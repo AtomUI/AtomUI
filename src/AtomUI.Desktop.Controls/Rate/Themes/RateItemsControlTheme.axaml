@@ -19,5 +19,6 @@
         <Style Selector="^ /template/ StackPanel#ItemsLayout">
             <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}"/>
         </Style>
+        <Setter Property="ClipToBounds" Value="False"/>
     </ControlTheme>
 </ResourceDictionary>

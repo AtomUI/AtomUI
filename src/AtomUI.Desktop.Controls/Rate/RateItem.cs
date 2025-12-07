@@ -4,9 +4,11 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -115,8 +117,17 @@ internal class RateItem : TemplatedControl
             o => o.StarClip,
             (o, v) => o.StarClip = v);
     
+    internal static readonly DirectProperty<RateItem, bool> IsFocusStartItemProperty =
+        AvaloniaProperty.RegisterDirect<RateItem, bool>(
+            nameof(IsFocusStartItem),
+            o => o.IsFocusStartItem,
+            (o, v) => o.IsFocusStartItem = v);
+    
     internal static readonly StyledProperty<double> HoverScaleProperty =
         AvaloniaProperty.Register<RateItem, double>(nameof(HoverScale));
+    
+    internal static readonly StyledProperty<ITransform?> HoverRenderTransformProperty =
+        AvaloniaProperty.Register<RateItem, ITransform?>(nameof (HoverRenderTransform));
     
     private VisualBrush? _characterBgBrush;
 
@@ -146,6 +157,20 @@ internal class RateItem : TemplatedControl
     {
         get => GetValue(HoverScaleProperty);
         set => SetValue(HoverScaleProperty, value);
+    }
+    
+    internal ITransform? HoverRenderTransform
+    {
+        get => GetValue(HoverRenderTransformProperty);
+        set => SetValue(HoverRenderTransformProperty, value);
+    }
+    
+    private bool _isFocusStartItem;
+
+    internal bool IsFocusStartItem
+    {
+        get => _isFocusStartItem;
+        set => SetAndRaise(IsFocusStartItemProperty, ref _isFocusStartItem, value);
     }
     
     #endregion
@@ -179,9 +204,12 @@ internal class RateItem : TemplatedControl
         {
             ConfigureStarClip();
         }
-        else if (change.Property == HoverScaleProperty)
+
+        if (change.Property == HoverScaleProperty)
         {
-            SetCurrentValue(RenderTransformProperty, new ScaleTransform(HoverScale, HoverScale));
+            var builder = TransformOperations.CreateBuilder(1);
+            builder.AppendScale(HoverScale, HoverScale);
+            SetCurrentValue(HoverRenderTransformProperty, builder.Build());
         }
         if (IsLoaded)
         {
@@ -274,7 +302,7 @@ internal class RateItem : TemplatedControl
             if (force || Transitions == null)
             {
                 Transitions = [
-                    TransitionUtils.CreateTransition<DoubleTransition>(HoverScaleProperty)
+                    TransitionUtils.CreateTransition<TransformOperationsTransition>(RenderTransformProperty)
                 ];
             }
         }

@@ -8,6 +8,8 @@
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}">
                     <Panel>
+                        <atom:DashedBorder BorderThickness="0.75" BorderBrush="{TemplateBinding StarColor}" StrokeDashArray="4, 2"
+                                           IsVisible="{TemplateBinding IsFocusStartItem}"/>
                         <Rectangle Fill="{TemplateBinding CharacterBgBrush}"
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Stretch"/>
@@ -19,7 +21,8 @@
                 </Border>
             </ControlTemplate>
         </Setter>
-
+        
+        <Setter Property="ClipToBounds" Value="False"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
         
@@ -42,10 +45,13 @@
         </Style>
         
         <Setter Property="RenderTransformOrigin" Value="{x:Static RelativePoint.Center}"/>
-        <Setter Property="HoverScale" Value="1.0"/>
+        <Setter Property="HoverScale" Value="{DynamicResource {x:Static atom:RateTokenKey.StarHoverScale}}"/>
         <Style Selector="^:pointerover">
-            <Setter Property="HoverScale" Value="{DynamicResource {x:Static atom:RateTokenKey.StarHoverScale}}"/>
+            <Setter Property="RenderTransform" Value="{Binding HoverRenderTransform, RelativeSource={RelativeSource Self}}"/> 
         </Style>
-        
+        <Style Selector="^[IsFocusStartItem=True]">
+            <Setter Property="RenderTransform" Value="{Binding HoverRenderTransform, RelativeSource={RelativeSource Self}}"/> 
+        </Style>
+    
     </ControlTheme>
 </ResourceDictionary>

@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -161,6 +162,8 @@ public class Rate : TemplatedControl,
     private ItemsControl? _itemsControl;
     private IDisposable? _pointerEventHandleDisposable;
     private double? _pressedEffectiveValue;
+    private bool _isPointerInRate;
+    private RateItem? _focusStartItem;
     
     static Rate()
     {
@@ -244,7 +247,12 @@ public class Rate : TemplatedControl,
             {
                 if (!bounds.Contains(position))
                 {
+                    _isPointerInRate = false;
                     SetCurrentValue(EffectiveValueProperty, Value);
+                }
+                else
+                {
+                    _isPointerInRate = true;
                 }
             }
             else if (pointerEventArgs.Type == RawPointerEventType.LeftButtonDown)
@@ -360,7 +368,35 @@ public class Rate : TemplatedControl,
             SetCurrentValue(EffectiveValueProperty, value);
         }
     }
-    
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        if (_itemsControl != null)
+        {
+            for (var i = 0; i < Count; i++)
+            {
+                if (_itemsControl.ContainerFromIndex(i) is RateItem rateItem)
+                {
+                    if (rateItem.Bounds.Contains(e.GetPosition(_itemsControl)))
+                    {
+                        _focusStartItem = rateItem;
+                    }
+                }
+            }
+        }
+    }
+
+    protected override void OnLostFocus(RoutedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (_focusStartItem != null)
+        {
+            _focusStartItem.IsFocusStartItem = false;
+            _focusStartItem                  = null;
+        }
+    }
+
     private double? CalculateEffectiveValue(Point point)
     {
         double? value = null;
@@ -431,6 +467,48 @@ public class Rate : TemplatedControl,
                     ToolTip.SetTip(rateItem, ToolTips[i]);
                 }
             }
+        }
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (IsKeyboardEnabled && !_isPointerInRate)
+        {
+            var currentValue = Value;
+            if (e.Key == Key.Left)
+            {
+                if (IsAllowHalf)
+                {
+                    currentValue -= 0.5;
+                }
+                else
+                {
+                    currentValue -= 1.0;
+                }
+
+                if (_focusStartItem != null)
+                {
+                    _focusStartItem.IsFocusStartItem = true;
+                }
+            }
+            else if (e.Key == Key.Right)
+            {
+                if (IsAllowHalf)
+                {
+                    currentValue += 0.5;
+                }
+                else
+                {
+                    currentValue += 1.0;
+                }
+                if (_focusStartItem != null)
+                {
+                    _focusStartItem.IsFocusStartItem = true;
+                }
+            }
+            currentValue = Math.Max(0, Math.Min(currentValue, Count));
+            SetCurrentValue(ValueProperty, currentValue);
         }
     }
 }

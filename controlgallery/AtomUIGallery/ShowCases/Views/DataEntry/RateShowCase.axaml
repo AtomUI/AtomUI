@@ -34,6 +34,21 @@
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
+            Title="Clear star"
+            Description="Support set allow to clear star when click again.">
+            <StackPanel Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:Rate DefaultValue="3" IsAllowClear="True" />
+                    <TextBlock>IsAllowClear: true</TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:Rate DefaultValue="3" IsAllowClear="False" />
+                    <TextBlock>IsAllowClear: false</TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
             Title="Other Character"
             Description="Replace the default star to other character like alphabet, digit, iconfont or even Chinese word.">
             <StackPanel Orientation="Vertical" Spacing="10">

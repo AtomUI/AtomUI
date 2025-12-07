@@ -173,7 +173,7 @@ public class DashedBorder : Decorator
         _borderRenderHelper.Render(
             context,
             Bounds.Size,
-            LayoutThickness,
+            BorderThickness,
             CornerRadius,
             BackgroundSizing,
             Background,

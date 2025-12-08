@@ -50,7 +50,7 @@
         
         <gallery:ShowCaseItem Title="Animated number" Description="Animated number with StatisticCountUp." IsOccupyEntireRow="True">
             <UniformGrid Columns="2" Rows="2">
-                <atom:Statistic Header="Active Users" Value="100">
+                <atom:Statistic Header="Active Users" Value="112893">
                     <atom:Statistic.Content>
                         <atom:StatisticCountUp EndValue="{Binding Value}"
                                                Precision="2"/>
@@ -62,6 +62,17 @@
                                                Precision="2"/>
                     </atom:Statistic.Content>
                 </atom:Statistic>
+            </UniformGrid>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="Timer" Description="Timer component." IsOccupyEntireRow="True">
+            <UniformGrid Columns="2" Rows="3" RowSpacing="10">
+                <atom:TimerStatistic Value="{Binding Deadline}"/>
+                <atom:TimerStatistic Header="Million Seconds" Value="{Binding Deadline}" Format="hh\:mm\:ss\.fff"/>
+                <atom:TimerStatistic Header="Countdown" Value="{Binding TenSecondsLater}"/>
+                <atom:TimerStatistic Header="Countup" Value="{Binding Before}"/>
+                <atom:TimerStatistic Header="Day Level (Countdown)" Value="{Binding Deadline}" Format="d\ \天\ h\ \时\ m\ \分\ s\ \秒"/>
+                <atom:TimerStatistic Header="Day Level (Countup)" Value="{Binding Before}" Format="d\ \天\ h\ \时\ m\ \分\ s\ \秒"/>
             </UniformGrid>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

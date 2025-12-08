@@ -7,40 +7,6 @@
         <ControlTheme.BasedOn>
             <atom:AbstractStatisticTheme TargetType="atom:Statistic"/>
         </ControlTheme.BasedOn>
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Name="Frame"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                    <StackPanel Name="RootLayout">
-                        <ContentPresenter Name="HeaderPresenter"
-                                          Content="{TemplateBinding Header}"
-                                          ContentTemplate="{TemplateBinding HeaderTemplate}"/>
-                        <atom:Skeleton IsLoading="{TemplateBinding IsLoading}" IsActive="True" IsShowParagraph="False">
-                            <StackPanel Orientation="Horizontal" Name="ContentLayout">
-                                <ContentPresenter Name="ValuePrefixAddOn"
-                                                  Foreground="{TemplateBinding ContentForeground}"
-                                                  FontSize="{TemplateBinding ContentFontSize}"
-                                                  Content="{TemplateBinding ValuePrefixAddOn}"
-                                                  ContentTemplate="{TemplateBinding ValuePrefixAddOnTemplate}"
-                                                  IsVisible="{TemplateBinding ValuePrefixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                <ContentPresenter Name="ContentPresenter"
-                                                  Foreground="{TemplateBinding ContentForeground}"
-                                                  FontSize="{TemplateBinding ContentFontSize}"
-                                                  Content="{TemplateBinding Content}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                                <ContentPresenter Name="ValueSuffixAddOn"
-                                                  Foreground="{TemplateBinding ContentForeground}"
-                                                  FontSize="{TemplateBinding ContentFontSize}"
-                                                  Content="{TemplateBinding ValueSuffixAddOn}"
-                                                  ContentTemplate="{TemplateBinding ValueSuffixAddOnTemplate}"
-                                                  IsVisible="{TemplateBinding ValueSuffixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                            </StackPanel>
-                        </atom:Skeleton>
-                    </StackPanel>
-                </Border>
-            </ControlTemplate>
-        </Setter>
         
         <Style Selector="^ /template/ StackPanel#RootLayout">
             <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}"/>

@@ -4,21 +4,56 @@
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractStatisticTheme"
               x:ClassModifier="internal">
-    
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:AbstractStatistic">
+            <Border Name="Frame"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{TemplateBinding CornerRadius}">
+                <StackPanel Name="RootLayout">
+                    <ContentPresenter Name="HeaderPresenter"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <atom:Skeleton IsLoading="{TemplateBinding IsLoading}" IsActive="True" IsShowParagraph="False">
+                        <StackPanel Orientation="Horizontal" Name="ContentLayout">
+                            <ContentPresenter Name="ValuePrefixAddOn"
+                                              Foreground="{TemplateBinding ContentForeground}"
+                                              FontSize="{TemplateBinding ContentFontSize}"
+                                              Content="{TemplateBinding ValuePrefixAddOn}"
+                                              ContentTemplate="{TemplateBinding ValuePrefixAddOnTemplate}"
+                                              IsVisible="{TemplateBinding ValuePrefixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <ContentPresenter Name="ContentPresenter"
+                                              Foreground="{TemplateBinding ContentForeground}"
+                                              FontSize="{TemplateBinding ContentFontSize}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            <ContentPresenter Name="ValueSuffixAddOn"
+                                              Foreground="{TemplateBinding ContentForeground}"
+                                              FontSize="{TemplateBinding ContentFontSize}"
+                                              Content="{TemplateBinding ValueSuffixAddOn}"
+                                              ContentTemplate="{TemplateBinding ValueSuffixAddOnTemplate}"
+                                              IsVisible="{TemplateBinding ValueSuffixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        </StackPanel>
+                    </atom:Skeleton>
+                </StackPanel>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+
     <Style Selector="^:is(atom|AbstractStatistic)">
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}"/>
-            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.TitleFontSize}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.TitleFontSize}}" />
         </Style>
-    
-        <Setter Property="ContentForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextHeading}}"/>
-        <Setter Property="ContentFontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
-    
+
+        <Setter Property="ContentForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextHeading}}" />
+        <Setter Property="ContentFontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}" />
+
         <Style Selector="^ /template/ atom|Icon">
-            <Setter Property="FillBrush" Value="{TemplateBinding ContentForeground}"/>
-            <Setter Property="StrokeBrush" Value="{TemplateBinding ContentForeground}"/>
-            <Setter Property="Width" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
-            <Setter Property="Height" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
+            <Setter Property="FillBrush" Value="{TemplateBinding ContentForeground}" />
+            <Setter Property="StrokeBrush" Value="{TemplateBinding ContentForeground}" />
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}" />
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}" />
         </Style>
     </Style>
 </ControlTheme>

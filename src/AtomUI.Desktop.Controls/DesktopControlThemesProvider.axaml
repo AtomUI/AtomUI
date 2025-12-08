@@ -54,6 +54,7 @@
         <ResourceInclude Source="Skeleton/Themes/SkeletonThemes.axaml" />
         <ResourceInclude Source="Select/Themes/SelectThemes.axaml" />
         <ResourceInclude Source="Slider/Themes/SliderThemes.axaml" />
+        <ResourceInclude Source="Statistic/Themes/StatisticThemes.axaml" />
         <ResourceInclude Source="Steps/Themes/StepsThemes.axaml" />
         <ResourceInclude Source="Switch/Themes/ToggleSwitchTheme.axaml" />
         <ResourceInclude Source="TabControl/Themes/TabControlThemes.axaml" />

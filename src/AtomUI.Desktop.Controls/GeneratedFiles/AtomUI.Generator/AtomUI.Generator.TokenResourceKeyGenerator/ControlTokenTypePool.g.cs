@@ -58,6 +58,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SkeletonToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SliderToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SpinToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.StatisticToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.StepsToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.TabControlToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.TagToken));

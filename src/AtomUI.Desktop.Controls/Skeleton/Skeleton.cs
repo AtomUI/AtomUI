@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
@@ -167,6 +168,7 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
     public Skeleton()
     {
         this.RegisterResources();
+        ContentProperty.Changed.AddClassHandler<Skeleton>((x, e) => x.HandleContentChanged(e));
     }
 
     private SkeletonAvatar? _avatar;
@@ -206,4 +208,16 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
         }
     }
     
+    private void HandleContentChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.OldValue is ILogical oldChild)
+        {
+            LogicalChildren.Remove(oldChild);
+        }
+
+        if (e.NewValue is ILogical newChild)
+        {
+            LogicalChildren.Add(newChild);
+        }
+    }
 }

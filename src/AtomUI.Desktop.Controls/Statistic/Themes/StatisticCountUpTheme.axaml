@@ -1,0 +1,16 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:StatisticCountUp}" TargetType="atom:StatisticCountUp">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <TextBlock Text="{TemplateBinding FormattedValue}"/>
+            </ControlTemplate>
+        </Setter>
+        
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextHeading}}"/>
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
+    </ControlTheme>
+</ResourceDictionary>

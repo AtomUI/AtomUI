@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.StatisticShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem Title="Basic" Description="Simplest Usage." IsOccupyEntireRow="True">
+            <UniformGrid Columns="2" Rows="2">
+                <atom:Statistic Header="Active Users" Value="112893" />
+                <StackPanel Orientation="Vertical" Spacing="16">
+                    <atom:Statistic Header="Account Balance (CNY)" Value="112893" Precision="2" />
+                    <atom:Button ButtonType="Primary">Recharge</atom:Button>
+                </StackPanel>
+                <atom:Statistic Header="Active Users" Value="112893" IsLoading="True" />
+            </UniformGrid>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="Unit"
+                              Description="Add unit through prefix and suffix."
+                              IsOccupyEntireRow="True">
+            <UniformGrid Columns="2" Rows="1">
+                <atom:Statistic Header="Feedback" Value="1128" ValuePrefixAddOn="{antdicons:AntDesignIconProvider LikeOutlined}"/>
+                <atom:Statistic Header="Unmerged" Value="93" ValueSuffixAddOn="/ 100"/>
+            </UniformGrid>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="In Card"
+                              Description="Display statistic data in Card."
+                              IsOccupyEntireRow="True">
+            <Border Background="#F0F2F5" Padding="20, 30">
+                <UniformGrid Columns="2" Rows="1" ColumnSpacing="20">
+                    <atom:Card SizeType="Large">
+                        <atom:Statistic Header="Active" Value="11.28" Precision="2"
+                                        ValuePrefixAddOn="{antdicons:AntDesignIconProvider ArrowUpOutlined}"
+                                        ValueSuffixAddOn="%"
+                                        ContentForeground="#3f8600"/>
+                    </atom:Card>
+                    <atom:Card SizeType="Large">
+                        <atom:Statistic Header="Idle"
+                                        Value="9.3"
+                                        Precision="2"
+                                        ValuePrefixAddOn="{antdicons:AntDesignIconProvider ArrowDownOutlined}"
+                                        ValueSuffixAddOn="%"
+                                        ContentForeground="#cf1322"/>
+                    </atom:Card>
+                </UniformGrid>
+            </Border>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="Animated number" Description="Animated number with StatisticCountUp." IsOccupyEntireRow="True">
+            <UniformGrid Columns="2" Rows="2">
+                <atom:Statistic Header="Active Users" Value="100">
+                    <atom:Statistic.Content>
+                        <atom:StatisticCountUp EndValue="{Binding Value}"
+                                               Precision="2"/>
+                    </atom:Statistic.Content>
+                </atom:Statistic>
+                <atom:Statistic Header="Account Balance (CNY)" Value="112893" >
+                    <atom:Statistic.Content>
+                        <atom:StatisticCountUp EndValue="{Binding Value}"
+                                               Precision="2"/>
+                    </atom:Statistic.Content>
+                </atom:Statistic>
+            </UniformGrid>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

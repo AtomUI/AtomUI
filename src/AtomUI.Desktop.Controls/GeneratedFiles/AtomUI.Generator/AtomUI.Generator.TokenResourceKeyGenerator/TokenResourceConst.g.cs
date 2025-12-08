@@ -854,6 +854,12 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey IndicatorSizeSM = new TokenResourceKey("AtomUI.Desktop.Controls.Spin.IndicatorSizeSM");
     }
 
+    public static class StatisticTokenKey
+    {
+        public static readonly TokenResourceKey ContentFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Statistic.ContentFontSize");
+        public static readonly TokenResourceKey TitleFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Statistic.TitleFontSize");
+    }
+
     public static class StepsTokenKey
     {
         public static readonly TokenResourceKey CustomIconFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Steps.CustomIconFontSize");

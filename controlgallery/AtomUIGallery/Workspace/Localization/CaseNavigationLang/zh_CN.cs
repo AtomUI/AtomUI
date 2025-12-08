@@ -58,6 +58,7 @@ internal class zh_CN : LanguageProvider
     public const string DataDisplay_List = "List 列表";
     public const string DataDisplay_QRCode = "QRCode 二维码";
     public const string DataDisplay_Segmented = "Segmented 分段控制器";
+    public const string DataDisplay_Statistic = "Statistic 统计数值";
     public const string DataDisplay_Timeline = "Timeline 时间轴";
     public const string DataDisplay_TreeView = "TreeView 树形控件";
     public const string DataDisplay_Tooltip = "Tooltip 文字提示";

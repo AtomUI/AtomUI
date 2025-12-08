@@ -66,6 +66,7 @@ public class CaseNavigationViewModel : ReactiveObject
         _showCaseViewModelFactories.Add(ListViewModel.ID, () => new ListViewModel(HostScreen));
         _showCaseViewModelFactories.Add(QRCodeViewModel.ID, () => new QRCodeViewModel(HostScreen));
         _showCaseViewModelFactories.Add(SegmentedViewModel.ID, () => new SegmentedViewModel(HostScreen));
+        _showCaseViewModelFactories.Add(StatisticViewModel.ID, () => new StatisticViewModel(HostScreen));
         _showCaseViewModelFactories.Add(TagViewModel.ID, () => new TagViewModel(HostScreen));
         _showCaseViewModelFactories.Add(TimelineViewModel.ID, () => new TimelineViewModel(HostScreen));
         _showCaseViewModelFactories.Add(TooltipViewModel.ID, () => new TooltipViewModel(HostScreen));

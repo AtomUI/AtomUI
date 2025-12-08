@@ -1,7 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:atom="https://atomui.net"
-                    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="Button/ButtonTheme.axaml"/>
@@ -9,6 +8,6 @@
         <ResourceInclude Source="SplitButtonTheme.axaml"/>
         <ResourceInclude Source="HyperLinkButtonTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
-    <themes:IconButtonTheme x:Key="{x:Type atom:IconButton}" TargetType="atom:IconButton"/>
-    <themes:ToggleIconButtonTheme x:Key="{x:Type atom:ToggleIconButton}" TargetType="atom:ToggleIconButton"/>
+    <atom:IconButtonTheme x:Key="{x:Type atom:IconButton}" TargetType="atom:IconButton"/>
+    <atom:ToggleIconButtonTheme x:Key="{x:Type atom:ToggleIconButton}" TargetType="atom:ToggleIconButton"/>
 </ResourceDictionary>

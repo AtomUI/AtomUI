@@ -1,0 +1,24 @@
+<ControlTheme TargetType="atom:AbstractStatistic"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:Class="AtomUI.Desktop.Controls.Themes.AbstractStatisticTheme"
+              x:ClassModifier="internal">
+    
+    <Style Selector="^:is(atom|AbstractStatistic)">
+        <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}"/>
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.TitleFontSize}}"/>
+        </Style>
+    
+        <Setter Property="ContentForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextHeading}}"/>
+        <Setter Property="ContentFontSize" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
+    
+        <Style Selector="^ /template/ atom|Icon">
+            <Setter Property="FillBrush" Value="{TemplateBinding ContentForeground}"/>
+            <Setter Property="StrokeBrush" Value="{TemplateBinding ContentForeground}"/>
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:StatisticTokenKey.ContentFontSize}}"/>
+        </Style>
+    </Style>
+</ControlTheme>

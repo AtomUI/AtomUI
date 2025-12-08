@@ -4302,7 +4302,11 @@ public partial class DataGrid
 
             DataGridSelectionAction action = DataGridSelectionAction.None;
 
-            var column                 = ColumnsInternal[columnIndex];
+            DataGridColumn? column = null;
+            if (columnIndex != -1)
+            {
+                column = ColumnsInternal[columnIndex];
+            }
             
             var clickInSelectIndicator = false;
             if (columnIndex != -1)

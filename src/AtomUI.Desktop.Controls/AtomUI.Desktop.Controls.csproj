@@ -31,5 +31,9 @@
                           ReferenceOutputAssembly="false"
                           PrivateAssets="all" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Image\" />
+    </ItemGroup>
     
 </Project>

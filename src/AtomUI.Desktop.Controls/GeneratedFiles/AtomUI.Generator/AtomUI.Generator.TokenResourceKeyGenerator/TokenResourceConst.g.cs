@@ -392,6 +392,16 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey VerticalMarginInline = new TokenResourceKey("AtomUI.Desktop.Controls.GroupBox.VerticalMarginInline");
     }
 
+    public static class ImagePreviewerTokenKey
+    {
+        public static readonly TokenResourceKey ImagePreviewSwitchSize = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.ImagePreviewSwitchSize");
+        public static readonly TokenResourceKey MaskBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.MaskBgColor");
+        public static readonly TokenResourceKey PreviewOperationColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationColor");
+        public static readonly TokenResourceKey PreviewOperationColorDisabled = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationColorDisabled");
+        public static readonly TokenResourceKey PreviewOperationHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationHoverColor");
+        public static readonly TokenResourceKey PreviewOperationSize = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationSize");
+    }
+
     public static class LineEditTokenKey
     {
         public static readonly TokenResourceKey InputFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.LineEdit.InputFontSize");

@@ -28,6 +28,7 @@
         <ResourceInclude Source="Flyouts/Themes/FlyoutThemes.axaml" />
         <ResourceInclude Source="GroupBox/Themes/GroupBoxTheme.axaml" />
         <ResourceInclude Source="HeaderedContentControl/Themes/HeaderedContentControlTheme.axaml" />
+        <ResourceInclude Source="ImagePreviewer/Themes/ImagePreviewerThemes.axaml" />
         <ResourceInclude Source="Input/Themes/InputThemes.axaml" />
         <ResourceInclude Source="ItemsControl/Themes/ItemsControlTheme.axaml" />
         <ResourceInclude Source="List/Themes/ListThemes.axaml" />

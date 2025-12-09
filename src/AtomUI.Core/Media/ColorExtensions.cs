@@ -11,9 +11,21 @@ public static class ColorExtensions
         return color.R / 255d;
     }
 
+    public static Color SetRedF(this Color color, double value)
+    {
+        value = Math.Clamp(value, 0.0, 1.0);
+        return ColorUtils.FromRgbF(color.GetAlphaF(), value, color.GetGreenF(), color.GetBlueF());
+    }
+
     public static double GetGreenF(this Color color)
     {
         return color.G / 255d;
+    }
+
+    public static Color SetGreenF(this Color color, double value)
+    {
+        value = Math.Clamp(value, 0.0, 1.0);
+        return ColorUtils.FromRgbF(color.GetAlphaF(), color.GetRedF(), value, color.GetBlueF());
     }
 
     public static double GetBlueF(this Color color)
@@ -21,9 +33,21 @@ public static class ColorExtensions
         return color.B / 255d;
     }
 
+    public static Color SetBlueF(this Color color, double value)
+    {
+        value = Math.Clamp(value, 0.0, 1.0);
+        return ColorUtils.FromRgbF(color.GetAlphaF(), color.GetRedF(), color.GetGreenF(), value);
+    }
+
     public static double GetAlphaF(this Color color)
     {
         return color.A / 255d;
+    }
+
+    public static Color SetAlphaF(this Color color, double value)
+    {
+        value = Math.Clamp(value, 0.0, 1.0);
+        return ColorUtils.FromRgbF(value, color.GetRedF(), color.GetGreenF(), color.GetBlueF());
     }
 
     public static string HexName(this Color color, ColorNameFormat format = ColorNameFormat.HexRgb)

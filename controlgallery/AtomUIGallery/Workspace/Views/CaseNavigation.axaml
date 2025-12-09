@@ -100,6 +100,8 @@
                               ItemKey="{x:Static viewmodels:ExpanderViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataDisplay_Empty}}"
                               ItemKey="{x:Static viewmodels:EmptyViewModel.ID}" />
+            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataDisplay_ImagePreviewer}}"
+                              ItemKey="{x:Static viewmodels:ImagePreviewerViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataDisplay_GroupBox}}"
                               ItemKey="{x:Static viewmodels:GroupBoxViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataDisplay_InfoFlyout}}"

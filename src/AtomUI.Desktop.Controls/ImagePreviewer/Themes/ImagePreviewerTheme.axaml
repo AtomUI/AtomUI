@@ -1,0 +1,52 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImagePreviewer}" TargetType="atom:ImagePreviewer">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <Panel>
+                        <Image Source="{TemplateBinding CoverImageSrc}" Stretch="Uniform" />
+                        <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
+                            <StackPanel Name="MaskLayout"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <antdicons:EyeOutlined />
+                                <TextBlock>Preview</TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Style Selector="^ /template/ Border#Mask">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.MaskBgColor}}" />
+            <Setter Property="TemplatedControl.Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
+        </Style>
+        <Style Selector="^ /template/ StackPanel#MaskLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
+        </Style>
+        <Style Selector="^ /template/ atom|Icon">
+            <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
+        </Style>
+        
+        <Style Selector="^:pointerover">
+            <Setter Property="MaskOpacity" Value="1" />
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

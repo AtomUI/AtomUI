@@ -53,6 +53,7 @@ internal class zh_CN : LanguageProvider
     public const string DataDisplay_DataGrid = "DataGrid 数据表格";
     public const string DataDisplay_Expander = "Expander 展开面板";
     public const string DataDisplay_Empty = "Empty 空状态";
+    public const string DataDisplay_ImagePreviewer = "ImagePreviewer 图片预览";
     public const string DataDisplay_GroupBox = "GroupBox 分组盒";
     public const string DataDisplay_InfoFlyout = "InfoFlyout 信息提示";
     public const string DataDisplay_List = "List 列表";

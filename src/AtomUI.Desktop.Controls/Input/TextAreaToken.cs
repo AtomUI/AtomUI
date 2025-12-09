@@ -38,9 +38,9 @@ internal class TextAreaToken : AbstractControlDesignToken
     /// </summary>
     public double ResizeHandleSize { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         FontSize                 = SharedToken.FontSize;
         FontSizeLG               = SharedToken.FontSizeLG;
         FontSizeSM               = SharedToken.FontSizeSM;

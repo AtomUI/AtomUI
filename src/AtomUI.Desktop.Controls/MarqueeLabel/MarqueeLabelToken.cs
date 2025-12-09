@@ -22,9 +22,9 @@ internal class MarqueeLabelToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         CycleSpace   = 200;
         DefaultSpeed = 150;
     }

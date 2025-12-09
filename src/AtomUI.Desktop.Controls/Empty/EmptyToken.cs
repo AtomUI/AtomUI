@@ -24,9 +24,9 @@ public class EmptyToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         var controlHeightLG = SharedToken.ControlHeightLG;
         EmptyImgHeight      = controlHeightLG * 2.5;
         EmptyImgHeightMD    = controlHeightLG * 1.85;

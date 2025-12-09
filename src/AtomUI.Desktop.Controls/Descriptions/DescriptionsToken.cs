@@ -74,9 +74,9 @@ internal class DescriptionsToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         LabelBg      = SharedToken.ColorFillAlter;
         LabelColor   = SharedToken.ColorTextTertiary;
         TitleColor   = SharedToken.ColorText;

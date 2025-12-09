@@ -167,9 +167,9 @@ internal class StepsToken : AbstractControlDesignToken
     
     #endregion
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         
         CustomIconSize      = SharedToken.ControlHeight;
         CustomIconFontSize  = SharedToken.ControlHeightSM;

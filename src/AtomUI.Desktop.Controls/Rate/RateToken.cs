@@ -50,9 +50,9 @@ internal class RateToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         StarColor      = SharedToken.ColorPalettes[PresetPrimaryColor.Yellow].Color6;
         StarSize       = SharedToken.ControlHeight * 0.625;
         StarSizeSM     = SharedToken.ControlHeightSM * 0.625;

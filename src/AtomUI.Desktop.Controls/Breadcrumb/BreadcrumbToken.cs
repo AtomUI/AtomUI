@@ -59,9 +59,9 @@ internal class BreadcrumbToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         IconSize                    = SharedToken.IconSize;
         ItemColor                   = SharedToken.ColorTextDescription;
         LastItemColor               = SharedToken.ColorText;

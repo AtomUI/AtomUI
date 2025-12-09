@@ -3,7 +3,8 @@ namespace AtomUI.Desktop.Controls.Themes;
 internal class TitleBarThemeConstants
 {
     public const string LogoPart = "PART_Logo";
-    public const string AddOnPart = "PART_AddOn";
+    public const string LeftAddOnPart = "PART_LeftAddOn";
+    public const string RightAddOnPart = "PART_RightAddOn";
     public const string ContentPresenterPart = "PART_ContentPresenter";
     public const string CaptionButtonGroupPart = "PART_CaptionButtonGroup";
 }

@@ -146,9 +146,9 @@ internal class SelectToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         
         // Item height default use `controlHeight - 2 * paddingXXS`,
         // but some case `paddingXXS=0`.

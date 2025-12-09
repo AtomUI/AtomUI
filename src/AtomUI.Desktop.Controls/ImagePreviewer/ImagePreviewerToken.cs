@@ -44,19 +44,44 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
     /// </summary>
     public Color MaskBgColor { get; set; }
     
+    /// <summary>
+    /// 预览窗口最小宽度
+    /// </summary>
+    public double DialogMinWidth { get; set; }
+    
+    /// <summary>
+    /// 预览窗口最小高度
+    /// </summary>
+    public double DialogMinHeight { get; set; }
+    
+    /// <summary>
+    /// 预览窗口标题栏背景色
+    /// </summary>
+    public Color TitleBarBackgroundColor { get; set; }
+    
     public ImagePreviewerToken()
         : base(ID)
     {
     }
     
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         PreviewOperationColor         = SharedToken.ColorTextLightSolid.SetAlphaF(0.65);
         PreviewOperationHoverColor    = SharedToken.ColorTextLightSolid.SetAlphaF(0.85);
         PreviewOperationColorDisabled = SharedToken.ColorTextLightSolid.SetAlphaF(0.25);
         PreviewOperationSize          = SharedToken.FontSizeIcon * 1.5;
         ImagePreviewSwitchSize        = SharedToken.ControlHeightLG;
         MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);
+        DialogMinWidth                = 710;
+        DialogMinHeight               = 240;
+        if (isDarkMode)
+        {
+            TitleBarBackgroundColor       = SharedToken.ColorBorderSecondary;
+        }
+        else
+        {
+            TitleBarBackgroundColor       = SharedToken.ColorBorderSecondary.Darken(1);
+        }
     }
 }

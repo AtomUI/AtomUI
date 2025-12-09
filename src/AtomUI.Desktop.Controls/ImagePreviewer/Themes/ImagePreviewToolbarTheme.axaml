@@ -1,0 +1,61 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImagePreviewToolbar}" TargetType="atom:ImagePreviewToolbar">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Orientation="Horizontal" Name="RootLayout">
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Icon="{antdicons:AntDesignIconProvider ArrowLeftOutlined}"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider ArrowRightOutlined}"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider ZoomOutOutlined}"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider SwapOutlined}"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider SwapOutlined}"
+                                     RenderTransform="rotate(90deg)"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider RotateLeftOutlined}"/>
+                    <atom:IconButton IsEnableHoverEffect="True" 
+                                     IsPassthroughMouseEvent="False"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider RotateRightOutlined}"/>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+        
+        <Style Selector="^ /template/ atom|IconButton">
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="IsEnableHoverEffect" Value="True"/>
+            <Setter Property="IsPassthroughMouseEvent" Value="False"/>
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}"/>
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}"/>
+        </Style>
+        
+        <Style Selector="^ /template/ StackPanel#RootLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}"/>
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

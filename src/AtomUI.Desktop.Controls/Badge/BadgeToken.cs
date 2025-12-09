@@ -70,9 +70,9 @@ internal class BadgeToken : AbstractControlDesignToken
     
     #endregion
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         var lineWidth = SharedToken.LineWidth;
         IndicatorHeight   = Math.Round(SharedToken.FontSize * SharedToken.RelativeLineHeight) - 2 * lineWidth;
         IndicatorHeightSM = SharedToken.FontSize;

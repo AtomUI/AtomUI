@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -17,24 +18,33 @@ namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Active)]
 [PseudoClasses(StdPseudoClass.Normal, StdPseudoClass.Minimized, StdPseudoClass.Maximized, StdPseudoClass.Fullscreen)]
-internal class TitleBar : ContentControl, IControlSharedTokenResourcesHost, IMotionAwareControl, IOperationSystemAware
+internal class TitleBar : TemplatedControl, 
+                          IControlSharedTokenResourcesHost,
+                          IMotionAwareControl, 
+                          IOperationSystemAware
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<Control?> LogoProperty =
         AvaloniaProperty.Register<TitleBar, Control?>(nameof(Logo));
+    
+    public static readonly StyledProperty<object?> TitleProperty =
+        AvaloniaProperty.Register<TitleBar, object?>(nameof(Title));
+    
+    public static readonly StyledProperty<IDataTemplate?> TitleTemplateProperty = 
+        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof (TitleTemplate));
+    
+    public static readonly StyledProperty<object?> LeftAddOnProperty =
+        AvaloniaProperty.Register<TitleBar, object?>(nameof(LeftAddOn));
 
-    public static readonly StyledProperty<double> TitleFontSizeProperty =
-        AvaloniaProperty.Register<TitleBar, double>(nameof(TitleFontSize), defaultValue: 13);
+    public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
+        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof(LeftAddOnTemplate));
+    
+    public static readonly StyledProperty<object?> RightAddOnProperty =
+        AvaloniaProperty.Register<TitleBar, object?>(nameof(RightAddOn));
 
-    public static readonly StyledProperty<FontWeight> TitleFontWeightProperty =
-        AvaloniaProperty.Register<TitleBar, FontWeight>(nameof(TitleFontWeight), defaultValue: FontWeight.Bold);
-
-    public static readonly StyledProperty<object?> AddOnProperty =
-        AvaloniaProperty.Register<TitleBar, object?>(nameof(AddOn));
-
-    public static readonly StyledProperty<IDataTemplate?> AddOnTemplateProperty =
-        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof(AddOnTemplate));
+    public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
+        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof(RightAddOnTemplate));
     
     public static readonly StyledProperty<bool> IsWindowActiveProperty = 
         AvaloniaProperty.Register<TitleBar, bool>(nameof(IsWindowActive));
@@ -53,30 +63,44 @@ internal class TitleBar : ContentControl, IControlSharedTokenResourcesHost, IMot
         get => GetValue(LogoProperty);
         set => SetValue(LogoProperty, value);
     }
-
-    public double TitleFontSize
+    
+    [DependsOn(nameof(TitleTemplate))]
+    public object? Title
     {
-        get => GetValue(TitleFontSizeProperty);
-        set => SetValue(TitleFontSizeProperty, value);
+        get => GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+    
+    public IDataTemplate? TitleTemplate
+    {
+        get => GetValue(TitleTemplateProperty);
+        set => SetValue(TitleTemplateProperty, value);
     }
 
-    public FontWeight TitleFontWeight
+    [DependsOn(nameof(LeftAddOnTemplate))]
+    public object? LeftAddOn
     {
-        get => GetValue(TitleFontWeightProperty);
-        set => SetValue(TitleFontWeightProperty, value);
+        get => GetValue(LeftAddOnProperty);
+        set => SetValue(LeftAddOnProperty, value);
     }
 
-    [DependsOn(nameof(AddOnTemplate))]
-    public object? AddOn
+    public IDataTemplate? LeftAddOnTemplate
     {
-        get => GetValue(AddOnProperty);
-        set => SetValue(AddOnProperty, value);
+        get => GetValue(LeftAddOnTemplateProperty);
+        set => SetValue(LeftAddOnTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(RightAddOnTemplate))]
+    public object? RightAddOn
+    {
+        get => GetValue(RightAddOnProperty);
+        set => SetValue(RightAddOnProperty, value);
     }
 
-    public IDataTemplate? AddOnTemplate
+    public IDataTemplate? RightAddOnTemplate
     {
-        get => GetValue(AddOnTemplateProperty);
-        set => SetValue(AddOnTemplateProperty, value);
+        get => GetValue(RightAddOnTemplateProperty);
+        set => SetValue(RightAddOnTemplateProperty, value);
     }
 
     public bool IsWindowActive
@@ -95,6 +119,12 @@ internal class TitleBar : ContentControl, IControlSharedTokenResourcesHost, IMot
     public Version OsVersion => GetValue(OsVersionProperty);
     #endregion
 
+    #region 公共属性定义
+
+    public event EventHandler? MaximizeWindowRequested;
+
+    #endregion
+
     #region 内部属性定义
 
     Control IMotionAwareControl.PropertyBindTarget => this;
@@ -105,6 +135,12 @@ internal class TitleBar : ContentControl, IControlSharedTokenResourcesHost, IMot
 
     private CaptionButtonGroup? _captionButtonGroup;
     private CompositeDisposable? _disposables;
+
+    static TitleBar()
+    {
+        FontSizeProperty.OverrideDefaultValue<TitleBar>(13);
+        FontWeightProperty.OverrideDefaultValue<TitleBar>(FontWeight.Bold);
+    }
 
     public TitleBar()
     {
@@ -181,6 +217,15 @@ internal class TitleBar : ContentControl, IControlSharedTokenResourcesHost, IMot
         else
         {
             Transitions = null;
+        }
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        if (e.ClickCount == 2 && e.Properties.IsLeftButtonPressed)
+        {
+            MaximizeWindowRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 

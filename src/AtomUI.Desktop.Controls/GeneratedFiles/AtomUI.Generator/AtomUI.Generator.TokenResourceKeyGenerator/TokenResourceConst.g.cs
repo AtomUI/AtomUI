@@ -229,6 +229,8 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey MinHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.MinHeight");
         public static readonly TokenResourceKey PressedBackgroundColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.PressedBackgroundColor");
         public static readonly TokenResourceKey TitleBarPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.TitleBarPadding");
+        public static readonly TokenResourceKey TitleFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.TitleFontSize");
+        public static readonly TokenResourceKey TitleFontWeight = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.TitleFontWeight");
         public static readonly TokenResourceKey WindowsCloseButtonHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.WindowsCloseButtonHoverBgColor");
         public static readonly TokenResourceKey WindowsCloseButtonHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.WindowsCloseButtonHoverColor");
         public static readonly TokenResourceKey WindowsCloseButtonPressedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.WindowsCloseButtonPressedBgColor");
@@ -394,12 +396,15 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class ImagePreviewerTokenKey
     {
+        public static readonly TokenResourceKey DialogMinHeight = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.DialogMinHeight");
+        public static readonly TokenResourceKey DialogMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.DialogMinWidth");
         public static readonly TokenResourceKey ImagePreviewSwitchSize = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.ImagePreviewSwitchSize");
         public static readonly TokenResourceKey MaskBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.MaskBgColor");
         public static readonly TokenResourceKey PreviewOperationColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationColor");
         public static readonly TokenResourceKey PreviewOperationColorDisabled = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationColorDisabled");
         public static readonly TokenResourceKey PreviewOperationHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationHoverColor");
         public static readonly TokenResourceKey PreviewOperationSize = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationSize");
+        public static readonly TokenResourceKey TitleBarBackgroundColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.TitleBarBackgroundColor");
     }
 
     public static class LineEditTokenKey

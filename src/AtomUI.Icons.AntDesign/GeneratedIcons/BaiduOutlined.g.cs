@@ -1,5 +1,6 @@
 // This code is auto generated. Do not modify.
-// Generated Date: 2025-12-02
+// Copyright (c) Qinware Technologies Co., Ltd. 2019-2025. All rights reserved.
+// Copyright (c) Ant Design Authors 2025 https://github.com/ant-design/ant-design
 
 using Avalonia;
 using System;

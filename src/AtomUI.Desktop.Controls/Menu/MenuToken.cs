@@ -226,9 +226,9 @@ internal class MenuToken : AbstractControlDesignToken
     /// </summary>
     public double SeparatorItemHeight { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
 
         var colorTextDisabled  = SharedToken.ColorTextDisabled;
         var colorError         = SharedToken.ColorError;

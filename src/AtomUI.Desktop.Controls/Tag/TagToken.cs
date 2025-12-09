@@ -33,9 +33,9 @@ internal class TagToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         TagFontSize      = SharedToken.FontSizeSM;
         TagLineHeight    = SharedToken.FontHeightSM;
         TagCloseIconSize = SharedToken.IconSizeXS;

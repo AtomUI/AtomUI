@@ -159,9 +159,9 @@ internal class TabControlToken : AbstractControlDesignToken
     /// </summary>
     public double TabAndContentGutter { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         var lineHeight = SharedToken.RelativeLineHeight;
         var lineWidth  = SharedToken.LineWidth;
 

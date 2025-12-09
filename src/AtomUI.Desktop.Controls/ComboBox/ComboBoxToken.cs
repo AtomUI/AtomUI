@@ -79,9 +79,9 @@ internal class ComboBoxToken : ButtonSpinnerToken
     /// </summary>
     public double PopupMarginToAnchor { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         PopupBorderRadius    = SharedToken.BorderRadiusLG;
         PopupContentPadding  = new Thickness(SharedToken.UniformlyPaddingXXS, PopupBorderRadius.TopLeft / 2);
         PopupBoxShadows      = SharedToken.BoxShadowsSecondary;

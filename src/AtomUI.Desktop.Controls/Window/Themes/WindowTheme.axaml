@@ -22,11 +22,12 @@
                                 <Border Padding="{TemplateBinding TitleBarOSOffsetMargin}" DockPanel.Dock="Top"
                                         IsVisible="{TemplateBinding IsTitleBarVisible}">
                                     <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
-                                                   Content="{TemplateBinding Title}"
+                                                   Title="{TemplateBinding Title}"
                                                    Logo="{TemplateBinding Logo}" />
                                 </Border>
 
                                 <Border Name="ContentFrame"
+                                        Background="{TemplateBinding ContentBackground}"
                                         CornerRadius="{TemplateBinding CornerRadius}"
                                         ClipToBounds="True"
                                         Cursor="Arrow"
@@ -54,6 +55,7 @@
 
     <Style Selector="^:is(atom|Window)">
 
+        <Setter Property="Cursor" Value="Arrow" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="TransparencyLevelHint" Value="Transparent" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:WindowTokenKey.DefaultBackground}}" />
@@ -80,7 +82,7 @@
         </Style>
 
         <Style Selector="^[OsType=macOS]">
-            <Setter Property="MacOSCaptionGroupOffset" Value="10, 0" />
+            <Setter Property="MacOSCaptionGroupOffset" Value="10, 2" />
             <Setter Property="MacOSCaptionGroupSpacing" Value="5" />
         </Style>
 

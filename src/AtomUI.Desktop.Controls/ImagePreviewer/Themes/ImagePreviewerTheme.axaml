@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:imagepreviewlang="using:AtomUI.Desktop.Controls.ImagePreviewerLang"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImagePreviewer}" TargetType="atom:ImagePreviewer">
@@ -20,7 +21,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
                                 <antdicons:EyeOutlined />
-                                <TextBlock>Preview</TextBlock>
+                                <TextBlock Text="{DynamicResource {x:Static imagepreviewlang:ImagePreviewerLangResourceKey.Preview}}"/>
                             </StackPanel>
                         </Border>
                     </Panel>

@@ -4,5 +4,7 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="ImagePreviewerTheme.axaml"/>
         <ResourceInclude Source="ImagePreviewerDialogTheme.axaml"/>
+        <ResourceInclude Source="ImagePreviewFloatToolbarTheme.axaml"/>
+        <ResourceInclude Source="ImagePreviewToolbarTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

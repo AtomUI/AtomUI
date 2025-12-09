@@ -4,10 +4,74 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImagePreviewerDialog}" TargetType="atom:ImagePreviewerDialog">
+        <ControlTheme.BasedOn>
+            <atom:WindowTheme TargetType="atom:ImagePreviewerDialog" />
+        </ControlTheme.BasedOn>
         <Setter Property="Template">
-            <ControlTemplate>
-              
+            <ControlTemplate TargetType="atom:ImagePreviewerDialog">
+                <Panel>
+                    <Border Name="WindowFrame"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            BackgroundSizing="InnerBorderEdge" />
+                    <Border Name="BodyFrame"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ClipToBounds="True">
+                        <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
+                            <Panel>
+                                <atom:GlobalDialogManager />
+                                <DockPanel LastChildFill="True"
+                                           Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
+                                    <Border Name="WindowTitleFrame"
+                                            Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                            DockPanel.Dock="Top"
+                                            IsVisible="{TemplateBinding IsTitleBarVisible}">
+                                        <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}">
+                                            <atom:TitleBar.LeftAddOn>
+                                                <atom:ImagePreviewToolbar/>
+                                            </atom:TitleBar.LeftAddOn>
+                                        </atom:TitleBar>
+                                    </Border>
+
+                                    <Border Name="ContentFrame"
+                                            CornerRadius="{TemplateBinding CornerRadius}"
+                                            ClipToBounds="True"
+                                            Cursor="Arrow"
+                                            Background="{TemplateBinding ContentBackground}"
+                                            Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"
+                                            Container.Sizing="WidthAndHeight"
+                                            Padding="{TemplateBinding Padding}">
+                                        <Panel>
+                                            <Image Source="{TemplateBinding CurrentImage}" Stretch="Uniform" />
+                                            <atom:WindowMediaQueryIndicator
+                                                Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}" />
+                                        </Panel>
+                                    </Border>
+                                </DockPanel>
+                            </Panel>
+                        </atom:VisualLayerManager>
+                    </Border>
+                    <atom:WindowResizer Name="{x:Static atom:WindowThemeConstants.WindowResizerPart}"
+                                        IsVisible="{Binding $parent[atom:Window].IsCustomResizerVisible}" />
+                </Panel>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="SizeToContent" Value="WidthAndHeight" />
+        
+        <Setter Property="CanResize" Value="True" />
+        <Setter Property="IsPinCaptionButtonEnabled" Value="True" />
+        <Setter Property="CanMaximize" Value="True" />
+        <Setter Property="CanMinimize" Value="True" />
+        <Setter Property="IsMoveEnabled" Value="True" />
+        <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinWidth}}" />
+        <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
+        <Setter Property="Width" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinWidth}}" />
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
+        <Setter Property="ContentBackground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgLayout}}" />
+        <Style Selector="^ /template/ Border#WindowTitleFrame">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" />
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

@@ -2,7 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:popupConfirmLang="clr-namespace:AtomUI.Desktop.Controls.PopupConfirmLang"
+    xmlns:popupConfirmLang="using:AtomUI.Desktop.Controls.PopupConfirmLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:PopupConfirm}" TargetType="atom:PopupConfirm">
         

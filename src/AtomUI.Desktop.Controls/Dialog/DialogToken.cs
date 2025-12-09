@@ -94,9 +94,9 @@ internal class DialogToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         HeaderBg       = Colors.Transparent;
         HeaderFontSize = SharedToken.FontSizeHeading5;
         ContentBg      = SharedToken.ColorBgElevated;

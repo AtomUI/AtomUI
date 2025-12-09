@@ -74,9 +74,9 @@ internal class SegmentedToken : AbstractControlDesignToken
     public Thickness SegmentedItemPaddingSM { get; set; }
     public Thickness SegmentedItemContentMargin { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         TrackPadding      = new Thickness(SharedToken.LineWidthBold);
         TrackBg           = SharedToken.ColorBgLayout;
         ItemColor         = SharedToken.ColorTextLabel;

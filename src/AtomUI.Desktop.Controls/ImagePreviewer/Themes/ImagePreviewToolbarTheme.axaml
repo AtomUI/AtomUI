@@ -8,37 +8,29 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel Orientation="Horizontal" Name="RootLayout">
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Icon="{antdicons:AntDesignIconProvider ArrowLeftOutlined}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider ArrowRightOutlined}"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider ZoomOutOutlined}"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider SwapOutlined}"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider SwapOutlined}"
                                      RenderTransform="rotate(90deg)"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider RotateLeftOutlined}"/>
-                    <atom:IconButton IsEnableHoverEffect="True" 
-                                     IsPassthroughMouseEvent="False"
+                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider RotateRightOutlined}"/>
                 </StackPanel>
@@ -47,7 +39,6 @@
         
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="IsEnableHoverEffect" Value="True"/>
             <Setter Property="IsPassthroughMouseEvent" Value="False"/>
             <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}"/>
             <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}"/>

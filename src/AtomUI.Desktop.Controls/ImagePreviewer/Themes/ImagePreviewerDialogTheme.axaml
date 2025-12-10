@@ -43,6 +43,9 @@
                                             Padding="{TemplateBinding Padding}">
                                         <Panel>
                                             <Image Source="{TemplateBinding CurrentImage}" Stretch="Uniform" />
+                                            <atom:ImagePreviewNavButton Name="PreviousButton"/>
+                                            <atom:ImagePreviewNavButton Name="NextButton"/>
+                                            <atom:ImagePreviewFloatToolbar/>
                                             <atom:WindowMediaQueryIndicator
                                                 Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}" />
                                         </Panel>
@@ -70,7 +73,7 @@
         <Setter Property="Height" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
         <Setter Property="ContentBackground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgLayout}}" />
         <Style Selector="^ /template/ Border#WindowTitleFrame">
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" /> 
         </Style>
 
     </ControlTheme>

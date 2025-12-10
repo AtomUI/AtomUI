@@ -9,7 +9,6 @@
             <ControlTemplate>
                 <atom:RowReorderButton
                     Name = "{x:Static atom:DataGridRowReorderHandleConstants.IndicatorIconButtonPart}"
-                    IsEnableHoverEffect="True"
                     Icon="{antdicons:AntDesignIconProvider  HolderOutlined}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
@@ -24,6 +23,14 @@
             <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"/>
             <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"/>
             <Setter Property="Cursor" Value="SizeAll"/>
+        </Style>
+        
+        <Style Selector="^ /template/ atom|IconButton#PART_IndicatorIconButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}"/>
+        </Style>
+        
+        <Style Selector="^ /template/ atom|IconButton#PART_IndicatorIconButton:pressed">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

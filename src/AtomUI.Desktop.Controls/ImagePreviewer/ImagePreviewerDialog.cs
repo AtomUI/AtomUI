@@ -134,6 +134,23 @@ internal class ImagePreviewerDialog : Window,
             o => o.CurrentImage,
             (o, v) => o.CurrentImage = v);
     
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> IsMultiImagesProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(IsMultiImages),
+            o => o.IsMultiImages,
+            (o, v) => o.IsMultiImages = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> IsLastImageProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(IsLastImage),
+            o => o.IsLastImage,
+            (o, v) => o.IsLastImage = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> IsFirstImageProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(IsFirstImage),
+            o => o.IsFirstImage,
+            (o, v) => o.IsFirstImage = v);
     
     private IImage? _currentImage;
 
@@ -141,6 +158,30 @@ internal class ImagePreviewerDialog : Window,
     {
         get => _currentImage;
         set => SetAndRaise(CurrentImageProperty, ref _currentImage, value);
+    }
+    
+    private bool _isMultiImages;
+
+    internal bool IsMultiImages
+    {
+        get => _isMultiImages;
+        set => SetAndRaise(IsMultiImagesProperty, ref _isMultiImages, value);
+    }
+    
+    private bool _isLastImage;
+
+    internal bool IsLastImage
+    {
+        get => _isLastImage;
+        set => SetAndRaise(IsLastImageProperty, ref _isLastImage, value);
+    }
+    
+    private bool _isFirstImage;
+
+    internal bool IsFirstImage
+    {
+        get => _isFirstImage;
+        set => SetAndRaise(IsFirstImageProperty, ref _isFirstImage, value);
     }
     
     Control IMotionAwareControl.PropertyBindTarget => this;
@@ -285,6 +326,7 @@ internal class ImagePreviewerDialog : Window,
             {
                 SetCurrentValue(CurrentIndexProperty, 0);
             }
+            SetCurrentValue(IsMultiImagesProperty, Sources?.Count > 0);
         }
     }
 
@@ -293,6 +335,13 @@ internal class ImagePreviewerDialog : Window,
         if (Sources?.Count > 0 && CurrentIndex >= 0 && CurrentIndex < Sources.Count)
         {
             SetCurrentValue(CurrentImageProperty, Sources[CurrentIndex]);
+            SetCurrentValue(IsFirstImageProperty, CurrentIndex == 0);
+            SetCurrentValue(IsLastImageProperty, CurrentIndex == Sources.Count - 1);
+        }
+        else if (Sources == null || Sources?.Count == 0)
+        {
+            SetCurrentValue(IsLastImageProperty, false);
+            SetCurrentValue(IsFirstImageProperty, false);
         }
     }
     

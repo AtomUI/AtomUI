@@ -42,9 +42,6 @@ public class IconButton : AvaloniaButton,
     public static readonly StyledProperty<double> IconHeightProperty = 
         AvaloniaProperty.Register<IconButton, double>(nameof(IconHeight));
 
-    public static readonly StyledProperty<bool> IsEnableHoverEffectProperty = 
-        AvaloniaProperty.Register<IconButton, bool>(nameof(IsEnableHoverEffect));
-
     public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<IconButton>();
 
@@ -76,12 +73,6 @@ public class IconButton : AvaloniaButton,
     {
         get => GetValue(IconHeightProperty);
         set => SetValue(IconHeightProperty, value);
-    }
-
-    public bool IsEnableHoverEffect
-    {
-        get => GetValue(IsEnableHoverEffectProperty);
-        set => SetValue(IsEnableHoverEffectProperty, value);
     }
 
     public bool IsMotionEnabled

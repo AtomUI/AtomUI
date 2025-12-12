@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 
@@ -97,7 +98,8 @@ public class CardTabControl : BaseTabControl
             Debug.Assert(ItemsBindingDisposables.ContainsKey(tabItem));
             var disposables = ItemsBindingDisposables[tabItem];
             disposables.Add(BindUtils.RelayBind(this, EffectiveCardBorderRadiusProperty, tabItem, TabItem.CornerRadiusProperty));
-            disposables.Add(BindUtils.RelayBind(this, CardBorderThicknessProperty, tabItem, TabItem.BorderThicknessProperty));
+            // Use template-level priority so selected-state styles can override border thickness
+            disposables.Add(BindUtils.RelayBind(this, CardBorderThicknessProperty, tabItem, TabItem.BorderThicknessProperty, BindingMode.Default, BindingPriority.Template));
         }
     }
 

@@ -35,7 +35,15 @@ internal class TabScrollContentPresenter : ScrollContentPresenter,
             var delta = e.Delta;
             if (TabStripPlacement == Dock.Top || TabStripPlacement == Dock.Bottom)
             {
-                delta = new Vector(delta.Y, delta.X);
+                // Horizontal tabs prefer horizontal delta, fall back to vertical delta when horizontal is zero
+                var dx = delta.X != 0 ? delta.X : delta.Y;
+                delta  = new Vector(dx, 0);
+            }
+            else
+            {
+                // Vertical tabs prefer vertical delta, fall back to horizontal delta when vertical is zero
+                var dy = delta.Y != 0 ? delta.Y : delta.X;
+                delta  = new Vector(0, dy);
             }
 
             if (Extent.Height > Viewport.Height)

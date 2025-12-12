@@ -22,13 +22,19 @@
                                 <atom:GlobalDialogManager />
                                 <DockPanel LastChildFill="True"
                                            Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
-                                    <Border Name="WindowTitleFrame"
+                                    <Border Name="{x:Static atom:ImagePreviewerThemeConstants.WindowHeaderPart}"
                                             Padding="{TemplateBinding TitleBarOSOffsetMargin}"
                                             DockPanel.Dock="Top"
                                             IsVisible="{TemplateBinding IsTitleBarVisible}">
                                         <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}">
                                             <atom:TitleBar.LeftAddOn>
-                                                <atom:ImagePreviewToolbar/>
+                                                <atom:ImagePreviewToolbar
+                                                    CurrentIndex="{Binding CurrentIndex, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    Count="{Binding Count, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    IsScaleDownEnabled="{Binding IsScaleDownEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    IsScaleUpEnabled="{Binding IsScaleUpEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    IsImageFitToWindow="{Binding IsImageFitToWindow, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    />
                                             </atom:TitleBar.LeftAddOn>
                                         </atom:TitleBar>
                                     </Border>
@@ -41,14 +47,23 @@
                                             Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"
                                             Container.Sizing="WidthAndHeight"
                                             Padding="{TemplateBinding Padding}">
-                                        <Panel>
-                                            <Image Source="{TemplateBinding CurrentImage}" Stretch="Uniform" />
-                                            <atom:ImagePreviewNavButton Name="PreviousButton"/>
-                                            <atom:ImagePreviewNavButton Name="NextButton"/>
-                                            <atom:ImagePreviewFloatToolbar/>
-                                            <atom:WindowMediaQueryIndicator
-                                                Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}" />
-                                        </Panel>
+                                        <atom:ImageViewer
+                                            Name="{x:Static atom:ImagePreviewerThemeConstants.ImageViewerPart}"
+                                            Count="{TemplateBinding Count}"
+                                            CurrentIndex="{TemplateBinding CurrentIndex}"
+                                            CurrentImage="{TemplateBinding CurrentImage}"
+                                            IsFirstImage="{TemplateBinding IsFirstImage}"
+                                            IsLastImage="{TemplateBinding IsLastImage}"
+                                            IsMultiImages="{TemplateBinding IsMultiImages}"
+                                            IsScaleUpEnabled="{TemplateBinding IsScaleUpEnabled}"
+                                            IsScaleDownEnabled="{TemplateBinding IsScaleDownEnabled}"
+                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                            ImageScaleX="{TemplateBinding ImageScaleX}"
+                                            ImageScaleY="{TemplateBinding ImageScaleY}"
+                                            ImageRotate="{TemplateBinding ImageRotate}"
+                                            IsImageMovable="{TemplateBinding IsImageMovable}" 
+                                            IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
+                                            />
                                     </Border>
                                 </DockPanel>
                             </Panel>
@@ -59,21 +74,26 @@
                 </Panel>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="SizeToContent" Value="WidthAndHeight" />
-        
+
+        <Setter Property="ImageScaleX" Value="1.0" />
+        <Setter Property="ImageScaleY" Value="1.0" />
+        <Setter Property="SizeToContent" Value="Manual" />
         <Setter Property="CanResize" Value="True" />
+        <Setter Property="WindowStartupLocation" Value="CenterScreen" />
         <Setter Property="IsPinCaptionButtonEnabled" Value="True" />
         <Setter Property="CanMaximize" Value="True" />
         <Setter Property="CanMinimize" Value="True" />
         <Setter Property="IsMoveEnabled" Value="True" />
         <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinWidth}}" />
         <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
-        <Setter Property="Width" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinWidth}}" />
-        <Setter Property="Height" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
         <Setter Property="ContentBackground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgLayout}}" />
         <Style Selector="^ /template/ Border#WindowTitleFrame">
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" /> 
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|ImagePreviewNavButton">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginXS}}" />
         </Style>
 
     </ControlTheme>

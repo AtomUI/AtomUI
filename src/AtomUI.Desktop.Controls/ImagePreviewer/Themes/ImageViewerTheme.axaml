@@ -1,0 +1,42 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImageViewer}" TargetType="atom:ImageViewer">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Canvas Name="{x:Static atom:ImagePreviewerThemeConstants.ImageViewerScenePart}">
+                        <Image Name="{x:Static atom:ImagePreviewerThemeConstants.ImageRendererPart}"
+                            Source="{TemplateBinding CurrentImage}" Stretch="Uniform"
+                               RenderTransform="{TemplateBinding ImageRenderTransform}"
+                               RenderTransformOrigin="{x:Static RelativePoint.Center}" />
+                    </Canvas>
+                    <atom:ImagePreviewNavButton Name="PreviousButton"
+                                                Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{TemplateBinding IsMultiImages}" />
+                    <atom:ImagePreviewNavButton Name="NextButton"
+                                                Icon="{antdicons:AntDesignIconProvider RightOutlined}"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{TemplateBinding IsMultiImages}" />
+                    <atom:ImagePreviewFloatToolbar
+                        CurrentIndex="{TemplateBinding CurrentIndex}"
+                        Count="{TemplateBinding Count}"
+                        IsScaleDownEnabled="{TemplateBinding IsScaleDownEnabled}"
+                        IsScaleUpEnabled="{TemplateBinding IsScaleUpEnabled}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom" />
+                    <atom:WindowMediaQueryIndicator
+                        Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+        
+        <Setter Property="Cursor" Value="DragMove" />
+    </ControlTheme>
+</ResourceDictionary>

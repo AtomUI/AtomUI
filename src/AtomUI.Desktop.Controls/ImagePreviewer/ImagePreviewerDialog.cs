@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DialogPositioning;
+using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -33,9 +35,6 @@ internal class ImagePreviewerDialog : Window,
     
     public static readonly StyledProperty<double> MaxScaleProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, double>(nameof(MaxScale), 50.0);
-
-    public static readonly StyledProperty<Transform?> TransformProperty =
-        AvaloniaProperty.Register<ImagePreviewerDialog, Transform?>(nameof(Transform));
     
     public static readonly StyledProperty<bool> IsModalProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, bool>(nameof(IsModal));
@@ -45,6 +44,14 @@ internal class ImagePreviewerDialog : Window,
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ImagePreviewerDialog>();
+    
+    public static readonly DirectProperty<ImagePreviewerDialog, int> CountProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, int>(
+            nameof(Count),
+            o => o.Count);
+    
+    public static readonly StyledProperty<Transform?> TransformProperty =
+        AvaloniaProperty.Register<ImagePreviewerDialog, Transform?>(nameof(Transform));
     
     public IList<IImage>? Sources
     {
@@ -76,12 +83,6 @@ internal class ImagePreviewerDialog : Window,
         set => SetValue(MaxScaleProperty, value);
     }
     
-    public Transform? Transform
-    {
-        get => GetValue(TransformProperty);
-        set => SetValue(TransformProperty, value);
-    }
-    
     public bool IsModal
     {
         get => GetValue(IsModalProperty);
@@ -98,6 +99,20 @@ internal class ImagePreviewerDialog : Window,
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+    
+    public Transform? Transform
+    {
+        get => GetValue(TransformProperty);
+        set => SetValue(TransformProperty, value);
+    }
+    
+    private int _count;
+
+    public int Count
+    {
+        get => _count;
+        internal set => SetAndRaise(CountProperty, ref _count, value);
     }
     
     Visual? IHostedVisualTreeRoot.Host
@@ -152,6 +167,42 @@ internal class ImagePreviewerDialog : Window,
             o => o.IsFirstImage,
             (o, v) => o.IsFirstImage = v);
     
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> IsScaleDownEnabledProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(IsScaleDownEnabled),
+            o => o.IsScaleDownEnabled,
+            (o, v) => o.IsScaleDownEnabled = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> IsScaleUpEnabledProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(IsScaleUpEnabled),
+            o => o.IsScaleUpEnabled,
+            (o, v) => o.IsScaleUpEnabled = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, double> ImageScaleXProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, double>(
+            nameof(ImageScaleX),
+            o => o.ImageScaleX,
+            (o, v) => o.ImageScaleX = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, double> ImageScaleYProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, double>(
+            nameof(ImageScaleY),
+            o => o.ImageScaleY,
+            (o, v) => o.ImageScaleY = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, double> ImageRotateProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, double>(
+            nameof(ImageRotate),
+            o => o.ImageRotate,
+            (o, v) => o.ImageRotate = v);
+    
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> IsImageFitToWindowProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(IsImageFitToWindow),
+            o => o.IsImageFitToWindow,
+            (o, v) => o.IsImageFitToWindow = v);
+    
     private IImage? _currentImage;
 
     internal IImage? CurrentImage
@@ -184,6 +235,54 @@ internal class ImagePreviewerDialog : Window,
         set => SetAndRaise(IsFirstImageProperty, ref _isFirstImage, value);
     }
     
+    private bool _isScaleDownEnabled;
+
+    internal bool IsScaleDownEnabled
+    {
+        get => _isScaleDownEnabled;
+        set => SetAndRaise(IsScaleDownEnabledProperty, ref _isScaleDownEnabled, value);
+    }
+    
+    private bool _isScaleUpEnabled;
+
+    internal bool IsScaleUpEnabled
+    {
+        get => _isScaleUpEnabled;
+        set => SetAndRaise(IsScaleUpEnabledProperty, ref _isScaleUpEnabled, value);
+    }
+    
+    private double _imageScaleX;
+
+    internal double ImageScaleX
+    {
+        get => _imageScaleX;
+        set => SetAndRaise(ImageScaleXProperty, ref _imageScaleX, value);
+    }
+    
+    private double _imageScaleY;
+
+    internal double ImageScaleY
+    {
+        get => _imageScaleY;
+        set => SetAndRaise(ImageScaleYProperty, ref _imageScaleY, value);
+    }
+    
+    private double _imageRotate;
+
+    internal double ImageRotate
+    {
+        get => _imageRotate;
+        set => SetAndRaise(ImageRotateProperty, ref _imageRotate, value);
+    }
+    
+    private bool _isImageFitToWindow = true;
+
+    internal bool IsImageFitToWindow
+    {
+        get => _isImageFitToWindow;
+        set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
+    }
+    
     Control IMotionAwareControl.PropertyBindTarget => this;
     
     #endregion
@@ -196,6 +295,24 @@ internal class ImagePreviewerDialog : Window,
     private readonly ManagedDialogPositioner _positioner;
     private ImagePreviewer _imagePreviewer;
     private PixelPoint _latestDialogPosition;
+    private bool _firstSizeCalculated;
+
+    static ImagePreviewerDialog()
+    {
+        AffectsRender<ImagePreviewerDialog>(CurrentImageProperty);
+        ImagePreviewBaseToolbar.HorizontalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleHorizontalFlipRequest());
+        ImagePreviewBaseToolbar.VerticalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleVerticalFlipRequest());
+        ImagePreviewBaseToolbar.RotateLeftRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleRotateLeftRequest());
+        ImagePreviewBaseToolbar.RotateRightRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleRotateRightRequest());
+        ImagePreviewBaseToolbar.ScaleDownRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleScaleDownRequest());
+        ImagePreviewBaseToolbar.ScaleUpRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleScaleUpRequest());
+    }
     
     public ImagePreviewerDialog(TopLevel parent, ImagePreviewer imagePreviewer)
     {
@@ -302,15 +419,16 @@ internal class ImagePreviewerDialog : Window,
                     return targetScreen.Bounds;
                 }
             }
-                 
+            
             return targetScreen?.WorkingArea ?? new Rect(0, 0, int.MaxValue, int.MaxValue);
         }
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var size = base.MeasureOverride(availableSize);
-        return new Size(Math.Max(size.Width, MinWidth), Math.Max(size.Height, MinHeight));
+        var calculateWindowSize = CalculateWindowSize();
+        base.MeasureOverride(calculateWindowSize);
+        return calculateWindowSize;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -326,7 +444,15 @@ internal class ImagePreviewerDialog : Window,
             {
                 SetCurrentValue(CurrentIndexProperty, 0);
             }
-            SetCurrentValue(IsMultiImagesProperty, Sources?.Count > 0);
+            SetCurrentValue(IsMultiImagesProperty, Sources?.Count > 1);
+            Count = Sources?.Count ?? 0;
+        }
+
+        if (change.Property == ImageScaleXProperty ||
+            change.Property == ImageScaleYProperty)
+        {
+            SetCurrentValue(IsScaleDownEnabledProperty, MathUtilities.GreaterThan(Math.Abs(ImageScaleX), MinScale) && MathUtilities.GreaterThan(Math.Abs(ImageScaleY), MinScale));
+            SetCurrentValue(IsScaleUpEnabledProperty, MathUtilities.LessThan(Math.Abs(ImageScaleX), MaxScale) && MathUtilities.LessThan(Math.Abs(ImageScaleY), MaxScale));
         }
     }
 
@@ -355,5 +481,104 @@ internal class ImagePreviewerDialog : Window,
     {
         base.Close();
         callback?.Invoke();
+    }
+
+    private Size CalculateWindowSize()
+    {
+        if (!_firstSizeCalculated)
+        {
+            const double ratio  = 0.70d;
+            var height = ClientAreaScreenGeometry.Height * ratio;
+            var width  = ClientAreaScreenGeometry.Width * ratio;
+            Width                = width;
+            Height               = height;
+            _firstSizeCalculated = true;
+            return new Size(width, height);
+        }
+        return new Size(Width, Height);
+    }
+    
+    private void HandleHorizontalFlipRequest()
+    {
+        SetCurrentValue(ImageScaleXProperty, -1 * ImageScaleX);
+    }
+    
+    private void HandleVerticalFlipRequest()
+    {
+        SetCurrentValue(ImageScaleYProperty, -1 * ImageScaleY);
+    }
+    
+    private void HandleRotateLeftRequest()
+    {
+        SetCurrentValue(ImageRotateProperty, ImageRotate - MathUtilities.Deg2Rad(90));
+    }
+    
+    private void HandleRotateRightRequest()
+    {
+        SetCurrentValue(ImageRotateProperty, ImageRotate + MathUtilities.Deg2Rad(90));
+    }
+    
+    private void HandleScaleDownRequest()
+    {
+        var scaleX = ImageScaleX * (1.0 - ScaleStep);
+        var scaleY = ImageScaleY * (1.0 - ScaleStep);
+        if (MathUtilities.LessThan(Math.Abs(scaleX), MinScale))
+        {
+            if (scaleX > 0)
+            {
+                scaleX = MinScale;
+            }
+            else
+            {
+                scaleX = -MinScale;
+            }
+        }
+        if (MathUtilities.LessThan(Math.Abs(scaleY), MinScale))
+        {
+            if (scaleY > 0)
+            {
+                scaleY = MinScale;
+            }
+            else
+            {
+                scaleY = -MinScale;
+            }
+        }
+        SetCurrentValue(ImageScaleXProperty, scaleX);
+        SetCurrentValue(ImageScaleYProperty, scaleY);
+        SetCurrentValue(IsImageFitToWindowProperty, false);
+    }
+    
+    private void HandleScaleUpRequest()
+    {
+        var scaleX = ImageScaleX * (1.0 + ScaleStep);
+        var scaleY = ImageScaleY * (1.0 + ScaleStep);
+
+        if (MathUtilities.GreaterThan(Math.Abs(scaleX), MaxScale))
+        {
+            if (scaleX > 0)
+            {
+                scaleX = MaxScale;
+            }
+            else
+            {
+                scaleX = -MaxScale;
+            }
+        }
+ 
+        if (MathUtilities.GreaterThan(Math.Abs(scaleY), MaxScale))
+        {
+            if (scaleY > 0)
+            {
+                scaleY = MaxScale;
+            }
+            else
+            {
+                scaleY = -MaxScale;
+            }
+        }
+        SetCurrentValue(ImageScaleXProperty, scaleX);
+        SetCurrentValue(ImageScaleYProperty, scaleY);
+        SetCurrentValue(IsImageFitToWindowProperty, false);
     }
 }

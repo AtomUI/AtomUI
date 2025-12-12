@@ -8,45 +8,57 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel Orientation="Horizontal" Name="RootLayout">
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.PreviousButtonPart}"
                                      Icon="{antdicons:AntDesignIconProvider ArrowLeftOutlined}"
-                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     Icon="{antdicons:AntDesignIconProvider ArrowRightOutlined}"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                                     IsVisible="{TemplateBinding IsMultiImages}" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.NextButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     Icon="{antdicons:AntDesignIconProvider ZoomOutOutlined}"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                                     Icon="{antdicons:AntDesignIconProvider ArrowRightOutlined}"
+                                     IsVisible="{TemplateBinding IsMultiImages}" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.ScaleDownButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                                     Icon="{antdicons:AntDesignIconProvider ZoomOutOutlined}"
+                                     IsEnabled="{TemplateBinding IsScaleDownEnabled}" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.ScaleUpButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     Icon="{antdicons:AntDesignIconProvider SwapOutlined}"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                                     Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}"
+                                     IsEnabled="{TemplateBinding IsScaleUpEnabled}" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.HorizontalFlipButtonPart}"
+                                     Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                     Icon="{antdicons:AntDesignIconProvider SwapOutlined}" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.VerticalFlipButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider SwapOutlined}"
-                                     RenderTransform="rotate(90deg)"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                                     RenderTransform="rotate(90deg)" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.RotateLeftButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     Icon="{antdicons:AntDesignIconProvider RotateLeftOutlined}"/>
-                    <atom:IconButton IsPassthroughMouseEvent="False"
+                                     Icon="{antdicons:AntDesignIconProvider RotateLeftOutlined}" />
+                    <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.RotateRightButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     Icon="{antdicons:AntDesignIconProvider RotateRightOutlined}"/>
+                                     Icon="{antdicons:AntDesignIconProvider RotateRightOutlined}" />
                 </StackPanel>
             </ControlTemplate>
         </Setter>
-        
+
         <Style Selector="^ /template/ atom|IconButton">
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="IsPassthroughMouseEvent" Value="False"/>
-            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}"/>
-            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}"/>
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="IsPassthroughMouseEvent" Value="False" />
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}" />
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}" />
         </Style>
-        
+
+        <Style Selector="^ /template/ atom|IconButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconButton:pressed">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}" />
+        </Style>
+
         <Style Selector="^ /template/ StackPanel#RootLayout">
-            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}"/>
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
         </Style>
-        
+
     </ControlTheme>
 </ResourceDictionary>

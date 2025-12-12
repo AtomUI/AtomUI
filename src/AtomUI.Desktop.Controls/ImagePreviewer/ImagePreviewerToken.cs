@@ -1,5 +1,6 @@
 using AtomUI.Media;
 using AtomUI.Theme.TokenSystem;
+using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -59,6 +60,26 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
     /// </summary>
     public Color TitleBarBackgroundColor { get; set; }
     
+    /// <summary>
+    /// 浮动导航按钮背景颜色
+    /// </summary>
+    public Color NavButtonBgColor { get; set; }
+    
+    /// <summary>
+    /// 浮动导航按钮 Hover 背景颜色
+    /// </summary>
+    public Color NavButtonBgHoverColor { get; set; }
+    
+    /// <summary>
+    /// 浮动工具栏内间距
+    /// </summary>
+    public Thickness FloatToolbarPadding { get; set; }
+    
+    /// <summary>
+    /// 浮动工具栏索引指示器内间距
+    /// </summary>
+    public Thickness FloatToolbarIndicatorPadding { get; set; }
+    
     public ImagePreviewerToken()
         : base(ID)
     {
@@ -67,8 +88,8 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        PreviewOperationColor         = SharedToken.ColorTextLightSolid.SetAlphaF(0.65);
-        PreviewOperationHoverColor    = SharedToken.ColorTextLightSolid.SetAlphaF(0.85);
+        PreviewOperationColor         = SharedToken.ColorTextLightSolid.SetAlphaF(0.85);
+        PreviewOperationHoverColor    = SharedToken.ColorTextLightSolid;
         PreviewOperationColorDisabled = SharedToken.ColorTextLightSolid.SetAlphaF(0.25);
         PreviewOperationSize          = SharedToken.FontSizeIcon * 1.5;
         ImagePreviewSwitchSize        = SharedToken.ControlHeightLG;
@@ -83,5 +104,10 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
         {
             TitleBarBackgroundColor       = SharedToken.ColorBorderSecondary.Darken(1);
         }
+
+        NavButtonBgColor             = SharedToken.ColorBgMask.SetAlphaF(0.1);
+        NavButtonBgHoverColor        = SharedToken.ColorBgMask.SetAlphaF(0.2);
+        FloatToolbarPadding          = new Thickness(SharedToken.UniformlyPaddingLG / 2, 0);
+        FloatToolbarIndicatorPadding = new Thickness(SharedToken.UniformlyPaddingXS, 0);
     }
 }

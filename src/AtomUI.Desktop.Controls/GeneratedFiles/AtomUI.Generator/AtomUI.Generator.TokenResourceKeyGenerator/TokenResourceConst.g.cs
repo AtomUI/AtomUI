@@ -398,8 +398,12 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     {
         public static readonly TokenResourceKey DialogMinHeight = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.DialogMinHeight");
         public static readonly TokenResourceKey DialogMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.DialogMinWidth");
+        public static readonly TokenResourceKey FloatToolbarIndicatorPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.FloatToolbarIndicatorPadding");
+        public static readonly TokenResourceKey FloatToolbarPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.FloatToolbarPadding");
         public static readonly TokenResourceKey ImagePreviewSwitchSize = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.ImagePreviewSwitchSize");
         public static readonly TokenResourceKey MaskBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.MaskBgColor");
+        public static readonly TokenResourceKey NavButtonBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.NavButtonBgColor");
+        public static readonly TokenResourceKey NavButtonBgHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.NavButtonBgHoverColor");
         public static readonly TokenResourceKey PreviewOperationColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationColor");
         public static readonly TokenResourceKey PreviewOperationColorDisabled = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationColorDisabled");
         public static readonly TokenResourceKey PreviewOperationHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.PreviewOperationHoverColor");

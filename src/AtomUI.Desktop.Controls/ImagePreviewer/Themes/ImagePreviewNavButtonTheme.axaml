@@ -7,10 +7,24 @@
         <ControlTheme.BasedOn>
             <atom:IconButtonTheme TargetType="atom:ImagePreviewNavButton" />
         </ControlTheme.BasedOn>
-        <Setter Property="Template">
-            <ControlTemplate TargetType="atom:ImagePreviewNavButton">
-             
-            </ControlTemplate>
-        </Setter>
+        
+        <Style Selector="^:is(atom|ImagePreviewNavButton)">
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}"/>
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.NavButtonBgColor}}"/>
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColor}}"/>
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXS}}"/>
+        
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.NavButtonBgHoverColor}}"/>
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationHoverColor}}"/>
+            </Style>
+        
+            <Style Selector="^:disabled">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColorDisabled}}"/>
+            </Style>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

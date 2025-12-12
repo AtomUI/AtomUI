@@ -7,7 +7,7 @@
         <Description>AtomUI is an implementation of AntDesigin based on .NET technology, and is committed to bringing AntDesign's excellent and efficient design language and experience to the Avalonia/.NET cross-platform desktop software development field.</Description>
         <PackageTags>avalonia;AntDesigin;UI;Control Library</PackageTags>
         <ProjectUrl>https://qinware.com</ProjectUrl>
-        <RepositoryUrl>https://github.com/chinware/AtomUI</RepositoryUrl>
+        <RepositoryUrl>https://github.com/AtomUI/AtomUI</RepositoryUrl>
         <Company>Qinware Technologies Ltd.</Company>
         <Copyright>Copyright ©2018-2025, Qinware Technologies Co.,Ltd., All Rights Reserved.</Copyright>
         <PackageIcon>logo.png</PackageIcon>

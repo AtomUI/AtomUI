@@ -66,7 +66,7 @@ public class ImagePreviewer : TemplatedControl,
     #region 预览窗口相关属性设置
 
     public static readonly StyledProperty<bool> IsImageMovableProperty =
-        AvaloniaProperty.Register<ImagePreviewer, bool>(nameof(IsImageMovable));
+        AvaloniaProperty.Register<ImagePreviewer, bool>(nameof(IsImageMovable), true);
     
     public static readonly StyledProperty<double> ImageScaleStepProperty =
         AvaloniaProperty.Register<ImagePreviewer, double>(nameof(ImageScaleStep), 0.5);

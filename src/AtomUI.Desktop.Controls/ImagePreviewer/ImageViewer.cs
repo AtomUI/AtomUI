@@ -304,8 +304,8 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         {
             if (!_isSelfChangedPosition)
             {
-                var offsetX = (finalSize.Width - _image.Bounds.Width) / 2;
-                var offsetY = (finalSize.Height - _image.Bounds.Height) / 2;
+                var offsetX = (finalSize.Width - _image.DesiredSize.Width) / 2;
+                var offsetY = (finalSize.Height - _image.DesiredSize.Height) / 2;
                 // 一直居中
                 Canvas.SetLeft(_image, offsetX);
                 Canvas.SetTop(_image, offsetY);
@@ -326,6 +326,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         var builder = TransformOperations.CreateBuilder(2);
         builder.AppendScale(ImageScaleX, ImageScaleY);
         builder.AppendRotate(ImageRotate);
+        Console.WriteLine(_image?.DesiredSize * ImageScaleX);
         ImageRenderTransform = builder.Build();
     }
     
@@ -393,6 +394,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     {
         if (_image != null)
         {
+            
             var imageWidth = _image.Bounds.Width * Math.Abs(ImageScaleX);
             var imageHeight = _image.Bounds.Height * Math.Abs(ImageScaleY);
             // if (MathUtilities.LessThanOrClose(imageWidth, Bounds.Width) && MathUtilities.LessThanOrClose(imageHeight, Bounds.Height))
@@ -413,7 +415,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
             //         ImageTranslateX = left;
             //     }
             // }
-            Console.WriteLine($"{ImageTranslateX}, {ImageTranslateY}-{(imageWidth )}-{(imageHeight )}");
+            Console.WriteLine($"{Canvas.GetLeft(_image)}-{Canvas.GetTop(_image)}");
         }
  
         _originalTranslateX = 0.0;

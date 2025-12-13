@@ -520,8 +520,8 @@ internal class ImagePreviewerDialog : Window,
     
     private void HandleScaleDownRequest()
     {
-        var scaleX = ImageScaleX * (1.0 - ScaleStep);
-        var scaleY = ImageScaleY * (1.0 - ScaleStep);
+        var scaleX = ImageScaleX - ScaleStep;
+        var scaleY = ImageScaleY - ScaleStep;
         if (MathUtilities.LessThan(Math.Abs(scaleX), MinScale))
         {
             if (scaleX > 0)
@@ -551,8 +551,8 @@ internal class ImagePreviewerDialog : Window,
     
     private void HandleScaleUpRequest()
     {
-        var scaleX = ImageScaleX * (1.0 + ScaleStep);
-        var scaleY = ImageScaleY * (1.0 + ScaleStep);
+        var scaleX = ImageScaleX + ScaleStep;
+        var scaleY = ImageScaleY + ScaleStep;
 
         if (MathUtilities.GreaterThan(Math.Abs(scaleX), MaxScale))
         {

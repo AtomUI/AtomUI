@@ -1,4 +1,3 @@
-using AtomUI.Utils;
 using AtomUIGallery.ShowCases.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -14,8 +13,15 @@ public partial class ImagePreviewerShowCase : ReactiveUserControl<ImagePreviewer
             if (DataContext is ImagePreviewerViewModel viewModel)
             {
                 viewModel.DefaultImages = [
-                    AssetsBitmapLoader.Load("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+                    "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png"
                 ];
+                viewModel.ThreeImages = [
+                    "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/4.webp",
+                    "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/5.webp",
+                    "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/6.webp"
+                ];
+                viewModel.FallbackImage = "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/Fallback.png";
+                viewModel.BlurImage = "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/Blur.png";
             }
         });
         InitializeComponent();

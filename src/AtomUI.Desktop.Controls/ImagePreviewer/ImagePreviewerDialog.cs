@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -15,7 +14,6 @@ namespace AtomUI.Desktop.Controls;
 internal class ImagePreviewerDialog : Window,
                                       IDialogHost,
                                       IHostedVisualTreeRoot,
-                                      IStyleHost,
                                       IMotionAwareControl,
                                       IManagedDialogPositionerDialog
 {
@@ -131,8 +129,6 @@ internal class ImagePreviewerDialog : Window,
             return ParentTopLevel ?? parentVisual;
         }
     }
-    
-    IStyleHost? IStyleHost.StylingParent => Parent;
     
     public TopLevel ParentTopLevel { get; }
 
@@ -314,19 +310,60 @@ internal class ImagePreviewerDialog : Window,
     {
         AffectsRender<ImagePreviewerDialog>(CurrentImageProperty);
         ImagePreviewBaseToolbar.HorizontalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleHorizontalFlipRequest());
+        {
+            dialog.HandleHorizontalFlipRequest();
+            args.Handled = true;
+        });
         ImagePreviewBaseToolbar.VerticalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleVerticalFlipRequest());
+        {
+            dialog.HandleVerticalFlipRequest();
+            args.Handled = true;
+        });
         ImagePreviewBaseToolbar.RotateLeftRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleRotateLeftRequest());
+        {
+            dialog.HandleRotateLeftRequest();
+            args.Handled = true;
+        });
         ImagePreviewBaseToolbar.RotateRightRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleRotateRightRequest());
+        {
+            dialog.HandleRotateRightRequest();
+            args.Handled = true;
+        });
         ImagePreviewBaseToolbar.ScaleDownRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleScaleDownRequest());
+        {
+            dialog.HandleScaleDownRequest();
+            args.Handled = true;
+        });
         ImagePreviewBaseToolbar.ScaleUpRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleScaleUpRequest());
+        {
+            dialog.HandleScaleUpRequest();
+            args.Handled = true;
+        });
         ImagePreviewBaseToolbar.FitToWindowRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
-            dialog.HandleFitToWindowRequest(args.IsFitToWindow));
+        {
+            dialog.HandleFitToWindowRequest(args.IsFitToWindow);
+            args.Handled = true;
+        });
+        ImagePreviewBaseToolbar.PreviousRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+        {
+            dialog.HandlePreviousRequest();
+            args.Handled = true;
+        });
+        ImagePreviewBaseToolbar.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+        {
+            dialog.HandleNextImageRequest();
+            args.Handled = true;
+        });
+        ImageViewer.PreviousRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+        {
+            dialog.HandlePreviousRequest();
+            args.Handled = true;
+        });
+        ImageViewer.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+        {
+            dialog.HandleNextImageRequest();
+            args.Handled = true;
+        });
     }
     
     public ImagePreviewerDialog(TopLevel parent, ImagePreviewer imagePreviewer)
@@ -598,9 +635,27 @@ internal class ImagePreviewerDialog : Window,
 
     private void HandleFitToWindowRequest(bool isFitToWindow)
     {
-        SetCurrentValue(ImageScaleXProperty, 1.0);
-        SetCurrentValue(ImageScaleYProperty, 1.0);
+        SetCurrentValue(ImageScaleXProperty, ImageScaleX > 0.0 ? 1.0 : -1.0);
+        SetCurrentValue(ImageScaleYProperty, ImageScaleY > 0.0 ? 1.0 : -1.0);
         SetCurrentValue(ImageScaleChangedProperty, false);
         SetCurrentValue(IsImageFitToWindowProperty, isFitToWindow);
+    }
+    
+    private void HandleNextImageRequest()
+    {
+        SetCurrentValue(IsImageFitToWindowProperty, true);
+        SetCurrentValue(ImageScaleChangedProperty, false);
+        SetCurrentValue(ImageScaleXProperty, 1.0);
+        SetCurrentValue(ImageScaleYProperty, 1.0);
+        SetCurrentValue(CurrentIndexProperty, Math.Min(CurrentIndex + 1, Count - 1));
+    }
+    
+    private void HandlePreviousRequest()
+    {
+        SetCurrentValue(IsImageFitToWindowProperty, true);
+        SetCurrentValue(ImageScaleChangedProperty, false);
+        SetCurrentValue(ImageScaleXProperty, 1.0);
+        SetCurrentValue(ImageScaleYProperty, 1.0);
+        SetCurrentValue(CurrentIndexProperty, Math.Max(CurrentIndex - 1, 0));
     }
 }

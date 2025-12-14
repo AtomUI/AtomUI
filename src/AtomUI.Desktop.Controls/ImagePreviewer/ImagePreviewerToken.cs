@@ -90,7 +90,7 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
         base.CalculateTokenValues(isDarkMode);
         PreviewOperationColor         = SharedToken.ColorTextLightSolid.SetAlphaF(0.85);
         PreviewOperationHoverColor    = SharedToken.ColorTextLightSolid;
-        PreviewOperationColorDisabled = SharedToken.ColorTextLightSolid.SetAlphaF(0.25);
+        PreviewOperationColorDisabled = SharedToken.ColorTextDisabled;
         PreviewOperationSize          = SharedToken.FontSizeIcon * 1.5;
         ImagePreviewSwitchSize        = SharedToken.ControlHeightLG;
         MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);

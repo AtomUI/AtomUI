@@ -74,6 +74,28 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    #region 公共事件定义
+    
+    public static RoutedEvent<RoutedEventArgs> PreviousRequestEvent =
+        RoutedEvent.Register<ImageViewer, RoutedEventArgs>(nameof(PreviousRequest), RoutingStrategies.Bubble);
+    
+    public static RoutedEvent<RoutedEventArgs> NextRequestEvent =
+        RoutedEvent.Register<ImageViewer, RoutedEventArgs>(nameof(NextRequest), RoutingStrategies.Bubble);
+    
+    public event EventHandler<RoutedEventArgs>? PreviousRequest
+    {
+        add => AddHandler(PreviousRequestEvent, value);
+        remove => RemoveHandler(PreviousRequestEvent, value);
+    }
+
+    public event EventHandler<RoutedEventArgs>? NextRequest
+    {
+        add => AddHandler(NextRequestEvent, value);
+        remove => RemoveHandler(NextRequestEvent, value);
+    }
+    
+    #endregion
+    
     #region 内部属性定义
     
     internal static readonly DirectProperty<ImageViewer, IImage?> CurrentImageProperty =
@@ -261,16 +283,41 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     private double _originalTranslateX;
     private double _originalTranslateY;
     private Point _delta;
+    private ImagePreviewNavButton? _previousButton;
+    private ImagePreviewNavButton? _nextButton;
     
     static ImageViewer()
     {
-        AffectsArrange<ImageViewer>(ImageTranslateXProperty, ImageTranslateYProperty);
+        AffectsArrange<ImageViewer>(ImageTranslateXProperty, ImageTranslateYProperty, CurrentIndexProperty);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _image = e.NameScope.Find<Image>(ImagePreviewerThemeConstants.ImageRendererPart);
+        _image          = e.NameScope.Find<Image>(ImagePreviewerThemeConstants.ImageRendererPart);
+        _previousButton = e.NameScope.Find<ImagePreviewNavButton>(ImagePreviewerThemeConstants.PreviousButtonPart);
+        _nextButton = e.NameScope.Find<ImagePreviewNavButton>(ImagePreviewerThemeConstants.NextButtonPart);
+        
+        if (_previousButton != null)
+        {
+            _previousButton.Click += HandleButtonClick;
+        }
+        if (_nextButton != null)
+        {
+            _nextButton.Click += HandleButtonClick;
+        }
+    }
+    
+    private void HandleButtonClick(object? sender, RoutedEventArgs e)
+    { 
+        if (sender == _previousButton)
+        {
+            RaiseEvent(new RoutedEventArgs(PreviousRequestEvent));
+        }
+        else if (sender == _nextButton)
+        {
+            RaiseEvent(new RoutedEventArgs(NextRequestEvent));
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -300,6 +347,10 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         else if (change.Property == IsImageFitToWindowProperty)
         {
             HandleFitToWindowChanged();
+        }
+        else if (change.Property == CurrentImageProperty)
+        {
+            _isSelfChangedPosition = false;
         }
     }
 
@@ -642,10 +693,13 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     {
         if (_image != null && _currentImage != null)
         {
+            _isSelfChangedPosition = false;
+            double offsetX = 0.0;
             if (!IsImageFitToWindow)
             {
-                _image.Width = _currentImage.Size.Width;
+                _image.Width  = _currentImage.Size.Width;
                 _image.Height = _currentImage.Size.Height;
+                offsetX       = (Bounds.Width - _image.Width) / 2;
             }
             else
             {
@@ -660,14 +714,13 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
                     _image.Width  = double.NaN;
                     _image.Height = Bounds.Height;
                 }
+                offsetX = (Bounds.Width - _image.DesiredSize.Width) / 2;
             }
-            var offsetX = (Bounds.Width - _image.Width) / 2;
-            var offsetY = (Bounds.Height - _image.Height) / 2;
             // 一直居中
             Canvas.SetLeft(_image, offsetX);
-            Canvas.SetTop(_image, offsetY);
+            Canvas.SetTop(_image, 0);
             ImageTranslateX = offsetX;
-            ImageTranslateY = offsetY;
+            ImageTranslateY = 0;
         }
     }
 }

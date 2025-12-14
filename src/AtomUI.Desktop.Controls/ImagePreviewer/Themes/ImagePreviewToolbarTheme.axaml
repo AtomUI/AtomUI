@@ -11,11 +11,13 @@
                     <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.PreviousButtonPart}"
                                      Icon="{antdicons:AntDesignIconProvider ArrowLeftOutlined}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                     IsVisible="{TemplateBinding IsMultiImages}" />
+                                     IsVisible="{TemplateBinding IsMultiImages}" 
+                                     IsEnabled="{TemplateBinding IsFirstImage, Converter={x:Static BoolConverters.Not}}"/>
                     <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.NextButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider ArrowRightOutlined}"
-                                     IsVisible="{TemplateBinding IsMultiImages}" />
+                                     IsVisible="{TemplateBinding IsMultiImages}" 
+                                     IsEnabled="{TemplateBinding IsLastImage, Converter={x:Static BoolConverters.Not}}"/>
                     <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.ScaleDownButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider ZoomOutOutlined}"

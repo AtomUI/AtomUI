@@ -25,11 +25,14 @@ public class ImagePreviewer : TemplatedControl,
                               IMotionAwareControl
 {
     #region 公共属性定义
-    public static readonly StyledProperty<IList<IImage>?> SourcesProperty =
-        AvaloniaProperty.Register<ImagePreviewer, IList<IImage>?>(nameof(Sources));
+    public static readonly StyledProperty<IList<string>?> SourcesProperty =
+        AvaloniaProperty.Register<ImagePreviewer, IList<string>?>(nameof(Sources));
 
-    public static readonly StyledProperty<IImage?> CoverImageSrcProperty =
-        AvaloniaProperty.Register<ImagePreviewer, IImage?>(nameof(CoverImageSrc));
+    public static readonly StyledProperty<string?> CoverImageSrcProperty =
+        AvaloniaProperty.Register<ImagePreviewer, string?>(nameof(CoverImageSrc));
+    
+    public static readonly StyledProperty<string?> FallbackImageSrcProperty =
+        AvaloniaProperty.Register<ImagePreviewer, string?>(nameof(FallbackImageSrc));
     
     public static readonly StyledProperty<bool> IsOpenProperty =
         AvaloniaProperty.Register<ImagePreviewer, bool>(nameof(IsOpen));
@@ -37,16 +40,22 @@ public class ImagePreviewer : TemplatedControl,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ImagePreviewer>();
     
-    public IList<IImage>? Sources
+    public IList<string>? Sources
     {
         get => GetValue(SourcesProperty);
         set => SetValue(SourcesProperty, value);
     }
 
-    public IImage? CoverImageSrc
+    public string? CoverImageSrc
     {
         get => GetValue(CoverImageSrcProperty);
         set => SetValue(CoverImageSrcProperty, value);
+    }
+    
+    public string? FallbackImageSrc
+    {
+        get => GetValue(FallbackImageSrcProperty);
+        set => SetValue(FallbackImageSrcProperty, value);
     }
     
     public bool IsOpen
@@ -191,6 +200,18 @@ public class ImagePreviewer : TemplatedControl,
             o => o.PreviewDialogOffsetY,
             (o, v) => o.PreviewDialogOffsetY = v);
     
+    internal static readonly DirectProperty<ImagePreviewer, IList<IImage>?> EffectiveSourcesProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewer, IList<IImage>?>(
+            nameof(EffectiveSources),
+            o => o.EffectiveSources,
+            (o, v) => o.EffectiveSources = v);
+    
+    internal static readonly DirectProperty<ImagePreviewer, IImage?> EffectiveCoverImageProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewer, IImage?>(
+            nameof(EffectiveCoverImage),
+            o => o.EffectiveCoverImage,
+            (o, v) => o.EffectiveCoverImage = v);
+    
     internal double MaskOpacity
     {
         get => GetValue(MaskOpacityProperty);
@@ -211,6 +232,22 @@ public class ImagePreviewer : TemplatedControl,
     {
         get => _previewDialogOffsetY;
         set => SetAndRaise(PreviewDialogOffsetYProperty, ref _previewDialogOffsetY, value);
+    }
+    
+    private IList<IImage>? _effectiveSources;
+
+    internal IList<IImage>? EffectiveSources
+    {
+        get => _effectiveSources;
+        set => SetAndRaise(EffectiveSourcesProperty, ref _effectiveSources, value);
+    }
+    
+    private IImage? _effectiveCoverImage;
+
+    internal IImage? EffectiveCoverImage
+    {
+        get => _effectiveCoverImage;
+        set => SetAndRaise(EffectiveCoverImageProperty, ref _effectiveCoverImage, value);
     }
 
     Control IMotionAwareControl.PropertyBindTarget => this;
@@ -238,26 +275,32 @@ public class ImagePreviewer : TemplatedControl,
         this.RegisterResources();
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        if (CoverImageSrc == null && Sources?.Count > 0)
-        {
-            SetCurrentValue(CoverImageSrcProperty, Sources.First());
-        }
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == SourcesProperty)
         {
-            if (Sources?.Count > 0)
+            HandleSourceChanged();
+        }
+        else if (change.Property == EffectiveSourcesProperty)
+        {
+            if (EffectiveSources?.Count > 0)
             {
-                if (CoverImageSrc == null)
+                if (EffectiveCoverImage == null)
                 {
-                    SetCurrentValue(CoverImageSrcProperty, Sources.First());
+                    SetCurrentValue(EffectiveCoverImageProperty, EffectiveSources.First());
                 }
+            }
+        }
+        else if (change.Property == CoverImageSrcProperty)
+        {
+            if (!string.IsNullOrEmpty(CoverImageSrc))
+            {
+                SetCurrentValue(EffectiveCoverImageProperty, AssetsBitmapLoader.Load(CoverImageSrc));
+            }
+            else
+            {
+                SetCurrentValue(EffectiveCoverImageProperty, null);
             }
         }
         if (IsLoaded)
@@ -268,11 +311,53 @@ public class ImagePreviewer : TemplatedControl,
             }
         }
     }
-    
-    protected override void OnLoaded(RoutedEventArgs e)
+
+    private void HandleSourceChanged()
     {
-        base.OnLoaded(e);
+        if (Sources != null && Sources.Count > 0)
+        {
+            var effectiveSources = new List<IImage>();
+            foreach (var source in Sources)
+            {
+                try
+                {
+                    var image = AssetsBitmapLoader.Load(source);
+                    effectiveSources.Add(image);
+                }
+                catch (Exception)
+                {
+                    // TODO 这个错误直接抛出还是忽略
+                }
+            }
+            SetCurrentValue(EffectiveSourcesProperty, effectiveSources);
+        }
+    }
+    
+    protected override void OnLoaded(RoutedEventArgs args)
+    {
+        base.OnLoaded(args);
         ConfigureTransitions(false);
+        if (EffectiveSources == null || EffectiveSources?.Count == 0)
+        {
+            if (FallbackImageSrc != null)
+            {
+                try
+                {
+                    var sources = new List<IImage>();
+                    var image   = AssetsBitmapLoader.Load(FallbackImageSrc);
+                    sources.Add(image);
+                    SetCurrentValue(EffectiveSourcesProperty, sources);
+                }
+                catch (Exception)
+                {
+                    // TODO 这个错误直接抛出还是忽略
+                }
+            }
+        }
+        if (EffectiveCoverImage == null && EffectiveSources?.Count > 0)
+        {
+            SetCurrentValue(EffectiveCoverImageProperty, EffectiveSources.First());
+        }
     }
 
     protected override void OnUnloaded(RoutedEventArgs e)
@@ -469,7 +554,7 @@ public class ImagePreviewer : TemplatedControl,
         disposables.Add(BindUtils.RelayBind(this, ImageScaleStepProperty, dialogHost, ImagePreviewerDialog.ScaleStepProperty));
         disposables.Add(BindUtils.RelayBind(this, ImageMinScaleProperty, dialogHost, ImagePreviewerDialog.MinScaleProperty));
         disposables.Add(BindUtils.RelayBind(this, ImageMaxScaleProperty, dialogHost, ImagePreviewerDialog.MaxScaleProperty));
-        disposables.Add(BindUtils.RelayBind(this, SourcesProperty, dialogHost, ImagePreviewerDialog.SourcesProperty));
+        disposables.Add(BindUtils.RelayBind(this, EffectiveSourcesProperty, dialogHost, ImagePreviewerDialog.SourcesProperty));
         disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, dialogHost, ImagePreviewerDialog.IsMotionEnabledProperty));
         disposables.Add(BindUtils.RelayBind(this, IsDialogModalProperty, dialogHost, ImagePreviewerDialog.IsModalProperty));
     }

@@ -14,7 +14,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <Panel>
-                        <Image Source="{TemplateBinding CoverImageSrc}" Stretch="Uniform" />
+                        <Image Source="{TemplateBinding EffectiveCoverImage}" Stretch="Uniform" />
                         <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
                             <StackPanel Name="MaskLayout"
                                         Orientation="Horizontal"

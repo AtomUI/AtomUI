@@ -12,7 +12,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -252,6 +251,10 @@ public class Window : AvaloniaWindow,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+         if (change.Property == BackgroundProperty)
+        {
+            Console.WriteLine(Background);
+        }
         if (change.Property == MaxWidthScreenRatioProperty)
         {
             this.ConstrainMaxSizeToScreenRatio(MaxWidthScreenRatio, double.NaN);

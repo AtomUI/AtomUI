@@ -34,6 +34,8 @@
                                                     IsScaleDownEnabled="{Binding IsScaleDownEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
                                                     IsScaleUpEnabled="{Binding IsScaleUpEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
                                                     IsImageFitToWindow="{Binding IsImageFitToWindow, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    IsFirstImage="{Binding IsFirstImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                    IsLastImage="{Binding IsLastImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
                                                     />
                                             </atom:TitleBar.LeftAddOn>
                                         </atom:TitleBar>

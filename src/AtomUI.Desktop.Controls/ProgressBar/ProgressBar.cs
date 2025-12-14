@@ -185,23 +185,44 @@ public class ProgressBar : AbstractLineProgress
     protected void DrawIndicatorBar(DrawingContext context, double deflateValue, IBrush brush)
     {
         Rect indicatorRect = default;
+        bool isEmpty       = false;
         if (Orientation == Orientation.Horizontal)
         {
             indicatorRect = _grooveRect.Deflate(new Thickness(0, 0, deflateValue, 0));
+            if (StrokeLineCap == PenLineCap.Round)
+            {
+                isEmpty = indicatorRect.Width < indicatorRect.Height / 2;
+            }
+            else
+            {
+                isEmpty = indicatorRect.Width < 1.0;
+            }
         }
         else
         {
             indicatorRect = _grooveRect.Deflate(new Thickness(0, 0, 0, deflateValue));
+            if (StrokeLineCap == PenLineCap.Round)
+            {
+                isEmpty = indicatorRect.Height < indicatorRect.Width / 2;
+            }
+            else
+            {
+                isEmpty = indicatorRect.Height < 1.0;
+            }
         }
 
-        if (StrokeLineCap == PenLineCap.Round)
+        if (!isEmpty)
         {
-            context.DrawPilledRect(brush, null, indicatorRect, Orientation);
+            if (StrokeLineCap == PenLineCap.Round)
+            {
+                context.DrawPilledRect(brush, null, indicatorRect, Orientation);
+            }
+            else
+            {
+                context.FillRectangle(brush, indicatorRect);
+            }
         }
-        else
-        {
-            context.FillRectangle(brush, indicatorRect);
-        }
+    
     }
 
     protected override void CalculateStrokeThickness()

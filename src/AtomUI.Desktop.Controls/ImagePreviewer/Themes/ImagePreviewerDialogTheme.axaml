@@ -63,6 +63,7 @@
                                             ImageRotate="{TemplateBinding ImageRotate}"
                                             IsImageMovable="{TemplateBinding IsImageMovable}" 
                                             IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
+                                            ImageScaleChanged="{TemplateBinding ImageScaleChanged}"
                                             />
                                     </Border>
                                 </DockPanel>

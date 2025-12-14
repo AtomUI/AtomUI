@@ -8,6 +8,7 @@ internal static class ImagePreviewerThemeConstants
     public static readonly string VerticalFlipButtonPart = "PART_VerticalFlipButton";
     public static readonly string ScaleUpButtonPart = "PART_ScaleUpButton";
     public static readonly string ScaleDownButtonPart = "PART_ScaleDownButton";
+    public static readonly string FitToWindowButtonPart = "PART_FitToWindowButton";
     public static readonly string PreviousButtonPart = "PART_PreviousButton";
     public static readonly string NextButtonPart = "PART_NextButton";
     public static readonly string RotateLeftButtonPart = "PART_RotateLeftButton";

@@ -118,6 +118,9 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
     public static RoutedEvent<RoutedEventArgs> RotateRightRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(RotateRightRequest), RoutingStrategies.Bubble);
     
+    public static RoutedEvent<ImageFitToWindowEventArgs> FitToWindowRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImageFitToWindowEventArgs>(nameof(FitToWindowRequest), RoutingStrategies.Bubble);
+    
     public event EventHandler<RoutedEventArgs>? HorizontalFlipRequest
     {
         add => AddHandler(HorizontalFlipRequestEvent, value);
@@ -165,6 +168,12 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         add => AddHandler(RotateRightRequestEvent, value);
         remove => RemoveHandler(RotateRightRequestEvent, value);
     }
+    
+    public event EventHandler<ImageFitToWindowEventArgs>? FitToWindowRequest
+    {
+        add => AddHandler(FitToWindowRequestEvent, value);
+        remove => RemoveHandler(FitToWindowRequestEvent, value);
+    }
     #endregion
 
     private IconButton? _horizontalFlipButton;
@@ -175,6 +184,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
     private IconButton? _nextButton;
     private IconButton? _rotateLeftButton;
     private IconButton? _rotateRightButton;
+    private ToggleIconButton? _fitToWindowButton;
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -196,6 +206,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         _nextButton           = e.NameScope.Find<IconButton>(ImagePreviewerThemeConstants.NextButtonPart);
         _rotateLeftButton     = e.NameScope.Find<IconButton>(ImagePreviewerThemeConstants.RotateLeftButtonPart);
         _rotateRightButton    = e.NameScope.Find<IconButton>(ImagePreviewerThemeConstants.RotateRightButtonPart);
+        _fitToWindowButton    = e.NameScope.Find<ToggleIconButton>(ImagePreviewerThemeConstants.FitToWindowButtonPart);
 
         if (_horizontalFlipButton != null)
         {
@@ -229,41 +240,53 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         {
             _rotateRightButton.Click += HandleButtonClick;
         }
+
+        if (_fitToWindowButton != null)
+        {
+            _fitToWindowButton.IsCheckedChanged += HandleButtonClick;
+        }
     }
 
     private void HandleButtonClick(object? sender, RoutedEventArgs e)
     {
         if (sender == _horizontalFlipButton)
         {
-            RaiseEvent(new  RoutedEventArgs(HorizontalFlipRequestEvent));
+            RaiseEvent(new RoutedEventArgs(HorizontalFlipRequestEvent));
         }
         else if (sender == _verticalFlipButton)
         {
-            RaiseEvent(new  RoutedEventArgs(VerticalFlipRequestEvent));
+            RaiseEvent(new RoutedEventArgs(VerticalFlipRequestEvent));
         }
         else if (sender == _scaleUpButton)
         {
-            RaiseEvent(new  RoutedEventArgs(ScaleUpRequestEvent));
+            RaiseEvent(new RoutedEventArgs(ScaleUpRequestEvent));
         }
         else if (sender == _scaleDownButton)
         {
-            RaiseEvent(new  RoutedEventArgs(ScaleDownRequestEvent));
+            RaiseEvent(new RoutedEventArgs(ScaleDownRequestEvent));
         }
         else if (sender == _previousButton)
         {
-            RaiseEvent(new  RoutedEventArgs(PreviousRequestEvent));
+            RaiseEvent(new RoutedEventArgs(PreviousRequestEvent));
         }
         else if (sender == _nextButton)
         {
-            RaiseEvent(new  RoutedEventArgs(NextRequestEvent));
+            RaiseEvent(new RoutedEventArgs(NextRequestEvent));
         }
         else if (sender == _rotateLeftButton)
         {
-            RaiseEvent(new  RoutedEventArgs(RotateLeftRequestEvent));
+            RaiseEvent(new RoutedEventArgs(RotateLeftRequestEvent));
         }
         else if (sender == _rotateRightButton)
         {
-            RaiseEvent(new  RoutedEventArgs(RotateRightRequestEvent));
+            RaiseEvent(new RoutedEventArgs(RotateRightRequestEvent));
+        }
+        else if (sender == _fitToWindowButton)
+        {
+            RaiseEvent(new ImageFitToWindowEventArgs(_fitToWindowButton?.IsChecked == true)
+            {
+                RoutedEvent = FitToWindowRequestEvent
+            });
         }
     }
 }

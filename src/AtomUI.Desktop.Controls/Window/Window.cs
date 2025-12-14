@@ -12,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -362,6 +363,9 @@ public class Window : AvaloniaWindow,
         if (OperatingSystem.IsMacOS())
         {
             this.SetMacOSWindowClosable(IsCloseCaptionButtonEnabled);
+            ConfigureMacOSCaptionGroupOffset();
+            // 不加这个最大化，最小化那个按钮位置有问题
+            ClientSize = new Size(ClientSize.Width, ClientSize.Height + 0.00001);
         }
     }
 
@@ -449,7 +453,6 @@ public class Window : AvaloniaWindow,
         }
         _disposeActions.Clear();
     }
-
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {

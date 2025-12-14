@@ -29,6 +29,11 @@
                                              Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                              Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}" 
                                              IsEnabled="{TemplateBinding IsScaleUpEnabled}" />
+                            <atom:ToggleIconButton Name="{x:Static atom:ImagePreviewerThemeConstants.FitToWindowButtonPart}"
+                                                   Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                                   CheckedIcon="{antdicons:AntDesignIconProvider FitToWindowOutlined}"
+                                                   UnCheckedIcon="{antdicons:AntDesignIconProvider OneToOneOutlined}"
+                                                   IsChecked="{TemplateBinding IsImageFitToWindow}"/>
                             <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.HorizontalFlipButtonPart}"
                                              Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                              Icon="{antdicons:AntDesignIconProvider SwapOutlined}" />
@@ -64,6 +69,16 @@
                     Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColor}}" />
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingSM}}" />
         </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton">
+            <Setter Property="IconWidth"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}" />
+            <Setter Property="IconHeight"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}" />
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColor}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingSM}}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
             <Setter Property="IconBrush"
@@ -71,6 +86,16 @@
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:disabled">
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColorDisabled}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationHoverColor}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|ToggleIconButton:disabled">
             <Setter Property="IconBrush"
                     Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColorDisabled}}" />
         </Style>

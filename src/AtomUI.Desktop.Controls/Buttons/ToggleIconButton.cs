@@ -1,14 +1,19 @@
-﻿using AtomUI.Controls;
+﻿using AtomUI.Animations;
+using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-public class ToggleIconButton : ToggleButton, IControlSharedTokenResourcesHost, IMotionAwareControl
+public class ToggleIconButton : ToggleButton,
+                                IControlSharedTokenResourcesHost, 
+                                IMotionAwareControl
 {
     #region 公共属性定义
 
@@ -135,5 +140,54 @@ public class ToggleIconButton : ToggleButton, IControlSharedTokenResourcesHost, 
     protected virtual bool NotifyHistTest(Point point)
     {
         return true;
+    }
+    
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (IsLoaded)
+        {
+            if (change.Property == IsMotionEnabledProperty)
+            {
+                ConfigureTransitions(true);
+            }
+        }
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        ConfigureTransitions(false);
+    }
+
+    protected override void OnUnloaded(RoutedEventArgs e)
+    {
+        base.OnUnloaded(e);
+        Transitions = null;
+    }
+    
+    private void ConfigureTransitions(bool force)
+    {
+        if (IsMotionEnabled)
+        {
+            if (force || Transitions == null)
+            {
+                Transitions =
+                [
+                    TransitionUtils.CreateTransition<SolidColorBrushTransition>(BackgroundProperty),
+                    TransitionUtils.CreateTransition<TransformOperationsTransition>(RenderTransformProperty)
+                ];
+                NotifyConfigureTransitions(Transitions);
+            }
+        }
+        else
+        {
+            Transitions = null;
+        }
+    }
+
+    protected virtual void NotifyConfigureTransitions(Transitions transitions)
+    {
     }
 }

@@ -29,6 +29,7 @@
                         Count="{TemplateBinding Count}"
                         IsScaleDownEnabled="{TemplateBinding IsScaleDownEnabled}"
                         IsScaleUpEnabled="{TemplateBinding IsScaleUpEnabled}"
+                        IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Bottom" />
                     <atom:WindowMediaQueryIndicator

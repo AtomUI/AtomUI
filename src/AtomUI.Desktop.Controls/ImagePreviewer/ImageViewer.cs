@@ -127,6 +127,12 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
             o => o.ImageScaleY,
             (o, v) => o.ImageScaleY = v);
     
+    internal static readonly DirectProperty<ImageViewer, bool> ImageScaleChangedProperty =
+        AvaloniaProperty.RegisterDirect<ImageViewer, bool>(
+            nameof(ImageScaleChanged),
+            o => o.ImageScaleChanged,
+            (o, v) => o.ImageScaleChanged = v);
+    
     internal static readonly DirectProperty<ImageViewer, double> ImageRotateProperty =
         AvaloniaProperty.RegisterDirect<ImageViewer, double>(
             nameof(ImageRotate),
@@ -214,6 +220,14 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         set => SetAndRaise(ImageScaleYProperty, ref _imageScaleY, value);
     }
     
+    private bool _imageScaleChanged;
+
+    internal bool ImageScaleChanged
+    {
+        get => _imageScaleChanged;
+        set => SetAndRaise(ImageScaleChangedProperty, ref _imageScaleChanged, value);
+    }
+    
     private double _imageRotate;
 
     internal double ImageRotate
@@ -246,6 +260,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     private Point? _lastestPoint;
     private double _originalTranslateX;
     private double _originalTranslateY;
+    private Point _delta;
     
     static ImageViewer()
     {
@@ -276,13 +291,23 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         {
             GenerateImageRenderTransform();
         }
+
+        if (change.Property == ImageScaleXProperty ||
+            change.Property == ImageScaleYProperty)
+        {
+            HandleScaleChanged();
+        }
+        else if (change.Property == IsImageFitToWindowProperty)
+        {
+            HandleFitToWindowChanged();
+        }
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
         if (_image != null)
         {
-            if (IsImageFitToWindow && MathUtilities.AreClose(Math.Abs(ImageScaleX), 1.0) && MathUtilities.AreClose(Math.Abs(ImageScaleY), 1.0))
+            if (IsImageFitToWindow && !ImageScaleChanged)
             {
                 if (availableSize.Width < availableSize.Height)
                 {
@@ -326,7 +351,6 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         var builder = TransformOperations.CreateBuilder(2);
         builder.AppendScale(ImageScaleX, ImageScaleY);
         builder.AppendRotate(ImageRotate);
-        Console.WriteLine(_image?.DesiredSize * ImageScaleX);
         ImageRenderTransform = builder.Build();
     }
     
@@ -364,7 +388,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        if (_lastestPoint.HasValue && e.Properties.IsLeftButtonPressed)
+        if (IsImageMovable && _lastestPoint.HasValue && e.Properties.IsLeftButtonPressed)
         {
             var delta             = e.GetPosition(this) - _lastestPoint.Value;
             var manhattanDistance = Math.Abs(delta.X) + Math.Abs(delta.Y);
@@ -383,6 +407,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     
     private void HandleDragging(Point position, Point delta)
     {
+        _delta = delta;
         var offsetX = _originalTranslateX + delta.X;
         var offsetY = _originalTranslateY + delta.Y;
         
@@ -392,36 +417,115 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
 
     private void HandleDragCompleted()
     {
-        if (_image != null)
-        {
-            
-            var imageWidth = _image.Bounds.Width * Math.Abs(ImageScaleX);
-            var imageHeight = _image.Bounds.Height * Math.Abs(ImageScaleY);
-            // if (MathUtilities.LessThanOrClose(imageWidth, Bounds.Width) && MathUtilities.LessThanOrClose(imageHeight, Bounds.Height))
-            // {
-            //     ImageTranslateX = (Bounds.Width -  imageWidth) / 2;
-            //     ImageTranslateY = (Bounds.Height -  imageHeight) / 2;
-            // }
-            // else if (MathUtilities.GreaterThan(imageWidth, Bounds.Width) && MathUtilities.GreaterThan(imageHeight, Bounds.Height))
-            // {
-            //     var imageCenterX = imageWidth / 2;
-            //     var imageCenterY = imageHeight / 2;
-            //     var left = imageCenterX - Bounds.Width  / 2;
-            //     var top = imageCenterY - Bounds.Height / 2;
-            //     var right =  imageCenterX + Bounds.Width  / 2;
-            //     var bottom = imageCenterY + Bounds.Height / 2;
-            //     if (ImageTranslateX > left)
-            //     {
-            //         ImageTranslateX = left;
-            //     }
-            // }
-            Console.WriteLine($"{Canvas.GetLeft(_image)}-{Canvas.GetTop(_image)}");
-        }
- 
+        ConstrainImagePosition();
         _originalTranslateX = 0.0;
         _originalTranslateY = 0.0;
         _lastestPoint       = null;
         IsDragging          = false;
+    }
+
+    private void ConstrainImagePosition()
+    {
+        if (_image != null)
+        {
+            var originalWidth     = _image.DesiredSize.Width;
+            var originalHeight    = _image.DesiredSize.Height;
+            var scaledImageWidth  = _image.DesiredSize.Width * Math.Abs(ImageScaleX);
+            var scaledImageHeight = _image.DesiredSize.Height * Math.Abs(ImageScaleY);
+            var leftBound         = (scaledImageWidth - originalWidth) / 2;
+            var topBound          = (scaledImageHeight - originalHeight) / 2;
+            var rightBound        = leftBound + Bounds.Width;
+            var bottomBound       = topBound + Bounds.Height;
+            
+            if (MathUtilities.LessThanOrClose(scaledImageWidth, Bounds.Width) && MathUtilities.LessThanOrClose(scaledImageHeight, Bounds.Height))
+            {
+                _isSelfChangedPosition = false;
+                InvalidateArrange();
+            }
+            else
+            {
+                if (MathUtilities.GreaterThan(scaledImageWidth, Bounds.Width))
+                {
+                    var left = Canvas.GetLeft(_image);
+                    if (_delta.X < 0)
+                    {
+                        var right = left + scaledImageWidth;
+                        if (right < rightBound)
+                        {
+                            ImageTranslateX = rightBound - scaledImageWidth;
+                        }
+                    }
+                    else
+                    {
+                        if (left > leftBound)
+                        {
+                            ImageTranslateX = leftBound;
+                        }
+                    }
+                }
+                else
+                {
+                    var left = Canvas.GetLeft(_image);
+                    if (_delta.X < 0)
+                    {
+                        if (left < leftBound)
+                        {
+                            ImageTranslateX = leftBound;
+                        }
+                        
+                    }
+                    else
+                    {
+                        var right = left + scaledImageWidth;
+                        if (right > rightBound)
+                        {
+                            ImageTranslateX = rightBound - scaledImageWidth;
+                        }
+                    }
+                }
+
+                if (MathUtilities.GreaterThan(scaledImageHeight, Bounds.Height))
+                {
+                    var top = Canvas.GetTop(_image);
+                    if (_delta.Y < 0)
+                    {
+                   
+                        var bottom = top + scaledImageHeight;
+                        if (bottom < bottomBound)
+                        {
+                            ImageTranslateY = bottomBound - scaledImageHeight;
+                        }
+                    }
+                    else
+                    {
+                        if (top > topBound)
+                        {
+                            ImageTranslateY = topBound;
+                        }
+                    }
+                }
+                else
+                {
+                    var top = Canvas.GetTop(_image);
+                    if (_delta.Y > 0)
+                    {
+                        if (top < topBound)
+                        {
+                            ImageTranslateY = topBound;
+                        }
+                        
+                    }
+                    else
+                    {
+                        var bottom = top + scaledImageHeight;
+                        if (bottom > bottomBound)
+                        {
+                            ImageTranslateY = bottomBound - scaledImageHeight;
+                        }
+                    }
+                }
+            }
+        }
     }
     
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
@@ -454,6 +558,116 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         {
             e.Handled           = true;
             HandleDragCompleted();
+        }
+    }
+
+    private void HandleScaleChanged()
+    {
+        if (_image != null)
+        {
+            var originalWidth     = _image.DesiredSize.Width;
+            var originalHeight    = _image.DesiredSize.Height;
+            var scaledImageWidth  = _image.DesiredSize.Width * Math.Abs(ImageScaleX);
+            var scaledImageHeight = _image.DesiredSize.Height * Math.Abs(ImageScaleY);
+            var leftBound         = (scaledImageWidth - originalWidth) / 2;
+            var topBound          = (scaledImageHeight - originalHeight) / 2;
+            var rightBound        = leftBound + Bounds.Width;
+            var bottomBound       = topBound + Bounds.Height;
+            
+            if (MathUtilities.LessThanOrClose(scaledImageWidth, Bounds.Width) && MathUtilities.LessThanOrClose(scaledImageHeight, Bounds.Height))
+            {
+                _isSelfChangedPosition = false;
+                InvalidateArrange();
+            }
+            else
+            {
+                if (MathUtilities.GreaterThan(scaledImageWidth, Bounds.Width))
+                {
+                    var left  = Canvas.GetLeft(_image);
+                    var right = left + scaledImageWidth;
+                    if (right < rightBound)
+                    {
+                        ImageTranslateX = rightBound - scaledImageWidth;
+                    }
+                    if (left > leftBound)
+                    {
+                        ImageTranslateX = leftBound;
+                    }
+                }
+                else
+                {
+                    var left = Canvas.GetLeft(_image);
+                    if (left < leftBound)
+                    {
+                        ImageTranslateX = leftBound;
+                    }
+                    var right = left + scaledImageWidth;
+                    if (right > rightBound)
+                    {
+                        ImageTranslateX = rightBound - scaledImageWidth;
+                    }
+                }
+
+                if (MathUtilities.GreaterThan(scaledImageHeight, Bounds.Height))
+                {
+                    var top    = Canvas.GetTop(_image);
+                    var bottom = top + scaledImageHeight;
+                    if (bottom < bottomBound)
+                    {
+                        ImageTranslateY = bottomBound - scaledImageHeight;
+                    }
+                    if (top > topBound)
+                    {
+                        ImageTranslateY = topBound;
+                    }
+                }
+                else
+                {
+                    var top = Canvas.GetTop(_image);
+                    if (top < topBound)
+                    {
+                        ImageTranslateY = topBound;
+                    }
+                    var bottom = top + scaledImageHeight;
+                    if (bottom > bottomBound)
+                    {
+                        ImageTranslateY = bottomBound - scaledImageHeight;
+                    }
+                }
+            }
+        }
+    }
+
+    private void HandleFitToWindowChanged()
+    {
+        if (_image != null && _currentImage != null)
+        {
+            if (!IsImageFitToWindow)
+            {
+                _image.Width = _currentImage.Size.Width;
+                _image.Height = _currentImage.Size.Height;
+            }
+            else
+            {
+                if (Bounds.Width < Bounds.Height)
+                {
+                    _image.Height = double.NaN;
+                    _image.Width  = Bounds.Width;
+               
+                }
+                else
+                {
+                    _image.Width  = double.NaN;
+                    _image.Height = Bounds.Height;
+                }
+            }
+            var offsetX = (Bounds.Width - _image.Width) / 2;
+            var offsetY = (Bounds.Height - _image.Height) / 2;
+            // 一直居中
+            Canvas.SetLeft(_image, offsetX);
+            Canvas.SetTop(_image, offsetY);
+            ImageTranslateX = offsetX;
+            ImageTranslateY = offsetY;
         }
     }
 }

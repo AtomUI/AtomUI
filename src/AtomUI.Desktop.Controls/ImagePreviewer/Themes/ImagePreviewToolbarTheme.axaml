@@ -24,6 +24,11 @@
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}"
                                      IsEnabled="{TemplateBinding IsScaleUpEnabled}" />
+                    <atom:ToggleIconButton Name="{x:Static atom:ImagePreviewerThemeConstants.FitToWindowButtonPart}"
+                                           Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                           CheckedIcon="{antdicons:AntDesignIconProvider FitToWindowOutlined}"
+                                           UnCheckedIcon="{antdicons:AntDesignIconProvider OneToOneOutlined}"
+                                           IsChecked="{TemplateBinding IsImageFitToWindow}"/>
                     <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.HorizontalFlipButtonPart}"
                                      Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                      Icon="{antdicons:AntDesignIconProvider SwapOutlined}" />
@@ -47,12 +52,26 @@
             <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}" />
             <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}" />
         </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton">
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}" />
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeLG}}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
         </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pressed">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton:pressed">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}" />
         </Style>
 

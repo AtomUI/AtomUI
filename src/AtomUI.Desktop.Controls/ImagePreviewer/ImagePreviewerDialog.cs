@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DialogPositioning;
-using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -191,6 +190,12 @@ internal class ImagePreviewerDialog : Window,
             o => o.ImageScaleY,
             (o, v) => o.ImageScaleY = v);
     
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> ImageScaleChangedProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(ImageScaleChanged),
+            o => o.ImageScaleChanged,
+            (o, v) => o.ImageScaleChanged = v);
+    
     internal static readonly DirectProperty<ImagePreviewerDialog, double> ImageRotateProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, double>(
             nameof(ImageRotate),
@@ -267,6 +272,14 @@ internal class ImagePreviewerDialog : Window,
         set => SetAndRaise(ImageScaleYProperty, ref _imageScaleY, value);
     }
     
+    private bool _imageScaleChanged;
+
+    internal bool ImageScaleChanged
+    {
+        get => _imageScaleChanged;
+        set => SetAndRaise(ImageScaleChangedProperty, ref _imageScaleChanged, value);
+    }
+    
     private double _imageRotate;
 
     internal double ImageRotate
@@ -312,6 +325,8 @@ internal class ImagePreviewerDialog : Window,
             dialog.HandleScaleDownRequest());
         ImagePreviewBaseToolbar.ScaleUpRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
             dialog.HandleScaleUpRequest());
+        ImagePreviewBaseToolbar.FitToWindowRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+            dialog.HandleFitToWindowRequest(args.IsFitToWindow));
     }
     
     public ImagePreviewerDialog(TopLevel parent, ImagePreviewer imagePreviewer)
@@ -520,8 +535,8 @@ internal class ImagePreviewerDialog : Window,
     
     private void HandleScaleDownRequest()
     {
-        var scaleX = ImageScaleX - ScaleStep;
-        var scaleY = ImageScaleY - ScaleStep;
+        var scaleX = ImageScaleX * (1 / (1 + ScaleStep));
+        var scaleY = ImageScaleY * (1 / (1 + ScaleStep));
         if (MathUtilities.LessThan(Math.Abs(scaleX), MinScale))
         {
             if (scaleX > 0)
@@ -546,13 +561,13 @@ internal class ImagePreviewerDialog : Window,
         }
         SetCurrentValue(ImageScaleXProperty, scaleX);
         SetCurrentValue(ImageScaleYProperty, scaleY);
-        SetCurrentValue(IsImageFitToWindowProperty, false);
+        SetCurrentValue(ImageScaleChangedProperty, true);
     }
     
     private void HandleScaleUpRequest()
     {
-        var scaleX = ImageScaleX + ScaleStep;
-        var scaleY = ImageScaleY + ScaleStep;
+        var scaleX = ImageScaleX * (1 + ScaleStep);
+        var scaleY = ImageScaleY * (1 + ScaleStep);
 
         if (MathUtilities.GreaterThan(Math.Abs(scaleX), MaxScale))
         {
@@ -565,7 +580,6 @@ internal class ImagePreviewerDialog : Window,
                 scaleX = -MaxScale;
             }
         }
- 
         if (MathUtilities.GreaterThan(Math.Abs(scaleY), MaxScale))
         {
             if (scaleY > 0)
@@ -579,6 +593,14 @@ internal class ImagePreviewerDialog : Window,
         }
         SetCurrentValue(ImageScaleXProperty, scaleX);
         SetCurrentValue(ImageScaleYProperty, scaleY);
-        SetCurrentValue(IsImageFitToWindowProperty, false);
+        SetCurrentValue(ImageScaleChangedProperty, true);
+    }
+
+    private void HandleFitToWindowRequest(bool isFitToWindow)
+    {
+        SetCurrentValue(ImageScaleXProperty, 1.0);
+        SetCurrentValue(ImageScaleYProperty, 1.0);
+        SetCurrentValue(ImageScaleChangedProperty, false);
+        SetCurrentValue(IsImageFitToWindowProperty, isFitToWindow);
     }
 }

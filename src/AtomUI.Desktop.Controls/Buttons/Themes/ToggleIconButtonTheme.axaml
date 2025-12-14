@@ -6,39 +6,51 @@
               x:ClassModifier="internal">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ToggleIconButton">
-            <Panel Name="{x:Static atom:ToggleIconButtonThemeConstants.RootLayoutPart}">
-                <atom:IconPresenter
-                    Name="{x:Static atom:ToggleIconButtonThemeConstants.CheckedIconPresenterPart}"
-                    Icon="{TemplateBinding CheckedIcon}"
-                    IsVisible="{TemplateBinding IsChecked}"
-                    Width="{TemplateBinding IconWidth}"
-                    Height="{TemplateBinding IconHeight}"
-                    IconBrush="{TemplateBinding IconBrush}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
-                <atom:IconPresenter
-                    Name="{x:Static atom:ToggleIconButtonThemeConstants.UnCheckedIconPresenterPart}"
-                    Icon="{TemplateBinding UnCheckedIcon}"
-                    Width="{TemplateBinding IconWidth}"
-                    Height="{TemplateBinding IconHeight}"
-                    IsVisible="{TemplateBinding IsChecked, Converter={x:Static BoolConverters.Not}}"
-                    IconBrush="{TemplateBinding IconBrush}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
-            </Panel>
+            <Border
+                Name="Frame"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Background="{TemplateBinding Background}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Padding="{TemplateBinding Padding}">
+                <Panel Name="{x:Static atom:ToggleIconButtonThemeConstants.RootLayoutPart}">
+                    <atom:IconPresenter
+                        Name="{x:Static atom:ToggleIconButtonThemeConstants.CheckedIconPresenterPart}"
+                        Icon="{TemplateBinding CheckedIcon}"
+                        IsVisible="{TemplateBinding IsChecked}"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        IconBrush="{TemplateBinding IconBrush}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                    <atom:IconPresenter
+                        Name="{x:Static atom:ToggleIconButtonThemeConstants.UnCheckedIconPresenterPart}"
+                        Icon="{TemplateBinding UnCheckedIcon}"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        IsVisible="{TemplateBinding IsChecked, Converter={x:Static BoolConverters.Not}}"
+                        IconBrush="{TemplateBinding IconBrush}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                </Panel>
+            </Border>
         </ControlTemplate>
     </Setter>
-    
+
     <Style Selector="^:is(atom|ToggleIconButton)">
         <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />
         <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Cursor" Value="Hand"/>
-        
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+
         <Setter Property="IconBrush"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
 
@@ -56,6 +68,6 @@
             <Setter Property="IconBrush"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
         </Style>
-        
+
     </Style>
 </ControlTheme>

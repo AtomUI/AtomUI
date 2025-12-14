@@ -78,7 +78,7 @@ public class ImagePreviewer : TemplatedControl,
         AvaloniaProperty.Register<ImagePreviewer, double>(nameof(ImageMaxScale), 50.0);
     
     public static readonly StyledProperty<bool> IsDialogModalProperty =
-        AvaloniaProperty.Register<ImagePreviewer, bool>(nameof (IsDialogModal), true);
+        AvaloniaProperty.Register<ImagePreviewer, bool>(nameof (IsDialogModal), false);
     
     public static readonly StyledProperty<DialogHorizontalAnchor> DialogHorizontalStartupLocationProperty =
         AvaloniaProperty.Register<ImagePreviewer, DialogHorizontalAnchor>(nameof(DialogHorizontalStartupLocation), DialogHorizontalAnchor.Custom);

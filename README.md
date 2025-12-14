@@ -222,12 +222,12 @@ You can start using it in your own projects
 
 #### All Control Gallery
 
-You can experience all the controls by cloning the control gallery project to your local machine.
+You can launch the `./controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj` project in your local development environment to experience all AtomUI controls.
 
 ```bash
-git clone --recurse-submodules https://github.com/chinware/AtomUI.ControlGallery.git
-cd AtomUI.ControlGallery
-dotnet build
+git clone https://github.com/AtomUI/AtomUI.git
+dotnet restore
+dotnet run --project controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj -f net10.0
 ```
 
 <div style="height:50px"></div>

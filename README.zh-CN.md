@@ -224,12 +224,12 @@ public partial class App : Application
 
 #### 体验所有控件
 
-您可以拉取控件库项目到本地来体验所有的 AtomUI 控件
+您可以启动 `./controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj` 项目在本机开发环境来体验所有的 AtomUI 控件
 
 ```bash
-git clone --recurse-submodules https://github.com/chinware/AtomUI.ControlGallery.git
-cd AtomUI.ControlGallery
-dotnet build
+git clone https://github.com/AtomUI/AtomUI.git
+dotnet restore
+dotnet run --project controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj -f net10.0
 ```
 
 <div style="height:50px"></div>

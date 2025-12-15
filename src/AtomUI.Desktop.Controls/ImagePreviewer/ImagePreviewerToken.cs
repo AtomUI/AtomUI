@@ -80,6 +80,11 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
     /// </summary>
     public Thickness FloatToolbarIndicatorPadding { get; set; }
     
+    /// <summary>
+    /// 封面默认的宽度
+    /// </summary>
+    public double CoverImageWidth { get; set; }
+    
     public ImagePreviewerToken()
         : base(ID)
     {
@@ -96,6 +101,8 @@ internal class ImagePreviewerToken : AbstractControlDesignToken
         MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);
         DialogMinWidth                = 710;
         DialogMinHeight               = 240;
+        CoverImageWidth               = 200;
+        
         if (isDarkMode)
         {
             TitleBarBackgroundColor       = SharedToken.ColorBorderSecondary;

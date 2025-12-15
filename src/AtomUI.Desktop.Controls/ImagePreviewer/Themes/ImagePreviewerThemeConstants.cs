@@ -2,7 +2,8 @@ namespace AtomUI.Desktop.Controls.Themes;
 
 internal static class ImagePreviewerThemeConstants
 {
-    public static readonly string WindowHeaderPart = "WindowTitleFrame";
+    public static readonly string WindowHeaderPart = "PART_WindowTitleFrame";
+    public static readonly string CoverItemsControlPart = "PART_CoverItemsControl";
     
     public static readonly string HorizontalFlipButtonPart = "PART_HorizontalFlipButton";
     public static readonly string VerticalFlipButtonPart = "PART_VerticalFlipButton";

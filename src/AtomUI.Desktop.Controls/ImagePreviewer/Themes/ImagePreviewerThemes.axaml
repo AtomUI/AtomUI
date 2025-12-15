@@ -3,10 +3,12 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="ImageViewerTheme.axaml"/>
-        <ResourceInclude Source="ImagePreviewerTheme.axaml"/>
         <ResourceInclude Source="ImagePreviewerDialogTheme.axaml"/>
         <ResourceInclude Source="ImagePreviewFloatToolbarTheme.axaml"/>
         <ResourceInclude Source="ImagePreviewToolbarTheme.axaml"/>
         <ResourceInclude Source="ImagePreviewNavButtonTheme.axaml"/>
+        <ResourceInclude Source="ImageGroupPreviewerTheme.axaml"/>
+        <ResourceInclude Source="ImagePreviewerTheme.axaml"/>
+        <ResourceInclude Source="ImagePreviewerCoverTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

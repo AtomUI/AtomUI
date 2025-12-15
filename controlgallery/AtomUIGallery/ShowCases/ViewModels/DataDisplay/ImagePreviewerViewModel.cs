@@ -19,6 +19,14 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _defaultImages, value);
     }
     
+    private IList<string>? _twoImages;
+
+    public IList<string>? TwoImages
+    {
+        get => _twoImages;
+        set => this.RaiseAndSetIfChanged(ref _twoImages, value);
+    }
+    
     private IList<string>? _threeImages;
 
     public IList<string>? ThreeImages

@@ -18,8 +18,8 @@ internal class ImagePreviewerDialog : Window,
                                       IManagedDialogPositionerDialog
 {
     #region 公共属性定义
-    public static readonly StyledProperty<IList<IImage>?> SourcesProperty =
-        AvaloniaProperty.Register<ImagePreviewerDialog, IList<IImage>?>(nameof(Sources));
+    public static readonly StyledProperty<IList<PreviewImageSource>?> SourcesProperty =
+        AvaloniaProperty.Register<ImagePreviewerDialog, IList<PreviewImageSource>?>(nameof(Sources));
     
     public static readonly StyledProperty<bool> IsImageMovableProperty =
         ImagePreviewer.IsImageMovableProperty.AddOwner<ImagePreviewerDialog>();
@@ -50,7 +50,7 @@ internal class ImagePreviewerDialog : Window,
     public static readonly StyledProperty<Transform?> TransformProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, Transform?>(nameof(Transform));
     
-    public IList<IImage>? Sources
+    public IList<PreviewImageSource>? Sources
     {
         get => GetValue(SourcesProperty);
         set => SetValue(SourcesProperty, value);
@@ -138,8 +138,8 @@ internal class ImagePreviewerDialog : Window,
     
     #region 内部属性定义
     
-    internal static readonly DirectProperty<ImagePreviewerDialog, IImage?> CurrentImageProperty =
-        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, IImage?>(
+    internal static readonly DirectProperty<ImagePreviewerDialog, PreviewImageSource?> CurrentImageProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, PreviewImageSource?>(
             nameof(CurrentImage),
             o => o.CurrentImage,
             (o, v) => o.CurrentImage = v);
@@ -204,9 +204,9 @@ internal class ImagePreviewerDialog : Window,
             o => o.IsImageFitToWindow,
             (o, v) => o.IsImageFitToWindow = v);
     
-    private IImage? _currentImage;
+    private PreviewImageSource? _currentImage;
 
-    internal IImage? CurrentImage
+    internal PreviewImageSource? CurrentImage
     {
         get => _currentImage;
         set => SetAndRaise(CurrentImageProperty, ref _currentImage, value);
@@ -302,7 +302,7 @@ internal class ImagePreviewerDialog : Window,
     private Size _dialogSize;
     private bool _needsUpdate;
     private readonly ManagedDialogPositioner _positioner;
-    private ImagePreviewer _imagePreviewer;
+    private AbstractImagePreviewer _imagePreviewer;
     private PixelPoint _latestDialogPosition;
     private bool _firstSizeCalculated;
 
@@ -366,7 +366,7 @@ internal class ImagePreviewerDialog : Window,
         });
     }
     
-    public ImagePreviewerDialog(TopLevel parent, ImagePreviewer imagePreviewer)
+    public ImagePreviewerDialog(TopLevel parent, AbstractImagePreviewer imagePreviewer)
     {
         ParentTopLevel  = parent;
         _positioner     = new ManagedDialogPositioner(this);

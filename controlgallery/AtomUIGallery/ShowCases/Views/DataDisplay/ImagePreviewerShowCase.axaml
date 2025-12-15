@@ -27,5 +27,12 @@
             Description="You can set different preview image.">
             <atom:ImagePreviewer Width="200" Sources="{Binding DefaultImages}" CoverImageSrc="{Binding BlurImage}"/>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Multiple image preview"
+            Description="Click the left and right switch buttons to preview multiple images."
+            IsOccupyEntireRow="True">
+            <atom:ImageGroupPreviewer Sources="{Binding TwoImages}" CoverWidth="200" CoverHeight="200"/>
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

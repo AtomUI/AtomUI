@@ -20,6 +20,10 @@ public partial class ImagePreviewerShowCase : ReactiveUserControl<ImagePreviewer
                     "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/5.webp",
                     "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/6.webp"
                 ];
+                viewModel.TwoImages = [
+                    "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/2.svg",
+                    "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/3.svg",
+                ];
                 viewModel.FallbackImage = "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/Fallback.png";
                 viewModel.BlurImage = "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/Blur.png";
             }

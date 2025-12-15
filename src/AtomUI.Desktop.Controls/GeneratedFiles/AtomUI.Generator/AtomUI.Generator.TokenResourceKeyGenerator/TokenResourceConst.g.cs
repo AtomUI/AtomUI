@@ -396,6 +396,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class ImagePreviewerTokenKey
     {
+        public static readonly TokenResourceKey CoverImageWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.CoverImageWidth");
         public static readonly TokenResourceKey DialogMinHeight = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.DialogMinHeight");
         public static readonly TokenResourceKey DialogMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.DialogMinWidth");
         public static readonly TokenResourceKey FloatToolbarIndicatorPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ImagePreviewer.FloatToolbarIndicatorPadding");

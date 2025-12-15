@@ -98,8 +98,8 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     
     #region 内部属性定义
     
-    internal static readonly DirectProperty<ImageViewer, IImage?> CurrentImageProperty =
-        AvaloniaProperty.RegisterDirect<ImageViewer, IImage?>(
+    internal static readonly DirectProperty<ImageViewer, PreviewImageSource?> CurrentImageProperty =
+        AvaloniaProperty.RegisterDirect<ImageViewer, PreviewImageSource?>(
             nameof(CurrentImage),
             o => o.CurrentImage,
             (o, v) => o.CurrentImage = v);
@@ -172,9 +172,9 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
             o => o.IsImageFitToWindow,
             (o, v) => o.IsImageFitToWindow = v);
     
-    private IImage? _currentImage;
+    private PreviewImageSource? _currentImage;
 
-    internal IImage? CurrentImage
+    internal PreviewImageSource? CurrentImage
     {
         get => _currentImage;
         set => SetAndRaise(CurrentImageProperty, ref _currentImage, value);
@@ -277,7 +277,7 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     Control IMotionAwareControl.PropertyBindTarget => this;
     #endregion
     
-    private Image? _image;
+    private ImagePreviewRenderer? _image;
     private bool _isSelfChangedPosition;
     private Point? _lastestPoint;
     private double _originalTranslateX;
@@ -294,9 +294,9 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _image          = e.NameScope.Find<Image>(ImagePreviewerThemeConstants.ImageRendererPart);
+        _image          = e.NameScope.Find<ImagePreviewRenderer>(ImagePreviewerThemeConstants.ImageRendererPart);
         _previousButton = e.NameScope.Find<ImagePreviewNavButton>(ImagePreviewerThemeConstants.PreviousButtonPart);
-        _nextButton = e.NameScope.Find<ImagePreviewNavButton>(ImagePreviewerThemeConstants.NextButtonPart);
+        _nextButton     = e.NameScope.Find<ImagePreviewNavButton>(ImagePreviewerThemeConstants.NextButtonPart);
         
         if (_previousButton != null)
         {
@@ -691,14 +691,14 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
 
     private void HandleFitToWindowChanged()
     {
-        if (_image != null && _currentImage != null)
+        if (_image != null)
         {
             _isSelfChangedPosition = false;
             double offsetX = 0.0;
             if (!IsImageFitToWindow)
             {
-                _image.Width  = _currentImage.Size.Width;
-                _image.Height = _currentImage.Size.Height;
+                _image.Width  = _image.SourceSize.Width;
+                _image.Height = _image.SourceSize.Height;
                 offsetX       = (Bounds.Width - _image.Width) / 2;
             }
             else
@@ -707,7 +707,6 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
                 {
                     _image.Height = double.NaN;
                     _image.Width  = Bounds.Width;
-               
                 }
                 else
                 {

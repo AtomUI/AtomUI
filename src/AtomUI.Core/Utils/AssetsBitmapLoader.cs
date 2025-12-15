@@ -4,9 +4,14 @@ using Avalonia.Platform;
 
 namespace AtomUI.Utils;
 
-public static class AssetsBitmapLoader
+public static class AssetsLoader
 {
-    public static Bitmap Load(string path)
+    public static Bitmap LoadBitmap(string path)
+    {
+        return new Bitmap(OpenStream(path));
+    }
+
+    public static Stream OpenStream(string path)
     {
         Uri? uri = null;
         if (path.StartsWith("avares:"))
@@ -21,9 +26,9 @@ public static class AssetsBitmapLoader
         }
         if (uri.IsAbsoluteUri && uri.IsFile)
         {
-            return new Bitmap(uri.LocalPath);
+            return new FileStream(uri.LocalPath, FileMode.Open, FileAccess.Read);
         }
         var assets = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-        return new Bitmap(assets.Open(uri));
+        return assets.Open(uri);
     }
 }

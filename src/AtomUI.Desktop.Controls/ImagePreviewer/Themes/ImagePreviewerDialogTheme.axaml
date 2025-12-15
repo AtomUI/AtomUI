@@ -90,7 +90,7 @@
         <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinWidth}}" />
         <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
         <Setter Property="ContentBackground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgLayout}}" />
-        <Style Selector="^ /template/ Border#WindowTitleFrame">
+        <Style Selector="^ /template/ Border#PART_WindowTitleFrame">
             <Setter Property="Background"
                     Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" />
         </Style>

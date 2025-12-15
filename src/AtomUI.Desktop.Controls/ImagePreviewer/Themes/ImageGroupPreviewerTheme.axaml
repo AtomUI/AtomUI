@@ -1,0 +1,35 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImageGroupPreviewer}" TargetType="atom:ImageGroupPreviewer">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <ItemsControl Name="{x:Static atom:ImagePreviewerThemeConstants.CoverItemsControlPart}"
+                                  ItemsSource="{TemplateBinding EffectiveSources}"
+                                  ItemsPanel="{TemplateBinding ItemsPanel}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <atom:ImagePreviewerCover ImageSource="{Binding}"
+                                                          Width="{Binding CoverWidth, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"
+                                                          Height="{Binding CoverHeight, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="CoverWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.CoverImageWidth}}" />
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        
+    </ControlTheme>
+</ResourceDictionary>

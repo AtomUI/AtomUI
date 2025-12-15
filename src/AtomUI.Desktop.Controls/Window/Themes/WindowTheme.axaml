@@ -28,7 +28,7 @@
 
                                 <Border Name="ContentFrame"
                                         Background="{TemplateBinding ContentBackground}"
-                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static atom:WindowTheme.CornerRadiusConverter}}"
                                         ClipToBounds="True"
                                         Cursor="Arrow"
                                         Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"

@@ -2,7 +2,10 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
     x:ClassModifier="internal">
+    <converters:CornerRadiusFilterConverter x:Key="CornerRadiusFilterConverter"
+                                            Filter="BottomLeft, BottomRight"/>
     <ControlTheme x:Key="{x:Type atom:ImagePreviewerDialog}" TargetType="atom:ImagePreviewerDialog">
         <ControlTheme.BasedOn>
             <atom:WindowTheme TargetType="atom:ImagePreviewerDialog" />
@@ -42,7 +45,7 @@
                                     </Border>
 
                                     <Border Name="ContentFrame"
-                                            CornerRadius="{TemplateBinding CornerRadius}"
+                                            CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource CornerRadiusFilterConverter}}"
                                             ClipToBounds="True"
                                             Cursor="Arrow"
                                             Background="{TemplateBinding ContentBackground}"

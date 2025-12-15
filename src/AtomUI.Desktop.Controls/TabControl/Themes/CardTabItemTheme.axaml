@@ -10,51 +10,39 @@
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        Margin="{TemplateBinding Margin}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        Padding="{TemplateBinding Padding}">
-                    <StackPanel Orientation="Horizontal">
-                        <atom:IconPresenter Name="ItemIconPresenter"
-                                             Icon="{TemplateBinding Icon}"
-                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <ContentPresenter Name="ContentPresenter"
-                                          Content="{TemplateBinding Header}"
-                                          ContentTemplate="{TemplateBinding HeaderTemplate, Converter={x:Static atom:BaseTabItemTheme.StringToTextBlockConverter}}" />
-                        <atom:IconButton Name="{x:Static atom:TabItemThemeConstants.ItemCloseButtonPart}"
-                                         Icon="{TemplateBinding CloseIcon}"
-                                         Opacity="{TemplateBinding CloseButtonOpacity}"
-                                         VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+                <Panel>
+                    <Border Name="Frame"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="{TemplateBinding Margin}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Padding="{TemplateBinding Padding}">
+                        <StackPanel Orientation="Horizontal">
+                            <atom:IconPresenter Name="ItemIconPresenter"
+                                                Icon="{TemplateBinding Icon}"
+                                                IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <ContentPresenter Name="ContentPresenter"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate, Converter={x:Static atom:BaseTabItemTheme.StringToTextBlockConverter}}" />
+                            <atom:IconButton Name="{x:Static atom:TabItemThemeConstants.ItemCloseButtonPart}"
+                                             Icon="{TemplateBinding CloseIcon}"
+                                             Opacity="{TemplateBinding CloseButtonOpacity}"
+                                             VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <Rectangle Height="1" Fill="Red" VerticalAlignment="Bottom" Margin="1, 0, 1, 0"/>
+                </Panel>
             </ControlTemplate>
         </Setter>
 
         <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TabControlTokenKey.HorizontalItemMargin}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:TabControlTokenKey.CardBg}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
-        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
 
         <Style Selector="^:selected">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
         </Style>
-        <!-- 选中态按放置方向去掉靠内容侧的边框 -->
-        <Style Selector="^[TabStripPlacement=Top]:selected">
-            <Setter Property="BorderThickness" Value="1,1,1,0" />
-        </Style>
-        <Style Selector="^[TabStripPlacement=Bottom]:selected">
-            <Setter Property="BorderThickness" Value="1,0,1,1" />
-        </Style>
-        <Style Selector="^[TabStripPlacement=Left]:selected">
-            <Setter Property="BorderThickness" Value="1,1,0,1" />
-        </Style>
-        <Style Selector="^[TabStripPlacement=Right]:selected">
-            <Setter Property="BorderThickness" Value="0,1,1,1" />
-        </Style>
-
 
         <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TabControlTokenKey.HorizontalItemMargin}}" />

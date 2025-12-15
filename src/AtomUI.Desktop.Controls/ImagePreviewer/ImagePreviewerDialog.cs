@@ -542,12 +542,11 @@ internal class ImagePreviewerDialog : Window,
             const double ratio  = 0.70d;
             var height = ClientAreaScreenGeometry.Height * ratio;
             var width  = ClientAreaScreenGeometry.Width * ratio;
-            Width                = width;
-            Height               = height;
+            ClientSize = new Size(width, height);
             _firstSizeCalculated = true;
             return new Size(width, height);
         }
-        return new Size(Width, Height);
+        return ClientSize;
     }
     
     private void HandleHorizontalFlipRequest()

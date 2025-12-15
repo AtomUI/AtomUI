@@ -97,9 +97,8 @@ public class CardTabControl : BaseTabControl
             tabItem.Shape = TabSharp.Card;
             Debug.Assert(ItemsBindingDisposables.ContainsKey(tabItem));
             var disposables = ItemsBindingDisposables[tabItem];
-            disposables.Add(BindUtils.RelayBind(this, EffectiveCardBorderRadiusProperty, tabItem, TabItem.CornerRadiusProperty));
-            // Use template-level priority so selected-state styles can override border thickness
-            disposables.Add(BindUtils.RelayBind(this, CardBorderThicknessProperty, tabItem, TabItem.BorderThicknessProperty, BindingMode.Default, BindingPriority.Template));
+            disposables.Add(BindUtils.RelayBind(this, EffectiveCardBorderRadiusProperty, tabItem, CornerRadiusProperty));
+            disposables.Add(BindUtils.RelayBind(this, CardBorderThicknessProperty, tabItem, BorderThicknessProperty));
         }
     }
 

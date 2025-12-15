@@ -52,28 +52,28 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
         Popup.MarginToAnchorProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<PlacementMode> PlacementProperty =
-        Avalonia.Controls.Primitives.Popup.PlacementProperty.AddOwner<PopupFlyoutBase>();
+        Popup.PlacementProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<double> HorizontalOffsetProperty =
-        Avalonia.Controls.Primitives.Popup.HorizontalOffsetProperty.AddOwner<PopupFlyoutBase>();
+        Popup.HorizontalOffsetProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<double> VerticalOffsetProperty =
-        Avalonia.Controls.Primitives.Popup.VerticalOffsetProperty.AddOwner<PopupFlyoutBase>();
+        Popup.VerticalOffsetProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
-        Avalonia.Controls.Primitives.Popup.PlacementAnchorProperty.AddOwner<PopupFlyoutBase>();
+        Popup.PlacementAnchorProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
-        Avalonia.Controls.Primitives.Popup.PlacementGravityProperty.AddOwner<PopupFlyoutBase>();
+        Popup.PlacementGravityProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<FlyoutShowMode> ShowModeProperty =
         AvaloniaProperty.Register<PopupFlyoutBase, FlyoutShowMode>(nameof(ShowMode));
     
     public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
-        Avalonia.Controls.Primitives.Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
+        Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
-        Avalonia.Controls.Primitives.Popup.PlacementConstraintAdjustmentProperty.AddOwner<PopupFlyoutBase>();
+        Popup.PlacementConstraintAdjustmentProperty.AddOwner<PopupFlyoutBase>();
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<PopupFlyoutBase>();

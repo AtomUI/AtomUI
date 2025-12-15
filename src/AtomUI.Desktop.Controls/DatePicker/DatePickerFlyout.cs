@@ -69,7 +69,7 @@ internal class DatePickerFlyout : Flyout
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsShowNowProperty, DatePickerPresenter, DatePickerPresenter.IsShowNowProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsShowTimeProperty, DatePickerPresenter, DatePickerPresenter.IsShowTimeProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ClockIdentifierProperty, DatePickerPresenter, DatePickerPresenter.ClockIdentifierProperty));
-        
+
         flyoutPresenter.Content = DatePickerPresenter;
         return flyoutPresenter;
     }

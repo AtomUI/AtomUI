@@ -43,6 +43,7 @@ internal class PopupConfirmFlyout : Flyout
                 PopupConfirmContainer.ConfirmContentProperty));
             _presenterBindingDisposables.Add(BindUtils.RelayBind(popupConfirm, PopupConfirm.ConfirmContentTemplateProperty, popupConfirmContainer,
                 PopupConfirmContainer.ConfirmContentTemplateProperty));
+            
             presenter.Content = popupConfirmContainer;
         }
         return presenter;

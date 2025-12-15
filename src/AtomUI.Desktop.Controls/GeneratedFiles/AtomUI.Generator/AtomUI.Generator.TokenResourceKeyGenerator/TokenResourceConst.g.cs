@@ -75,18 +75,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey SeparatorMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Breadcrumb.SeparatorMargin");
     }
 
-    public static class ButtonSpinnerTokenKey
-    {
-        public static readonly TokenResourceKey ControlWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.ControlWidth");
-        public static readonly TokenResourceKey FilledHandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.FilledHandleBg");
-        public static readonly TokenResourceKey HandleActiveBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleActiveBg");
-        public static readonly TokenResourceKey HandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBg");
-        public static readonly TokenResourceKey HandleBorderColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBorderColor");
-        public static readonly TokenResourceKey HandleHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleHoverColor");
-        public static readonly TokenResourceKey HandleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleIconSize");
-        public static readonly TokenResourceKey HandleWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleWidth");
-    }
-
     public static class ButtonTokenKey
     {
         public static readonly TokenResourceKey BorderColorDisabled = new TokenResourceKey("AtomUI.Desktop.Controls.Button.BorderColorDisabled");
@@ -140,6 +128,18 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey TextTextActiveColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.TextTextActiveColor");
         public static readonly TokenResourceKey TextTextColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.TextTextColor");
         public static readonly TokenResourceKey TextTextHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.TextTextHoverColor");
+    }
+
+    public static class ButtonSpinnerTokenKey
+    {
+        public static readonly TokenResourceKey ControlWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.ControlWidth");
+        public static readonly TokenResourceKey FilledHandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.FilledHandleBg");
+        public static readonly TokenResourceKey HandleActiveBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleActiveBg");
+        public static readonly TokenResourceKey HandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBg");
+        public static readonly TokenResourceKey HandleBorderColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBorderColor");
+        public static readonly TokenResourceKey HandleHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleHoverColor");
+        public static readonly TokenResourceKey HandleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleIconSize");
+        public static readonly TokenResourceKey HandleWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleWidth");
     }
 
     public static class CalendarTokenKey
@@ -498,11 +498,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey TopLevelItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.TopLevelItemSelectedColor");
     }
 
-    public static class MessageBoxTokenKey
-    {
-        public static readonly TokenResourceKey StyleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.MessageBox.StyleIconSize");
-    }
-
     public static class MessageTokenKey
     {
         public static readonly TokenResourceKey CardHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Message.CardHeight");
@@ -511,6 +506,11 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey MessageIconMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Message.MessageIconMargin");
         public static readonly TokenResourceKey MessageIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Message.MessageIconSize");
         public static readonly TokenResourceKey MessageTopMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Message.MessageTopMargin");
+    }
+
+    public static class MessageBoxTokenKey
+    {
+        public static readonly TokenResourceKey StyleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.MessageBox.StyleIconSize");
     }
 
     public static class NavMenuTokenKey

@@ -64,9 +64,8 @@
                         <Border Name="Frame" Background="{TemplateBinding Background}"
                                 MinHeight="{TemplateBinding MinHeight}"
                                 Padding="{TemplateBinding Padding}">
-                            <DockPanel LastChildFill="True" VerticalAlignment="Center">
+                            <DockPanel LastChildFill="True">
                                 <StackPanel Orientation="Horizontal"
-                                            VerticalAlignment="Center"
                                             Spacing="{DynamicResource {x:Static atom:ChromeTokenKey.LogoAndTitleSpacing}}"
                                             DockPanel.Dock="Left">
                                     <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.LogoPart}"

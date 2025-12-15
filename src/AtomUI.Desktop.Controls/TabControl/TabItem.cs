@@ -93,6 +93,12 @@ public class TabItem : HeaderedContentControl, ISelectable
     
     internal static readonly StyledProperty<double> CloseButtonOpacityProperty =
         AvaloniaProperty.Register<TabItem, double>(nameof(CloseButtonOpacity));
+    
+    internal static readonly DirectProperty<TabItem, Thickness> LineMaskMarginProperty =
+        AvaloniaProperty.RegisterDirect<TabItem, Thickness>(
+            nameof(LineMaskMargin),
+            o => o.LineMaskMargin,
+            (o, v) => o.LineMaskMargin = v);
 
     internal SizeType SizeType
     {
@@ -116,6 +122,15 @@ public class TabItem : HeaderedContentControl, ISelectable
     {
         get => GetValue(CloseButtonOpacityProperty);
         set => SetValue(CloseButtonOpacityProperty, value);
+    }
+    
+    // Card only
+    private Thickness _lineMaskMargin;
+
+    internal Thickness LineMaskMargin
+    {
+        get => _lineMaskMargin;
+        set => SetAndRaise(LineMaskMarginProperty, ref _lineMaskMargin, value);
     }
     #endregion
     
@@ -211,6 +226,10 @@ public class TabItem : HeaderedContentControl, ISelectable
         {
             SetupDefaultCloseIcon();
         }
+        else if (change.Property == TabStripPlacementProperty)
+        {
+            HandleTabStripPlacementChanged();
+        }
     }
 
     private void SetupShapeThemeBindings(bool force)
@@ -283,6 +302,18 @@ public class TabItem : HeaderedContentControl, ISelectable
             {
                 SetCurrentValue(HeaderProperty, obj.NewValue);
             }
+        }
+    }
+
+    private void HandleTabStripPlacementChanged()
+    {
+        if (TabStripPlacement == Dock.Top || TabStripPlacement == Dock.Bottom)
+        {
+            SetCurrentValue(LineMaskMarginProperty, new Thickness(1, 0, 1, 0));
+        }
+        else
+        {
+            SetCurrentValue(LineMaskMarginProperty, new Thickness(0, 1, 0, 1));
         }
     }
 }

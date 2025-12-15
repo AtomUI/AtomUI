@@ -1,0 +1,26 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImagePreviewer}" TargetType="atom:ImagePreviewer">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <atom:ImagePreviewerCover ImageSource="{TemplateBinding EffectiveCoverImage}"
+                                              Width="{TemplateBinding CoverWidth}"
+                                              Height="{TemplateBinding CoverHeight}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        
+        <Setter Property="CoverWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.CoverImageWidth}}"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+    </ControlTheme>
+</ResourceDictionary>

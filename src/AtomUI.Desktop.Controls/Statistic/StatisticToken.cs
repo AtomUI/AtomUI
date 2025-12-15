@@ -24,9 +24,9 @@ internal class StatisticToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         TitleFontSize = SharedToken.FontSize;
         ContentFontSize = SharedToken.FontSizeHeading3;
     }

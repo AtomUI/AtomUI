@@ -51,7 +51,7 @@
             <Setter Property="IconBrush"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
         </Style>
-
+        
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pressed, ^ /template/ atom|IconButton#PART_DecreaseButton:pressed">
             <Setter Property="Background"

@@ -38,18 +38,6 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
 
-        <Style Selector="^[IsEnableHoverEffect=True]">
-            <Style Selector="^:pointerover">
-                <Setter Property="Background"
-                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
-            </Style>
-
-            <Style Selector="^:pressed">
-                <Setter Property="Background"
-                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}" />
-            </Style>
-        </Style>
-
         <Style Selector="^ /template/ atom|IconPresenter atom|Icon">
             <Setter Property="LoadingAnimation" Value="{TemplateBinding LoadingAnimation}" />
             <Setter Property="LoadingAnimationDuration" Value="{TemplateBinding LoadingAnimationDuration}" />

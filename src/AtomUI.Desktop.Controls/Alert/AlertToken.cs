@@ -63,9 +63,9 @@ internal class AlertToken : AbstractControlDesignToken
     /// </summary>
     public Thickness DescriptionLabelMargin { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         const double paddingHorizontal = 12; // Fixed value here.
         WithDescriptionIconSize = SharedToken.FontSizeHeading3;
         DefaultPadding          = new Thickness(paddingHorizontal, SharedToken.PaddingContentVerticalSM);

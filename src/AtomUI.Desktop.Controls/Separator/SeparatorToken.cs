@@ -49,9 +49,9 @@ public class SeparatorToken : AbstractControlDesignToken
     /// </summary>
     public Thickness HorizontalWithTextGutterMargin { get; set; }
     
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         TextPaddingInline              = 1.0;
         OrientationMarginPercent       = 0.05;
         VerticalMarginInline           = SharedToken.UniformlyMarginXS;

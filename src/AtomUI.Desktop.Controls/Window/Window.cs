@@ -46,6 +46,9 @@ public class Window : AvaloniaWindow,
     public static readonly StyledProperty<Control?> LogoProperty =
         TitleBar.LogoProperty.AddOwner<Window>();
     
+    public static readonly StyledProperty<IBrush?> ContentBackgroundProperty =
+        AvaloniaProperty.Register<Window, IBrush?>(nameof(ContentBackground));
+    
     public static readonly StyledProperty<bool> IsFullScreenCaptionButtonEnabledProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsFullScreenCaptionButtonEnabled));
 
@@ -107,6 +110,12 @@ public class Window : AvaloniaWindow,
     {
         get => GetValue(LogoProperty);
         set => SetValue(LogoProperty, value);
+    }
+    
+    public IBrush? ContentBackground
+    {
+        get => GetValue(ContentBackgroundProperty);
+        set => SetValue(ContentBackgroundProperty, value);
     }
     
     public bool IsFullScreenCaptionButtonEnabled
@@ -228,6 +237,11 @@ public class Window : AvaloniaWindow,
 
     protected bool CloseByClickCloseCaptionButton;
 
+    static Window()
+    {
+        AffectsRender<Window>(ContentBackgroundProperty);
+    }
+
     public Window()
     {
         ScalingChanged += HandleScalingChanged;
@@ -237,6 +251,10 @@ public class Window : AvaloniaWindow,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+         if (change.Property == BackgroundProperty)
+        {
+            Console.WriteLine(Background);
+        }
         if (change.Property == MaxWidthScreenRatioProperty)
         {
             this.ConstrainMaxSizeToScreenRatio(MaxWidthScreenRatio, double.NaN);
@@ -299,16 +317,16 @@ public class Window : AvaloniaWindow,
         _titleBar = e.NameScope.Find<TitleBar>(WindowThemeConstants.TitleBarPart);
         if (_titleBar != null)
         {
-            _titleBar.DoubleTapped    += HandleTitleDoubleClicked;
-            _titleBar.PointerPressed  += HandleTitleBarPointerPressed;
-            _titleBar.PointerReleased += HandleTitleBarPointerReleased;
-            _titleBar.PointerMoved    += HandleTitleBarPointerMoved;
+            _titleBar.MaximizeWindowRequested += HandleTitleDoubleClicked;
+            _titleBar.PointerPressed          += HandleTitleBarPointerPressed;
+            _titleBar.PointerReleased         += HandleTitleBarPointerReleased;
+            _titleBar.PointerMoved            += HandleTitleBarPointerMoved;
             _disposeActions.Add(() =>
             {
-                _titleBar.DoubleTapped    -= HandleTitleDoubleClicked;
-                _titleBar.PointerPressed  -= HandleTitleBarPointerPressed;
-                _titleBar.PointerReleased -= HandleTitleBarPointerReleased;
-                _titleBar.PointerMoved    -= HandleTitleBarPointerMoved;
+                _titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
+                _titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
+                _titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
+                _titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
             });
         }
 
@@ -348,6 +366,9 @@ public class Window : AvaloniaWindow,
         if (OperatingSystem.IsMacOS())
         {
             this.SetMacOSWindowClosable(IsCloseCaptionButtonEnabled);
+            ConfigureMacOSCaptionGroupOffset();
+            // 不加这个最大化，最小化那个按钮位置有问题
+            ClientSize = new Size(ClientSize.Width, ClientSize.Height + 0.00001);
         }
     }
 
@@ -356,7 +377,7 @@ public class Window : AvaloniaWindow,
         this.ConstrainMaxSizeToScreenRatio(MaxWidthScreenRatio, MaxHeightScreenRatio);
     }
 
-    private void HandleTitleDoubleClicked(object? sender, RoutedEventArgs e)
+    private void HandleTitleDoubleClicked(object? sender, EventArgs e)
     {
         if (CanResize)
         {
@@ -365,7 +386,7 @@ public class Window : AvaloniaWindow,
             {
                 return;
             }
-
+        
             if (windowState == WindowState.Normal && (OsType == OsType.macOS || CanMaximize))
             {
                 WindowState =  WindowState.Maximized;
@@ -435,7 +456,6 @@ public class Window : AvaloniaWindow,
         }
         _disposeActions.Clear();
     }
-
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {

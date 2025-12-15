@@ -236,7 +236,7 @@ internal class Theme : AvaloniaObject, ITheme
         foreach (var token in ControlTokens.Values)
         {
             var controlToken = (token as AbstractControlDesignToken)!;
-            controlToken.CalculateTokenValues();
+            controlToken.CalculateTokenValues(IsDarkMode);
             var controlTokenType  = controlToken.GetType();
             var tokenAttr         = controlTokenType.GetCustomAttribute<ControlDesignTokenAttribute>();
             var qualifiedTokenKey = GenerateTokenQualifiedKey(controlToken.GetId(), tokenAttr?.ResourceCatalog);

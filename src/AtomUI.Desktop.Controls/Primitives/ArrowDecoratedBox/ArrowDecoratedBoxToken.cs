@@ -23,9 +23,9 @@ public class ArrowDecoratedBoxToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         ArrowSize = SharedToken.SizePopupArrow / 1.3;
         Padding   = SharedToken.PaddingXS;
     }

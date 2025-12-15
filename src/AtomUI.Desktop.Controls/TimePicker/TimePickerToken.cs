@@ -53,9 +53,9 @@ internal class TimePickerToken : AbstractControlDesignToken
     /// </summary>
     public Thickness HeaderMargin { get; set; }
     
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         ItemWidth                     = 40;
         PeriodHostWidth               = 50;
         ItemHeight                    = SharedToken.ControlHeight - 4;

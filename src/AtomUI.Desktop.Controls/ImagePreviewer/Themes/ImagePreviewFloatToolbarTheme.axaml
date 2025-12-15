@@ -1,0 +1,113 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImagePreviewFloatToolbar}" TargetType="atom:ImagePreviewFloatToolbar">
+        <Setter Property="Template">
+            <ControlTemplate>
+
+                <StackPanel Orientation="Vertical" Name="RootLayout">
+                    <Border Name="IndicatorFrame"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            HorizontalAlignment="Center"
+                            IsVisible="{TemplateBinding IsMultiImages}">
+                        <TextBlock HorizontalAlignment="Center" Text="{TemplateBinding IndicatorText}" />
+                    </Border>
+                    <Border Name="ActionFrame"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <StackPanel Orientation="Horizontal">
+                            <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.ScaleDownButtonPart}"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider ZoomOutOutlined}"
+                                             IsEnabled="{TemplateBinding IsScaleDownEnabled}" />
+                            <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.ScaleUpButtonPart}"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}" 
+                                             IsEnabled="{TemplateBinding IsScaleUpEnabled}" />
+                            <atom:ToggleIconButton Name="{x:Static atom:ImagePreviewerThemeConstants.FitToWindowButtonPart}"
+                                                   Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                                   CheckedIcon="{antdicons:AntDesignIconProvider FitToWindowOutlined}"
+                                                   UnCheckedIcon="{antdicons:AntDesignIconProvider OneToOneOutlined}"
+                                                   IsChecked="{TemplateBinding IsImageFitToWindow}"/>
+                            <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.HorizontalFlipButtonPart}"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider SwapOutlined}" />
+                            <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.VerticalFlipButtonPart}"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider SwapOutlined}"
+                                             RenderTransform="rotate(90deg)" />
+                            <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.RotateLeftButtonPart}"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider RotateLeftOutlined}" />
+                            <atom:IconButton Name="{x:Static atom:ImagePreviewerThemeConstants.RotateRightButtonPart}"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider RotateRightOutlined}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="CornerRadius" Value="100" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColor}}" />
+        <Setter Property="Background"
+                Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.NavButtonBgHoverColor}}" />
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.FloatToolbarPadding}}" />
+        <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginLG}}" />
+        <Style Selector="^ /template/ atom|IconButton">
+            <Setter Property="IconWidth"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}" />
+            <Setter Property="IconHeight"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}" />
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColor}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingSM}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton">
+            <Setter Property="IconWidth"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}" />
+            <Setter Property="IconHeight"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationSize}}" />
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColor}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingSM}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconButton:pointerover">
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationHoverColor}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconButton:disabled">
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColorDisabled}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationHoverColor}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|ToggleIconButton:disabled">
+            <Setter Property="IconBrush"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.PreviewOperationColorDisabled}}" />
+        </Style>
+
+        <Style Selector="^ /template/ StackPanel#RootLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        </Style>
+
+        <Style Selector="^ /template/ Border#IndicatorFrame">
+            <Setter Property="Padding"
+                    Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.FloatToolbarIndicatorPadding}}" />
+        </Style>
+
+    </ControlTheme>
+</ResourceDictionary>

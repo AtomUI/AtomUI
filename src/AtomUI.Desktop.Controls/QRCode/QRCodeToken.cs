@@ -26,9 +26,9 @@ internal class QRCodeToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         var colorBgContainer = SharedToken.ColorBgContainer;
         QRCodeTextColor           = SharedToken.ColorText;
         QRCodeMaskBackgroundColor = Color.FromArgb(244, colorBgContainer.R, colorBgContainer.G, colorBgContainer.B);

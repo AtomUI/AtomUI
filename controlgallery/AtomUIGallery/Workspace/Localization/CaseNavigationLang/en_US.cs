@@ -53,6 +53,7 @@ internal class en_US : LanguageProvider
     public const string DataDisplay_DataGrid = "DataGrid";
     public const string DataDisplay_Expander = "Expander";
     public const string DataDisplay_Empty = "Empty";
+    public const string DataDisplay_ImagePreviewer = "ImagePreviewer";
     public const string DataDisplay_GroupBox = "GroupBox";
     public const string DataDisplay_InfoFlyout = "InfoFlyout";
     public const string DataDisplay_List = "List";

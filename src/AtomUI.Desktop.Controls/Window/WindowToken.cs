@@ -31,9 +31,9 @@ public class WindowToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         DefaultBackground = SharedToken.ColorBgContainer;
         DefaultForeground = SharedToken.ColorText;
         CornerRadius      = new CornerRadius(12);

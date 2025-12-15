@@ -1,12 +1,11 @@
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
-              xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
               TargetType="atom:DialogHost"
               x:Class="AtomUI.Desktop.Controls.Themes.DialogHostTheme"
               x:ClassModifier="internal">
     <ControlTheme.BasedOn>
-        <themes:WindowTheme TargetType="atom:DialogHost" />
+        <atom:WindowTheme TargetType="atom:DialogHost" />
     </ControlTheme.BasedOn>
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DialogHost">
@@ -22,7 +21,7 @@
                         <DockPanel LastChildFill="True" Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
                             <Border Padding="{TemplateBinding TitleBarOSOffsetMargin}" DockPanel.Dock="Top">
                                 <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
-                                               Content="{TemplateBinding Title}"
+                                               Title="{TemplateBinding Title}"
                                                Logo="{TemplateBinding Logo}" />
                             </Border>
 

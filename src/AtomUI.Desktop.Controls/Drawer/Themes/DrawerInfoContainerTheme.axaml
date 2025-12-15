@@ -18,7 +18,6 @@
                             <atom:IconButton Name="{x:Static atom:DrawerInfoContainerThemeConstants.CloseButtonPart}"
                                              Grid.Column="0"
                                              Icon="{antdicons:AntDesignIconProvider CloseOutlined}"
-                                             IsEnableHoverEffect="True"
                                              VerticalAlignment="Center"
                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                              IsVisible="{TemplateBinding IsShowCloseButton}" />
@@ -125,6 +124,14 @@
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:DrawerTokenKey.CloseIconMargin}}" />
             <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
             <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#InfoContainer">

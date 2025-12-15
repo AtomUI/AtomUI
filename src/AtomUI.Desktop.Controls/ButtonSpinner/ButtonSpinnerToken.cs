@@ -59,9 +59,9 @@ internal class ButtonSpinnerToken : LineEditToken
     /// </summary>
     public Color FilledHandleBg { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         ControlWidth   = 90;
         HandleWidth    = SharedToken.ControlHeightSM;
         HandleIconSize = SharedToken.FontSize / 2;

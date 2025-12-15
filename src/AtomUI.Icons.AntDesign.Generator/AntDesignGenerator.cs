@@ -46,7 +46,8 @@ public class AntDesignGenerator : DefaultIconPackageGenerator
     {
         var      sourceText = new StringBuilder();
         sourceText.AppendLine("// This code is auto generated. Do not modify.");
-        sourceText.AppendLine($"// Generated Date: {DateTime.Today.ToString("yyyy-MM-dd")}");
+        sourceText.AppendLine("// Copyright (c) Qinware Technologies Co., Ltd. 2019-2025. All rights reserved.");
+        sourceText.AppendLine("// Copyright (c) Ant Design Authors 2025 https://github.com/ant-design/ant-design");
         sourceText.AppendLine("");
         sourceText.AppendLine("using Avalonia;");
         sourceText.AppendLine("using System;");

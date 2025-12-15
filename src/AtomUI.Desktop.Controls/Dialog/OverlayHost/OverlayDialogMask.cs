@@ -116,5 +116,4 @@ internal class OverlayDialogMask : TemplatedControl
         Width  = size.Width;
         Height = size.Height;
     }
-
 }

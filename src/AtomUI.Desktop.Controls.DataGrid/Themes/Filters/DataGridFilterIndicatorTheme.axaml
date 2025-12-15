@@ -15,6 +15,16 @@
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:DataGridTokenKey.FilterIndicatorPadding}}" />
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
+            
+            <Style Selector="^:pointerover">
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
+            </Style>
+
+            <Style Selector="^:pressed">
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextActive}}" />
+            </Style>
 
             <Style Selector="^[IsFilterActivated=True]">
                 <Setter Property="IconBrush"

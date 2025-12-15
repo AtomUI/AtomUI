@@ -146,9 +146,9 @@ internal class CardToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         HeaderBg         = Colors.Transparent;
         HeaderFontSizeLG = SharedToken.FontSizeLG;
         HeaderFontSize   = SharedToken.FontSize;

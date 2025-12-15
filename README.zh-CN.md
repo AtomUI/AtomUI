@@ -275,12 +275,3 @@ Avalonia 是一个跨平台的 .NET UI 框架，使用 XAML 语言设计界面�
 [github-contrib-shield]: https://contrib.rocks/image?repo=chinware%2FAtomUI
 
 [github-contrib-link]: https://github.com/chinware/AtomUI/graphs/contributors
-
-#### 关于秦派软件
-
-<p align="center">
-    <img src="./resources/images/readme/Qinware.png" width="300" />
-</p>
-
-北京秦派软件科技有限公司(Qinware Technology Co., Ltd.)
-是一家致力于开发生产力工具软件的技术公司，成立之初立志要在工具软件领域深耕，践行精益求精的研发精神，努力推出优质的生产力工具软件服务国内外的开发者，提升开发者的工作效率，同时创造出商业价值和社会价值。

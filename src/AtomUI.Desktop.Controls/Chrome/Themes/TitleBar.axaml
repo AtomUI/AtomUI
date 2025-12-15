@@ -11,10 +11,9 @@
                     <Border Name="Frame" Background="{TemplateBinding Background}"
                             MinHeight="{TemplateBinding MinHeight}"
                             Padding="{TemplateBinding Padding}">
-                        <DockPanel LastChildFill="True" VerticalAlignment="Center"
+                        <DockPanel LastChildFill="True"
                                    HorizontalSpacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">
                             <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center"
                                         Spacing="{DynamicResource {x:Static atom:ChromeTokenKey.LogoAndTitleSpacing}}"
                                         DockPanel.Dock="Left">
                                 <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.LogoPart}"
@@ -24,24 +23,27 @@
                                                   VerticalContentAlignment="Center"
                                                   Content="{TemplateBinding Logo}"
                                                   IsVisible="{TemplateBinding Logo, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.LeftAddOnPart}"
+                                                  Content="{TemplateBinding LeftAddOn}"
+                                                  ContentTemplate="{TemplateBinding LeftAddOnTemplate}"
+                                                  IsVisible="{TemplateBinding LeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.ContentPresenterPart}"
                                                   HorizontalAlignment="Left"
                                                   VerticalAlignment="Center"
-                                                  FontSize="{TemplateBinding TitleFontSize}"
-                                                  FontWeight="{TemplateBinding TitleFontWeight}"
                                                   IsHitTestVisible="False"
-                                                  Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                                  Content="{TemplateBinding Title, Converter={StaticResource StringToTextBlockConverter}}"
+                                                  ContentTemplate="{TemplateBinding TitleTemplate}"
+                                                  IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             </StackPanel>
                             <DockPanel LastChildFill="True">
                                 <atom:CaptionButtonGroup DockPanel.Dock="Right"
                                                          Name="{x:Static atom:TitleBarThemeConstants.CaptionButtonGroupPart}"
                                                          IsWindowActive="{TemplateBinding IsWindowActive}"
                                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.AddOnPart}"
-                                                  VerticalAlignment="Center"
-                                                  Content="{TemplateBinding AddOn}"
-                                                  ContentTemplate="{TemplateBinding AddOnTemplate}" />
+                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.RightAddOnPart}"
+                                                  Content="{TemplateBinding RightAddOn}"
+                                                  ContentTemplate="{TemplateBinding RightAddOnTemplate}" 
+                                                  IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             </DockPanel>
                         </DockPanel>
                     </Border>
@@ -61,9 +63,8 @@
                         <Border Name="Frame" Background="{TemplateBinding Background}"
                                 MinHeight="{TemplateBinding MinHeight}"
                                 Padding="{TemplateBinding Padding}">
-                            <DockPanel LastChildFill="True" VerticalAlignment="Center">
+                            <DockPanel LastChildFill="True">
                                 <StackPanel Orientation="Horizontal"
-                                            VerticalAlignment="Center"
                                             Spacing="{DynamicResource {x:Static atom:ChromeTokenKey.LogoAndTitleSpacing}}"
                                             DockPanel.Dock="Left">
                                     <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.LogoPart}"
@@ -73,20 +74,23 @@
                                                       VerticalContentAlignment="Center"
                                                       Content="{TemplateBinding Logo}"
                                                       IsVisible="{TemplateBinding Logo, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                    <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.LeftAddOnPart}"
+                                                      Content="{TemplateBinding LeftAddOn}"
+                                                      ContentTemplate="{TemplateBinding LeftAddOnTemplate}"
+                                                      IsVisible="{TemplateBinding LeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                     <ContentPresenter
                                         Name="{x:Static atom:TitleBarThemeConstants.ContentPresenterPart}"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
-                                        FontSize="{TemplateBinding TitleFontSize}"
-                                        FontWeight="{TemplateBinding TitleFontWeight}"
                                         IsHitTestVisible="False"
-                                        Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
-                                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                        Content="{TemplateBinding Title, Converter={StaticResource StringToTextBlockConverter}}"
+                                        ContentTemplate="{TemplateBinding TitleTemplate}" 
+                                        IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 </StackPanel>
-                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.AddOnPart}"
-                                                  VerticalAlignment="Center"
-                                                  Content="{TemplateBinding AddOn}"
-                                                  ContentTemplate="{TemplateBinding AddOnTemplate}" />
+                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.RightAddOnPart}"
+                                                  Content="{TemplateBinding RightAddOn}"
+                                                  ContentTemplate="{TemplateBinding RightAddOnTemplate}" 
+                                                  IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             </DockPanel>
                         </Border>
                     </DockPanel>
@@ -101,17 +105,24 @@
                             MinHeight="{TemplateBinding MinHeight}"
                             Padding="{TemplateBinding Padding}">
                         <DockPanel LastChildFill="True" VerticalAlignment="Center">
+                            <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.LeftAddOnPart}"
+                                              DockPanel.Dock="Left"
+                                              Content="{TemplateBinding LeftAddOn}"
+                                              ContentTemplate="{TemplateBinding LeftAddOnTemplate}" 
+                                              IsVisible="{TemplateBinding LeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                            
                             <DockPanel LastChildFill="True"
                                        DockPanel.Dock="Right">
                                 <atom:CaptionButtonGroup DockPanel.Dock="Right"
                                                          Name="{x:Static atom:TitleBarThemeConstants.CaptionButtonGroupPart}"
                                                          IsWindowActive="{TemplateBinding IsWindowActive}"
                                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.AddOnPart}"
-                                                  VerticalAlignment="Center"
-                                                  Content="{TemplateBinding AddOn}"
-                                                  ContentTemplate="{TemplateBinding AddOnTemplate}" />
+                                <ContentPresenter Name="{x:Static atom:TitleBarThemeConstants.RightAddOnPart}"
+                                                  Content="{TemplateBinding RightAddOn}"
+                                                  ContentTemplate="{TemplateBinding RightAddOnTemplate}" 
+                                                  IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             </DockPanel>
+                        
                             <Panel>
                                 <StackPanel Orientation="Horizontal"
                                             VerticalAlignment="Center"
@@ -124,11 +135,10 @@
                                                       IsVisible="{TemplateBinding Logo, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                     <ContentPresenter
                                         Name="{x:Static atom:TitleBarThemeConstants.ContentPresenterPart}"
-                                        FontSize="{TemplateBinding TitleFontSize}"
-                                        FontWeight="{TemplateBinding TitleFontWeight}"
                                         IsHitTestVisible="False"
-                                        Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
-                                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                        Content="{TemplateBinding Title, Converter={StaticResource StringToTextBlockConverter}}"
+                                        ContentTemplate="{TemplateBinding TitleTemplate}" 
+                                        IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 </StackPanel>
                             </Panel>
 
@@ -143,6 +153,8 @@
         <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:ChromeTokenKey.MinHeight}}" />
 
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ChromeTokenKey.ActiveColor}}" />
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:ChromeTokenKey.TitleFontSize}}" />
+        <Setter Property="FontWeight" Value="{DynamicResource {x:Static atom:ChromeTokenKey.TitleFontWeight}}" />
 
         <Style Selector="^[IsWindowActive=False]">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ChromeTokenKey.InactiveColor}}" />

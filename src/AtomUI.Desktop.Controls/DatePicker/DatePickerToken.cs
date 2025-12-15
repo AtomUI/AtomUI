@@ -110,9 +110,9 @@ internal class DatePickerToken : AbstractControlDesignToken
     /// </summary>
     public Thickness ButtonsPanelMargin { get; set; }
     
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
 
         var colorPrimary = SharedToken.ColorPrimary;
 

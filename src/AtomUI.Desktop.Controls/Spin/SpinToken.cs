@@ -47,9 +47,9 @@ internal class SpinToken : AbstractControlDesignToken
     /// </summary>
     public TimeSpan IndicatorDuration { get; set; }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         var controlHeightLG = SharedToken.ControlHeightLG;
         var controlHeight   = SharedToken.ControlHeight;
         var indicatorSize     = controlHeightLG / 2;

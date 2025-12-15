@@ -17,9 +17,9 @@ public class MessageBoxToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         StyleIconSize = SharedToken.SizeLG * 1.2;
     }
 }

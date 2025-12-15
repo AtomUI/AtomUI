@@ -364,9 +364,9 @@ internal class NavMenuToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         
         var colorTextLightSolid = SharedToken.ColorTextLightSolid;
         

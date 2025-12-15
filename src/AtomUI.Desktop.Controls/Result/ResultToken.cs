@@ -47,9 +47,9 @@ internal class ResultToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         HeaderFontSize    = SharedToken.FontSizeHeading3;
         SubHeaderFontSize = SharedToken.FontSize;
         IconSize          = SharedToken.FontSizeHeading3 * 3;

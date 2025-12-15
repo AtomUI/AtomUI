@@ -98,9 +98,9 @@ internal class PaginationToken : AbstractControlDesignToken
     {
     }
     
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         ItemBg                    = SharedToken.ColorBgContainer;
         ItemSize                  = SharedToken.ControlHeight;
         ItemSizeSM                = SharedToken.ControlHeightSM;

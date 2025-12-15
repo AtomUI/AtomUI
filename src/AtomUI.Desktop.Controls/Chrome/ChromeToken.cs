@@ -46,6 +46,16 @@ internal class ChromeToken : AbstractControlDesignToken
     public Thickness TitleBarPadding { get; set; }
     
     /// <summary>
+    /// 窗口标题默认字体
+    /// </summary>
+    public double TitleFontSize { get; set; }
+    
+    /// <summary>
+    /// 窗口标题默认字体粗细
+    /// </summary>
+    public FontWeight TitleFontWeight { get; set; }
+    
+    /// <summary>
     /// 标题按钮的大小
     /// </summary>
     public double CaptionButtonSize {  get; set; }
@@ -125,9 +135,9 @@ internal class ChromeToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         CloseHoverBackgroundColor   = SharedToken.ColorErrorTextActive;
         ClosePressedBackgroundColor = SharedToken.ColorErrorTextHover;
         ForegroundColor             = SharedToken.ColorTextSecondary;
@@ -135,10 +145,10 @@ internal class ChromeToken : AbstractControlDesignToken
         PressedBackgroundColor      = SharedToken.ColorBgTextActive;
         LogoAndTitleSpacing         = SharedToken.SizeUnit * 2;
         TitleBarPadding             = new Thickness(LogoAndTitleSpacing * 1.8, LogoAndTitleSpacing);
-        CaptionButtonSize           = SharedToken.SizeUnit * 3;
+        CaptionButtonSize           = SharedToken.IconSize;
         LogoSize                    = SharedToken.SizeUnit * 4;
         
-        ActiveColor   = SharedToken.ColorText;
+        ActiveColor   = SharedToken.ColorTextSecondary;
         InactiveColor = SharedToken.ColorTextQuaternary;
 
         ActiveBgColor        = SharedToken.ColorFillTertiary;
@@ -156,5 +166,8 @@ internal class ChromeToken : AbstractControlDesignToken
         WindowsCloseButtonHoverBgColor   = Color.FromRgb(244, 67, 54); // #F44336
         WindowsCloseButtonPressedBgColor = Color.FromArgb(190, 244, 67, 54);
         WindowsCloseButtonHoverColor     = ColorUtils.OnBackground(Colors.White, WindowsCloseButtonHoverBgColor);
+
+        TitleFontSize = 13;
+        TitleFontWeight = FontWeight.Bold;
     }
 }

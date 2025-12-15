@@ -50,9 +50,9 @@ internal class CollapseToken : AbstractControlDesignToken
 
     #endregion
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         HeaderPadding             = new Thickness(SharedToken.UniformlyPadding, SharedToken.UniformlyPaddingSM);
         HeaderBg                  = SharedToken.ColorFillAlter;
         ContentPadding            = new Thickness(16, SharedToken.UniformlyPadding);

@@ -1,0 +1,51 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ImageViewer}" TargetType="atom:ImageViewer">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Canvas Name="{x:Static atom:ImagePreviewerThemeConstants.ImageViewerScenePart}">
+                        <atom:ImagePreviewRenderer
+                            Name="{x:Static atom:ImagePreviewerThemeConstants.ImageRendererPart}"
+                            Source="{TemplateBinding CurrentImage}" Stretch="Uniform"
+                            RenderTransform="{TemplateBinding ImageRenderTransform}"
+                            RenderTransformOrigin="{x:Static RelativePoint.Center}" />
+                    </Canvas>
+                    <atom:ImagePreviewNavButton Name="{x:Static atom:ImagePreviewerThemeConstants.PreviousButtonPart}"
+                                                Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{TemplateBinding IsMultiImages}"
+                                                IsEnabled="{TemplateBinding IsFirstImage, Converter={x:Static BoolConverters.Not}}" />
+                    <atom:ImagePreviewNavButton Name="{x:Static atom:ImagePreviewerThemeConstants.NextButtonPart}"
+                                                Icon="{antdicons:AntDesignIconProvider RightOutlined}"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{TemplateBinding IsMultiImages}"
+                                                IsEnabled="{TemplateBinding IsLastImage, Converter={x:Static BoolConverters.Not}}" />
+                    <atom:ImagePreviewFloatToolbar
+                        CurrentIndex="{TemplateBinding CurrentIndex}"
+                        Count="{TemplateBinding Count}"
+                        IsScaleDownEnabled="{TemplateBinding IsScaleDownEnabled}"
+                        IsScaleUpEnabled="{TemplateBinding IsScaleUpEnabled}"
+                        IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom" />
+                    <atom:WindowMediaQueryIndicator
+                        Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^ /template/ atom|ImagePreviewNavButton">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.Margin}}" />
+        </Style>
+        <Style Selector="^ /template/ Image#PART_ImageRenderer">
+            <Setter Property="Cursor" Value="DragMove" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

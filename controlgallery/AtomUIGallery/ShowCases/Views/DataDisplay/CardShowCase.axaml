@@ -6,8 +6,8 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem Title="Basic"
-                                      Description="A basic card containing a title, content and an extra corner content. Supports two sizes: default and small."
-                                      IsOccupyEntireRow="True">
+                              Description="A basic card containing a title, content and an extra corner content. Supports two sizes: default and small."
+                              IsOccupyEntireRow="True">
             <WrapPanel ItemSpacing="20" LineSpacing="20">
                 <atom:Card Header="Large size card" SizeType="Large" Width="300">
                     <atom:Card.Extra>
@@ -19,7 +19,7 @@
                         <atom:TextBlock>Card content</atom:TextBlock>
                     </StackPanel>
                 </atom:Card>
-        
+
                 <atom:Card Header="Default size card" SizeType="Middle" Width="300">
                     <atom:Card.Extra>
                         <atom:HyperLinkButton>More</atom:HyperLinkButton>
@@ -30,7 +30,7 @@
                         <atom:TextBlock>Card content</atom:TextBlock>
                     </StackPanel>
                 </atom:Card>
-        
+
                 <atom:Card Header="Small size card" SizeType="Small" Width="300">
                     <atom:Card.Extra>
                         <atom:HyperLinkButton>More</atom:HyperLinkButton>
@@ -42,14 +42,14 @@
                     </StackPanel>
                 </atom:Card>
             </WrapPanel>
-        
+
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="No border"
-                                      Description="A borderless card on a gray background."
-                                      IsOccupyEntireRow="True">
+                              Description="A borderless card on a gray background."
+                              IsOccupyEntireRow="True">
             <Border Padding="20" Background="{Binding BorderlessFrameBg}">
-                <atom:Card Header="Card title" Width="300" StyleVariant="Borderless">
+                <atom:Card Header="Card title" Width="300" StyleVariant="Borderless" HorizontalAlignment="Left">
                     <atom:Card.Extra>
                         <atom:HyperLinkButton>More</atom:HyperLinkButton>
                     </atom:Card.Extra>
@@ -61,11 +61,11 @@
                 </atom:Card>
             </Border>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Simple card"
-                                      Description="A simple card only containing a content area."
-                                      IsOccupyEntireRow="True">
-            <atom:Card Width="300">
+                              Description="A simple card only containing a content area."
+                              IsOccupyEntireRow="True">
+            <atom:Card Width="300" HorizontalAlignment="Left">
                 <StackPanel Orientation="Vertical" Spacing="3">
                     <atom:TextBlock>Card content</atom:TextBlock>
                     <atom:TextBlock>Card content</atom:TextBlock>
@@ -73,39 +73,42 @@
                 </StackPanel>
             </atom:Card>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Customized content"
-                                      Description="You can use Card.Meta to support more flexible content."
-                                      IsOccupyEntireRow="True">
-            <atom:Card Width="240" IsHoverable="True">
+                              Description="You can use Card.Meta to support more flexible content."
+                              IsOccupyEntireRow="True">
+            <atom:Card Width="240" IsHoverable="True" HorizontalAlignment="Left">
                 <atom:Card.Cover>
                     <Image Source="/Assets/CardShowCase/Cover1.png" />
                 </atom:Card.Cover>
                 <atom:CardMetaContent Header="Europe Street beat"
-                                      Content="www.instagram.com"/>
+                                      Content="www.instagram.com" />
             </atom:Card>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Card in column"
-                                      Description="Cards usually cooperate with grid column layout in overview page."
-                                      IsOccupyEntireRow="True">
+                              Description="Cards usually cooperate with grid column layout in overview page."
+                              IsOccupyEntireRow="True">
             <Border Padding="20" Background="{Binding BorderlessFrameBg}">
                 <Grid RowDefinitions="*" ColumnDefinitions="*, *, *" ColumnSpacing="20">
-                    <atom:Card Header="Card title" StyleVariant="Borderless" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch">
+                    <atom:Card Header="Card title" StyleVariant="Borderless" Grid.Row="0" Grid.Column="0"
+                               HorizontalAlignment="Stretch">
                         <StackPanel Orientation="Vertical" Spacing="3">
                             <atom:TextBlock>Card content</atom:TextBlock>
                             <atom:TextBlock>Card content</atom:TextBlock>
                             <atom:TextBlock>Card content</atom:TextBlock>
                         </StackPanel>
                     </atom:Card>
-                    <atom:Card Header="Card title" StyleVariant="Borderless" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch">
+                    <atom:Card Header="Card title" StyleVariant="Borderless" Grid.Row="0" Grid.Column="1"
+                               HorizontalAlignment="Stretch">
                         <StackPanel Orientation="Vertical" Spacing="3">
                             <atom:TextBlock>Card content</atom:TextBlock>
                             <atom:TextBlock>Card content</atom:TextBlock>
                             <atom:TextBlock>Card content</atom:TextBlock>
                         </StackPanel>
                     </atom:Card>
-                    <atom:Card Header="Card title" StyleVariant="Borderless" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch">
+                    <atom:Card Header="Card title" StyleVariant="Borderless" Grid.Row="0" Grid.Column="2"
+                               HorizontalAlignment="Stretch">
                         <StackPanel Orientation="Vertical" Spacing="3">
                             <atom:TextBlock>Card content</atom:TextBlock>
                             <atom:TextBlock>Card content</atom:TextBlock>
@@ -115,51 +118,51 @@
                 </Grid>
             </Border>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Loading card"
-                                      Description="Shows a loading indicator while the contents of the card is being fetched."
-                                      IsOccupyEntireRow="True">
-           <StackPanel Orientation="Vertical" Spacing="20">
-               <atom:ToggleSwitch IsChecked="{Binding IsLoading, Mode=TwoWay}"/>
-               <atom:Card MinWidth="300" IsLoading="{Binding IsLoading}">
-                   <atom:CardMetaContent Header="Card title">
-                       <atom:CardMetaContent.Avatar>
-                           <atom:Avatar Src="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg"/>
-                       </atom:CardMetaContent.Avatar>
-                       <StackPanel Orientation="Vertical" Spacing="3">
-                           <atom:TextBlock>This is the description</atom:TextBlock>
-                           <atom:TextBlock>This is the description</atom:TextBlock>
-                       </StackPanel>
-                   </atom:CardMetaContent>
-                   <atom:Card.Actions>
-                       <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}"/>
-                       <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}"/>
-                       <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}"/>
-                   </atom:Card.Actions>
-               </atom:Card>
-        
-               <atom:Card MinWidth="300" IsLoading="{Binding IsLoading}">
-                   <atom:CardMetaContent Header="Card title">
-                       <atom:CardMetaContent.Avatar>
-                           <atom:Avatar Src="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar2.svg"/>
-                       </atom:CardMetaContent.Avatar>
-                       <StackPanel Orientation="Vertical" Spacing="3">
-                           <atom:TextBlock>This is the description</atom:TextBlock>
-                           <atom:TextBlock>This is the description</atom:TextBlock>
-                       </StackPanel>
-                   </atom:CardMetaContent>
-                   <atom:Card.Actions>
-                       <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}"/>
-                       <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}"/>
-                       <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}"/>
-                   </atom:Card.Actions>
-               </atom:Card>
-           </StackPanel>
+                              Description="Shows a loading indicator while the contents of the card is being fetched."
+                              IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <atom:ToggleSwitch IsChecked="{Binding IsLoading, Mode=TwoWay}" />
+                <atom:Card MinWidth="300" IsLoading="{Binding IsLoading}" HorizontalAlignment="Left">
+                    <atom:CardMetaContent Header="Card title">
+                        <atom:CardMetaContent.Avatar>
+                            <atom:Avatar Src="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg" />
+                        </atom:CardMetaContent.Avatar>
+                        <StackPanel Orientation="Vertical" Spacing="3">
+                            <atom:TextBlock>This is the description</atom:TextBlock>
+                            <atom:TextBlock>This is the description</atom:TextBlock>
+                        </StackPanel>
+                    </atom:CardMetaContent>
+                    <atom:Card.Actions>
+                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}" />
+                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}" />
+                    </atom:Card.Actions>
+                </atom:Card>
+
+                <atom:Card MinWidth="300" IsLoading="{Binding IsLoading}" HorizontalAlignment="Left">
+                    <atom:CardMetaContent Header="Card title">
+                        <atom:CardMetaContent.Avatar>
+                            <atom:Avatar Src="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar2.svg" />
+                        </atom:CardMetaContent.Avatar>
+                        <StackPanel Orientation="Vertical" Spacing="3">
+                            <atom:TextBlock>This is the description</atom:TextBlock>
+                            <atom:TextBlock>This is the description</atom:TextBlock>
+                        </StackPanel>
+                    </atom:CardMetaContent>
+                    <atom:Card.Actions>
+                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}" />
+                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}" />
+                    </atom:Card.Actions>
+                </atom:Card>
+            </StackPanel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Grid card"
-                                      Description="Grid style card content.."
-                                      IsOccupyEntireRow="True">
+                              Description="Grid style card content.."
+                              IsOccupyEntireRow="True">
             <atom:Card HorizontalAlignment="Stretch" Header="Card Title" SizeType="Large">
                 <atom:CardGridContent ColumnDefinitions="*, *, *, *"
                                       RowDefinitions="Auto, Auto">
@@ -173,10 +176,10 @@
                 </atom:CardGridContent>
             </atom:Card>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Inner card"
-                                      Description="It can be placed inside the ordinary card to display the information of the multilevel structure."
-                                      IsOccupyEntireRow="True">
+                              Description="It can be placed inside the ordinary card to display the information of the multilevel structure."
+                              IsOccupyEntireRow="True">
             <atom:Card Header="Card title" HorizontalAlignment="Stretch" SizeType="Large">
                 <StackPanel Orientation="Vertical" Spacing="20">
                     <atom:Card Header="Card title" HorizontalAlignment="Stretch" IsInnerMode="True">
@@ -189,7 +192,7 @@
                             <atom:TextBlock>Card content</atom:TextBlock>
                         </StackPanel>
                     </atom:Card>
-        
+
                     <atom:Card Header="Card title" HorizontalAlignment="Stretch" IsInnerMode="True">
                         <atom:Card.Extra>
                             <atom:HyperLinkButton>More</atom:HyperLinkButton>
@@ -203,52 +206,52 @@
                 </StackPanel>
             </atom:Card>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="With tabs"
-                                      Description="More content can be hosted.."
-                                      IsOccupyEntireRow="True">
-           <StackPanel Orientation="Vertical" Spacing="20">
-               <atom:Card Header="Card title" HorizontalAlignment="Stretch" SizeType="Large">
-                   <atom:Card.Extra>
-                       <atom:HyperLinkButton>More</atom:HyperLinkButton>
-                   </atom:Card.Extra>
-                   <atom:CardTabsContent>
-                       <atom:TabItem Header="Tab1">content1</atom:TabItem>
-                       <atom:TabItem Header="Tab2">content2</atom:TabItem>
-                   </atom:CardTabsContent>
-               </atom:Card>
-        
-               <atom:Card HorizontalAlignment="Stretch">
-                   <atom:CardTabsContent>
-                       <atom:CardTabsContent.TabBarExtraContent>
-                           <atom:HyperLinkButton>More</atom:HyperLinkButton>
-                       </atom:CardTabsContent.TabBarExtraContent>
-                       <atom:TabItem Header="article">article content</atom:TabItem>
-                       <atom:TabItem Header="app">app content</atom:TabItem>
-                       <atom:TabItem Header="project">project content</atom:TabItem>
-                   </atom:CardTabsContent>
-               </atom:Card>
-           </StackPanel>
+                              Description="More content can be hosted.."
+                              IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <atom:Card Header="Card title" HorizontalAlignment="Stretch" SizeType="Large">
+                    <atom:Card.Extra>
+                        <atom:HyperLinkButton>More</atom:HyperLinkButton>
+                    </atom:Card.Extra>
+                    <atom:CardTabsContent>
+                        <atom:TabItem Header="Tab1">content1</atom:TabItem>
+                        <atom:TabItem Header="Tab2">content2</atom:TabItem>
+                    </atom:CardTabsContent>
+                </atom:Card>
+
+                <atom:Card HorizontalAlignment="Stretch">
+                    <atom:CardTabsContent>
+                        <atom:CardTabsContent.TabBarExtraContent>
+                            <atom:HyperLinkButton>More</atom:HyperLinkButton>
+                        </atom:CardTabsContent.TabBarExtraContent>
+                        <atom:TabItem Header="article">article content</atom:TabItem>
+                        <atom:TabItem Header="app">app content</atom:TabItem>
+                        <atom:TabItem Header="project">project content</atom:TabItem>
+                    </atom:CardTabsContent>
+                </atom:Card>
+            </StackPanel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Support more content configuration"
-                                      Description="A Card that supports cover, avatar, title and description."
-                                      IsOccupyEntireRow="True">
-            <atom:Card Width="300">
+                              Description="A Card that supports cover, avatar, title and description."
+                              IsOccupyEntireRow="True">
+            <atom:Card Width="300" HorizontalAlignment="Left">
                 <atom:Card.Cover>
                     <Image Source="/Assets/CardShowCase/Cover2.png" />
                 </atom:Card.Cover>
- 
+
                 <atom:CardMetaContent Header="Card title"
                                       Content="This is the description">
                     <atom:CardMetaContent.Avatar>
-                        <atom:Avatar Src="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg"/>
+                        <atom:Avatar Src="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg" />
                     </atom:CardMetaContent.Avatar>
                 </atom:CardMetaContent>
                 <atom:Card.Actions>
-                    <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}"/>
-                    <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}"/>
-                    <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}"/>
+                    <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}" />
+                    <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                    <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}" />
                 </atom:Card.Actions>
             </atom:Card>
         </gallery:ShowCaseItem>

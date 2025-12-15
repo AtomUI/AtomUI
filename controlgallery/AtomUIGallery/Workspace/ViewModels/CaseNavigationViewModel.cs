@@ -60,6 +60,7 @@ public class CaseNavigationViewModel : ReactiveObject
         _showCaseViewModelFactories.Add(DescriptionsViewModel.ID, () => new DescriptionsViewModel(HostScreen));
         _showCaseViewModelFactories.Add(DataGridViewModel.ID, () => new DataGridViewModel(HostScreen));
         _showCaseViewModelFactories.Add(EmptyViewModel.ID, () => new EmptyViewModel(HostScreen));
+        _showCaseViewModelFactories.Add(ImagePreviewerViewModel.ID, () => new ImagePreviewerViewModel(HostScreen));
         _showCaseViewModelFactories.Add(ExpanderViewModel.ID, () => new ExpanderViewModel(HostScreen));
         _showCaseViewModelFactories.Add(GroupBoxViewModel.ID, () => new GroupBoxViewModel(HostScreen));
         _showCaseViewModelFactories.Add(InfoFlyoutViewModel.ID, () => new InfoFlyoutViewModel(HostScreen));

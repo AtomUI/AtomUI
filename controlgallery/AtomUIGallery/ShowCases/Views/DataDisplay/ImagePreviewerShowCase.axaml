@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.ImagePreviewerShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem
+            Title="Basic Usage"
+            Description="Click the image to zoom in.">
+            <atom:ImagePreviewer Width="200" Sources="{Binding DefaultImages}"/>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Fault tolerant"
+            Description="Load failed to display image placeholder.">
+            <atom:ImagePreviewer Width="200" FallbackImageSrc="{Binding FallbackImage}"/>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Preview from one image"
+            Description="Preview a collection from one image.">
+            <atom:ImagePreviewer Width="200" Sources="{Binding ThreeImages}"/>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Custom preview image"
+            Description="You can set different preview image.">
+            <atom:ImagePreviewer Width="200" Sources="{Binding DefaultImages}" CoverImageSrc="{Binding BlurImage}"/>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Multiple image preview"
+            Description="Click the left and right switch buttons to preview multiple images."
+            IsOccupyEntireRow="True">
+            <atom:ImageGroupPreviewer Sources="{Binding TwoImages}" CoverWidth="200" CoverHeight="200"/>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

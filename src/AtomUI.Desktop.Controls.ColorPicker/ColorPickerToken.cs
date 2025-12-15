@@ -140,9 +140,9 @@ public class ColorPickerToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         ColorPickerWidth                  = 234;
         ColorPickerHandlerSizeLG          = 32; // 用在触摸屏上
         ColorPickerHandlerSize            = 16;

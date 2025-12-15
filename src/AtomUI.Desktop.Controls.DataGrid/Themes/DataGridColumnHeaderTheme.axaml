@@ -21,7 +21,6 @@
                                     IsVisible="{TemplateBinding CanUserSort}"
                                     SupportedSortDirections="{TemplateBinding SupportedSortDirections}" />
                                 <atom:DataGridFilterIndicator
-                                    IsEnableHoverEffect="True"
                                     Name="{x:Static atom:DataGridColumnHeaderThemeConstants.FilterIndicatorPart}"
                                     VerticalAlignment="Center">
                                     <atom:DataGridFilterIndicator.IsVisible>

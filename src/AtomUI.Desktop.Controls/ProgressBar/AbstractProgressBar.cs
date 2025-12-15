@@ -273,14 +273,14 @@ public abstract class AbstractProgressBar : RangeBase,
     {
         AffectsMeasure<AbstractProgressBar>(EffectiveSizeTypeProperty,
             ShowProgressInfoProperty,
-            ProgressTextFormatProperty);
+            ProgressTextFormatProperty,
+            ValueProperty);
         AffectsRender<AbstractProgressBar>(StrokeBrushProperty,
             StrokeLineCapProperty,
             TrailColorProperty,
             StrokeThicknessProperty,
             SuccessStrokeBrushProperty,
-            SuccessThresholdProperty,
-            ValueProperty);
+            SuccessThresholdProperty);
         ValueProperty.OverrideMetadata<AbstractProgressBar>(
             new StyledPropertyMetadata<double>(defaultBindingMode: BindingMode.OneWay));
         SizeTypeProperty.OverrideDefaultValue<AbstractProgressBar>(SizeType.Large);

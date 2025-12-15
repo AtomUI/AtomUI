@@ -371,7 +371,7 @@ public partial class Dialog : TemplatedControl,
     
     private double _offsetX;
 
-    public double OffsetX
+    internal double OffsetX
     {
         get => _offsetX;
         set => SetAndRaise(OffsetXProperty, ref _offsetX, value);
@@ -379,7 +379,7 @@ public partial class Dialog : TemplatedControl,
     
     private double _offsetY;
 
-    public double OffsetY
+    internal double OffsetY
     {
         get => _offsetY;
         set => SetAndRaise(OffsetYProperty, ref _offsetY, value);
@@ -387,7 +387,7 @@ public partial class Dialog : TemplatedControl,
     
     private bool _effectiveMinimizable;
 
-    public bool EffectiveMinimizable
+    internal bool EffectiveMinimizable
     {
         get => _effectiveMinimizable;
         set => SetAndRaise(EffectiveMinimizableProperty, ref _effectiveMinimizable, value);
@@ -418,7 +418,7 @@ public partial class Dialog : TemplatedControl,
     public Dialog()
     {
         this.RegisterResources();
-        CustomButtons.CollectionChanged += new NotifyCollectionChangedEventHandler(HandleCustomButtonsChanged);
+        CustomButtons.CollectionChanged += HandleCustomButtonsChanged;
     }
 
     private void HandleIsOpenChanged(AvaloniaPropertyChangedEventArgs<bool> e)
@@ -561,27 +561,30 @@ public partial class Dialog : TemplatedControl,
                 windowDialogHost?.Dispose();
             }
         });
-        
-        if (IsLightDismissEnabled)
+
+        if (DialogHostType == DialogHostType.Overlay)
         {
-            var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(topLevel);
-        
-            if (dismissLayer != null)
+            if (IsLightDismissEnabled)
             {
-                dismissLayer.IsVisible               = true;
-                dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
-                    
-                Disposable.Create(() =>
+                var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(topLevel);
+        
+                if (dismissLayer != null)
                 {
-                    dismissLayer.IsVisible               = false;
-                    dismissLayer.InputPassThroughElement = null;
-                }).DisposeWith(handlerCleanup);
+                    dismissLayer.IsVisible               = true;
+                    dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
+                    
+                    Disposable.Create(() =>
+                    {
+                        dismissLayer.IsVisible               = false;
+                        dismissLayer.InputPassThroughElement = null;
+                    }).DisposeWith(handlerCleanup);
                 
-                SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
-                    dismissLayer,
-                    PointerPressedDismissOverlay,
-                    (x, handler) => x.PointerPressed += handler,
-                    (x, handler) => x.PointerPressed -= handler).DisposeWith(handlerCleanup);
+                    SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
+                        dismissLayer,
+                        PointerPressedDismissOverlay,
+                        (x, handler) => x.PointerPressed += handler,
+                        (x, handler) => x.PointerPressed -= handler).DisposeWith(handlerCleanup);
+                }
             }
         }
         

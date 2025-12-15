@@ -277,15 +277,3 @@ GitHub [Issues][github-issues-link] to get stuck in to show us what you’re mad
 [github-contrib-shield]: https://contrib.rocks/image?repo=chinware%2FAtomUI
 
 [github-contrib-link]: https://github.com/chinware/AtomUI/graphs/contributors
-
-#### About Qinware
-
-<p align="center">
-    <img src="./resources/images/readme/Qinware.png" width="300" />
-</p>
-
-Qinware Technology Co., Ltd. is a technology company dedicated to the development of productivity tool software. Since
-its
-inception, it has been determined to deepen its roots in the field of tool software, practice the spirit of continuous
-improvement in research and development, and strive to launch high-quality productivity tool software to serve
-developers at home and abroad, improve developers' work efficiency, and create commercial value and social value.

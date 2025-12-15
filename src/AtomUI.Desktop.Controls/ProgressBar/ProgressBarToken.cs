@@ -53,9 +53,9 @@ internal class ProgressBarToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
 
         CircleTextColor  = SharedToken.ColorText;
         DefaultColor     = SharedToken.ColorInfo;

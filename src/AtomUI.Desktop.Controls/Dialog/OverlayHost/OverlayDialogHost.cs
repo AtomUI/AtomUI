@@ -243,6 +243,7 @@ internal class OverlayDialogHost : ContentControl,
     private Size _dialogSize;
     private bool _needsUpdate;
     private OverlayDialogMask _dialogMask;
+    
     // 用于最大化
     private Point _originPosition;
     private OverlayDialogHeader? _header;
@@ -692,16 +693,16 @@ internal class OverlayDialogHost : ContentControl,
             {
                 var height    = originHeight + args.DeltaOffsetY;
                 var minHeight = 0d;
-                if (_dialog.IsSet(Dialog.MinHeightProperty))
+                if (_dialog.IsSet(MinHeightProperty))
                 {
                     minHeight =  _dialog.MinHeight;
                 }
                 height = Math.Max(height, minHeight);
-                if (_dialog.IsSet(Dialog.MaxHeightProperty))
+                if (_dialog.IsSet(MaxHeightProperty))
                 {
                     height = Math.Min(height, MaxHeight);
                 }
-                _dialog.SetCurrentValue(Dialog.HeightProperty, height);
+                _dialog.SetCurrentValue(HeightProperty, height);
             }
         }
     }

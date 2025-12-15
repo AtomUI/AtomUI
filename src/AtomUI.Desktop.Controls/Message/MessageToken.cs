@@ -44,9 +44,9 @@ internal class MessageToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         ContentBg = SharedToken.ColorBgElevated;
         ContentPadding = new Thickness(
             (SharedToken.ControlHeightLG -

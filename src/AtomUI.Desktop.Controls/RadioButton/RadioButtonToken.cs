@@ -38,9 +38,9 @@ internal class RadioButtonToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues()
+    public override void CalculateTokenValues(bool isDarkMode)
     {
-        base.CalculateTokenValues();
+        base.CalculateTokenValues(isDarkMode);
         var lineWidth        = SharedToken.LineWidth;
         var fontSizeLG       = SharedToken.FontSizeLG;
         var colorPrimary     = SharedToken.ColorPrimary;

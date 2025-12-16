@@ -184,7 +184,7 @@ jobs:
    
    BuildAtomUIGalleryAppImageX64Installers:
       name: Build Linux X64 AppImage Installer
-      runs-on: qinware-ubuntu-latest
+      runs-on: ubuntu-latest
       steps:
          -  name: Checkout code
             uses: actions/checkout@v4.2.2
@@ -262,7 +262,7 @@ jobs:
    
    BuildAtomUIGalleryAppImageArm64Installers:
       name: Build Linux Arm64 AppImage Installer
-      runs-on: qinware-ubuntu-arm64-latest
+      runs-on: ubuntu-24.04-arm
       steps:
          -  name: Checkout code
             uses: actions/checkout@v4.2.2

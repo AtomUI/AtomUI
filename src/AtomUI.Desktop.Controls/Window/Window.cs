@@ -251,10 +251,6 @@ public class Window : AvaloniaWindow,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-         if (change.Property == BackgroundProperty)
-        {
-            Console.WriteLine(Background);
-        }
         if (change.Property == MaxWidthScreenRatioProperty)
         {
             this.ConstrainMaxSizeToScreenRatio(MaxWidthScreenRatio, double.NaN);

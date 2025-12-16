@@ -95,7 +95,6 @@ public class StatisticCountUp : TemplatedControl, IControlSharedTokenResourcesHo
         {
             if (change.Property == EndValueProperty)
             {
-                Console.WriteLine(EndValue);
                 SetCurrentValue(AnimatingValueProperty, EndValue);
             }
         }

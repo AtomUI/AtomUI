@@ -246,8 +246,8 @@ public class NavMenu : ItemsControl,
             i.Close();
         }
 
-        IsOpen = false;
-        SetCurrentValue(SelectedItemProperty, null);
+        IsOpen       = false;
+        SelectedItem = null;
 
         RaiseEvent(new RoutedEventArgs
         {
@@ -727,7 +727,7 @@ public class NavMenu : ItemsControl,
         }
         pathNodes = pathNodes.Reverse().ToList();
         
-        if (pathNodes?.Count > 0)
+        if (pathNodes.Count > 0)
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {

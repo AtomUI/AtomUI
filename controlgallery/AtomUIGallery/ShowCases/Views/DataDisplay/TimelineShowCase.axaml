@@ -96,19 +96,17 @@
                     <atom:RadioButton x:Name="ModeAlternate">Alternate</atom:RadioButton>
                 </WrapPanel>
                 <atom:Timeline Mode="Left" x:Name="LabelTimeline">
-                    <atom:TimelineItem
-                        Label="2024-01-01">
-                        AtomUI Officially Initiated 2024-01-01
+                    <atom:TimelineItem Label="2024-01-01">
+                        AtomUI Officially Initiated
+                    </atom:TimelineItem>
+                    <atom:TimelineItem Label="2015-09-01 09:12:11">
+                        Create a services site
                     </atom:TimelineItem>
                     <atom:TimelineItem>
-                        Create a services site 2015-09-01
+                        Qinware website online
                     </atom:TimelineItem>
-                    <atom:TimelineItem>
-                        Qinware website online 2024-01-01
-                    </atom:TimelineItem>
-                    <atom:TimelineItem
-                        Label="2029-09-01">
-                        Network problems being solved 2029-09-01
+                    <atom:TimelineItem Label="2029-09-01">
+                        Network problems being solved
                     </atom:TimelineItem>
                 </atom:Timeline>
             </StackPanel>

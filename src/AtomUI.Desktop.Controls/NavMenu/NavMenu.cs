@@ -246,7 +246,7 @@ public class NavMenu : ItemsControl,
             i.Close();
         }
 
-        SetCurrentValue(IsOpenProperty, false);
+        IsOpen = false;
         SetCurrentValue(SelectedItemProperty, null);
 
         RaiseEvent(new RoutedEventArgs
@@ -263,7 +263,7 @@ public class NavMenu : ItemsControl,
             return;
         }
 
-        SetCurrentValue(IsOpenProperty, true);
+        IsOpen = true;
 
         RaiseEvent(new RoutedEventArgs
         {

@@ -16,6 +16,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -971,7 +972,7 @@ public class Select : TemplatedControl,
         {
             if (e.Source is TextBox textBox)
             {
-                ActivateFilterValue = textBox.Text;
+                ActivateFilterValue = textBox.Text?.Trim();
             }
 
             if (Mode == SelectMode.Tags)
@@ -1018,7 +1019,7 @@ public class Select : TemplatedControl,
                 }
             }
 
-            if (_optionsBox.CollectionView?.Count == 0 && ActivateFilterValue != null)
+            if (_optionsBox.CollectionView?.Count == 0 && !string.IsNullOrEmpty(ActivateFilterValue))
             {
                 _addNewOption = new SelectOption()
                 {
@@ -1211,5 +1212,30 @@ public class Select : TemplatedControl,
         {
             SetCurrentValue(IsEffectiveSearchEnabledProperty, IsSearchEnabled);
         }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated += HandleWindowDeactivated;
+        }
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromLogicalTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated -= HandleWindowDeactivated;
+        }
+    }
+
+    private void HandleWindowDeactivated(object? sender, EventArgs e)
+    {
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 }

@@ -50,7 +50,8 @@
                                                   SelectionMode="{TemplateBinding SelectionMode}"
                                                   SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
                                                   SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"
-                                                  AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}" />
+                                                  AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}" 
+                                                  IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"/>
                             <ContentPresenter
                                 Name="EmptyIndicator"
                                 HorizontalContentAlignment="Center"

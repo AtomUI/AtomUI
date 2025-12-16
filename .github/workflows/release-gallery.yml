@@ -25,7 +25,7 @@ env:
 jobs:
    BuildAtomUIGalleryDmgX64Installers:
       name: Build macOS x86_64 DMG Installer
-      runs-on: macos-13
+      runs-on: macos-15-intel
       steps:
          -  name: Checkout code
             uses: actions/checkout@v4.2.2

@@ -274,12 +274,12 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         _lastBuddyPopupSize     = size;
         _lastBuddyPopupPosition = position;
         
-        var offset         = new Point(position.X, position.Y);
-        var renderScaling = GetRenderScaling();
-        var layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling,
-            offset.Y - maskShadowsThickness.Top * renderScaling);
+        var   offset      = new Point(position.X, position.Y);
+        Point layerOffset = default;
+        // 不知道为何这里的行为 macOS 和 Linux 与 Windows 不一样
         if (OperatingSystem.IsMacOS())
         {
+            layerOffset = new Point(offset.X - maskShadowsThickness.Left, offset.Y - maskShadowsThickness.Top);
             var topOffsetMark = 0d;
             if (ManagedPopupPositionerPopup != null)
             {
@@ -298,6 +298,11 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             {
                 RenderTransform = null;
             }
+        }
+        else
+        {
+            var renderScaling = GetRenderScaling();
+            layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling, offset.Y - maskShadowsThickness.Top * renderScaling);
         }
         MoveAndResize(layerOffset, size.Inflate(MaskShadows.Thickness()));
     }

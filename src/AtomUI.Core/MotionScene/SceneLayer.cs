@@ -146,8 +146,6 @@ internal class SceneLayer : WindowBase, IHostedVisualTreeRoot, IDisposable
 
     public void MoveAndResize(Point point, Size size)
     {
-        Width  = size.Width;
-        Height = size.Height;
         ManagedPopupPositionerPopup?.MoveAndResize(new Point(Math.Round(point.X), Math.Floor(point.Y + 0.5)), size);
     }
     

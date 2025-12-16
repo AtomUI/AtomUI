@@ -34,7 +34,7 @@ public class AvatarGroup : TemplatedControl,
     public static readonly StyledProperty<int?> MaxDisplayCountProperty =
         AvaloniaProperty.Register<AvatarGroup, int?>(nameof(MaxDisplayCount));
     
-    public static readonly StyledProperty<AvatarSizeType> SizeTypeProperty =
+    public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         Avatar.SizeTypeProperty.AddOwner<AvatarGroup>();
     
     public static readonly StyledProperty<double> SizeProperty =
@@ -70,7 +70,7 @@ public class AvatarGroup : TemplatedControl,
         set => SetValue(MaxDisplayCountProperty, value);
     }
     
-    public AvatarSizeType SizeType
+    public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);

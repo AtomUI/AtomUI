@@ -46,11 +46,11 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<AvatarShape> AvatarShapeProperty =
         AvaloniaProperty.Register<Skeleton, AvatarShape>(nameof(AvatarShape), AvatarShape.Circle);
         
-    public static readonly StyledProperty<AvatarSizeType> AvatarSizeTypeProperty =
-        AvaloniaProperty.Register<Skeleton, AvatarSizeType>(nameof(AvatarSizeType), AvatarSizeType.Middle);
+    public static readonly StyledProperty<CustomizableSizeType> AvatarSizeTypeProperty =
+        AvaloniaProperty.Register<Skeleton, CustomizableSizeType>(nameof(AvatarSizeType), CustomizableSizeType.Middle);
     
     public static readonly StyledProperty<double> AvatarSizeProperty =
-        AvaloniaProperty.Register<Skeleton, double>(nameof(AvatarSizeType), Double.NaN);
+        AvaloniaProperty.Register<Skeleton, double>(nameof(AvatarSize), Double.NaN);
     
     public static readonly StyledProperty<object?> ContentProperty = 
         ContentControl.ContentProperty.AddOwner<Skeleton>();
@@ -118,7 +118,7 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
         set => SetValue(ParagraphLineWidthsProperty, value);
     }
     
-    public AvatarSizeType AvatarSizeType
+    public CustomizableSizeType AvatarSizeType
     {
         get => GetValue(AvatarSizeTypeProperty);
         set => SetValue(AvatarSizeTypeProperty, value);

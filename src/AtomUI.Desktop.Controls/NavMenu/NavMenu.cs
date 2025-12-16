@@ -596,7 +596,7 @@ public class NavMenu : ItemsControl,
     {
         if (!skipSelf)
         {
-            item.SetCurrentValue(NavMenuItem.IsSelectedProperty, false);
+            item.IsSelected = false;
         }
         
         for (var i = 0; i < item.ItemCount; i++)

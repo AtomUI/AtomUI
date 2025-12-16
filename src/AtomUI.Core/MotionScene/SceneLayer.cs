@@ -1,4 +1,5 @@
 ﻿using AtomUI.Native;
+using AtomUI.Reflection;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -52,6 +53,13 @@ internal class SceneLayer : WindowBase, IHostedVisualTreeRoot, IDisposable
         {
             ManagedPopupPositionerPopup = managedPopupPositioner.GetManagedPopupPositionerPopup();
         }
+        
+        if (Parent != null && Parent != parent)
+        {
+            ((ISetLogicalParent)this).SetParent(null);
+        }
+        ((ISetLogicalParent)this).SetParent(parent);
+        this.SetTemplatedParent(parent.TemplatedParent);
         
         Focusable = false;
     }
@@ -147,5 +155,10 @@ internal class SceneLayer : WindowBase, IHostedVisualTreeRoot, IDisposable
     {
         base.OnApplyTemplate(e);
         MotionActor = e.NameScope.Find<BaseMotionActor>(BaseMotionActor.MotionActorPart);
+    }
+
+    protected double GetRenderScaling()
+    {
+        return ParentTopLevel.RenderScaling;
     }
 }

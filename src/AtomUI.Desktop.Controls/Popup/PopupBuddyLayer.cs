@@ -168,7 +168,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     public PopupBuddyLayer(Popup buddyPopup, TopLevel parent)
         : base(parent)
     {
-        _buddyPopup    = buddyPopup;
+        _buddyPopup = buddyPopup;
     }
     
     private void SetupPopupHost()
@@ -256,8 +256,8 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             return;
         }
         // 这个是否大小和位置信息都有了
-        var popupOffset          = popupRoot.PlatformImpl.Position;
-        var popupSize      = popupRoot.ClientSize;
+        var popupOffset = popupRoot.PlatformImpl.Position;
+        var popupSize   = popupRoot.ClientSize;
         ConfigureSizeAndPosition(new Point(popupOffset.X, popupOffset.Y), popupSize);
     }
 
@@ -271,20 +271,19 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         {
             return;
         }
-        
         _lastBuddyPopupSize     = size;
         _lastBuddyPopupPosition = position;
         
         var offset         = new Point(position.X, position.Y);
-        
-        var layerOffset = new Point(offset.X - maskShadowsThickness.Left * DesktopScaling,
-            offset.Y - maskShadowsThickness.Top * DesktopScaling);
+        var renderScaling = GetRenderScaling();
+        var layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling,
+            offset.Y - maskShadowsThickness.Top * renderScaling);
         if (OperatingSystem.IsMacOS())
         {
             var topOffsetMark = 0d;
             if (ManagedPopupPositionerPopup != null)
             {
-                var screens        = ManagedPopupPositionerPopup.Screens;
+                var screens = ManagedPopupPositionerPopup.Screens;
                 foreach (var screen in screens)
                 {
                     topOffsetMark = Math.Max(topOffsetMark, screen.WorkingArea.Top);

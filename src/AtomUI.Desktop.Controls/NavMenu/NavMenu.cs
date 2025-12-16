@@ -216,6 +216,7 @@ public class NavMenu : ItemsControl,
     private ItemsPresenter? _menuItemsPresenter;
     private readonly Dictionary<NavMenuItem, CompositeDisposable> _itemsBindingDisposables = new();
     private IDisposable? _borderThicknessDisposable;
+    private bool _defaultOpenPathsApplied;
 
     static NavMenu()
     {
@@ -678,24 +679,27 @@ public class NavMenu : ItemsControl,
 
     private void ConfigureDefaultOpenedPaths()
     {
-        if (DefaultOpenPaths != null)
+        if (DefaultOpenPaths != null && !_defaultOpenPathsApplied)
         {
             foreach (var defaultOpenPath in DefaultOpenPaths)
             {
                 var pathNodes = FindMenuItemByPath(defaultOpenPath);
                 OpenMenuItemPaths(pathNodes);
             }
+
+            _defaultOpenPathsApplied = true;
         }
     }
 
     private void ConfigureDefaultSelectedPath()
     {
         INavMenuItemData? targetItem = null;
+        // 直接设置 SelectedItem 优先级高于 DefaultSelectedPath
         if (SelectedItem != null)
         {
             targetItem = SelectedItem;
         }
-        if (DefaultSelectedPath != null)
+        else if (DefaultSelectedPath != null)
         { 
             var pathNodes = FindMenuItemByPath(DefaultSelectedPath);
             if (pathNodes.Count > 0)

@@ -52,7 +52,9 @@
                                            IsShowTitle="False"
                                            ClipToBounds = "False"
                                            Content="{TemplateBinding Content}"
-                                           ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                           ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                     </DockPanel>
                 </Panel>

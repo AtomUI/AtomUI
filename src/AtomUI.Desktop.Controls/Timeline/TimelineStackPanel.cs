@@ -5,7 +5,7 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TimelineStackPanel : StackPanel
+internal class TimelineStackPanel : StackPanel
 {
     #region 公共属性定义
 
@@ -38,7 +38,7 @@ public class TimelineStackPanel : StackPanel
         bool   fHorizontal      = (Orientation == Orientation.Horizontal);
         double spacing          = Spacing;
         bool   hasVisibleChild  = false;
-
+    
         //
         // Initialize child sizing and iterator data
         // Allow children as much size as they want along the stack.
@@ -51,7 +51,7 @@ public class TimelineStackPanel : StackPanel
         {
             layoutSlotSize = layoutSlotSize.WithHeight(Double.PositiveInfinity);
         }
-
+    
         //
         //  Iterate through children.
         //  While we still supported virtualization, this was hidden in a child iterator (see source history).
@@ -62,16 +62,16 @@ public class TimelineStackPanel : StackPanel
         {
             var  child     = children[idx];
             bool isVisible = child.IsVisible;
-
+    
             if (isVisible && !hasVisibleChild)
             {
                 hasVisibleChild = true;
             }
-
+    
             // Measure the child.
             child.Measure(layoutSlotSize);
             Size childDesiredSize = child.DesiredSize;
-
+    
             // Accumulate child size.
             if (fHorizontal)
             {
@@ -88,7 +88,7 @@ public class TimelineStackPanel : StackPanel
                     stackDesiredSize.WithHeight(stackDesiredSize.Height + (isVisible ? spacing : 0) +
                                                 childDesiredSize.Height);
             }
-
+    
             if (IsReverse)
             {
                 idx--;
@@ -98,7 +98,7 @@ public class TimelineStackPanel : StackPanel
                 idx++;
             }
         }
-
+    
         if (fHorizontal)
         {
             stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width - (hasVisibleChild ? spacing : 0));
@@ -107,10 +107,10 @@ public class TimelineStackPanel : StackPanel
         {
             stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
         }
-
+    
         return stackDesiredSize;
     }
-
+    
     protected override Size ArrangeOverride(Size finalSize)
     {
         var    children          = Children;
@@ -118,21 +118,25 @@ public class TimelineStackPanel : StackPanel
         Rect   rcChild           = new Rect(finalSize);
         double previousChildSize = 0.0;
         var    spacing           = Spacing;
-
-        //
-        // Arrange and Position Children.
-        //
-
+        
         int idx = IsReverse ? children.Count - 1 : 0;
         int end = IsReverse ? 0 : children.Count - 1;
         while (IsReverse ? idx >= end : idx <= end)
         {
             var child = children[idx];
+            if (IsReverse)
+            {
+                idx--;
+            }
+            else
+            {
+                idx++;
+            }
             if (!child.IsVisible)
             {
                 continue;
             }
-
+    
             if (fHorizontal)
             {
                 rcChild           =  rcChild.WithX(rcChild.X + previousChildSize);
@@ -149,31 +153,14 @@ public class TimelineStackPanel : StackPanel
                 rcChild           =  rcChild.WithWidth(Math.Max(finalSize.Width, child.DesiredSize.Width));
                 previousChildSize += spacing;
             }
-
-            ArrangeChild(child, rcChild, finalSize, Orientation);
-            if (IsReverse)
-            {
-                idx--;
-            }
-            else
-            {
-                idx++;
-            }
+            
+            child.Arrange(rcChild);
         }
-
+    
         RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal
             ? HorizontalSnapPointsChangedEvent
             : VerticalSnapPointsChangedEvent));
-
+    
         return finalSize;
-    }
-
-    internal virtual void ArrangeChild(
-        Control child,
-        Rect rect,
-        Size panelSize,
-        Orientation orientation)
-    {
-        child.Arrange(rect);
     }
 }

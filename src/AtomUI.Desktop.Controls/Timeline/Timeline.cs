@@ -195,21 +195,13 @@ public class Timeline : ItemsControl,
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
-        if (container is TimelineItem timelineItem)
-        {
-            var idx = IsReverse ? ItemCount - 1 - index : index;
-            timelineItem.NotifyVisualIndexChanged(this, idx);
-        }
+        CalculateItemsPositionInfo();
     }
 
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
     {
         base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
-        if (container is TimelineItem timelineItem)
-        {
-            var idx = IsReverse ? ItemCount - 1 - newIndex : newIndex;
-            timelineItem.NotifyVisualIndexChanged(this, idx);
-        }
+        CalculateItemsPositionInfo();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -224,20 +216,76 @@ public class Timeline : ItemsControl,
         {
             if (change.Property == IsReverseProperty)
             {
-                NotifyItemsVisualIndex();
+                CalculateItemsPositionInfo();
             }
         }
     }
 
-    private void NotifyItemsVisualIndex()
+    private void CalculateItemsPositionInfo()
     {
-        for (int i = 0; i < ItemCount; i++)
+        for (int i = 0, logicalIndex = 0; i < ItemCount; i++)
         {
-            if (ContainerFromIndex(i) is TimelineItem timelineItem)
+            if (ContainerFromIndex(i) is TimelineItem timelineItem && timelineItem.IsVisible)
             {
-                var idx = IsReverse ? ItemCount - 1 - i : i;
-                timelineItem.NotifyVisualIndexChanged(this, idx);
+                var idx = IsReverse ? ItemCount - 1 - logicalIndex : logicalIndex;
+                CalculateItemPositionInfo(timelineItem, idx);
+                logicalIndex++;
             }
         }
+    }
+    
+    internal void CalculateItemPositionInfo(TimelineItem timelineItem, int index)
+    {
+        timelineItem.IsOdd         = index % 2 != 0;
+        timelineItem.IsFirst       = index == 0;
+        timelineItem.IsLast        = index == GetVisibleItemsCount() - 1;
+        timelineItem.NextIsPending = false;
+        if (PendingItemReference != null && PendingItemReference.TryGetTarget(out var pendingItem))
+        {
+            if (timelineItem == pendingItem)
+            {
+                if (!IsReverse)
+                {
+                    var previousItemIndex = index - 1;
+                    while (previousItemIndex >= 0)
+                    {
+                        if (ContainerFromIndex(previousItemIndex) is TimelineItem previousItem && previousItem.IsVisible)
+                        {
+                            previousItem.NextIsPending = true;
+                            break;
+                        }
+
+                        previousItemIndex--;
+                    }
+                }
+                else
+                {
+                    var previousItemIndex = index + 1;
+                    while (previousItemIndex < ItemCount)
+                    {
+                        if (ContainerFromIndex(previousItemIndex) is TimelineItem previousItem && previousItem.IsVisible)
+                        {
+                            previousItem.NextIsPending = true;
+                            break;
+                        }
+
+                        previousItemIndex++;
+                    }
+                }
+            }
+        }
+    }
+
+    private int GetVisibleItemsCount()
+    {
+        var count = 0;
+        for (var i = 0; i < ItemCount; i++)
+        {
+            if (ContainerFromIndex(i) is TimelineItem previousItem && previousItem.IsVisible)
+            {
+                ++count;
+            }
+        }
+        return count;
     }
 }

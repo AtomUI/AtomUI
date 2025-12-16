@@ -57,7 +57,8 @@ public class NavMenu : ItemsControl,
     public static readonly DirectProperty<NavMenu, bool> IsOpenProperty =
         AvaloniaProperty.RegisterDirect<NavMenu, bool>(
             nameof(IsOpen),
-            o => o.IsOpen);
+            o => o.IsOpen,
+            (o,v) => o.IsOpen = v);
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NavMenu>();

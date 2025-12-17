@@ -1069,6 +1069,12 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey TreeNodeSwitcherMargin = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.TreeNodeSwitcherMargin");
     }
 
+    public static class UploadTokenKey
+    {
+        public static readonly TokenResourceKey ActionsColor = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.ActionsColor");
+        public static readonly TokenResourceKey PictureCardSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureCardSize");
+    }
+
     public static class WindowTokenKey
     {
         public static readonly TokenResourceKey CornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.Window.CornerRadius");

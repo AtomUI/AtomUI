@@ -67,6 +67,7 @@
         <ResourceInclude Source="Tooltip/Themes/ToolTipTheme.axaml" />
         <ResourceInclude Source="TransitioningContentControl/Themes/TransitioningContentControlTheme.axaml" />
         <ResourceInclude Source="TreeView/Themes/TreeViewThemes.axaml" />
+        <ResourceInclude Source="Upload/Themes/UploadThemes.axaml" />
         <ResourceInclude Source="Window/Themes/WindowThemes.axaml" />
     </atom:ControlThemesProvider.ControlThemes>
 </atom:ControlThemesProvider>

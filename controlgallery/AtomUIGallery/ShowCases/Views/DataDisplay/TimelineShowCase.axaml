@@ -41,7 +41,7 @@
             </atom:TimelineItem>
         </atom:Timeline>
     </gallery:ShowCaseItem>
-        
+    
         <gallery:ShowCaseItem Description="When the timeline is incomplete and ongoing, put a ghost node at last. Set pending as truthy value to enable displaying pending item. You can customize the pending content by passing a React Element. Meanwhile, pendingDot={a React Element} is used to customize the dot of the pending item. reverse={true} is used for reversing nodes." Title="Last node and Reversing">
             <StackPanel>
                 <atom:Timeline
@@ -63,7 +63,7 @@
                 </DockPanel>
             </StackPanel>
         </gallery:ShowCaseItem>
-        
+    
         <gallery:ShowCaseItem Description="Alternate timeline." Title="Alternate">
             <atom:Timeline Mode="Alternate">
                 <atom:TimelineItem Label="2024-01-01">
@@ -82,7 +82,7 @@
                 </atom:TimelineItem>
             </atom:Timeline>
         </gallery:ShowCaseItem>
-        
+    
         <gallery:ShowCaseItem Description="Use label show time alone." Title="Label">
             <StackPanel>
                 <WrapPanel Margin="0,0,0,20" Orientation="Horizontal">
@@ -96,24 +96,22 @@
                     <atom:RadioButton x:Name="ModeAlternate">Alternate</atom:RadioButton>
                 </WrapPanel>
                 <atom:Timeline Mode="Left" x:Name="LabelTimeline">
-                    <atom:TimelineItem
-                        Label="2024-01-01">
-                        AtomUI Officially Initiated 2024-01-01 
+                    <atom:TimelineItem Label="2024-01-01">
+                        AtomUI Officially Initiated
+                    </atom:TimelineItem>
+                    <atom:TimelineItem Label="2015-09-01 09:12:11">
+                        Create a services site
                     </atom:TimelineItem>
                     <atom:TimelineItem>
-                        Create a services site 2015-09-01
+                        Qinware website online
                     </atom:TimelineItem>
-                    <atom:TimelineItem>
-                        Qinware website online 2024-01-01 
-                    </atom:TimelineItem>
-                    <atom:TimelineItem 
-                        Label="2029-09-01">
-                        Network problems being solved 2029-09-01
+                    <atom:TimelineItem Label="2029-09-01">
+                        Network problems being solved
                     </atom:TimelineItem>
                 </atom:Timeline>
             </StackPanel>
         </gallery:ShowCaseItem>
-        
+    
         <gallery:ShowCaseItem Description="Right alternate timeline." Title="Right alternate">
             <atom:Timeline Mode="Right">
                 <atom:TimelineItem>

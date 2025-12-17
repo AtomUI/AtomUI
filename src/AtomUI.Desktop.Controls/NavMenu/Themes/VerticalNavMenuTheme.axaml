@@ -36,6 +36,7 @@
         <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
         
         <Style Selector="^[Mode=Vertical]">
+            <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalMenuContentPadding}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
@@ -49,6 +50,7 @@
         </Style>
 
         <Style Selector="^[Mode=Inline]">
+            <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalMenuContentPadding}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />

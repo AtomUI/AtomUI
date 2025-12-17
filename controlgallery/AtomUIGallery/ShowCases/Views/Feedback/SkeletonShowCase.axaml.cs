@@ -22,15 +22,15 @@ public partial class SkeletonShowCase : ReactiveUserControl<SkeletonViewModel>
         {
             if (e.Index == 0)
             {
-                viewModel.SkeletonButtonAndInputSizeType = SizeType.Middle;
+                viewModel.SkeletonButtonAndInputSizeType = CustomizableSizeType.Middle;
             }
             else if (e.Index == 1)
             {
-                viewModel.SkeletonButtonAndInputSizeType = SizeType.Large;
+                viewModel.SkeletonButtonAndInputSizeType = CustomizableSizeType.Large;
             }
             else if (e.Index == 2)
             {
-                viewModel.SkeletonButtonAndInputSizeType = SizeType.Small;
+                viewModel.SkeletonButtonAndInputSizeType = CustomizableSizeType.Small;
             }
         }
     }

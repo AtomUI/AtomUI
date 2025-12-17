@@ -6,32 +6,30 @@
     <ControlTheme x:Key="{x:Type atom:PopupBuddyLayer}" TargetType="atom:PopupBuddyLayer">
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel>
-                    <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}">
-                        <Panel>
-                            <Decorator Padding="{TemplateBinding Padding}">
-                                <Panel>
-                                    <Panel Name="{x:Static atom:PopupBuddyLayerThemeConstants.ShadowRendererPart}"/>
-                                    <LayoutTransformControl
-                                        Name="{x:Static atom:PopupBuddyLayerThemeConstants.ArrowIndicatorLayoutPart}"
-                                        ZIndex="1000"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Top">
-                                        <atom:ArrowIndicator
-                                            Name="{x:Static atom:PopupBuddyLayerThemeConstants.ArrowIndicatorPart}"
-                                            FilledColor="{TemplateBinding ArrowFillColor}" 
-                                            ArrowSize="{TemplateBinding ArrowSize}"
-                                            IsVisible="{TemplateBinding IsShowArrow}"/>
-                                    </LayoutTransformControl>
-                                </Panel>
-                            </Decorator>
-                            <ContentPresenter
-                                Name="{x:Static atom:PopupBuddyLayerThemeConstants.GhostContentPresenterPart}"
-                                ZIndex="1000" 
-                                Padding="{TemplateBinding MotionPadding}"/>
-                        </Panel>
-                    </atom:MotionActor>
-                </Panel>
+                <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}">
+                    <Panel>
+                        <Decorator Padding="{TemplateBinding Padding}">
+                            <Panel>
+                                <Panel Name="{x:Static atom:PopupBuddyLayerThemeConstants.ShadowRendererPart}"/>
+                                <LayoutTransformControl
+                                    Name="{x:Static atom:PopupBuddyLayerThemeConstants.ArrowIndicatorLayoutPart}"
+                                    ZIndex="1000"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top">
+                                    <atom:ArrowIndicator
+                                        Name="{x:Static atom:PopupBuddyLayerThemeConstants.ArrowIndicatorPart}"
+                                        FilledColor="{TemplateBinding ArrowFillColor}" 
+                                        ArrowSize="{TemplateBinding ArrowSize}"
+                                        IsVisible="{TemplateBinding IsShowArrow}"/>
+                                </LayoutTransformControl>
+                            </Panel>
+                        </Decorator>
+                        <ContentPresenter
+                            Name="{x:Static atom:PopupBuddyLayerThemeConstants.GhostContentPresenterPart}"
+                            ZIndex="1000" 
+                            Padding="{TemplateBinding MotionPadding}"/>
+                    </Panel>
+                </atom:MotionActor>
             </ControlTemplate>
         </Setter>
         

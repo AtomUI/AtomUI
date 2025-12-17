@@ -37,7 +37,9 @@
                     </DockPanel>
                     <ContentPresenter IsVisible="{TemplateBinding IsContentVisible}"
                                       Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
                 </Panel>
             </ControlTemplate>
         </Setter>

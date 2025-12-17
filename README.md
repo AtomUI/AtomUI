@@ -5,7 +5,7 @@
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-5.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
-[![Nuget Download](https://img.shields.io/nuget/dt/AtomUI?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![Nuget Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
 [Changelog](./CHANGELOG.md) · [Report Bug][github-issues-link] · [Request Feature][github-issues-link]
@@ -14,33 +14,33 @@
 
 ![](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png)
 
-[github-release-shield]: https://img.shields.io/github/v/release/chinware/AtomUI?color=369eff&labelColor=black&logo=github&style=flat-square
+[github-release-shield]: https://img.shields.io/github/v/release/AtomUI/AtomUI?color=369eff&labelColor=black&logo=github&style=flat-square
 
-[github-release-link]: https://github.com/chinware/AtomUI/releases
+[github-release-link]: https://github.com/AtomUI/AtomUI/releases
 
-[github-releasedate-shield]: https://img.shields.io/github/release-date/chinware/AtomUI?color=black&labelColor=black&style=flat-square
+[github-releasedate-shield]: https://img.shields.io/github/release-date/AtomUI/AtomUI?color=black&labelColor=black&style=flat-square
 
-[github-releasedate-link]: https://github.com/chinware/AtomUI/releases
+[github-releasedate-link]: https://github.com/AtomUI/AtomUI/releases
 
-[github-contributors-shield]: https://img.shields.io/github/contributors/chinware/AtomUI?color=c4f042&labelColor=black&style=flat-square
+[github-contributors-shield]: https://img.shields.io/github/contributors/AtomUI/AtomUI?color=c4f042&labelColor=black&style=flat-square
 
-[github-contributors-link]: https://github.com/chinware/AtomUI/graphs/contributors
+[github-contributors-link]: https://github.com/AtomUI/AtomUI/graphs/contributors
 
-[github-forks-shield]: https://img.shields.io/github/forks/chinware/AtomUI?color=8ae8ff&labelColor=black&style=flat-square
+[github-forks-shield]: https://img.shields.io/github/forks/AtomUI/AtomUI?color=8ae8ff&labelColor=black&style=flat-square
 
-[github-forks-link]: https://github.com/chinware/AtomUI/network/members
+[github-forks-link]: https://github.com/AtomUI/AtomUI/network/members
 
-[github-stars-shield]: https://img.shields.io/github/stars/chinware/AtomUI?color=ffcb47&labelColor=black&style=flat-square
+[github-stars-shield]: https://img.shields.io/github/stars/AtomUI/AtomUI?color=ffcb47&labelColor=black&style=flat-square
 
-[github-stars-link]: https://github.com/chinware/AtomUI/network/stargazers
+[github-stars-link]: https://github.com/AtomUI/AtomUI/network/stargazers
 
-[github-issues-shield]: https://img.shields.io/github/issues/chinware/AtomUI?color=ff80eb&labelColor=black&style=flat-square
+[github-issues-shield]: https://img.shields.io/github/issues/AtomUI/AtomUI?color=ff80eb&labelColor=black&style=flat-square
 
-[github-issues-link]: https://github.com/chinware/AtomUI/issues
+[github-issues-link]: https://github.com/AtomUI/AtomUI/issues
 
-[github-license-shield]: https://img.shields.io/github/license/chinware/AtomUI?color=white&labelColor=black&style=flat-square
+[github-license-shield]: https://img.shields.io/github/license/AtomUI/AtomUI?color=white&labelColor=black&style=flat-square
 
-[github-license-link]: https://github.com/chinware/AtomUI/blob/master/LICENSE
+[github-license-link]: https://github.com/AtomUI/AtomUI/blob/master/LICENSE
 
 Documentation Language: [English](README.md) | [简体中文](README.zh-CN.md)
 
@@ -268,12 +268,12 @@ GitHub [Issues][github-issues-link] to get stuck in to show us what you’re mad
 
 [![][github-contrib-shield]][github-contrib-link]
 
-[github-issues-link]: https://github.com/chinware/AtomUI/issues
+[github-issues-link]: https://github.com/AtomUI/AtomUI/issues
 
 [pr-welcome-shield]: https://img.shields.io/badge/PR%20WELCOME-%E2%86%92-ffcb47?labelColor=black&style=for-the-badge
 
-[pr-welcome-link]: https://github.com/chinware/AtomUI/pulls
+[pr-welcome-link]: https://github.com/AtomUI/AtomUI/pulls
 
 [github-contrib-shield]: https://contrib.rocks/image?repo=chinware%2FAtomUI
 
-[github-contrib-link]: https://github.com/chinware/AtomUI/graphs/contributors
+[github-contrib-link]: https://github.com/AtomUI/AtomUI/graphs/contributors

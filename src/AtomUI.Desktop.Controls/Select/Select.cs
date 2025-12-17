@@ -16,6 +16,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -971,7 +972,7 @@ public class Select : TemplatedControl,
         {
             if (e.Source is TextBox textBox)
             {
-                ActivateFilterValue = textBox.Text;
+                ActivateFilterValue = textBox.Text?.Trim();
             }
 
             if (Mode == SelectMode.Tags)

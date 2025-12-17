@@ -401,7 +401,7 @@ public class AbstractImagePreviewer : TemplatedControl,
             SubscribeToEventHandler<Window, EventHandler>(window, ParentClosed,
                 (x, handler) => x.Closed += handler,
                 (x, handler) => x.Closed -= handler).DisposeWith(handlerCleanup);
-        } 
+        }
         
         var cleanupPopup = Disposable.Create((previewDialog, handlerCleanup), state =>
         {

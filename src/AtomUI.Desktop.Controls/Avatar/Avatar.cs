@@ -14,14 +14,6 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public enum AvatarSizeType
-{
-    Large,
-    Middle,
-    Small,
-    Custom
-}
-
 public enum AvatarShape
 {
     Circle,
@@ -55,9 +47,9 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
     public static readonly StyledProperty<string?> TextProperty = 
         AvaloniaProperty.Register<TemplatedControl, string?>(nameof (Text));
 
-    public static readonly StyledProperty<AvatarSizeType> SizeTypeProperty =
-        AvaloniaProperty.Register<Avatar, AvatarSizeType>(nameof(SizeType),
-            AvatarSizeType.Middle);
+    public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
+        AvaloniaProperty.Register<Avatar, CustomizableSizeType>(nameof(SizeType),
+            CustomizableSizeType.Middle);
     
     public static readonly StyledProperty<double> SizeProperty =
         AvaloniaProperty.Register<Avatar, double>(nameof(Size), Double.NaN);
@@ -99,7 +91,7 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
         set => SetValue(TextProperty, value);
     }
 
-    public AvatarSizeType SizeType
+    public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
@@ -164,7 +156,7 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
 
     #endregion
 
-    private AvatarSizeType? _originSizeType;
+    private CustomizableSizeType? _originSizeType;
     private TextBlock? _textPresenter;
     
     static Avatar()
@@ -186,7 +178,7 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
             if (!double.IsNaN(Size))
             {
                 _originSizeType = SizeType;
-                SizeType        = AvatarSizeType.Custom;
+                SizeType        = CustomizableSizeType.Custom;
             }
             else
             {
@@ -235,7 +227,7 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
 
     private void ConfigureIconSize()
     {
-        if (SizeType == AvatarSizeType.Custom)
+        if (SizeType == CustomizableSizeType.Custom)
         {
             Debug.Assert(!double.IsNaN(Size));
             // 不影响模板设置

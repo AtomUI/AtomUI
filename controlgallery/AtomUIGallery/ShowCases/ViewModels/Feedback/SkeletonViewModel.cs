@@ -29,9 +29,9 @@ public class SkeletonViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _isSkeletonBlock, value);
     }
     
-    private SizeType _skeletonButtonAndInputSizeType;
+    private CustomizableSizeType _skeletonButtonAndInputSizeType;
 
-    public SizeType SkeletonButtonAndInputSizeType
+    public CustomizableSizeType SkeletonButtonAndInputSizeType
     {
         get => _skeletonButtonAndInputSizeType;
         set => this.RaiseAndSetIfChanged(ref _skeletonButtonAndInputSizeType, value);

@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
@@ -45,17 +46,23 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<AvatarShape> AvatarShapeProperty =
         AvaloniaProperty.Register<Skeleton, AvatarShape>(nameof(AvatarShape), AvatarShape.Circle);
         
-    public static readonly StyledProperty<AvatarSizeType> AvatarSizeTypeProperty =
-        AvaloniaProperty.Register<Skeleton, AvatarSizeType>(nameof(AvatarSizeType), AvatarSizeType.Middle);
+    public static readonly StyledProperty<CustomizableSizeType> AvatarSizeTypeProperty =
+        AvaloniaProperty.Register<Skeleton, CustomizableSizeType>(nameof(AvatarSizeType), CustomizableSizeType.Middle);
     
     public static readonly StyledProperty<double> AvatarSizeProperty =
-        AvaloniaProperty.Register<Skeleton, double>(nameof(AvatarSizeType), Double.NaN);
+        AvaloniaProperty.Register<Skeleton, double>(nameof(AvatarSize), Double.NaN);
     
     public static readonly StyledProperty<object?> ContentProperty = 
         ContentControl.ContentProperty.AddOwner<Skeleton>();
     
     public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty = 
         ContentControl.ContentTemplateProperty.AddOwner<Skeleton>();
+    
+    public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+        ContentControl.HorizontalContentAlignmentProperty.AddOwner<Skeleton>();
+    
+    public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+        ContentControl.VerticalContentAlignmentProperty.AddOwner<Skeleton>();
     
     public bool IsLoading
     {
@@ -111,7 +118,7 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
         set => SetValue(ParagraphLineWidthsProperty, value);
     }
     
-    public AvatarSizeType AvatarSizeType
+    public CustomizableSizeType AvatarSizeType
     {
         get => GetValue(AvatarSizeTypeProperty);
         set => SetValue(AvatarSizeTypeProperty, value);
@@ -141,6 +148,18 @@ public class Skeleton : AbstractSkeleton, IControlSharedTokenResourcesHost
     {
         get => GetValue(ContentTemplateProperty);
         set => SetValue(ContentTemplateProperty, value);
+    }
+    
+    public HorizontalAlignment HorizontalContentAlignment
+    {
+        get => GetValue(HorizontalContentAlignmentProperty);
+        set => SetValue(HorizontalContentAlignmentProperty, value);
+    }
+    
+    public VerticalAlignment VerticalContentAlignment
+    {
+        get => GetValue(VerticalContentAlignmentProperty);
+        set => SetValue(VerticalContentAlignmentProperty, value);
     }
     #endregion
 

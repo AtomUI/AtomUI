@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -165,24 +164,16 @@ public class TimelineItem : ContentControl
         Debug.Assert(Parent is Timeline, "TimelineItem's parent must be a timeline control.");
     }
 
-    internal void NotifyVisualIndexChanged(Timeline timeline, int newIndex)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        IsOdd         = newIndex % 2 != 0;
-        IsFirst       = newIndex == 0;
-        IsLast        = newIndex == timeline.ItemCount - 1;
-        NextIsPending = false;
-        if (timeline.PendingItemReference != null && timeline.PendingItemReference.TryGetTarget(out var pendingItem))
+        base.OnPropertyChanged(change);
+        if (change.Property == IsOddProperty ||
+            change.Property == IsFirstProperty ||
+            change.Property == IsLastProperty ||
+            change.Property == IsPendingProperty)
         {
-            if (this == pendingItem)
-            {
-                var previousItemIndex = newIndex - 1;
-                if (timeline.ContainerFromIndex(previousItemIndex) is TimelineItem previousItem)
-                {
-                    previousItem.NextIsPending = true;
-                }
-            }
+            UpdatePseudoClasses();
         }
-        UpdatePseudoClasses();
     }
 
     private void UpdatePseudoClasses()

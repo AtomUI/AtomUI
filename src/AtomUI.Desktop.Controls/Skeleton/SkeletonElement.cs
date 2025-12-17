@@ -4,17 +4,17 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-public abstract class SkeletonElement : AbstractSkeleton, ISizeTypeAware
+public abstract class SkeletonElement : AbstractSkeleton, ICustomizableSizeTypeAware
 {
     #region 公共属性定义
     
-    public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<SkeletonButton>();
+    public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
+        CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<SkeletonButton>();
     
     public static readonly StyledProperty<bool> IsBlockProperty =
         AvaloniaProperty.Register<SkeletonElement, bool>(nameof(IsBlock));
     
-    public SizeType SizeType
+    public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);

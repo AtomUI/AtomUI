@@ -71,20 +71,19 @@ public class IconPresenter : Control, IMotionAwareControl
     {
         var oldChild = (Control?)change.OldValue;
         var newChild = (Control?)change.NewValue;
-
         if (oldChild != null)
         {
             _disposables?.Dispose();
             _disposables = null;
             ((ISetLogicalParent)oldChild).SetParent(null);
-            LogicalChildren.Clear();
+            LogicalChildren.Remove(oldChild);
             VisualChildren.Remove(oldChild);
         }
 
         if (newChild != null)
         {
             _disposables?.Dispose();
-            _disposables = new CompositeDisposable(2);
+            _disposables = new CompositeDisposable(4);
             _disposables.Add(BindUtils.RelayBind(this, WidthProperty, newChild, WidthProperty, BindingMode.Default, BindingPriority.Template));
             _disposables.Add(BindUtils.RelayBind(this, HeightProperty, newChild, HeightProperty, BindingMode.Default, BindingPriority.Template));
             if (newChild is Icon icon)
@@ -97,7 +96,8 @@ public class IconPresenter : Control, IMotionAwareControl
             {
                 _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, pathIcon, PathIcon.ForegroundProperty, BindingMode.Default, BindingPriority.Template));
             }
-            ((ISetLogicalParent)newChild).SetParent(this);
+            ((ISetLogicalParent)newChild).SetParent(null);
+            newChild.SetVisualParent(null);
             VisualChildren.Add(newChild);
             LogicalChildren.Add(newChild);
         }

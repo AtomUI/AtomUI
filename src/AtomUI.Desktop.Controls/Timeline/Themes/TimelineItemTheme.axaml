@@ -14,7 +14,7 @@
                                         Mode="{TemplateBinding Mode}"
                                         IsLabelLayout="{TemplateBinding IsLabelLayout}">
                     <atom:TextBlock Name="{x:Static atom:TimelineItemThemeConstants.LabelPart}"
-                                    VerticalAlignment="Center"
+                                    VerticalAlignment="Top"
                                     TextWrapping="Wrap"
                                     Text="{TemplateBinding Label}" />
                     <atom:TimelineIndicator Name="{x:Static atom:TimelineItemThemeConstants.IndicatorPart}"

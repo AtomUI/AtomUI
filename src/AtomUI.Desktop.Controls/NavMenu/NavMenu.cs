@@ -216,6 +216,7 @@ public class NavMenu : ItemsControl,
     private ItemsPresenter? _menuItemsPresenter;
     private readonly Dictionary<NavMenuItem, CompositeDisposable> _itemsBindingDisposables = new();
     private IDisposable? _borderThicknessDisposable;
+    private bool _defaultOpenPathsApplied;
 
     static NavMenu()
     {
@@ -246,8 +247,8 @@ public class NavMenu : ItemsControl,
             i.Close();
         }
 
-        SetCurrentValue(IsOpenProperty, false);
-        SetCurrentValue(SelectedItemProperty, null);
+        IsOpen       = false;
+        SelectedItem = null;
 
         RaiseEvent(new RoutedEventArgs
         {
@@ -263,7 +264,7 @@ public class NavMenu : ItemsControl,
             return;
         }
 
-        SetCurrentValue(IsOpenProperty, true);
+        IsOpen = true;
 
         RaiseEvent(new RoutedEventArgs
         {
@@ -595,7 +596,7 @@ public class NavMenu : ItemsControl,
     {
         if (!skipSelf)
         {
-            item.SetCurrentValue(NavMenuItem.IsSelectedProperty, false);
+            item.IsSelected = false;
         }
         
         for (var i = 0; i < item.ItemCount; i++)
@@ -678,24 +679,27 @@ public class NavMenu : ItemsControl,
 
     private void ConfigureDefaultOpenedPaths()
     {
-        if (DefaultOpenPaths != null)
+        if (DefaultOpenPaths != null && !_defaultOpenPathsApplied)
         {
             foreach (var defaultOpenPath in DefaultOpenPaths)
             {
                 var pathNodes = FindMenuItemByPath(defaultOpenPath);
                 OpenMenuItemPaths(pathNodes);
             }
+
+            _defaultOpenPathsApplied = true;
         }
     }
 
     private void ConfigureDefaultSelectedPath()
     {
         INavMenuItemData? targetItem = null;
+        // 直接设置 SelectedItem 优先级高于 DefaultSelectedPath
         if (SelectedItem != null)
         {
             targetItem = SelectedItem;
         }
-        if (DefaultSelectedPath != null)
+        else if (DefaultSelectedPath != null)
         { 
             var pathNodes = FindMenuItemByPath(DefaultSelectedPath);
             if (pathNodes.Count > 0)
@@ -727,7 +731,7 @@ public class NavMenu : ItemsControl,
         }
         pathNodes = pathNodes.Reverse().ToList();
         
-        if (pathNodes?.Count > 0)
+        if (pathNodes.Count > 0)
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {

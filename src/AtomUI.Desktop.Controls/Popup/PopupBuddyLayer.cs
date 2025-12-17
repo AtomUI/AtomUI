@@ -168,7 +168,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     public PopupBuddyLayer(Popup buddyPopup, TopLevel parent)
         : base(parent)
     {
-        _buddyPopup    = buddyPopup;
+        _buddyPopup = buddyPopup;
     }
     
     private void SetupPopupHost()
@@ -256,8 +256,8 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             return;
         }
         // 这个是否大小和位置信息都有了
-        var popupOffset          = popupRoot.PlatformImpl.Position;
-        var popupSize      = popupRoot.ClientSize;
+        var popupOffset = popupRoot.PlatformImpl.Position;
+        var popupSize   = popupRoot.ClientSize;
         ConfigureSizeAndPosition(new Point(popupOffset.X, popupOffset.Y), popupSize);
     }
 
@@ -271,20 +271,19 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         {
             return;
         }
-        
         _lastBuddyPopupSize     = size;
         _lastBuddyPopupPosition = position;
         
-        var offset         = new Point(position.X, position.Y);
-        
-        var layerOffset = new Point(offset.X - maskShadowsThickness.Left * DesktopScaling,
-            offset.Y - maskShadowsThickness.Top * DesktopScaling);
+        var   offset      = new Point(position.X, position.Y);
+        Point layerOffset = default;
+        // 不知道为何这里的行为 macOS 和 Linux 与 Windows 不一样
         if (OperatingSystem.IsMacOS())
         {
+            layerOffset = new Point(offset.X - maskShadowsThickness.Left, offset.Y - maskShadowsThickness.Top);
             var topOffsetMark = 0d;
             if (ManagedPopupPositionerPopup != null)
             {
-                var screens        = ManagedPopupPositionerPopup.Screens;
+                var screens = ManagedPopupPositionerPopup.Screens;
                 foreach (var screen in screens)
                 {
                     topOffsetMark = Math.Max(topOffsetMark, screen.WorkingArea.Top);
@@ -299,6 +298,11 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             {
                 RenderTransform = null;
             }
+        }
+        else
+        {
+            var renderScaling = GetRenderScaling();
+            layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling, offset.Y - maskShadowsThickness.Top * renderScaling);
         }
         MoveAndResize(layerOffset, size.Inflate(MaskShadows.Thickness()));
     }

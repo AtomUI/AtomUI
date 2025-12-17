@@ -121,7 +121,7 @@ public class ContextMenu : AvaloniaContextMenu,
         _popup.AddClosingEventHandler(this.CreateEventHandler<CancelEventArgs>("PopupClosing")!);
         _popup.KeyUp += this.CreateEventHandler<KeyEventArgs>("PopupKeyUp");
 
-        BindUtils.RelayBind(this, IsUseOverlayLayerProperty, _popup, Popup.MaskShadowsProperty);
+        BindUtils.RelayBind(this, IsUseOverlayLayerProperty, _popup, Popup.ShouldUseOverlayLayerProperty);
         BindUtils.RelayBind(this, MaskShadowsProperty, _popup, Popup.MaskShadowsProperty);
         
         if (_popup is IPopupHostProvider popupHostProvider)

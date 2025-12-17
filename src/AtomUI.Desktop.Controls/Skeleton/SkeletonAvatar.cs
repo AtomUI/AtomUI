@@ -8,14 +8,14 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-public class SkeletonAvatar : AbstractSkeleton, IControlSharedTokenResourcesHost
+public class SkeletonAvatar : AbstractSkeleton, IControlSharedTokenResourcesHost, ICustomizableSizeTypeAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<AvatarShape> ShapeProperty =
         AvaloniaProperty.Register<SkeletonAvatar, AvatarShape>(nameof(AvatarShape), AvatarShape.Circle);
     
-    public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<SkeletonAvatar>();
+    public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
+        CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<SkeletonAvatar>();
     
     public static readonly StyledProperty<double> SizeProperty =
         AvaloniaProperty.Register<SkeletonAvatar, double>(nameof(Size), Double.NaN);
@@ -26,7 +26,7 @@ public class SkeletonAvatar : AbstractSkeleton, IControlSharedTokenResourcesHost
         set => SetValue(ShapeProperty, value);
     }
     
-    public SizeType SizeType
+    public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);

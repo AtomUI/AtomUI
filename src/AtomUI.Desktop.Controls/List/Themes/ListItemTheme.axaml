@@ -31,7 +31,6 @@
         <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemMargin}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemColor}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemBgColor}}" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
 
         <Style Selector="^[DisabledItemHoverEffect=False]:pointerover">

@@ -7,9 +7,10 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <DockPanel Name="RootLayout" LastChildFill="True">
-                    <ContentPresenter Name="TriggerContent"
+                    <ContentPresenter Name="{x:Static atom:UploadThemeConstants.TriggerContentPart}"
                                       Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                      ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                      Focusable="False"/>
                     <atom:UploadList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
                                      ListType="{TemplateBinding ListType}"/>
                 </DockPanel>
@@ -18,24 +19,24 @@
 
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^[ListType=Text]">
-            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Top"/>
             </Style>
         </Style>
         <Style Selector="^[ListType=Picture]">
-            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Top"/>
             </Style>
         </Style>
         
         <Style Selector="^[ListType=PictureCard]">
-            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
             </Style>
         </Style>
         
         <Style Selector="^[ListType=PictureCard]">
-            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
             </Style>
         </Style>

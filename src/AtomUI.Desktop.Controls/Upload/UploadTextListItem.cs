@@ -1,8 +1,6 @@
-using Avalonia.Controls.Primitives;
-
 namespace AtomUI.Desktop.Controls;
 
-internal class UploadTextListItem : TemplatedControl
+internal class UploadTextListItem : AbstractUploadListItem
 {
     
 }

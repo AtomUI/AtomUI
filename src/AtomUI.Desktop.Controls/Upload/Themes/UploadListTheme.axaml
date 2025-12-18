@@ -14,5 +14,13 @@
                 </Border>
             </ControlTemplate>
         </Setter>
+        
+        <Style Selector="^[ListType=Text]">
+            <Setter Property="ItemsPanel">
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </Setter>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

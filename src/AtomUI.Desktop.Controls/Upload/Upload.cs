@@ -5,6 +5,7 @@ using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -173,6 +174,7 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
     private IDisposable? _clickSubscription;
     private Point? _latestClickPosition;
     private ItemsControl? _uploadListControl;
+    private Control? _triggerContent;
     private FileUploadScheduler _uploadScheduler;
 
     public Upload()
@@ -204,7 +206,8 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
         {
             var point = mouseEventArgs.Point;
             var localPoint = TopLevel.GetTopLevel(this)?.TranslatePoint(point.Position, this) ?? default;
-            var constraintBounds = new Rect(0, 0, Bounds.Width, Bounds.Height);
+            var constraintOffset = _triggerContent?.TranslatePoint(new Point(0, 0), this) ?? default;
+            var constraintBounds = new Rect(constraintOffset, _triggerContent?.Bounds.Size ?? new Size());
             if (constraintBounds.Contains(localPoint))
             {
                 if (mouseEventArgs.Type == RawPointerEventType.LeftButtonDown)
@@ -287,6 +290,7 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
         task.UploadCancelledHandler = HandleUploadCancelled;
 
         var uploadTaskInfo = new UploadTaskInfo();
+        uploadTaskInfo.TaskId = task.Id;
         TaskInfoList.Add(uploadTaskInfo);
         _uploadScheduler.EnqueueTask(task);
     }
@@ -315,6 +319,7 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
     {
         base.OnApplyTemplate(e);
         _uploadListControl = e.NameScope.Find<ItemsControl>(UploadThemeConstants.UploadListPart);
+        _triggerContent = e.NameScope.Find<ContentPresenter>(UploadThemeConstants.TriggerContentPart);
         if (_uploadListControl != null)
         {
             _uploadListControl.ItemsSource = TaskInfoList;

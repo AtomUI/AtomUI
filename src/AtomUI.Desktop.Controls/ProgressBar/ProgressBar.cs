@@ -5,6 +5,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -57,7 +58,7 @@ public class ProgressBar : AbstractLineProgress
 
     #endregion
 
-    private IDisposable? PercentageLabelBindingDisposable;
+    private IDisposable? _percentageLabelBindingDisposable;
     
     static ProgressBar()
     {
@@ -72,7 +73,7 @@ public class ProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             targetHeight = StrokeThickness;
-            if (!PercentPosition.IsInner && ShowProgressInfo)
+            if (!PercentPosition.IsInner && IsShowProgressInfo)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
                 {
@@ -86,15 +87,13 @@ public class ProgressBar : AbstractLineProgress
             }
             else if (!double.IsNaN(MinWidth))
             {
-                targetWidth = MinHeight;
+                targetWidth = MinWidth;
             }
-
-            targetHeight = Math.Max(targetHeight, MinHeight);
         }
         else
         {
             targetWidth = StrokeThickness;
-            if (!PercentPosition.IsInner && ShowProgressInfo)
+            if (!PercentPosition.IsInner && IsShowProgressInfo)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
                 {
@@ -118,7 +117,7 @@ public class ProgressBar : AbstractLineProgress
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (ShowProgressInfo)
+        if (IsShowProgressInfo)
         {
             var extraInfoRect = GetExtraInfoRect(new Rect(new Point(0, 0), finalSize));
             if (LayoutTransformLabel is not null)
@@ -246,7 +245,7 @@ public class ProgressBar : AbstractLineProgress
             strokeThickness = IndicatorThickness;
         }
 
-        if (ShowProgressInfo && PercentPosition.IsInner)
+        if (IsShowProgressInfo && PercentPosition.IsInner)
         {
             if (Orientation == Orientation.Horizontal)
             {
@@ -273,11 +272,12 @@ public class ProgressBar : AbstractLineProgress
         StrokeThickness = strokeThickness;
     }
 
-    protected override void NotifySetupUI()
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         CalculateSizeTypeThresholdValue();
         CalculateMinBarThickness();
-        base.NotifySetupUI();
+        base.OnApplyTemplate(e);
+        SetupPercentLabelForegroundBrush();
     }
 
     protected override SizeType CalculateEffectiveSizeType(double size)
@@ -399,7 +399,7 @@ public class ProgressBar : AbstractLineProgress
         var    strokeThickness = StrokeThickness;
         if (Orientation == Orientation.Horizontal)
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (!PercentPosition.IsInner)
                 {
@@ -422,7 +422,7 @@ public class ProgressBar : AbstractLineProgress
         }
         else
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (!PercentPosition.IsInner)
                 {
@@ -462,7 +462,7 @@ public class ProgressBar : AbstractLineProgress
         double offsetY      = 0;
         double targetWidth  = 0;
         double targetHeight = 0;
-        if (ShowProgressInfo)
+        if (IsShowProgressInfo)
         {
             targetWidth  = _extraInfoSize.Width;
             targetHeight = _extraInfoSize.Height;
@@ -470,7 +470,7 @@ public class ProgressBar : AbstractLineProgress
 
         if (Orientation == Orientation.Horizontal)
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (PercentPosition.IsInner)
                 {
@@ -559,23 +559,28 @@ public class ProgressBar : AbstractLineProgress
 
     protected override Size CalculateExtraInfoSize(double fontSize)
     {
-        if ((Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum)) &&
-            !PercentPosition.IsInner)
+        if (IsShowProgressInfo)
         {
-            // 只要图标
-            return new Size(LineInfoIconSize, LineInfoIconSize);
-        }
-
-        var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
-        if (ShowProgressInfo && PercentPosition.IsInner)
-        {
-            if (Orientation == Orientation.Vertical)
+            if ((Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum)) &&
+                !PercentPosition.IsInner)
             {
-                textSize = new Size(textSize.Height, textSize.Width);
+                // 只要图标
+                return new Size(LineInfoIconSize, LineInfoIconSize);
             }
+
+            var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+            if (PercentPosition.IsInner)
+            {
+                if (Orientation == Orientation.Vertical)
+                {
+                    textSize = new Size(textSize.Height, textSize.Width);
+                }
+            }
+
+            return textSize;
         }
 
-        return textSize;
+        return default;
     }
 
     protected override void NotifyEffectSizeTypeChanged()
@@ -605,6 +610,10 @@ public class ProgressBar : AbstractLineProgress
         {
             UpdatePseudoClasses();
         }
+        else if (change.Property == IsShowProgressInfoProperty)
+        {
+            CalculateMinBarThickness();
+        }
     }
 
     // 需要评估是否需要
@@ -626,18 +635,12 @@ public class ProgressBar : AbstractLineProgress
         }
     }
 
-    protected override void NotifyUiStructureReady()
-    {
-        base.NotifyUiStructureReady();
-        SetupPercentLabelForegroundBrush();
-    }
-
     private void SetupPercentLabelForegroundBrush()
     {
         if (!PercentPosition.IsInner)
         {
-            PercentageLabelBindingDisposable?.Dispose();
-            PercentageLabelBindingDisposable = BindUtils.RelayBind(this, ForegroundProperty, PercentageLabel!, ForegroundProperty);
+            _percentageLabelBindingDisposable?.Dispose();
+            _percentageLabelBindingDisposable = BindUtils.RelayBind(this, ForegroundProperty, PercentageLabel!, ForegroundProperty);
         }
         else
         {

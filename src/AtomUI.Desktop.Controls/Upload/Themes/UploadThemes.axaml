@@ -3,8 +3,12 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="UploadTheme.axaml" />
+        <ResourceInclude Source="UploadPictureCircleListItemTheme.axaml" />
+        <ResourceInclude Source="UploadPictureCardListItemTheme.axaml" />
         <ResourceInclude Source="UploadPictureListItemTheme.axaml" />
         <ResourceInclude Source="UploadTextListItemTheme.axaml" />
+        <ResourceInclude Source="UploadTextListItemHeaderTheme.axaml" />
         <ResourceInclude Source="UploadListTheme.axaml" />
+        <ResourceInclude Source="UploadDefaultDropAreaTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

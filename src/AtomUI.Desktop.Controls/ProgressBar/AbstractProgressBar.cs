@@ -39,8 +39,8 @@ public abstract class AbstractProgressBar : RangeBase,
     public static readonly StyledProperty<bool> IsIndeterminateProperty =
         AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsIndeterminate));
     
-    public static readonly StyledProperty<bool> ShowProgressInfoProperty =
-        AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(ShowProgressInfo), true);
+    public static readonly StyledProperty<bool> IsShowProgressInfoProperty =
+        AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsShowProgressInfo), true);
     
     public static readonly StyledProperty<string> ProgressTextFormatProperty =
         AvaloniaProperty.Register<AbstractProgressBar, string>(nameof(ProgressTextFormat), "{0:0}%");
@@ -97,10 +97,10 @@ public abstract class AbstractProgressBar : RangeBase,
     /// <summary>
     /// Gets or sets a value indicating whether progress text will be shown.
     /// </summary>
-    public bool ShowProgressInfo
+    public bool IsShowProgressInfo
     {
-        get => GetValue(ShowProgressInfoProperty);
-        set => SetValue(ShowProgressInfoProperty, value);
+        get => GetValue(IsShowProgressInfoProperty);
+        set => SetValue(IsShowProgressInfoProperty, value);
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public abstract class AbstractProgressBar : RangeBase,
     static AbstractProgressBar()
     {
         AffectsMeasure<AbstractProgressBar>(EffectiveSizeTypeProperty,
-            ShowProgressInfoProperty,
+            IsShowProgressInfoProperty,
             ProgressTextFormatProperty,
             ValueProperty);
         AffectsRender<AbstractProgressBar>(StrokeBrushProperty,
@@ -338,8 +338,9 @@ public abstract class AbstractProgressBar : RangeBase,
         PercentageLabel = e.NameScope.Find<Label>(ProgressBarThemeConstants.PercentageLabelPart);
         ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>(ProgressBarThemeConstants.ExceptionCompletedIconPresenterPart);
         SuccessCompletedIconPresenter = e.NameScope.Find<IconPresenter>(ProgressBarThemeConstants.SuccessCompletedIconPresenterPart);
-        NotifySetupUI();
-        NotifyUiStructureReady();
+        // 创建完更新调用一次
+        NotifyEffectSizeTypeChanged();
+        UpdateProgress();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -371,7 +372,7 @@ public abstract class AbstractProgressBar : RangeBase,
 
     protected virtual void NotifyUpdateProgress()
     {
-        if (ShowProgressInfo && PercentageLabel != null)
+        if (IsShowProgressInfo && PercentageLabel != null)
         {
             if (Status != ProgressStatus.Exception)
             {
@@ -385,14 +386,7 @@ public abstract class AbstractProgressBar : RangeBase,
     protected virtual void NotifyHandleExtraInfoVisibility()
     {
     }
-
-    protected virtual void NotifyUiStructureReady()
-    {
-        // 创建完更新调用一次
-        NotifyEffectSizeTypeChanged();
-        UpdateProgress();
-    }
-
+    
     private void ConfigureTransitions(bool force)
     {
         if (IsMotionEnabled)
@@ -459,9 +453,9 @@ public abstract class AbstractProgressBar : RangeBase,
         PseudoClasses.Set(ProgressBarPseudoClass.Completed, MathUtils.AreClose(Value, Maximum));
     }
 
-    protected virtual void NotifySetupUI()
-    {
-    }
+    // protected virtual void NotifySetupUI()
+    // {
+    // }
 
     protected virtual void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

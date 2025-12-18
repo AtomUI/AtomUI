@@ -10,10 +10,10 @@ public class FileUploadTask
     public FileUploadResult? Result { get; set; }
     public CancellationTokenSource? CancellationTokenSource { get; set; }
     
-    public Action<UploadFileInfo, double>? UploadProgressHandler { get; set; }
-    public Action<UploadFileInfo, FileUploadResult>? UploadCompletedHandler { get; set; }
-    public Action<UploadFileInfo, FileUploadResult>? UploadFailedHandler { get; set; }
-    public Action<UploadFileInfo, FileUploadResult>? UploadCancelledHandler { get; set; }
+    public Action<Guid, UploadFileInfo, double>? UploadProgressHandler { get; set; }
+    public Action<Guid, UploadFileInfo, FileUploadResult>? UploadCompletedHandler { get; set; }
+    public Action<Guid, UploadFileInfo, FileUploadResult>? UploadFailedHandler { get; set; }
+    public Action<Guid, UploadFileInfo, FileUploadResult>? UploadCancelledHandler { get; set; }
 
     public FileUploadTask()
     {

@@ -3,6 +3,7 @@ using AtomUI.Theme.Styling;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -163,11 +164,11 @@ public class StepsProgressBar : AbstractLineProgress
         StrokeThickness = strokeThickness;
     }
 
-    protected override void NotifySetupUI()
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         CalculateSizeTypeThresholdValue();
         CalculateMinBarThickness();
-        base.NotifySetupUI();
+        base.OnApplyTemplate(e);
     }
 
     // 需要评估是否需要
@@ -320,7 +321,7 @@ public class StepsProgressBar : AbstractLineProgress
             var chunkWidth  = GetChunkWidth();
             var chunkHeight = GetChunkHeight();
             targetWidth = chunkWidth * Steps + DEFAULT_CHUNK_SPACE * (Steps - 1);
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (PercentPosition == LinePercentAlignment.Center)
                 {
@@ -339,7 +340,7 @@ public class StepsProgressBar : AbstractLineProgress
             var chunkWidth  = GetChunkHeight();
             var chunkHeight = GetChunkWidth();
             targetHeight = chunkHeight * Steps + DEFAULT_CHUNK_SPACE * (Steps - 1);
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (PercentPosition == LinePercentAlignment.Center)
                 {
@@ -359,7 +360,7 @@ public class StepsProgressBar : AbstractLineProgress
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (ShowProgressInfo)
+        if (IsShowProgressInfo)
         {
             var extraInfoRect = GetExtraInfoRect(new Rect(new Point(0, 0), finalSize));
             if (LayoutTransformLabel is not null)
@@ -434,7 +435,7 @@ public class StepsProgressBar : AbstractLineProgress
         var    strokeThickness = StrokeThickness;
         if (Orientation == Orientation.Horizontal)
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 var percentLabelWidth  = _extraInfoSize.Width;
                 var percentLabelHeight = _extraInfoSize.Height;
@@ -454,7 +455,7 @@ public class StepsProgressBar : AbstractLineProgress
         }
         else
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 var percentLabelWidth  = _extraInfoSize.Width;
                 var percentLabelHeight = _extraInfoSize.Height;
@@ -491,7 +492,7 @@ public class StepsProgressBar : AbstractLineProgress
         double offsetY      = 0;
         double targetWidth  = 0;
         double targetHeight = 0;
-        if (ShowProgressInfo)
+        if (IsShowProgressInfo)
         {
             targetWidth  = _extraInfoSize.Width;
             targetHeight = _extraInfoSize.Height;
@@ -499,7 +500,7 @@ public class StepsProgressBar : AbstractLineProgress
 
         if (Orientation == Orientation.Horizontal)
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (PercentPosition == LinePercentAlignment.Start)
                 {
@@ -520,7 +521,7 @@ public class StepsProgressBar : AbstractLineProgress
         }
         else
         {
-            if (ShowProgressInfo)
+            if (IsShowProgressInfo)
             {
                 if (PercentPosition == LinePercentAlignment.Start)
                 {

@@ -10,7 +10,7 @@
     </ControlTheme.BasedOn>
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:AbstractLineProgress">
-            <Canvas>
+            <Canvas IsVisible="{TemplateBinding IsShowProgressInfo}">
                 <LayoutTransformControl Name="{x:Static atom:ProgressBarThemeConstants.LayoutTransformControlPart}">
                     <Label Name="{x:Static atom:ProgressBarThemeConstants.PercentageLabelPart}"
                            Padding="0"
@@ -37,11 +37,11 @@
         <Setter Property="LineProgressPadding" Value="{DynamicResource {x:Static atom:ProgressBarTokenKey.LineProgressPadding}}" />
         <Setter Property="LineExtraInfoMargin" Value="{DynamicResource {x:Static atom:ProgressBarTokenKey.LineExtraInfoMargin}}" />
         
-        <Style Selector="^ /template/ atom|IconPresenter#PARTExceptionCompletedIconPresenter">
+        <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
         </Style>
         
-        <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+        <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
         </Style>
         

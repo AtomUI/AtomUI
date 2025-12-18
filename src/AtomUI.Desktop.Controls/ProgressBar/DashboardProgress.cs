@@ -1,5 +1,6 @@
 using AtomUI.Media;
 using Avalonia;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -202,9 +203,9 @@ public class DashboardProgress : AbstractCircleProgress
         IndicatorAngle = CalculateAngle(Value);
     }
 
-    protected override void NotifyUiStructureReady()
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        base.NotifyUiStructureReady();
+        base.OnApplyTemplate(e);
         _anglePair = CalculateAngle(DashboardGapPosition, GapDegree);
     }
 

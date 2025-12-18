@@ -3,7 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter" VerticalAlignment="Center" HorizontalAlignment="Center" />
+    <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter" 
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center"
+                                     TextWrapping="Wrap"/>
     <ControlTheme x:Key="{x:Type atom:ToolTip}" TargetType="atom:ToolTip">
         <Setter Property="Template">
             <ControlTemplate>

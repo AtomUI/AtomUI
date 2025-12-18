@@ -23,7 +23,7 @@
                 <atom:ProgressBar Value="50" Minimum="0" Maximum="100" />
                 <atom:ProgressBar Value="70" Minimum="0" Maximum="100" Status="Exception" />
                 <atom:ProgressBar Value="100" Minimum="0" Maximum="100" />
-                <atom:ProgressBar Value="50" Minimum="0" Maximum="100" ShowProgressInfo="False" />
+                <atom:ProgressBar Value="50" Minimum="0" Maximum="100" IsShowProgressInfo="False" />
             </StackPanel>
         </gallery:ShowCaseItem>
 
@@ -45,7 +45,7 @@
                 <atom:ProgressBar Value="50" Minimum="0" Maximum="100" SizeType="Middle" />
                 <atom:ProgressBar Value="70" Minimum="0" Maximum="100" Status="Exception" SizeType="Middle" />
                 <atom:ProgressBar Value="100" Minimum="0" Maximum="100" SizeType="Middle" />
-                <atom:ProgressBar Value="50" Minimum="0" Maximum="100" ShowProgressInfo="False" SizeType="Middle" />
+                <atom:ProgressBar Value="50" Minimum="0" Maximum="100" IsShowProgressInfo="False" SizeType="Middle" />
             </WrapPanel>
         </gallery:ShowCaseItem>
 
@@ -63,7 +63,7 @@
             Title="Dynamic"
             Description="A dynamic progress bar is better.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" />
+                <atom:ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" IsShowProgressInfo="False"/>
                 <atom:CircleProgress Value="{Binding ProgressValue}" Minimum="0" Maximum="100" />
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <atom:Button SizeType="Small" Command="{Binding SubProgressValue}">Sub</atom:Button>
@@ -106,8 +106,7 @@
                 </WrapPanel>
             </StackPanel>
         </gallery:ShowCaseItem>
-
-
+        
         <gallery:ShowCaseItem
             Title="Stroke Linecap"
             Description="By setting strokeLinecap='butt', you can change the linecaps from round to butt, see stroke-linecap for more information.">

@@ -53,19 +53,20 @@ public class FileUploadScheduler : IFileUploadScheduler
             var cancellationToken       = cancellationTokenSource.Token;
             task.CancellationTokenSource = cancellationTokenSource;
             task.Status                  = FileUploadStatus.Uploading;
+            Debug.Assert(task.UploadFileInfo != null);
+            
+            var progress = new Progress<FileUploadProgress>(report =>
+            {
+                task.Progress = report.Percentage;
+                task.UploadProgressHandler?.Invoke(task.Id, task.UploadFileInfo, task.Progress);
+            });
             
             _ = Task.Run(async () =>
             {
-                Debug.Assert(task.UploadFileInfo != null);
+         
                 FileUploadResult? result = null;
                 try
                 {
-                    var progress = new Progress<FileUploadProgress>(report =>
-                    {
-                        task.Progress = report.Percentage;
-                        task.UploadProgressHandler?.Invoke(task.UploadFileInfo, task.Progress);
-                    });
-                    
                     result = await _transport.UploadAsync(
                         task.UploadFileInfo,
                         task.Context,
@@ -81,11 +82,11 @@ public class FileUploadScheduler : IFileUploadScheduler
                         {
                             Debug.WriteLine(
                                 $"Upload failed: {task.UploadFileInfo.FilePath}, Reason: {result.UserFriendlyMessage}");
-                            task.UploadFailedHandler?.Invoke(task.UploadFileInfo, result);
+                            task.UploadFailedHandler?.Invoke(task.Id, task.UploadFileInfo, result);
                         }
                         else
                         {
-                            task.UploadCompletedHandler?.Invoke(task.UploadFileInfo, result);
+                            task.UploadCompletedHandler?.Invoke(task.Id, task.UploadFileInfo, result);
                         }
                     });
                 }
@@ -94,7 +95,7 @@ public class FileUploadScheduler : IFileUploadScheduler
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         task.Status = FileUploadStatus.Cancelled;
-                        task.UploadCancelledHandler?.Invoke(task.UploadFileInfo, FileUploadResult.CancelledResult("upload cancelled"));
+                        task.UploadCancelledHandler?.Invoke(task.Id, task.UploadFileInfo, FileUploadResult.CancelledResult("upload cancelled"));
                     });
                 }
                 catch (Exception ex)
@@ -103,7 +104,7 @@ public class FileUploadScheduler : IFileUploadScheduler
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         task.Status = FileUploadStatus.Failed;
-                        task.UploadFailedHandler?.Invoke(task.UploadFileInfo, FileUploadResult.FailureResult(FileUploadErrorCode.Unknown, ex.Message));
+                        task.UploadFailedHandler?.Invoke(task.Id, task.UploadFileInfo, FileUploadResult.FailureResult(FileUploadErrorCode.Unknown, ex.Message));
                     });
                 }
                 finally

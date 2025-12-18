@@ -73,13 +73,13 @@ internal class TimelineIndicator : TemplatedControl
             o => o.NextIsPending,
             (o, v) => o.NextIsPending = v);
     
-    public double RelativeLineHeight
+    internal double RelativeLineHeight
     {
         get => GetValue(RelativeLineHeightProperty);
         set => SetValue(RelativeLineHeightProperty, value);
     }
 
-    public IBrush? DefaultIndicatorColor
+    internal IBrush? DefaultIndicatorColor
     {
         get => GetValue(DefaultIndicatorColorProperty);
         set => SetValue(DefaultIndicatorColorProperty, value);

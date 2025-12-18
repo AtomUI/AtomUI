@@ -9,13 +9,15 @@
                 <DockPanel Name="RootLayout" LastChildFill="True">
                     <ContentPresenter Name="{x:Static atom:UploadThemeConstants.TriggerContentPart}"
                                       Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}" 
-                                      Focusable="False"/>
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
                     <atom:UploadList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
-                                     ListType="{TemplateBinding ListType}"/>
+                                     ListType="{TemplateBinding ListType}"
+                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
                 </DockPanel>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
 
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^[ListType=Text]">

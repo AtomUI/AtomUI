@@ -1073,6 +1073,8 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     {
         public static readonly TokenResourceKey ActionsColor = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.ActionsColor");
         public static readonly TokenResourceKey PictureCardSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureCardSize");
+        public static readonly TokenResourceKey TextListItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListItemMargin");
+        public static readonly TokenResourceKey TextListNamePadding = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListNamePadding");
     }
 
     public static class WindowTokenKey

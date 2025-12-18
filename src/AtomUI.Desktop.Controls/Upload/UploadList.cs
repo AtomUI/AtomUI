@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 
@@ -69,7 +70,19 @@ internal class UploadList : ItemsControl, IMotionAwareControl
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new SegmentedItem();
+        if (ListType == UploadListType.Picture)
+        {
+            return new UploadPictureListItem();
+        }
+        if (ListType == UploadListType.PictureCard)
+        {
+            return new UploadPictureCardListItem();
+        }
+        if (ListType == UploadListType.PictureCircle)
+        {
+            return new UploadPictureCircleListItem();
+        }
+        return new UploadTextListItem();
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -80,38 +93,32 @@ internal class UploadList : ItemsControl, IMotionAwareControl
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
-        // if (container is SegmentedItem segmentedItem)
-        // {
-        //     var disposables = new CompositeDisposable(2);
-        //     
-        //     if (item != null && item is not Visual)
-        //     {
-        //         if (!segmentedItem.IsSet(SegmentedItem.ContentProperty))
-        //         {
-        //             segmentedItem.SetCurrentValue(SegmentedItem.ContentProperty, item);
-        //         }
-        //     }
-        //     
-        //     if (ItemTemplate != null)
-        //     {
-        //         disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, segmentedItem, SegmentedItem.ContentTemplateProperty));
-        //     }
-        //     
-        //     disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, segmentedItem, SegmentedItem.SizeTypeProperty));
-        //     disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, segmentedItem, SegmentedItem.IsMotionEnabledProperty));
-        //     
-        //     PrepareSegmentedItem(segmentedItem, item, index, disposables);
-        //     
-        //     if (_itemsBindingDisposables.TryGetValue(segmentedItem, out var oldDisposables))
-        //     {
-        //         oldDisposables.Dispose();
-        //         _itemsBindingDisposables.Remove(segmentedItem);
-        //     }
-        //     _itemsBindingDisposables.Add(segmentedItem, disposables);
-        // }
-        // else
-        // {
-        //     throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type SegmentedItem.");
-        // }
+        if (container is AbstractUploadListItem listItem)
+        {
+            var disposables = new CompositeDisposable(8);
+            if (item != null && item is UploadTaskInfo uploadTaskInfo)
+            {
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.TaskIdProperty, listItem, AbstractUploadListItem.TaskIdProperty));
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.FileNameProperty, listItem, AbstractUploadListItem.FileNameProperty));
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.ProgressProperty, listItem, AbstractUploadListItem.ProgressProperty));
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.IsImageFileProperty, listItem, AbstractUploadListItem.IsImageFileProperty));
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.StatusProperty, listItem, AbstractUploadListItem.StatusProperty));
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.ErrorMessageProperty, listItem, AbstractUploadListItem.ErrorMessageProperty));
+                disposables.Add(BindUtils.RelayBind(uploadTaskInfo, UploadTaskInfo.FilePathProperty, listItem, AbstractUploadListItem.FilePathProperty));
+            }
+            
+            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, listItem, AbstractUploadListItem.IsMotionEnabledProperty));
+            
+            if (_itemsBindingDisposables.TryGetValue(listItem, out var oldDisposables))
+            {
+                oldDisposables.Dispose();
+                _itemsBindingDisposables.Remove(listItem);
+            }
+            _itemsBindingDisposables.Add(listItem, disposables);
+        }
+        else
+        {
+            throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type AbstractUploadListItem.");
+        }
     }
 }

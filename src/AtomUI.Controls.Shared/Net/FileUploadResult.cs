@@ -18,9 +18,7 @@ public enum FileUploadStatus
     Uploading,
     Success,
     Failed,
-    Cancelled,
-    TimedOut,
-    Removed
+    Cancelled
 }
 
 public record FileUploadResult

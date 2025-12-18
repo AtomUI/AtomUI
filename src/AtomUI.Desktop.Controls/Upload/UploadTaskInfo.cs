@@ -5,7 +5,11 @@ namespace AtomUI.Desktop.Controls;
 
 public class UploadTaskInfo : AvaloniaObject
 {
-    public Guid TaskId { get; set; }
+    public static readonly DirectProperty<UploadTaskInfo, Guid> TaskIdProperty =
+        AvaloniaProperty.RegisterDirect<UploadTaskInfo, Guid>(
+            nameof(TaskId),
+            o => o.TaskId,
+            (o, v) => o.TaskId = v);
     
     public static readonly DirectProperty<UploadTaskInfo, string?> FileNameProperty =
         AvaloniaProperty.RegisterDirect<UploadTaskInfo, string?>(
@@ -36,6 +40,20 @@ public class UploadTaskInfo : AvaloniaObject
             nameof(ErrorMessage),
             o => o.ErrorMessage,
             (o, v) => o.ErrorMessage = v);
+    
+    public static readonly DirectProperty<UploadTaskInfo, Uri?> FilePathProperty =
+        AvaloniaProperty.RegisterDirect<UploadTaskInfo, Uri?>(
+            nameof(FilePath),
+            o => o.FilePath,
+            (o, v) => o.FilePath = v);
+    
+    private Guid _taskId;
+
+    public Guid TaskId
+    {
+        get => _taskId;
+        set => SetAndRaise(TaskIdProperty, ref _taskId, value);
+    }
     
     private double _progress;
 
@@ -76,4 +94,14 @@ public class UploadTaskInfo : AvaloniaObject
         get => _errorMessage;
         set => SetAndRaise(ErrorMessageProperty, ref _errorMessage, value);
     }
+    
+    private Uri? _filePath;
+
+    public Uri? FilePath
+    {
+        get => _filePath;
+        set => SetAndRaise(FilePathProperty, ref _filePath, value);
+    }
+    
+    internal FileUploadTask? UploadTask { get; set; }
 }

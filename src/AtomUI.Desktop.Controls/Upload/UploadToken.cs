@@ -1,4 +1,5 @@
 using AtomUI.Theme.TokenSystem;
+using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -30,10 +31,22 @@ internal class UploadToken : AbstractControlDesignToken
     /// </summary>
     public double PictureCardSize { get; set; }
     
+    /// <summary>
+    /// 文本列表的外间距
+    /// </summary>
+    public Thickness TextListItemMargin { get; set; }
+    
+    /// <summary>
+    /// 文本列表文件名的内间距
+    /// </summary>
+    public Thickness TextListNamePadding { get; set; }
+    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        ActionsColor    = SharedToken.ColorIcon;
-        PictureCardSize = SharedToken.ControlHeightLG * 2.55;
+        ActionsColor       = SharedToken.ColorIcon;
+        PictureCardSize    = SharedToken.ControlHeightLG * 2.55;
+        TextListItemMargin = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
+        TextListNamePadding = new Thickness(SharedToken.UniformlyPaddingXS, 0);
     }
 }

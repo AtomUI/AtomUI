@@ -1,4 +1,4 @@
-using System.Net;
+using System.Text.RegularExpressions;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -14,7 +14,7 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Upload : ContentControl, IControlSharedTokenResourcesHost
+public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     public static readonly StyledProperty<IReadOnlyList<string>?> AcceptsProperty =
@@ -64,6 +64,9 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
             nameof(UploadTransport),
             o => o.UploadTransport,
             (o, v) => o.UploadTransport = v);
+    
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Upload>();
     
     public IReadOnlyList<string>? Accepts
     {
@@ -151,6 +154,13 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
         set => SetAndRaise(UploadTransportProperty, ref _uploadTransport, value);
     }
     
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+
+    
     public AvaloniaList<UploadTaskInfo> TaskInfoList { get; } = new ();
     
     #endregion
@@ -161,6 +171,7 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
     public Action<UploadFileInfo>? FilePreviewHandler { get; set; }
     public Action<UploadFileInfo>? FileDropHandler { get; set; }
     public Action<UploadFileInfo, Task<bool>>? FileRemovedHandler { get; set; }
+    public Func<UploadFileInfo, bool>? IsImageFilePredicate { get; set; }
     
     #endregion
     
@@ -174,9 +185,19 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
     private IDisposable? _clickSubscription;
     private Point? _latestClickPosition;
     private ItemsControl? _uploadListControl;
-    private Control? _triggerContent;
+    private ContentPresenter? _triggerContent;
     private FileUploadScheduler _uploadScheduler;
+    private static readonly Regex ImageExtensionRegex = 
+        new Regex(@"\.(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico|heic|heif)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    static Upload()
+    {
+        AbstractUploadListItem.TaskRemoveRequestEvent.AddClassHandler<Upload>((upload, args) =>
+        {
+            upload.HandleUploadTaskRemoveRequest(args.TaskId);
+        });
+    }
+    
     public Upload()
     {
         _uploadScheduler = new FileUploadScheduler();
@@ -290,29 +311,53 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
         task.UploadCancelledHandler = HandleUploadCancelled;
 
         var uploadTaskInfo = new UploadTaskInfo();
-        uploadTaskInfo.TaskId = task.Id;
+        uploadTaskInfo.TaskId      = task.Id;
+        uploadTaskInfo.FileName    = uploadFile.Name;
+        uploadTaskInfo.Status      = task.Status;
+        uploadTaskInfo.Progress    = task.Progress;
+        uploadTaskInfo.IsImageFile = IsImageFile(uploadFile);
+        uploadTaskInfo.UploadTask  = task;
         TaskInfoList.Add(uploadTaskInfo);
         _uploadScheduler.EnqueueTask(task);
     }
 
-    private void HandleUploadProgressChanged(UploadFileInfo fileInfo, double progress)
+    private void HandleUploadProgressChanged(Guid taskId, UploadFileInfo fileInfo, double progress)
     {
-        Console.WriteLine($"Upload Progress: {progress:00.00}%");
+        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        if (taskInfo != null)
+        {
+            taskInfo.Status   = FileUploadStatus.Uploading;
+            taskInfo.Progress = progress;
+        }
     }
     
-    private void HandleUploadCompleted(UploadFileInfo uploadFileInfo, FileUploadResult result)
+    private void HandleUploadCompleted(Guid taskId, UploadFileInfo uploadFileInfo, FileUploadResult result)
     {
-        Console.WriteLine($"Upload Completed: {result.RemoteUrl}");
+        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        if (taskInfo != null)
+        {
+            taskInfo.Status = FileUploadStatus.Success;
+        }
     }
     
-    private void HandleUploadFailed(UploadFileInfo uploadFileInfo, FileUploadResult result)
+    private void HandleUploadFailed(Guid taskId, UploadFileInfo uploadFileInfo, FileUploadResult result)
     {
-        Console.WriteLine($"Upload Failed: {result.UserFriendlyMessage}");
+        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        if (taskInfo != null)
+        {
+            taskInfo.Status       = FileUploadStatus.Failed;
+            taskInfo.ErrorMessage = result.UserFriendlyMessage;
+        }
     }
     
-    private void HandleUploadCancelled(UploadFileInfo uploadFileInfo, FileUploadResult result)
+    private void HandleUploadCancelled(Guid taskId, UploadFileInfo uploadFileInfo, FileUploadResult result)
     {
-        Console.WriteLine($"Upload Cancelled: {result.UserFriendlyMessage}");
+        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        if (taskInfo != null)
+        {
+            taskInfo.Status       = FileUploadStatus.Cancelled;
+            taskInfo.ErrorMessage = result.UserFriendlyMessage;
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -345,6 +390,40 @@ public class Upload : ContentControl, IControlSharedTokenResourcesHost
             {
                 await _uploadScheduler.SetMaxConcurrentTasksAsync(MaxConcurrentTasks);
             });
+        }
+    }
+
+    private bool IsImageFile(UploadFileInfo uploadFileInfo)
+    {
+        if (IsImageFilePredicate != null)
+        {
+            return IsImageFilePredicate.Invoke(uploadFileInfo);
+        }
+        var extension = Path.GetExtension(uploadFileInfo.FilePath.LocalPath).ToLowerInvariant();
+        if (string.IsNullOrEmpty(extension))
+        {
+            return false;
+        }
+        return ImageExtensionRegex.IsMatch(extension);
+    }
+
+    private void HandleUploadTaskRemoveRequest(Guid taskId)
+    {
+        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        if (taskInfo != null)
+        {
+            if (taskInfo.Status != FileUploadStatus.Uploading || taskInfo.UploadTask == null)
+            {
+                TaskInfoList.Remove(taskInfo);
+            }
+            else
+            {
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await _uploadScheduler.CancelUploadAsync(taskInfo.UploadTask);
+                    TaskInfoList.Remove(taskInfo);
+                });
+            }
         }
     }
 }

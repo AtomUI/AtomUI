@@ -68,6 +68,9 @@ public class MessageBox : TemplatedControl,
     
     public static readonly StyledProperty<bool> IsDragMovableProperty =
         Dialog.IsDragMovableProperty.AddOwner<MessageBox>();
+
+    public static readonly StyledProperty<object?> ResultProperty =
+        Dialog.ResultProperty.AddOwner<MessageBox>();
     
     public static readonly StyledProperty<bool> IsCenterOnStartupProperty =
         AvaloniaProperty.Register<MessageBox, bool>(nameof(IsCenterOnStartup), true);
@@ -178,6 +181,12 @@ public class MessageBox : TemplatedControl,
         get => GetValue(IsDragMovableProperty);
         set => SetValue(IsDragMovableProperty, value);
     }
+
+    public object? Result
+    {
+        get => GetValue(ResultProperty);
+        set => SetValue(ResultProperty, value);
+    }
     
     public bool IsCenterOnStartup
     {
@@ -286,6 +295,13 @@ public class MessageBox : TemplatedControl,
             {
                 ConfigureOkButton();
             }
+            else if (change.Property == ResultProperty && _dialog != null)
+            {
+                if (!Equals(_dialog.Result, change.NewValue))
+                {
+                    _dialog.SetCurrentValue(Dialog.ResultProperty, change.NewValue);
+                }
+            }
             else if (change.Property == IsCenterOnStartupProperty)
             {
                 ConfigurePositionOnStartup();
@@ -296,6 +312,14 @@ public class MessageBox : TemplatedControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_dialog != null)
+        {
+            _dialog.Opened           -= HandleDialogOpened;
+            _dialog.Closed           -= HandleDialogClosed;
+            _dialog.Rejected         -= HandleDialogCancelled;
+            _dialog.Accepted         -= HandleDialogConfirmed;
+            _dialog.Finished         -= HandleDialogFinished;
+        }
         _dialog = e.NameScope.Find<Dialog>(MessageBoxThemeConstants.DialogPart);
         if (_dialog != null)
         {
@@ -303,8 +327,13 @@ public class MessageBox : TemplatedControl,
             _dialog.Closed           += HandleDialogClosed;
             _dialog.Rejected         += HandleDialogCancelled;
             _dialog.Accepted         += HandleDialogConfirmed;
+            _dialog.Finished         += HandleDialogFinished;
             _dialog.ButtonsConfigure =  ButtonsConfigure;
             _dialog.CustomButtons.AddRange(CustomButtons);
+            if (!Equals(Result, _dialog.Result))
+            {
+                _dialog.SetCurrentValue(Dialog.ResultProperty, Result);
+            }
         }
 
         ConfigureIcon();
@@ -314,6 +343,7 @@ public class MessageBox : TemplatedControl,
     
     private void HandleDialogOpened(object? sender, EventArgs e)
     {
+        SetCurrentValue(ResultProperty, null);
         Opened?.Invoke(this, EventArgs.Empty);
     }
 
@@ -330,6 +360,11 @@ public class MessageBox : TemplatedControl,
     private void HandleDialogConfirmed(object? sender, EventArgs e)
     {
         Confirmed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void HandleDialogFinished(object? sender, DialogFinishedEventArgs e)
+    {
+        SetCurrentValue(ResultProperty, e.Result);
     }
 
     private void ConfigureIcon()

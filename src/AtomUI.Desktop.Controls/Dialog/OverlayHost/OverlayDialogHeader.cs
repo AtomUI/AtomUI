@@ -110,8 +110,6 @@ internal class OverlayDialogHeader : TemplatedControl, IMotionAwareControl
     }
     
     #region 内部属性定义
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
     
     internal static readonly DirectProperty<OverlayDialogHeader, bool> IsDialogMaximizedProperty =
         AvaloniaProperty.RegisterDirect<OverlayDialogHeader, bool>(

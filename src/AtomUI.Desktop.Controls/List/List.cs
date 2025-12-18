@@ -405,7 +405,6 @@ public class List : TemplatedControl,
         private set;
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ListToken.ID;
 

@@ -257,8 +257,7 @@ public abstract class AbstractProgressBar : RangeBase,
         get => GetValue(IsCompletedProperty);
         set => SetValue(IsCompletedProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ProgressBarToken.ID;
 

@@ -149,8 +149,7 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
         get => _contentType;
         set => SetAndRaise(ContentTypeProperty, ref _contentType, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
 

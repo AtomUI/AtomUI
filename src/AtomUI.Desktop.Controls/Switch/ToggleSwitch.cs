@@ -249,8 +249,7 @@ public class ToggleSwitch : ToggleButton,
         get => GetValue(SwitchOpacityProperty);
         set => SetValue(SwitchOpacityProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ToggleSwitchToken.ID;
 

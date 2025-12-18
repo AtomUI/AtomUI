@@ -251,7 +251,6 @@ public class DialogButtonBox : TemplatedControl,
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => DialogToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
     #endregion
 
     private DockPanel? _leftGroup;

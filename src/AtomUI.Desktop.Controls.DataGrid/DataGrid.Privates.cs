@@ -240,8 +240,7 @@ public partial class DataGrid
 
     internal ScrollBar? VerticalScrollBar => _vScrollBar;
     internal ScrollBar? HorizontalScrollBar => _hScrollBar;
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => DataGridToken.ID;
 

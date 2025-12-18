@@ -154,7 +154,6 @@ public class Rate : TemplatedControl,
         set => SetAndRaise(EffectiveValueProperty, ref _effectiveValue, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => RateToken.ID;
     #endregion

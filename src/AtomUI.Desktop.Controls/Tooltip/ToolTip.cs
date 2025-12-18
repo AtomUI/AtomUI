@@ -318,7 +318,6 @@ public class ToolTip : ContentControl,
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ToolTipToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
 
     #endregion
 

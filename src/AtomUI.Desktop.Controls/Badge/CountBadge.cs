@@ -116,7 +116,6 @@ public class CountBadge : Control,
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => BadgeToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
 
     #endregion
 

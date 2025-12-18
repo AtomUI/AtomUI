@@ -190,7 +190,6 @@ public class Expander : AvaloniaExpander,
         set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ExpanderToken.ID;
     

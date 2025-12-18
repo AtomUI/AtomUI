@@ -263,8 +263,6 @@ internal class AddOnDecoratedBox : ContentControl,
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => AddOnDecoratedBoxToken.ID;
-    
-    Control IMotionAwareControl.PropertyBindTarget => this;
 
     #endregion
     

@@ -177,7 +177,6 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     
     private protected readonly Dictionary<TabStripItem, CompositeDisposable> ItemsBindingDisposables = new();
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TabControlToken.ID;
     

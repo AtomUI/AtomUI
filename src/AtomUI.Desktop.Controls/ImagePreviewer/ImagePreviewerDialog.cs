@@ -292,8 +292,6 @@ internal class ImagePreviewerDialog : Window,
         set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
-    
     #endregion
     
     protected override Type StyleKeyOverride { get; } = typeof(ImagePreviewerDialog);

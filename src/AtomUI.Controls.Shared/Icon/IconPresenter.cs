@@ -46,7 +46,6 @@ public class IconPresenter : Control, IMotionAwareControl
 
     #endregion
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     private CompositeDisposable? _disposables;
     
     static IconPresenter()

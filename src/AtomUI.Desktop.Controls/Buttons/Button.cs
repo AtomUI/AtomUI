@@ -182,8 +182,7 @@ public class Button : AvaloniaButton,
         get => GetValue(WaveSpiritTypeProperty);
         set => SetValue(WaveSpiritTypeProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
     

@@ -216,7 +216,6 @@ public abstract class AbstractColorPickerView : TemplatedControl,
         set => SetAndRaise(IsAlphaEffectiveVisibleProperty, ref _isAlphaEffectiveVisible, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ColorPickerToken.ID;
     #endregion

@@ -102,7 +102,6 @@ public class HyperLinkButton : AvaloniaButton,
 
     #endregion
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
 

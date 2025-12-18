@@ -113,7 +113,6 @@ public class TextBox : AvaloniaTextBox,
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => LineEditToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
     #endregion
     
     private IconButton? _clearButton;

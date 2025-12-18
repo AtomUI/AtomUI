@@ -169,12 +169,6 @@ public class FlyoutHost : ContentControl, IMotionAwareControl
     }
 
     #endregion
-
-    #region 内部属性定义
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
-
-    #endregion
     
     private readonly FlyoutStateHelper _flyoutStateHelper;
     private CompositeDisposable? _flyoutStateHelperDisposables;

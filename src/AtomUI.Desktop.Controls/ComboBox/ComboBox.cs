@@ -194,8 +194,7 @@ public class ComboBox : AvaloniaComboBox,
         get => GetValue(PopupContentPaddingProperty);
         set => SetValue(PopupContentPaddingProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ComboBoxToken.ID;
 

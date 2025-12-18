@@ -102,7 +102,6 @@ public class DotBadge : Control,
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => BadgeToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
 
     #endregion
 

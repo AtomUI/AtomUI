@@ -206,7 +206,6 @@ public class Steps : SelectingItemsControl,
         set => SetValue(VerticalItemSpacingProperty, value);
     }
 
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => StepsToken.ID;
 

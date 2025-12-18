@@ -246,8 +246,7 @@ public class Carousel : SelectingItemsControl,
         get => GetValue(PaginationOffsetProperty);
         set => SetValue(PaginationOffsetProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => CarouselToken.ID;
 

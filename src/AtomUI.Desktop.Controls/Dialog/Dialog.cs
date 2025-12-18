@@ -393,7 +393,6 @@ public partial class Dialog : TemplatedControl,
         set => SetAndRaise(EffectiveMinimizableProperty, ref _effectiveMinimizable, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => DialogToken.ID;
     

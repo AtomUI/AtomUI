@@ -541,7 +541,6 @@ public class Select : TemplatedControl,
         set => SetAndRaise(IsEffectiveSearchEnabledProperty, ref _isEffectiveSearchEnabled, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => SelectToken.ID;
 

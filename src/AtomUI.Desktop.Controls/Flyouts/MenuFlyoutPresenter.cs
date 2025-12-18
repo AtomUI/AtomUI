@@ -118,7 +118,6 @@ public class MenuFlyoutPresenter : MenuBase,
         set => SetValue(MaxPopupHeightProperty, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => MenuToken.ID;
 

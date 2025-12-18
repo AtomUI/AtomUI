@@ -241,8 +241,7 @@ public class AbstractImagePreviewer : TemplatedControl,
         get => _effectiveSources;
         set => SetAndRaise(EffectiveSourcesProperty, ref _effectiveSources, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ImagePreviewerToken.ID;
     

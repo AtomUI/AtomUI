@@ -204,8 +204,7 @@ public class Drawer : Control,
         get => _effectiveDialogSize;
         set => SetAndRaise(EffectiveDialogSizeProperty, ref _effectiveDialogSize, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => DrawerToken.ID;
 

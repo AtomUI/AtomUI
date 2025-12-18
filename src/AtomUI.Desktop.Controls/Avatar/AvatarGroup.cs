@@ -117,8 +117,7 @@ public class AvatarGroup : TemplatedControl,
         get => GetValue(GroupOverlappingProperty);
         set => SetValue(GroupOverlappingProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
     #endregion

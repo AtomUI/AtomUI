@@ -980,6 +980,7 @@ public class Select : TemplatedControl,
                 if (_addNewOption != null)
                 {
                     Options.Remove(_addNewOption);
+                    _addNewOption = null;
                 }
             }
             ConfigurePlaceholderVisible();
@@ -1019,7 +1020,12 @@ public class Select : TemplatedControl,
                 }
             }
 
-            if (_optionsBox.CollectionView?.Count == 0 && !string.IsNullOrEmpty(ActivateFilterValue))
+            // Only allow "create from search text" in Tags mode.
+            // For Single/Multiple, when data is empty (or filter results are empty),
+            // the dropdown should show the empty indicator instead of adding a temporary option.
+            if (Mode == SelectMode.Tags &&
+                _optionsBox.CollectionView?.Count == 0 &&
+                !string.IsNullOrWhiteSpace(ActivateFilterValue))
             {
                 _addNewOption = new SelectOption()
                 {

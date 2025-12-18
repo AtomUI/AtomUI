@@ -12,6 +12,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -568,6 +569,12 @@ public class Select : TemplatedControl,
         });
         OptionsSourceProperty.Changed.AddClassHandler<Select>((x, e) => x.HandleOptionsSourcePropertyChanged(e));
         SelectSearchTextBox.TextChangedEvent.AddClassHandler<Select>((x, e) => x.HandleSearchInputTextChanged(e));
+        SelectSearchTextBox.KeyDownEvent.AddClassHandler<Select>(
+            (x, e) => x.HandleSearchInputKeyDown(e),
+            RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        SelectResultOptionsBox.KeyDownEvent.AddClassHandler<Select>(
+            (x, e) => x.HandleSearchInputKeyDown(e),
+            RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         SelectTag.ClosedEvent.AddClassHandler<Select>((x, e) => x.HandleTagCloseRequest(e));
     }
     
@@ -591,6 +598,53 @@ public class Select : TemplatedControl,
         var optValue = selectOption.Value?.ToString();
         return strValue == optValue;
     }
+
+    private bool TryHandleDeleteKey(KeyEventArgs e)
+    {
+        if (Mode == SelectMode.Single || SelectedOptions == null || SelectedOptions.Count == 0)
+        {
+            return false;
+        }
+
+        if (e.Key != Key.Back && e.Key != Key.Delete)
+        {
+            return false;
+        }
+
+        if (e.Source is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text) == false)
+        {
+            return false;
+        }
+
+        var newSelection = new List<object>();
+        foreach (var selectedItem in SelectedOptions)
+        {
+            newSelection.Add(selectedItem);
+        }
+
+        if (newSelection.Count == 0)
+        {
+            return false;
+        }
+
+        var lastIndex   = newSelection.Count - 1;
+        var removedItem = newSelection[lastIndex];
+        newSelection.RemoveAt(lastIndex);
+        SetCurrentValue(SelectedOptionsProperty, newSelection);
+        SyncSelection();
+
+        if (Mode == SelectMode.Tags && removedItem is SelectOption option && option.IsDynamicAdded)
+        {
+            Options.Remove(option);
+            if (ReferenceEquals(_addNewOption, option))
+            {
+                _addNewOption = null;
+            }
+        }
+
+        e.Handled = true;
+        return true;
+    }
     
     protected override void OnKeyDown(KeyEventArgs e)
     {
@@ -601,10 +655,20 @@ public class Select : TemplatedControl,
             return;
         }
 
+        if (TryHandleDeleteKey(e))
+        {
+            return;
+        }
+
         if ((e.Key == Key.F4 && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == false) ||
             ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)))
         {
             SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
+            e.Handled = true;
+        }
+        else if (!IsDropDownOpen && (e.Key == Key.Down || e.Key == Key.Up))
+        {
+            SetCurrentValue(IsDropDownOpenProperty, true);
             e.Handled = true;
         }
         else if (IsDropDownOpen && e.Key == Key.Escape)
@@ -617,7 +681,72 @@ public class Select : TemplatedControl,
             SetCurrentValue(IsDropDownOpenProperty, true);
             e.Handled = true;
         }
-        else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
+        else if (IsDropDownOpen)
+        {
+            if (e.Key == Key.Down)
+            {
+                _optionsBox?.MoveActiveBy(1);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Up)
+            {
+                _optionsBox?.MoveActiveBy(-1);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                _optionsBox?.CommitActiveSelection();
+                if (Mode == SelectMode.Single)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+                e.Handled = true;
+            }
+        }
+    }
+
+    private void HandleSearchInputKeyDown(KeyEventArgs e)
+    {
+        if (TryHandleDeleteKey(e))
+        {
+            return;
+        }
+
+        if (e.Handled)
+        {
+            return;
+        }
+
+        if (!IsDropDownOpen)
+        {
+            if (e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Enter)
+            {
+                SetCurrentValue(IsDropDownOpenProperty, true);
+                e.Handled = true;
+            }
+            return;
+        }
+
+        if (e.Key == Key.Down)
+        {
+            _optionsBox?.MoveActiveBy(1);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Up)
+        {
+            _optionsBox?.MoveActiveBy(-1);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            _optionsBox?.CommitActiveSelection();
+            if (Mode == SelectMode.Single)
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false);
+            }
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
         {
             SetCurrentValue(IsDropDownOpenProperty, false);
             e.Handled = true;
@@ -714,6 +843,7 @@ public class Select : TemplatedControl,
         if (_optionsBox != null)
         {
             _optionsBox.Select = this;
+            ConfigureOptionsBoxSelectionMode();
         }
         
         _popup                    =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
@@ -814,6 +944,7 @@ public class Select : TemplatedControl,
             ConfigurePlaceholderVisible();
             ConfigureSelectedFilterDescription();
             SetCurrentValue(SelectedCountProperty, SelectedOptions?.Count ?? 0);
+            CleanDynamicAddedOptions();
         }
         else if (change.Property == OptionFilterPropProperty)
         {
@@ -822,6 +953,7 @@ public class Select : TemplatedControl,
         else if (change.Property == ModeProperty)
         {
             ConfigureSingleSelectedOption();
+            ConfigureOptionsBoxSelectionMode();
         }
         else if (change.Property == IsHideSelectedOptionsProperty)
         {
@@ -897,7 +1029,19 @@ public class Select : TemplatedControl,
                 }
             }
             _optionsBox.SetCurrentValue(SelectOptions.SelectedItemsProperty, selectedItems);
+            _optionsBox.EnsureActiveOption();
         }
+    }
+
+    private void ConfigureOptionsBoxSelectionMode()
+    {
+        if (_optionsBox == null)
+        {
+            return;
+        }
+
+        _optionsBox.SetCurrentValue(List.SelectionModeProperty,
+            Mode == SelectMode.Single ? SelectionMode.Single : SelectionMode.Multiple);
     }
     
     private void IsVisibleChanged(bool isVisible)
@@ -975,11 +1119,14 @@ public class Select : TemplatedControl,
                 ActivateFilterValue = textBox.Text?.Trim();
             }
 
-            if (Mode == SelectMode.Tags)
+            if (_addNewOption != null)
             {
-                if (_addNewOption != null)
+                var isSelected = SelectedOptions?.Contains(_addNewOption) == true;
+                var isCurrentInput = ActivateFilterValue == _addNewOption.Header?.ToString();
+                if (!isSelected && !isCurrentInput)
                 {
                     Options.Remove(_addNewOption);
+                    _addNewOption = null;
                 }
             }
             ConfigurePlaceholderVisible();
@@ -1019,7 +1166,9 @@ public class Select : TemplatedControl,
                 }
             }
 
-            if (_optionsBox.CollectionView?.Count == 0 && !string.IsNullOrEmpty(ActivateFilterValue))
+            if (Mode == SelectMode.Tags &&
+                _optionsBox.CollectionView?.Count == 0 &&
+                !string.IsNullOrEmpty(ActivateFilterValue))
             {
                 _addNewOption = new SelectOption()
                 {
@@ -1091,6 +1240,7 @@ public class Select : TemplatedControl,
             Options.Clear();
             Options.AddRange(newItemsSource);
             ConfigureDefaultValues();
+            SyncSelection();
         }
     }
 
@@ -1206,13 +1356,55 @@ public class Select : TemplatedControl,
     {
         if (Mode == SelectMode.Tags)
         {
-            SetCurrentValue(IsEffectiveSearchEnabledProperty, true);
+            SetCurrentValue(
+                IsEffectiveSearchEnabledProperty, true);
         }
         else
         {
-            SetCurrentValue(IsEffectiveSearchEnabledProperty, IsSearchEnabled);
+            SetCurrentValue(
+                IsEffectiveSearchEnabledProperty,
+                IsSearchEnabled);
         }
     }
+
+    private void CleanDynamicAddedOptions()
+    {
+        if (Mode != SelectMode.Tags)
+        {
+            return;
+        }
+        
+        var selected = new HashSet<SelectOption>();
+        if (SelectedOptions != null)
+        {
+            foreach (var item in SelectedOptions)
+            {
+                if (item is SelectOption opt)
+                {
+                    selected.Add(opt);
+                }
+            }
+        }
+
+        var toRemove = new List<SelectOption>();
+        foreach (var option in Options)
+        {
+            if (option.IsDynamicAdded && !selected.Contains(option))
+            {
+                toRemove.Add(option);
+            }
+        }
+
+        foreach (var option in toRemove)
+        {
+            Options.Remove(option);
+            if (ReferenceEquals(_addNewOption, option))
+            {
+                _addNewOption = null;
+            }
+        }
+    }
+    
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

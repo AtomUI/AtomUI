@@ -6,8 +6,39 @@
     <ControlTheme x:Key="{x:Type atom:Upload}" TargetType="atom:Upload">
         <Setter Property="Template">
             <ControlTemplate>
-                <ResourceInclude Source="UploadTheme.axaml" />
+                <DockPanel Name="RootLayout" LastChildFill="True">
+                    <ContentPresenter Name="TriggerContent"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    <atom:UploadList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
+                                     ListType="{TemplateBinding ListType}"/>
+                </DockPanel>
             </ControlTemplate>
         </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
+        <Style Selector="^[ListType=Text]">
+            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+                <Setter Property="DockPanel.Dock" Value="Top"/>
+            </Style>
+        </Style>
+        <Style Selector="^[ListType=Picture]">
+            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+                <Setter Property="DockPanel.Dock" Value="Top"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[ListType=PictureCard]">
+            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+                <Setter Property="DockPanel.Dock" Value="Right"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[ListType=PictureCard]">
+            <Style Selector="^ /template/ ContentPresenter#TriggerContent">
+                <Setter Property="DockPanel.Dock" Value="Right"/>
+            </Style>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

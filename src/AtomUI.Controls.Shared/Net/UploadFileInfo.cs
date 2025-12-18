@@ -1,21 +1,19 @@
 namespace AtomUI.Controls;
 
-public enum UploadFileStatus
-{
-    Error,
-    Done,
-    Uploading,
-    Removed
-}
-
 public record UploadFileInfo
 {
-    public Guid Uid { get; set; }
-    public int Size { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? FileName { get; set; }
-    public UploadFileStatus Status { get; set; }
-    public int LastModified { get; set; }
-    public DateTime? LastModifiedDate { get; set; }
-    public double Percent { get; set; }
+    public ulong Size { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public Uri FilePath { get; init; }
+    public DateTimeOffset? DateCreated { get; init; }
+    public DateTimeOffset? DateModified { get; init; }
+
+    public UploadFileInfo(string name, Uri filePath, ulong size, DateTimeOffset? dateCreated = null, DateTimeOffset? dateModified = null)
+    {
+        Name = name;
+        FilePath = filePath;
+        Size = size;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+    }
 }

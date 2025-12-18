@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.UploadShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem
+            Title="Upload by clicking"
+            Description="Classic mode. File selection dialog pops up when upload button is clicked.">
+            <atom:Upload Name="BasicUpload">
+                <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button>
+            </atom:Upload> 
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

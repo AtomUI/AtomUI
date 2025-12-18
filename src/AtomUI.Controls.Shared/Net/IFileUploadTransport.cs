@@ -2,8 +2,8 @@ namespace AtomUI.Controls;
 
 public record FileUploadProgress
 {
-    public long BytesSent { get; set; }
-    public long TotalBytes { get; set; }
+    public ulong BytesSent { get; set; }
+    public ulong TotalBytes { get; set; }
     public double Percentage => TotalBytes > 0 ? (BytesSent * 100.0) / TotalBytes : 0;
 }
 

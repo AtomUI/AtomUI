@@ -1,0 +1,6 @@
+namespace AtomUI.Desktop.Controls.Themes;
+
+internal static class UploadThemeConstants
+{
+    public const string UploadListPart = "PART_UploadList";
+}

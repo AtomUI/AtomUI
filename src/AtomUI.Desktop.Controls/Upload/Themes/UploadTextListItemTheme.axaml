@@ -1,0 +1,13 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:UploadTextListItem}" TargetType="atom:UploadTextListItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+             
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

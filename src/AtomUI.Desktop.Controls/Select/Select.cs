@@ -1166,9 +1166,12 @@ public class Select : TemplatedControl,
                 }
             }
 
+            // Only allow "create from search text" in Tags mode.
+            // For Single/Multiple, when data is empty (or filter results are empty),
+            // the dropdown should show the empty indicator instead of adding a temporary option.
             if (Mode == SelectMode.Tags &&
                 _optionsBox.CollectionView?.Count == 0 &&
-                !string.IsNullOrEmpty(ActivateFilterValue))
+                !string.IsNullOrWhiteSpace(ActivateFilterValue))
             {
                 _addNewOption = new SelectOption()
                 {

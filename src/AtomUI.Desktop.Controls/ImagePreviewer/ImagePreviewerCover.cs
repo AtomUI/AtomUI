@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class ImagePreviewerCover : TemplatedControl, IMotionAwareControl
+internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<PreviewImageSource?> ImageSourceProperty =

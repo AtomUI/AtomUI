@@ -1,11 +1,20 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
 public class ImagePreviewer : AbstractImagePreviewer
 {
     #region 公共属性定义
+    public static readonly StyledProperty<object?> CoverIndicatorContentProperty =
+        AvaloniaProperty.Register<ImagePreviewer, object?>(nameof(CoverIndicatorContent));
+    
+    public static readonly StyledProperty<IDataTemplate?> CoverIndicatorContentTemplateProperty =
+        AvaloniaProperty.Register<ImagePreviewer, IDataTemplate?>(nameof(CoverIndicatorContentTemplate));
+    
     public static readonly StyledProperty<string?> CoverImageSrcProperty =
         AvaloniaProperty.Register<ImagePreviewer, string?>(nameof(CoverImageSrc));
     
@@ -13,6 +22,19 @@ public class ImagePreviewer : AbstractImagePreviewer
     {
         get => GetValue(CoverImageSrcProperty);
         set => SetValue(CoverImageSrcProperty, value);
+    }
+    
+    [DependsOn(nameof(CoverIndicatorContentTemplate))]
+    public object? CoverIndicatorContent
+    {
+        get => GetValue(CoverIndicatorContentProperty);
+        set => SetValue(CoverIndicatorContentProperty, value);
+    }
+    
+    public IDataTemplate? CoverIndicatorContentTemplate
+    {
+        get => GetValue(CoverIndicatorContentTemplateProperty);
+        set => SetValue(CoverIndicatorContentTemplateProperty, value);
     }
     #endregion
     

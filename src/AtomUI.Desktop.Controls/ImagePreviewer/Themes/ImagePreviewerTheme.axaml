@@ -2,6 +2,8 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    xmlns:imagepreviewlang="using:AtomUI.Desktop.Controls.ImagePreviewerLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImagePreviewer}" TargetType="atom:ImagePreviewer">
         <Setter Property="Template">
@@ -13,7 +15,9 @@
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <atom:ImagePreviewerCover ImageSource="{TemplateBinding EffectiveCoverImage}"
                                               Width="{TemplateBinding CoverWidth}"
-                                              Height="{TemplateBinding CoverHeight}"/>
+                                              Height="{TemplateBinding CoverHeight}"
+                                              Content="{TemplateBinding CoverIndicatorContent}"
+                                              ContentTemplate="{TemplateBinding CoverIndicatorContentTemplate}"/>
                 </Border>
             </ControlTemplate>
         </Setter>
@@ -22,5 +26,18 @@
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        
+        <Setter Property="CoverIndicatorContentTemplate">
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}">
+                    <antdicons:EyeOutlined StrokeBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}"/>
+                    <TextBlock
+                        Text="{DynamicResource {x:Static imagepreviewlang:ImagePreviewerLangResourceKey.Preview}}" />
+                </StackPanel>
+            </DataTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

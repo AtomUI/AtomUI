@@ -1,6 +1,6 @@
 namespace AtomUI.Controls;
 
-public class FileUploadTask
+internal class FileUploadTask
 {
     public Guid Id { get; set; }
     public FileUploadStatus Status { get; set; } = FileUploadStatus.Pending;

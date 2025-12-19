@@ -1,6 +1,6 @@
 namespace AtomUI.Controls;
 
-public interface IFileUploadScheduler
+internal interface IFileUploadScheduler
 {
     IFileUploadTransport? Transport { get; }
     void EnqueueTask(FileUploadTask task);

@@ -640,7 +640,10 @@ public class ProgressBar : AbstractLineProgress
         if (!PercentPosition.IsInner)
         {
             _percentageLabelBindingDisposable?.Dispose();
-            _percentageLabelBindingDisposable = BindUtils.RelayBind(this, ForegroundProperty, PercentageLabel!, ForegroundProperty);
+            if (PercentageLabel != null)
+            {
+                _percentageLabelBindingDisposable = BindUtils.RelayBind(this, ForegroundProperty, PercentageLabel, ForegroundProperty);
+            }
         }
         else
         {

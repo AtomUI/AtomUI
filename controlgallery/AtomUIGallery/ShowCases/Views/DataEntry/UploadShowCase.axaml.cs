@@ -1,5 +1,8 @@
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
+using Avalonia;
+using Avalonia.Controls;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 
@@ -7,11 +10,106 @@ namespace AtomUIGallery.ShowCases.Views;
 
 public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
 {
+    private WindowMessageManager? _messageManager;
+    
     public UploadShowCase()
     {
-        this.WhenActivated(disposables => { });
+        this.WhenActivated(disposables =>
+        {
+            if (DataContext is UploadViewModel vm)
+            {
+                vm.DefaultTaskList = [
+                    new UploadTaskInfo()
+                    {
+                        TaskId    = Guid.NewGuid(),
+                        FileName = "xxx.png",
+                        IsImageFile = true,
+                        Status = FileUploadStatus.Uploading,
+                        Progress = 33
+                    },
+                    new UploadTaskInfo()
+                    {
+                        TaskId      = Guid.NewGuid(),
+                        FileName    = "yyy.png",
+                        IsImageFile = true,
+                        Status      = FileUploadStatus.Success,
+                        Progress    = 100
+                    },
+                    new UploadTaskInfo()
+                    {
+                        TaskId      = Guid.NewGuid(),
+                        FileName    = "zzz.png",
+                        IsImageFile = true,
+                        Status      = FileUploadStatus.Failed,
+                        ErrorMessage = "Server Error 500"
+                    },
+                ];
+            }
+        });
         InitializeComponent();
-        BasicUpload.UploadTransport = new UploadMockTransport();
+        BasicUpload.UploadTransport                               =  new UploadMockTransport();
+        AvatarDemoPictureCardUpload.UploadTransport               =  new UploadMockTransport();
+        AvatarDemoPictureCircleUpload.UploadTransport             =  new UploadMockTransport();
+        DefaultFileList.UploadTransport                           =  new UploadMockTransport();
+        AvatarDemoPictureCardUpload.UploadTaskAboutToScheduling   += HandleAboutToScheduling;
+        AvatarDemoPictureCircleUpload.UploadTaskAboutToScheduling += HandleAboutToScheduling;
+        AvatarDemoPictureCardUpload.UploadTaskFailed              += HandleUploadFailed;
+        AvatarDemoPictureCircleUpload.UploadTaskFailed            += HandleUploadFailed;
+        AvatarDemoPictureCircleUpload.UploadTaskCompleted         += HandleUploadCompleted;
+        AvatarDemoPictureCardUpload.UploadTaskCompleted           += HandleUploadCompleted;
+    }
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_messageManager == null)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            _messageManager = new WindowMessageManager(topLevel)
+            {
+                MaxItems = 10
+            };
+        }
+    }
+
+    private void HandleAboutToScheduling(object? sender, UploadTaskAboutToSchedulingEventArgs e)
+    {
+        var fileInfo          = e.UploadFileInfo;
+        var ext               = Path.GetExtension(fileInfo.FilePath.LocalPath);
+        var isAllowedFileType = false;
+        if (ext == ".jpeg" || ext == ".jpg" || ext == ".png")
+        {
+            isAllowedFileType = true;
+        }
+
+        if (!isAllowedFileType)
+        {
+            e.Cancel       = true;
+            e.CancelReason = "You can only upload JPG/PNG file!";
+            return;
+        }
+        var isLt2M = (double)fileInfo.Size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            e.Cancel       = true;
+            e.CancelReason = "Image must smaller than 2MB!";
+        }
+    }
+    
+    private void HandleUploadFailed(object? sender, UploadTaskFailedEventArgs e)
+    {
+        var errorMsg = e.Result.UserFriendlyMessage;
+        _messageManager?.Show(new Message(
+            type: MessageType.Error,
+            content:$"{errorMsg}"
+        ));
+    }
+    
+    private void HandleUploadCompleted(object? sender, UploadTaskCompletedEventArgs e)
+    {
+        _messageManager?.Show(new Message(
+            type: MessageType.Success,
+            content:$"{e.UploadFileInfo.Name} upload successfully!"
+        ));
     }
 }
 

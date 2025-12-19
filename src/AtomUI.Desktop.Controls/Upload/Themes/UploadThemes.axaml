@@ -10,5 +10,6 @@
         <ResourceInclude Source="UploadTextListItemHeaderTheme.axaml" />
         <ResourceInclude Source="UploadListTheme.axaml" />
         <ResourceInclude Source="UploadDefaultDropAreaTheme.axaml" />
+        <ResourceInclude Source="UploadTriggerContentTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

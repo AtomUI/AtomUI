@@ -4,7 +4,7 @@ using Avalonia.Threading;
 
 namespace AtomUI.Controls;
 
-public class FileUploadScheduler : IFileUploadScheduler
+internal class FileUploadScheduler : IFileUploadScheduler
 {
     private SemaphoreSlim _concurrentSemaphore;
     private IFileUploadTransport? _transport;
@@ -63,7 +63,6 @@ public class FileUploadScheduler : IFileUploadScheduler
             
             _ = Task.Run(async () =>
             {
-         
                 FileUploadResult? result = null;
                 try
                 {

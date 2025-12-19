@@ -43,6 +43,7 @@ internal class UploadTextListItemHeader : TemplatedControl, IMotionAwareControl
         get => GetValue(ErrorMessageProperty);
         set => SetValue(ErrorMessageProperty, value);
     }
+    
     #region 内部属性定义
 
     internal static readonly StyledProperty<double> RelativeLineHeightProperty =

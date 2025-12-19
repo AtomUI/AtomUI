@@ -7,41 +7,50 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <DockPanel Name="RootLayout" LastChildFill="True">
-                    <ContentPresenter Name="{x:Static atom:UploadThemeConstants.TriggerContentPart}"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    <atom:UploadTriggerContent Name="{x:Static atom:UploadThemeConstants.TriggerContentPart}"
+                                               Content="{TemplateBinding Content}"
+                                               ContentTemplate="{TemplateBinding ContentTemplate}"
+                                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                               ListType="{TemplateBinding ListType}"/>
                     <atom:UploadList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
                                      ListType="{TemplateBinding ListType}"
-                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                     IsVisible="{TemplateBinding IsShowUploadList}"/>
                 </DockPanel>
             </ControlTemplate>
         </Setter>
         
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
-
         <Setter Property="ClipToBounds" Value="False" />
+        
         <Style Selector="^[ListType=Text]">
-            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
+            <Style Selector="^ /template/ atom|UploadTriggerContent#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Top"/>
             </Style>
         </Style>
         <Style Selector="^[ListType=Picture]">
-            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
+            <Style Selector="^ /template/ atom|UploadTriggerContent#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Top"/>
             </Style>
         </Style>
         
         <Style Selector="^[ListType=PictureCard]">
-            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
+            <Style Selector="^ /template/ atom|UploadTriggerContent#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
             </Style>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         
-        <Style Selector="^[ListType=PictureCard]">
-            <Style Selector="^ /template/ ContentPresenter#PART_TriggerContent">
+        <Style Selector="^[ListType=PictureCircle]">
+            <Style Selector="^ /template/ atom|UploadTriggerContent#PART_TriggerContent">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
             </Style>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-
+        
     </ControlTheme>
 </ResourceDictionary>

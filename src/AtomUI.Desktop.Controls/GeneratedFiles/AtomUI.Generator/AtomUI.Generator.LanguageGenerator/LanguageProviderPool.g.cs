@@ -23,6 +23,8 @@ namespace AtomUI.Theme.Language
             languageProviders.Add(new AtomUI.Desktop.Controls.QRCodeLang.zh_CN());
             languageProviders.Add(new AtomUI.Desktop.Controls.TimePickerLang.en_US());
             languageProviders.Add(new AtomUI.Desktop.Controls.TimePickerLang.zh_CN());
+            languageProviders.Add(new AtomUI.Desktop.Controls.UploadLang.en_US());
+            languageProviders.Add(new AtomUI.Desktop.Controls.UploadLang.zh_CN());
             return languageProviders;
         }
     }

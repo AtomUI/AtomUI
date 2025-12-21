@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
@@ -17,6 +16,9 @@ public class ImagePreviewer : AbstractImagePreviewer
     
     public static readonly StyledProperty<string?> CoverImageSrcProperty =
         AvaloniaProperty.Register<ImagePreviewer, string?>(nameof(CoverImageSrc));
+    
+    public static readonly StyledProperty<bool> IsShowCoverMaskProperty =
+        AvaloniaProperty.Register<ImagePreviewer, bool>(nameof(IsShowCoverMask), true);
     
     public string? CoverImageSrc
     {
@@ -36,9 +38,16 @@ public class ImagePreviewer : AbstractImagePreviewer
         get => GetValue(CoverIndicatorContentTemplateProperty);
         set => SetValue(CoverIndicatorContentTemplateProperty, value);
     }
+    
+    public bool IsShowCoverMask
+    {
+        get => GetValue(IsShowCoverMaskProperty);
+        set => SetValue(IsShowCoverMaskProperty, value);
+    }
     #endregion
     
     #region 内部属性定义
+    
     internal static readonly DirectProperty<ImagePreviewer, PreviewImageSource?> EffectiveCoverImageProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewer, PreviewImageSource?>(
             nameof(EffectiveCoverImage),

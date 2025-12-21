@@ -37,7 +37,6 @@
         </Style>
         
         <Style Selector="^[ListType=PictureCircle]">
-            
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}"/>
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}"/>
@@ -53,12 +52,16 @@
             <Style Selector="^:pointerover">
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}"/>
             </Style>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         
         <Style Selector="^[ListType=PictureCircle]">
             <Style Selector="^:pointerover">
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}"/>
             </Style>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

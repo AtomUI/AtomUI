@@ -1,0 +1,39 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:uploadlang="using:AtomUI.Desktop.Controls.UploadLang"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:UploadShapeUploadingContent}" TargetType="atom:UploadShapeUploadingContent">
+        <ControlTheme.BasedOn>
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapeUploadingContent"/>
+        </ControlTheme.BasedOn>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <atom:DashedBorder Name="Frame"
+                                   Background="{TemplateBinding Background}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   Padding="{TemplateBinding Padding}">
+                    <StackPanel Name="ContentLayout"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Uploading}}"
+                                   HorizontalAlignment="Center"/>
+                        <atom:ProgressBar SizeType="Small" IsShowProgressInfo="False" Value="{TemplateBinding Progress}"/>
+                    </StackPanel>
+                </atom:DashedBorder>
+            </ControlTemplate>
+        </Setter>
+        
+        <Style Selector="^ /template/ atom|DashedBorder#Frame">
+            <Setter Property="StrokeDashArray" Value="4, 2"/>
+        </Style>
+        
+        <Style Selector="^ /template/ StackPanel#ContentLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}"/>
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

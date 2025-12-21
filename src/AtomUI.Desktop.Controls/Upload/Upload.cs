@@ -56,6 +56,9 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     public static readonly StyledProperty<bool> IsShowUploadListProperty =
         AvaloniaProperty.Register<Upload, bool>(nameof(IsShowUploadList), true);
     
+    public static readonly StyledProperty<bool> IsShowUploadTriggerProperty =
+        AvaloniaProperty.Register<Upload, bool>(nameof(IsShowUploadTrigger), true);
+    
     public static readonly StyledProperty<IList<UploadTaskInfo>?> DefaultTaskListProperty =
         AvaloniaProperty.Register<Upload, IList<UploadTaskInfo>?>(nameof(DefaultTaskList));
     
@@ -149,6 +152,12 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         set => SetValue(IsShowUploadListProperty, value);
     }
     
+    public bool IsShowUploadTrigger
+    {
+        get => GetValue(IsShowUploadTriggerProperty);
+        set => SetValue(IsShowUploadTriggerProperty, value);
+    }
+    
     public IList<UploadTaskInfo>? DefaultTaskList
     {
         get => GetValue(DefaultTaskListProperty);
@@ -214,13 +223,10 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
 
     #endregion
     
-    private IDisposable? _clickSubscription;
-    private Point? _latestClickPosition;
     private ItemsControl? _uploadListControl;
-    private UploadTriggerContent? _triggerContent;
     private FileUploadScheduler _uploadScheduler;
     private static readonly Regex ImageExtensionRegex = 
-        new Regex(@"\.(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico|heic|heif)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        new (@"\.(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico|heic|heif)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private bool _defaultTaskListApplied;
 
@@ -230,63 +236,15 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         {
             upload.HandleUploadTaskRemoveRequest(args.TaskId);
         });
+        UploadTriggerContent.FileSelectRequestEvent.AddClassHandler<Upload>((upload, args) =>
+        {
+            upload.HandleFileSelectRequest();
+        });
     }
     
     public Upload()
     {
         _uploadScheduler = new FileUploadScheduler();
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        ConfigureInputManager();
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _clickSubscription?.Dispose();
-    }
-
-    private void ConfigureInputManager()
-    {
-        var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
-        _clickSubscription = inputManager?.Process.Subscribe(ListenForMouseEvent);
-    }
-    
-    private void ListenForMouseEvent(RawInputEventArgs e)
-    {
-        if (e is RawPointerEventArgs mouseEventArgs)
-        {
-            var point = mouseEventArgs.Point;
-            var localPoint = TopLevel.GetTopLevel(this)?.TranslatePoint(point.Position, this) ?? default;
-            var constraintOffset = _triggerContent?.TranslatePoint(new Point(0, 0), this) ?? default;
-            var constraintBounds = new Rect(constraintOffset, _triggerContent?.Bounds.Size ?? new Size());
-            if (constraintBounds.Contains(localPoint))
-            {
-                if (mouseEventArgs.Type == RawPointerEventType.LeftButtonDown)
-                {
-                    _latestClickPosition = localPoint;
-                }
-                else if (mouseEventArgs.Type == RawPointerEventType.LeftButtonUp)
-                {
-                    if (IsOpenFileDialogOnClick)
-                    {
-                        if (_latestClickPosition != null && constraintBounds.Contains(_latestClickPosition.Value))
-                        {
-                            OpenFileDialog();
-                        }
-                    }
-
-                    _latestClickPosition = null;
-                }
-                else if (mouseEventArgs.Type == RawPointerEventType.Move)
-                {
-                    
-                }
-            }
-        }
     }
 
     protected virtual void OpenFileDialog()
@@ -351,7 +309,17 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         uploadTaskInfo.Progress    = task.Progress;
         uploadTaskInfo.IsImageFile = IsImageFile(uploadFile);
         uploadTaskInfo.UploadTask  = task;
-        TaskInfoList.Add(uploadTaskInfo);
+
+        if (ListType == UploadListType.PictureCircle || ListType == UploadListType.PictureCard)
+        {
+            var index = TaskInfoList.Count - 1;
+            TaskInfoList.Insert(index, uploadTaskInfo);
+        }
+        else
+        {
+            TaskInfoList.Add(uploadTaskInfo);
+        }
+ 
         UploadTaskCreated?.Invoke(this, new UploadTaskCreatedEventArgs(task.Id, uploadFile));
         var aboutToSchedulingEvent = new UploadTaskAboutToSchedulingEventArgs(task.Id, uploadFile);
         UploadTaskAboutToScheduling?.Invoke(this, aboutToSchedulingEvent);
@@ -361,7 +329,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         }
         else
         {
-            uploadTaskInfo.Status   = FileUploadStatus.Failed;
+            uploadTaskInfo.Status = FileUploadStatus.Failed;
             UploadTaskFailed?.Invoke(this, new UploadTaskFailedEventArgs(task.Id, 
                 uploadFile, 
                 FileUploadResult.FailureResult(FileUploadErrorCode.ClientError, aboutToSchedulingEvent.CancelReason ?? "client error")));
@@ -432,11 +400,11 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     {
         base.OnApplyTemplate(e);
         _uploadListControl = e.NameScope.Find<ItemsControl>(UploadThemeConstants.UploadListPart);
-        _triggerContent = e.NameScope.Find<UploadTriggerContent>(UploadThemeConstants.TriggerContentPart);
         if (_uploadListControl != null)
         {
             _uploadListControl.ItemsSource = TaskInfoList;
         }
+        ConfigurePictureTriggerTask();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -458,6 +426,10 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
             {
                 await _uploadScheduler.SetMaxConcurrentTasksAsync(MaxConcurrentTasks);
             });
+        }
+        else if (change.Property == ListTypeProperty)
+        {
+            ConfigurePictureTriggerTask();
         }
     }
 
@@ -495,6 +467,14 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
             }
         }
     }
+    
+    private void HandleFileSelectRequest()
+    {
+        if (IsOpenFileDialogOnClick)
+        {
+            OpenFileDialog();
+        }
+    }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -503,8 +483,48 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         {
             if (DefaultTaskList != null)
             {
-                TaskInfoList.AddRange(DefaultTaskList);
+                if (ListType == UploadListType.PictureCircle || ListType == UploadListType.PictureCard)
+                {
+                    // 检查是否有 trigger
+                    var trigger = TaskInfoList.FirstOrDefault(x => x.IsPictureTriggerTask);
+                    if (trigger != null)
+                    {
+                        TaskInfoList.InsertRange(0, DefaultTaskList);
+                    }
+                    else
+                    {
+                        TaskInfoList.AddRange(DefaultTaskList);
+                    }
+                }
+                else
+                {
+                    TaskInfoList.AddRange(DefaultTaskList);
+                }
+                
+                _defaultTaskListApplied = true;
             }
+        }
+    }
+
+    private void ConfigurePictureTriggerTask()
+    {
+        var taskInfo = TaskInfoList.FirstOrDefault(x => x.IsPictureTriggerTask);
+        if (ListType == UploadListType.PictureCircle || ListType == UploadListType.PictureCard)
+        {
+            if (taskInfo == null)
+            {
+                TaskInfoList.Add(new UploadTaskInfo()
+                {
+                    IsPictureTriggerTask = true,
+                });
+            }
+        }
+        else
+        {
+            if (taskInfo != null)
+            {
+                TaskInfoList.Remove(taskInfo);
+            }    
         }
     }
 }

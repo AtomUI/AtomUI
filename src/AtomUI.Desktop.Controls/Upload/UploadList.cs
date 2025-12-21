@@ -31,7 +31,7 @@ internal class UploadList : ItemsControl, IMotionAwareControl
     
     #endregion
     
-    private readonly Dictionary<AbstractUploadListItem, CompositeDisposable> _itemsBindingDisposables = new();
+    protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     
     public UploadList()
     {
@@ -55,12 +55,12 @@ internal class UploadList : ItemsControl, IMotionAwareControl
             {
                 foreach (var item in e.OldItems)
                 {
-                    if (item is AbstractUploadListItem listItem)
+                    if (item != null)
                     {
-                        if (_itemsBindingDisposables.TryGetValue(listItem, out var disposable))
+                        if (_itemsBindingDisposables.TryGetValue(item, out var disposable))
                         {
                             disposable.Dispose();
-                            _itemsBindingDisposables.Remove(listItem);
+                            _itemsBindingDisposables.Remove(item);
                         }
                     }
                 }
@@ -74,13 +74,12 @@ internal class UploadList : ItemsControl, IMotionAwareControl
         {
             return new UploadPictureListItem();
         }
-        if (ListType == UploadListType.PictureCard)
+        if (ListType == UploadListType.PictureCard || ListType == UploadListType.PictureCircle)
         {
-            return new UploadPictureCardListItem();
-        }
-        if (ListType == UploadListType.PictureCircle)
-        {
-            return new UploadPictureCircleListItem();
+            return new UploadPictureShapeListItem()
+            {
+                IsCircle = ListType == UploadListType.PictureCircle
+            };
         }
         return new UploadTextListItem();
     }
@@ -108,7 +107,7 @@ internal class UploadList : ItemsControl, IMotionAwareControl
             }
             
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, listItem, AbstractUploadListItem.IsMotionEnabledProperty));
-            
+            NotifyPrepareUploadListItem(listItem, disposables);
             if (_itemsBindingDisposables.TryGetValue(listItem, out var oldDisposables))
             {
                 oldDisposables.Dispose();
@@ -116,9 +115,9 @@ internal class UploadList : ItemsControl, IMotionAwareControl
             }
             _itemsBindingDisposables.Add(listItem, disposables);
         }
-        else
-        {
-            throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type AbstractUploadListItem.");
-        }
+    }
+
+    protected virtual void NotifyPrepareUploadListItem(AbstractUploadListItem listItem, CompositeDisposable disposables)
+    {
     }
 }

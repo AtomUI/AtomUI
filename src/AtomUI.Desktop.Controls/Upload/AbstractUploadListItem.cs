@@ -8,7 +8,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal enum UploadListActions
 {
-    Remove
+    Remove,
+    Preview
 }
 
 internal class TaskRemoveRequestEventArgs : RoutedEventArgs
@@ -110,6 +111,22 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
     }
 
     #endregion
+
+    static AbstractUploadListItem()
+    {
+        IconButton.ClickEvent.AddClassHandler<AbstractUploadListItem>((o, args) => o.HandleActionButtonClicked((args.Source as IconButton)!));
+    }
+    
+    private void HandleActionButtonClicked(IconButton button)
+    {
+        if (button.Tag is UploadListActions actionType)
+        {
+            if (actionType == UploadListActions.Remove)
+            {
+                RaiseTaskRemoveRequestEvent();
+            }
+        }
+    }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

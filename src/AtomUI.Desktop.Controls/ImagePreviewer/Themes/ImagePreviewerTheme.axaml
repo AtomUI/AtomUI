@@ -17,7 +17,8 @@
                                               Width="{TemplateBinding CoverWidth}"
                                               Height="{TemplateBinding CoverHeight}"
                                               Content="{TemplateBinding CoverIndicatorContent}"
-                                              ContentTemplate="{TemplateBinding CoverIndicatorContentTemplate}"/>
+                                              ContentTemplate="{TemplateBinding CoverIndicatorContentTemplate}"
+                                              IsShowCoverMask="{TemplateBinding IsShowCoverMask}"/>
                 </Border>
             </ControlTemplate>
         </Setter>

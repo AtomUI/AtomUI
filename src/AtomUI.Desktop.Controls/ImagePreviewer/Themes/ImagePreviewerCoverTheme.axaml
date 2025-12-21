@@ -13,7 +13,9 @@
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <Panel>
                         <atom:ImagePreviewRenderer Source="{TemplateBinding ImageSource}" Stretch="Uniform" />
-                        <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
+                        <Border Name="Mask" 
+                                Opacity="{TemplateBinding MaskOpacity}"
+                                IsVisible="{TemplateBinding IsShowCoverMask}">
                             <ContentPresenter Name="MaskContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}" />
@@ -23,7 +25,10 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Cursor" Value="Hand" />
+        <Style Selector="^[IsShowCoverMask=True]">
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+      
         <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Style Selector="^ /template/ Border#Mask">

@@ -41,12 +41,18 @@ internal class UploadToken : AbstractControlDesignToken
     /// </summary>
     public Thickness TextListNamePadding { get; set; }
     
+    /// <summary>
+    /// 文件类型图标大小
+    /// </summary>
+    public double UploadThumbnailSize { get; set; }
+    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        ActionsColor       = SharedToken.ColorIcon;
-        PictureCardSize    = SharedToken.ControlHeightLG * 2.55;
-        TextListItemMargin = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
+        ActionsColor        = SharedToken.ColorIcon;
+        PictureCardSize     = SharedToken.ControlHeightLG * 2.55;
+        TextListItemMargin  = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
         TextListNamePadding = new Thickness(SharedToken.UniformlyPaddingXS, 0);
+        UploadThumbnailSize = SharedToken.FontSizeHeading2;
     }
 }

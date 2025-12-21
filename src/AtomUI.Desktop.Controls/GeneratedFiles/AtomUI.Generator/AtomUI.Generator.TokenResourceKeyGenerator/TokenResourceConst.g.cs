@@ -1075,6 +1075,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PictureCardSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureCardSize");
         public static readonly TokenResourceKey TextListItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListItemMargin");
         public static readonly TokenResourceKey TextListNamePadding = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListNamePadding");
+        public static readonly TokenResourceKey UploadThumbnailSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.UploadThumbnailSize");
     }
 
     public static class WindowTokenKey

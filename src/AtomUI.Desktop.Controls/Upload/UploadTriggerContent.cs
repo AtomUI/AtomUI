@@ -2,6 +2,8 @@ using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
@@ -29,6 +31,71 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
     }
 
     #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<RoutedEventArgs> FileSelectRequestEvent =
+        RoutedEvent.Register<AbstractUploadListItem, RoutedEventArgs>(nameof(FileSelectRequest), RoutingStrategies.Bubble);
+
+    public event EventHandler<RoutedEventArgs>? FileSelectRequest
+    {
+        add => AddHandler(FileSelectRequestEvent, value);
+        remove => RemoveHandler(FileSelectRequestEvent, value);
+    }
+
+    #endregion
+    
+    private IDisposable? _clickSubscription;
+    private Point? _latestClickPosition;
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureInputManager();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _clickSubscription?.Dispose();
+    }
+
+    private void ConfigureInputManager()
+    {
+        var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
+        _clickSubscription = inputManager?.Process.Subscribe(ListenForMouseEvent);
+    }
+    
+    private void ListenForMouseEvent(RawInputEventArgs e)
+    {
+        if (e is RawPointerEventArgs mouseEventArgs)
+        {
+            var point            = mouseEventArgs.Point;
+            var localPoint       = TopLevel.GetTopLevel(this)?.TranslatePoint(point.Position, this) ?? default;
+            var constraintOffset = this.TranslatePoint(new Point(0, 0), this) ?? default;
+            var constraintBounds = new Rect(constraintOffset, Bounds.Size);
+            if (constraintBounds.Contains(localPoint))
+            {
+                if (mouseEventArgs.Type == RawPointerEventType.LeftButtonDown)
+                {
+                    _latestClickPosition = localPoint;
+                }
+                else if (mouseEventArgs.Type == RawPointerEventType.LeftButtonUp)
+                {
+                    if (_latestClickPosition != null && constraintBounds.Contains(_latestClickPosition.Value))
+                    {
+                        RaiseEvent(new RoutedEventArgs(FileSelectRequestEvent, this));
+                    }
+
+                    _latestClickPosition = null;
+                }
+                else if (mouseEventArgs.Type == RawPointerEventType.Move)
+                {
+                    
+                }
+            }
+        }
+    }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

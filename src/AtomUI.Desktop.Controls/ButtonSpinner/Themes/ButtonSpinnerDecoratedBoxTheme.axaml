@@ -2,12 +2,11 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ButtonSpinnerDecoratedBox}"
                   TargetType="atom:ButtonSpinnerDecoratedBox">
         <ControlTheme.BasedOn>
-            <themes:AddOnDecoratedBoxTheme TargetType="atom:ButtonSpinnerDecoratedBox" />
+            <atom:AddOnDecoratedBoxTheme TargetType="atom:ButtonSpinnerDecoratedBox" />
         </ControlTheme.BasedOn>
 
         <Setter Property="Template">

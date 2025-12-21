@@ -21,11 +21,11 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
                 vm.DefaultTaskList = [
                     new UploadTaskInfo()
                     {
-                        TaskId    = Guid.NewGuid(),
-                        FileName = "xxx.png",
+                        TaskId      = Guid.NewGuid(),
+                        FileName    = "xxx.png",
                         IsImageFile = true,
-                        Status = FileUploadStatus.Uploading,
-                        Progress = 33
+                        Status      = FileUploadStatus.Uploading,
+                        Progress    = 33
                     },
                     new UploadTaskInfo()
                     {
@@ -37,26 +37,28 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
                     },
                     new UploadTaskInfo()
                     {
-                        TaskId      = Guid.NewGuid(),
-                        FileName    = "zzz.png",
-                        IsImageFile = true,
-                        Status      = FileUploadStatus.Failed,
+                        TaskId       = Guid.NewGuid(),
+                        FileName     = "zzz.png",
+                        IsImageFile  = true,
+                        Status       = FileUploadStatus.Failed,
                         ErrorMessage = "Server Error 500"
                     },
                 ];
+                InitPictureWallTaskList(vm);
             }
         });
         InitializeComponent();
-        BasicUpload.UploadTransport                               =  new UploadMockTransport();
-        AvatarDemoPictureCardUpload.UploadTransport               =  new UploadMockTransport();
-        AvatarDemoPictureCircleUpload.UploadTransport             =  new UploadMockTransport();
-        DefaultFileList.UploadTransport                           =  new UploadMockTransport();
-        AvatarDemoPictureCardUpload.UploadTaskAboutToScheduling   += HandleAboutToScheduling;
-        AvatarDemoPictureCircleUpload.UploadTaskAboutToScheduling += HandleAboutToScheduling;
-        AvatarDemoPictureCardUpload.UploadTaskFailed              += HandleUploadFailed;
-        AvatarDemoPictureCircleUpload.UploadTaskFailed            += HandleUploadFailed;
-        AvatarDemoPictureCircleUpload.UploadTaskCompleted         += HandleUploadCompleted;
-        AvatarDemoPictureCardUpload.UploadTaskCompleted           += HandleUploadCompleted;
+        // BasicUpload.UploadTransport                               =  new UploadMockTransport();
+        // AvatarDemoPictureCardUpload.UploadTransport               =  new UploadMockTransport();
+        // AvatarDemoPictureCircleUpload.UploadTransport             =  new UploadMockTransport();
+        // DefaultFileList.UploadTransport                           =  new UploadMockTransport();
+        // AvatarDemoPictureCardUpload.UploadTaskAboutToScheduling   += HandleAboutToScheduling;
+        // AvatarDemoPictureCircleUpload.UploadTaskAboutToScheduling += HandleAboutToScheduling;
+        // AvatarDemoPictureCardUpload.UploadTaskFailed              += HandleUploadFailed;
+        // AvatarDemoPictureCircleUpload.UploadTaskFailed            += HandleUploadFailed;
+        // AvatarDemoPictureCircleUpload.UploadTaskCompleted         += HandleUploadCompleted;
+        // AvatarDemoPictureCardUpload.UploadTaskCompleted           += HandleUploadCompleted;
+        PicturesWallUpload.UploadTransport = new UploadMockTransport();
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -111,6 +113,60 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
             content:$"{e.UploadFileInfo.Name} upload successfully!"
         ));
     }
+
+    private void InitPictureWallTaskList(UploadViewModel uploadViewModel)
+    {
+        uploadViewModel.PicturesWallDefaultTaskList = [
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "image.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Success,
+                FilePath    = new Uri("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+            },
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "image.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Success,
+                FilePath    = new Uri("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+            },
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "image.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Success,
+                FilePath    = new Uri("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+            },
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "image.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Success,
+                FilePath    = new Uri("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+            },
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "image.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Uploading,
+                Progress    = 50
+            },
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "image.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Failed,
+                ErrorMessage = "Upload error!"
+            },
+        ];
+    }
 }
 
 public class UploadMockTransport : IFileUploadTransport
@@ -121,8 +177,8 @@ public class UploadMockTransport : IFileUploadTransport
         IProgress<FileUploadProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        var totalBytes = fileInfo.Size;
-        var bytesSent  = 0ul;
+        var totalBytes  = fileInfo.Size;
+        var bytesSent   = 0ul;
         var elapsedTime = TimeSpan.Zero;
         try
         {

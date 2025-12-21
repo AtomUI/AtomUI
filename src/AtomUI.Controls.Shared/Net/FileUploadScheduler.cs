@@ -52,7 +52,7 @@ internal class FileUploadScheduler : IFileUploadScheduler
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken       = cancellationTokenSource.Token;
             task.CancellationTokenSource = cancellationTokenSource;
-            task.Status                  = FileUploadStatus.Uploading;
+   
             Debug.Assert(task.UploadFileInfo != null);
             
             var progress = new Progress<FileUploadProgress>(report =>
@@ -66,6 +66,7 @@ internal class FileUploadScheduler : IFileUploadScheduler
                 FileUploadResult? result = null;
                 try
                 {
+                    task.Status = FileUploadStatus.Uploading;
                     result = await _transport.UploadAsync(
                         task.UploadFileInfo,
                         task.Context,

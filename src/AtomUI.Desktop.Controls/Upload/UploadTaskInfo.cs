@@ -104,4 +104,5 @@ public class UploadTaskInfo : AvaloniaObject
     }
     
     internal FileUploadTask? UploadTask { get; set; }
+    internal bool IsPictureTriggerTask { get; set; }
 }

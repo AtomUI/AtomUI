@@ -5,42 +5,55 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
-        <gallery:ShowCaseItem
-            Title="Upload by clicking"
-            Description="Classic mode. File selection dialog pops up when upload button is clicked.">
-            <atom:Upload Name="BasicUpload">
-                <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button>
-            </atom:Upload>
-        </gallery:ShowCaseItem>
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Upload by clicking" -->
+        <!--     Description="Classic mode. File selection dialog pops up when upload button is clicked."> -->
+        <!--     <atom:Upload Name="BasicUpload"> -->
+        <!--         <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button> -->
+        <!--     </atom:Upload> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Avatar" -->
+        <!--     Description="Click to upload user's avatar, and validate size and format of picture with beforeUpload."> -->
+        <!--     <StackPanel Orientation="Horizontal" Spacing="20"> -->
+        <!--         <atom:Upload Name="AvatarDemoPictureCardUpload" ListType="PictureCard"> -->
+        <!--            <StackPanel Orientation="Vertical"> -->
+        <!--                <Panel> -->
+        <!--                    <antdicons:PlusOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}, Converter={x:Static BoolConverters.Not}}"/> -->
+        <!--                    <antdicons:LoadingOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}}" -->
+        <!--                                               LoadingAnimation="Spin"/> -->
+        <!--                </Panel> -->
+        <!--                <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock> -->
+        <!--            </StackPanel> -->
+        <!--         </atom:Upload> -->
+        <!--         <atom:Upload Name="AvatarDemoPictureCircleUpload" ListType="PictureCircle"> -->
+        <!--             <StackPanel Orientation="Vertical"> -->
+        <!--                 <antdicons:PlusOutlined/> -->
+        <!--                 <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock> -->
+        <!--             </StackPanel> -->
+        <!--         </atom:Upload> -->
+        <!--     </StackPanel> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Default Files" -->
+        <!--     Description="Use defaultFileList for uploaded files when page init." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Upload Name="DefaultFileList" DefaultTaskList="{Binding DefaultTaskList}"> -->
+        <!--         <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button> -->
+        <!--     </atom:Upload>  -->
+        <!-- </gallery:ShowCaseItem> -->
         
         <gallery:ShowCaseItem
-            Title="Avatar"
-            Description="Click to upload user's avatar, and validate size and format of picture with beforeUpload.">
-            <StackPanel Orientation="Horizontal" Spacing="20">
-                <atom:Upload Name="AvatarDemoPictureCardUpload" ListType="PictureCard">
-                   <StackPanel Orientation="Vertical">
-                       <Panel>
-                           <antdicons:PlusOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}, Converter={x:Static BoolConverters.Not}}"/>
-                           <antdicons:LoadingOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"
-                                                      LoadingAnimation="Spin"/>
-                       </Panel>
-                       <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock>
-                   </StackPanel>
-                </atom:Upload>
-                <atom:Upload Name="AvatarDemoPictureCircleUpload" ListType="PictureCircle">
-                    <StackPanel Orientation="Vertical">
-                        <antdicons:PlusOutlined/>
-                        <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock>
-                    </StackPanel>
-                </atom:Upload>
-            </StackPanel>
-        </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem
-            Title="Default Files"
-            Description="Use defaultFileList for uploaded files when page init.">
-            <atom:Upload Name="DefaultFileList" DefaultTaskList="{Binding DefaultTaskList}">
-                <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button>
+            Title="Pictures Wall"
+            Description="After users upload picture, the thumbnail will be shown in list. The upload button will disappear when count meets limitation."
+            IsOccupyEntireRow="True">
+            <atom:Upload Name="PicturesWallUpload" DefaultTaskList="{Binding PicturesWallDefaultTaskList}" ListType="PictureCard">
+                <StackPanel Orientation="Vertical">
+                    <antdicons:PlusOutlined/>
+                    <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock>
+                </StackPanel>
             </atom:Upload> 
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

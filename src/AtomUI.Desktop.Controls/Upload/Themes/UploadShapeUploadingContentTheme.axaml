@@ -7,7 +7,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:UploadShapeUploadingContent}" TargetType="atom:UploadShapeUploadingContent">
         <ControlTheme.BasedOn>
-            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapeUploadingContent"/>
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapeUploadingContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
@@ -15,32 +15,36 @@
                                    Background="{TemplateBinding Background}"
                                    BorderBrush="{TemplateBinding BorderBrush}"
                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                   CornerRadius="{TemplateBinding CornerRadius}"
-                                   Padding="{TemplateBinding Padding}">
-                    <Panel>
-                        <StackPanel Name="ContentLayout" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Uploading}}"
-                                       HorizontalAlignment="Center"/>
-                            <atom:ProgressBar SizeType="Small" IsShowProgressInfo="False" Value="{TemplateBinding Progress}"/>
-                        </StackPanel>
-                        <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
-                            <atom:IconButton Icon="{antdicons:AntDesignIconProvider DeleteOutlined}" 
-                                             HorizontalAlignment="Center" 
-                                             VerticalAlignment="Center"
-                                             Tag="{x:Static atom:UploadListActions.Remove}" />
-                        </Border>
-                    </Panel>
+                                   CornerRadius="{TemplateBinding CornerRadius}">
+                    <Border Name="ContentFrame"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ClipToBounds="True"
+                            Margin="{TemplateBinding Padding}">
+                        <Panel>
+                            <TextBlock
+                                Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Uploading}}"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Top"
+                                Margin="0, 10, 0, 0"/>
+                            <atom:ProgressBar SizeType="Small" IsShowProgressInfo="False"
+                                              Value="{TemplateBinding Progress}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                            <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
+                                <atom:IconButton Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center"
+                                                 Tag="{x:Static atom:UploadListActions.Remove}" />
+                            </Border>
+                        </Panel>
+                    </Border>
                 </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
-        
+
         <Style Selector="^ /template/ atom|DashedBorder#Frame">
-            <Setter Property="StrokeDashArray" Value="4, 2"/>
+            <Setter Property="StrokeDashArray" Value="4, 2" />
         </Style>
-        
-        <Style Selector="^ /template/ StackPanel#ContentLayout">
-            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}"/>
-        </Style>
-        
+
     </ControlTheme>
 </ResourceDictionary>

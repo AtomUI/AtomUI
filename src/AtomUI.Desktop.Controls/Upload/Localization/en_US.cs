@@ -7,4 +7,5 @@ internal class en_US : LanguageProvider
 {
     public const string Uploading = "Uploading...";
     public const string Pending = "Pending...";
+    public const string DragUploadHead = "Click or drag file to this area to upload";
 }

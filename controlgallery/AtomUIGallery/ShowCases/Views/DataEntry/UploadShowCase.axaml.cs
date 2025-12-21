@@ -58,7 +58,9 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
         // AvatarDemoPictureCircleUpload.UploadTaskFailed            += HandleUploadFailed;
         // AvatarDemoPictureCircleUpload.UploadTaskCompleted         += HandleUploadCompleted;
         // AvatarDemoPictureCardUpload.UploadTaskCompleted           += HandleUploadCompleted;
-        PicturesWallUpload.UploadTransport = new UploadMockTransport();
+        // PicturesWallUpload.UploadTransport = new UploadMockTransport();
+        // PicturesCircleWallUpload.UploadTransport = new UploadMockTransport();
+        DragAndDropUpload.UploadTransport = new UploadMockTransport();
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -76,10 +76,7 @@ internal class UploadList : ItemsControl, IMotionAwareControl
         }
         if (ListType == UploadListType.PictureCard || ListType == UploadListType.PictureCircle)
         {
-            return new UploadPictureShapeListItem()
-            {
-                IsCircle = ListType == UploadListType.PictureCircle
-            };
+            return new UploadPictureShapeListItem();
         }
         return new UploadTextListItem();
     }
@@ -107,6 +104,7 @@ internal class UploadList : ItemsControl, IMotionAwareControl
             }
             
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, listItem, AbstractUploadListItem.IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(this, ListTypeProperty, listItem, AbstractUploadListItem.ListTypeProperty));
             NotifyPrepareUploadListItem(listItem, disposables);
             if (_itemsBindingDisposables.TryGetValue(listItem, out var oldDisposables))
             {

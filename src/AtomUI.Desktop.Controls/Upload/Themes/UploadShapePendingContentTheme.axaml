@@ -16,12 +16,16 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}">
-                    <StackPanel Name="ContentLayout"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Pending}}"
-                                   HorizontalAlignment="Center" />
-                    </StackPanel>
+                    <Border Name="ContentFrame"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ClipToBounds="True">
+                        <StackPanel Name="ContentLayout"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Pending}}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
                 </Border>
             </ControlTemplate>
         </Setter>

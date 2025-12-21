@@ -1072,6 +1072,9 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     public static class UploadTokenKey
     {
         public static readonly TokenResourceKey ActionsColor = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.ActionsColor");
+        public static readonly TokenResourceKey DragHeaderMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.DragHeaderMargin");
+        public static readonly TokenResourceKey DragIconMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.DragIconMargin");
+        public static readonly TokenResourceKey DragIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.DragIconSize");
         public static readonly TokenResourceKey PictureCardSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureCardSize");
         public static readonly TokenResourceKey TextListItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListItemMargin");
         public static readonly TokenResourceKey TextListNamePadding = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListNamePadding");

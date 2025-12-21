@@ -42,18 +42,39 @@
         <!--     IsOccupyEntireRow="True"> -->
         <!--     <atom:Upload Name="DefaultFileList" DefaultTaskList="{Binding DefaultTaskList}"> -->
         <!--         <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button> -->
+        <!--     </atom:Upload> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Pictures Wall" -->
+        <!--     Description="After users upload picture, the thumbnail will be shown in list. The upload button will disappear when count meets limitation." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Upload Name="PicturesWallUpload" DefaultTaskList="{Binding PicturesWallDefaultTaskList}" ListType="PictureCard"> -->
+        <!--         <StackPanel Orientation="Vertical"> -->
+        <!--             <antdicons:PlusOutlined/> -->
+        <!--             <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock> -->
+        <!--         </StackPanel> -->
+        <!--     </atom:Upload>  -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Pictures with picture-circle type" -->
+        <!--     Description="Alternative display for picture-card." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Upload Name="PicturesCircleWallUpload" DefaultTaskList="{Binding PicturesWallDefaultTaskList}" ListType="PictureCircle"> -->
+        <!--         <StackPanel Orientation="Vertical"> -->
+        <!--             <antdicons:PlusOutlined/> -->
+        <!--             <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock> -->
+        <!--         </StackPanel> -->
         <!--     </atom:Upload>  -->
         <!-- </gallery:ShowCaseItem> -->
         
         <gallery:ShowCaseItem
-            Title="Pictures Wall"
-            Description="After users upload picture, the thumbnail will be shown in list. The upload button will disappear when count meets limitation."
+            Title="Drag and Drop"
+            Description="You can drag files to a specific area, to upload. Alternatively, you can also upload by selecting."
             IsOccupyEntireRow="True">
-            <atom:Upload Name="PicturesWallUpload" DefaultTaskList="{Binding PicturesWallDefaultTaskList}" ListType="PictureCard">
-                <StackPanel Orientation="Vertical">
-                    <antdicons:PlusOutlined/>
-                    <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock>
-                </StackPanel>
+            <atom:Upload Name="DragAndDropUpload">
+                <atom:UploadDefaultDropArea/>
             </atom:Upload> 
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

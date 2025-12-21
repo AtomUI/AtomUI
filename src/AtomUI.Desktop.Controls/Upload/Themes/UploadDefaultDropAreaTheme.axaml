@@ -2,12 +2,83 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:uploadlang="using:AtomUI.Desktop.Controls.UploadLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:UploadDefaultDropArea}" TargetType="atom:UploadDefaultDropArea">
         <Setter Property="Template">
             <ControlTemplate>
-           
+                <atom:DashedBorder Name="Frame"
+                                   Background="{TemplateBinding Background}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   Padding="{TemplateBinding Padding}">
+                    <StackPanel Orientation="Vertical">
+                        <atom:IconPresenter Name="IconPresenter"
+                                            Icon="{TemplateBinding DropIcon}" />
+                        <ContentPresenter Name="HeaderContentPresenter"
+                                          Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        <ContentPresenter Name="SubHeaderContentPresenter"
+                                          Content="{TemplateBinding SubHeader}"
+                                          ContentTemplate="{TemplateBinding SubHeaderTemplate}" />
+                    </StackPanel>
+                </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}"/>
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}"/>
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}"/>
+        <Setter Property="Header" Value="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.DragUploadHead}}"/>
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
+        <Setter Property="DragDrop.AllowDrop" Value="True"/>
+        
+        <Style Selector="^ /template/ atom|DashedBorder#Frame">
+            <Setter Property="StrokeDashArray" Value="4, 2"/>
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}"/>
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.DragIconSize}}"/>
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.DragIconSize}}"/>
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:UploadTokenKey.DragIconMargin}}"/>
+        </Style>
+        
+        <Style Selector="^:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}"/>
+        </Style>
+        
+        <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextHeading}}"/>
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeLG}}"/>
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:UploadTokenKey.DragHeaderMargin}}"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        
+        <Style Selector="^ /template/ ContentPresenter#SubHeaderContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}"/>
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}"/>
+            </Style>
+            
+            <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}"/>
+            </Style>
+        
+            <Style Selector="^ /template/ ContentPresenter#SubHeaderContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}"/>
+            </Style>
+        </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

@@ -46,6 +46,21 @@ internal class UploadToken : AbstractControlDesignToken
     /// </summary>
     public double UploadThumbnailSize { get; set; }
     
+    /// <summary>
+    /// 拖动上传区域图标大小
+    /// </summary>
+    public double DragIconSize { get; set; }
+    
+    /// <summary>
+    /// 拖动上传区域图标外间距
+    /// </summary>
+    public Thickness DragIconMargin { get; set; }
+    
+    /// <summary>
+    /// 拖动上传区域主标题的外间距
+    /// </summary>
+    public Thickness DragHeaderMargin { get; set; }
+    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -54,5 +69,8 @@ internal class UploadToken : AbstractControlDesignToken
         TextListItemMargin  = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
         TextListNamePadding = new Thickness(SharedToken.UniformlyPaddingXS, 0);
         UploadThumbnailSize = SharedToken.FontSizeHeading2;
+        DragIconSize        = SharedToken.FontSizeHeading3 * 2;
+        DragIconMargin      = new Thickness(0, 0, 0, SharedToken.UniformlyMargin);
+        DragHeaderMargin    = new Thickness(0, 0, 0, SharedToken.UniformlyMarginXXS);
     }
 }

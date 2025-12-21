@@ -12,6 +12,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXS}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextSecondary}}" />
         
         <Style Selector="^[Status=Failed]">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />

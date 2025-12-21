@@ -2,6 +2,7 @@ using AtomUI.Controls;
 using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Animation;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 
@@ -10,6 +11,9 @@ namespace AtomUI.Desktop.Controls;
 internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareControl
 {
     #region 公共属性定义
+    public static readonly StyledProperty<UploadListType> ListTypeProperty =
+        Upload.ListTypeProperty.AddOwner<AbstractUploadPictureContent>();
+    
     public static readonly StyledProperty<bool> IsImageFileProperty =
         AvaloniaProperty.Register<AbstractUploadPictureContent, bool>(nameof(IsImageFile));
     
@@ -24,6 +28,12 @@ internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareCont
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractUploadPictureContent>();
+    
+    public UploadListType ListType
+    {
+        get => GetValue(ListTypeProperty);
+        set => SetValue(ListTypeProperty, value);
+    }
     
     public bool IsImageFile
     {
@@ -80,6 +90,19 @@ internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareCont
                 ConfigureTransitions(true);
             }
         }
+        
+        if (change.Property == ListTypeProperty)
+        {
+            if (ListType == UploadListType.PictureCircle)
+            {
+                var radius= Math.Max(Width, Height);
+                if (double.IsNaN(radius))
+                {
+                    radius = Math.Min(DesiredSize.Width, DesiredSize.Height);
+                }
+                ConfigureEffectiveCornerRadius(radius);
+            }
+        }
     }
     
     protected override void OnUnloaded(RoutedEventArgs e)
@@ -108,6 +131,20 @@ internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareCont
         else
         {
             Transitions = null;
+        }
+    }
+    
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        ConfigureEffectiveCornerRadius(Math.Max(e.NewSize.Width, e.NewSize.Height));
+    }
+    
+    private void ConfigureEffectiveCornerRadius(double cornerRadius)
+    {
+        if (ListType == UploadListType.PictureCircle)
+        {
+            SetCurrentValue(CornerRadiusProperty, new CornerRadius(cornerRadius));
         }
     }
 }

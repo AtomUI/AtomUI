@@ -10,6 +10,7 @@
                     <atom:UploadShapeUploadingContent 
                         Status="{TemplateBinding Status}"
                         IsImageFile="{TemplateBinding IsImageFile}"
+                        ListType="{TemplateBinding ListType}"
                         FileName="{TemplateBinding FileName}"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         FilePath="{TemplateBinding FilePath}"
@@ -26,7 +27,8 @@
                         IsImageFile="{TemplateBinding IsImageFile}"
                         FileName="{TemplateBinding FileName}"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                        FilePath="{TemplateBinding FilePath}"/>
+                        FilePath="{TemplateBinding FilePath}"
+                        ListType="{TemplateBinding ListType}"/>
                 </ControlTemplate>
             </Setter>
         </Style>
@@ -39,7 +41,8 @@
                         IsImageFile="{TemplateBinding IsImageFile}"
                         FileName="{TemplateBinding FileName}"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                        FilePath="{TemplateBinding FilePath}"/>
+                        FilePath="{TemplateBinding FilePath}"
+                        ListType="{TemplateBinding ListType}"/>
                 </ControlTemplate>
             </Setter>
         </Style>
@@ -51,7 +54,8 @@
                                                     IsImageFile="{TemplateBinding IsImageFile}"
                                                     FileName="{TemplateBinding FileName}"
                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}" 
-                                                    FilePath="{TemplateBinding FilePath}"/>
+                                                    FilePath="{TemplateBinding FilePath}"
+                                                    ListType="{TemplateBinding ListType}"/>
                 </ControlTemplate>
             </Setter>
         </Style>

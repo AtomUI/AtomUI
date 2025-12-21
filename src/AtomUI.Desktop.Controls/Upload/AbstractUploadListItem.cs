@@ -47,6 +47,9 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
     public static readonly StyledProperty<Uri?> FilePathProperty =
         AvaloniaProperty.Register<AbstractUploadListItem, Uri?>(nameof(FilePath));
     
+    public static readonly StyledProperty<UploadListType> ListTypeProperty =
+        Upload.ListTypeProperty.AddOwner<AbstractUploadListItem>();
+    
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractUploadListItem>();
 
@@ -90,6 +93,12 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
     {
         get => GetValue(FilePathProperty);
         set => SetValue(FilePathProperty, value);
+    }
+    
+    public UploadListType ListType
+    {
+        get => GetValue(ListTypeProperty);
+        set => SetValue(ListTypeProperty, value);
     }
     
     public bool IsMotionEnabled

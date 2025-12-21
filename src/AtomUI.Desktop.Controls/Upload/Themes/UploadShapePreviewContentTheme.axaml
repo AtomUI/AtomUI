@@ -16,26 +16,30 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}">
-                    <Panel>
-                        <atom:UploadImagePreviewer Name="{x:Static atom:UploadThemeConstants.ImagePreviewerPart}"
-                                                   IsShowCoverMask="False"
-                                                   HorizontalAlignment="Stretch"
-                                                   VerticalAlignment="Stretch"
-                                                   Sources="{TemplateBinding Sources}" />
-                        <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
-                            <StackPanel Name="ActionsLayout" Orientation="Horizontal" HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
-                                <atom:IconButton Icon="{antdicons:AntDesignIconProvider EyeOutlined}"
-                                                 HorizontalAlignment="Center"
-                                                 VerticalAlignment="Center"
-                                                 Tag="{x:Static atom:UploadListActions.Preview}" />
-                                <atom:IconButton Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
-                                                 HorizontalAlignment="Center"
-                                                 VerticalAlignment="Center"
-                                                 Tag="{x:Static atom:UploadListActions.Remove}" />
-                            </StackPanel>
-                        </Border>
-                    </Panel>
+                    <Border Name="ContentFrame"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ClipToBounds="True">
+                        <Panel>
+                            <atom:UploadImagePreviewer Name="{x:Static atom:UploadThemeConstants.ImagePreviewerPart}"
+                                                       IsShowCoverMask="False"
+                                                       HorizontalAlignment="Stretch"
+                                                       VerticalAlignment="Stretch"
+                                                       Sources="{TemplateBinding Sources}" />
+                            <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
+                                <StackPanel Name="ActionsLayout" Orientation="Horizontal" HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <atom:IconButton Icon="{antdicons:AntDesignIconProvider EyeOutlined}"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     Tag="{x:Static atom:UploadListActions.Preview}" />
+                                    <atom:IconButton Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     Tag="{x:Static atom:UploadListActions.Remove}" />
+                                </StackPanel>
+                            </Border>
+                        </Panel>
+                    </Border>
                 </Border>
             </ControlTemplate>
         </Setter>

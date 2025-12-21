@@ -240,6 +240,13 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         {
             upload.HandleFileSelectRequest();
         });
+        UploadDefaultDropArea.FilesDroppedEvent.AddClassHandler<Upload>((upload, args) =>
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await upload.EnqueueUploadFiles(args.Files);
+            });
+        });
     }
     
     public Upload()
@@ -274,12 +281,17 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
                     {
                         AllowMultiple = IsMultipleEnabled
                     });
-                    foreach (var file in result)
-                    {
-                        await EnqueueUploadFile(file);
-                    }
+                    await EnqueueUploadFiles(result);
                 }
             });
+        }
+    }
+
+    private async Task EnqueueUploadFiles(IReadOnlyList<IStorageFile> files)
+    {
+        foreach (var file in files)
+        {
+            await EnqueueUploadFile(file);
         }
     }
 
@@ -309,6 +321,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         uploadTaskInfo.Progress    = task.Progress;
         uploadTaskInfo.IsImageFile = IsImageFile(uploadFile);
         uploadTaskInfo.UploadTask  = task;
+        uploadTaskInfo.FilePath    = file.Path;
 
         if (ListType == UploadListType.PictureCircle || ListType == UploadListType.PictureCard)
         {
@@ -524,7 +537,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
             if (taskInfo != null)
             {
                 TaskInfoList.Remove(taskInfo);
-            }    
+            }
         }
     }
 }

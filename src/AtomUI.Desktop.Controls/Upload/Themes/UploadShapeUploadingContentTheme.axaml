@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
     xmlns:uploadlang="using:AtomUI.Desktop.Controls.UploadLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:UploadShapeUploadingContent}" TargetType="atom:UploadShapeUploadingContent">
@@ -16,13 +17,19 @@
                                    BorderThickness="{TemplateBinding BorderThickness}"
                                    CornerRadius="{TemplateBinding CornerRadius}"
                                    Padding="{TemplateBinding Padding}">
-                    <StackPanel Name="ContentLayout"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Uploading}}"
-                                   HorizontalAlignment="Center"/>
-                        <atom:ProgressBar SizeType="Small" IsShowProgressInfo="False" Value="{TemplateBinding Progress}"/>
-                    </StackPanel>
+                    <Panel>
+                        <StackPanel Name="ContentLayout" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Uploading}}"
+                                       HorizontalAlignment="Center"/>
+                            <atom:ProgressBar SizeType="Small" IsShowProgressInfo="False" Value="{TemplateBinding Progress}"/>
+                        </StackPanel>
+                        <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
+                            <atom:IconButton Icon="{antdicons:AntDesignIconProvider DeleteOutlined}" 
+                                             HorizontalAlignment="Center" 
+                                             VerticalAlignment="Center"
+                                             Tag="{x:Static atom:UploadListActions.Remove}" />
+                        </Border>
+                    </Panel>
                 </atom:DashedBorder>
             </ControlTemplate>
         </Setter>

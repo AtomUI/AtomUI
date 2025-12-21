@@ -17,6 +17,19 @@
                 </ControlTemplate>
             </Setter>
         </Style>
+        
+        <Style Selector="^[Status=Pending]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:UploadShapePendingContent 
+                        Status="{TemplateBinding Status}"
+                        IsImageFile="{TemplateBinding IsImageFile}"
+                        FileName="{TemplateBinding FileName}"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                        FilePath="{TemplateBinding FilePath}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
 
         <Style Selector="^[Status=Success][IsImageFile=True]">
             <Setter Property="Template">

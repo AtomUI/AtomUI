@@ -14,5 +14,6 @@
         <ResourceInclude Source="UploadShapeUploadingContentTheme.axaml" />
         <ResourceInclude Source="UploadShapeDefaultContentTheme.axaml" />
         <ResourceInclude Source="UploadShapePreviewContentTheme.axaml" />
+        <ResourceInclude Source="UploadShapePendingContentTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

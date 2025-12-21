@@ -87,6 +87,7 @@ namespace AtomUI.Desktop.Controls.UploadLang
 {
     internal static class UploadLangResourceKey
     {
+        public static readonly LanguageResourceKey Pending = new LanguageResourceKey("Upload.Pending", "AtomUI.Lang");
         public static readonly LanguageResourceKey Uploading = new LanguageResourceKey("Upload.Uploading", "AtomUI.Lang");
     }
 }

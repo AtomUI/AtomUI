@@ -4,27 +4,27 @@
     xmlns:atom="https://atomui.net"
     xmlns:uploadlang="using:AtomUI.Desktop.Controls.UploadLang"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:UploadShapeUploadingContent}" TargetType="atom:UploadShapeUploadingContent">
+    <ControlTheme x:Key="{x:Type atom:UploadShapePendingContent}" TargetType="atom:UploadShapePendingContent">
         <ControlTheme.BasedOn>
-            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapeUploadingContent"/>
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapePendingContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:DashedBorder Name="Frame"
-                                   Background="{TemplateBinding Background}"
-                                   BorderBrush="{TemplateBinding BorderBrush}"
-                                   BorderThickness="{TemplateBinding BorderThickness}"
-                                   CornerRadius="{TemplateBinding CornerRadius}"
-                                   Padding="{TemplateBinding Padding}">
+                <Border Name="Frame"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
                     <StackPanel Name="ContentLayout"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Uploading}}"
-                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource {x:Static uploadlang:UploadLangResourceKey.Pending}}"
+                                   HorizontalAlignment="Center" />
                     </StackPanel>
-                </atom:DashedBorder>
+                </Border>
             </ControlTemplate>
         </Setter>
-        
+
     </ControlTheme>
 </ResourceDictionary>

@@ -6,4 +6,5 @@ namespace AtomUI.Desktop.Controls.UploadLang;
 internal class zh_CN : LanguageProvider
 {
     public const string Uploading = "上传中...";
+    public const string Pending = "等待调度...";
 }

@@ -6,4 +6,5 @@ namespace AtomUI.Desktop.Controls.UploadLang;
 internal class en_US : LanguageProvider
 {
     public const string Uploading = "Uploading...";
+    public const string Pending = "Pending...";
 }

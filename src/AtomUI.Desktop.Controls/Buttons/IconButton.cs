@@ -99,8 +99,7 @@ public class IconButton : AvaloniaButton,
         get => GetValue(IsPassthroughMouseEventProperty);
         set => SetValue(IsPassthroughMouseEventProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
 

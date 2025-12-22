@@ -1,22 +1,53 @@
 using Avalonia;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
 public class ImagePreviewer : AbstractImagePreviewer
 {
     #region 公共属性定义
+    public static readonly StyledProperty<object?> CoverIndicatorContentProperty =
+        AvaloniaProperty.Register<ImagePreviewer, object?>(nameof(CoverIndicatorContent));
+    
+    public static readonly StyledProperty<IDataTemplate?> CoverIndicatorContentTemplateProperty =
+        AvaloniaProperty.Register<ImagePreviewer, IDataTemplate?>(nameof(CoverIndicatorContentTemplate));
+    
     public static readonly StyledProperty<string?> CoverImageSrcProperty =
         AvaloniaProperty.Register<ImagePreviewer, string?>(nameof(CoverImageSrc));
+    
+    public static readonly StyledProperty<bool> IsShowCoverMaskProperty =
+        AvaloniaProperty.Register<ImagePreviewer, bool>(nameof(IsShowCoverMask), true);
     
     public string? CoverImageSrc
     {
         get => GetValue(CoverImageSrcProperty);
         set => SetValue(CoverImageSrcProperty, value);
     }
+    
+    [DependsOn(nameof(CoverIndicatorContentTemplate))]
+    public object? CoverIndicatorContent
+    {
+        get => GetValue(CoverIndicatorContentProperty);
+        set => SetValue(CoverIndicatorContentProperty, value);
+    }
+    
+    public IDataTemplate? CoverIndicatorContentTemplate
+    {
+        get => GetValue(CoverIndicatorContentTemplateProperty);
+        set => SetValue(CoverIndicatorContentTemplateProperty, value);
+    }
+    
+    public bool IsShowCoverMask
+    {
+        get => GetValue(IsShowCoverMaskProperty);
+        set => SetValue(IsShowCoverMaskProperty, value);
+    }
     #endregion
     
     #region 内部属性定义
+    
     internal static readonly DirectProperty<ImagePreviewer, PreviewImageSource?> EffectiveCoverImageProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewer, PreviewImageSource?>(
             nameof(EffectiveCoverImage),

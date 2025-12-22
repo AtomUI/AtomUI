@@ -39,17 +39,17 @@
         <Style Selector="^[Status=Normal]">
             <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:ProgressBarTokenKey.DefaultColor}}" />
             
-            <Style Selector="^ /template/ atom|IconPresenter#PARTExceptionCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
         
-            <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
-                <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+                <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
             </Style>
@@ -58,17 +58,17 @@
         <Style Selector="^[Status=Active]">
             <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:ProgressBarTokenKey.DefaultColor}}" />
             
-            <Style Selector="^ /template/ atom|IconPresenter#PARTExceptionCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
         
-            <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
-                <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+                <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
             </Style>
@@ -77,17 +77,17 @@
         <Style Selector="^[Status=Exception]">
             <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
             
-            <Style Selector="^ /template/ atom|IconPresenter#PARTExceptionCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         
-            <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
-                <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+                <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="False" />
                 </Style>
             </Style>
@@ -96,17 +96,17 @@
         <Style Selector="^[Status=Success]">
             <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
             
-            <Style Selector="^ /template/ atom|IconPresenter#PARTExceptionCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
         
-            <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
-                <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+                <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="False" />
                 </Style>
             </Style>

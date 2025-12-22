@@ -131,8 +131,7 @@ public class MessageCard : TemplatedControl,
         get => _openCloseMotionDuration;
         set => SetAndRaise(OpenCloseMotionDurationProperty, ref _openCloseMotionDuration, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => MessageToken.ID;
 

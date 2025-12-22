@@ -1,0 +1,71 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:UploadPictureShapeListItem}" TargetType="atom:UploadPictureShapeListItem">
+        <Style Selector="^[Status=Uploading]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:UploadPictureShapeUploadingContent 
+                        Status="{TemplateBinding Status}"
+                        IsImageFile="{TemplateBinding IsImageFile}"
+                        ListType="{TemplateBinding ListType}"
+                        FileName="{TemplateBinding FileName}"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                        FilePath="{TemplateBinding FilePath}"
+                        Progress="{TemplateBinding Progress}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="^[Status=Pending]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:UploadPictureShapePendingContent 
+                        Status="{TemplateBinding Status}"
+                        IsImageFile="{TemplateBinding IsImageFile}"
+                        FileName="{TemplateBinding FileName}"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                        FilePath="{TemplateBinding FilePath}"
+                        ListType="{TemplateBinding ListType}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="^[Status=Success][IsImageFile=True]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:UploadPictureShapePreviewContent 
+                        Status="{TemplateBinding Status}"
+                        IsImageFile="{TemplateBinding IsImageFile}"
+                        FileName="{TemplateBinding FileName}"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                        FilePath="{TemplateBinding FilePath}"
+                        ListType="{TemplateBinding ListType}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="^[Status=Cancelled], ^[Status=Failed], ^[Status=Success][IsImageFile=False]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:UploadPictureShapeDefaultContent Status="{TemplateBinding Status}"
+                                                    IsImageFile="{TemplateBinding IsImageFile}"
+                                                    FileName="{TemplateBinding FileName}"
+                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}" 
+                                                    FilePath="{TemplateBinding FilePath}"
+                                                    ListType="{TemplateBinding ListType}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="^[Status=Cancelled], ^[Status=Failed]">
+            <Style Selector="^:pointerover">
+                <Setter Property="atom:ToolTip.Tip" Value="{Binding ErrorMessage, RelativeSource={RelativeSource Self}}" />
+                <Setter Property="atom:ToolTip.Placement" Value="Top" />
+            </Style>
+        </Style>
+
+    </ControlTheme>
+</ResourceDictionary>

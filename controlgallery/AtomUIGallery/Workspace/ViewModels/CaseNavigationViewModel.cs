@@ -87,6 +87,7 @@ public class CaseNavigationViewModel : ReactiveObject
         _showCaseViewModelFactories.Add(SliderViewModel.ID, () => new SliderViewModel(HostScreen));
         _showCaseViewModelFactories.Add(TimePickerViewModel.ID, () => new TimePickerViewModel(HostScreen));
         _showCaseViewModelFactories.Add(ToggleSwitchViewModel.ID, () => new ToggleSwitchViewModel(HostScreen));
+        _showCaseViewModelFactories.Add(UploadViewModel.ID, () => new UploadViewModel(HostScreen));
     }
 
     private void RegisterFeedbackViewModels()

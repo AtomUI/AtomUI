@@ -118,8 +118,7 @@ public class OptionButtonGroup : SelectingItemsControl,
         {
             Orientation = Orientation.Horizontal
         });
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => OptionButtonToken.ID;
 

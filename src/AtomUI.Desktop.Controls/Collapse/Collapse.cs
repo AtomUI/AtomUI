@@ -139,8 +139,7 @@ public class Collapse : SelectingItemsControl,
         {
             Orientation = Orientation.Vertical
         });
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => CollapseToken.ID;
 

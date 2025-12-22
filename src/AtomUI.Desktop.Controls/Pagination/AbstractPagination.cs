@@ -105,8 +105,6 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
         return allowPageSizes.Contains(pageSize);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
-    
     #endregion
     
     protected bool TemplateConfigured = false;

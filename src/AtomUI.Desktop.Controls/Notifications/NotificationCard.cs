@@ -141,8 +141,7 @@ public class NotificationCard : ContentControl,
         get => _openCloseMotionDuration;
         set => SetAndRaise(OpenCloseMotionDurationProperty, ref _openCloseMotionDuration, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => NotificationToken.ID;
 

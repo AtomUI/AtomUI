@@ -58,7 +58,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     
     #endregion
 
-    #region 内部属性定义
+        #region 内部属性定义
     
     internal static readonly DirectProperty<PopupBuddyLayer, CornerRadius> MaskShadowsContentCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<PopupBuddyLayer, CornerRadius>(

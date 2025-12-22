@@ -17,7 +17,7 @@
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
 
-        <Style Selector="^[ShowProgressInfo=True]">
+        <Style Selector="^[IsShowProgressInfo=True]">
             <Style Selector="^[Orientation=Horizontal]">
                 <Style Selector="^[PercentPosition=Start]">
                     <Style Selector="^ /template/ atom|IconPresenter">

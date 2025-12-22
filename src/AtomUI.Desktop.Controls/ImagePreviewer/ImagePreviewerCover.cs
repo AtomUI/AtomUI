@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class ImagePreviewerCover : TemplatedControl, IMotionAwareControl
+internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<PreviewImageSource?> ImageSourceProperty =
@@ -16,6 +16,9 @@ internal class ImagePreviewerCover : TemplatedControl, IMotionAwareControl
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ImagePreviewerCover>();
+    
+    public static readonly StyledProperty<bool> IsShowCoverMaskProperty =
+        ImagePreviewer.IsShowCoverMaskProperty.AddOwner<ImagePreviewerCover>();
     
     public PreviewImageSource? ImageSource
     {
@@ -27,6 +30,12 @@ internal class ImagePreviewerCover : TemplatedControl, IMotionAwareControl
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+    
+    public bool IsShowCoverMask
+    {
+        get => GetValue(IsShowCoverMaskProperty);
+        set => SetValue(IsShowCoverMaskProperty, value);
     }
     #endregion
 
@@ -41,8 +50,6 @@ internal class ImagePreviewerCover : TemplatedControl, IMotionAwareControl
         set => SetValue(MaskOpacityProperty, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
-
     #endregion
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

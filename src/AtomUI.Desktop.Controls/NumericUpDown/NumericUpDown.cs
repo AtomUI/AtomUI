@@ -151,8 +151,7 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         get => _isEffectiveShowClearButton;
         set => SetAndRaise(IsEffectiveShowClearButtonProperty, ref _isEffectiveShowClearButton, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => NumericUpDownToken.ID;
     

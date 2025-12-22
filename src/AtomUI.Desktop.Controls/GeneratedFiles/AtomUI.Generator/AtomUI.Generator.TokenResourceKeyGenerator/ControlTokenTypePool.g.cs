@@ -70,6 +70,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ToolTipToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.TreeFlyoutToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.TreeViewToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.UploadToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.WindowToken));
             return tokenTypes;
         }

@@ -140,9 +140,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         get => GetValue(IsDetectMouseClickEnabledProperty);
         set => SetValue(IsDetectMouseClickEnabledProperty, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
-
+    
     #endregion
 
     internal BaseMotionActor? MotionActor;

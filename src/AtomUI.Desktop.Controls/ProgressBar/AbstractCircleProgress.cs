@@ -107,12 +107,6 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         return sizeType;
     }
 
-    protected override void NotifySetupUI()
-    {
-        CalculateSizeTypeThresholdValue();
-        base.NotifySetupUI();
-    }
-
     private void CalculateSizeTypeThresholdValue()
     {
         _sizeTypeThresholdValue.Add(SizeType.Large, LARGE_CIRCLE_SIZE);
@@ -270,7 +264,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (ShowProgressInfo)
+        if (IsShowProgressInfo)
         {
             var extraInfoRect = GetExtraInfoRect(new Rect(new Point(0, 0), finalSize));
             var extraInfoPos  = extraInfoRect.Position;
@@ -338,6 +332,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        CalculateSizeTypeThresholdValue();
         base.OnApplyTemplate(e);
         if (ExceptionCompletedIcon == null)
         {

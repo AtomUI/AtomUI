@@ -145,7 +145,6 @@ public class Card : HeaderedContentControl,
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => CardToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
     
     internal static readonly DirectProperty<Card, Thickness> HeaderBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<Card, Thickness>(

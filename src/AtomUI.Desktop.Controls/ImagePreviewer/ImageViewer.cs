@@ -274,7 +274,6 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     #endregion
     
     private ImagePreviewRenderer? _image;

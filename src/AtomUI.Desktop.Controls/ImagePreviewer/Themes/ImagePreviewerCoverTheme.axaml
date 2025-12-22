@@ -2,8 +2,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:antdicons="https://atomui.net/icons/antdesign"
-    xmlns:imagepreviewlang="using:AtomUI.Desktop.Controls.ImagePreviewerLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImagePreviewerCover}" TargetType="atom:ImagePreviewerCover">
         <Setter Property="Template">
@@ -14,35 +12,29 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <Panel>
-                        <atom:ImagePreviewRenderer Source="{TemplateBinding ImageSource}" Stretch="Uniform"/>
-                        <Border Name="Mask" Opacity="{TemplateBinding MaskOpacity}">
-                            <StackPanel Name="MaskLayout"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
-                                <antdicons:EyeOutlined />
-                                <TextBlock
-                                    Text="{DynamicResource {x:Static imagepreviewlang:ImagePreviewerLangResourceKey.Preview}}" />
-                            </StackPanel>
+                        <atom:ImagePreviewRenderer Source="{TemplateBinding ImageSource}" Stretch="Uniform" />
+                        <Border Name="Mask" 
+                                Opacity="{TemplateBinding MaskOpacity}"
+                                IsVisible="{TemplateBinding IsShowCoverMask}">
+                            <ContentPresenter Name="MaskContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
                         </Border>
                     </Panel>
                 </Border>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="Cursor" Value="Hand" />
+
+        <Style Selector="^[IsShowCoverMask=True]">
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+      
         <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Style Selector="^ /template/ Border#Mask">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.MaskBgColor}}" />
             <Setter Property="TemplatedControl.Foreground"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
-        </Style>
-        <Style Selector="^ /template/ StackPanel#MaskLayout">
-            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
-        </Style>
-        <Style Selector="^ /template/ atom|Icon">
-            <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
         </Style>
 
         <Style Selector="^:pointerover">

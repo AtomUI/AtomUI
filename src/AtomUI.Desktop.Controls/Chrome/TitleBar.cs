@@ -126,8 +126,7 @@ internal class TitleBar : TemplatedControl,
     #endregion
 
     #region 内部属性定义
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ChromeToken.ID;
 

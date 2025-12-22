@@ -41,7 +41,6 @@ internal class SizeTypeAwareIconPresenter : TemplatedControl, ISizeTypeAware, IM
     }
     #endregion
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     
     static SizeTypeAwareIconPresenter()
     {

@@ -587,7 +587,6 @@ public class Calendar : TemplatedControl,
     }
 
     internal DateTime DisplayDateInternal { get; set; }
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => CalendarToken.ID;
 

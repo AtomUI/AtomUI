@@ -1,0 +1,89 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:UploadTextListItemHeader}" TargetType="atom:UploadTextListItemHeader">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="InfoFrame" CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}">
+                    <DockPanel LastChildFill="True" Height="{TemplateBinding EffectiveLineHeight}">
+                        <Panel DockPanel.Dock="Left">
+                            <antdicons:PaperClipOutlined Name="NormalIcon" IsVisible="False"/>
+                            <antdicons:LoadingOutlined Name="LoadingIcon" IsVisible="False" LoadingAnimation="Spin"/>
+                        </Panel>
+                        <atom:IconButton Name="DeleteAction"
+                                         Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
+                                         DockPanel.Dock="Right"
+                                         VerticalAlignment="Stretch"
+                                         Width="{TemplateBinding EffectiveLineHeight}"
+                                         IsVisible="False"
+                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}" 
+                                         Tag="{x:Static atom:UploadListActions.Remove}"/>
+                        <TextBlock Name="FileName" Text="{TemplateBinding FileName}" />
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+            
+        </Setter>
+        
+        <Style Selector="^ /template/ atom|Icon">
+            <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
+        </Style>
+        <Setter Property="RelativeLineHeight"
+                Value="{DynamicResource {x:Static atom:SharedTokenKey.RelativeLineHeight}}" />
+        <Setter Property="Margin" Value="{DynamicResource {x:Static atom:UploadTokenKey.TextListItemMargin}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+
+        <Style Selector="^ /template/ atom|IconButton">
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:UploadTokenKey.ActionsColor}}" />
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+        </Style>
+        
+        <Style Selector="^[Status=Uploading]">
+            <Style Selector="^ /template/ atom|Icon#LoadingIcon">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+        <Style Selector="^:not(^[Status=Uploading])">
+            <Style Selector="^ /template/ atom|Icon#NormalIcon">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style> 
+        
+        <Style Selector="^[Status=Failed]">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            <Style Selector="^ /template/ atom|Icon">
+                <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+            <Setter Property="atom:ToolTip.Tip" Value="{Binding ErrorMessage, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="atom:ToolTip.Placement" Value="Top" />
+        </Style>
+
+        <Style Selector="^ /template/ TextBlock#FileName">
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:UploadTokenKey.TextListNamePadding}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconButton:pointerover">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgHover}}" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgHover}}" />
+            
+            <Style Selector="^ /template/ atom|IconButton#DeleteAction">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

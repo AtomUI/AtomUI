@@ -147,8 +147,6 @@ internal class DialogHost : Window,
         set => SetAndRaise(IsEffectiveFooterVisibleProperty, ref _isEffectiveFooterVisible, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
-    
     #endregion
     
     protected override Type StyleKeyOverride { get; } = typeof(DialogHost);

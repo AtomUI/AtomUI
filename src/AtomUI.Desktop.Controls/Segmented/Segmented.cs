@@ -101,7 +101,6 @@ public class Segmented : SelectingItemsControl,
         set => SetValue(SelectedThumbPosProperty, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => SegmentedToken.ID;
     

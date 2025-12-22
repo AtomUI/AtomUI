@@ -193,7 +193,6 @@ public class ButtonSpinner : Spinner,
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonSpinnerToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
 
     #endregion
     

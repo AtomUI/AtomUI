@@ -229,7 +229,6 @@ internal class OverlayDialogHost : ContentControl,
         set => SetAndRaise(IsHostAnimatingProperty, ref _isHostAnimating, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     internal bool IsHidden => _dialogLayer.Children.Contains(this);
     
     #endregion

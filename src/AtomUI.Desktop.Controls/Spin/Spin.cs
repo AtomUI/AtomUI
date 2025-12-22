@@ -140,7 +140,6 @@ public class Spin : ContentControl, IMotionAwareControl
         set => SetValue(MaskOpacityProperty, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     #endregion
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

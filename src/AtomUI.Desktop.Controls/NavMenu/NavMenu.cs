@@ -194,7 +194,6 @@ public class NavMenu : ItemsControl,
         set => SetValue(HorizontalBorderThicknessProperty, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => NavMenuToken.ID;
     

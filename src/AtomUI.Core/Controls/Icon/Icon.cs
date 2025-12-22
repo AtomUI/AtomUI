@@ -165,8 +165,6 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
     protected virtual IList<DrawingInstruction> DrawingInstructions { get; } = Array.Empty<DrawingInstruction>();
     protected Rect ViewBox;
 
-    Control IMotionAwareControl.PropertyBindTarget => this;
-
     private Animation? _animation;
     private CancellationTokenSource? _animationCancellationTokenSource;
     protected readonly IBrush?[] DrawBrushes = new IBrush[5];

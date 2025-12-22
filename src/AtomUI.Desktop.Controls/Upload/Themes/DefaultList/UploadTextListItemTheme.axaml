@@ -1,0 +1,34 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:UploadTextListItem}" TargetType="atom:UploadTextListItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Orientation="Vertical" Name="RootLayout">
+                    <atom:UploadTextListItemHeader FileName="{TemplateBinding FileName}"
+                                                   Status="{TemplateBinding Status}"
+                                                   ErrorMessage="{TemplateBinding ErrorMessage}"
+                                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                    <atom:ProgressBar Name="ProgressBar" 
+                                      SizeType="Small" 
+                                      Value="{TemplateBinding Progress}"
+                                      IsShowProgressInfo="False"
+                                      IsVisible="False" />
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^[Status=Uploading]">
+            <Style Selector="^ /template/ atom|ProgressBar#ProgressBar">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^ /template/ StackPanel#RootLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
+        </Style>
+
+    </ControlTheme>
+</ResourceDictionary>

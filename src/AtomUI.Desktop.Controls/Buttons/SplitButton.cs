@@ -266,8 +266,7 @@ public class SplitButton : ContentControl,
         get => _effectiveButtonType;
         set => SetAndRaise(EffectiveButtonTypeProperty, ref _effectiveButtonType, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
     

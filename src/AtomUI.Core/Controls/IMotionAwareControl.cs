@@ -1,12 +1,10 @@
 using Avalonia;
-using Avalonia.Controls;
 
 namespace AtomUI.Controls;
 
 public interface IMotionAwareControl
 {
     bool IsMotionEnabled { get; }
-    Control PropertyBindTarget { get; }
 }
 
 public abstract class MotionAwareControlProperty

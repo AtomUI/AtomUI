@@ -82,3 +82,13 @@ namespace AtomUI.Desktop.Controls.TimePickerLang
         public static readonly LanguageResourceKey PMText = new LanguageResourceKey("TimePicker.PMText", "AtomUI.Lang");
     }
 }
+
+namespace AtomUI.Desktop.Controls.UploadLang
+{
+    internal static class UploadLangResourceKey
+    {
+        public static readonly LanguageResourceKey DragUploadHead = new LanguageResourceKey("Upload.DragUploadHead", "AtomUI.Lang");
+        public static readonly LanguageResourceKey Pending = new LanguageResourceKey("Upload.Pending", "AtomUI.Lang");
+        public static readonly LanguageResourceKey Uploading = new LanguageResourceKey("Upload.Uploading", "AtomUI.Lang");
+    }
+}

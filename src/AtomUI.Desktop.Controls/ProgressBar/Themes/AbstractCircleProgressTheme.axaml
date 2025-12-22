@@ -44,11 +44,11 @@
         <Setter Property="CircleMinimumIconSize"
                 Value="{DynamicResource {x:Static atom:ProgressBarTokenKey.CircleMinimumIconSize}}" />
 
-        <Style Selector="^ /template/ atom|IconPresenter#PARTExceptionCompletedIconPresenter">
+        <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|IconPresenter#PARTSuccessCompletedIconPresenter">
+        <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}" />
         </Style>
         

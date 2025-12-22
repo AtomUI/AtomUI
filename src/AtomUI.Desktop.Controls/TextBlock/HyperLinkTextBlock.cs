@@ -155,8 +155,6 @@ public class HyperLinkTextBlock : TemplatedControl, IMotionAwareControl
         set => SetValue(ClickModeProperty, value);
     }
 
-    Control IMotionAwareControl.PropertyBindTarget => this;
-
     #endregion
     
     private bool _commandCanExecute = true;

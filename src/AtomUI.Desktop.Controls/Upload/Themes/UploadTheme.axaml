@@ -1,0 +1,58 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:Upload}" TargetType="atom:Upload">
+        
+        <Style Selector="^[ListType=Text], ^[ListType=Picture]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel Name="RootLayout" LastChildFill="True">
+                        <atom:UploadTriggerContent Name="{x:Static atom:UploadThemeConstants.TriggerContentPart}"
+                                                   DockPanel.Dock="Top"
+                                                   Content="{TemplateBinding Content}"
+                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                   ListType="{TemplateBinding ListType}"
+                                                   IsVisible="{TemplateBinding IsShowUploadTrigger}"/>
+                        <atom:UploadList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
+                                         ListType="{TemplateBinding ListType}"
+                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                         IsVisible="{TemplateBinding IsShowUploadList}"/>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="^[ListType=PictureCard], ^[ListType=PictureCircle]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:UploadPictureShapeList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
+                                          ListType="{TemplateBinding ListType}"
+                                          IsShowUploadTrigger="{TemplateBinding IsShowUploadTrigger}"
+                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                          IsShowUploadList="{TemplateBinding IsShowUploadList}"
+                                          TriggerContent="{TemplateBinding Content}"
+                                          TriggerContentTemplate="{TemplateBinding ContentTemplate}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
+        <Setter Property="ClipToBounds" Value="False" />
+        
+        <Style Selector="^[ListType=PictureCard]">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style Selector="^[ListType=PictureCircle]">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

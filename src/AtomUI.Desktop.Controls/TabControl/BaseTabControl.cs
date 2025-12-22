@@ -257,7 +257,6 @@ public class BaseTabControl : SelectingItemsControl,
 
     internal ContentPresenter? ContentPart { get; private set; }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TabControlToken.ID;
     

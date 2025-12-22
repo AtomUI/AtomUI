@@ -223,7 +223,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetValue(MotionDurationProperty, value);
     }
     
-    Control IMotionAwareControl.PropertyBindTarget => this;
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeViewToken.ID;
     

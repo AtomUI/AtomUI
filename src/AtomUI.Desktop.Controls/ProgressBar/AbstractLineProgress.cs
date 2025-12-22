@@ -92,18 +92,53 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     // 根据当前的状态进行计算
     protected virtual Size CalculateExtraInfoSize(double fontSize)
     {
-        if (Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum))
+        if (IsShowProgressInfo)
         {
-            // 只要图标
-            return new Size(LineInfoIconSize, LineInfoIconSize);
-        }
+            if (Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum))
+            {
+                // 只要图标
+                return new Size(LineInfoIconSize, LineInfoIconSize);
+            }
 
-        return TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+            return TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+        }
+        return default;
+    }
+    
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(ProgressBarPseudoClass.Vertical, Orientation == Orientation.Vertical);
+        PseudoClasses.Set(ProgressBarPseudoClass.Horizontal, Orientation == Orientation.Horizontal);
     }
 
-    protected override void NotifyUiStructureReady()
+    protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.NotifyUiStructureReady();
+        base.NotifyPropertyChanged(change);
+
+        if (this.IsAttachedToVisualTree())
+        {
+            if ((change.Property == WidthProperty && Orientation == Orientation.Vertical) ||
+                (change.Property == HeightProperty && Orientation == Orientation.Horizontal))
+            {
+                EffectiveSizeType = CalculateEffectiveSizeType(change.GetNewValue<double>());
+                CalculateStrokeThickness();
+            }
+            else if (change.Property == EffectiveSizeTypeProperty ||
+                     change.Property == IsShowProgressInfoProperty)
+            {
+                _extraInfoSize = CalculateExtraInfoSize(FontSize);
+            }
+            else if (change.Property == OrientationProperty)
+            {
+                NotifyOrientationChanged();
+            }
+        }
+    }
+    
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        
         var    calculateEffectiveSize = false;
         double sizeValue              = 0;
         if (Orientation == Orientation.Horizontal && !double.IsNaN(Height))
@@ -124,40 +159,7 @@ public abstract class AbstractLineProgress : AbstractProgressBar
 
         _extraInfoSize = CalculateExtraInfoSize(FontSize);
         NotifyOrientationChanged();
-    }
-
-    private void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(ProgressBarPseudoClass.Vertical, Orientation == Orientation.Vertical);
-        PseudoClasses.Set(ProgressBarPseudoClass.Horizontal, Orientation == Orientation.Horizontal);
-    }
-
-    protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.NotifyPropertyChanged(change);
-
-        if (this.IsAttachedToVisualTree())
-        {
-            if ((change.Property == WidthProperty && Orientation == Orientation.Vertical) ||
-                (change.Property == HeightProperty && Orientation == Orientation.Horizontal))
-            {
-                EffectiveSizeType = CalculateEffectiveSizeType(change.GetNewValue<double>());
-                CalculateStrokeThickness();
-            }
-            else if (change.Property == EffectiveSizeTypeProperty)
-            {
-                _extraInfoSize = CalculateExtraInfoSize(FontSize);
-            }
-            else if (change.Property == OrientationProperty)
-            {
-                NotifyOrientationChanged();
-            }
-        }
-    }
-    
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
+        
         ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>(ProgressBarThemeConstants.ExceptionCompletedIconPresenterPart);
         SuccessCompletedIconPresenter   = e.NameScope.Find<IconPresenter>(ProgressBarThemeConstants.SuccessCompletedIconPresenterPart);
         if (ExceptionCompletedIcon == null)

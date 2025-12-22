@@ -31,5 +31,19 @@
                           ReferenceOutputAssembly="false"
                           PrivateAssets="all" />
     </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Upload\Themes\DefaultList\UploadTextListItemHeaderTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\DefaultList\UploadTextListItemTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureList\UploadPicturePendingContentTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureList\UploadPictureShapeDefaultContentTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadPictureListItemTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadPictureShapeListItemTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadShapeDefaultContentTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadShapeListTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadShapePendingContentTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadShapePreviewContentTheme.axaml" />
+      <AdditionalFiles Include="Upload\Themes\PictureShapeList\UploadShapeUploadingContentTheme.axaml" />
+    </ItemGroup>
     
 </Project>

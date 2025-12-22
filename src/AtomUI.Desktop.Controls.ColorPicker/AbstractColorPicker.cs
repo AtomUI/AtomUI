@@ -213,8 +213,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         get => _colorBlockBackground;
         set => SetAndRaise(ColorBlockBackgroundProperty, ref _colorBlockBackground, value);
     }
-
-    Control IMotionAwareControl.PropertyBindTarget => this;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ColorPickerToken.ID;
     

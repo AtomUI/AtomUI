@@ -254,7 +254,6 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => InfoPickerInputToken.ID;
-    Control IMotionAwareControl.PropertyBindTarget => this;
 
     #endregion
 

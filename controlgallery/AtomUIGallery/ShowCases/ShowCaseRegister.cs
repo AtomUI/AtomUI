@@ -73,6 +73,7 @@ internal static class ShowCaseRegister
         Locator.CurrentMutable.Register(() => new SliderShowCase(), typeof(IViewFor<SliderViewModel>));
         Locator.CurrentMutable.Register(() => new TimePickerShowCase(), typeof(IViewFor<TimePickerViewModel>));
         Locator.CurrentMutable.Register(() => new ToggleSwitchShowCase(), typeof(IViewFor<ToggleSwitchViewModel>));
+        Locator.CurrentMutable.Register(() => new UploadShowCase(), typeof(IViewFor<UploadViewModel>));
     }
     
     private static void RegisterFeedbackCases()

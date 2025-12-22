@@ -18,6 +18,10 @@
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionActiveBg}}" />
             </Style>
             
+            <Style Selector="^[IsActive=True]">
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionActiveBg}}" />
+            </Style>
+            
             <Style Selector="^[IsSelected=True]">
                 <Setter Property="FontWeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedFontWeight}}"/>
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedColor}}"/>

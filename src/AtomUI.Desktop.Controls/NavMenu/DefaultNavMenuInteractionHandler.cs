@@ -355,7 +355,6 @@ internal class DefaultNavMenuInteractionHandler : INavMenuInteractionHandler
         _inputManagerSubscription?.Dispose();
 
         Menu               = null;
-        LatestSelectedItem = null;
         _root              = null;
     }
 

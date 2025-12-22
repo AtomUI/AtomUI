@@ -480,7 +480,6 @@ public class NavMenu : ItemsControl,
         base.OnAttachedToLogicalTree(e);
         ConfigureControlTheme(false);
         ConfigureItemContainerTheme(false);
-        SetupInteractionHandler();
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

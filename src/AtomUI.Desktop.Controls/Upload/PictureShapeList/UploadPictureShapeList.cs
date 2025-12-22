@@ -7,20 +7,20 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class UploadShapeList : UploadList
+internal class UploadPictureShapeList : UploadList
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> TriggerContentProperty =
-        AvaloniaProperty.Register<UploadShapeList, object?>(nameof(TriggerContent));
+        AvaloniaProperty.Register<UploadPictureShapeList, object?>(nameof(TriggerContent));
     
     public static readonly StyledProperty<IDataTemplate?> TriggerContentTemplateProperty =
-        AvaloniaProperty.Register<UploadShapeList, IDataTemplate?>(nameof(TriggerContentTemplate));
+        AvaloniaProperty.Register<UploadPictureShapeList, IDataTemplate?>(nameof(TriggerContentTemplate));
     
     public static readonly StyledProperty<bool> IsShowUploadListProperty =
-        Upload.IsShowUploadListProperty.AddOwner<UploadShapeList>();
+        Upload.IsShowUploadListProperty.AddOwner<UploadPictureShapeList>();
 
     public static readonly StyledProperty<bool> IsShowUploadTriggerProperty =
-        Upload.IsShowUploadTriggerProperty.AddOwner<UploadShapeList>();
+        Upload.IsShowUploadTriggerProperty.AddOwner<UploadPictureShapeList>();
     
     [DependsOn(nameof(TriggerContentTemplate))]
     public object? TriggerContent

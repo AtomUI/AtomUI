@@ -6,8 +6,6 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -19,13 +17,6 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     #region 公共属性定义
     public static readonly StyledProperty<IReadOnlyList<string>?> AcceptsProperty =
         AvaloniaProperty.Register<Upload, IReadOnlyList<string>?>(nameof(Accepts));
-    
-    public static readonly StyledProperty<string?> ActionUrlProperty =
-        AvaloniaProperty.Register<Upload, string?>(nameof(ActionUrl));
-    
-    public static readonly StyledProperty<Func<string?, CancellationToken, Task<bool>>?> BeforeUploadProperty =
-        AvaloniaProperty.Register<Upload, Func<string?, CancellationToken, Task<bool>>?>(
-            nameof(BeforeUpload));
     
     public static readonly StyledProperty<object?> ExtraContextProperty =
         AvaloniaProperty.Register<Upload, object?>(
@@ -41,17 +32,11 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     public static readonly StyledProperty<UploadListType> ListTypeProperty =
         AvaloniaProperty.Register<Upload, UploadListType>(nameof(ListType));
     
-    public static readonly StyledProperty<Func<UploadFileInfo, UploadListType, Control>?> IconRenderProperty =
-        AvaloniaProperty.Register<Upload, Func<UploadFileInfo, UploadListType, Control>?>(nameof(IconRender));
-    
     public static readonly StyledProperty<bool> IsMultipleEnabledProperty =
         AvaloniaProperty.Register<Upload, bool>(nameof(IsMultipleEnabled));
     
     public static readonly StyledProperty<bool> IsOpenFileDialogOnClickProperty =
         AvaloniaProperty.Register<Upload, bool>(nameof(IsOpenFileDialogOnClick), true);
-    
-    public static readonly StyledProperty<bool> IsPastableProperty =
-        AvaloniaProperty.Register<Upload, bool>(nameof(IsPastable));
     
     public static readonly StyledProperty<bool> IsShowUploadListProperty =
         AvaloniaProperty.Register<Upload, bool>(nameof(IsShowUploadList), true);
@@ -86,18 +71,6 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         set => SetValue(AcceptsProperty, value);
     }
     
-    public string? ActionUrl
-    {
-        get => GetValue(ActionUrlProperty);
-        set => SetValue(ActionUrlProperty, value);
-    }
-    
-    public Func<string?, CancellationToken, Task<bool>>? BeforeUpload
-    {
-        get => GetValue(BeforeUploadProperty);
-        set => SetValue(BeforeUploadProperty, value);
-    }
-    
     public object? ExtraContext
     {
         get => GetValue(ExtraContextProperty);
@@ -122,12 +95,6 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         set => SetValue(ListTypeProperty, value);
     }
     
-    public Func<UploadFileInfo, UploadListType, Control>? IconRender
-    {
-        get => GetValue(IconRenderProperty);
-        set => SetValue(IconRenderProperty, value);
-    }
-    
     public bool IsMultipleEnabled
     {
         get => GetValue(IsMultipleEnabledProperty);
@@ -138,12 +105,6 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     {
         get => GetValue(IsOpenFileDialogOnClickProperty);
         set => SetValue(IsOpenFileDialogOnClickProperty, value);
-    }
-    
-    public bool IsPastable
-    {
-        get => GetValue(IsPastableProperty);
-        set => SetValue(IsPastableProperty, value);
     }
     
     public bool IsShowUploadList
@@ -195,6 +156,8 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     public AvaloniaList<UploadTaskInfo> TaskInfoList { get; } = new ();
     
     #endregion
+    
+    private List<UploadTaskInfo> _allTaskList = new ();
 
     #region 公共事件定义
 
@@ -209,11 +172,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     #endregion
 
     #region 公共回调函数定义
-    
-    public Action<UploadFileInfo>? FilePreviewHandler { get; set; }
-    public Action<UploadFileInfo>? FileDropHandler { get; set; }
     public Func<UploadFileInfo, bool>? IsImageFilePredicate { get; set; }
-    
     #endregion
     
     #region 内部属性定义
@@ -234,7 +193,10 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     {
         AbstractUploadListItem.TaskRemoveRequestEvent.AddClassHandler<Upload>((upload, args) =>
         {
-            upload.HandleUploadTaskRemoveRequest(args.TaskId);
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await upload.HandleUploadTaskRemoveRequestAsync(args.TaskId);
+            });
         });
         UploadTriggerContent.FileSelectRequestEvent.AddClassHandler<Upload>((upload, args) =>
         {
@@ -270,24 +232,47 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
             {
                 if (IsUploadDirectoryEnabled)
                 {
-                    await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+                    var directories = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
                     {
                         AllowMultiple = IsMultipleEnabled
                     });
+                    var files = new List<UploadFileInfo>();
+                    foreach (var directory in directories)
+                    {
+                        foreach (var fileInfo in Directory.EnumerateFiles(directory.Path.LocalPath, "*", SearchOption.TopDirectoryOnly).Select(x => new FileInfo(x)))
+                        {
+                            files.Add(new UploadFileInfo(fileInfo.Name, new Uri(fileInfo.FullName), fileInfo.Length, fileInfo.CreationTime,  fileInfo.LastWriteTime));
+                        }
+                    }
+                    await EnqueueUploadFiles(files);
                 }
                 else
                 {
-                    var result = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+                    var files = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
                     {
-                        AllowMultiple = IsMultipleEnabled
+                        AllowMultiple     = IsMultipleEnabled,
+                        SuggestedFileType = new FilePickerFileType("filter")
+                        {
+                            MimeTypes = Accepts,
+                            Patterns  = Accepts,
+                            AppleUniformTypeIdentifiers = Accepts
+                        }
                     });
-                    await EnqueueUploadFiles(result);
+                    await EnqueueUploadFiles(files);
                 }
             });
         }
     }
 
     private async Task EnqueueUploadFiles(IReadOnlyList<IStorageFile> files)
+    {
+        foreach (var file in files)
+        {
+            await EnqueueUploadFile(file);
+        }
+    }
+    
+    private async Task EnqueueUploadFiles(IList<UploadFileInfo> files)
     {
         foreach (var file in files)
         {
@@ -301,9 +286,14 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         var uploadFile = new UploadFileInfo(
             file.Name,
             file.Path,
-            properties.Size ?? 0,
+            (long)(properties.Size ?? 0),
             properties.DateCreated,
             properties.DateModified);
+        await EnqueueUploadFile(uploadFile);
+    }
+
+    private async Task EnqueueUploadFile(UploadFileInfo uploadFile)
+    {
         var task = new FileUploadTask
         {
             UploadFileInfo = uploadFile
@@ -321,8 +311,43 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         uploadTaskInfo.Progress    = task.Progress;
         uploadTaskInfo.IsImageFile = IsImageFile(uploadFile);
         uploadTaskInfo.UploadTask  = task;
-        uploadTaskInfo.FilePath    = file.Path;
+        uploadTaskInfo.FilePath    = uploadFile.FilePath;
+        
+        _allTaskList.Add(uploadTaskInfo);
 
+        if (TaskInfoList.Count > 0 && TaskInfoList.Count == MaxCount)
+        {
+            if (MaxCount > 1)
+            {
+                return; 
+            }
+
+            await CancelAllUploadTaskAsync();
+        }
+        
+        UploadTaskCreated?.Invoke(this, new UploadTaskCreatedEventArgs(task.Id, uploadFile));
+        var aboutToSchedulingEvent = new UploadTaskAboutToSchedulingEventArgs(task.Id, uploadFile);
+        UploadTaskAboutToScheduling?.Invoke(this, aboutToSchedulingEvent);
+        if (aboutToSchedulingEvent.Result == UploadPredicateResult.Schedule)
+        {
+            AddUploadTaskInfo(uploadTaskInfo);
+            _uploadScheduler.EnqueueTask(task);
+        }
+        else
+        {
+            if (aboutToSchedulingEvent.Result == UploadPredicateResult.CancelWithInTaskList)
+            {
+                AddUploadTaskInfo(uploadTaskInfo);
+            }
+            uploadTaskInfo.Status = FileUploadStatus.Failed;
+            UploadTaskFailed?.Invoke(this, new UploadTaskFailedEventArgs(task.Id, 
+                uploadFile, 
+                FileUploadResult.FailureResult(FileUploadErrorCode.ClientError, aboutToSchedulingEvent.CancelReason ?? "client error")));
+        }
+    }
+
+    private void AddUploadTaskInfo(UploadTaskInfo uploadTaskInfo)
+    {
         if (ListType == UploadListType.PictureCircle || ListType == UploadListType.PictureCard)
         {
             var index = TaskInfoList.Count - 1;
@@ -331,21 +356,6 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         else
         {
             TaskInfoList.Add(uploadTaskInfo);
-        }
- 
-        UploadTaskCreated?.Invoke(this, new UploadTaskCreatedEventArgs(task.Id, uploadFile));
-        var aboutToSchedulingEvent = new UploadTaskAboutToSchedulingEventArgs(task.Id, uploadFile);
-        UploadTaskAboutToScheduling?.Invoke(this, aboutToSchedulingEvent);
-        if (!aboutToSchedulingEvent.Cancel)
-        {
-            _uploadScheduler.EnqueueTask(task);
-        }
-        else
-        {
-            uploadTaskInfo.Status = FileUploadStatus.Failed;
-            UploadTaskFailed?.Invoke(this, new UploadTaskFailedEventArgs(task.Id, 
-                uploadFile, 
-                FileUploadResult.FailureResult(FileUploadErrorCode.ClientError, aboutToSchedulingEvent.CancelReason ?? "client error")));
         }
     }
 
@@ -460,22 +470,47 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         return ImageExtensionRegex.IsMatch(extension);
     }
 
-    private void HandleUploadTaskRemoveRequest(Guid taskId)
+    private async Task HandleUploadTaskRemoveRequestAsync(Guid taskId)
     {
-        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        var taskInfo = _allTaskList.FirstOrDefault(x => x.TaskId == taskId);
         if (taskInfo != null)
         {
             if (taskInfo.Status != FileUploadStatus.Uploading || taskInfo.UploadTask == null)
             {
                 TaskInfoList.Remove(taskInfo);
+                _allTaskList.Remove(taskInfo);
             }
             else
             {
-                Dispatcher.UIThread.InvokeAsync(async () =>
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     await _uploadScheduler.CancelUploadAsync(taskInfo.UploadTask);
                     TaskInfoList.Remove(taskInfo);
+                    _allTaskList.Remove(taskInfo);
                     UploadTaskRemoved?.Invoke(this, new UploadTaskRemovedEventArgs(taskId, taskInfo.UploadTask.UploadFileInfo!));
+                });
+            }
+        }
+    }
+    
+    private async Task CancelAllUploadTaskAsync()
+    {
+        for (int i = _allTaskList.Count - 1; i >= 0; i--)
+        {
+            var taskInfo = TaskInfoList[i];
+            if (taskInfo.Status != FileUploadStatus.Uploading || taskInfo.UploadTask == null)
+            {
+                TaskInfoList.Remove(taskInfo);
+                _allTaskList.Remove(taskInfo);
+            }
+            else
+            {
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await _uploadScheduler.CancelUploadAsync(taskInfo.UploadTask);
+                    _allTaskList.Remove(taskInfo);
+                    TaskInfoList.Remove(taskInfo);
+                    UploadTaskRemoved?.Invoke(this, new UploadTaskRemovedEventArgs(taskInfo.TaskId, taskInfo.UploadTask.UploadFileInfo!));
                 });
             }
         }
@@ -514,6 +549,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
                     TaskInfoList.AddRange(DefaultTaskList);
                 }
                 
+                _allTaskList.AddRange(DefaultTaskList);
                 _defaultTaskListApplied = true;
             }
         }

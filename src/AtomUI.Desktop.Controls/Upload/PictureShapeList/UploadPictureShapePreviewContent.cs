@@ -5,10 +5,10 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class UploadShapePreviewContent : AbstractUploadPictureContent
+internal class UploadPictureShapePreviewContent : AbstractUploadPictureContent
 {
     public static readonly StyledProperty<IList<string>?> SourcesProperty =
-        AvaloniaProperty.Register<UploadShapePreviewContent, IList<string>?>(nameof(Sources));
+        AvaloniaProperty.Register<UploadPictureShapePreviewContent, IList<string>?>(nameof(Sources));
     
     public IList<string>? Sources
     {
@@ -16,9 +16,9 @@ internal class UploadShapePreviewContent : AbstractUploadPictureContent
         set => SetValue(SourcesProperty, value);
     }
     
-    static UploadShapePreviewContent()
+    static UploadPictureShapePreviewContent()
     {
-        IconButton.ClickEvent.AddClassHandler<UploadShapePreviewContent>((o, args) => o.HandleActionButtonClicked((args.Source as IconButton)!));
+        IconButton.ClickEvent.AddClassHandler<UploadPictureShapePreviewContent>((o, args) => o.HandleActionButtonClicked((args.Source as IconButton)!));
     }
     
     private void HandleActionButtonClicked(IconButton button)

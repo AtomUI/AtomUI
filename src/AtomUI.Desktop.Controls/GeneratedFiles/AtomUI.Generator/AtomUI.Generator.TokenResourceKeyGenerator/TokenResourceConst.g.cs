@@ -1076,6 +1076,8 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey DragIconMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.DragIconMargin");
         public static readonly TokenResourceKey DragIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.DragIconSize");
         public static readonly TokenResourceKey PictureCardSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureCardSize");
+        public static readonly TokenResourceKey PictureListItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureListItemMargin");
+        public static readonly TokenResourceKey PictureListPreviewerSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.PictureListPreviewerSize");
         public static readonly TokenResourceKey TextListItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListItemMargin");
         public static readonly TokenResourceKey TextListNamePadding = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.TextListNamePadding");
         public static readonly TokenResourceKey UploadThumbnailSize = new TokenResourceKey("AtomUI.Desktop.Controls.Upload.UploadThumbnailSize");

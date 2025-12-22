@@ -45,22 +45,63 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
                     },
                 ];
                 InitPictureWallTaskList(vm);
+                InitPictureListTaskList(vm);
             }
         });
         InitializeComponent();
-        // BasicUpload.UploadTransport                               =  new UploadMockTransport();
-        // AvatarDemoPictureCardUpload.UploadTransport               =  new UploadMockTransport();
-        // AvatarDemoPictureCircleUpload.UploadTransport             =  new UploadMockTransport();
-        // DefaultFileList.UploadTransport                           =  new UploadMockTransport();
-        // AvatarDemoPictureCardUpload.UploadTaskAboutToScheduling   += HandleAboutToScheduling;
-        // AvatarDemoPictureCircleUpload.UploadTaskAboutToScheduling += HandleAboutToScheduling;
-        // AvatarDemoPictureCardUpload.UploadTaskFailed              += HandleUploadFailed;
-        // AvatarDemoPictureCircleUpload.UploadTaskFailed            += HandleUploadFailed;
-        // AvatarDemoPictureCircleUpload.UploadTaskCompleted         += HandleUploadCompleted;
-        // AvatarDemoPictureCardUpload.UploadTaskCompleted           += HandleUploadCompleted;
-        // PicturesWallUpload.UploadTransport = new UploadMockTransport();
-        // PicturesCircleWallUpload.UploadTransport = new UploadMockTransport();
-        DragAndDropUpload.UploadTransport = new UploadMockTransport();
+        BasicUpload.UploadTransport     =  new UploadMockTransport();
+        BasicUpload.UploadTaskFailed    += HandleUploadFailed;
+        BasicUpload.UploadTaskCompleted += HandleUploadCompleted;
+        
+        AvatarDemoPictureCardUpload.UploadTransport     =  new UploadMockTransport();
+        AvatarDemoPictureCardUpload.UploadTaskFailed    += HandleUploadFailed;
+        AvatarDemoPictureCardUpload.UploadTaskCompleted += HandleUploadCompleted;
+        
+        AvatarDemoPictureCircleUpload.UploadTransport     =  new UploadMockTransport();
+        AvatarDemoPictureCircleUpload.UploadTaskFailed    += HandleUploadFailed;
+        AvatarDemoPictureCircleUpload.UploadTaskCompleted += HandleUploadCompleted;
+        
+        DefaultFileList.UploadTransport               =  new UploadMockTransport();
+        DefaultFileList.UploadTaskFailed              += HandleUploadFailed;
+        DefaultFileList.UploadTaskCompleted           += HandleUploadCompleted;
+        
+        AvatarDemoPictureCardUpload.UploadTaskAboutToScheduling   += HandleAboutToScheduling;
+        AvatarDemoPictureCircleUpload.UploadTaskAboutToScheduling += HandleAboutToScheduling;
+        AvatarDemoPictureCardUpload.UploadTaskFailed              += HandleUploadFailed;
+        AvatarDemoPictureCircleUpload.UploadTaskFailed            += HandleUploadFailed;
+        AvatarDemoPictureCircleUpload.UploadTaskCompleted         += HandleUploadCompleted;
+        AvatarDemoPictureCardUpload.UploadTaskCompleted           += HandleUploadCompleted;
+        PicturesWallUpload.UploadTransport                        =  new UploadMockTransport();
+        PicturesWallUpload.UploadTaskFailed                       += HandleUploadFailed;
+        PicturesWallUpload.UploadTaskCompleted                    += HandleUploadCompleted;
+        
+        PicturesCircleWallUpload.UploadTransport                  =  new UploadMockTransport();
+        PicturesCircleWallUpload.UploadTaskFailed                 += HandleUploadFailed;
+        PicturesCircleWallUpload.UploadTaskCompleted              += HandleUploadCompleted;
+        
+        DragAndDropUpload.UploadTransport                         =  new UploadMockTransport();
+        DragAndDropUpload.UploadTaskFailed                        += HandleUploadFailed;
+        DragAndDropUpload.UploadTaskCompleted                     += HandleUploadCompleted;
+        
+        PictureListUpload.UploadTransport                         =  new UploadMockTransport();
+        PictureListUpload.UploadTaskFailed                        += HandleUploadFailed;
+        PictureListUpload.UploadTaskCompleted                     += HandleUploadCompleted;
+        
+        MaxCount1Upload.UploadTransport                           =  new UploadMockTransport();
+        MaxCount1Upload.UploadTaskFailed                          += HandleUploadFailed;
+        MaxCount1Upload.UploadTaskCompleted                       += HandleUploadCompleted;
+        
+        MaxCount3Upload.UploadTransport                           =  new UploadMockTransport();
+        MaxCount3Upload.UploadTaskFailed                          += HandleUploadFailed;
+        MaxCount3Upload.UploadTaskCompleted                       += HandleUploadCompleted;
+        
+        DirectoryUpload.UploadTransport                           =  new UploadMockTransport();
+        DirectoryUpload.UploadTaskFailed                          += HandleUploadFailed;
+        DirectoryUpload.UploadTaskCompleted                       += HandleUploadCompleted;
+        PngOnlyUpload.UploadTransport                             =  new UploadMockTransport();
+        PngOnlyUpload.UploadTaskAboutToScheduling                 += HandlePngUploadAboutToScheduling;
+        PngOnlyUpload.UploadTaskFailed                            += HandleUploadFailed;
+        PngOnlyUpload.UploadTaskCompleted                         += HandleUploadCompleted;
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -88,14 +129,25 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
 
         if (!isAllowedFileType)
         {
-            e.Cancel       = true;
+            e.Result       = UploadPredicateResult.CancelWithInTaskList;
             e.CancelReason = "You can only upload JPG/PNG file!";
             return;
         }
         var isLt2M = (double)fileInfo.Size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            e.Cancel       = true;
+            e.Result       = UploadPredicateResult.CancelWithInTaskList;
             e.CancelReason = "Image must smaller than 2MB!";
+        }
+    }
+    
+    private void HandlePngUploadAboutToScheduling(object? sender, UploadTaskAboutToSchedulingEventArgs e)
+    {
+        var fileInfo = e.UploadFileInfo;
+        var ext      = Path.GetExtension(fileInfo.FilePath.LocalPath);
+        if (ext != ".png")
+        {
+            e.Result       = UploadPredicateResult.Cancel;
+            e.CancelReason = "You can only upload PNG file!";
         }
     }
     
@@ -161,10 +213,41 @@ public partial class UploadShowCase : ReactiveUserControl<UploadViewModel>
             },
             new UploadTaskInfo()
             {
+                TaskId       = Guid.NewGuid(),
+                FileName     = "image.png",
+                IsImageFile  = true,
+                Status       = FileUploadStatus.Failed,
+                ErrorMessage = "Upload error!"
+            },
+        ];
+    }
+
+    private void InitPictureListTaskList(UploadViewModel uploadViewModel)
+    {
+        uploadViewModel.PictureListStyleDefaultTaskList =
+        [
+            new UploadTaskInfo()
+            {
                 TaskId      = Guid.NewGuid(),
-                FileName    = "image.png",
+                FileName    = "xxx.png",
                 IsImageFile = true,
-                Status      = FileUploadStatus.Failed,
+                Status      = FileUploadStatus.Uploading,
+                Progress    = 33
+            },
+            new UploadTaskInfo()
+            {
+                TaskId      = Guid.NewGuid(),
+                FileName    = "yyy.png",
+                IsImageFile = true,
+                Status      = FileUploadStatus.Success,
+                FilePath    = new Uri("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+            },
+            new UploadTaskInfo()
+            {
+                TaskId       = Guid.NewGuid(),
+                FileName     = "zzz.png",
+                IsImageFile  = true,
+                Status       = FileUploadStatus.Failed,
                 ErrorMessage = "Upload error!"
             },
         ];
@@ -180,7 +263,7 @@ public class UploadMockTransport : IFileUploadTransport
         CancellationToken cancellationToken = default)
     {
         var totalBytes  = fileInfo.Size;
-        var bytesSent   = 0ul;
+        var bytesSent   = 0L;
         var elapsedTime = TimeSpan.Zero;
         try
         {
@@ -197,9 +280,9 @@ public class UploadMockTransport : IFileUploadTransport
                 var delay = TimeSpan.FromMilliseconds(Random.Shared.Next(300, 1000));
                 await Task.Delay(delay, cancellationToken);
                 elapsedTime += delay;
-                bytesSent += (ulong)(totalBytes *
-                                     ((double)Random.Shared.NextInt64((long)totalBytes / 20, (long)totalBytes / 10) /
-                                      totalBytes));
+                bytesSent += (long)(totalBytes *
+                                    ((double)Random.Shared.NextInt64((long)totalBytes / 20, (long)totalBytes / 10) /
+                                     totalBytes));
                 bytesSent = Math.Min(bytesSent, totalBytes);
                 var uploadProgress = new FileUploadProgress()
                 {

@@ -7,7 +7,7 @@
         <Style Selector="^[Status=Uploading]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <atom:UploadShapeUploadingContent 
+                    <atom:UploadPictureShapeUploadingContent 
                         Status="{TemplateBinding Status}"
                         IsImageFile="{TemplateBinding IsImageFile}"
                         ListType="{TemplateBinding ListType}"
@@ -22,7 +22,7 @@
         <Style Selector="^[Status=Pending]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <atom:UploadShapePendingContent 
+                    <atom:UploadPictureShapePendingContent 
                         Status="{TemplateBinding Status}"
                         IsImageFile="{TemplateBinding IsImageFile}"
                         FileName="{TemplateBinding FileName}"
@@ -36,7 +36,7 @@
         <Style Selector="^[Status=Success][IsImageFile=True]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <atom:UploadShapePreviewContent 
+                    <atom:UploadPictureShapePreviewContent 
                         Status="{TemplateBinding Status}"
                         IsImageFile="{TemplateBinding IsImageFile}"
                         FileName="{TemplateBinding FileName}"
@@ -50,7 +50,7 @@
         <Style Selector="^[Status=Cancelled], ^[Status=Failed], ^[Status=Success][IsImageFile=False]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <atom:UploadShapeDefaultContent Status="{TemplateBinding Status}"
+                    <atom:UploadPictureShapeDefaultContent Status="{TemplateBinding Status}"
                                                     IsImageFile="{TemplateBinding IsImageFile}"
                                                     FileName="{TemplateBinding FileName}"
                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}" 

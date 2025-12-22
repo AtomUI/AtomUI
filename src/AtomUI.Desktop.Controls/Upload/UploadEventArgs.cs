@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using AtomUI.Controls;
 
 namespace AtomUI.Desktop.Controls;
@@ -15,11 +14,12 @@ public class UploadTaskCreatedEventArgs : EventArgs
     }
 }
 
-public class UploadTaskAboutToSchedulingEventArgs : CancelEventArgs
+public class UploadTaskAboutToSchedulingEventArgs : EventArgs
 {
     public Guid TaskId { get; }
     public UploadFileInfo UploadFileInfo { get; }
     
+    public UploadPredicateResult Result { get; set; } = UploadPredicateResult.Schedule;
     public string? CancelReason { get; set; }
 
     public UploadTaskAboutToSchedulingEventArgs(Guid taskId, UploadFileInfo uploadFileInfo)

@@ -3,17 +3,21 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="UploadTheme.axaml" />
-        <ResourceInclude Source="UploadPictureShapeListItemTheme.axaml" />
-        <ResourceInclude Source="UploadPictureListItemTheme.axaml" />
-        <ResourceInclude Source="UploadTextListItemTheme.axaml" />
-        <ResourceInclude Source="UploadTextListItemHeaderTheme.axaml" />
+        <ResourceInclude Source="DefaultList/UploadTextListItemTheme.axaml" />
+        <ResourceInclude Source="DefaultList/UploadTextListItemHeaderTheme.axaml" />
+        <ResourceInclude Source="PictureShapeList/UploadPictureShapeListItemTheme.axaml" />
+        <ResourceInclude Source="PictureShapeList/UploadPictureShapeUploadingContentTheme.axaml" />
+        <ResourceInclude Source="PictureShapeList/UploadPictureShapeDefaultContentTheme.axaml" />
+        <ResourceInclude Source="PictureShapeList/UploadPictureShapePreviewContentTheme.axaml" />
+        <ResourceInclude Source="PictureShapeList/UploadPictureShapePendingContentTheme.axaml" />
+        <ResourceInclude Source="PictureShapeList/UploadPictureShapeListTheme.axaml" />
+        <ResourceInclude Source="PictureList/UploadPictureDefaultContentTheme.axaml" />
+        <ResourceInclude Source="PictureList/UploadPictureListItemTheme.axaml" />
+        <ResourceInclude Source="PictureList/UploadPicturePendingContentTheme.axaml" />
+        <ResourceInclude Source="PictureList/UploadPictureUploadingContentTheme.axaml" />
+        <ResourceInclude Source="PictureList/UploadPicturePreviewContentTheme.axaml" />
         <ResourceInclude Source="UploadListTheme.axaml" />
-        <ResourceInclude Source="UploadShapeListTheme.axaml" />
         <ResourceInclude Source="UploadDefaultDropAreaTheme.axaml" />
         <ResourceInclude Source="UploadTriggerContentTheme.axaml" />
-        <ResourceInclude Source="UploadShapeUploadingContentTheme.axaml" />
-        <ResourceInclude Source="UploadShapeDefaultContentTheme.axaml" />
-        <ResourceInclude Source="UploadShapePreviewContentTheme.axaml" />
-        <ResourceInclude Source="UploadShapePendingContentTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

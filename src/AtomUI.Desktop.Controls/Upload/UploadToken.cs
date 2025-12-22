@@ -61,16 +61,28 @@ internal class UploadToken : AbstractControlDesignToken
     /// </summary>
     public Thickness DragHeaderMargin { get; set; }
     
+    /// <summary>
+    /// 图片列表的外间距
+    /// </summary>
+    public Thickness PictureListItemMargin { get; set; }
+    
+    /// <summary>
+    /// 图片列表图片预览大小
+    /// </summary>
+    public double PictureListPreviewerSize { get; set; }
+    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        ActionsColor        = SharedToken.ColorIcon;
-        PictureCardSize     = SharedToken.ControlHeightLG * 2.55;
-        TextListItemMargin  = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
-        TextListNamePadding = new Thickness(SharedToken.UniformlyPaddingXS, 0);
-        UploadThumbnailSize = SharedToken.FontSizeHeading2;
-        DragIconSize        = SharedToken.FontSizeHeading3 * 2;
-        DragIconMargin      = new Thickness(0, 0, 0, SharedToken.UniformlyMargin);
-        DragHeaderMargin    = new Thickness(0, 0, 0, SharedToken.UniformlyMarginXXS);
+        ActionsColor             = SharedToken.ColorIcon;
+        PictureCardSize          = SharedToken.ControlHeightLG * 2.55;
+        TextListItemMargin       = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
+        TextListNamePadding      = new Thickness(SharedToken.UniformlyPaddingXS, 0);
+        UploadThumbnailSize      = SharedToken.FontSizeHeading2;
+        DragIconSize             = SharedToken.FontSizeHeading3 * 2;
+        DragIconMargin           = new Thickness(0, 0, 0, SharedToken.UniformlyMargin);
+        DragHeaderMargin         = new Thickness(0, 0, 0, SharedToken.UniformlyMarginXXS);
+        PictureListItemMargin    = new Thickness(0, SharedToken.UniformlyMarginXS, 0, 0);
+        PictureListPreviewerSize = SharedToken.SizeXXL;
     }
 }

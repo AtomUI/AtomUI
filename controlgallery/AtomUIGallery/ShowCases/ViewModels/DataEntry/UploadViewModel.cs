@@ -27,6 +27,14 @@ public class UploadViewModel : ReactiveObject, IRoutableViewModel
         get => _picturesWallDefaultTaskList;
         set => this.RaiseAndSetIfChanged(ref _picturesWallDefaultTaskList, value);
     }
+    
+    private List<UploadTaskInfo>? _pictureListStyleDefaultTaskList;
+
+    public List<UploadTaskInfo>? PictureListStyleDefaultTaskList
+    {
+        get => _pictureListStyleDefaultTaskList;
+        set => this.RaiseAndSetIfChanged(ref _pictureListStyleDefaultTaskList, value);
+    }
 
     public UploadViewModel(IScreen screen)
     {

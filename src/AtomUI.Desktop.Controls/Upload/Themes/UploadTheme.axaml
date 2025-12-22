@@ -30,7 +30,7 @@
         <Style Selector="^[ListType=PictureCard], ^[ListType=PictureCircle]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <atom:UploadShapeList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
+                    <atom:UploadPictureShapeList Name="{x:Static atom:UploadThemeConstants.UploadListPart}" 
                                           ListType="{TemplateBinding ListType}"
                                           IsShowUploadTrigger="{TemplateBinding IsShowUploadTrigger}"
                                           IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

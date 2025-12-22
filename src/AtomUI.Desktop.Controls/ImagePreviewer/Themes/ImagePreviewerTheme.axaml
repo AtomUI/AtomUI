@@ -14,8 +14,6 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <atom:ImagePreviewerCover ImageSource="{TemplateBinding EffectiveCoverImage}"
-                                              Width="{TemplateBinding CoverWidth}"
-                                              Height="{TemplateBinding CoverHeight}"
                                               Content="{TemplateBinding CoverIndicatorContent}"
                                               ContentTemplate="{TemplateBinding CoverIndicatorContentTemplate}"
                                               IsShowCoverMask="{TemplateBinding IsShowCoverMask}"/>
@@ -23,7 +21,6 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="CoverWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.CoverImageWidth}}"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />

@@ -4,9 +4,9 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:UploadShapePreviewContent}" TargetType="atom:UploadShapePreviewContent">
+    <ControlTheme x:Key="{x:Type atom:UploadPictureShapePreviewContent}" TargetType="atom:UploadPictureShapePreviewContent">
         <ControlTheme.BasedOn>
-            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapePreviewContent" />
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadPictureShapePreviewContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
@@ -47,6 +47,9 @@
         <Style Selector="^ /template/ StackPanel#ActionsLayout">
             <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
         </Style>
+        
+        <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
 
     </ControlTheme>
 </ResourceDictionary>

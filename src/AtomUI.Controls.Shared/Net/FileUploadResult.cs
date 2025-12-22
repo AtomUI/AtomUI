@@ -72,7 +72,7 @@ public record FileUploadResult
     /// <summary>
     /// 文件总大小（字节）
     /// </summary>
-    public ulong FileSize { get; init; }
+    public long FileSize { get; init; }
     
     /// <summary>
     /// 实际上传耗时
@@ -105,7 +105,7 @@ public record FileUploadResult
     /// </summary>
     public static FileUploadResult SuccessResult(
         Uri remoteUrl, 
-        ulong fileSize, 
+        long fileSize, 
         TimeSpan elapsedTime,
         string? fileId = null,
         string? fileHash = null,

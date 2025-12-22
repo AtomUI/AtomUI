@@ -4,9 +4,9 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:UploadShapeDefaultContent}" TargetType="atom:UploadShapeDefaultContent">
+    <ControlTheme x:Key="{x:Type atom:UploadPictureShapeDefaultContent}" TargetType="atom:UploadPictureShapeDefaultContent">
         <ControlTheme.BasedOn>
-            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapeDefaultContent" />
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadPictureShapeDefaultContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
@@ -43,6 +43,9 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+        
         <Style Selector="^ /template/ atom|Icon">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.UploadThumbnailSize}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.UploadThumbnailSize}}" />

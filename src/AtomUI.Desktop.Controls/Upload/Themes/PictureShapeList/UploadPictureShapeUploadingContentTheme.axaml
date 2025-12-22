@@ -5,9 +5,9 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     xmlns:uploadlang="using:AtomUI.Desktop.Controls.UploadLang"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:UploadShapeUploadingContent}" TargetType="atom:UploadShapeUploadingContent">
+    <ControlTheme x:Key="{x:Type atom:UploadPictureShapeUploadingContent}" TargetType="atom:UploadPictureShapeUploadingContent">
         <ControlTheme.BasedOn>
-            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapeUploadingContent" />
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadPictureShapeUploadingContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
@@ -45,6 +45,9 @@
         <Style Selector="^ /template/ atom|DashedBorder#Frame">
             <Setter Property="StrokeDashArray" Value="4, 2" />
         </Style>
+        
+        <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
 
     </ControlTheme>
 </ResourceDictionary>

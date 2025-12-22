@@ -4,9 +4,9 @@
     xmlns:atom="https://atomui.net"
     xmlns:uploadlang="using:AtomUI.Desktop.Controls.UploadLang"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:UploadShapePendingContent}" TargetType="atom:UploadShapePendingContent">
+    <ControlTheme x:Key="{x:Type atom:UploadPictureShapePendingContent}" TargetType="atom:UploadPictureShapePendingContent">
         <ControlTheme.BasedOn>
-            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadShapePendingContent" />
+            <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadPictureShapePendingContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
@@ -30,5 +30,7 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
     </ControlTheme>
 </ResourceDictionary>

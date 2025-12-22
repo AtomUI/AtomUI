@@ -11,58 +11,59 @@
                                    BorderBrush="{TemplateBinding BorderBrush}"
                                    BorderThickness="{TemplateBinding BorderThickness}"
                                    CornerRadius="{TemplateBinding CornerRadius}">
-                    <ContentPresenter Content="{TemplateBinding Content}"
+                    <ContentPresenter Name="{x:Static atom:UploadTriggerContentThemeConstants.TriggerPart}"
+                                      Content="{TemplateBinding Content}"
                                       ContentTemplate="{TemplateBinding ContentTemplate}"
                                       HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Cursor="Hand" />
                 </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="Cursor" Value="Hand"/>
+
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextSecondary}}" />
-        
-         <Style Selector="^[ListType=PictureCard]">
-             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}"/>
-             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}"/>
-             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}"/>
-             <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}"/>
-     
-             <Style Selector="^ /template/ atom|DashedBorder#TriggerContentFrame">
-                 <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}"/>
-                 <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}"/>
-                 <Setter Property="StrokeDashArray" Value="4, 2"/>
-             </Style>
-        </Style>
-        
-        <Style Selector="^[ListType=PictureCircle]">
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}"/>
-            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}"/>
-            <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}"/>
+
+        <Style Selector="^[ListType=PictureCard]">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+
             <Style Selector="^ /template/ atom|DashedBorder#TriggerContentFrame">
-                <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}"/>
-                <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}"/>
-                <Setter Property="StrokeDashArray" Value="4, 2"/>
+                <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+                <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+                <Setter Property="StrokeDashArray" Value="4, 2" />
             </Style>
         </Style>
-        
+
+        <Style Selector="^[ListType=PictureCircle]">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+            <Style Selector="^ /template/ atom|DashedBorder#TriggerContentFrame">
+                <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+                <Setter Property="Height" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />
+                <Setter Property="StrokeDashArray" Value="4, 2" />
+            </Style>
+        </Style>
+
         <Style Selector="^[ListType=PictureCard]">
             <Style Selector="^:pointerover">
-                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
             </Style>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        
+
         <Style Selector="^[ListType=PictureCircle]">
             <Style Selector="^:pointerover">
-                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
             </Style>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

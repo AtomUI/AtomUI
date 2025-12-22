@@ -1,7 +1,10 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -47,6 +50,7 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
     
     private IDisposable? _clickSubscription;
     private Point? _latestClickPosition;
+    private ContentPresenter? _trigger;
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -70,31 +74,42 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
     {
         if (e is RawPointerEventArgs mouseEventArgs)
         {
-            var point            = mouseEventArgs.Point;
-            var localPoint       = TopLevel.GetTopLevel(this)?.TranslatePoint(point.Position, this) ?? default;
-            var constraintOffset = this.TranslatePoint(new Point(0, 0), this) ?? default;
-            var constraintBounds = new Rect(constraintOffset, Bounds.Size);
-            if (constraintBounds.Contains(localPoint))
+            if (_trigger != null && _trigger.Child != null)
             {
                 if (mouseEventArgs.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    _latestClickPosition = localPoint;
+                    if (IsMousePointValid(mouseEventArgs.Position))
+                    {
+                        _latestClickPosition = mouseEventArgs.Position;
+                    }
                 }
                 else if (mouseEventArgs.Type == RawPointerEventType.LeftButtonUp)
                 {
-                    if (_latestClickPosition != null && constraintBounds.Contains(_latestClickPosition.Value))
+                    if (_latestClickPosition != null && IsMousePointValid(_latestClickPosition.Value))
                     {
                         RaiseEvent(new RoutedEventArgs(FileSelectRequestEvent, this));
                     }
 
                     _latestClickPosition = null;
                 }
-                else if (mouseEventArgs.Type == RawPointerEventType.Move)
-                {
-                    
-                }
             }
         }
+    }
+
+    private bool IsMousePointValid(Point point)
+    {
+        if (_trigger == null || _trigger.Child == null)
+        {
+            return false;
+        }
+        var localPoint       = TopLevel.GetTopLevel(this)?.TranslatePoint(point, this) ?? default;
+        var constraintOffset = _trigger.Child.TranslatePoint(new Point(0, 0), this) ?? default;
+        var constraintBounds = new Rect(constraintOffset, _trigger.Child.Bounds.Size);
+        if (constraintBounds.Contains(localPoint))
+        {
+            return true;
+        }
+        return false;
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -164,5 +179,11 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
         {
             SetCurrentValue(CornerRadiusProperty, new CornerRadius(cornerRadius));
         }
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _trigger = e.NameScope.Find<ContentPresenter>(UploadTriggerContentThemeConstants.TriggerPart);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections;
+using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
@@ -269,6 +270,9 @@ public class BaseTabControl : SelectingItemsControl,
     private Point _tabStripBorderStartPoint;
     private Point _tabStripBorderEndPoint;
     private protected readonly Dictionary<TabItem, CompositeDisposable> ItemsBindingDisposables = new();
+    private const int UnselectedIndex = -1;
+    private const int FirstItemIndex  = 0;
+    private const int SingleItemCount = 1;
 
     static BaseTabControl()
     {
@@ -292,6 +296,13 @@ public class BaseTabControl : SelectingItemsControl,
         {
             return false;
         }
+
+        var index = GetTabIndex(tabItem);
+        if (!CanRemoveItemAt(index))
+        {
+            return false;
+        }
+
         var closingArgs = new TabClosingEventArgs(ClosingEvent, tabItem);
         RaiseEvent(closingArgs);
 
@@ -300,29 +311,68 @@ public class BaseTabControl : SelectingItemsControl,
             return false;
         }
 
-        if (SelectedItem == tabItem)
-        {
-            var index = Items.IndexOf(tabItem);
-            if (index > 0)
-            {
-                SelectedIndex = index - 1;
-            }
-            else if (Items.Count > 1)
-            {
-                SelectedIndex = 1;
-            }
-            else
-            {
-                SelectedIndex = -1;
-            }
-        }
-        
-        Items.Remove(tabItem);
+        SelectedIndex = GetNextSelectionIndex(index);
+        RemoveItemAt(index);
         
         var closedArgs = new TabClosedEventArgs(ClosedEvent, tabItem);
         RaiseEvent(closedArgs);
         
         return true;
+    }
+
+    private int GetTabIndex(TabItem tabItem)
+    {
+        var containerIndex = ItemContainerGenerator.IndexFromContainer(tabItem);
+        return containerIndex >= FirstItemIndex ? containerIndex : Items.IndexOf(tabItem);
+    }
+
+    private bool CanRemoveItemAt(int index)
+    {
+        if (ItemsSource is IList list)
+        {
+            return IsValidIndex(index, list.Count);
+        }
+
+        if (ItemsSource is null)
+        {
+            return IsValidIndex(index, Items.Count);
+        }
+
+        return false;
+    }
+
+    private void RemoveItemAt(int index)
+    {
+        if (ItemsSource is IList list)
+        {
+            list.RemoveAt(index);
+        }
+        else
+        {
+            Items.RemoveAt(index);
+        }
+    }
+
+    private static bool IsValidIndex(int index, int count)
+    {
+        return index >= FirstItemIndex && index < count;
+    }
+
+    private int GetNextSelectionIndex(int closingIndex)
+    {
+        if (SelectedIndex != closingIndex)
+        {
+            return SelectedIndex;
+        }
+
+        var isClosingLastItem = Items.Count <= SingleItemCount;
+        if (isClosingLastItem)
+        {
+            return UnselectedIndex;
+        }
+
+        var previousIndex = closingIndex - SingleItemCount;
+        return previousIndex >= FirstItemIndex ? previousIndex : FirstItemIndex;
     }
     
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

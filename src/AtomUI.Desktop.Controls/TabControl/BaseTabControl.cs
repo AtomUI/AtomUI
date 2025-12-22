@@ -322,7 +322,7 @@ public class BaseTabControl : SelectingItemsControl,
 
     private int GetTabIndex(TabItem tabItem)
     {
-        var containerIndex = ItemContainerGenerator.IndexFromContainer(tabItem);
+        var containerIndex = IndexFromContainer(tabItem);
         return containerIndex >= FirstItemIndex ? containerIndex : Items.IndexOf(tabItem);
     }
 

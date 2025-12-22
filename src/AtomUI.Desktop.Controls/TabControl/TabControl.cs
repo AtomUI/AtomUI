@@ -41,7 +41,6 @@ public class TabControl : BaseTabControl
     private Border? _selectedIndicator;
     private ItemsPresenter? _itemsPresenter;
     private TabControlScrollViewer? _scrollViewer;
-    private bool _isScrollSubscriptionHooked;
 
     public TabControl()
     {
@@ -137,10 +136,9 @@ public class TabControl : BaseTabControl
         _selectedIndicator = e.NameScope.Find<Border>(TabControlThemeConstants.SelectedItemIndicatorPart);
         _itemsPresenter    = e.NameScope.Find<ItemsPresenter>(TabControlThemeConstants.ItemsPresenterPart);
         
-        if (_scrollViewer != null && _isScrollSubscriptionHooked)
+        if (_scrollViewer != null)
         {
             _scrollViewer.PropertyChanged -= HandleScrollViewerPropertyChanged;
-            _isScrollSubscriptionHooked   = false;
         }
 
         _scrollViewer = e.NameScope.Find<TabControlScrollViewer>(TabControlThemeConstants.TabsContainerPart);
@@ -148,7 +146,6 @@ public class TabControl : BaseTabControl
         {
             _scrollViewer.TabControl      = this;
             _scrollViewer.PropertyChanged += HandleScrollViewerPropertyChanged;
-            _isScrollSubscriptionHooked    = true;
         }
     }
     
@@ -192,11 +189,6 @@ public class TabControl : BaseTabControl
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         base.OnUnloaded(e);
-        if (_scrollViewer != null && _isScrollSubscriptionHooked)
-        {
-            _scrollViewer.PropertyChanged -= HandleScrollViewerPropertyChanged;
-            _isScrollSubscriptionHooked    = false;
-        }
         Transitions = null;
     }
 

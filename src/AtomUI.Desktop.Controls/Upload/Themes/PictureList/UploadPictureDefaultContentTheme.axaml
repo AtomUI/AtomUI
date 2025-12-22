@@ -58,11 +58,17 @@
             <Style Selector="^ /template/ atom|Icon">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
             </Style>
+            <Style Selector="^ /template/ atom|IconButton">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
         </Style>
 
         <Style Selector="^[Status=Cancelled]">
             <Style Selector="^ /template/ atom|Icon">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
             </Style>
         </Style>
 

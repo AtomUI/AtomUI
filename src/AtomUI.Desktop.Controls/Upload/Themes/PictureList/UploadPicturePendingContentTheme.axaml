@@ -50,6 +50,6 @@
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextSecondary}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
         </Style>
-
+        
     </ControlTheme>
 </ResourceDictionary>

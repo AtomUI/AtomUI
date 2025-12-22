@@ -55,5 +55,17 @@
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgTextHover}}" />
         </Style>
 
+        <Style Selector="^[Status=Failed]">
+            <Style Selector="^ /template/ atom|IconButton">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[Status=Cancelled]">
+            <Style Selector="^ /template/ atom|IconButton">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+        </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

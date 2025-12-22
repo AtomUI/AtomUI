@@ -312,8 +312,6 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
         uploadTaskInfo.IsImageFile = IsImageFile(uploadFile);
         uploadTaskInfo.UploadTask  = task;
         uploadTaskInfo.FilePath    = uploadFile.FilePath;
-        
-        _allTaskList.Add(uploadTaskInfo);
 
         if (TaskInfoList.Count > 0 && TaskInfoList.Count == MaxCount)
         {
@@ -325,6 +323,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
             await CancelAllUploadTaskAsync();
         }
         
+        _allTaskList.Add(uploadTaskInfo);
         UploadTaskCreated?.Invoke(this, new UploadTaskCreatedEventArgs(task.Id, uploadFile));
         var aboutToSchedulingEvent = new UploadTaskAboutToSchedulingEventArgs(task.Id, uploadFile);
         UploadTaskAboutToScheduling?.Invoke(this, aboutToSchedulingEvent);
@@ -361,11 +360,14 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
 
     private void HandleUploadProgressChanged(Guid taskId, UploadFileInfo fileInfo, double progress)
     {
-        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        var taskInfo = _allTaskList.FirstOrDefault(x => x.TaskId == taskId);
         if (taskInfo != null)
         {
             SetCurrentValue(IsTaskRunningProperty, true);
-            taskInfo.Status   = FileUploadStatus.Uploading;
+            if (taskInfo.Status == FileUploadStatus.Pending)
+            {
+                taskInfo.Status = FileUploadStatus.Uploading;
+            }
             taskInfo.Progress = progress;
             UploadTaskProgress?.Invoke(this, new UploadTaskProgressEventArgs(taskId, fileInfo, progress));
         }
@@ -373,7 +375,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     
     private void HandleUploadCompleted(Guid taskId, UploadFileInfo uploadFileInfo, FileUploadResult result)
     {
-        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        var taskInfo = _allTaskList.FirstOrDefault(x => x.TaskId == taskId);
         if (taskInfo != null)
         {
             taskInfo.Status = FileUploadStatus.Success;
@@ -384,7 +386,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     
     private void HandleUploadFailed(Guid taskId, UploadFileInfo uploadFileInfo, FileUploadResult result)
     {
-        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        var taskInfo = _allTaskList.FirstOrDefault(x => x.TaskId == taskId);
         if (taskInfo != null)
         {
             taskInfo.Status       = FileUploadStatus.Failed;
@@ -396,7 +398,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     
     private void HandleUploadCancelled(Guid taskId, UploadFileInfo uploadFileInfo, FileUploadResult result)
     {
-        var taskInfo = TaskInfoList.FirstOrDefault(x => x.TaskId == taskId);
+        var taskInfo = _allTaskList.FirstOrDefault(x => x.TaskId == taskId);
         if (taskInfo != null)
         {
             taskInfo.Status       = FileUploadStatus.Cancelled;
@@ -409,7 +411,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     private void CheckTaskRunning()
     {
         var isTaskRunning = false;
-        foreach (var uploadTaskInfo in TaskInfoList)
+        foreach (var uploadTaskInfo in _allTaskList)
         {
             if (uploadTaskInfo.Status == FileUploadStatus.Uploading)
             {

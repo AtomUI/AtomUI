@@ -57,8 +57,11 @@ internal class FileUploadScheduler : IFileUploadScheduler
             
             var progress = new Progress<FileUploadProgress>(report =>
             {
-                task.Progress = report.Percentage;
-                task.UploadProgressHandler?.Invoke(task.Id, task.UploadFileInfo, task.Progress);
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    task.Progress = report.Percentage;
+                    task.UploadProgressHandler?.Invoke(task.Id, task.UploadFileInfo, task.Progress);
+                });
             });
             
             _ = Task.Run(async () =>
@@ -66,7 +69,6 @@ internal class FileUploadScheduler : IFileUploadScheduler
                 FileUploadResult? result = null;
                 try
                 {
-                    task.Status = FileUploadStatus.Uploading;
                     result = await _transport.UploadAsync(
                         task.UploadFileInfo,
                         task.Context,

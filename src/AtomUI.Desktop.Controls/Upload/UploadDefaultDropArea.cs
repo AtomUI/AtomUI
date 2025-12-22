@@ -92,6 +92,7 @@ public class UploadDefaultDropArea : TemplatedControl, IMotionAwareControl
         {
             area.HandleDrop(args);
         });
+   
     }
 
     private void HandleDrop(DragEventArgs e)

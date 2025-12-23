@@ -11,6 +11,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -38,7 +39,7 @@ public class MessageBox : TemplatedControl,
     public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty = Dialog.ContentTemplateProperty.AddOwner<MessageBox>();
     
     public static readonly StyledProperty<MessageBoxStyle> StyleProperty =
-        AvaloniaProperty.Register<MessageBox, MessageBoxStyle>(nameof (Style));
+        AvaloniaProperty.Register<MessageBox, MessageBoxStyle>(nameof (Style), MessageBoxStyle.Information);
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<MessageBox>();
@@ -250,36 +251,144 @@ public class MessageBox : TemplatedControl,
 
     public MessageBox()
     {
-        CustomButtons.CollectionChanged += new NotifyCollectionChangedEventHandler(HandleCustomButtonsChanged);
+        CustomButtons.CollectionChanged += HandleCustomButtonsChanged;
     }
 
     public object? Open()
     {
-        if (_dialog == null)
-        {
-            return null;
-        }
+        Debug.Assert(_dialog != null);
         return _dialog.Open();
     }
 
-    public Task<object?>? OpenAsync()
+    public async Task OpenAsync()
     {
-        if (_dialog == null)
-        {
-            return null;
-        }
-        return _dialog.OpenAsync();
+        Debug.Assert(_dialog != null);
+        await _dialog.OpenAsync();
     }
 
     public void Cancel()
     {
-        _dialog?.Reject();
+        Debug.Assert(_dialog != null);
+        _dialog.Reject();
     }
 
     public void Confirm()
     {
-        _dialog?.Accept();
+        Debug.Assert(_dialog != null);
+        _dialog.Accept();
     }
+
+    #region 静态 API
+
+    public static object? ShowMessageBox<TView, TViewModel>(TViewModel? dataContext, MessageBoxOptions? options = null,
+                                                            TopLevel? topLevel = null)
+        where TView : Control, new()
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var messageBox        = CreateMessageBox(new TView(), dataContext, options);
+        if (options?.HostType == DialogHostType.Window)
+        {
+            messageBox.PlacementTarget = dialogManager;
+        }
+        dialogManager.Children.Add(messageBox);
+        var result = messageBox.Open();
+        dialogManager.Children.Remove(messageBox);
+        return result;
+    }
+    
+    public static object? ShowMessageBox(Control content, object? dataContext = null, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var messageBox    = CreateMessageBox(content, dataContext, options);
+        if (options?.HostType == DialogHostType.Window)
+        {
+            messageBox.PlacementTarget = dialogManager;
+        }
+        dialogManager.Children.Add(messageBox);
+        var result = messageBox.Open();
+        dialogManager.Children.Remove(messageBox);
+        return result;
+    }
+    
+    public static async Task<object?> ShowMessageBoxAsync<TView, TViewModel>(TViewModel? dataContext, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+        where TView : Control, new()
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var messageBox    = CreateMessageBox(new TView(), dataContext, options);
+        if (options?.HostType == DialogHostType.Window)
+        {
+            messageBox.PlacementTarget = dialogManager;
+        }
+        messageBox.Closed += (_, _) => dialogManager.Children.Remove(messageBox);
+        dialogManager.Children.Add(messageBox);
+        await Dispatcher.UIThread.InvokeAsync(async () => await messageBox.OpenAsync());
+        return messageBox.Result;
+    }
+
+    public static async Task<object?> ShowMessageAsync(Control content, object? dataContext = null, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var messageBox    = CreateMessageBox(content, dataContext, options);
+        if (options?.HostType == DialogHostType.Window)
+        {
+            messageBox.PlacementTarget = dialogManager;
+        }
+        messageBox.Closed += (_, _) => dialogManager.Children.Remove(messageBox);
+        dialogManager.Children.Add(messageBox);
+        var tsc = new  TaskCompletionSource<object?>();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await messageBox.OpenAsync();
+            tsc.SetResult(messageBox.Result);
+        });
+        await tsc.Task;
+        return messageBox.Result;
+    }
+
+    private static MessageBox CreateMessageBox(Control content, object? dataContext, MessageBoxOptions? options)
+    {
+        var messageBox = new MessageBox()
+        {
+            Title                 = options?.Title,
+            IsLightDismissEnabled = options?.IsLightDismissEnabled ?? false,
+            IsModal               = options?.IsModal ?? true,
+            IsDragMovable         = options?.IsDragMovable ?? false,
+            Style                 = options?.Style ?? MessageBoxStyle.Information,
+            PlacementTarget       = options?.PlacementTarget,
+            HorizontalOffset      = options?.HorizontalOffset,
+            VerticalOffset        = options?.VerticalOffset,
+            HostType              = options?.HostType ?? DialogHostType.Overlay,
+            IsCenterOnStartup     = options?.IsCenterOnStartup ?? true,
+            Content               = content,
+            DataContext           = dataContext,
+            Width                 = options?.Width ?? double.NaN,
+            Height                = options?.Height ?? double.NaN,
+            MinWidth              = options?.MinWidth ?? 0d,
+            MinHeight             = options?.MinHeight ?? 0d,
+            MaxWidth              = options?.MaxWidth ?? double.PositiveInfinity,
+            MaxHeight             = options?.MaxHeight ?? double.PositiveInfinity,
+            IsConfirmLoading      = options?.IsConfirmLoading ?? false,
+            IsLoading             = options?.IsLoading ?? false,
+        };
+        if (options?.Icon != null)
+        {
+            messageBox.Icon = options.Icon;
+        }
+        return messageBox;
+    }
+
+    private static GlobalDialogManager FindDialogManager(TopLevel? topLevel)
+    {
+        var toplevel      = topLevel ?? Window.GetMainWindow();
+        var dialogManager = toplevel.FindDescendantOfType<GlobalDialogManager>();
+        if (dialogManager == null)
+        {
+            throw new InvalidOperationException("The DialogManager was not found in TopLevel; you may not be using the atom:Window class.");
+        }
+        return dialogManager;
+    }
+
+    #endregion
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -306,13 +415,13 @@ public class MessageBox : TemplatedControl,
         base.OnApplyTemplate(e);
         if (_dialog != null)
         {
-            _dialog.Opened           -= HandleDialogOpened;
-            _dialog.Closed           -= HandleDialogClosed;
-            _dialog.Rejected         -= HandleDialogCancelled;
-            _dialog.Accepted         -= HandleDialogConfirmed;
-            _dialog.Finished         -= HandleDialogFinished;
+            _dialog.Opened   -= HandleDialogOpened;
+            _dialog.Closed   -= HandleDialogClosed;
+            _dialog.Rejected -= HandleDialogCancelled;
+            _dialog.Accepted -= HandleDialogConfirmed;
+            _dialog.Finished -= HandleDialogFinished;
         }
-        _dialog = e.NameScope.Find<Dialog>(MessageBoxThemeConstants.DialogPart);
+        _dialog = e.NameScope.Find<MessageBoxDialog>(MessageBoxThemeConstants.DialogPart);
         if (_dialog != null)
         {
             _dialog.Opened           += HandleDialogOpened;

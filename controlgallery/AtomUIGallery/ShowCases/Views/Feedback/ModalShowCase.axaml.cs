@@ -259,7 +259,7 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         // 鼠标会被卡死，强制刷新一次事件循环
         await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
         var content = BuildDialogContent();
-        var options = new DialogOptions()
+        var options = new DialogOptions
         {
             IsModal                   = true,
             Title                     = "Basic Modal",
@@ -272,7 +272,7 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
             VerticalOffset            = new Dimension(30, DimensionUnitType.Percentage),
             MinWidth                  = 400
         };
-        Dialog.ShowDialog(content, null, options);
+        await Dialog.ShowDialogAsync(content, null, options);
     }
 
     private async void HandleOpenWindowDialogButtonClick(object? sender, RoutedEventArgs e)
@@ -280,7 +280,7 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         // 鼠标会被卡死，强制刷新一次事件循环
         await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
         var content = BuildDialogContent();
-        var options = new DialogOptions()
+        var options = new DialogOptions
         {
             IsModal                   = true,
             Title                     = "Basic Modal",
@@ -294,14 +294,14 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
             VerticalOffset            = new Dimension(30, DimensionUnitType.Percentage),
             MinWidth                  = 400
         };
-        Dialog.ShowDialog(content, null, options);
+        await Dialog.ShowDialogAsync(content, null, options);
     }
 
     private async void HandleOpenCustomViewDialogButtonClick(object? sender, RoutedEventArgs e)
     {
         // 鼠标会被卡死，强制刷新一次事件循环
         await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
-        var options = new DialogOptions()
+        var options = new DialogOptions
         {
             IsModal                   = true,
             Title                     = "Basic Modal",
@@ -318,30 +318,124 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var viewModel = new ModalUserControlViewModel()
         {
             Name = "AtomUI",
-            Age = 2
+            Age  = 2
         };
         Dialog.ShowDialog<ModalUserControlView, ModalUserControlViewModel>(viewModel, options);
     }
 
     private Control BuildDialogContent()
     {
-        var stackPanel = new StackPanel()
+        var stackPanel = new StackPanel
         {
             Orientation = Orientation.Vertical,
             Spacing     = 5
         };
-        stackPanel.Children.Add(new TextBlock()
+        stackPanel.Children.Add(new TextBlock
         {
             Text = "Some contents..."
         });
-        stackPanel.Children.Add(new TextBlock()
+        stackPanel.Children.Add(new TextBlock
         {
             Text = "Some contents..."
         });
-        stackPanel.Children.Add(new TextBlock()
+        stackPanel.Children.Add(new TextBlock
         {
             Text = "Some contents..."
         });
         return stackPanel;
     }
+
+    private async void HandleCreateConfirmMessageBox(object? sender, RoutedEventArgs e)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+        var content = BuildMessageBoxContent();
+        var options = new MessageBoxOptions()
+        {
+            IsModal           = true,
+            Title             = "Do you want to delete these items?",
+            IsDragMovable     = true,
+            IsCenterOnStartup = true,
+            Style             = MessageBoxStyle.Confirm
+        };
+        await MessageBox.ShowMessageAsync(content, null, options);
+    }
+    
+    private async void HandleCreateInformationMessageBox(object? sender, RoutedEventArgs e)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+        var content = BuildMessageBoxContent();
+        var options = new MessageBoxOptions()
+        {
+            IsModal           = true,
+            Title             = "This is a notification message",
+            IsDragMovable     = true,
+            IsCenterOnStartup = true,
+            Style             = MessageBoxStyle.Information
+        };
+        await MessageBox.ShowMessageAsync(content, null, options);
+    }
+    
+    private async void HandleCreateSuccessMessageBox(object? sender, RoutedEventArgs e)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+        var content = BuildMessageBoxContent();
+        var options = new MessageBoxOptions()
+        {
+            IsModal           = true,
+            Title             = "Operation successful",
+            IsDragMovable     = true,
+            IsCenterOnStartup = true,
+            Style             = MessageBoxStyle.Success
+        };
+        await MessageBox.ShowMessageAsync(content, null, options);
+    }
+    
+    private async void HandleCreateErrorMessageBox(object? sender, RoutedEventArgs e)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+        var content = BuildMessageBoxContent();
+        var options = new MessageBoxOptions()
+        {
+            IsModal           = true,
+            Title             = "This is an error message",
+            IsDragMovable     = true,
+            IsCenterOnStartup = true,
+            Style             = MessageBoxStyle.Error
+        };
+        await MessageBox.ShowMessageAsync(content, null, options);
+    }
+    
+    private async void HandleCreateWarningMessageBox(object? sender, RoutedEventArgs e)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+        var content = BuildMessageBoxContent();
+        var options = new MessageBoxOptions()
+        {
+            IsModal           = true,
+            Title             = "This is a warning message",
+            IsDragMovable     = true,
+            IsCenterOnStartup = true,
+            Style             = MessageBoxStyle.Warning
+        };
+        await MessageBox.ShowMessageAsync(content, null, options);
+    }
+    
+    private Control BuildMessageBoxContent()
+    {
+        var stackPanel = new StackPanel
+        {
+            Orientation = Orientation.Vertical,
+            Spacing     = 5
+        };
+        stackPanel.Children.Add(new TextBlock
+        {
+            Text = "some messages...some messages..."
+        });
+        stackPanel.Children.Add(new TextBlock
+        {
+            Text = "some messages...some messages..."
+        });
+        return stackPanel;
+    }
+
 }

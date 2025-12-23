@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DialogPositioning;
@@ -275,12 +274,6 @@ public partial class Dialog : TemplatedControl,
         set => SetValue(DialogHostTypeProperty, value);
     }
     
-    public Task<object?>? ResultTask
-    {
-        get;
-        private set;
-    }
-    
     public DialogStandardButtons StandardButtons
     {
         get => GetValue(StandardButtonsProperty);
@@ -401,7 +394,6 @@ public partial class Dialog : TemplatedControl,
     private bool _ignoreIsOpenChanged;
     private DialogOpenState? _openState;
     private Action<IDialogHost?>? _dialogHostChangedHandler;
-    private IDisposable? _modalSubscription;
     private CancellationTokenSource? _frameCancellationTokenSource;
     private bool _startupLocationCalculated;
     private bool _opening;
@@ -446,16 +438,16 @@ public partial class Dialog : TemplatedControl,
         var token = _frameCancellationTokenSource.Token;
         var frame = new DispatcherFrame();
         token.Register(() => frame.Continue = false);
-        var resultTask = OpenAsync();
+        var _ = OpenAsync();
         Dispatcher.UIThread.PushFrame(frame);
-        return resultTask?.Result;
+        return Result;
     }
 
-    public Task<object?>? OpenAsync()
+    public async Task OpenAsync()
     {
         if (_openState != null || _opening)
         {
-            return null;
+            return;
         }
 
         _opening = true;
@@ -466,7 +458,7 @@ public partial class Dialog : TemplatedControl,
         IDialogHost?        dialogHost              = null;
         CompositeDisposable relayBindingDisposables = new CompositeDisposable();
         DialogHost?         windowDialogHost        = null;
-        OverlayDialogHost?  overlayDialogHost       = null;
+  
         if (DialogHostType == DialogHostType.Window)
         {
             windowDialogHost               = CreateDialogHost(topLevel, this);
@@ -479,7 +471,7 @@ public partial class Dialog : TemplatedControl,
             var dialogLayer = DialogLayer.GetDialogLayer(placementTarget);
             if (dialogLayer != null)
             {
-                overlayDialogHost              = CreateOverlayDialogHost(dialogLayer, this);
+                var overlayDialogHost              = CreateOverlayDialogHost(dialogLayer, this);
                 OverlayInputPassThroughElement = overlayDialogHost;
                 RelayOverlayDialogBindings(relayBindingDisposables, overlayDialogHost);
                 overlayDialogHost.CustomButtons.AddRange(CustomButtons);
@@ -535,6 +527,12 @@ public partial class Dialog : TemplatedControl,
         } 
         var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
         inputManager?.Process.Subscribe(ListenForNonClientClick).DisposeWith(handlerCleanup);
+
+        TaskCompletionSource? modalTsc = null;
+        if (IsModal)
+        {
+            modalTsc = new TaskCompletionSource();
+        }
         
         var cleanupPopup = Disposable.Create((dialogHost, handlerCleanup), state =>
         {
@@ -554,6 +552,7 @@ public partial class Dialog : TemplatedControl,
                     dialogAwareDataContext.NotifyClosed();
                 }
                 Closed?.Invoke(this, EventArgs.Empty);
+                modalTsc?.TrySetResult();
             });
             if (DialogHostType == DialogHostType.Window)
             {
@@ -596,7 +595,7 @@ public partial class Dialog : TemplatedControl,
             {
                 if (topLevel is Window windowTopLevel)
                 {
-                    windowDialog.ShowDialog(windowTopLevel);
+                    await windowDialog.ShowDialog(windowTopLevel);
                 }
             }
             else
@@ -609,32 +608,6 @@ public partial class Dialog : TemplatedControl,
             dialogHost.Show();
         }
         
-        if (IsModal)
-        {
-            var tcs = new TaskCompletionSource<object?>();
-
-            var disposables = new CompositeDisposable(
-            [
-                Observable.FromEventPattern(
-                              x => Closed += x,
-                              x => Closed -= x)
-                          .Take(1)
-                          .Subscribe(_ =>
-                          {
-                              _modalSubscription?.Dispose();
-                          }),
-                Disposable.Create(() =>
-                {
-                    _modalSubscription = null;
-                    // owner!.Activate();
-                    tcs.SetResult(Result);
-                })
-            ]);
-
-            _modalSubscription = disposables;
-            ResultTask         = tcs.Task;
-        }
-        
         using (BeginIgnoringIsOpen())
         {
             SetCurrentValue(IsOpenProperty, true);
@@ -642,8 +615,10 @@ public partial class Dialog : TemplatedControl,
         Opened?.Invoke(this, EventArgs.Empty);
         _opening = false;
         _dialogHostChangedHandler?.Invoke(Host);
-        
-        return ResultTask;
+        if (modalTsc != null)
+        {
+            await modalTsc.Task;
+        }
     }
 
     private protected virtual DialogHost CreateDialogHost(TopLevel topLevel, Dialog dialog)
@@ -761,8 +736,6 @@ public partial class Dialog : TemplatedControl,
         _openState = null;
         
         _dialogHostChangedHandler?.Invoke(null);
-        _modalSubscription?.Dispose();
-        _modalSubscription = null;
         using (BeginIgnoringIsOpen())
         {
             SetCurrentValue(IsOpenProperty, false);

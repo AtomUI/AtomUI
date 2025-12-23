@@ -100,14 +100,15 @@
                     <TextBlock VerticalAlignment="Center">Native Window:</TextBlock>
                     <atom:ToggleSwitch Name="StyleCaseHostTypeSwitch" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="10">
+                <atom:Separator Title="Normal"/>
+                <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="10">
                     <Panel>
                         <atom:MessageBox PlacementTarget="ConfirmMsgBoxBtn"
                                          Title="Do you want to delete these items?"
                                          IsOpen="{Binding IsConfirmMsgBoxOpened, Mode=TwoWay}"
                                          Style="Confirm"
                                          HostType="{Binding MessageBoxStyleCaseHostType}">
-                            <StackPanel Orientation="Vertical" Spacing="10">
+                            <StackPanel Orientation="Vertical" Spacing="5">
                                 <TextBlock>Some descriptions</TextBlock>
                             </StackPanel>
                         </atom:MessageBox>
@@ -119,7 +120,7 @@
                                          IsOpen="{Binding IsInformationMsgBoxOpened, Mode=TwoWay}"
                                          Style="Information"
                                          HostType="{Binding MessageBoxStyleCaseHostType}">
-                            <StackPanel Orientation="Vertical" Spacing="10">
+                            <StackPanel Orientation="Vertical" Spacing="5">
                                 <TextBlock>some messages...some messages...</TextBlock>
                                 <TextBlock>some messages...some messages...</TextBlock>
                             </StackPanel>
@@ -132,7 +133,7 @@
                                          Style="Success"
                                          HostType="{Binding MessageBoxStyleCaseHostType}"
                                          IsOpen="{Binding IsSuccessMsgBoxOpened, Mode=TwoWay}">
-                            <StackPanel Orientation="Vertical" Spacing="10">
+                            <StackPanel Orientation="Vertical" Spacing="5">
                                 <TextBlock>some messages...some messages...</TextBlock>
                                 <TextBlock>some messages...some messages...</TextBlock>
                             </StackPanel>
@@ -145,7 +146,7 @@
                                          Style="Error"
                                          HostType="{Binding MessageBoxStyleCaseHostType}"
                                          IsOpen="{Binding IsErrorMsgBoxOpened, Mode=TwoWay}">
-                            <StackPanel Orientation="Vertical" Spacing="10">
+                            <StackPanel Orientation="Vertical" Spacing="5">
                                 <TextBlock>some messages...some messages...</TextBlock>
                                 <TextBlock>some messages...some messages...</TextBlock>
                             </StackPanel>
@@ -158,14 +159,23 @@
                                          Style="Warning"
                                          HostType="{Binding MessageBoxStyleCaseHostType}"
                                          IsOpen="{Binding IsWarningMsgBoxOpened, Mode=TwoWay}">
-                            <StackPanel Orientation="Vertical" Spacing="10">
+                            <StackPanel Orientation="Vertical" Spacing="5">
                                 <TextBlock>some messages...some messages...</TextBlock>
                                 <TextBlock>some messages...some messages...</TextBlock>
                             </StackPanel>
                         </atom:MessageBox>
                         <atom:Button Name="WarningMsgBoxBtn">Warning</atom:Button>
                     </Panel>
-                </StackPanel>
+                </WrapPanel>
+
+                <atom:Separator Title="Static API" />
+                <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="10">
+                    <atom:Button Click="HandleCreateConfirmMessageBox">Confirm</atom:Button>
+                    <atom:Button Click="HandleCreateInformationMessageBox">Information</atom:Button>
+                    <atom:Button Click="HandleCreateSuccessMessageBox">Success</atom:Button>
+                    <atom:Button Click="HandleCreateErrorMessageBox">Error</atom:Button>
+                    <atom:Button Click="HandleCreateWarningMessageBox">Warning</atom:Button>
+                </WrapPanel>
             </StackPanel>
         </gallery:ShowCaseItem>
 

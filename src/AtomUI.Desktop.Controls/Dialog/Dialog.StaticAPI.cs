@@ -1,6 +1,5 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -36,7 +35,7 @@ public partial class Dialog
         return result;
     }
     
-    public static Task<object?>? ShowDialogAsync<TView, TViewModel>(TViewModel? dataContext, DialogOptions? options = null, TopLevel? topLevel = null)
+    public static async Task ShowDialogAsync<TView, TViewModel>(TViewModel? dataContext, DialogOptions? options = null, TopLevel? topLevel = null)
         where TView : Control, new()
     {
         var dialogManager = FindDialogManager(topLevel);
@@ -47,10 +46,10 @@ public partial class Dialog
         }
         dialog.Closed += (_, _) => dialogManager.Children.Remove(dialog);
         dialogManager.Children.Add(dialog);
-        return dialog.OpenAsync();
+        await Dispatcher.UIThread.InvokeAsync(async () => await dialog.OpenAsync());
     }
 
-    public static Task<object?>? ShowDialogAsync(Control content, object? dataContext = null, DialogOptions? options = null, TopLevel? topLevel = null)
+    public static async Task ShowDialogAsync(Control content, object? dataContext = null, DialogOptions? options = null, TopLevel? topLevel = null)
     {
         var dialogManager = FindDialogManager(topLevel);
         var dialog        = CreateDialog(content, dataContext, options);
@@ -60,7 +59,7 @@ public partial class Dialog
         }
         dialog.Closed += (_, _) => dialogManager.Children.Remove(dialog);
         dialogManager.Children.Add(dialog);
-        return dialog.OpenAsync();
+        await Dispatcher.UIThread.InvokeAsync(async () => await dialog.OpenAsync());
     }
 
     private static Dialog CreateDialog(Control content, object? dataContext, DialogOptions? options)
@@ -99,22 +98,12 @@ public partial class Dialog
 
     private static GlobalDialogManager FindDialogManager(TopLevel? topLevel)
     {
-        var toplevel      = topLevel ?? GetMainWindow();
+        var toplevel      = topLevel ?? Window.GetMainWindow();
         var dialogManager = toplevel.FindDescendantOfType<GlobalDialogManager>();
         if (dialogManager == null)
         {
             throw new InvalidOperationException("The DialogManager was not found in TopLevel; you may not be using the atom:Window class.");
         }
         return dialogManager;
-    }
-    
-    private static Window? GetMainWindow()
-    {
-        var lifetime = Application.Current?.ApplicationLifetime;
-        if (lifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
-        {
-            return desktopLifetime.MainWindow as Window;
-        }
-        return null;
     }
 }

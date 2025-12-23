@@ -339,6 +339,16 @@ public class Window : AvaloniaWindow,
         ConfigureCustomResizerVisible();
     }
 
+    public static Window? GetMainWindow()
+    {
+        var lifetime = Application.Current?.ApplicationLifetime;
+        if (lifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+        {
+            return desktopLifetime.MainWindow as Window;
+        }
+        return null;
+    }
+    
     protected override void OnClosed(EventArgs e)
     {
         Dispose();

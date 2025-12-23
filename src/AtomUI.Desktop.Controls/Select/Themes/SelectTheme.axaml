@@ -63,7 +63,7 @@
                                               Content="{TemplateBinding SelectedOption}"
                                               IsVisible="False">
                                 <ContentPresenter.ContentTemplate>
-                                    <DataTemplate x:DataType="atom:SelectOption">
+                                    <DataTemplate x:DataType="atom:ISelectOption">
                                         <TextBlock Text="{Binding Header}"/>
                                     </DataTemplate>
                                 </ContentPresenter.ContentTemplate>

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -12,7 +11,6 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -37,8 +35,8 @@ public class Select : TemplatedControl,
                       ISizeTypeAware
 {
     #region 公共属性定义
-    public static readonly StyledProperty<IEnumerable<SelectOption>?> OptionsSourceProperty =
-        AvaloniaProperty.Register<Select, IEnumerable<SelectOption>?>(nameof(OptionsSource));
+    public static readonly StyledProperty<IEnumerable<ISelectOption>?> OptionsSourceProperty =
+        AvaloniaProperty.Register<Select, IEnumerable<ISelectOption>?>(nameof(OptionsSource));
     
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         AvaloniaProperty.Register<Select, IDataTemplate?>(nameof(OptionTemplate));
@@ -139,8 +137,8 @@ public class Select : TemplatedControl,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Select>();
     
-    public static readonly DirectProperty<Select, IList?> SelectedOptionsProperty =
-        AvaloniaProperty.RegisterDirect<Select, IList?>(
+    public static readonly DirectProperty<Select, IList<ISelectOption>?> SelectedOptionsProperty =
+        AvaloniaProperty.RegisterDirect<Select, IList<ISelectOption>?>(
             nameof(SelectedOptions),
             o => o.SelectedOptions,
             (o, v) => o.SelectedOptions = v);
@@ -157,7 +155,7 @@ public class Select : TemplatedControl,
         AvaloniaProperty.Register<Select, string>(
             nameof(OptionFilterProp), "Value");
     
-    public IEnumerable<SelectOption>? OptionsSource
+    public IEnumerable<ISelectOption>? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
@@ -369,11 +367,11 @@ public class Select : TemplatedControl,
     }
     
     [Content]
-    public AvaloniaList<SelectOption> Options { get; set; } = new();
+    public AvaloniaList<ISelectOption> Options { get; set; } = new();
     
-    private IList? _selectedOptions;
+    private IList<ISelectOption>? _selectedOptions;
 
-    public IList? SelectedOptions
+    public IList<ISelectOption>? SelectedOptions
     {
         get => _selectedOptions;
         set => SetAndRaise(SelectedOptionsProperty, ref _selectedOptions, value);
@@ -392,10 +390,10 @@ public class Select : TemplatedControl,
     }
     #endregion
     
-    public IComparer<SelectOption>? FilterSortFn { get; set; }
+    public IComparer<ISelectOption>? FilterSortFn { get; set; }
     public Func<object, object, bool>? FilterFn { get; set; }
     
-    public Func<object, SelectOption, bool>? DefaultValueCompareFn { get; set; }
+    public Func<object, ISelectOption, bool>? DefaultValueCompareFn { get; set; }
     public IList<object>? DefaultValues { get; set; }
     
     #region 公共事件定义
@@ -439,8 +437,8 @@ public class Select : TemplatedControl,
             o => o.IsSelectionEmpty,
             (o, v) => o.IsSelectionEmpty = v);
     
-    internal static readonly DirectProperty<Select, SelectOption?> SelectedOptionProperty =
-        AvaloniaProperty.RegisterDirect<Select, SelectOption?>(
+    internal static readonly DirectProperty<Select, ISelectOption?> SelectedOptionProperty =
+        AvaloniaProperty.RegisterDirect<Select, ISelectOption?>(
             nameof(SelectedOption),
             o => o.SelectedOption,
             (o, v) => o.SelectedOption = v);
@@ -510,9 +508,9 @@ public class Select : TemplatedControl,
         set => SetAndRaise(IsSelectionEmptyProperty, ref _isSelectionEmpty, value);
     }
     
-    private SelectOption? _selectedOption;
+    private ISelectOption? _selectedOption;
 
-    internal SelectOption? SelectedOption
+    internal ISelectOption? SelectedOption
     {
         get => _selectedOption;
         set => SetAndRaise(SelectedOptionProperty, ref _selectedOption, value);
@@ -557,7 +555,7 @@ public class Select : TemplatedControl,
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
     private bool _clickInTagCloseButton;
-    private SelectOption? _addNewOption;
+    private ISelectOption? _addNewOption;
 
     static Select()
     {
@@ -587,7 +585,7 @@ public class Select : TemplatedControl,
         Clear();
     }
     
-    private bool OptionEqualByValue(object value, SelectOption selectOption)
+    private bool OptionEqualByValue(object value, ISelectOption selectOption)
     {
         if (DefaultValueCompareFn != null)
         {
@@ -632,7 +630,7 @@ public class Select : TemplatedControl,
         SetCurrentValue(SelectedOptionsProperty, newSelection);
         SyncSelection();
 
-        if (Mode == SelectMode.Tags && removedItem is SelectOption option && option.IsDynamicAdded)
+        if (Mode == SelectMode.Tags && removedItem is ISelectOption option && option.IsDynamicAdded)
         {
             Options.Remove(option);
             if (ReferenceEquals(_addNewOption, option))
@@ -874,10 +872,10 @@ public class Select : TemplatedControl,
         return !popupRoots.Contains(args.Root);
     }
 
-    internal void NotifyLogicalSelectOption(SelectOption selectOption)
+    internal void NotifyLogicalSelectOption(ISelectOption selectOption)
     {
         Debug.Assert(_optionsBox != null);
-        var selectedOptions = new List<object>();
+        var selectedOptions = new List<ISelectOption>();
         if (Mode == SelectMode.Single)
         {
             if (_singleSearchInput != null)
@@ -1236,7 +1234,7 @@ public class Select : TemplatedControl,
     
     private void HandleOptionsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        var newItemsSource = (IEnumerable<SelectOption>?)change.NewValue;
+        var newItemsSource = (IEnumerable<ISelectOption>?)change.NewValue;
         if (newItemsSource != null)
         {
             Options.Clear();
@@ -1259,7 +1257,7 @@ public class Select : TemplatedControl,
                     {
                         if (OptionEqualByValue(defaultValue, option))
                         {
-                            SetCurrentValue(SelectedOptionsProperty, new List<SelectOption>()
+                            SetCurrentValue(SelectedOptionsProperty, new List<ISelectOption>()
                             {
                                 option
                             });
@@ -1272,7 +1270,7 @@ public class Select : TemplatedControl,
             {
                 if (DefaultValues?.Count > 0)
                 {
-                    var selectedOptions = new List<SelectOption>();
+                    var selectedOptions = new List<ISelectOption>();
                     foreach (var defaultValue in DefaultValues)
                     {
                         foreach (var option in Options)
@@ -1376,19 +1374,19 @@ public class Select : TemplatedControl,
             return;
         }
         
-        var selected = new HashSet<SelectOption>();
+        var selected = new HashSet<ISelectOption>();
         if (SelectedOptions != null)
         {
             foreach (var item in SelectedOptions)
             {
-                if (item is SelectOption opt)
+                if (item is ISelectOption opt)
                 {
                     selected.Add(opt);
                 }
             }
         }
 
-        var toRemove = new List<SelectOption>();
+        var toRemove = new List<ISelectOption>();
         foreach (var option in Options)
         {
             if (option.IsDynamicAdded && !selected.Contains(option))

@@ -1,4 +1,3 @@
-using System.Collections;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -14,8 +13,8 @@ internal class SelectResultOptionsBox : TemplatedControl
 {
     #region 公共属性定义
 
-    public static readonly DirectProperty<SelectResultOptionsBox, IList?> SelectedOptionsProperty =
-        AvaloniaProperty.RegisterDirect<SelectResultOptionsBox, IList?>(
+    public static readonly DirectProperty<SelectResultOptionsBox, IList<ISelectOption>?> SelectedOptionsProperty =
+        AvaloniaProperty.RegisterDirect<SelectResultOptionsBox, IList<ISelectOption>?>(
             nameof(SelectedOptions),
             o => o.SelectedOptions,
             (o, v) => o.SelectedOptions = v);
@@ -38,9 +37,9 @@ internal class SelectResultOptionsBox : TemplatedControl
     public static readonly StyledProperty<bool?> IsResponsiveMaxTagCountProperty =
         Select.IsResponsiveMaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
     
-    private IList? _selectedOptions;
+    private IList<ISelectOption>? _selectedOptions;
 
-    public IList? SelectedOptions
+    public IList<ISelectOption>? SelectedOptions
     {
         get => _selectedOptions;
         set => SetAndRaise(SelectedOptionsProperty, ref _selectedOptions, value);
@@ -105,7 +104,7 @@ internal class SelectResultOptionsBox : TemplatedControl
     private SelectMaxTagAwarePanel? _maxCountAwarePanel;
     private SelectSearchTextBox? _searchTextBox;
     private SelectRemainInfoTag? _collapsedInfoTag;
-    private protected readonly Dictionary<object, IDisposable> _tagsBindingDisposables = new();
+    private protected readonly Dictionary<object, IDisposable> TagsBindingDisposables = new();
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -213,38 +212,35 @@ internal class SelectResultOptionsBox : TemplatedControl
             {
                 _searchTextBox?.Clear();
                 _defaultPanel.Children.Clear();
-                foreach (var entry in _tagsBindingDisposables)
+                foreach (var entry in TagsBindingDisposables)
                 {
                     entry.Value.Dispose();
                 }
-                _tagsBindingDisposables.Clear();
+                TagsBindingDisposables.Clear();
                 if (_selectedOptions != null)
                 {
                     for (var i = 0; i < _selectedOptions.Count; i++)
                     {
-                        var item = _selectedOptions[i];
-                        if (item is SelectOption option)
+                        var option = _selectedOptions[i];
+                        var tag = new SelectTag
                         {
-                            var tag = new SelectTag
+                            TagText = option.Header,
+                            Option  = option
+                        };
+                        if (MaxTagCount.HasValue)
+                        {
+                            if (i < MaxTagCount)
                             {
-                                TagText = option.Header,
-                                Option  = option
-                            };
-                            if (MaxTagCount.HasValue)
-                            {
-                                if (i < MaxTagCount)
-                                {
-                                    tag.IsVisible = true;
-                                }
-                                else
-                                {
-                                    tag.IsVisible = false;
-                                }
+                                tag.IsVisible = true;
                             }
-                       
-                            _tagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
-                            _defaultPanel.Children.Add(tag);
+                            else
+                            {
+                                tag.IsVisible = false;
+                            }
                         }
+                       
+                        TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
+                        _defaultPanel.Children.Add(tag);
                     }
                 }
                 
@@ -266,26 +262,23 @@ internal class SelectResultOptionsBox : TemplatedControl
             {
                 _searchTextBox?.Clear();
                 _maxCountAwarePanel.Children.Clear();
-                foreach (var entry in _tagsBindingDisposables)
+                foreach (var entry in TagsBindingDisposables)
                 {
                     entry.Value.Dispose();
                 }
                 
-                _tagsBindingDisposables.Clear();
+                TagsBindingDisposables.Clear();
                 if (_selectedOptions != null)
                 {
-                    foreach (var item in _selectedOptions)
+                    foreach (var option in _selectedOptions)
                     {
-                        if (item is SelectOption option)
+                        var tag = new SelectTag
                         {
-                            var tag = new SelectTag
-                            {
-                                TagText = option.Header,
-                                Option  = option
-                            };
-                            _tagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
-                            _maxCountAwarePanel.Children.Add(tag);
-                        }
+                            TagText = option.Header,
+                            Option  = option
+                        };
+                        TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
+                        _maxCountAwarePanel.Children.Add(tag);
                     }
                 }
                 

@@ -3,6 +3,10 @@ namespace AtomUI.Desktop.Controls;
 public interface ISelectOption
 {
     string Header { get; }
+    bool IsEnabled { get; }
+    object? Value { get; }
+    string? Group { get; }
+    bool IsDynamicAdded { get; }
 }
 
 public record SelectOption : ISelectOption

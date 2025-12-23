@@ -1,4 +1,3 @@
-using System;
 using System.Reactive.Disposables;
 using AtomUI.Data;
 using Avalonia;
@@ -20,7 +19,7 @@ internal class SelectOptions : List
     
     public Select? Select { get; set; }
 
-    private SelectOption? _activeOption;
+    private ISelectOption? _activeOption;
     private int _activeIndex = -1;
     
     internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -49,12 +48,12 @@ internal class SelectOptions : List
             }
         }
 
-        SelectOption? optionToActivate = null;
+        ISelectOption? optionToActivate = null;
         if (SelectedItems != null)
         {
             foreach (var item in SelectedItems)
             {
-                if (item is SelectOption opt && opt.IsEnabled)
+                if (item is ISelectOption opt && opt.IsEnabled)
                 {
                     optionToActivate = opt;
                     break;
@@ -66,7 +65,7 @@ internal class SelectOptions : List
         SetActiveOption(optionToActivate);
     }
     
-    internal void SetActiveOption(SelectOption? option)
+    internal void SetActiveOption(ISelectOption? option)
     {
         if (ReferenceEquals(_activeOption, option))
         {
@@ -119,7 +118,7 @@ internal class SelectOptions : List
             return;
         }
         
-        if (ListDefaultView.Items[nextIndex] is SelectOption option)
+        if (ListDefaultView.Items[nextIndex] is ISelectOption option)
         {
             SetActiveOption(option);
         }
@@ -181,7 +180,7 @@ internal class SelectOptions : List
         if (ListDefaultView != null && Select != null)
         {
             var item = ListDefaultView.ItemFromContainer(container);
-            if (item is SelectOption option)
+            if (item is ISelectOption option)
             {
                 SetActiveOption(option);
                 Select.NotifyLogicalSelectOption(option);
@@ -211,11 +210,11 @@ internal class SelectOptions : List
                 {
                     listItem.SetCurrentValue(SelectOptionItem.ContentProperty, item);
                 }
-                else if (item is SelectOption selectOption)
+                else if (item is ISelectOption selectOption)
                 {
                     listItem.SetCurrentValue(SelectOptionItem.ContentProperty, selectOption.Header);
                 }
-                if (item is SelectOption data)
+                if (item is ISelectOption data)
                 {
                     if (!listItem.IsSet(SelectOptionItem.IsEnabledProperty))
                     {
@@ -224,7 +223,7 @@ internal class SelectOptions : List
                 }
             }
 
-            listItem.SetCurrentValue(SelectOptionItem.IsActiveProperty, item is SelectOption opt && ReferenceEquals(opt, _activeOption));
+            listItem.SetCurrentValue(SelectOptionItem.IsActiveProperty, item is ISelectOption opt && ReferenceEquals(opt, _activeOption));
             
             if (ItemTemplate != null)
             {
@@ -302,7 +301,7 @@ internal class SelectOptions : List
         }
     }
 
-    private int FindIndexForOption(SelectOption option)
+    private int FindIndexForOption(ISelectOption option)
     {
         if (ListDefaultView == null)
         {
@@ -319,7 +318,7 @@ internal class SelectOptions : List
         return -1;
     }
 
-    private SelectOption? FindFirstEnabledOption()
+    private ISelectOption? FindFirstEnabledOption()
     {
         if (ListDefaultView == null)
         {
@@ -328,7 +327,7 @@ internal class SelectOptions : List
         
         for (var i = 0; i < ItemCount; i++)
         {
-            if (ListDefaultView.Items[i] is SelectOption option && option.IsEnabled)
+            if (ListDefaultView.Items[i] is ISelectOption option && option.IsEnabled)
             {
                 return option;
             }
@@ -352,14 +351,14 @@ internal class SelectOptions : List
                 return -1;
             }
             
-            if (ListDefaultView.Items[index] is SelectOption option && option.IsEnabled)
+            if (ListDefaultView.Items[index] is ISelectOption option && option.IsEnabled)
             {
                 return index;
             }
         }
     }
 
-    private void UpdateContainerActiveState(SelectOption? option, bool isActive)
+    private void UpdateContainerActiveState(ISelectOption? option, bool isActive)
     {
         if (option == null || ListDefaultView == null)
         {

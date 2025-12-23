@@ -7,7 +7,7 @@ internal class OptionHeaderConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is SelectOption option)
+        if (value is ISelectOption option)
         {
             return option.Header;
         }

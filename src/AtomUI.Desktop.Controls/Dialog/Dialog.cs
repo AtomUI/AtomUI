@@ -418,7 +418,7 @@ public partial class Dialog : TemplatedControl,
         {
             if (e.NewValue.Value)
             {
-                OpenAsync();
+                Dispatcher.UIThread.InvokeAsync(OpenAsync);
             }
             else
             {

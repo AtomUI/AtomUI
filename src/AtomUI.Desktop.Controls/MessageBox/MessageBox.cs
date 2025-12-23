@@ -4,6 +4,7 @@ using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -251,6 +252,7 @@ public class MessageBox : TemplatedControl,
 
     public MessageBox()
     {
+        this.RegisterResources();
         CustomButtons.CollectionChanged += HandleCustomButtonsChanged;
     }
 

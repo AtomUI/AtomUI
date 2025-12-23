@@ -1,6 +1,7 @@
 using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Styling;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -85,6 +86,11 @@ public class StatisticCountUp : TemplatedControl, IControlSharedTokenResourcesHo
     static StatisticCountUp()
     {
         AffectsMeasure<StatisticCountUp>(FormattedValueProperty);
+    }
+
+    public StatisticCountUp()
+    {
+        this.RegisterResources();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

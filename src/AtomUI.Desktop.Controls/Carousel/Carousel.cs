@@ -2,6 +2,7 @@ using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -272,6 +273,7 @@ public class Carousel : SelectingItemsControl,
 
     public Carousel()
     {
+        this.RegisterResources();
         SelectionChanged += HandleSelectionChanged;
     }
     

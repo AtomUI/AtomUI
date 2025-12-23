@@ -223,7 +223,7 @@ public class Drawer : Control,
     {
         this.RegisterResources();
         this.ConfigureMotionBindingStyle();
-        this.ConfigureInstanceStyles();
+        ConfigureInstanceStyles();
     }
     
     public static Drawer? GetDrawer(Visual element)

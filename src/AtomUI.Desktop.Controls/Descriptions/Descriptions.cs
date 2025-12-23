@@ -6,6 +6,7 @@ using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -150,6 +151,7 @@ public class Descriptions : TemplatedControl,
 
     public Descriptions()
     {
+        this.RegisterResources();
         Items.CollectionChanged += HandleCollectionChanged;
     }
 

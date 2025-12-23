@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -213,6 +214,7 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
     
     public Upload()
     {
+        this.RegisterResources();
         _uploadScheduler = new FileUploadScheduler();
     }
 

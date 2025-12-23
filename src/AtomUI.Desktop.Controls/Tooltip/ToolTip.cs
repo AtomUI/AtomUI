@@ -3,6 +3,7 @@ using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
 using AtomUI.Theme.Palette;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -335,6 +336,11 @@ public class ToolTip : ContentControl,
     static ToolTip()
     {
         IsOpenProperty.Changed.Subscribe(HandleIsOpenChanged);
+    }
+
+    public ToolTip()
+    {
+        this.RegisterResources();
     }
     
     public CornerRadius GetMaskCornerRadius()

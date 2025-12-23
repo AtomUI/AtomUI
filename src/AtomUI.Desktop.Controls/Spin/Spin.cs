@@ -1,4 +1,6 @@
 ﻿using AtomUI.Controls;
+using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -10,7 +12,7 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Spin : ContentControl, IMotionAwareControl
+public class Spin : ContentControl, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
 
@@ -140,7 +142,15 @@ public class Spin : ContentControl, IMotionAwareControl
         set => SetValue(MaskOpacityProperty, value);
     }
     
+    Control IControlSharedTokenResourcesHost.HostControl => this;
+    string IControlSharedTokenResourcesHost.TokenId => SpinToken.ID;
+    
     #endregion
+    
+    public Spin()
+    {
+        this.RegisterResources();
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -149,6 +159,13 @@ public class Spin : ContentControl, IMotionAwareControl
             change.Property == CustomIndicatorProperty)
         {
             SetCurrentValue(IsCustomIndicatorProperty, CustomIndicator != null || CustomIndicatorTemplate != null);
+        }
+        if (IsLoaded)
+        {
+            if (change.Property == IsMotionEnabledProperty)
+            {
+                ConfigureTransitions(true);
+            }
         }
     }
 

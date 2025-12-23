@@ -32,8 +32,12 @@ internal static partial class WindowExtensions
     public static void SetMacOSOptionButtonsPosition(this WindowBase window, double x, double y, double spacing = 10.0)
     {
         var handle = window.PlatformImpl?.Handle?.Handle;
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         Debug.Assert(handle is not null);
-        if (handle == IntPtr.Zero)
+        if (handle is null || handle == IntPtr.Zero)
         {
             throw new ArgumentException("Invalid window handle");
         }
@@ -88,8 +92,12 @@ internal static partial class WindowExtensions
     public static Size GetMacOSOptionsSize(this WindowBase window, double spacing = 10.0)
     {
         var handle = window.PlatformImpl?.Handle?.Handle;
+        if (Design.IsDesignMode)
+        {
+            return default;
+        }
         Debug.Assert(handle is not null);
-        if (handle == IntPtr.Zero)
+        if (handle is null || handle == IntPtr.Zero)
         {
             throw new ArgumentException("Invalid window handle");
         }
@@ -129,8 +137,12 @@ internal static partial class WindowExtensions
     public static void SetMacOSWindowClosable(this WindowBase window, bool flag)
     {
         var handle = window.PlatformImpl?.Handle?.Handle;
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         Debug.Assert(handle is not null);
-        if (handle == IntPtr.Zero)
+        if (handle is null || handle == IntPtr.Zero)
         {
             throw new ArgumentException("Invalid window handle");
         }

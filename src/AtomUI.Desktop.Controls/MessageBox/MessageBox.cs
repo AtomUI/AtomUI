@@ -21,8 +21,8 @@ public enum MessageBoxOkButtonStyle
     Primary
 }
 
-public class MessageBox : TemplatedControl, 
-                          IMotionAwareControl, 
+public class MessageBox : TemplatedControl,
+                          IMotionAwareControl,
                           IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
@@ -294,13 +294,6 @@ public class MessageBox : TemplatedControl,
             {
                 ConfigureOkButton();
             }
-            else if (change.Property == ResultProperty && _dialog != null)
-            {
-                if (!Equals(_dialog.Result, change.NewValue))
-                {
-                    _dialog.SetCurrentValue(Dialog.ResultProperty, change.NewValue);
-                }
-            }
             else if (change.Property == IsCenterOnStartupProperty)
             {
                 ConfigurePositionOnStartup();
@@ -329,10 +322,6 @@ public class MessageBox : TemplatedControl,
             _dialog.Finished         += HandleDialogFinished;
             _dialog.ButtonsConfigure =  ButtonsConfigure;
             _dialog.CustomButtons.AddRange(CustomButtons);
-            if (!Equals(Result, _dialog.Result))
-            {
-                _dialog.SetCurrentValue(Dialog.ResultProperty, Result);
-            }
         }
 
         ConfigureIcon();
@@ -342,7 +331,6 @@ public class MessageBox : TemplatedControl,
     
     private void HandleDialogOpened(object? sender, EventArgs e)
     {
-        SetCurrentValue(ResultProperty, null);
         Opened?.Invoke(this, EventArgs.Empty);
     }
 

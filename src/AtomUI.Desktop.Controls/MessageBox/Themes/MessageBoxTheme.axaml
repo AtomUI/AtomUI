@@ -27,7 +27,8 @@
                                        Height="{TemplateBinding Height}"
                                        MinHeight="{TemplateBinding MinHeight}"
                                        IsLoading="{TemplateBinding IsLoading}"
-                                       IsConfirmLoading="{TemplateBinding IsConfirmLoading}"/>
+                                       IsConfirmLoading="{TemplateBinding IsConfirmLoading}"
+                                       Result="{TemplateBinding Result, Mode=TwoWay}"/>
             </ControlTemplate>
         </Setter>
         

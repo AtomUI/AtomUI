@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public class WindowToken : AbstractControlDesignToken
+internal class WindowToken : AbstractControlDesignToken
 {
     public const string ID = "Window";
 

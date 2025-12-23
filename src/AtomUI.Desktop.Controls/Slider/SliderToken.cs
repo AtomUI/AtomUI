@@ -8,7 +8,7 @@ namespace AtomUI.Desktop.Controls;
 // vertical: part   (水平时，垂直方向命名为 part)
 // horizontal: full (水平时，水平方向命名为 full)
 [ControlDesignToken]
-public class SliderToken : AbstractControlDesignToken
+internal class SliderToken : AbstractControlDesignToken
 {
     public const string ID = "Slider";
 

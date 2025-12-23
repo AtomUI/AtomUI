@@ -4,7 +4,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public class EmptyToken : AbstractControlDesignToken
+internal class EmptyToken : AbstractControlDesignToken
 {
     public const string ID = "Empty";
 

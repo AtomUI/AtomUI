@@ -6,7 +6,6 @@ namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
 internal class SkeletonToken : AbstractControlDesignToken
-
 {
     public const string ID = "Skeleton";
     

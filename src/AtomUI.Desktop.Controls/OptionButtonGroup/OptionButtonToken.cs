@@ -7,7 +7,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public class OptionButtonToken : AbstractControlDesignToken
+internal class OptionButtonToken : AbstractControlDesignToken
 {
     public const string ID = "OptionButton";
 

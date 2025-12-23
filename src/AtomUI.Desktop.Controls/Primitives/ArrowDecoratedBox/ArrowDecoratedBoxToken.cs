@@ -4,7 +4,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public class ArrowDecoratedBoxToken : AbstractControlDesignToken
+internal class ArrowDecoratedBoxToken : AbstractControlDesignToken
 {
     public const string ID = "ArrowDecoratedBox";
 

@@ -3,7 +3,7 @@ using AtomUI.Theme.TokenSystem;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public class MessageBoxToken : AbstractControlDesignToken
+internal class MessageBoxToken : AbstractControlDesignToken
 {
     public const string ID = "MessageBox";
     

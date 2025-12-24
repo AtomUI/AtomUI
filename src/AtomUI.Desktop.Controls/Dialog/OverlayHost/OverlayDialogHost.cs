@@ -247,7 +247,6 @@ internal class OverlayDialogHost : ContentControl,
     private Point _originPosition;
     private OverlayDialogHeader? _header;
     private OverlayDialogResizer? _resizer;
-    private readonly List<Action> _disposeActions = new();
     private Dialog _dialog;
     private DialogButtonBox? _buttonBox;
     private CompositeDisposable? _confirmLoadingBindings;
@@ -415,11 +414,6 @@ internal class OverlayDialogHost : ContentControl,
         _dialogLayer.Children.Remove(this);
         _dialog.ClearValue(Dialog.OffsetXProperty);
         _dialog.ClearValue(Dialog.OffsetYProperty);
-        foreach (var disposeAction in _disposeActions)
-        {
-            disposeAction.Invoke();
-        }
-        _disposeActions.Clear();
     }
 
     private void HandleDialogLayerSizeChanged(object? sender, SizeChangedEventArgs e)
@@ -565,6 +559,13 @@ internal class OverlayDialogHost : ContentControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        if (_resizer != null)
+        {
+            _resizer.ResizeRequest -= HandleResizeRequest;
+            _resizer.AboutToResize -= HandleAboutToResize;
+        }
+
         _resizer = e.NameScope.Find<OverlayDialogResizer>(OverlayDialogThemeConstants.ResizerPart);
         if (_resizer != null)
         {
@@ -572,17 +573,40 @@ internal class OverlayDialogHost : ContentControl,
             _resizer.ResizeRequest += HandleResizeRequest;
             _resizer.AboutToResize += HandleAboutToResize;
         }
+
+        if (_header != null)
+        {
+            _header.Pressed          -= HandleHeaderPressed;
+            _header.DoubleTapped     -= HandleHeaderDoubleClicked;
+            _header.MaximizeRequest  -= HandleHeaderMaximizeRequest;
+            _header.NormalizeRequest -= HandleHeaderNormalizeRequest;
+            _header.CloseRequest     -= HandleHeaderCloseRequest;
+            _header.PointerPressed   -= HandleHeaderPointerPressed;
+            _header.PointerReleased  -= HandleHeaderPointerReleased;
+            _header.PointerMoved     -= HandleHeaderPointerMoved;
+        }
+        
         _header    = e.NameScope.Find<OverlayDialogHeader>(OverlayDialogThemeConstants.HeaderPart);
-        _buttonBox = e.NameScope.Find<DialogButtonBox>(DialogThemeConstants.ButtonBoxPart);
-        ConfigureHeaderHandlers();
         if (_header != null)
         {
             _header.SetCurrentValue(OverlayDialogHeader.IsDialogMaximizedProperty, WindowState == OverlayDialogState.Maximized);
-            _header.Pressed += (sender, args) =>
-            {
-                HeaderPressed?.Invoke(this, EventArgs.Empty);
-            };
+            _header.Pressed          += HandleHeaderPressed;
+            _header.DoubleTapped     += HandleHeaderDoubleClicked;
+            _header.MaximizeRequest  += HandleHeaderMaximizeRequest;
+            _header.NormalizeRequest += HandleHeaderNormalizeRequest;
+            _header.CloseRequest     += HandleHeaderCloseRequest;
+            _header.PointerPressed   += HandleHeaderPointerPressed;
+            _header.PointerReleased  += HandleHeaderPointerReleased;
+            _header.PointerMoved     += HandleHeaderPointerMoved;
         }
+        
+        if (_buttonBox != null)
+        {
+            _buttonBox.Clicked             -= HandleButtonBoxClicked;
+            _buttonBox.ButtonsSynchronized -= HandleButtonsSynchronized;
+        }
+
+        _buttonBox = e.NameScope.Find<DialogButtonBox>(DialogThemeConstants.ButtonBoxPart);
         if (_buttonBox != null)
         {
             _buttonBox.CustomButtons.AddRange(CustomButtons);
@@ -590,7 +614,12 @@ internal class OverlayDialogHost : ContentControl,
             _buttonBox.ButtonsSynchronized += HandleButtonsSynchronized;
         }
     }
-    
+
+    private void HandleHeaderPressed(object? sender, EventArgs e)
+    {
+        HeaderPressed?.Invoke(this, EventArgs.Empty);
+    }
+
     private void HandleButtonBoxClicked(object? sender, DialogButtonClickedEventArgs args)
     {
         _dialog.NotifyDialogButtonBoxClicked(args.SourceButton);
@@ -703,30 +732,6 @@ internal class OverlayDialogHost : ContentControl,
                 }
                 _dialog.SetCurrentValue(HeightProperty, height);
             }
-        }
-    }
-
-    private void ConfigureHeaderHandlers()
-    {
-        if (_header != null)
-        {
-            _header.DoubleTapped     += HandleHeaderDoubleClicked;
-            _header.MaximizeRequest  += HandleHeaderMaximizeRequest;
-            _header.NormalizeRequest += HandleHeaderNormalizeRequest;
-            _header.CloseRequest     += HandleHeaderCloseRequest;
-            _header.PointerPressed   += HandleHeaderPointerPressed;
-            _header.PointerReleased  += HandleHeaderPointerReleased;
-            _header.PointerMoved     += HandleHeaderPointerMoved;
-            _disposeActions.Add(() =>
-            {
-                _header.DoubleTapped     -= HandleHeaderDoubleClicked;
-                _header.MaximizeRequest  -= HandleHeaderMaximizeRequest;
-                _header.NormalizeRequest -= HandleHeaderNormalizeRequest;
-                _header.CloseRequest     -= HandleHeaderCloseRequest;
-                _header.PointerPressed   -= HandleHeaderPointerPressed;
-                _header.PointerReleased  -= HandleHeaderPointerReleased;
-                _header.PointerMoved     -= HandleHeaderPointerMoved;
-            });
         }
     }
     

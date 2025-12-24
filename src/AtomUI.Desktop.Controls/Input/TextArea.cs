@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -222,15 +223,20 @@ public class TextArea : AvaloniaTextBox,
         {
             decorator.Owner = this;
         }
-        
-        _clearButton      = e.NameScope.Find<IconButton>(TextAreaThemeConstants.ClearButtonPart);
-        if (_clearButton is not null)
+
+        if (_clearButton != null)
         {
-            _clearButton.Click += (sender, args) => { NotifyClearButtonClicked(); };
+            _clearButton.Click -= HandleClearButtonClicked;
+        }
+
+        _clearButton = e.NameScope.Find<IconButton>(TextAreaThemeConstants.ClearButtonPart);
+        if (_clearButton != null)
+        {
+            _clearButton.Click += HandleClearButtonClicked;
         }
         
         _resizeHandle = e.NameScope.Find<ResizeHandle>(TextAreaThemeConstants.ResizeHandle);
-        if (_resizeHandle is not null)
+        if (_resizeHandle != null)
         {
             _resizeHandle.Owner = this;
         }
@@ -240,11 +246,19 @@ public class TextArea : AvaloniaTextBox,
         HandleInputChanged(Text);
     }
 
+    private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
+    {
+        NotifyClearButtonClicked();
+    }
+
     internal void NotifyScrollViewerCreated(ScrollViewer scrollViewer)
     {
-        _scrollViewer = scrollViewer;
-        scrollViewer.ScrollChanged -= this.HandleScrollChanged;
-        scrollViewer.ScrollChanged += this.HandleScrollChanged;
+        if (_scrollViewer != null)
+        {
+            _scrollViewer.ScrollChanged -= this.HandleScrollChanged;
+        }
+        _scrollViewer               =  scrollViewer;
+        _scrollViewer.ScrollChanged += this.HandleScrollChanged;
         this.SetScrollViewer(scrollViewer);
     }
 

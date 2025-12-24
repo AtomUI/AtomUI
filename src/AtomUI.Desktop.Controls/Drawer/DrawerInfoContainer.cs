@@ -218,6 +218,10 @@ internal class DrawerInfoContainer : HeaderedContentControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_closeButton != null)
+        {
+            _closeButton.Click -= HandleCloseButtonClick;
+        }
         _closeButton = e.NameScope.Find<IconButton>(DrawerInfoContainerThemeConstants.CloseButtonPart);
         if (_closeButton != null)
         {

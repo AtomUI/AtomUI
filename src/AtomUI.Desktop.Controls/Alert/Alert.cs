@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -159,16 +160,22 @@ public class Alert : TemplatedControl, IControlSharedTokenResourcesHost
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_closeButton != null)
+        {
+            _closeButton.Click -= HandleCloseBtnClick;
+        }
         _closeButton = e.NameScope.Find<IconButton>(AlertThemeConstants.CloseBtnPart);
         if (_closeButton != null)
         {
-            _closeButton.Click += (sender, args) =>
-            {
-                CloseRequest?.Invoke(this, EventArgs.Empty);
-            };
+            _closeButton.Click += HandleCloseBtnClick;
         }
         UpdatePseudoClasses();
         SetupCloseButton();
+    }
+
+    private void HandleCloseBtnClick(object? sender, RoutedEventArgs e)
+    {
+        CloseRequest?.Invoke(this, EventArgs.Empty);
     }
 
     private void SetupCloseButton()

@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Styling;
@@ -412,33 +413,51 @@ internal class AddOnDecoratedBox : ContentControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        ContentFrame = e.NameScope.Find<Border>(AddOnDecoratedBoxThemeConstants.ContentFramePart);
+        
         _leftAddOn   = e.NameScope.Find<Control>(AddOnDecoratedBoxThemeConstants.LeftAddOnPart);
         _rightAddOn  = e.NameScope.Find<Control>(AddOnDecoratedBoxThemeConstants.RightAddOnPart);
+        
         if (ContentFrame != null)
         {
-            ContentFrame.PointerEntered += (sender, args) =>
-            {
-                IsInnerBoxHover = true;
-            };
-            ContentFrame.PointerExited += (sender, args) =>
-            {
-                IsInnerBoxHover = false;
-            };
-            ContentFrame.PointerPressed += (sender, args) =>
-            {
-                IsInnerBoxHover   = true;
-                IsInnerBoxPressed = true;
-            };
-            ContentFrame.PointerReleased += (sender, args) =>
-            {
-                IsInnerBoxPressed = false;
-            };
+            ContentFrame.PointerEntered  -= HandleContentFramePointerEnter;
+            ContentFrame.PointerExited   -= HandleContentFramePointerExited;
+            ContentFrame.PointerPressed  -= HandleContentFramePointerPressed;
+            ContentFrame.PointerReleased -= HandleContentFramePointerReleased;
+        }
+        
+        ContentFrame = e.NameScope.Find<Border>(AddOnDecoratedBoxThemeConstants.ContentFramePart);
+        if (ContentFrame != null)
+        {
+            ContentFrame.PointerEntered  += HandleContentFramePointerEnter;
+            ContentFrame.PointerExited   += HandleContentFramePointerExited;
+            ContentFrame.PointerPressed  += HandleContentFramePointerPressed;
+            ContentFrame.PointerReleased += HandleContentFramePointerReleased;
         }
 
         ConfigureInnerBoxCornerRadius();
         ConfigureAddOnBorderInfo();
         ConfigureInnerBoxBorderThickness();
+    }
+
+    private void HandleContentFramePointerEnter(object? sender, PointerEventArgs args)
+    {
+        IsInnerBoxHover = true;
+    }
+    
+    private void HandleContentFramePointerExited(object? sender, PointerEventArgs args)
+    {
+        IsInnerBoxHover = false;
+    }
+    
+    private void HandleContentFramePointerPressed(object? sender, PointerEventArgs args)
+    {
+        IsInnerBoxHover   = true;
+        IsInnerBoxPressed = true;
+    }
+    
+    private void HandleContentFramePointerReleased(object? sender, PointerEventArgs args)
+    {
+        IsInnerBoxPressed = false;
     }
     
     protected virtual void NotifyAddOnBorderInfoCalculated()

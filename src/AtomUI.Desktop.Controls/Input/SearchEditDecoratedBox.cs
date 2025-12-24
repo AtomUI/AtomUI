@@ -66,9 +66,15 @@ internal class SearchEditDecoratedBox : AddOnDecoratedBox
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        if (_searchButton != null)
+        {
+            _searchButton.Click -= HandleSearchButtonClick;
+        }
+        
         _searchButton = e.NameScope.Find<Button>(AddOnDecoratedBoxThemeConstants.RightAddOnPart);
 
-        if (_searchButton is not null)
+        if (_searchButton != null)
         {
             _bindingDisposables?.Dispose();
             _bindingDisposables = new CompositeDisposable(2);

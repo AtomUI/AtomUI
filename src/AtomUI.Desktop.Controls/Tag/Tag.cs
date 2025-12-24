@@ -224,6 +224,12 @@ public class Tag : TemplatedControl, IControlSharedTokenResourcesHost
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        if (CloseButton != null)
+        {
+            CloseButton.Click -= HandleCloseRequest;
+        }
+        
         CloseButton = e.NameScope.Find<IconButton>(TagThemeConstants.CloseButtonPart);
         if (CloseButton != null)
         {

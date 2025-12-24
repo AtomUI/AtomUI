@@ -194,19 +194,19 @@ public class DropdownButton : Button
         _flyoutHelperBindingDisposables?.Dispose();
         _flyoutBindingDisposables?.Dispose();
     }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _flyoutStateHelper.NotifyDetachedFromVisualTree();
-    }
-
+    
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         _flyoutStateHelper.NotifyAttachedToVisualTree();
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _flyoutStateHelper.NotifyDetachedFromVisualTree();
+    }
+    
     private void SetupFlyoutProperties()
     {
         if (DropdownFlyout is not null)
@@ -276,15 +276,31 @@ public class DropdownButton : Button
         RaiseEvent(eventArgs);
     }
 
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == DropdownFlyoutProperty)
+        {
+            if (change.OldValue is MenuFlyout oldMenuFlyout)
+            {
+                oldMenuFlyout.Opened -= HandleFlyoutOpened;
+                oldMenuFlyout.Closed -= HandleFlyoutClosed;
+            }
+
+            if (change.NewValue is MenuFlyout newMenuFlyout)
+            {
+                newMenuFlyout.Opened += HandleFlyoutOpened;
+                newMenuFlyout.Closed += HandleFlyoutClosed;
+            }
+        }
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        RightExtraContent = new Border();
-        if (DropdownFlyout is not null)
+        if (RightExtraContent == null)
         {
-            DropdownFlyout.Opened                    += HandleFlyoutOpened;
-            DropdownFlyout.Closed                    += HandleFlyoutClosed;
-            DropdownFlyout.IsDetectMouseClickEnabled =  false;
+            SetCurrentValue(RightExtraContentProperty, new Border());
         }
     }
 }

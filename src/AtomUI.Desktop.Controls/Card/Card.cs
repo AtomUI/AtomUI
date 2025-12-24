@@ -336,6 +336,10 @@ public class Card : HeaderedContentControl,
     {
         base.OnApplyTemplate(e);
         UpdatePseudoClasses();
+        if (_cardActionPanel != null)
+        {
+            _cardActionPanel.Actions.Clear();
+        }
         _cardActionPanel = e.NameScope.Find<CardActionPanel>(CardThemeConstants.ActionPanelPart);
         if (_cardActionPanel != null)
         {
@@ -355,10 +359,11 @@ public class Card : HeaderedContentControl,
         {
             if (force || Transitions == null)
             {
-                Transitions = new Transitions
-                {
-                    TransitionUtils.CreateTransition<BoxShadowsTransition>(BoxShadowProperty, SharedTokenKey.MotionDurationFast)
-                };
+                Transitions =
+                [
+                    TransitionUtils.CreateTransition<BoxShadowsTransition>(BoxShadowProperty,
+                        SharedTokenKey.MotionDurationFast)
+                ];
             }
         }
         else

@@ -160,6 +160,17 @@ internal class OverlayDialogHeader : TemplatedControl, IMotionAwareControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        
+        if (_closeButton != null)
+        {
+            _closeButton.Click -= HandleCloseButtonClicked;
+        }
+        
+        if (_maximizeButton != null)
+        {
+            _maximizeButton.Click -= HandleMaximizeButtonClicked;
+        }
+        
         _closeButton    = e.NameScope.Find<DialogCaptionButton>(OverlayDialogHeaderThemeConstants.CloseButtonPart);
         _maximizeButton = e.NameScope.Find<DialogCaptionButton>(OverlayDialogHeaderThemeConstants.MaximizeButtonPart);
         

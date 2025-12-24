@@ -228,7 +228,6 @@ public class Window : AvaloniaWindow,
     
     protected override Type StyleKeyOverride { get; } = typeof(Window);
     private WindowResizer? _windowResizer;
-    private readonly List<Action> _disposeActions = new();
     private TitleBar? _titleBar;
     private bool _isDisposed;
     private Point? _lastMousePressedPoint;
@@ -310,6 +309,15 @@ public class Window : AvaloniaWindow,
         {
             _windowResizer.TargetWindow = this;
         }
+
+        if (_titleBar != null)
+        {
+            _titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
+            _titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
+            _titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
+            _titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
+        }
+        
         _titleBar = e.NameScope.Find<TitleBar>(WindowThemeConstants.TitleBarPart);
         if (_titleBar != null)
         {
@@ -317,13 +325,6 @@ public class Window : AvaloniaWindow,
             _titleBar.PointerPressed          += HandleTitleBarPointerPressed;
             _titleBar.PointerReleased         += HandleTitleBarPointerReleased;
             _titleBar.PointerMoved            += HandleTitleBarPointerMoved;
-            _disposeActions.Add(() =>
-            {
-                _titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
-                _titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
-                _titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
-                _titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
-            });
         }
 
         var mediaQueryIndicator = e.NameScope.Find<WindowMediaQueryIndicator>(WindowThemeConstants.MediaQueryIndicatorPart);
@@ -456,11 +457,6 @@ public class Window : AvaloniaWindow,
         _isDisposed     =  true;
         
         ScalingChanged -= HandleScalingChanged;
-        foreach (var disposeAction in _disposeActions)
-        {
-            disposeAction.Invoke();
-        }
-        _disposeActions.Clear();
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

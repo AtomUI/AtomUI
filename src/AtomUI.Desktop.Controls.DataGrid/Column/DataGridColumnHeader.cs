@@ -109,7 +109,13 @@ internal partial class DataGridColumnHeader : ContentControl
             nameof(IsShowFrozenShadow),
             o => o.IsShowFrozenShadow, 
             (o, v) => o.IsShowFrozenShadow = v);
-    
+
+    internal static readonly DirectProperty<DataGridColumnHeader, bool> IsSeparatorFullHeightProperty =
+        AvaloniaProperty.RegisterDirect<DataGridColumnHeader, bool>(
+            nameof(IsSeparatorFullHeight),
+            o => o.IsSeparatorFullHeight,
+            (o, v) => o.IsSeparatorFullHeight = v);
+
     internal static readonly DirectProperty<DataGridColumnHeader, FrozenColumnShadowPosition> FrozenShadowPositionProperty =
         AvaloniaProperty.RegisterDirect<DataGridColumnHeader, FrozenColumnShadowPosition>(
             nameof(FrozenShadowPosition),
@@ -160,6 +166,13 @@ internal partial class DataGridColumnHeader : ContentControl
             SetAndRaise(IsLastVisibleProperty, ref _isMiddleVisible, value);
             PseudoClasses.Set(DataGridPseudoClass.MiddleColumnHeader, value);
         }
+    }
+
+    private bool _isSeparatorFullHeight;
+    internal bool IsSeparatorFullHeight
+    {
+        get => _isSeparatorFullHeight;
+        set => SetAndRaise(IsSeparatorFullHeightProperty, ref _isSeparatorFullHeight, value);
     }
 
     internal SizeType SizeType

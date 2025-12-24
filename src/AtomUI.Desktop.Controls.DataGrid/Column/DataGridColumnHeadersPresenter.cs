@@ -385,6 +385,7 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
             // Measure each column header
             bool                 autoGrowWidth = column.Width.IsAuto || column.Width.IsSizeToHeader;
             DataGridColumnHeader columnHeader  = column.HeaderCell;
+            columnHeader.IsSeparatorFullHeight = OwningGrid.AreVerticalGridLinesVisible;
             if (column != lastVisibleColumn)
             {
                 columnHeader.UpdateSeparatorVisibility(lastVisibleColumn);

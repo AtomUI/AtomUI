@@ -372,8 +372,7 @@ public partial class DataGrid
 
     internal bool ColumnRequiresRightGridLine(DataGridColumn dataGridColumn, bool includeLastRightGridLineWhenPresent)
     {
-        return (GridLinesVisibility == DataGridGridLinesVisibility.Vertical ||
-                GridLinesVisibility == DataGridGridLinesVisibility.All) &&
+        return AreVerticalGridLinesVisible &&
                (dataGridColumn != ColumnsInternal.LastVisibleColumn ||
                 (includeLastRightGridLineWhenPresent &&
                  ColumnsInternal.FillerColumn != null &&

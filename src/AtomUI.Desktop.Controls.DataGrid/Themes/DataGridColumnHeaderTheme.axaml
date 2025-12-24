@@ -46,7 +46,6 @@
                     </Border>
                     <Rectangle Name="VerticalSeparator"
                                Width="1.0"
-                               VerticalAlignment="Center"
                                HorizontalAlignment="Right"
                                IsVisible="{TemplateBinding IsSeparatorsVisible}" />
                     <Panel Name="FocusVisual"
@@ -107,7 +106,13 @@
 
         <Style Selector="^ /template/ Rectangle#VerticalSeparator">
             <Setter Property="Fill" Value="{DynamicResource {x:Static atom:DataGridTokenKey.HeaderSplitColor}}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeight}}" />
+        </Style>
+        
+        <Style Selector="^[IsSeparatorFullHeight=True] /template/ Rectangle#VerticalSeparator">
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Height" Value="NaN" />
         </Style>
 
         <Style Selector="^ /template/ StackPanel#IndicatorsLayout">

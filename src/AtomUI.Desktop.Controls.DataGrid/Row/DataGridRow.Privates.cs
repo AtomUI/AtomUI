@@ -545,7 +545,7 @@ public partial class DataGridRow
             {
                 // It looks like setting Visibility sometimes has side effects so make sure the value is actually
                 // different before setting it
-                bool newVisibility = OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.Horizontal || OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.All;
+                bool newVisibility = OwningGrid.AreHorizontalGridLinesVisible;
 
                 if (newVisibility != _bottomGridLine.IsVisible)
                 {

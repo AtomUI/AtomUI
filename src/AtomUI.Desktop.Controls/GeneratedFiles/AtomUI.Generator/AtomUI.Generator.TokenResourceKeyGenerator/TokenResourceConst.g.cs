@@ -874,6 +874,14 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey IndicatorSizeSM = new TokenResourceKey("AtomUI.Desktop.Controls.Spin.IndicatorSizeSM");
     }
 
+    public static class SplitterTokenKey
+    {
+        public static readonly TokenResourceKey ResizeSpinnerSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.ResizeSpinnerSize");
+        public static readonly TokenResourceKey SplitBarDraggableSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarDraggableSize");
+        public static readonly TokenResourceKey SplitBarSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarSize");
+        public static readonly TokenResourceKey SplitTriggerSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitTriggerSize");
+    }
+
     public static class SplitViewTokenKey
     {
         public static readonly TokenResourceKey CompactPaneThemeLength = new TokenResourceKey("AtomUI.Desktop.Controls.SplitView.CompactPaneThemeLength");

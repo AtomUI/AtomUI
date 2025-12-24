@@ -631,6 +631,7 @@ public partial class Dialog : TemplatedControl,
         {
             SetCurrentValue(IsOpenProperty, true);
         }
+        
         Opened?.Invoke(this, EventArgs.Empty);
         _opening = false;
         _dialogHostChangedHandler?.Invoke(Host);

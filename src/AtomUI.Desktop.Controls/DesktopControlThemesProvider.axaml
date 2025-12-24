@@ -55,6 +55,7 @@
         <ResourceInclude Source="Select/Themes/SelectThemes.axaml" />
         <ResourceInclude Source="Slider/Themes/SliderThemes.axaml" />
         <ResourceInclude Source="Spin/Themes/SpinThemes.axaml" />
+        <ResourceInclude Source="Splitter/Themes/SplitterThemes.axaml" />
         <ResourceInclude Source="SplitView/Themes/SplitViewTheme.axaml" />
         <ResourceInclude Source="Statistic/Themes/StatisticThemes.axaml" />
         <ResourceInclude Source="Steps/Themes/StepsThemes.axaml" />

@@ -427,6 +427,10 @@ public partial class Dialog : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// 同步打开，会打开一个新的事件循环然后等待窗口结束
+    /// </summary>
+    /// <returns></returns>
     public object? Open()
     {
         if (_openState != null || _opening)
@@ -443,6 +447,13 @@ public partial class Dialog : TemplatedControl,
         return Result;
     }
 
+    /// <summary>
+    /// 异步打开 Dialog
+    ///
+    /// 注意这里 Task 的完成分为两种情况
+    /// 1. IsModal 为 true，Task 会等待到窗口关闭才会完成，所以在 await 之后可以获取 Result
+    /// 2. IsMoal 为 false，Task 会在窗口打开之后就会完成，所以 await 之后是不能获取 Result
+    /// </summary>
     public async Task OpenAsync()
     {
         if (_openState != null || _opening)
@@ -529,7 +540,7 @@ public partial class Dialog : TemplatedControl,
         inputManager?.Process.Subscribe(ListenForNonClientClick).DisposeWith(handlerCleanup);
 
         TaskCompletionSource? modalTsc = null;
-        if (IsModal)
+        if (IsModal && dialogHost is not DialogHost)
         {
             modalTsc = new TaskCompletionSource();
         }
@@ -595,7 +606,15 @@ public partial class Dialog : TemplatedControl,
             {
                 if (topLevel is Window windowTopLevel)
                 {
+                    using (BeginIgnoringIsOpen())
+                    {
+                        SetCurrentValue(IsOpenProperty, true);
+                    }
+                    Opened?.Invoke(this, EventArgs.Empty);
+                    _opening = false;
+                    _dialogHostChangedHandler?.Invoke(Host);
                     await windowDialog.ShowDialog(windowTopLevel);
+                    return;
                 }
             }
             else

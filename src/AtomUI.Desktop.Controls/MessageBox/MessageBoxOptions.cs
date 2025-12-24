@@ -8,7 +8,6 @@ public record MessageBoxOptions
     public string? Title { get; init; }
     public PathIcon? Icon { get; init; }
     public MessageBoxStyle  Style { get; init; } = MessageBoxStyle.Information;
-    public bool IsModal { get; init; } = true;
     public bool IsDragMovable { get; init; }
     public Control? PlacementTarget { get; init; }
     public Dimension? HorizontalOffset { get; init; }

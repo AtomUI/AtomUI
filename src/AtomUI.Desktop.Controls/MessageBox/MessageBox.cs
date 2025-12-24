@@ -312,7 +312,10 @@ public class MessageBox : TemplatedControl,
         return result;
     }
     
-    public static async Task<object?> ShowMessageBoxAsync<TView, TViewModel>(TViewModel? dataContext, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+    public static async Task ShowMessageBoxAsync<TView, TViewModel>(TViewModel? dataContext, 
+                                                                    MessageBoxOptions? options = null,
+                                                                    Action<IMessageBoxActionResult>? closed = null,
+                                                                    TopLevel? topLevel = null)
         where TView : Control, new()
     {
         var dialogManager = FindDialogManager(topLevel);
@@ -321,13 +324,49 @@ public class MessageBox : TemplatedControl,
         {
             messageBox.PlacementTarget = dialogManager;
         }
+
+        messageBox.Closed += (_, _) =>
+        {
+            closed?.Invoke(new MessageBoxActionResult(messageBox.Result));
+            dialogManager.Children.Remove(messageBox);
+        };
+        dialogManager.Children.Add(messageBox);
+        var tsc = new TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await messageBox.OpenAsync();
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
+    }
+    
+    public static async Task<object?> ShowMessageBoxModalAsync<TView, TViewModel>(TViewModel? dataContext, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+        where TView : Control, new()
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var messageBox    = CreateMessageBox(new TView(), dataContext, options);
+        messageBox.IsModal = true;
+        if (options?.HostType == DialogHostType.Window)
+        {
+            messageBox.PlacementTarget = dialogManager;
+        }
         messageBox.Closed += (_, _) => dialogManager.Children.Remove(messageBox);
         dialogManager.Children.Add(messageBox);
-        await Dispatcher.UIThread.InvokeAsync(async () => await messageBox.OpenAsync());
+        var tsc = new TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await messageBox.OpenAsync();
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
         return messageBox.Result;
     }
 
-    public static async Task<object?> ShowMessageAsync(Control content, object? dataContext = null, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+    public static async Task ShowMessageAsync(Control content, 
+                                              object? dataContext = null,
+                                              MessageBoxOptions? options = null, 
+                                              Action<IMessageBoxActionResult>? closed = null,
+                                              TopLevel? topLevel = null)
     {
         var dialogManager = FindDialogManager(topLevel);
         var messageBox    = CreateMessageBox(content, dataContext, options);
@@ -335,13 +374,38 @@ public class MessageBox : TemplatedControl,
         {
             messageBox.PlacementTarget = dialogManager;
         }
-        messageBox.Closed += (_, _) => dialogManager.Children.Remove(messageBox);
+
+        messageBox.Closed += (_, _) =>
+        {
+            closed?.Invoke(new MessageBoxActionResult(messageBox.Result));
+            dialogManager.Children.Remove(messageBox);
+        };
         dialogManager.Children.Add(messageBox);
-        var tsc = new  TaskCompletionSource<object?>();
+        var tsc = new TaskCompletionSource();
         await Dispatcher.UIThread.InvokeAsync(async () =>
         {
             await messageBox.OpenAsync();
-            tsc.SetResult(messageBox.Result);
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
+    }
+    
+    public static async Task<object?> ShowMessageModalAsync(Control content, object? dataContext = null, MessageBoxOptions? options = null, TopLevel? topLevel = null)
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var messageBox    = CreateMessageBox(content, dataContext, options);
+        messageBox.IsModal = true;
+        if (options?.HostType == DialogHostType.Window)
+        {
+            messageBox.PlacementTarget = dialogManager;
+        }
+        messageBox.Closed += (_, _) => dialogManager.Children.Remove(messageBox);
+        dialogManager.Children.Add(messageBox);
+        var tsc = new TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await messageBox.OpenAsync();
+            tsc.TrySetResult();
         });
         await tsc.Task;
         return messageBox.Result;
@@ -353,7 +417,6 @@ public class MessageBox : TemplatedControl,
         {
             Title                 = options?.Title,
             IsLightDismissEnabled = options?.IsLightDismissEnabled ?? false,
-            IsModal               = options?.IsModal ?? true,
             IsDragMovable         = options?.IsDragMovable ?? false,
             Style                 = options?.Style ?? MessageBoxStyle.Information,
             PlacementTarget       = options?.PlacementTarget,

@@ -375,13 +375,13 @@ public sealed class FlexPanel : Panel
         element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));
 
         var size = Uv.FromSize(element.DesiredSize, isColumn);
-        var minLength = Math.Max(size.U, isColumn ? element.MinHeight : element.MinWidth);
+        var minLength = Math.Max(0.0, isColumn ? element.MinHeight : element.MinWidth);
         Flex.SetMinLength(element, minLength);
 
         var flexLength = basis.Kind switch
         {
-            FlexBasisKind.Auto => size.U,
-            FlexBasisKind.Absolute or FlexBasisKind.Relative => Math.Max(size.U, flexConstraint),
+            FlexBasisKind.Auto => Math.Max(size.U, minLength),
+            FlexBasisKind.Absolute or FlexBasisKind.Relative => Math.Max(flexConstraint, minLength),
             _ => throw new InvalidOperationException()
         };
         size = size.WithU(flexLength);

@@ -329,8 +329,8 @@
                                                  Binding="{Binding Address}" />
                     </atom:DataGrid.Columns>
                 </atom:DataGrid>
-        
-                <atom:DataGrid x:Name="SmallSizeDataGrid" SizeType="Small">
+                
+                <atom:DataGrid  x:Name="SmallSizeDataGrid"        SizeType="Small">
                     <atom:DataGrid.Columns>
                         <atom:DataGridTextColumn Header="Name"
                                                  Binding="{Binding Name}" />
@@ -345,24 +345,43 @@
         <gallery:ShowCaseItem Title="border, title and footer"
                                       Description="Add border, title and footer for table." IsOccupyEntireRow="True">
             <atom:DataGrid x:Name="CustomHeaderAndFooterDataGrid"
-                           GridLinesVisibility="All"
-                           IsShowFrameBorder="True">
-                <atom:DataGrid.Title>
-                    Header
-                </atom:DataGrid.Title>
-                <atom:DataGrid.Footer>
-                    Footer
-                </atom:DataGrid.Footer>
+                           CanUserFilterColumns="True"
+                          >
+      
                 <atom:DataGrid.Columns>
-                    <atom:DataGridTemplateColumn Header="Name">
-                        <atom:DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <atom:HyperLinkTextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </atom:DataGridTemplateColumn.CellTemplate>
-                    </atom:DataGridTemplateColumn>
+                    <!-- <atom:DataGridTemplateColumn Header="Name"> -->
+                    <!--     <atom:DataGridTemplateColumn.CellTemplate> -->
+                    <!--         <DataTemplate> -->
+                    <!--             <atom:HyperLinkTextBlock Text="{Binding Name}" /> -->
+                    <!--         </DataTemplate> -->
+                    <!--     </atom:DataGridTemplateColumn.CellTemplate> -->
+                    <!-- </atom:DataGridTemplateColumn> -->
+                    
+                    <atom:DataGridTextColumn Header="Name"
+                            Binding="{Binding Name}"
+                            CanUserSort="True"
+                            FilterMultiple="True">
+                        <atom:DataGridTextColumn.Filters>
+                            <atom:DataGridFilterItem Text="Joe" Value="Joe" />
+                            <atom:DataGridFilterItem Text="Jim" Value="Jim" />
+                            <atom:DataGridFilterItem Text="Submenu" Value="Submenu">
+                                <atom:DataGridFilterItem Text="Green" Value="Green" />
+                                <atom:DataGridFilterItem Text="Black" Value="Black" />
+                            </atom:DataGridFilterItem>
+                        </atom:DataGridTextColumn.Filters>
+                    </atom:DataGridTextColumn>
+                    
                     <atom:DataGridTextColumn Header="Cash Assets" Binding="{Binding Money}" />
-                    <atom:DataGridTextColumn Header="Address" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="Address"
+                            Binding="{Binding Address}"
+        
+                            CanUserSort="True"
+                            FilterMultiple="True">
+                        <atom:DataGridTextColumn.Filters>
+                            <atom:DataGridFilterItem Text="London" Value="London" />
+                            <atom:DataGridFilterItem Text="New York" Value="New York" />
+                        </atom:DataGridTextColumn.Filters>
+                    </atom:DataGridTextColumn>
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
         </gallery:ShowCaseItem>

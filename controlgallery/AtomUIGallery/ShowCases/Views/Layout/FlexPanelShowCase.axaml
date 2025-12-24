@@ -1,0 +1,285 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.FlexPanelShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem Title="Basic Layout" Description="The basic usage." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="20">
+                    <atom:RadioButton x:Name="DirectionHorizontal" IsChecked="True">horizontal</atom:RadioButton>
+                    <atom:RadioButton x:Name="DirectionVertical">vertical</atom:RadioButton>
+                </StackPanel>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12"
+                        HorizontalAlignment="Stretch">
+                    <atom:FlexPanel x:Name="BasicFlexPanel"
+                                    Direction="Row"
+                                    AlignItems="Stretch"
+                                    HorizontalAlignment="Stretch">
+                        <Border x:Name="BasicItem1" Background="#4F7CF5" Height="60" MinWidth="80" />
+                        <Border x:Name="BasicItem2" Background="#1F5BFF" Height="60" MinWidth="80" />
+                        <Border x:Name="BasicItem3" Background="#4F7CF5" Height="60" MinWidth="80" />
+                        <Border x:Name="BasicItem4" Background="#1F5BFF" Height="60" MinWidth="80" />
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Alignment" Description="Set justify and align." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <atom:TextBlock FontWeight="Bold">Select justify:</atom:TextBlock>
+                <atom:Segmented x:Name="JustifySegmented">
+                    <atom:SegmentedItem IsSelected="True">flex-start</atom:SegmentedItem>
+                    <atom:SegmentedItem>center</atom:SegmentedItem>
+                    <atom:SegmentedItem>flex-end</atom:SegmentedItem>
+                    <atom:SegmentedItem>space-between</atom:SegmentedItem>
+                    <atom:SegmentedItem>space-around</atom:SegmentedItem>
+                    <atom:SegmentedItem>space-evenly</atom:SegmentedItem>
+                </atom:Segmented>
+
+                <atom:TextBlock FontWeight="Bold">Select align:</atom:TextBlock>
+                <atom:Segmented x:Name="AlignSegmented">
+                    <atom:SegmentedItem>flex-start</atom:SegmentedItem>
+                    <atom:SegmentedItem>center</atom:SegmentedItem>
+                    <atom:SegmentedItem IsSelected="True">flex-end</atom:SegmentedItem>
+                    <atom:SegmentedItem>stretch</atom:SegmentedItem>
+                </atom:Segmented>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6"  Height="120">
+                    <atom:FlexPanel x:Name="AlignFlexPanel"
+                                    Direction="Row"
+                                    JustifyContent="FlexStart"
+                                    AlignItems="FlexEnd">
+                        <atom:Button ButtonType="Primary">Primary</atom:Button>
+                        <atom:Button ButtonType="Primary">Primary</atom:Button>
+                        <atom:Button ButtonType="Primary">Primary</atom:Button>
+                        <atom:Button ButtonType="Primary">Primary</atom:Button>
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Gap" Description="Set spacing between items." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="20">
+                    <atom:RadioButton x:Name="GapSmall" IsChecked="True" GroupName="GapMode">small</atom:RadioButton>
+                    <atom:RadioButton x:Name="GapMiddle" GroupName="GapMode">middle</atom:RadioButton>
+                    <atom:RadioButton x:Name="GapLarge" GroupName="GapMode">large</atom:RadioButton>
+                    <atom:RadioButton x:Name="GapCustomize" GroupName="GapMode">customize</atom:RadioButton>
+                </StackPanel>
+
+                <StackPanel x:Name="GapCustomPanel" Orientation="Horizontal" Spacing="8" IsVisible="False">
+                    <atom:TextBlock VerticalAlignment="Center">Custom gap:</atom:TextBlock>
+                    <atom:Slider x:Name="GapValueSlider"
+                                 Width="200"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 TickFrequency="4"
+                                 Value="12" />
+                </StackPanel>
+
+                <atom:FlexPanel x:Name="GapFlexPanel" Direction="Row" ColumnSpacing="8" RowSpacing="8">
+                    <atom:Button ButtonType="Primary">Primary</atom:Button>
+                    <atom:Button ButtonType="Default">Default</atom:Button>
+                    <atom:Button ButtonType="Dashed">Dashed</atom:Button>
+                    <atom:Button ButtonType="Link">Link</atom:Button>
+                </atom:FlexPanel>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="Align Self" Description="Override alignment per item with Flex.AlignSelf." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <atom:Segmented x:Name="AlignSelfSegmented">
+                    <atom:SegmentedItem IsSelected="True">flex-start</atom:SegmentedItem>
+                    <atom:SegmentedItem>center</atom:SegmentedItem>
+                    <atom:SegmentedItem>flex-end</atom:SegmentedItem>
+                    <atom:SegmentedItem>stretch</atom:SegmentedItem>
+                </atom:Segmented>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12" Height="140">
+                    <atom:FlexPanel x:Name="AlignSelfFlexPanel" Direction="Row" ColumnSpacing="8" AlignItems="FlexStart">
+                        <Border Background="#4F7CF5" Height="50" Width="80" CornerRadius="4" />
+                        <Border x:Name="AlignSelfTarget" Background="#1F5BFF" Height="70" Width="80" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Item A" />
+                        </Border>
+                        <Border Background="#4F7CF5" Height="60" Width="80" CornerRadius="4" />
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Auto Wrap" Description="Items wrap automatically." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="20">
+                    <atom:RadioButton x:Name="WrapEnabled" IsChecked="True" GroupName="WrapMode">wrap</atom:RadioButton>
+                    <atom:RadioButton x:Name="WrapDisabled" GroupName="WrapMode">nowrap</atom:RadioButton>
+                </StackPanel>
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <ScrollViewer x:Name="WrapScrollViewer"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <atom:FlexPanel x:Name="WrapFlexPanel"
+                                        Direction="Row"
+                                        Wrap="Wrap"
+                                        ColumnSpacing="8"
+                                        RowSpacing="8"
+                                        JustifyContent="FlexStart">
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                            <atom:Button ButtonType="Primary">Button</atom:Button>
+                        </atom:FlexPanel>
+                    </ScrollViewer>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Order" Description="Change item order with Flex.Order." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <atom:Segmented x:Name="OrderSegmented">
+                    <atom:SegmentedItem IsSelected="True">default</atom:SegmentedItem>
+                    <atom:SegmentedItem>reverse</atom:SegmentedItem>
+                    <atom:SegmentedItem>custom</atom:SegmentedItem>
+                </atom:Segmented>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <atom:FlexPanel Direction="Row" ColumnSpacing="8">
+                        <Border x:Name="OrderItemA" Background="#4F7CF5" Width="80" Height="50" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="A" />
+                        </Border>
+                        <Border x:Name="OrderItemB" Background="#1F5BFF" Width="80" Height="50" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="B" />
+                        </Border>
+                        <Border x:Name="OrderItemC" Background="#4F7CF5" Width="80" Height="50" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="C" />
+                        </Border>
+                        <Border x:Name="OrderItemD" Background="#1F5BFF" Width="80" Height="50" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="D" />
+                        </Border>
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Basis" Description="Control initial size with Flex.Basis." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <atom:Segmented x:Name="BasisKindSegmented">
+                        <atom:SegmentedItem IsSelected="True">auto</atom:SegmentedItem>
+                        <atom:SegmentedItem>absolute</atom:SegmentedItem>
+                        <atom:SegmentedItem>relative</atom:SegmentedItem>
+                    </atom:Segmented>
+
+                    <StackPanel x:Name="BasisValuePanel" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <atom:TextBlock VerticalAlignment="Center">Value:</atom:TextBlock>
+                        <atom:NumericUpDown x:Name="BasisValueInput"
+                                            Width="120"
+                                            Minimum="0"
+                                            Maximum="600"
+                                            Increment="1"
+                                            FormatString="0"
+                                            Value="120" />
+                        <atom:TextBlock x:Name="BasisValueUnit" VerticalAlignment="Center" Text="px" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="BasisPercentPanel" Orientation="Horizontal" Spacing="8"
+                                VerticalAlignment="Center" IsVisible="False">
+                        <atom:TextBlock VerticalAlignment="Center">Percent:</atom:TextBlock>
+                        <atom:Slider x:Name="BasisValueSlider"
+                                     Width="160"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     TickFrequency="10"
+                                     Value="100" />
+                        <atom:TextBlock x:Name="BasisPercentText" VerticalAlignment="Center" Text="100%" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <atom:FlexPanel x:Name="BasisFlexPanel" Direction="Row" ColumnSpacing="8">
+                        <Border x:Name="BasisItem"  Background="#4F7CF5" Height="50" MinWidth="60" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Item A" />
+                        </Border>
+                        <Border x:Name="BasisGrowItem1" Background="#1F5BFF" Height="50" atom:Flex.Grow="1" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Grow" />
+                        </Border>
+                        <Border x:Name="BasisGrowItem2" Background="#4F7CF5" Height="50" atom:Flex.Grow="1" CornerRadius="4">
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Grow" />
+                        </Border>
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+
+
+        <gallery:ShowCaseItem Title="Flex Grow" Description="Distribute free space with Flex.Grow." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <atom:TextBlock VerticalAlignment="Center">Item A:</atom:TextBlock>
+                    <atom:NumericUpDown x:Name="GrowInputA"
+                                        Width="80"
+                                        Minimum="0"
+                                        Maximum="5"
+                                        Increment="1"
+                                        FormatString="0"
+                                        Value="1" />
+                    <atom:TextBlock VerticalAlignment="Center">Item B:</atom:TextBlock>
+                    <atom:NumericUpDown x:Name="GrowInputB"
+                                        Width="80"
+                                        Minimum="0"
+                                        Maximum="5"
+                                        Increment="1"
+                                        FormatString="0"
+                                        Value="2" />
+                </StackPanel>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <atom:FlexPanel x:Name="GrowFlexPanel" Direction="Row" ColumnSpacing="8">
+                        <Border x:Name="GrowItemA" Background="#4F7CF5" Height="50" MinWidth="60" CornerRadius="4" >
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Item A" />
+                        </Border>
+                        <Border x:Name="GrowItemB" Background="#1F5BFF" Height="50" MinWidth="60" CornerRadius="4" >
+                            <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Item B" />
+                        </Border>
+                        <Border x:Name="GrowItemC" Background="#4F7CF5" Height="50" MinWidth="60" CornerRadius="4" />
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Combination" Description="Nested flex panels for complex layouts." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="16">
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <atom:FlexPanel Direction="Row" ColumnSpacing="16" AlignItems="Center">
+                        <Border Width="260" Height="160" CornerRadius="6" ClipToBounds="True" atom:Flex.Shrink="0">
+                            <Image Source="/Assets/CardShowCase/Cover1.png" Stretch="UniformToFill" />
+                        </Border>
+                        <atom:FlexPanel Direction="Column" RowSpacing="12" AlignItems="FlexStart" atom:Flex.Grow="1">
+                            <atom:TextBlock FontSize="20"
+                                            FontWeight="Bold"
+                                            TextWrapping="Wrap"
+                                            Text="&quot;AtomUI is an enterprise-class UI design language and Avalonia UI library.&quot;" />
+                            <atom:Button ButtonType="Primary"
+                                         Width="120"
+                                         atom:Flex.AlignSelf="FlexEnd">Get Started</atom:Button>
+                        </atom:FlexPanel>
+                    </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

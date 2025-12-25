@@ -93,7 +93,7 @@
 
     <Style Selector="^:is(atom|LineEdit)">
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
-
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Style Selector="^[StyleVariant=Borderless]">
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">

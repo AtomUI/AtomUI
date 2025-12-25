@@ -90,6 +90,6 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="ClipToBounds" Value="False"/>
-  
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     </ControlTheme>
 </ResourceDictionary>

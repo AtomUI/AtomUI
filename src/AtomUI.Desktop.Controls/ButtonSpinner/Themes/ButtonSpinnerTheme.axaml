@@ -39,6 +39,7 @@
         
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="SpinnerHandleWidth"
                 Value="{DynamicResource {x:Static atom:ButtonSpinnerTokenKey.HandleWidth}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />

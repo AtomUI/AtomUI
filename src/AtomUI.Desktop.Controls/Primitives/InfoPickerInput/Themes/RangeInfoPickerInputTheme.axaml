@@ -94,7 +94,7 @@
         
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
         <Style Selector="^ /template/ atom|TextBox">
             <Setter Property="Foreground"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />

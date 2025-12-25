@@ -509,6 +509,11 @@ public sealed class FlexPanel : Panel
         foreach (var element in items)
         {
             var mult = isShrink ? Flex.GetShrink(element) : Flex.GetGrow(element);
+            if (mult > 0.0 && isShrink)
+            {
+                mult *= Flex.GetBaseLength(element);
+            }
+
             if (mult > 0.0)
             {
                 activeItems.Add((element, mult));

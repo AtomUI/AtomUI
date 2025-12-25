@@ -261,6 +261,54 @@
             </StackPanel>
         </gallery:ShowCaseItem>
 
+        <gallery:ShowCaseItem Title="Flex Shrink (Weighted)" Description="Shrink is weighted by each item's base size." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <atom:TextBlock VerticalAlignment="Center">Container width:</atom:TextBlock>
+                    <atom:Slider x:Name="ShrinkWidthSlider"
+                                 Width="200"
+                                 Minimum="180"
+                                 Maximum="360"
+                                 TickFrequency="10"
+                                 Value="260" />
+                    <atom:TextBlock x:Name="ShrinkWidthText" VerticalAlignment="Center" Text="260px" />
+                </StackPanel>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <Border x:Name="ShrinkContainer"
+                            Width="260"
+                            HorizontalAlignment="Left"
+                            BorderBrush="#DADADA"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="8">
+                        <atom:FlexPanel x:Name="ShrinkFlexPanel" Direction="Row" ColumnSpacing="8">
+                            <Border Background="#4F7CF5"
+                                    Height="50"
+                                    CornerRadius="4"
+                                    atom:Flex.Basis="200"
+                                    atom:Flex.Shrink="1">
+                                <atom:TextBlock HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Text="Basis 200" />
+                            </Border>
+                            <Border Background="#1F5BFF"
+                                    Height="50"
+                                    CornerRadius="4"
+                                    atom:Flex.Basis="100"
+                                    atom:Flex.Shrink="1">
+                                <atom:TextBlock HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Text="Basis 100" />
+                            </Border>
+                        </atom:FlexPanel>
+                    </Border>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
         <gallery:ShowCaseItem Title="Combination" Description="Nested flex panels for complex layouts." IsOccupyEntireRow="True">
             <StackPanel Margin="20" Spacing="16">
                 <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="8" Padding="16">
@@ -278,6 +326,250 @@
                                          atom:Flex.AlignSelf="FlexEnd">Get Started</atom:Button>
                         </atom:FlexPanel>
                     </atom:FlexPanel>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+                <gallery:ShowCaseItem Title="Flex Playground" Description="Adjust all flex properties." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="16">
+                <StackPanel Spacing="12">
+                    <atom:TextBlock FontWeight="Bold">Panel</atom:TextBlock>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Direction:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundDirectionSegmented">
+                            <atom:SegmentedItem IsSelected="True">row</atom:SegmentedItem>
+                            <atom:SegmentedItem>column</atom:SegmentedItem>
+                            <atom:SegmentedItem>row-reverse</atom:SegmentedItem>
+                            <atom:SegmentedItem>column-reverse</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Wrap:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundWrapSegmented">
+                            <atom:SegmentedItem>nowrap</atom:SegmentedItem>
+                            <atom:SegmentedItem IsSelected="True">wrap</atom:SegmentedItem>
+                            <atom:SegmentedItem>wrap-reverse</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Justify:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundJustifySegmented">
+                            <atom:SegmentedItem IsSelected="True">flex-start</atom:SegmentedItem>
+                            <atom:SegmentedItem>center</atom:SegmentedItem>
+                            <atom:SegmentedItem>flex-end</atom:SegmentedItem>
+                            <atom:SegmentedItem>space-between</atom:SegmentedItem>
+                            <atom:SegmentedItem>space-around</atom:SegmentedItem>
+                            <atom:SegmentedItem>space-evenly</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Align items:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundAlignItemsSegmented">
+                            <atom:SegmentedItem>flex-start</atom:SegmentedItem>
+                            <atom:SegmentedItem>center</atom:SegmentedItem>
+                            <atom:SegmentedItem>flex-end</atom:SegmentedItem>
+                            <atom:SegmentedItem IsSelected="True">stretch</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Align content:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundAlignContentSegmented">
+                            <atom:SegmentedItem>flex-start</atom:SegmentedItem>
+                            <atom:SegmentedItem>center</atom:SegmentedItem>
+                            <atom:SegmentedItem>flex-end</atom:SegmentedItem>
+                            <atom:SegmentedItem IsSelected="True">stretch</atom:SegmentedItem>
+                            <atom:SegmentedItem>space-between</atom:SegmentedItem>
+                            <atom:SegmentedItem>space-around</atom:SegmentedItem>
+                            <atom:SegmentedItem>space-evenly</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Column gap:</atom:TextBlock>
+                        <atom:Slider x:Name="PlaygroundColumnSpacingSlider"
+                                     Width="140"
+                                     Minimum="0"
+                                     Maximum="60"
+                                     TickFrequency="2"
+                                     Value="8" />
+                        <atom:TextBlock x:Name="PlaygroundColumnSpacingText" VerticalAlignment="Center" Text="8px" />
+                        <atom:TextBlock VerticalAlignment="Center">Row gap:</atom:TextBlock>
+                        <atom:Slider x:Name="PlaygroundRowSpacingSlider"
+                                     Width="140"
+                                     Minimum="0"
+                                     Maximum="60"
+                                     TickFrequency="2"
+                                     Value="8" />
+                        <atom:TextBlock x:Name="PlaygroundRowSpacingText" VerticalAlignment="Center" Text="8px" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Width:</atom:TextBlock>
+                        <atom:Slider x:Name="PlaygroundWidthSlider"
+                                     Width="200"
+                                     Minimum="200"
+                                     Maximum="1000"
+                                     TickFrequency="20"
+                                     Value="320" />
+                        <atom:TextBlock x:Name="PlaygroundWidthText" VerticalAlignment="Center" Text="320px" />
+                        <atom:TextBlock VerticalAlignment="Center">Height:</atom:TextBlock>
+                        <atom:Slider x:Name="PlaygroundHeightSlider"
+                                     Width="160"
+                                     Minimum="120"
+                                     Maximum="600"
+                                     TickFrequency="20"
+                                     Value="200" />
+                        <atom:TextBlock x:Name="PlaygroundHeightText" VerticalAlignment="Center" Text="200px" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <atom:TextBlock FontWeight="Bold">Item</atom:TextBlock>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Select:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundItemSegmented">
+                            <atom:SegmentedItem IsSelected="True">A</atom:SegmentedItem>
+                            <atom:SegmentedItem>B</atom:SegmentedItem>
+                            <atom:SegmentedItem>C</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Align self:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundAlignSelfSegmented">
+                            <atom:SegmentedItem IsSelected="True">auto</atom:SegmentedItem>
+                            <atom:SegmentedItem>flex-start</atom:SegmentedItem>
+                            <atom:SegmentedItem>center</atom:SegmentedItem>
+                            <atom:SegmentedItem>flex-end</atom:SegmentedItem>
+                            <atom:SegmentedItem>stretch</atom:SegmentedItem>
+                        </atom:Segmented>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Basis:</atom:TextBlock>
+                        <atom:Segmented x:Name="PlaygroundBasisKindSegmented">
+                            <atom:SegmentedItem>auto</atom:SegmentedItem>
+                            <atom:SegmentedItem IsSelected="True">absolute</atom:SegmentedItem>
+                            <atom:SegmentedItem>relative</atom:SegmentedItem>
+                        </atom:Segmented>
+
+                        <StackPanel x:Name="PlaygroundBasisValuePanel" Orientation="Horizontal" Spacing="8">
+                            <atom:TextBlock VerticalAlignment="Center">Value:</atom:TextBlock>
+                            <atom:NumericUpDown x:Name="PlaygroundBasisValueInput"
+                                                Width="100"
+                                                Minimum="0"
+                                                Maximum="600"
+                                                Increment="1"
+                                                FormatString="0"
+                                                Value="160" />
+                            <atom:TextBlock x:Name="PlaygroundBasisValueUnit" VerticalAlignment="Center" Text="px" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="PlaygroundBasisPercentPanel" Orientation="Horizontal" Spacing="8"
+                                    IsVisible="False">
+                            <atom:TextBlock VerticalAlignment="Center">Percent:</atom:TextBlock>
+                            <atom:Slider x:Name="PlaygroundBasisValueSlider"
+                                         Width="140"
+                                         Minimum="0"
+                                         Maximum="100"
+                                         TickFrequency="10"
+                                         Value="50" />
+                            <atom:TextBlock x:Name="PlaygroundBasisPercentText" VerticalAlignment="Center" Text="50%" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <atom:TextBlock VerticalAlignment="Center">Grow:</atom:TextBlock>
+                        <atom:NumericUpDown x:Name="PlaygroundGrowInput"
+                                            Width="70"
+                                            Minimum="0"
+                                            Maximum="5"
+                                            Increment="1"
+                                            FormatString="0"
+                                            Value="1" />
+                        <atom:TextBlock VerticalAlignment="Center">Shrink:</atom:TextBlock>
+                        <atom:NumericUpDown x:Name="PlaygroundShrinkInput"
+                                            Width="70"
+                                            Minimum="0"
+                                            Maximum="5"
+                                            Increment="1"
+                                            FormatString="0"
+                                            Value="1" />
+                        <atom:TextBlock VerticalAlignment="Center">Order:</atom:TextBlock>
+                        <atom:NumericUpDown x:Name="PlaygroundOrderInput"
+                                            Width="70"
+                                            Minimum="-5"
+                                            Maximum="5"
+                                            Increment="1"
+                                            FormatString="0"
+                                            Value="0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <Border x:Name="PlaygroundContainer"
+                            Width="320"
+                            Height="200"
+                            HorizontalAlignment="Left"
+                            BorderBrush="#DADADA"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="8">
+                        <atom:FlexPanel x:Name="PlaygroundFlexPanel"
+                                        Direction="Row"
+                                        Wrap="Wrap"
+                                        ColumnSpacing="8"
+                                        RowSpacing="8"
+                                        JustifyContent="FlexStart"
+                                        AlignItems="Stretch"
+                                        AlignContent="Stretch">
+                            <Border x:Name="PlaygroundItemA"
+                                    Background="#4F7CF5"
+                                    MinHeight="50"
+                                    MinWidth="60"
+                                    CornerRadius="4"
+                                    atom:Flex.Basis="160"
+                                    atom:Flex.Grow="1"
+                                    atom:Flex.Shrink="1">
+                                <atom:TextBlock HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Text="A" />
+                            </Border>
+                            <Border x:Name="PlaygroundItemB"
+                                    Background="#1F5BFF"
+                                    MinHeight="50"
+                                    MinWidth="60"
+                                    CornerRadius="4"
+                                    atom:Flex.Basis="100"
+                                    atom:Flex.Grow="1"
+                                    atom:Flex.Shrink="1">
+                                <atom:TextBlock HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Text="B" />
+                            </Border>
+                            <Border x:Name="PlaygroundItemC"
+                                    Background="#4F7CF5"
+                                    MinHeight="50"
+                                    MinWidth="60"
+                                    CornerRadius="4"
+                                    atom:Flex.Basis="80"
+                                    atom:Flex.Grow="0"
+                                    atom:Flex.Shrink="1">
+                                <atom:TextBlock HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Text="C" />
+                            </Border>
+                        </atom:FlexPanel>
+                    </Border>
                 </Border>
             </StackPanel>
         </gallery:ShowCaseItem>

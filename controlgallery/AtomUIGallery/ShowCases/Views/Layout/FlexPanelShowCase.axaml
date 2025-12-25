@@ -316,7 +316,12 @@
                         <Border Width="260" Height="160" CornerRadius="6" ClipToBounds="True" atom:Flex.Shrink="0">
                             <Image Source="/Assets/CardShowCase/Cover1.png" Stretch="UniformToFill" />
                         </Border>
-                        <atom:FlexPanel Direction="Column" RowSpacing="12" AlignItems="FlexStart" atom:Flex.Grow="1">
+                        <atom:FlexPanel Direction="Column"
+                                        Wrap="Wrap"
+                                        RowSpacing="12"
+                                        AlignItems="FlexStart"
+                                        MinWidth="0"
+                                        atom:Flex.Grow="1">
                             <atom:TextBlock FontSize="20"
                                             FontWeight="Bold"
                                             TextWrapping="Wrap"

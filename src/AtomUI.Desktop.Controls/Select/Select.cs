@@ -967,6 +967,12 @@ public class Select : TemplatedControl,
         }
     }
     
+    protected override void OnLostFocus(RoutedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        SetCurrentValue(IsDropDownOpenProperty, false);
+    }
+    
     private void PopupClosed(object? sender, EventArgs e)
     {
         _subscriptionsOnOpen.Clear();

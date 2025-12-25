@@ -30,6 +30,8 @@
                           Icon="{antdicons:AntDesignIconProvider Kind=LayoutOutlined}">
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_BoxPanel}}"
                               ItemKey="{x:Static viewmodels:BoxPanelViewModel.ID}" />
+            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_FlexPanel}}"
+                              ItemKey="{x:Static viewmodels:FlexPanelViewModel.ID}" />
         </atom:NavMenuItem>
 
         <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Navigation}}"

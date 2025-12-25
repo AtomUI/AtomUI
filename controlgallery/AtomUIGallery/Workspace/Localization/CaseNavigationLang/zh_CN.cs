@@ -18,6 +18,7 @@ internal class zh_CN : LanguageProvider
     
     public const string Layout = "布局";
     public const string Layout_BoxPanel = "BoxPanel 盒子布局";
+    public const string Layout_FlexPanel = "FlexPanel 弹性布局";
     
     public const string Navigation = "导航";
     public const string Navigation_Breadcrumb = "Breadcrumb 面包屑";

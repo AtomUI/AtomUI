@@ -203,9 +203,16 @@ public sealed class FlexPanel : Panel
         var (childIndex, firstChildIndex, itemIndex) = (0, 0, 0);
 
         var flexLines = new List<FlexLine>();
+        var useFinalSizeForRelativeBasis = false;
 
         foreach (var element in children)
         {
+            if (!useFinalSizeForRelativeBasis && double.IsInfinity(max.U) &&
+                Flex.GetBasis(element).Kind == FlexBasisKind.Relative)
+            {
+                useFinalSizeForRelativeBasis = true;
+            }
+
             var size = MeasureChild(element, max, isColumn);
 
             if (Wrap != FlexWrap.NoWrap && lineData.U + size.U + itemIndex * spacing.U > max.U)
@@ -230,7 +237,7 @@ public sealed class FlexPanel : Panel
             flexLines.Add(new FlexLine(firstChildIndex, firstChildIndex + itemIndex - 1, lineData));
         }
 
-        var state = new FlexLayoutState(children, flexLines);
+        var state = new FlexLayoutState(children, flexLines, useFinalSizeForRelativeBasis);
 
         var totalSpacingV = (flexLines.Count - 1) * spacing.V;
         var panelSizeU = flexLines.Count > 0
@@ -319,11 +326,22 @@ public sealed class FlexPanel : Panel
         var crossOffset = v;
         foreach (var line in state.Lines)
         {
+            var lineItems = state.GetLineItems(line).ToArray();
+            if (state.UseFinalSizeForRelativeBasis)
+            {
+                ApplyRelativeBasisUsingPanelSize(lineItems, panelSize.U);
+            }
+
             var lineV = singleLineNoWrap ? panelSize.V : scaleV * line.V;
-            var (itemsCount, _, _, freeU) = GetLineMeasureU(line, panelSize.U, spacing.U);
+            var itemsCount = lineItems.Length;
+            var totalSpacingU = (itemsCount - 1) * spacing.U;
+            var lineU = state.UseFinalSizeForRelativeBasis
+                ? lineItems.Sum(item => Flex.GetCurrentLength(item))
+                : line.U;
+            var totalU = lineU + totalSpacingU;
+            var freeU = panelSize.U - totalU;
             var (_, lineAutoMargins, flexFreeU) = GetLineMultInfo(line, freeU);
 
-            var lineItems = state.GetLineItems(line).ToArray();
             var remainingFreeU = freeU - flexFreeU;
             remainingFreeU += ResolveFlexibleLengths(lineItems, flexFreeU);
 
@@ -351,6 +369,13 @@ public sealed class FlexPanel : Panel
             {
                 var size = Uv.FromSize(element.DesiredSize, isColumn).WithU(Flex.GetCurrentLength(element));
                 var align = Flex.GetAlignSelf(element) ?? AlignItems;
+                var hasExplicitCrossSize = isColumn
+                    ? element.IsSet(Layoutable.WidthProperty)
+                    : element.IsSet(Layoutable.HeightProperty);
+                if (align == AlignItems.Stretch && hasExplicitCrossSize)
+                {
+                    align = AlignItems.FlexStart;
+                }
                 if (isWrapReverse)
                 {
                     align = align switch
@@ -386,7 +411,12 @@ public sealed class FlexPanel : Panel
     private static Uv MeasureChild(Layoutable element, Uv max, bool isColumn)
     {
         var basis = Flex.GetBasis(element);
-        var flexConstraint = basis.Kind switch
+        var basisKind = basis.Kind;
+        if (basisKind == FlexBasisKind.Relative && double.IsInfinity(max.U))
+        {
+            basisKind = FlexBasisKind.Auto;
+        }
+        var flexConstraint = basisKind switch
         {
             FlexBasisKind.Auto => max.U,
             FlexBasisKind.Absolute => basis.Value,
@@ -396,7 +426,7 @@ public sealed class FlexPanel : Panel
         var hasExplicitMin = isColumn
             ? element.IsSet(Layoutable.MinHeightProperty)
             : element.IsSet(Layoutable.MinWidthProperty);
-        var useAutoMeasuredMin = !hasExplicitMin && basis.Kind != FlexBasisKind.Auto && flexConstraint != max.U;
+        var useAutoMeasuredMin = !hasExplicitMin && basisKind != FlexBasisKind.Auto && flexConstraint != max.U;
         var autoMinLength = 0.0;
         if (useAutoMeasuredMin)
         {
@@ -412,7 +442,7 @@ public sealed class FlexPanel : Panel
             : Math.Max(0.0, useAutoMeasuredMin ? autoMinLength : size.U);
         Flex.SetMinLength(element, minLength);
 
-        var flexLength = basis.Kind switch
+        var flexLength = basisKind switch
         {
             FlexBasisKind.Auto => Math.Max(size.U, minLength),
             FlexBasisKind.Absolute or FlexBasisKind.Relative => Math.Max(flexConstraint, minLength),
@@ -610,6 +640,29 @@ public sealed class FlexPanel : Panel
         return remainingFreeU;
     }
 
+    private static void ApplyRelativeBasisUsingPanelSize(IReadOnlyList<Layoutable> items, double panelSizeU)
+    {
+        if (double.IsInfinity(panelSizeU) || double.IsNaN(panelSizeU))
+        {
+            return;
+        }
+
+        foreach (var element in items)
+        {
+            var basis = Flex.GetBasis(element);
+            if (basis.Kind != FlexBasisKind.Relative)
+            {
+                continue;
+            }
+
+            var flexConstraint = panelSizeU * basis.Value;
+            var minLength = Flex.GetMinLength(element);
+            var flexLength = Math.Max(flexConstraint, minLength);
+            Flex.SetBaseLength(element, flexLength);
+            Flex.SetCurrentLength(element, flexLength);
+        }
+    }
+
     private static double GetItemMinLength(Layoutable element)
     {
         var minLength = Flex.GetMinLength(element);
@@ -629,10 +682,14 @@ public sealed class FlexPanel : Panel
 
         public IReadOnlyList<FlexLine> Lines { get; }
 
-        public FlexLayoutState(IReadOnlyList<Layoutable> children, List<FlexLine> lines)
+        public bool UseFinalSizeForRelativeBasis { get; }
+
+        public FlexLayoutState(IReadOnlyList<Layoutable> children, List<FlexLine> lines,
+            bool useFinalSizeForRelativeBasis)
         {
             _children = children;
             Lines = lines;
+            UseFinalSizeForRelativeBasis = useFinalSizeForRelativeBasis;
         }
 
         public IEnumerable<Layoutable> GetLineItems(FlexLine line)

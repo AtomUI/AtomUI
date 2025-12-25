@@ -230,7 +230,7 @@ public sealed class FlexPanel : Panel
             flexLines.Add(new FlexLine(firstChildIndex, firstChildIndex + itemIndex - 1, lineData));
         }
 
-        var state = new FlexLayoutState(children, flexLines, Wrap);
+        var state = new FlexLayoutState(children, flexLines);
 
         var totalSpacingV = (flexLines.Count - 1) * spacing.V;
         var panelSizeU = flexLines.Count > 0
@@ -288,6 +288,7 @@ public sealed class FlexPanel : Panel
 
         var isColumn = Direction is FlexDirection.Column or FlexDirection.ColumnReverse;
         var isReverse = Direction is FlexDirection.RowReverse or FlexDirection.ColumnReverse;
+        var isWrapReverse = Wrap == FlexWrap.WrapReverse;
 
         var panelSize = Uv.FromSize(finalSize, isColumn);
         var spacing = Uv.FromSize(ColumnSpacing, RowSpacing, isColumn);
@@ -297,6 +298,15 @@ public sealed class FlexPanel : Panel
         var totalSpacingV = (linesCount - 1) * spacing.V;
         var totalV = totalLineV + totalSpacingV;
         var freeV = panelSize.V - totalV;
+        var singleLineNoWrap = Wrap == FlexWrap.NoWrap && linesCount == 1;
+
+        if (singleLineNoWrap)
+        {
+            totalLineV = panelSize.V;
+            totalSpacingV = 0.0;
+            totalV = totalLineV;
+            freeV = 0.0;
+        }
 
         var alignContent = DetermineAlignContent(AlignContent, freeV, linesCount);
 
@@ -306,9 +316,10 @@ public sealed class FlexPanel : Panel
             ? (panelSize.V - totalSpacingV) / totalLineV
             : 1.0;
 
+        var crossOffset = v;
         foreach (var line in state.Lines)
         {
-            var lineV = scaleV * line.V;
+            var lineV = singleLineNoWrap ? panelSize.V : scaleV * line.V;
             var (itemsCount, _, _, freeU) = GetLineMeasureU(line, panelSize.U, spacing.U);
             var (_, lineAutoMargins, flexFreeU) = GetLineMultInfo(line, freeU);
 
@@ -316,6 +327,7 @@ public sealed class FlexPanel : Panel
             var remainingFreeU = freeU - flexFreeU;
             remainingFreeU += ResolveFlexibleLengths(lineItems, flexFreeU);
 
+            var lineStart = isWrapReverse ? panelSize.V - crossOffset - lineV : crossOffset;
             var currentFreeU = remainingFreeU;
             if (lineAutoMargins != 0 && remainingFreeU != 0.0)
             {
@@ -339,13 +351,22 @@ public sealed class FlexPanel : Panel
             {
                 var size = Uv.FromSize(element.DesiredSize, isColumn).WithU(Flex.GetCurrentLength(element));
                 var align = Flex.GetAlignSelf(element) ?? AlignItems;
+                if (isWrapReverse)
+                {
+                    align = align switch
+                    {
+                        AlignItems.FlexStart => AlignItems.FlexEnd,
+                        AlignItems.FlexEnd => AlignItems.FlexStart,
+                        _ => align
+                    };
+                }
 
                 var positionV = align switch
                 {
-                    AlignItems.FlexStart => v,
-                    AlignItems.FlexEnd => v + lineV - size.V,
-                    AlignItems.Center => v + (lineV - size.V) / 2,
-                    AlignItems.Stretch => v,
+                    AlignItems.FlexStart => lineStart,
+                    AlignItems.FlexEnd => lineStart + lineV - size.V,
+                    AlignItems.Center => lineStart + (lineV - size.V) / 2,
+                    AlignItems.Stretch => lineStart,
                     _ => throw new InvalidOperationException()
                 };
 
@@ -356,7 +377,7 @@ public sealed class FlexPanel : Panel
                 u += size.U + spacingU;
             }
 
-            v += lineV + spacingV;
+            crossOffset += lineV + spacingV;
         }
 
         return finalSize;
@@ -372,10 +393,23 @@ public sealed class FlexPanel : Panel
             FlexBasisKind.Relative => max.U * basis.Value,
             _ => throw new InvalidOperationException($"Unsupported FlexBasisKind value: {basis.Kind}")
         };
+        var hasExplicitMin = isColumn
+            ? element.IsSet(Layoutable.MinHeightProperty)
+            : element.IsSet(Layoutable.MinWidthProperty);
+        var useAutoMeasuredMin = !hasExplicitMin && basis.Kind != FlexBasisKind.Auto && flexConstraint != max.U;
+        var autoMinLength = 0.0;
+        if (useAutoMeasuredMin)
+        {
+            element.Measure(Uv.ToSize(max.WithU(max.U), isColumn));
+            autoMinLength = Uv.FromSize(element.DesiredSize, isColumn).U;
+        }
+
         element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));
 
         var size = Uv.FromSize(element.DesiredSize, isColumn);
-        var minLength = Math.Max(0.0, isColumn ? element.MinHeight : element.MinWidth);
+        var minLength = hasExplicitMin
+            ? Math.Max(0.0, isColumn ? element.MinHeight : element.MinWidth)
+            : Math.Max(0.0, useAutoMeasuredMin ? autoMinLength : size.U);
         Flex.SetMinLength(element, minLength);
 
         var flexLength = basis.Kind switch
@@ -595,12 +629,8 @@ public sealed class FlexPanel : Panel
 
         public IReadOnlyList<FlexLine> Lines { get; }
 
-        public FlexLayoutState(IReadOnlyList<Layoutable> children, List<FlexLine> lines, FlexWrap wrap)
+        public FlexLayoutState(IReadOnlyList<Layoutable> children, List<FlexLine> lines)
         {
-            if (wrap == FlexWrap.WrapReverse)
-            {
-                lines.Reverse();
-            }
             _children = children;
             Lines = lines;
         }

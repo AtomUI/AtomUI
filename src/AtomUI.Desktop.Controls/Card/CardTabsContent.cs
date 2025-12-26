@@ -89,6 +89,11 @@ public class CardTabsContent : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_tabControl != null)
+        {
+            _tabControl.Items.Clear();
+        }
+
         _tabControl = e.NameScope.Find<TabControl>(CardTabsContentThemeConstants.TabControlPart);
         if (_tabControl != null)
         {

@@ -261,7 +261,6 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildDialogContent();
         var options = new DialogOptions
         {
-            IsModal                   = true,
             Title                     = "Basic Modal",
             IsResizable               = false,
             IsDragMovable             = true,
@@ -272,7 +271,7 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
             VerticalOffset            = new Dimension(30, DimensionUnitType.Percentage),
             MinWidth                  = 400
         };
-        await Dialog.ShowDialogAsync(content, null, options);
+        await Dialog.ShowDialogModalAsync(content, null, options);
     }
 
     private async void HandleOpenWindowDialogButtonClick(object? sender, RoutedEventArgs e)
@@ -282,7 +281,6 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildDialogContent();
         var options = new DialogOptions
         {
-            IsModal                   = true,
             Title                     = "Basic Modal",
             IsResizable               = false,
             IsDragMovable             = true,
@@ -294,7 +292,7 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
             VerticalOffset            = new Dimension(30, DimensionUnitType.Percentage),
             MinWidth                  = 400
         };
-        await Dialog.ShowDialogAsync(content, null, options);
+        await Dialog.ShowDialogModalAsync(content, null, options);
     }
 
     private async void HandleOpenCustomViewDialogButtonClick(object? sender, RoutedEventArgs e)
@@ -303,7 +301,6 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
         var options = new DialogOptions
         {
-            IsModal                   = true,
             Title                     = "Basic Modal",
             IsResizable               = false,
             IsDragMovable             = true,
@@ -320,7 +317,7 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
             Name = "AtomUI",
             Age  = 2
         };
-        Dialog.ShowDialog<ModalUserControlView, ModalUserControlViewModel>(viewModel, options);
+        await Dialog.ShowDialogModalAsync<ModalUserControlView, ModalUserControlViewModel>(viewModel, options);
     }
 
     private Control BuildDialogContent()
@@ -351,13 +348,12 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildMessageBoxContent();
         var options = new MessageBoxOptions()
         {
-            IsModal           = true,
             Title             = "Do you want to delete these items?",
             IsDragMovable     = true,
             IsCenterOnStartup = true,
             Style             = MessageBoxStyle.Confirm
         };
-        await MessageBox.ShowMessageAsync(content, null, options);
+        await MessageBox.ShowMessageModalAsync(content, null, options);
     }
     
     private async void HandleCreateInformationMessageBox(object? sender, RoutedEventArgs e)
@@ -366,13 +362,12 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildMessageBoxContent();
         var options = new MessageBoxOptions()
         {
-            IsModal           = true,
             Title             = "This is a notification message",
             IsDragMovable     = true,
             IsCenterOnStartup = true,
             Style             = MessageBoxStyle.Information
         };
-        await MessageBox.ShowMessageAsync(content, null, options);
+        await MessageBox.ShowMessageModalAsync(content, null, options);
     }
     
     private async void HandleCreateSuccessMessageBox(object? sender, RoutedEventArgs e)
@@ -381,13 +376,12 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildMessageBoxContent();
         var options = new MessageBoxOptions()
         {
-            IsModal           = true,
             Title             = "Operation successful",
             IsDragMovable     = true,
             IsCenterOnStartup = true,
             Style             = MessageBoxStyle.Success
         };
-        await MessageBox.ShowMessageAsync(content, null, options);
+        await MessageBox.ShowMessageModalAsync(content, null, options);
     }
     
     private async void HandleCreateErrorMessageBox(object? sender, RoutedEventArgs e)
@@ -396,13 +390,12 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildMessageBoxContent();
         var options = new MessageBoxOptions()
         {
-            IsModal           = true,
             Title             = "This is an error message",
             IsDragMovable     = true,
             IsCenterOnStartup = true,
             Style             = MessageBoxStyle.Error
         };
-        await MessageBox.ShowMessageAsync(content, null, options);
+        await MessageBox.ShowMessageModalAsync(content, null, options);
     }
     
     private async void HandleCreateWarningMessageBox(object? sender, RoutedEventArgs e)
@@ -411,13 +404,12 @@ public partial class ModalShowCase : ReactiveUserControl<ModalViewModel>
         var content = BuildMessageBoxContent();
         var options = new MessageBoxOptions()
         {
-            IsModal           = true,
             Title             = "This is a warning message",
             IsDragMovable     = true,
             IsCenterOnStartup = true,
             Style             = MessageBoxStyle.Warning
         };
-        await MessageBox.ShowMessageAsync(content, null, options);
+        await MessageBox.ShowMessageModalAsync(content, null, options);
     }
     
     private Control BuildMessageBoxContent()

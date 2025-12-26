@@ -294,6 +294,17 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        
+        if (_radioButton != null)
+        {
+            _radioButton.IsCheckedChanged -= HandleRadioButtonCheckedChanged;
+        }
+
+        if (_checkBox != null)
+        {
+            _checkBox.IsCheckedChanged -= HandleCheckBoxCheckedChanged;
+        }
+        
         _radioButton = e.NameScope.Find<RadioButton>(MenuItemThemeConstants.ToggleRadioPart);
         _checkBox    = e.NameScope.Find<CheckBox>(MenuItemThemeConstants.ToggleCheckboxPart);
         _popup       = e.NameScope.Find<Popup>(MenuItemThemeConstants.PopupPart);
@@ -304,28 +315,38 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData
         }
         if (_radioButton != null)
         {
-            _radioButton.IsCheckedChanged += (sender, args) =>
-            {
-                if (_radioButton.IsVisible)
-                {
-                    IsChecked = _radioButton.IsChecked == true;
-                }
-            };
+            _radioButton.IsCheckedChanged += HandleRadioButtonCheckedChanged;
         }
 
         if (_checkBox != null)
         {
-            _checkBox.IsCheckedChanged += (sender, args) =>
-            {
-                if (_checkBox.IsVisible)
-                {
-                    IsChecked = _checkBox.IsChecked == true;
-                }
-            };
+            _checkBox.IsCheckedChanged += HandleCheckBoxCheckedChanged;
         }
         
         UpdatePseudoClasses();
         ConfigureMaxPopupHeight();
+    }
+
+    private void HandleRadioButtonCheckedChanged(object? sender, RoutedEventArgs args)
+    {
+        if (_radioButton != null)
+        {
+            if (_radioButton.IsVisible)
+            {
+                IsChecked = _radioButton.IsChecked == true;
+            }
+        }
+    }
+
+    private void HandleCheckBoxCheckedChanged(object? sender, RoutedEventArgs args)
+    {
+        if (_checkBox != null)
+        {
+            if (_checkBox.IsVisible)
+            {
+                IsChecked = _checkBox.IsChecked == true;
+            }
+        }
     }
 
     private bool MenuPopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)

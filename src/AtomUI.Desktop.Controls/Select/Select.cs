@@ -748,6 +748,10 @@ public class Select : TemplatedControl,
             SetCurrentValue(IsDropDownOpenProperty, false);
             e.Handled = true;
         }
+        else if (e.Key == Key.Tab)
+        {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+        }
     }
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -761,27 +765,24 @@ public class Select : TemplatedControl,
                 return;
             }
         }
-        
+
         if (IsDropDownOpen)
         {
             // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
             // is pressed, close the drop-down
-            if (!IsHideSelectedOptions)
+            if (e.Source is Control sourceControl)
+            {
+                var parent = sourceControl.FindAncestorOfType<IconButton>();
+                var tag    = parent?.FindAncestorOfType<SelectTag>();
+                if (tag != null)
+                {
+                    _clickInTagCloseButton = true;
+                }
+            }
+            else if (!IsHideSelectedOptions)
             {
                 SetCurrentValue(IsDropDownOpenProperty, false); 
                 e.Handled = true;
-            }
-            else
-            {
-                if (e.Source is PathIcon icon)
-                {
-                    var parent = icon.FindAncestorOfType<IconButton>();
-                    var tag = parent?.FindAncestorOfType<SelectTag>();
-                    if (tag != null)
-                    {
-                        _clickInTagCloseButton = true;
-                    }
-                }
             }
         }
         else
@@ -805,9 +806,9 @@ public class Select : TemplatedControl,
             else if (PseudoClasses.Contains(StdPseudoClass.Pressed))
             {
                 var clickInTagCloseButton = false;
-                if (e.Source is PathIcon icon)
+                if (e.Source is Control sourceControl)
                 {
-                    var parent = icon.FindAncestorOfType<IconButton>();
+                    var parent = sourceControl.FindAncestorOfType<IconButton>();
                     var tag    = parent?.FindAncestorOfType<SelectTag>();
                     if (tag != null)
                     {
@@ -1193,7 +1194,7 @@ public class Select : TemplatedControl,
         {
             if (SelectedOptions != null)
             {
-                var selectedOptions = new List<object>();
+                var selectedOptions = new List<ISelectOption>();
                 foreach (var selectedItem in SelectedOptions)
                 {
                     selectedOptions.Add(selectedItem);
@@ -1202,7 +1203,8 @@ public class Select : TemplatedControl,
                 {
                     selectedOptions.Remove(tag.Option);
                 }
-                SetCurrentValue(SelectedOptionsProperty, selectedOptions);
+                SelectedOptions = selectedOptions;
+                SyncSelection();
             }
 
             if (Mode == SelectMode.Tags)
@@ -1312,7 +1314,7 @@ public class Select : TemplatedControl,
         {
             if (IsHideSelectedOptions)
             {
-                var selectedOptions = new HashSet<object>();
+                var selectedOptions = new HashSet<ISelectOption>();
                 if (SelectedOptions?.Count > 0)
                 {
                     foreach (var selectedOption in SelectedOptions)
@@ -1345,7 +1347,7 @@ public class Select : TemplatedControl,
 
     private static bool SelectFilterFn(object value, object filterValue)
     {
-        if (filterValue is HashSet<object> set)
+        if (filterValue is HashSet<ISelectOption> set)
         {
             return !set.Contains(value);
         }
@@ -1377,12 +1379,9 @@ public class Select : TemplatedControl,
         var selected = new HashSet<ISelectOption>();
         if (SelectedOptions != null)
         {
-            foreach (var item in SelectedOptions)
+            foreach (var opt in SelectedOptions)
             {
-                if (item is ISelectOption opt)
-                {
-                    selected.Add(opt);
-                }
+                selected.Add(opt);
             }
         }
 
@@ -1404,7 +1403,6 @@ public class Select : TemplatedControl,
             }
         }
     }
-    
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

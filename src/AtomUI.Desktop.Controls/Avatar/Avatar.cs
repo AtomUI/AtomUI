@@ -211,17 +211,23 @@ public class Avatar : TemplatedControl, IControlSharedTokenResourcesHost, IMotio
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_textPresenter != null)
+        {
+            _textPresenter.SizeChanged -= HandleTextPresenterSizeChanged;
+        }
         _textPresenter = e.NameScope.Find<TextBlock>(AvatarThemeConstants.TextPresenterPart);
         if (_textPresenter != null)
         {
-            _textPresenter.SizeChanged += (sender, args) =>
-            {
-                ConfigureTextRenderTransform();
-            };
+            _textPresenter.SizeChanged += HandleTextPresenterSizeChanged;
         }
         ConfigureShape();
         ConfigureIconSize();
         ConfigureContentType();
+    }
+
+    private void HandleTextPresenterSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        ConfigureTextRenderTransform();
     }
 
     private void ConfigureIconSize()

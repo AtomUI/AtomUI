@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -219,15 +220,23 @@ public class QRCode : TemplatedControl, IControlSharedTokenResourcesHost
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        if (_refreshButton != null)
+        {
+            _refreshButton.Click -= HandleRefreshButtonClicked;
+        }
+        
         _refreshButton = e.NameScope.Find<Button>(QRCodeThemeConstants.RefreshPart);
         if (_refreshButton != null)
         {
-            _refreshButton.Click += (sender, args) =>
-            {
-                RefreshRequested?.Invoke(this, EventArgs.Empty);
-            };
+            _refreshButton.Click += HandleRefreshButtonClicked;
         }
         SetupQRCode();
+    }
+
+    private void HandleRefreshButtonClicked(object? sender, RoutedEventArgs args)
+    {
+        RefreshRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void SetupQRCode()

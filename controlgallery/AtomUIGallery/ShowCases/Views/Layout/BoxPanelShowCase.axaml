@@ -4,7 +4,12 @@
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
 
-    <gallery:ShowCasePanel>
+<atom:FlexPanel Direction="Column">
+            <atom:Alert Type="Warning"
+                    IsShowIcon="True"
+                    Margin="5,5,5,0"
+                    Message="{DynamicResource CaseNavigation.Layout_BoxPanel_DeprecationNotice}" />
+        <gallery:ShowCasePanel >
         <!-- 1. Basic Usage -->
         <gallery:ShowCaseItem Description="The basic usage." Title="Basic">
             <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
@@ -349,5 +354,6 @@
             </StackPanel>
         </gallery:ShowCaseItem>
 
-    </gallery:ShowCasePanel>
+        </gallery:ShowCasePanel>
+</atom:FlexPanel>
 </UserControl>

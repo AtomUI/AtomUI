@@ -11,7 +11,6 @@
                 <Panel>
                     <atom:SelectAddOnDecoratedBox
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
-                        Focusable="True"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"
@@ -118,6 +117,7 @@
 
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="PopupContentPadding"
                 Value="{DynamicResource {x:Static atom:SelectTokenKey.PopupContentPadding}}" />

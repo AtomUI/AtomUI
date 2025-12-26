@@ -382,10 +382,15 @@ internal class DrawerContainer : ContentControl
     {
         base.OnApplyTemplate(e);
         _motionActor   = e.NameScope.Find<BaseMotionActor>(DrawerContainerThemeConstants.InfoContainerMotionActorPart);
-        _infoContainer = e.NameScope.Find<DrawerInfoContainer>(DrawerContainerThemeConstants.InfoContainerPart);
+        
         if (_infoContainer != null)
         {
             _infoContainer.CloseRequested -= HandleCloseRequested;
+        }
+
+        _infoContainer = e.NameScope.Find<DrawerInfoContainer>(DrawerContainerThemeConstants.InfoContainerPart);
+        if (_infoContainer != null)
+        {
             _infoContainer.CloseRequested += HandleCloseRequested;
         }
     }

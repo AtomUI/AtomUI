@@ -95,6 +95,10 @@ internal class SelectHandle : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_clearButton != null)
+        {
+            _clearButton.Click -= HandleClearButtonClicked;
+        }
         _clearButton = e.NameScope.Find<IconButton>(SelectHandleThemeConstants.ClearButtonPart);
         if (_clearButton != null)
         {

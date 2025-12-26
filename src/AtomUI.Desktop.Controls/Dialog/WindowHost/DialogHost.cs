@@ -218,6 +218,12 @@ internal class DialogHost : Window,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_buttonBox != null)
+        {
+            _buttonBox.CustomButtons.Clear();
+            _buttonBox.Clicked             -= HandleButtonBoxClicked;
+            _buttonBox.ButtonsSynchronized -= HandleButtonsSynchronized;
+        }
         _buttonBox = e.NameScope.Find<DialogButtonBox>(DialogThemeConstants.ButtonBoxPart);
         if (_buttonBox != null)
         {

@@ -1,6 +1,5 @@
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -15,36 +14,19 @@ internal class WindowResizer : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _rootLayout = e.NameScope.Find<Panel>(WindowResizerThemeConstants.RootLayoutPart);
-        ConfigureResizeHandles(true);
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        ConfigureResizeHandles(true);
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        ConfigureResizeHandles(false);
-    }
-
-    private void ConfigureResizeHandles(bool isAttach)
-    {
         if (_rootLayout != null)
         {
             foreach (var child in _rootLayout.Children)
             {
-                if (isAttach)
-                {
-                    child.PointerPressed += HandleResizeHandlePressed;
-                }
-                else
-                {
-                    child.PointerPressed -= HandleResizeHandlePressed;
-                }
+                child.PointerPressed -= HandleResizeHandlePressed;
+            }
+        }
+        _rootLayout = e.NameScope.Find<Panel>(WindowResizerThemeConstants.RootLayoutPart);
+        if (_rootLayout != null)
+        {
+            foreach (var child in _rootLayout.Children)
+            {
+                child.PointerPressed += HandleResizeHandlePressed;
             }
         }
     }

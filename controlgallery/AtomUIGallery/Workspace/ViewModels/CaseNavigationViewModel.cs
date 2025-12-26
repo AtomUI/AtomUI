@@ -47,6 +47,7 @@ public class CaseNavigationViewModel : ReactiveObject
     private void RegisterLayoutViewModels()
     {
         _showCaseViewModelFactories.Add(BoxPanelViewModel.ID, () => new BoxPanelViewModel(HostScreen));
+        _showCaseViewModelFactories.Add(FlexPanelViewModel.ID, () => new FlexPanelViewModel(HostScreen));
     }
 
     private void RegisterDataDisplayViewModels()

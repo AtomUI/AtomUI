@@ -55,6 +55,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|InfoPickerInput)">
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />

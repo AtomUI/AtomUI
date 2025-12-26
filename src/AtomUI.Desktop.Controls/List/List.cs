@@ -487,18 +487,26 @@ public class List : TemplatedControl,
         }
         _topPagination    = e.NameScope.Find<Pagination>(ListThemeConstants.TopPaginationPart);
         _bottomPagination = e.NameScope.Find<Pagination>(ListThemeConstants.BottomPaginationPart);
+
+        if (ListDefaultView != null)
+        {
+            ListDefaultView.SelectionChanged -= HandleListViewSelectionChanged;
+        }
+
         ListDefaultView   = e.NameScope.Find<ListDefaultView>(ListThemeConstants.ListViewPart);
         if (ListDefaultView != null)
         {
-            ListDefaultView.OwnerList    = this;
-            ListDefaultView.SelectionChanged += (sender, args) =>
-            {
-                RaiseEvent(new SelectionChangedEventArgs(SelectionChangedEvent, args.RemovedItems, args.AddedItems));
-            };
+            ListDefaultView.OwnerList        =  this;
+            ListDefaultView.SelectionChanged += HandleListViewSelectionChanged;
             SyncSelectionState();
         }
         UpdatePseudoClasses();
         ConfigureEmptyIndicator();
+    }
+
+    private void HandleListViewSelectionChanged(object? sender, SelectionChangedEventArgs args)
+    {
+        RaiseEvent(new SelectionChangedEventArgs(SelectionChangedEvent, args.RemovedItems, args.AddedItems));
     }
     
     private void UpdatePseudoClasses()

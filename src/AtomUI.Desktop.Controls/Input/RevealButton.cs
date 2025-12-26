@@ -8,7 +8,14 @@ internal class RevealButton : ToggleIconButton
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        SetCurrentValue(CheckedIconProperty, new EyeOutlined());
-        SetCurrentValue(UnCheckedIconProperty, new EyeInvisibleOutlined());
+        if (CheckedIcon == null)
+        {
+            SetCurrentValue(CheckedIconProperty, new EyeOutlined());
+        }
+
+        if (UnCheckedIcon == null)
+        {
+            SetCurrentValue(UnCheckedIconProperty, new EyeInvisibleOutlined());
+        }
     }
 }

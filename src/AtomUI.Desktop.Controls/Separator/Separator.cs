@@ -274,7 +274,7 @@ public class Separator : AvaloniaSeparator,
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
-        if (Orientation == Orientation.Horizontal && _titleLabel!.IsVisible)
+        if (Orientation == Orientation.Horizontal && _titleLabel?.IsVisible == true)
         {
             var titleRect = GetTitleRect(DesiredSize.Deflate(Margin));
             _titleLabel.Arrange(titleRect);
@@ -295,7 +295,7 @@ public class Separator : AvaloniaSeparator,
         {
             // 线最小得占到 25 %，拍脑袋
             var lineMinWidth = finalSize.Width * SEPARATOR_LINE_MIN_PROPORTION;
-            var titleWidth   = _titleLabel!.DesiredSize.Width + 2;
+            var titleWidth   = (_titleLabel?.DesiredSize.Width ?? 0) + 2;
             var remainWidth  = finalSize.Width - titleWidth - GetTextPaddingInline() * 2;
             if (lineMinWidth > remainWidth)
             {

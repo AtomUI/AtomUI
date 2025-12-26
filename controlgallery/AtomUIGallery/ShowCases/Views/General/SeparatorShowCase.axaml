@@ -29,7 +29,7 @@
                 <atom:TextBlock TextWrapping="Wrap">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nonne merninisti licere mihi ista probare, quae sunt a te dicta? Refert tamen, quo modo.
                 </atom:TextBlock>
-                <atom:Separator Title="Text" FontStyle="Italic" />
+                <atom:Separator Title="Text" FontStyle="Italic" IsVisible="False"/>
                 <atom:TextBlock TextWrapping="Wrap">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nonne merninisti licere mihi ista probare, quae sunt a te dicta? Refert tamen, quo modo.
                 </atom:TextBlock>
@@ -46,7 +46,7 @@
                 <atom:TextBlock TextWrapping="Wrap">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nonne merninisti licere mihi ista probare, quae sunt a te dicta? Refert tamen, quo modo.
                 </atom:TextBlock>
-        
+                
                 <atom:Separator Title="Right Text with 50px orientationMargin" TitlePosition="Right" TitleColor="Coral"
                                 FontWeight="Medium"
                                 OrientationMargin="50" />

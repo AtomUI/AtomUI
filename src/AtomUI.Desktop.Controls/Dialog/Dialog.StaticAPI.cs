@@ -20,6 +20,22 @@ public partial class Dialog
         dialogManager.Children.Remove(dialog);
         return result;
     }
+    
+    public static object? ShowDialogModal<TView, TViewModel>(TViewModel? dataContext, DialogOptions? options = null, TopLevel? topLevel = null)
+        where TView : Control, new()
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var dialog        = CreateDialog(new TView(), dataContext, options);
+        dialog.IsModal = true;
+        if (options?.DialogHostType == DialogHostType.Window)
+        {
+            dialog.PlacementTarget = dialogManager;
+        }
+        dialogManager.Children.Add(dialog);
+        var result = dialog.Open();
+        dialogManager.Children.Remove(dialog);
+        return result;
+    }
 
     public static object? ShowDialog(Control content, object? dataContext = null, DialogOptions? options = null, TopLevel? topLevel = null)
     {
@@ -35,7 +51,25 @@ public partial class Dialog
         return result;
     }
     
-    public static async Task ShowDialogAsync<TView, TViewModel>(TViewModel? dataContext, DialogOptions? options = null, TopLevel? topLevel = null)
+    public static object? ShowDialogModal(Control content, object? dataContext = null, DialogOptions? options = null, TopLevel? topLevel = null)
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var dialog        = CreateDialog(content, dataContext, options);
+        dialog.IsModal = true;
+        if (options?.DialogHostType == DialogHostType.Window)
+        {
+            dialog.PlacementTarget = dialogManager;
+        }
+        dialogManager.Children.Add(dialog);
+        var result = dialog.Open();
+        dialogManager.Children.Remove(dialog);
+        return result;
+    }
+    
+    public static async Task ShowDialogAsync<TView, TViewModel>(TViewModel? dataContext,
+                                                                DialogOptions? options = null,
+                                                                Action<IDialogActionResult>? closed = null,
+                                                                TopLevel? topLevel = null)
         where TView : Control, new()
     {
         var dialogManager = FindDialogManager(topLevel);
@@ -44,12 +78,48 @@ public partial class Dialog
         {
             dialog.PlacementTarget = dialogManager;
         }
+        dialog.Closed += (_, _) =>
+        {
+            closed?.Invoke(new DialogActionResult(dialog.Result));
+            dialogManager.Children.Remove(dialog);
+        };
+        dialogManager.Children.Add(dialog);
+        var tsc = new TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await dialog.OpenAsync();
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
+    }
+    
+    public static async Task<object?> ShowDialogModalAsync<TView, TViewModel>(TViewModel? dataContext, DialogOptions? options = null, TopLevel? topLevel = null)
+        where TView : Control, new()
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var dialog        = CreateDialog(new TView(), dataContext, options);
+        dialog.IsModal = true;
+        if (options?.DialogHostType == DialogHostType.Window)
+        {
+            dialog.PlacementTarget = dialogManager;
+        }
         dialog.Closed += (_, _) => dialogManager.Children.Remove(dialog);
         dialogManager.Children.Add(dialog);
-        await Dispatcher.UIThread.InvokeAsync(async () => await dialog.OpenAsync());
+        var tsc = new  TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await dialog.OpenAsync();
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
+        return dialog.Result;
     }
 
-    public static async Task ShowDialogAsync(Control content, object? dataContext = null, DialogOptions? options = null, TopLevel? topLevel = null)
+    public static async Task ShowDialogAsync(Control content, 
+                                             object? dataContext = null, 
+                                             DialogOptions? options = null, 
+                                             Action<IDialogActionResult>? closed = null,
+                                             TopLevel? topLevel = null)
     {
         var dialogManager = FindDialogManager(topLevel);
         var dialog        = CreateDialog(content, dataContext, options);
@@ -57,9 +127,41 @@ public partial class Dialog
         {
             dialog.PlacementTarget = dialogManager;
         }
+
+        dialog.Closed += (_, _) =>
+        {
+            closed?.Invoke(new DialogActionResult(dialog.Result));
+            dialogManager.Children.Remove(dialog);
+        };
+        dialogManager.Children.Add(dialog);
+        var tsc = new TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await dialog.OpenAsync();
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
+    }
+    
+    public static async Task<object?> ShowDialogModalAsync(Control content, object? dataContext = null, DialogOptions? options = null, TopLevel? topLevel = null)
+    {
+        var dialogManager = FindDialogManager(topLevel);
+        var dialog        = CreateDialog(content, dataContext, options);
+        dialog.IsModal = true;
+        if (options?.DialogHostType == DialogHostType.Window)
+        {
+            dialog.PlacementTarget = dialogManager;
+        }
         dialog.Closed += (_, _) => dialogManager.Children.Remove(dialog);
         dialogManager.Children.Add(dialog);
-        await Dispatcher.UIThread.InvokeAsync(async () => await dialog.OpenAsync());
+        var tsc = new TaskCompletionSource();
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await dialog.OpenAsync();
+            tsc.TrySetResult();
+        });
+        await tsc.Task;
+        return dialog.Result;
     }
 
     private static Dialog CreateDialog(Control content, object? dataContext, DialogOptions? options)
@@ -69,7 +171,6 @@ public partial class Dialog
             Title                     = options?.Title,
             TitleIcon                 = options?.TitleIcon,
             IsLightDismissEnabled     = options?.IsLightDismissEnabled ?? false,
-            IsModal                   = options?.IsModal ?? true,
             IsResizable               = options?.IsResizable ?? false,
             IsClosable                = options?.IsClosable ?? true,
             IsMaximizable             = options?.IsMaximizable ?? false,

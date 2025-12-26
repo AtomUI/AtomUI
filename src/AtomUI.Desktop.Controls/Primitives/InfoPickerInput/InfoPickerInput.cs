@@ -10,6 +10,7 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
@@ -454,6 +455,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         
         if (DecoratedBox != null)
         {
+            KeyboardNavigation.SetTabOnceActiveElement(this, DecoratedBox);
             if (DecoratedBox.ContentRightAddOn is Control rightContent)
             {
                 PickerClearUpButton = rightContent.FindDescendantOfType<PickerClearUpButton>();

@@ -486,8 +486,8 @@ public class ToggleSwitch : ToggleButton,
 
         _onContentPresenter  = scope.Find<ContentPresenter>(ToggleSwitchThemeConstants.OnContentPresenterPart);
         _offContentPresenter = scope.Find<ContentPresenter>(ToggleSwitchThemeConstants.OffContentPresenterPart);
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(ToggleSwitchThemeConstants.WaveSpiritPart);
-        _mainLayout          = e.NameScope.Find<Canvas>(ToggleSwitchThemeConstants.MainContainerPart);
+        _waveSpiritDecorator = scope.Find<WaveSpiritDecorator>(ToggleSwitchThemeConstants.WaveSpiritPart);
+        _mainLayout          = scope.Find<Canvas>(ToggleSwitchThemeConstants.MainContainerPart);
         HandleLoadingState(IsLoading);
     }
 

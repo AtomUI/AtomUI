@@ -32,12 +32,17 @@ internal class CardActionPanel : TemplatedControl
 
     public CardActionPanel()
     {
-        Actions.CollectionChanged += new NotifyCollectionChangedEventHandler(this.HandleActionsChanged);
+        Actions.CollectionChanged += HandleActionsChanged;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_uniformGrid != null)
+        {
+            _uniformGrid.Children.Clear();
+        }
+
         _uniformGrid = e.NameScope.Find<UniformGrid>(CardActionPanelThemeConstants.GridPanelPart);
         if (_uniformGrid != null)
         {

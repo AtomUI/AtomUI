@@ -500,7 +500,12 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
 
         _arrowIndicatorLayout = e.NameScope.Find<LayoutTransformControl>(PopupBuddyLayerThemeConstants.ArrowIndicatorLayoutPart);
         _ghostContentPresenter = e.NameScope.Find<ContentPresenter>(PopupBuddyLayerThemeConstants.GhostContentPresenterPart);
-       
+
+        if (_shadowRendererPanel != null)
+        {
+            _shadowRendererPanel.Children.Clear();
+        }
+        
         _shadowRendererPanel = e.NameScope.Find<Panel>(PopupBuddyLayerThemeConstants.ShadowRendererPart);
         if (_shadowRendererPanel != null)
         {

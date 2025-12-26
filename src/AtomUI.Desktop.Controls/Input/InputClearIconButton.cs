@@ -8,6 +8,9 @@ internal class InputClearIconButton : IconButton
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        SetCurrentValue(IconProperty, new CloseCircleFilled());
+        if (Icon == null)
+        {
+            SetCurrentValue(IconProperty, new CloseCircleFilled());
+        }
     }
 }

@@ -6,8 +6,6 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
-using IconControl = Icon;
-
 internal class SizeTypeAwareIconPresenter : TemplatedControl, ISizeTypeAware, IMotionAwareControl
 {
     #region 公共属性定义

@@ -51,9 +51,6 @@ public partial class DataGrid : TemplatedControl,
     public static readonly StyledProperty<bool> IsShowFrameBorderProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsShowFrameBorder), false);
 
-    public static readonly StyledProperty<bool> BorderedProperty =
-        AvaloniaProperty.Register<DataGrid, bool>(nameof(Bordered), false);
-    
     public static readonly StyledProperty<bool> CanUserReorderColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderColumns));
     
@@ -264,12 +261,6 @@ public partial class DataGrid : TemplatedControl,
     {
         get => GetValue(IsShowFrameBorderProperty);
         set => SetValue(IsShowFrameBorderProperty, value);
-    }
-
-    public bool Bordered
-    {
-        get => GetValue(BorderedProperty);
-        set => SetValue(BorderedProperty, value);
     }
 
     /// <summary>
@@ -985,7 +976,6 @@ public partial class DataGrid : TemplatedControl,
         ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleColumnWidthChanged(e));
         LeftFrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleFrozenColumnCountChanged(e));
         GridLinesVisibilityProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleGridLinesVisibilityChanged(e));
-        BorderedProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleGridLinesVisibilityChanged(e));
         HeadersVisibilityProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleHeadersVisibilityChanged(e));
         IsReadOnlyProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleIsReadOnlyChanged(e));
         MaxColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.HandleMaxColumnWidthChanged(e));
@@ -1600,7 +1590,7 @@ public partial class DataGrid : TemplatedControl,
         _topRightCornerHeader = e.NameScope.Find<ContentControl>(DataGridThemeConstants.TopRightCornerPart);
         _bottomRightCorner    = e.NameScope.Find<Visual>(DataGridThemeConstants.BottomRightCornerPart);
 
-        if (IsShowFrameBorder || Bordered)
+        if (IsShowFrameBorder)
         {
             ConfigureFrameBorderThickness();
         }
@@ -1741,7 +1731,6 @@ public partial class DataGrid : TemplatedControl,
         if (change.Property == BorderThicknessProperty ||
             change.Property == GridLinesVisibilityProperty ||
             change.Property == IsShowFrameBorderProperty ||
-            change.Property == BorderedProperty ||
             change.Property == FooterProperty)
         {
             ConfigureFrameBorderThickness();

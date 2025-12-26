@@ -76,12 +76,10 @@ public partial class DataGrid
         (HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row;
 
     internal bool AreHorizontalGridLinesVisible =>
-        Bordered ||
         GridLinesVisibility == DataGridGridLinesVisibility.Horizontal ||
         GridLinesVisibility == DataGridGridLinesVisibility.All;
 
     internal bool AreVerticalGridLinesVisible =>
-        Bordered ||
         GridLinesVisibility == DataGridGridLinesVisibility.Vertical ||
         GridLinesVisibility == DataGridGridLinesVisibility.All;
 

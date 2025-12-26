@@ -4704,8 +4704,7 @@ public partial class DataGrid
 
     private void ConfigureFrameBorderThickness()
     {
-        bool showFrameBorder = IsShowFrameBorder || Bordered;
-        if (!showFrameBorder)
+        if (!IsShowFrameBorder)
         {
             SetValue(FrameBorderThicknessProperty, new Thickness(0), BindingPriority.Template);
         }

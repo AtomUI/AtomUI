@@ -319,8 +319,7 @@ public class DataGridCell : ContentControl
         if (OwningGrid != null && _rightGridLine != null)
         {
             bool newVisibility =
-                (OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.Vertical ||
-                 OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.All)
+                OwningGrid.AreVerticalGridLinesVisible
                 && ((OwningGrid.ColumnsInternal.FillerColumn != null &&
                      OwningGrid.ColumnsInternal.FillerColumn.IsActive) || OwningColumn != lastVisibleColumn);
 

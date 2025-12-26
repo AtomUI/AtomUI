@@ -7,6 +7,11 @@
     xmlns:dataGridLocalization="clr-namespace:AtomUI.Desktop.Controls.DataGridLocalization">
     <converters:DataGridHeaderCornerRadiusConverter x:Key="DataGridHeaderCornerRadiusConverter" />
     <converters:DataGridUniformBorderThicknessToScalarConverter x:Key="DataGridUniformBorderThicknessToScalarConverter" />
+    <atom:BorderThicknessFilterConverter x:Key="TitleSeparatorThicknessConverter"
+                                         Left="False"
+                                         Top="False"
+                                         Right="False"
+                                         Bottom="True" />
     <converters:DataGridPaginationVisibilityConvertor x:Key="TopPaginationVisibilityConvertor" IsTop="True" />
     <converters:DataGridPaginationVisibilityConvertor x:Key="BottomPaginationVisibilityConvertor" IsTop="False" />
     <ControlTheme x:Key="{x:Type atom:DataGrid}" TargetType="atom:DataGrid">
@@ -33,11 +38,14 @@
                                              SizeType="{TemplateBinding SizeType}"
                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                              IsVisible="{TemplateBinding EffectivePaginationVisibility, Converter={StaticResource TopPaginationVisibilityConvertor}}" />
-                            <ContentPresenter Name="Title"
-                                              Content="{TemplateBinding Title}"
-                                              ContentTemplate="{TemplateBinding TitleTemplate}"
-                                              IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                              DockPanel.Dock="Top" />
+                            <Border Name="TitleFrame"
+                                    DockPanel.Dock="Top"
+                                    BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource TitleSeparatorThicknessConverter}}"
+                                    IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <ContentPresenter Name="Title"
+                                                  Content="{TemplateBinding Title}"
+                                                  ContentTemplate="{TemplateBinding TitleTemplate}" />
+                            </Border>
                             <atom:Pagination DockPanel.Dock="Bottom"
                                              Name="{x:Static atom:DataGridThemeConstants.BottomPaginationPart}"
                                              Margin="{DynamicResource {x:Static atom:DataGridTokenKey.PaginationMargin}}"
@@ -179,6 +187,14 @@
 
         <Style Selector="^ /template/ Border#Frame">
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableBorderColor}}" />
+        </Style>
+
+        <Style Selector="^ /template/ Border#TitleFrame">
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableBorderColor}}" />
+        </Style>
+
+        <Style Selector="^[IsShowFrameBorder=False] /template/ Border#TitleFrame">
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#Footer">

@@ -75,6 +75,14 @@ public partial class DataGrid
     internal bool IsRowHeadersVisible =>
         (HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row;
 
+    internal bool AreHorizontalGridLinesVisible =>
+        GridLinesVisibility == DataGridGridLinesVisibility.Horizontal ||
+        GridLinesVisibility == DataGridGridLinesVisibility.All;
+
+    internal bool AreVerticalGridLinesVisible =>
+        GridLinesVisibility == DataGridGridLinesVisibility.Vertical ||
+        GridLinesVisibility == DataGridGridLinesVisibility.All;
+
     internal double RowHeadersDesiredWidth
     {
         get => _rowHeaderDesiredWidth;
@@ -94,8 +102,7 @@ public partial class DataGrid
     }
 
     internal bool AreRowBottomGridLinesRequired =>
-        (GridLinesVisibility == DataGridGridLinesVisibility.Horizontal ||
-         GridLinesVisibility == DataGridGridLinesVisibility.All);
+        AreHorizontalGridLinesVisible;
 
     internal int FirstVisibleSlot => (SlotCount > 0) ? GetNextVisibleSlot(-1) : -1;
 

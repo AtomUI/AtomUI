@@ -133,7 +133,7 @@ public class DataGridRowHeader : ContentControl
     private void ConfigureSeparatorVisible()
     {
         Debug.Assert(OwningGrid != null);
-        bool newVisibility = OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.Horizontal || OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.All;
+        bool newVisibility = OwningGrid.AreHorizontalGridLinesVisible;
 
         if (newVisibility != IsSeparatorsVisible)
         {

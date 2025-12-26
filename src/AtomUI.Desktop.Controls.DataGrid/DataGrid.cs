@@ -50,7 +50,7 @@ public partial class DataGrid : TemplatedControl,
 
     public static readonly StyledProperty<bool> IsShowFrameBorderProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsShowFrameBorder), false);
-    
+
     public static readonly StyledProperty<bool> CanUserReorderColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderColumns));
     

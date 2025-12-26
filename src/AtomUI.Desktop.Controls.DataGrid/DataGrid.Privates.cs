@@ -1522,6 +1522,11 @@ public partial class DataGrid
     {
         if (IsColumnHeadersVisible)
         {
+            if (_topLeftCornerHeader is DataGridColumnHeader cornerHeader)
+            {
+                cornerHeader.IsSeparatorFullHeight = AreVerticalGridLinesVisible;
+            }
+
             double totalColumnsWidth = 0;
             foreach (DataGridColumn column in ColumnsInternal)
             {
@@ -1529,6 +1534,7 @@ public partial class DataGrid
 
                 column.HeaderCell.IsSeparatorsVisible =
                     (column != ColumnsInternal.LastVisibleColumn || totalColumnsWidth < CellsWidth);
+                column.HeaderCell.IsSeparatorFullHeight = AreVerticalGridLinesVisible;
             }
         }
 
@@ -2257,9 +2263,9 @@ public partial class DataGrid
 
     private void HandleGridLinesVisibilityChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        EnsureVerticalGridLines();
         foreach (DataGridRow row in GetAllRows())
         {
-            row.EnsureGridLines();
             row.InvalidateHorizontalArrange();
         }
     }
@@ -4704,8 +4710,7 @@ public partial class DataGrid
         }
         else
         {
-            if (Footer == null && (GridLinesVisibility == DataGridGridLinesVisibility.All ||
-                                   GridLinesVisibility == DataGridGridLinesVisibility.Horizontal))
+            if (Footer == null && AreHorizontalGridLinesVisible)
             {
                 SetValue(FrameBorderThicknessProperty,
                     new Thickness(BorderThickness.Left, BorderThickness.Top, BorderThickness.Right, 0));

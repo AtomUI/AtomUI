@@ -24,7 +24,6 @@
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
                         <Rectangle Name="VerticalSeparator"
                                    Width="1.0"
-                                   VerticalAlignment="Center"
                                    HorizontalAlignment="Right"
                                    IsVisible="{TemplateBinding IsSeparatorsVisible}" />
                         <Panel Name="FocusVisual"

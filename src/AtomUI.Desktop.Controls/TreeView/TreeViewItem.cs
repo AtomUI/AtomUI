@@ -30,21 +30,6 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     public static readonly StyledProperty<bool?> IsCheckedProperty =
         AvaloniaProperty.Register<TreeViewItem, bool?>(nameof(IsChecked), false);
 
-    public static readonly StyledProperty<PathIcon?> SwitcherExpandIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherExpandIcon));
-
-    public static readonly StyledProperty<PathIcon?> SwitcherCollapseIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherCollapseIcon));
-
-    public static readonly StyledProperty<PathIcon?> SwitcherRotationIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
-
-    public static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
-
-    public static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLeafIcon));
-
     public static readonly DirectProperty<TreeViewItem, bool> IsLeafProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsLeaf),
             o => o.IsLeaf);
@@ -62,36 +47,6 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
-    }
-
-    public PathIcon? SwitcherExpandIcon
-    {
-        get => GetValue(SwitcherExpandIconProperty);
-        set => SetValue(SwitcherExpandIconProperty, value);
-    }
-
-    public PathIcon? SwitcherCollapseIcon
-    {
-        get => GetValue(SwitcherCollapseIconProperty);
-        set => SetValue(SwitcherCollapseIconProperty, value);
-    }
-
-    public PathIcon? SwitcherRotationIcon
-    {
-        get => GetValue(SwitcherRotationIconProperty);
-        set => SetValue(SwitcherRotationIconProperty, value);
-    }
-
-    public PathIcon? SwitcherLoadingIcon
-    {
-        get => GetValue(SwitcherLoadingIconProperty);
-        set => SetValue(SwitcherLoadingIconProperty, value);
-    }
-
-    public PathIcon? SwitcherLeafIcon
-    {
-        get => GetValue(SwitcherLeafIconProperty);
-        set => SetValue(SwitcherLeafIconProperty, value);
     }
 
     public bool? IsChecked
@@ -148,6 +103,21 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     #endregion
 
     #region 内部属性定义
+    
+    internal static readonly StyledProperty<PathIcon?> SwitcherExpandIconProperty =
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherExpandIcon));
+
+    internal static readonly StyledProperty<PathIcon?> SwitcherCollapseIconProperty =
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherCollapseIcon));
+
+    internal static readonly StyledProperty<PathIcon?> SwitcherRotationIconProperty =
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
+
+    internal static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
+
+    internal static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLeafIcon));
 
     internal static readonly DirectProperty<TreeViewItem, TreeItemHoverMode> NodeHoverModeProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItem, TreeItemHoverMode>(nameof(NodeHoverMode),
@@ -188,6 +158,36 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     
     internal static readonly StyledProperty<bool> IsShowLeafIconProperty =
         AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsShowLeafIcon));
+    
+    internal PathIcon? SwitcherExpandIcon
+    {
+        get => GetValue(SwitcherExpandIconProperty);
+        set => SetValue(SwitcherExpandIconProperty, value);
+    }
+
+    internal PathIcon? SwitcherCollapseIcon
+    {
+        get => GetValue(SwitcherCollapseIconProperty);
+        set => SetValue(SwitcherCollapseIconProperty, value);
+    }
+
+    internal PathIcon? SwitcherRotationIcon
+    {
+        get => GetValue(SwitcherRotationIconProperty);
+        set => SetValue(SwitcherRotationIconProperty, value);
+    }
+
+    internal PathIcon? SwitcherLoadingIcon
+    {
+        get => GetValue(SwitcherLoadingIconProperty);
+        set => SetValue(SwitcherLoadingIconProperty, value);
+    }
+
+    internal PathIcon? SwitcherLeafIcon
+    {
+        get => GetValue(SwitcherLeafIconProperty);
+        set => SetValue(SwitcherLeafIconProperty, value);
+    }
     
     private TreeItemHoverMode _nodeHoverMode;
 

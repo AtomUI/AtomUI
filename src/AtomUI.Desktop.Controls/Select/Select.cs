@@ -270,12 +270,18 @@ public class Select : TemplatedControl,
         set => SetValue(MaxTagCountProperty, value);
     }
     
+    /// <summary>
+    /// 响应式最大显示的 Tags 数量
+    /// </summary>
     public bool? IsResponsiveMaxTagCount
     {
         get => GetValue(IsResponsiveMaxTagCountProperty);
         set => SetValue(IsResponsiveMaxTagCountProperty, value);
     }
     
+    /// <summary>
+    /// 在响应式情况下，Tags 因为宽度不够被隐藏之后显示的内容
+    /// </summary>
     public string? MaxTagPlaceholder
     {
         get => GetValue(MaxTagPlaceholderProperty);
@@ -390,7 +396,6 @@ public class Select : TemplatedControl,
     }
     #endregion
     
-    public IComparer<ISelectOption>? FilterSortFn { get; set; }
     public Func<object, object, bool>? FilterFn { get; set; }
     
     public Func<object, ISelectOption, bool>? DefaultValueCompareFn { get; set; }

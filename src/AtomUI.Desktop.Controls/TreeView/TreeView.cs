@@ -42,6 +42,21 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
     public static readonly StyledProperty<TreeItemHoverMode> NodeHoverModeProperty =
         AvaloniaProperty.Register<TreeView, TreeItemHoverMode>(nameof(NodeHoverMode), TreeItemHoverMode.Default);
+    
+    public static readonly StyledProperty<PathIcon?> SwitcherExpandIconProperty =
+        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherExpandIcon));
+
+    public static readonly StyledProperty<PathIcon?> SwitcherCollapseIconProperty =
+        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherCollapseIcon));
+
+    public static readonly StyledProperty<PathIcon?> SwitcherRotationIconProperty =
+        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherRotationIcon));
+
+    public static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
+        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherRotationIcon));
+
+    public static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
+        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherLeafIcon));
 
     public static readonly StyledProperty<bool> IsShowLeafIconProperty =
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsShowLeafIcon));
@@ -101,6 +116,36 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     {
         get => GetValue(NodeHoverModeProperty);
         set => SetValue(NodeHoverModeProperty, value);
+    }
+    
+    public PathIcon? SwitcherExpandIcon
+    {
+        get => GetValue(SwitcherExpandIconProperty);
+        set => SetValue(SwitcherExpandIconProperty, value);
+    }
+
+    public PathIcon? SwitcherCollapseIcon
+    {
+        get => GetValue(SwitcherCollapseIconProperty);
+        set => SetValue(SwitcherCollapseIconProperty, value);
+    }
+
+    public PathIcon? SwitcherRotationIcon
+    {
+        get => GetValue(SwitcherRotationIconProperty);
+        set => SetValue(SwitcherRotationIconProperty, value);
+    }
+
+    public PathIcon? SwitcherLoadingIcon
+    {
+        get => GetValue(SwitcherLoadingIconProperty);
+        set => SetValue(SwitcherLoadingIconProperty, value);
+    }
+
+    public PathIcon? SwitcherLeafIcon
+    {
+        get => GetValue(SwitcherLeafIconProperty);
+        set => SetValue(SwitcherLeafIconProperty, value);
     }
 
     public bool IsShowLeafIcon
@@ -485,6 +530,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 TreeViewItem.IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, TreeViewItem.IsSwitcherRotationProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, SwitcherExpandIconProperty, treeViewItem, TreeViewItem.SwitcherExpandIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, SwitcherCollapseIconProperty, treeViewItem, TreeViewItem.SwitcherCollapseIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, SwitcherRotationIconProperty, treeViewItem, TreeViewItem.SwitcherRotationIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, SwitcherLoadingIconProperty, treeViewItem, TreeViewItem.SwitcherLoadingIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, SwitcherLeafIconProperty, treeViewItem, TreeViewItem.SwitcherLeafIconProperty));
             
             PrepareTreeViewItem(treeViewItem, item, index, disposables);
             

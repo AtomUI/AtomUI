@@ -289,15 +289,6 @@ public partial class TreeView
         }
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == DefaultSelectedPathsProperty)
-        {
-            ConfigureDefaultSelectedPaths();
-        }
-    }
-
     private void HandlePrepareDrag()
     {
         _beingDraggedTreeItem = GetNodeByPositionSelfFirst(_lastPoint!.Value);

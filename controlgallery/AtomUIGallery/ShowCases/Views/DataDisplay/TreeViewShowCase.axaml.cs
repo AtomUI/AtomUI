@@ -18,6 +18,7 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
                 InitBasicTreeViewData(viewModel);
                 viewModel.TreeViewNodeHoverMode = TreeItemHoverMode.Default;
                 InitBasicTreeNodes(viewModel);
+                InitCustomizeCollapseExpandTreeDefaultExpandedPaths(viewModel);
             }
         });
         InitializeComponent();
@@ -117,6 +118,13 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
                     }
                 ]
             }
+        ];
+    }
+
+    private void InitCustomizeCollapseExpandTreeDefaultExpandedPaths(TreeViewViewModel viewModel)
+    {
+        viewModel.CustomizeCollapseExpandTreeDefaultExpandedPaths = [
+            new TreeNodePath("0-0/0-0-0")
         ];
     }
 }

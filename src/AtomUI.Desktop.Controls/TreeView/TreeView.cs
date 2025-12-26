@@ -43,20 +43,20 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public static readonly StyledProperty<TreeItemHoverMode> NodeHoverModeProperty =
         AvaloniaProperty.Register<TreeView, TreeItemHoverMode>(nameof(NodeHoverMode), TreeItemHoverMode.Default);
     
-    public static readonly StyledProperty<PathIcon?> SwitcherExpandIconProperty =
-        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherExpandIcon));
+    public static readonly StyledProperty<IconTemplate?> SwitcherExpandIconProperty =
+        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherExpandIcon));
 
-    public static readonly StyledProperty<PathIcon?> SwitcherCollapseIconProperty =
-        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherCollapseIcon));
+    public static readonly StyledProperty<IconTemplate?> SwitcherCollapseIconProperty =
+        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherCollapseIcon));
 
-    public static readonly StyledProperty<PathIcon?> SwitcherRotationIconProperty =
-        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherRotationIcon));
+    public static readonly StyledProperty<IconTemplate?> SwitcherRotationIconProperty =
+        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherRotationIcon));
 
-    public static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
-        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherRotationIcon));
+    public static readonly StyledProperty<IconTemplate?> SwitcherLoadingIconProperty =
+        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherRotationIcon));
 
-    public static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
-        AvaloniaProperty.Register<TreeView, PathIcon?>(nameof(SwitcherLeafIcon));
+    public static readonly StyledProperty<IconTemplate?> SwitcherLeafIconProperty =
+        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherLeafIcon));
 
     public static readonly StyledProperty<bool> IsShowLeafIconProperty =
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsShowLeafIcon));
@@ -118,31 +118,31 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetValue(NodeHoverModeProperty, value);
     }
     
-    public PathIcon? SwitcherExpandIcon
+    public IconTemplate? SwitcherExpandIcon
     {
         get => GetValue(SwitcherExpandIconProperty);
         set => SetValue(SwitcherExpandIconProperty, value);
     }
 
-    public PathIcon? SwitcherCollapseIcon
+    public IconTemplate? SwitcherCollapseIcon
     {
         get => GetValue(SwitcherCollapseIconProperty);
         set => SetValue(SwitcherCollapseIconProperty, value);
     }
 
-    public PathIcon? SwitcherRotationIcon
+    public IconTemplate? SwitcherRotationIcon
     {
         get => GetValue(SwitcherRotationIconProperty);
         set => SetValue(SwitcherRotationIconProperty, value);
     }
 
-    public PathIcon? SwitcherLoadingIcon
+    public IconTemplate? SwitcherLoadingIcon
     {
         get => GetValue(SwitcherLoadingIconProperty);
         set => SetValue(SwitcherLoadingIconProperty, value);
     }
 
-    public PathIcon? SwitcherLeafIcon
+    public IconTemplate? SwitcherLeafIcon
     {
         get => GetValue(SwitcherLeafIconProperty);
         set => SetValue(SwitcherLeafIconProperty, value);
@@ -522,6 +522,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, treeViewItem, TreeViewItem.HeaderTemplateProperty));
             }
             
+            SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherExpandIconProperty, SwitcherExpandIcon);
+            SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherCollapseIconProperty, SwitcherCollapseIcon);
+            SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherRotationIconProperty, SwitcherRotationIcon);
+            SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLoadingIconProperty, SwitcherLoadingIcon);
+            SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLeafIconProperty, SwitcherLeafIcon);
+            
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, TreeViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, TreeViewItem.NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, TreeViewItem.IsShowLineProperty));
@@ -530,11 +536,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 TreeViewItem.IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, TreeViewItem.IsSwitcherRotationProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, SwitcherExpandIconProperty, treeViewItem, TreeViewItem.SwitcherExpandIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, SwitcherCollapseIconProperty, treeViewItem, TreeViewItem.SwitcherCollapseIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, SwitcherRotationIconProperty, treeViewItem, TreeViewItem.SwitcherRotationIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, SwitcherLoadingIconProperty, treeViewItem, TreeViewItem.SwitcherLoadingIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, SwitcherLeafIconProperty, treeViewItem, TreeViewItem.SwitcherLeafIconProperty));
             
             PrepareTreeViewItem(treeViewItem, item, index, disposables);
             
@@ -550,6 +551,19 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type TreeViewItem.");
         }
     }
+
+    private void SetTreeViewItemIcon(TreeViewItem treeViewItem, AvaloniaProperty iconProperty, IIconTemplate? iconTemplate)
+    {
+        if (iconTemplate == null)
+        {
+            treeViewItem.SetValue(iconProperty, null);
+        }
+        else
+        {
+            treeViewItem.SetValue(iconProperty, iconTemplate.Build());
+        }
+    }
+    
     
     protected virtual void PrepareTreeViewItem(TreeViewItem treeViewItem, object? item, int index, CompositeDisposable compositeDisposable)
     {
@@ -980,4 +994,93 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     }
 
     #endregion
+    
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == DefaultSelectedPathsProperty)
+        {
+            ConfigureDefaultSelectedPaths();
+        }
+        else if (change.Property == SwitcherRotationIconProperty)
+        {
+            HandleSwitcherRotationIconChanged();
+        }
+        else if (change.Property == SwitcherExpandIconProperty)
+        {
+            HandleSwitcherExpandIconChanged();
+        }
+        else if (change.Property == SwitcherCollapseIconProperty)
+        {
+            HandleSwitcherCollapseIconChanged();
+        }
+        else if (change.Property == SwitcherLoadingIconProperty)
+        {
+            HandleSwitcherLoadingIconChanged();
+        }
+        else if (change.Property == SwitcherLeafIconProperty)
+        {
+            HandleSwitcherLeafIconChanged();
+        }
+    }
+
+    protected void HandleSwitcherRotationIconChanged()
+    {
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is TreeViewItem treeViewItem)
+            {
+                SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherRotationIconProperty, SwitcherRotationIcon);
+            }
+        }
+    }
+    
+    protected void HandleSwitcherExpandIconChanged()
+    {
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is TreeViewItem treeViewItem)
+            {
+                SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherExpandIconProperty, SwitcherExpandIcon);
+            }
+        }
+    }
+    
+    protected void HandleSwitcherCollapseIconChanged()
+    {
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is TreeViewItem treeViewItem)
+            {
+                SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherCollapseIconProperty, SwitcherCollapseIcon);
+            }
+        }
+    }
+    
+    protected void HandleSwitcherLoadingIconChanged()
+    {
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is TreeViewItem treeViewItem)
+            {
+                SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLoadingIconProperty, SwitcherLoadingIcon);
+            }
+        }
+    }
+    
+    protected void HandleSwitcherLeafIconChanged()
+    {
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is TreeViewItem treeViewItem)
+            {
+                SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLeafIconProperty, SwitcherLeafIcon);
+            }
+        }
+    }
 }

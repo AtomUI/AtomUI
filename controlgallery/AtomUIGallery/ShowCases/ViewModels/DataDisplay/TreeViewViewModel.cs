@@ -45,6 +45,14 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _basicTreeViewDefaultExpandedPaths, value);
     }
     
+    private IList<TreeNodePath>? _customizeCollapseExpandTreeDefaultExpandedPaths;
+
+    public IList<TreeNodePath>? CustomizeCollapseExpandTreeDefaultExpandedPaths
+    {
+        get => _customizeCollapseExpandTreeDefaultExpandedPaths;
+        set => this.RaiseAndSetIfChanged(ref _customizeCollapseExpandTreeDefaultExpandedPaths, value);
+    }
+    
     private IList<TreeNodePath>? _basicTreeViewDefaultSelectedPaths;
 
     public IList<TreeNodePath>? BasicTreeViewDefaultSelectedPaths

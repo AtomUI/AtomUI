@@ -22,6 +22,7 @@
                             CollapseIcon="{TemplateBinding SwitcherCollapseIcon}"
                             ExpandIcon="{TemplateBinding SwitcherExpandIcon}"
                             LoadingIcon="{TemplateBinding SwitcherLoadingIcon}"
+                            RotationIcon="{TemplateBinding SwitcherRotationIcon}"
                             LeafIcon="{TemplateBinding SwitcherLeafIcon}"
                             IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
                             IsLoading="{TemplateBinding IsLoading}" />

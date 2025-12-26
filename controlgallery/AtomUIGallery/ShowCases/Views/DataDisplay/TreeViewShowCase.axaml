@@ -31,125 +31,152 @@
             </atom:TreeView>
         </gallery:ShowCaseItem>
         
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Generate by template" -->
-        <!--     Description="You can use the Template mechanism to generate tree nodes"> -->
-        <!--     <atom:TreeView ToggleType="CheckBox" -->
-        <!--                    x:DataType="viewModels:TreeViewViewModel" -->
-        <!--                    DefaultExpandedPaths="{Binding BasicTreeViewDefaultExpandedPaths}" -->
-        <!--                    DefaultSelectedPaths="{Binding BasicTreeViewDefaultSelectedPaths}" -->
-        <!--                    DefaultCheckedPaths="{Binding BasicTreeViewDefaultCheckedPaths}" -->
-        <!--                    ItemsSource="{Binding BasicTreeNodes}"> -->
-        <!--         <atom:TreeView.ItemTemplate> -->
-        <!--             <TreeDataTemplate ItemsSource="{Binding Children}"> -->
-        <!--                 <atom:TextBlock Text="{Binding Header}" /> -->
-        <!--             </TreeDataTemplate> -->
-        <!--         </atom:TreeView.ItemTemplate> -->
-        <!--     </atom:TreeView> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Block Node" -->
-        <!--     Description="Block Node."> -->
-        <!--     <atom:TreeView ToggleType="CheckBox" IsDefaultExpandAll="True" NodeHoverMode="Block"> -->
-        <!--         <atom:TreeViewItem Header="parent"> -->
-        <!--             <atom:TreeViewItem Header="child 1" IsEnabled="False" /> -->
-        <!--             <atom:TreeViewItem Header="child 2" IsIndicatorEnabled="False"/> -->
-        <!--         </atom:TreeViewItem> -->
-        <!--     </atom:TreeView> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Tree with line" -->
-        <!--     Description="Tree with connected line between nodes, turn on by showLine, customize the preset icon by switcherIcon."> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="10"> -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <TextBlock VerticalAlignment="Center">showLine:</TextBlock> -->
-        <!--             <atom:ToggleSwitch VerticalAlignment="Center" IsChecked="{Binding ShowLineSwitchChecked,Mode=TwoWay}" /> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <TextBlock VerticalAlignment="Center" >showIcon:</TextBlock> -->
-        <!--             <atom:ToggleSwitch VerticalAlignment="Center" IsChecked="{Binding ShowIconSwitchChecked,Mode=TwoWay}" /> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <TextBlock VerticalAlignment="Center">ShowLeafIcon:</TextBlock> -->
-        <!--             <atom:ToggleSwitch VerticalAlignment="Center" IsChecked="{Binding ShowLeafIconSwitchChecked,Mode=TwoWay}" /> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <TextBlock VerticalAlignment="Center">Node hover mode:</TextBlock> -->
-        <!--             <atom:RadioButton IsChecked="True" IsCheckedChanged="HandleHoverModeChanged" Tag="{x:Static atom:TreeItemHoverMode.Default}">Default</atom:RadioButton> -->
-        <!--             <atom:RadioButton IsCheckedChanged="HandleHoverModeChanged" Tag="{x:Static atom:TreeItemHoverMode.Block}">Block</atom:RadioButton> -->
-        <!--             <atom:RadioButton IsCheckedChanged="HandleHoverModeChanged" Tag="{x:Static atom:TreeItemHoverMode.WholeLine}">WholeLine</atom:RadioButton> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <atom:TreeView IsShowLine="{Binding ShowLineSwitchChecked}" -->
-        <!--                        IsShowIcon="{Binding ShowIconSwitchChecked}" -->
-        <!--                        IsShowLeafIcon="{Binding ShowLeafIconSwitchChecked}" -->
-        <!--                        NodeHoverMode="{Binding TreeViewNodeHoverMode}" -->
-        <!--                        IsSwitcherRotation="False" -->
-        <!--                        x:DataType="viewModels:TreeViewViewModel"> -->
-        <!--             <atom:TreeViewItem Header="parent 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" -->
-        <!--                                IsExpanded="True"> -->
-        <!--                 <atom:TreeViewItem Header="parent 1-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" -->
-        <!--                                    IsExpanded="True"> -->
-        <!--                     <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                     <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                 </atom:TreeViewItem> -->
-        <!--                 <atom:TreeViewItem Header="parent 1-1"> -->
-        <!--                     <atom:TreeViewItem Header="leaf" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                 </atom:TreeViewItem> -->
-        <!--                 <atom:TreeViewItem Header="parent 1-2"> -->
-        <!--                     <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                     <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                 </atom:TreeViewItem> -->
-        <!--             </atom:TreeViewItem> -->
-        <!--             <atom:TreeViewItem Header="parent 2"> -->
-        <!--                 <atom:TreeViewItem Header="parent 2-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"> -->
-        <!--                     <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                     <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" /> -->
-        <!--                 </atom:TreeViewItem> -->
-        <!--             </atom:TreeViewItem> -->
-        <!--         </atom:TreeView> -->
-        <!--     </StackPanel> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="draggable" -->
-        <!--     Description="Drag treeNode to insert after the other treeNode or insert into the other parent TreeNode." -->
-        <!--     Margin="0, 0, 10, 0"> -->
-        <!--     <atom:TreeView IsDraggable="True" NodeHoverMode="Block"> -->
-        <!--         <atom:TreeViewItem Header="0-0"> -->
-        <!--             <atom:TreeViewItem Header="0-0-0"> -->
-        <!--                 <atom:TreeViewItem Header="0-0-0-0" /> -->
-        <!--                 <atom:TreeViewItem Header="0-0-0-1" /> -->
-        <!--                 <atom:TreeViewItem Header="0-0-0-2" /> -->
-        <!--             </atom:TreeViewItem> -->
-        <!--             <atom:TreeViewItem Header="0-0-1"> -->
-        <!--                 <atom:TreeViewItem Header="0-0-1-0" /> -->
-        <!--                 <atom:TreeViewItem Header="0-0-1-1" /> -->
-        <!--                 <atom:TreeViewItem Header="0-0-1-2" /> -->
-        <!--             </atom:TreeViewItem> -->
-        <!--             <atom:TreeViewItem Header="0-0-2" /> -->
-        <!--         </atom:TreeViewItem> -->
-        <!--         <atom:TreeViewItem Header="0-1"> -->
-        <!--             <atom:TreeViewItem Header="0-1-0"> -->
-        <!--                 <atom:TreeViewItem Header="0-1-0-0" /> -->
-        <!--                 <atom:TreeViewItem Header="0-1-0-1" /> -->
-        <!--                 <atom:TreeViewItem Header="0-1-0-2" /> -->
-        <!--             </atom:TreeViewItem> -->
-        <!--             <atom:TreeViewItem Header="0-1-1"> -->
-        <!--                 <atom:TreeViewItem Header="0-1-1-0" /> -->
-        <!--                 <atom:TreeViewItem Header="0-1-1-1" /> -->
-        <!--                 <atom:TreeViewItem Header="0-1-1-2" /> -->
-        <!--             </atom:TreeViewItem> -->
-        <!--             <atom:TreeViewItem Header="0-1-2" /> -->
-        <!--         </atom:TreeViewItem> -->
-        <!--         <atom:TreeViewItem Header="0-2" /> -->
-        <!--     </atom:TreeView> -->
-        <!-- </gallery:ShowCaseItem> -->
+        <gallery:ShowCaseItem
+            Title="Generate by template"
+            Description="You can use the Template mechanism to generate tree nodes">
+            <atom:TreeView ToggleType="CheckBox"
+                           x:DataType="viewModels:TreeViewViewModel"
+                           DefaultExpandedPaths="{Binding BasicTreeViewDefaultExpandedPaths}"
+                           DefaultSelectedPaths="{Binding BasicTreeViewDefaultSelectedPaths}"
+                           DefaultCheckedPaths="{Binding BasicTreeViewDefaultCheckedPaths}"
+                           ItemsSource="{Binding BasicTreeNodes}">
+                <atom:TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" />
+                    </TreeDataTemplate>
+                </atom:TreeView.ItemTemplate>
+            </atom:TreeView>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Block Node"
+            Description="Block Node.">
+            <atom:TreeView ToggleType="CheckBox" IsDefaultExpandAll="True" NodeHoverMode="Block">
+                <atom:TreeViewItem Header="parent">
+                    <atom:TreeViewItem Header="child 1" IsEnabled="False" />
+                    <atom:TreeViewItem Header="child 2" IsIndicatorEnabled="False"/>
+                </atom:TreeViewItem>
+            </atom:TreeView>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Tree with line"
+            Description="Tree with connected line between nodes, turn on by showLine, customize the preset icon by switcherIcon.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock VerticalAlignment="Center">showLine:</TextBlock>
+                    <atom:ToggleSwitch VerticalAlignment="Center" IsChecked="{Binding ShowLineSwitchChecked,Mode=TwoWay}" />
+                </StackPanel>
+        
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock VerticalAlignment="Center" >showIcon:</TextBlock>
+                    <atom:ToggleSwitch VerticalAlignment="Center" IsChecked="{Binding ShowIconSwitchChecked,Mode=TwoWay}" />
+                </StackPanel>
+        
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock VerticalAlignment="Center">ShowLeafIcon:</TextBlock>
+                    <atom:ToggleSwitch VerticalAlignment="Center" IsChecked="{Binding ShowLeafIconSwitchChecked,Mode=TwoWay}" />
+                </StackPanel>
+        
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock VerticalAlignment="Center">Node hover mode:</TextBlock>
+                    <atom:RadioButton IsChecked="True" IsCheckedChanged="HandleHoverModeChanged" Tag="{x:Static atom:TreeItemHoverMode.Default}">Default</atom:RadioButton>
+                    <atom:RadioButton IsCheckedChanged="HandleHoverModeChanged" Tag="{x:Static atom:TreeItemHoverMode.Block}">Block</atom:RadioButton>
+                    <atom:RadioButton IsCheckedChanged="HandleHoverModeChanged" Tag="{x:Static atom:TreeItemHoverMode.WholeLine}">WholeLine</atom:RadioButton>
+                </StackPanel>
+        
+                <atom:TreeView IsShowLine="{Binding ShowLineSwitchChecked}"
+                               IsShowIcon="{Binding ShowIconSwitchChecked}"
+                               IsShowLeafIcon="{Binding ShowLeafIconSwitchChecked}"
+                               NodeHoverMode="{Binding TreeViewNodeHoverMode}"
+                               IsSwitcherRotation="False"
+                               x:DataType="viewModels:TreeViewViewModel">
+                    <atom:TreeViewItem Header="parent 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
+                                       IsExpanded="True">
+                        <atom:TreeViewItem Header="parent 1-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
+                                           IsExpanded="True">
+                            <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                            <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeViewItem>
+                        <atom:TreeViewItem Header="parent 1-1">
+                            <atom:TreeViewItem Header="leaf" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeViewItem>
+                        <atom:TreeViewItem Header="parent 1-2">
+                            <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                            <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeViewItem>
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="parent 2">
+                        <atom:TreeViewItem Header="parent 2-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}">
+                            <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                            <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeViewItem>
+                    </atom:TreeViewItem>
+                </atom:TreeView>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="draggable"
+            Description="Drag treeNode to insert after the other treeNode or insert into the other parent TreeNode."
+            Margin="0, 0, 10, 0">
+            <atom:TreeView IsDraggable="True" NodeHoverMode="Block">
+                <atom:TreeViewItem Header="0-0">
+                    <atom:TreeViewItem Header="0-0-0">
+                        <atom:TreeViewItem Header="0-0-0-0" />
+                        <atom:TreeViewItem Header="0-0-0-1" />
+                        <atom:TreeViewItem Header="0-0-0-2" />
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="0-0-1">
+                        <atom:TreeViewItem Header="0-0-1-0" />
+                        <atom:TreeViewItem Header="0-0-1-1" />
+                        <atom:TreeViewItem Header="0-0-1-2" />
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="0-0-2" />
+                </atom:TreeViewItem>
+                <atom:TreeViewItem Header="0-1">
+                    <atom:TreeViewItem Header="0-1-0">
+                        <atom:TreeViewItem Header="0-1-0-0" />
+                        <atom:TreeViewItem Header="0-1-0-1" />
+                        <atom:TreeViewItem Header="0-1-0-2" />
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="0-1-1">
+                        <atom:TreeViewItem Header="0-1-1-0" />
+                        <atom:TreeViewItem Header="0-1-1-1" />
+                        <atom:TreeViewItem Header="0-1-1-2" />
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="0-1-2" />
+                </atom:TreeViewItem>
+                <atom:TreeViewItem Header="0-2" />
+            </atom:TreeView>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Customize collapse/expand icon"
+            Description="customize collapse/expand icon of tree node">
+            <atom:TreeView Name="CustomizeCollapseExpandTree" DefaultExpandedPaths="{Binding CustomizeCollapseExpandTreeDefaultExpandedPaths}"
+                           IsSwitcherRotation="True">
+                <atom:TreeView.SwitcherRotationIcon>
+                    <atom:IconTemplate>
+                        <antdicons:RightOutlined/>
+                    </atom:IconTemplate>
+                </atom:TreeView.SwitcherRotationIcon>
+                <atom:TreeViewItem Header="parent 1" ItemKey="0-0">
+                    <atom:TreeViewItem Header="parent 1-0" ItemKey="0-0-0">
+                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-0"/>
+                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-1" />
+                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-2" />
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="parent 1-1" ItemKey="0-0-1">
+                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-1-0"/>
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="parent 1-2" ItemKey="0-0-2">
+                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-2-0"/>
+                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-2-1"/>
+                    </atom:TreeViewItem>
+                </atom:TreeViewItem>
+            </atom:TreeView>
+        </gallery:ShowCaseItem>
 
     </gallery:ShowCasePanel>
 </UserControl>

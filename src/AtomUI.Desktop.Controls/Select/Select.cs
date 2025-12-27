@@ -799,7 +799,11 @@ public class Select : TemplatedControl,
             {
                 if (Mode == SelectMode.Single)
                 {
-                    SetCurrentValue(IsDropDownOpenProperty, false);
+                    var optionItem = source.FindAncestorOfType<SelectOptionItem>();
+                    if (optionItem != null && optionItem.IsEnabled)
+                    {
+                        SetCurrentValue(IsDropDownOpenProperty, false);
+                    }
                 }
                 e.Handled = true;
             }

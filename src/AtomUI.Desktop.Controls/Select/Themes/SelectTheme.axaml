@@ -151,7 +151,10 @@
                 <Setter Property="IsShowSelectedIndicator" Value="False" />
             </Style>
             <Style Selector="^[IsSearchEnabled=False]">
-                <Setter Property="Cursor" Value="Hand"/>
+                <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Style>
+              
                 <Style Selector="^ /template/ ContentPresenter#SingleSelectResultPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
@@ -177,7 +180,9 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsSearchEnabled=False]">
-                <Setter Property="Cursor" Value="Hand"/>
+                <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Style>
             </Style>
             <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
                 <Setter Property="IsShowSelectedIndicator" Value="True" />
@@ -190,7 +195,9 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsSearchEnabled=False]">
-                <Setter Property="Cursor" Value="Hand"/>
+                <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Style>
             </Style>
             <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
                 <Setter Property="IsShowSelectedIndicator" Value="True" />

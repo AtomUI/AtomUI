@@ -9,31 +9,28 @@
             <themes:ListItemTheme TargetType="atom:SelectOptionItem" />
         </ControlTheme.BasedOn>
         
-        <Style Selector="^:is(atom|SelectOptionItem)">
-            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionFontSize}}"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Cursor" Value="Hand"/>
             
-            <Style Selector="^[DisabledItemHoverEffect=False]:pointerover">
-                <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionActiveBg}}" />
-            </Style>
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionFontSize}}"/>
+        <Setter Property="Focusable" Value="False"/>
             
-            <Style Selector="^[IsActive=True]">
-                <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionActiveBg}}" />
-            </Style>
-            
-            <Style Selector="^[IsSelected=True]">
-                <Setter Property="FontWeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedFontWeight}}"/>
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedColor}}"/>
-                <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedBg}}"/>
-            </Style>
-            
-            <Style Selector="^[SizeType=Middle]">
-                <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionPadding}}" />
-                <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionHeight}}" />
-            </Style>
-            
+        <Style Selector="^[DisabledItemHoverEffect=False]:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionActiveBg}}" />
         </Style>
-        
+            
+        <Style Selector="^[IsActive=True]">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionActiveBg}}" />
+        </Style>
+            
+        <Style Selector="^[IsSelected=True]">
+            <Setter Property="FontWeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedFontWeight}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedColor}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedBg}}"/>
+        </Style>
+            
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionPadding}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionHeight}}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

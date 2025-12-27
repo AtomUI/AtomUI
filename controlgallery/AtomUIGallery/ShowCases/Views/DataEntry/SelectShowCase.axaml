@@ -13,7 +13,7 @@
             <WrapPanel ItemSpacing="10" LineSpacing="10">
                 <atom:Select Mode="Single" PlaceholderText="Please select" Width="120"
                              DefaultValues="lucy">
-                    <atom:SelectOption Header="Jack" Value="jack" />
+                    <atom:SelectOption Header="Jack" Value="jack" IsEnabled="False" />
                     <atom:SelectOption Header="Lucy" Value="lucy" />
                     <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
                     <atom:SelectOption Header="Disabled" IsEnabled="False" Value="disabled" />

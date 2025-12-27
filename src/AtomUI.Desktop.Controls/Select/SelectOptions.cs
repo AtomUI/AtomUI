@@ -294,8 +294,12 @@ internal class SelectOptions : List
             {
                 for (var i = 0; i < ItemCount; i++)
                 {
+                    var item      = ListDefaultView.Items[i];
                     var container = ListDefaultView.ContainerFromIndex(i);
-                    container?.SetCurrentValue(IsEnabledProperty, true);
+                    if (item is ISelectOption selectOption)
+                    {
+                        container?.SetCurrentValue(IsEnabledProperty, selectOption.IsEnabled);
+                    }
                 }
             }
         }

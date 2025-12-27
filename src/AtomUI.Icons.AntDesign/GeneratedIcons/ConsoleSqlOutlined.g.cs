@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ConsoleSqlOutlined : Icon
+public class ConsoleSqlOutlined : AntDesignIcon
 {
     public ConsoleSqlOutlined()
     {

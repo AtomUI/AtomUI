@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FolderOpenTwoTone : Icon
+public class FolderOpenTwoTone : AntDesignIcon
 {
     public FolderOpenTwoTone()
     {

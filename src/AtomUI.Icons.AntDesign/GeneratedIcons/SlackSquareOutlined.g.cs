@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SlackSquareOutlined : Icon
+public class SlackSquareOutlined : AntDesignIcon
 {
     public SlackSquareOutlined()
     {

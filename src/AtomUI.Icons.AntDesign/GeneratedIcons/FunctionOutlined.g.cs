@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FunctionOutlined : Icon
+public class FunctionOutlined : AntDesignIcon
 {
     public FunctionOutlined()
     {

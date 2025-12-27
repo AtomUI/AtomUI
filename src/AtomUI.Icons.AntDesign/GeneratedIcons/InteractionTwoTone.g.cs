@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class InteractionTwoTone : Icon
+public class InteractionTwoTone : AntDesignIcon
 {
     public InteractionTwoTone()
     {

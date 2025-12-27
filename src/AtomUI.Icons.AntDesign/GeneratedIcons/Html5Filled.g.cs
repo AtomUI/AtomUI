@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class Html5Filled : Icon
+public class Html5Filled : AntDesignIcon
 {
     public Html5Filled()
     {

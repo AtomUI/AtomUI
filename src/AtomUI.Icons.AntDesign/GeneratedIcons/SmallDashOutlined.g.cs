@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SmallDashOutlined : Icon
+public class SmallDashOutlined : AntDesignIcon
 {
     public SmallDashOutlined()
     {

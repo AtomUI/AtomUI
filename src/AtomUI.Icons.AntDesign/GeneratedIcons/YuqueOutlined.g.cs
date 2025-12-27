@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class YuqueOutlined : Icon
+public class YuqueOutlined : AntDesignIcon
 {
     public YuqueOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DashboardFilled : Icon
+public class DashboardFilled : AntDesignIcon
 {
     public DashboardFilled()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ReconciliationOutlined : Icon
+public class ReconciliationOutlined : AntDesignIcon
 {
     public ReconciliationOutlined()
     {

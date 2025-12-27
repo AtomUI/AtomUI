@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FunnelPlotTwoTone : Icon
+public class FunnelPlotTwoTone : AntDesignIcon
 {
     public FunnelPlotTwoTone()
     {

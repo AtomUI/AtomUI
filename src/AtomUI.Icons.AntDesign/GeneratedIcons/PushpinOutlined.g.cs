@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PushpinOutlined : Icon
+public class PushpinOutlined : AntDesignIcon
 {
     public PushpinOutlined()
     {

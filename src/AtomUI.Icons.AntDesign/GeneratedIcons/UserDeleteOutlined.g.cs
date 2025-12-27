@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class UserDeleteOutlined : Icon
+public class UserDeleteOutlined : AntDesignIcon
 {
     public UserDeleteOutlined()
     {

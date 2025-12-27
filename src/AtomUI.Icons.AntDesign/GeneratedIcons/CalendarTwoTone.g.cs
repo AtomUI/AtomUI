@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CalendarTwoTone : Icon
+public class CalendarTwoTone : AntDesignIcon
 {
     public CalendarTwoTone()
     {

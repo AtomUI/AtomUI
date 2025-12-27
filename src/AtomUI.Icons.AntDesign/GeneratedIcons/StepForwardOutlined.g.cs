@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class StepForwardOutlined : Icon
+public class StepForwardOutlined : AntDesignIcon
 {
     public StepForwardOutlined()
     {

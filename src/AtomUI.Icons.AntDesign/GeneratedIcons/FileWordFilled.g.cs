@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FileWordFilled : Icon
+public class FileWordFilled : AntDesignIcon
 {
     public FileWordFilled()
     {

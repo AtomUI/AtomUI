@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PropertySafetyFilled : Icon
+public class PropertySafetyFilled : AntDesignIcon
 {
     public PropertySafetyFilled()
     {

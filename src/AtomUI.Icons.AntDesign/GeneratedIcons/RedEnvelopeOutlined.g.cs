@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RedEnvelopeOutlined : Icon
+public class RedEnvelopeOutlined : AntDesignIcon
 {
     public RedEnvelopeOutlined()
     {

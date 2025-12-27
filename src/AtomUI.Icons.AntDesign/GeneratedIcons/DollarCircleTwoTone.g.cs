@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DollarCircleTwoTone : Icon
+public class DollarCircleTwoTone : AntDesignIcon
 {
     public DollarCircleTwoTone()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AppstoreTwoTone : Icon
+public class AppstoreTwoTone : AntDesignIcon
 {
     public AppstoreTwoTone()
     {

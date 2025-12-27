@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class GiteeOutlined : Icon
+public class GiteeOutlined : AntDesignIcon
 {
     public GiteeOutlined()
     {

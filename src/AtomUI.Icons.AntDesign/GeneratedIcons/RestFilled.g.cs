@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RestFilled : Icon
+public class RestFilled : AntDesignIcon
 {
     public RestFilled()
     {

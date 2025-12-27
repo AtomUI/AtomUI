@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CarryOutFilled : Icon
+public class CarryOutFilled : AntDesignIcon
 {
     public CarryOutFilled()
     {

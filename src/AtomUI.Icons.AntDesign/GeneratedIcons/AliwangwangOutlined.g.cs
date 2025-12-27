@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AliwangwangOutlined : Icon
+public class AliwangwangOutlined : AntDesignIcon
 {
     public AliwangwangOutlined()
     {

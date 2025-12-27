@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class HighlightTwoTone : Icon
+public class HighlightTwoTone : AntDesignIcon
 {
     public HighlightTwoTone()
     {

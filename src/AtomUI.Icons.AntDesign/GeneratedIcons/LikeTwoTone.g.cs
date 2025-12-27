@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class LikeTwoTone : Icon
+public class LikeTwoTone : AntDesignIcon
 {
     public LikeTwoTone()
     {

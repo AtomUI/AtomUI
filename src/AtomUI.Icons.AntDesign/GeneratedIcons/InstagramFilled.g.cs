@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class InstagramFilled : Icon
+public class InstagramFilled : AntDesignIcon
 {
     public InstagramFilled()
     {

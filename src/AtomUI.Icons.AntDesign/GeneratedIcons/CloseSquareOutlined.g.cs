@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CloseSquareOutlined : Icon
+public class CloseSquareOutlined : AntDesignIcon
 {
     public CloseSquareOutlined()
     {

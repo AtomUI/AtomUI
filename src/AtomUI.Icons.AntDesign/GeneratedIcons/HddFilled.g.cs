@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class HddFilled : Icon
+public class HddFilled : AntDesignIcon
 {
     public HddFilled()
     {

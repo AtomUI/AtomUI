@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DatabaseFilled : Icon
+public class DatabaseFilled : AntDesignIcon
 {
     public DatabaseFilled()
     {

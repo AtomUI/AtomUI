@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class StarFilled : Icon
+public class StarFilled : AntDesignIcon
 {
     public StarFilled()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PushpinFilled : Icon
+public class PushpinFilled : AntDesignIcon
 {
     public PushpinFilled()
     {

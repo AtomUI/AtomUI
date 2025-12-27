@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BehanceSquareOutlined : Icon
+public class BehanceSquareOutlined : AntDesignIcon
 {
     public BehanceSquareOutlined()
     {

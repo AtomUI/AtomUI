@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CompassTwoTone : Icon
+public class CompassTwoTone : AntDesignIcon
 {
     public CompassTwoTone()
     {

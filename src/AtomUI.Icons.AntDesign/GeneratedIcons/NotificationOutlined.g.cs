@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class NotificationOutlined : Icon
+public class NotificationOutlined : AntDesignIcon
 {
     public NotificationOutlined()
     {

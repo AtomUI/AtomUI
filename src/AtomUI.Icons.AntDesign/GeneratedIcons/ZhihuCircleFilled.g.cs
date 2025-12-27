@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ZhihuCircleFilled : Icon
+public class ZhihuCircleFilled : AntDesignIcon
 {
     public ZhihuCircleFilled()
     {

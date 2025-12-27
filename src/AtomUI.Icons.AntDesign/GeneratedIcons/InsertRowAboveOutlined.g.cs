@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class InsertRowAboveOutlined : Icon
+public class InsertRowAboveOutlined : AntDesignIcon
 {
     public InsertRowAboveOutlined()
     {

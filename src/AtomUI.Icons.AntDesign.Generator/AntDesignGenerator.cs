@@ -60,7 +60,7 @@ public class AntDesignGenerator : DefaultIconPackageGenerator
         var    svgParsedInfo = SvgParser.Parse(svgSource);
         var    viewBox       = svgParsedInfo.ViewBox;
         var    className     = $"{iconFileInfo.Name}{iconFileInfo.ThemeType}";
-        sourceText.AppendLine($"public class {className} : Icon");
+        sourceText.AppendLine($"public class {className} : AntDesignIcon");
         sourceText.AppendLine(@"{");
         sourceText.AppendLine($"    public {className}()");
         sourceText.AppendLine(@"    {");

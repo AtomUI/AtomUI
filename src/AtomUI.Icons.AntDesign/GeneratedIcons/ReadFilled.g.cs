@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ReadFilled : Icon
+public class ReadFilled : AntDesignIcon
 {
     public ReadFilled()
     {

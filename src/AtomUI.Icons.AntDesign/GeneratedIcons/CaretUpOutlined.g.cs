@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CaretUpOutlined : Icon
+public class CaretUpOutlined : AntDesignIcon
 {
     public CaretUpOutlined()
     {

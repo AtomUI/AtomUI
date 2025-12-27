@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class MobileTwoTone : Icon
+public class MobileTwoTone : AntDesignIcon
 {
     public MobileTwoTone()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FilePdfOutlined : Icon
+public class FilePdfOutlined : AntDesignIcon
 {
     public FilePdfOutlined()
     {

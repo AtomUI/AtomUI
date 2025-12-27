@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class WindowsFilled : Icon
+public class WindowsFilled : AntDesignIcon
 {
     public WindowsFilled()
     {

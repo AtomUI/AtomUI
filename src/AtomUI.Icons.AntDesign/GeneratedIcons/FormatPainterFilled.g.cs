@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FormatPainterFilled : Icon
+public class FormatPainterFilled : AntDesignIcon
 {
     public FormatPainterFilled()
     {

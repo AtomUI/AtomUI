@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BranchesOutlined : Icon
+public class BranchesOutlined : AntDesignIcon
 {
     public BranchesOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PieChartTwoTone : Icon
+public class PieChartTwoTone : AntDesignIcon
 {
     public PieChartTwoTone()
     {

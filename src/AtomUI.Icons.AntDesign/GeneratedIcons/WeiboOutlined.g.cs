@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class WeiboOutlined : Icon
+public class WeiboOutlined : AntDesignIcon
 {
     public WeiboOutlined()
     {

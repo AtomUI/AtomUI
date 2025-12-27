@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FullscreenExitOutlined : Icon
+public class FullscreenExitOutlined : AntDesignIcon
 {
     public FullscreenExitOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class MinusSquareOutlined : Icon
+public class MinusSquareOutlined : AntDesignIcon
 {
     public MinusSquareOutlined()
     {

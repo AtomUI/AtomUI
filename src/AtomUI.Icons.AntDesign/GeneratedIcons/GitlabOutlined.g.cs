@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class GitlabOutlined : Icon
+public class GitlabOutlined : AntDesignIcon
 {
     public GitlabOutlined()
     {

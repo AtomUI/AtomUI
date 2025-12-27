@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CodepenSquareFilled : Icon
+public class CodepenSquareFilled : AntDesignIcon
 {
     public CodepenSquareFilled()
     {

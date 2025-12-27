@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RedEnvelopeTwoTone : Icon
+public class RedEnvelopeTwoTone : AntDesignIcon
 {
     public RedEnvelopeTwoTone()
     {

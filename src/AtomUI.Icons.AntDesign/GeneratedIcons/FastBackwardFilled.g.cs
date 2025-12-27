@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FastBackwardFilled : Icon
+public class FastBackwardFilled : AntDesignIcon
 {
     public FastBackwardFilled()
     {

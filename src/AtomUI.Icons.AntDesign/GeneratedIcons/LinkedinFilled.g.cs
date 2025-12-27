@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class LinkedinFilled : Icon
+public class LinkedinFilled : AntDesignIcon
 {
     public LinkedinFilled()
     {

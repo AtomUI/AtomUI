@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DisconnectOutlined : Icon
+public class DisconnectOutlined : AntDesignIcon
 {
     public DisconnectOutlined()
     {

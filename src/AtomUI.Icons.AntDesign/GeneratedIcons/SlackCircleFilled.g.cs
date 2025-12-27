@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SlackCircleFilled : Icon
+public class SlackCircleFilled : AntDesignIcon
 {
     public SlackCircleFilled()
     {

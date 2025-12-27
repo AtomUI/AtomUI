@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class WechatFilled : Icon
+public class WechatFilled : AntDesignIcon
 {
     public WechatFilled()
     {

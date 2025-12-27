@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DingdingOutlined : Icon
+public class DingdingOutlined : AntDesignIcon
 {
     public DingdingOutlined()
     {

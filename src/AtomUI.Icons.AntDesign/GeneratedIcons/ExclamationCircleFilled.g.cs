@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ExclamationCircleFilled : Icon
+public class ExclamationCircleFilled : AntDesignIcon
 {
     public ExclamationCircleFilled()
     {

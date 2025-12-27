@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DribbbleCircleFilled : Icon
+public class DribbbleCircleFilled : AntDesignIcon
 {
     public DribbbleCircleFilled()
     {

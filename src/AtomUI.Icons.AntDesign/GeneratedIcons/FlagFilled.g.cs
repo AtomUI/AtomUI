@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FlagFilled : Icon
+public class FlagFilled : AntDesignIcon
 {
     public FlagFilled()
     {

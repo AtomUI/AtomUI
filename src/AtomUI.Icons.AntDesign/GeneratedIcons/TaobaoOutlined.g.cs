@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TaobaoOutlined : Icon
+public class TaobaoOutlined : AntDesignIcon
 {
     public TaobaoOutlined()
     {

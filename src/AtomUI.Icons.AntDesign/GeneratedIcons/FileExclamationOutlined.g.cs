@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FileExclamationOutlined : Icon
+public class FileExclamationOutlined : AntDesignIcon
 {
     public FileExclamationOutlined()
     {

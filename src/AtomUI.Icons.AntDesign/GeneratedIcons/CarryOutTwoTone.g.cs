@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CarryOutTwoTone : Icon
+public class CarryOutTwoTone : AntDesignIcon
 {
     public CarryOutTwoTone()
     {

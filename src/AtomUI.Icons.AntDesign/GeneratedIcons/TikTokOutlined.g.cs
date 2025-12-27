@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TikTokOutlined : Icon
+public class TikTokOutlined : AntDesignIcon
 {
     public TikTokOutlined()
     {

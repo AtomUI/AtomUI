@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BarChartOutlined : Icon
+public class BarChartOutlined : AntDesignIcon
 {
     public BarChartOutlined()
     {

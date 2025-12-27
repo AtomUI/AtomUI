@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BookFilled : Icon
+public class BookFilled : AntDesignIcon
 {
     public BookFilled()
     {

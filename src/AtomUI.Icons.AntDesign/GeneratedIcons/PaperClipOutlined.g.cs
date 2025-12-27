@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PaperClipOutlined : Icon
+public class PaperClipOutlined : AntDesignIcon
 {
     public PaperClipOutlined()
     {

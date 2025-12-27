@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class LikeFilled : Icon
+public class LikeFilled : AntDesignIcon
 {
     public LikeFilled()
     {

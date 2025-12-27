@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CopyTwoTone : Icon
+public class CopyTwoTone : AntDesignIcon
 {
     public CopyTwoTone()
     {

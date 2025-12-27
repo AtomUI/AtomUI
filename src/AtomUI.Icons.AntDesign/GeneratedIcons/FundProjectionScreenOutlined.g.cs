@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FundProjectionScreenOutlined : Icon
+public class FundProjectionScreenOutlined : AntDesignIcon
 {
     public FundProjectionScreenOutlined()
     {

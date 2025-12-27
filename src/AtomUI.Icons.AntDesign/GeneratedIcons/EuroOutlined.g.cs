@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class EuroOutlined : Icon
+public class EuroOutlined : AntDesignIcon
 {
     public EuroOutlined()
     {

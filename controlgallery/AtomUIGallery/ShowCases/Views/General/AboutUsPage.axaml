@@ -32,13 +32,14 @@
                     <Run Text="使命：" Foreground="Red" />
                     <Run Text="让数字世界建设者更高效" />
                 </atom:TextBlock>
+    
             </StackPanel>
-
+    
             <Image Source="/Assets/AtomUIOSS-release-banner.png"
                    HorizontalAlignment="Center"
                    Width="800"
                    Margin="0, 20, 0, 20" />
-
+    
             <StackPanel HorizontalAlignment="Center" Spacing="10" Orientation="Horizontal">
                 <atom:HyperLinkButton NavigateUri="https://qinware.com">Home Page</atom:HyperLinkButton>
                 <atom:HyperLinkButton Icon="{antdicons:AntDesignIconProvider GiteeOutlined}"
@@ -50,20 +51,20 @@
                     Github
                 </atom:HyperLinkButton>
             </StackPanel>
-
+    
             <StackPanel HorizontalAlignment="Center" Spacing="20" Orientation="Horizontal" Margin="0, 20, 0, 20">
                 <atom:GroupBox HeaderTitle="微信公众号">
                     <Image Source="/Assets/qinware-wechatpress.png"
                            HorizontalAlignment="Center"
                            Width="200" />
                 </atom:GroupBox>
-
+    
                 <atom:GroupBox HeaderTitle="微信交流群">
                     <Image Source="/Assets/atomui-wechat.png"
                            HorizontalAlignment="Center"
                            Width="200" />
                 </atom:GroupBox>
-
+    
                 <atom:GroupBox HeaderTitle="QQ 交流群">
                     <Image Source="/Assets/atomui-qq.png"
                            HorizontalAlignment="Center"

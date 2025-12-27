@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FormatPainterOutlined : Icon
+public class FormatPainterOutlined : AntDesignIcon
 {
     public FormatPainterOutlined()
     {

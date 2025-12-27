@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class VideoCameraFilled : Icon
+public class VideoCameraFilled : AntDesignIcon
 {
     public VideoCameraFilled()
     {

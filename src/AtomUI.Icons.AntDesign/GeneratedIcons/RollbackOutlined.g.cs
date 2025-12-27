@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RollbackOutlined : Icon
+public class RollbackOutlined : AntDesignIcon
 {
     public RollbackOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class EnvironmentFilled : Icon
+public class EnvironmentFilled : AntDesignIcon
 {
     public EnvironmentFilled()
     {

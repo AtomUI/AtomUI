@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ReconciliationTwoTone : Icon
+public class ReconciliationTwoTone : AntDesignIcon
 {
     public ReconciliationTwoTone()
     {

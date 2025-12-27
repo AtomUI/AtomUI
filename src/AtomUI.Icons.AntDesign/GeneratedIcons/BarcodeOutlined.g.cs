@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BarcodeOutlined : Icon
+public class BarcodeOutlined : AntDesignIcon
 {
     public BarcodeOutlined()
     {

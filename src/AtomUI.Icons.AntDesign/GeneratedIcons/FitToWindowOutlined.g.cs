@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FitToWindowOutlined : Icon
+public class FitToWindowOutlined : AntDesignIcon
 {
     public FitToWindowOutlined()
     {

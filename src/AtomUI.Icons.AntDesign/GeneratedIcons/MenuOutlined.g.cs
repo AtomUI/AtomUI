@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class MenuOutlined : Icon
+public class MenuOutlined : AntDesignIcon
 {
     public MenuOutlined()
     {

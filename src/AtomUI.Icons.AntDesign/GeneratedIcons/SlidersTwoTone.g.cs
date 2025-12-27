@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SlidersTwoTone : Icon
+public class SlidersTwoTone : AntDesignIcon
 {
     public SlidersTwoTone()
     {

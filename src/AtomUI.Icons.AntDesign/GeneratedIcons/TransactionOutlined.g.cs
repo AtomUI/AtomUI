@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TransactionOutlined : Icon
+public class TransactionOutlined : AntDesignIcon
 {
     public TransactionOutlined()
     {

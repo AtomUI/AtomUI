@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ScheduleOutlined : Icon
+public class ScheduleOutlined : AntDesignIcon
 {
     public ScheduleOutlined()
     {

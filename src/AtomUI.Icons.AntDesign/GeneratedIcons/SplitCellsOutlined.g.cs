@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SplitCellsOutlined : Icon
+public class SplitCellsOutlined : AntDesignIcon
 {
     public SplitCellsOutlined()
     {

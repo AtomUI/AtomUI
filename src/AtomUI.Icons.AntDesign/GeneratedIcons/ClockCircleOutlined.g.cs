@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ClockCircleOutlined : Icon
+public class ClockCircleOutlined : AntDesignIcon
 {
     public ClockCircleOutlined()
     {

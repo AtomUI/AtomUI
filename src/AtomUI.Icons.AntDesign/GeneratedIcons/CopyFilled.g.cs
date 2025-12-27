@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CopyFilled : Icon
+public class CopyFilled : AntDesignIcon
 {
     public CopyFilled()
     {

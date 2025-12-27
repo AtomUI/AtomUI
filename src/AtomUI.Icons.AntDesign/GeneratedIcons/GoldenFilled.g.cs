@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class GoldenFilled : Icon
+public class GoldenFilled : AntDesignIcon
 {
     public GoldenFilled()
     {

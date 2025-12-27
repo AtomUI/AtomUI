@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class VideoCameraTwoTone : Icon
+public class VideoCameraTwoTone : AntDesignIcon
 {
     public VideoCameraTwoTone()
     {

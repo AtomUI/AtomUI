@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ClockCircleTwoTone : Icon
+public class ClockCircleTwoTone : AntDesignIcon
 {
     public ClockCircleTwoTone()
     {

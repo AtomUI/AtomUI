@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TrophyFilled : Icon
+public class TrophyFilled : AntDesignIcon
 {
     public TrophyFilled()
     {

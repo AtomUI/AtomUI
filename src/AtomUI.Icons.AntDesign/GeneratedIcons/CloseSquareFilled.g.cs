@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CloseSquareFilled : Icon
+public class CloseSquareFilled : AntDesignIcon
 {
     public CloseSquareFilled()
     {

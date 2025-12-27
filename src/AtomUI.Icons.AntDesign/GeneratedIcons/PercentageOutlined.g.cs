@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PercentageOutlined : Icon
+public class PercentageOutlined : AntDesignIcon
 {
     public PercentageOutlined()
     {

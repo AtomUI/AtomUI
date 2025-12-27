@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class UpCircleFilled : Icon
+public class UpCircleFilled : AntDesignIcon
 {
     public UpCircleFilled()
     {

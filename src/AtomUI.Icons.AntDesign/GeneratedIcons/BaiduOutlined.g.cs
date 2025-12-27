@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BaiduOutlined : Icon
+public class BaiduOutlined : AntDesignIcon
 {
     public BaiduOutlined()
     {

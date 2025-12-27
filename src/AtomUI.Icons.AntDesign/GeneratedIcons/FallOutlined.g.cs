@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FallOutlined : Icon
+public class FallOutlined : AntDesignIcon
 {
     public FallOutlined()
     {

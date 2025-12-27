@@ -11,13 +11,47 @@ public abstract class DrawingInstruction
 
     public IconBrushType? StrokeBrush;
     public IconBrushType? FillBrush;
+    
+    private Geometry? _geometry;
 
     public bool IsStrokeEnabled { get; set; } = false;
     public bool IsStrokeWidthCustomizable { get; set; } = false;
     public bool IsStrokeLinejoinCustomizable { get; set; } = false;
     public bool IsStrokeLinecapCustomizable { get; set; } = false;
+
+    public void Draw(DrawingContext drawingContext, in Matrix globalGeometryMatrix, Icon icon)
+    {
+        _geometry ??= BuildGeometry();
+        IBrush? fillBrush = null;
+        if (FillBrush != null)
+        {
+            fillBrush = icon.FindIconBrush(FillBrush.Value);
+        }
+
+        var        pen             = BuildPen(icon);
+        Transform? originTransform = null;
+        try
+        {
+            originTransform = _geometry.Transform;
+            if (Transform != null)
+            {
+                _geometry.Transform = new MatrixTransform(Transform.Value * globalGeometryMatrix);
+            }
+            else
+            {
+                _geometry.Transform = new MatrixTransform(globalGeometryMatrix);
+            }
+
+            using var opacityState = drawingContext.PushOpacity(Opacity);
+            drawingContext.DrawGeometry(fillBrush, pen, _geometry);
+        }
+        finally
+        {
+            _geometry.Transform = originTransform;
+        }
+    }
     
-    public abstract void Draw(DrawingContext drawingContext, Icon icon);
+    protected abstract Geometry BuildGeometry();
 
     protected IPen? BuildPen(Icon icon)
     {
@@ -51,18 +85,9 @@ public class RectDrawingInstruction : DrawingInstruction
     public double RadiusX { get; set; } = 0;
     public double RadiusY { get; set; } = 0;
     
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+    protected override Geometry BuildGeometry()
     {
-        IBrush? fillBrush = null;
-        if (FillBrush != null)
-        {
-            fillBrush = icon.FindIconBrush(FillBrush.Value);
-        }
-        var       pen            = BuildPen(icon);
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        drawingContext.DrawRectangle(fillBrush, pen, Rect, RadiusX, RadiusY);
+        return new RectangleGeometry(Rect, RadiusX, RadiusY);
     }
 }
 
@@ -71,18 +96,14 @@ public class CircleDrawingInstruction : DrawingInstruction
     public double Radius { get; set; }
     public Point Center { get; set; }
     
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+    protected override Geometry BuildGeometry()
     {
-        IBrush? fillBrush = null;
-        if (FillBrush != null)
+        return new EllipseGeometry()
         {
-            fillBrush = icon.FindIconBrush(FillBrush.Value);
-        }
-        var       pen            = BuildPen(icon);
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        drawingContext.DrawEllipse(fillBrush, pen, Center, Radius, Radius);
+            Center  = Center,
+            RadiusX = Radius,
+            RadiusY = Radius
+        };
     }
 }
 
@@ -91,19 +112,15 @@ public class EllipseDrawingInstruction : DrawingInstruction
     public double RadiusX { get; set; }
     public double RadiusY { get; set; }
     public Point Center { get; set; }
-    
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+
+    protected override Geometry BuildGeometry()
     {
-        IBrush? fillBrush = null;
-        if (FillBrush != null)
+        return new EllipseGeometry()
         {
-            fillBrush = icon.FindIconBrush(FillBrush.Value);
-        }
-        var       pen            = BuildPen(icon);
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        drawingContext.DrawEllipse(fillBrush, pen, Center, RadiusX, RadiusY);
+            Center  = Center,
+            RadiusX = RadiusX,
+            RadiusY = RadiusY
+        };
     }
 }
 
@@ -112,78 +129,51 @@ public class LineDrawingInstruction : DrawingInstruction
     public Point StartPoint { get; set; }
     public Point EndPoint { get; set; }
 
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+    protected override Geometry BuildGeometry()
     {
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        var       pen            = BuildPen(icon);
-        Debug.Assert(pen != null);
-        drawingContext.DrawLine(pen, StartPoint, EndPoint);
+        return new LineGeometry()
+        {
+            StartPoint = StartPoint,
+            EndPoint   = EndPoint
+        };
     }
 }
 
 public class PolylineDrawingInstruction : DrawingInstruction
 {
     public IList<Point> Points { get; set; } = Array.Empty<Point>();
-    
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+
+    protected override Geometry BuildGeometry()
     {
-        var       pen            = BuildPen(icon);
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        var geometry = new PolylineGeometry()
+        return new PolylineGeometry()
         {
-            Points = Points,
+            Points   = Points,
             IsFilled = false,
         };
-        drawingContext.DrawGeometry(null, pen, geometry);
     }
 }
 
 public class PolygonDrawingInstruction : DrawingInstruction
 {
     public IList<Point> Points { get; set; } = Array.Empty<Point>();
-    
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+
+    protected override Geometry BuildGeometry()
     {
-        IBrush? fillBrush = null;
-        if (FillBrush != null)
-        {
-            fillBrush = icon.FindIconBrush(FillBrush.Value);
-        }
-        var       pen            = BuildPen(icon);
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        var geometry = new PolylineGeometry()
+        return new PolylineGeometry()
         {
             Points   = Points,
             IsFilled = true,
         };
-        drawingContext.DrawGeometry(fillBrush, pen, geometry);
     }
 }
 
 public class PathDrawingInstruction : DrawingInstruction
 {
     public Geometry? Data { get; set; }
-    public override void Draw(DrawingContext drawingContext, Icon icon)
+
+    protected override Geometry BuildGeometry()
     {
-        if (Data == null)
-        {
-            return;
-        }
-        IBrush? fillBrush = null;
-        if (FillBrush != null)
-        {
-            fillBrush = icon.FindIconBrush(FillBrush.Value);
-        }
-        var       pen            = BuildPen(icon);
-        var       transform      = Transform ?? Matrix.Identity;
-        using var transformState = drawingContext.PushTransform(transform);
-        using var opacityState   = drawingContext.PushOpacity(Opacity);
-        drawingContext.DrawGeometry(fillBrush, pen, Data);
+        Debug.Assert(Data != null);
+        return Data;
     }
 }

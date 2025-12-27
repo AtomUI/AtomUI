@@ -5,6 +5,6 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:IconPresenter}" TargetType="atom:IconPresenter">
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
-        <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
+        <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIconHover}}" />
     </ControlTheme>
 </ResourceDictionary>

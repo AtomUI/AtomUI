@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SyncOutlined : Icon
+public class SyncOutlined : AntDesignIcon
 {
     public SyncOutlined()
     {

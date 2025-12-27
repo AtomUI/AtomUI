@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CloudOutlined : Icon
+public class CloudOutlined : AntDesignIcon
 {
     public CloudOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DeliveredProcedureOutlined : Icon
+public class DeliveredProcedureOutlined : AntDesignIcon
 {
     public DeliveredProcedureOutlined()
     {

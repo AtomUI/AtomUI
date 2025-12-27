@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class WindowUnpinOutlined : Icon
+public class WindowUnpinOutlined : AntDesignIcon
 {
     public WindowUnpinOutlined()
     {

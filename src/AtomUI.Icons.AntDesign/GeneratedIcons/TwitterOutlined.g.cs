@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TwitterOutlined : Icon
+public class TwitterOutlined : AntDesignIcon
 {
     public TwitterOutlined()
     {

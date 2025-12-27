@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class WindowMaximizedOutlined : Icon
+public class WindowMaximizedOutlined : AntDesignIcon
 {
     public WindowMaximizedOutlined()
     {

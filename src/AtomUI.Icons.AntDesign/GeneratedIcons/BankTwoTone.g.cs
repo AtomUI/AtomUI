@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BankTwoTone : Icon
+public class BankTwoTone : AntDesignIcon
 {
     public BankTwoTone()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RadiusBottomrightOutlined : Icon
+public class RadiusBottomrightOutlined : AntDesignIcon
 {
     public RadiusBottomrightOutlined()
     {

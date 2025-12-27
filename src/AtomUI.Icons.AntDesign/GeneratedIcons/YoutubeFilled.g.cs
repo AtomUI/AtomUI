@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class YoutubeFilled : Icon
+public class YoutubeFilled : AntDesignIcon
 {
     public YoutubeFilled()
     {

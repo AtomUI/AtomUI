@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class MoonFilled : Icon
+public class MoonFilled : AntDesignIcon
 {
     public MoonFilled()
     {

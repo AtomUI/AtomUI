@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FolderOutlined : Icon
+public class FolderOutlined : AntDesignIcon
 {
     public FolderOutlined()
     {

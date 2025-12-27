@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CodeSandboxOutlined : Icon
+public class CodeSandboxOutlined : AntDesignIcon
 {
     public CodeSandboxOutlined()
     {

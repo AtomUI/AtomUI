@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SlidersOutlined : Icon
+public class SlidersOutlined : AntDesignIcon
 {
     public SlidersOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class YoutubeOutlined : Icon
+public class YoutubeOutlined : AntDesignIcon
 {
     public YoutubeOutlined()
     {

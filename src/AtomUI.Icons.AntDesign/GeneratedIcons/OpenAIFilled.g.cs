@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class OpenAIFilled : Icon
+public class OpenAIFilled : AntDesignIcon
 {
     public OpenAIFilled()
     {

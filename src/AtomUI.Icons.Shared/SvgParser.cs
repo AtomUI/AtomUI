@@ -13,6 +13,7 @@ public class SvgParser
     private const string LineElementName = "line";
     private const string PolygonElementName = "polygon";
     private const string PolylineElementName = "polyline";
+    private const string ClipPathElementName = "clipPath";
     private const string GroupElementName = "g";
     private const string ViewBoxAttrName = "viewBox";
     
@@ -138,6 +139,12 @@ public class SvgParser
         {
             return HandlePolygonElement(reader);
         }
+
+        if (name == ClipPathElementName)
+        {
+            reader.Skip();
+            return true;
+        }
         
         return false;
     }
@@ -218,15 +225,34 @@ public class SvgParser
         
         var rxStr = reader.GetAttribute(RXAttrName);
         var ryStr = reader.GetAttribute(RYAttrName);
-        if (!string.IsNullOrEmpty(rxStr) && double.TryParse(rxStr, out var rx))
+
+        double? rx = null;
+        double? ry = null;
+
         {
-            rectElement.RadiusX = rx;
+            if (!string.IsNullOrEmpty(rxStr) && double.TryParse(rxStr, out var dvalue))
+            {
+                rx = dvalue;
+            }
         }
 
-        if (!string.IsNullOrEmpty(ryStr) && double.TryParse(ryStr, out var ry))
         {
-            rectElement.RadiusY = ry;
+            if (!string.IsNullOrEmpty(ryStr) && double.TryParse(ryStr, out var dvalue))
+            {
+                ry = dvalue;
+            }
         }
+
+        if (rx == null && ry != null)
+        {
+            rx = ry;
+        }
+        else if (rx != null && ry == null)
+        {
+            ry = rx;
+        }
+        rectElement.RadiusX = rx ?? 0.0;
+        rectElement.RadiusY = ry ?? 0.0;
 
         _graphicElements?.Add(rectElement);
         return false;
@@ -264,17 +290,35 @@ public class SvgParser
         var ellipseElement = new EllipseElement();
         ParseElementCommonAttributes(ellipseElement, reader);
 
+        double? rx = null;
+        double? ry = null;
+        
         var rxStr = reader.GetAttribute(RXAttrName);
-        if (!string.IsNullOrEmpty(rxStr) && double.TryParse(rxStr, out var rx))
         {
-            ellipseElement.RadiusX = rx;
+            if (!string.IsNullOrEmpty(rxStr) && double.TryParse(rxStr, out var dvalue))
+            {
+                rx = dvalue;
+            }
         }
         
         var ryStr = reader.GetAttribute(RYAttrName);
-        if (!string.IsNullOrEmpty(ryStr) && double.TryParse(ryStr, out var ry))
         {
-            ellipseElement.RadiusY = ry;
+            if (!string.IsNullOrEmpty(ryStr) && double.TryParse(ryStr, out var dvalue))
+            {
+                ry = dvalue;
+            }
         }
+        
+        if (rx == null && ry != null)
+        {
+            rx = ry;
+        }
+        else if (rx != null && ry == null)
+        {
+            ry = rx;
+        }
+        ellipseElement.RadiusX = rx ?? 0.0;
+        ellipseElement.RadiusY = ry ?? 0.0;
         
         var cxStr = reader.GetAttribute(CXAttrName);
         var cyStr = reader.GetAttribute(CYAttrName);

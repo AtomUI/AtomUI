@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ShareAltOutlined : Icon
+public class ShareAltOutlined : AntDesignIcon
 {
     public ShareAltOutlined()
     {

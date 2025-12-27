@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PythonOutlined : Icon
+public class PythonOutlined : AntDesignIcon
 {
     public PythonOutlined()
     {

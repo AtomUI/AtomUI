@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BilibiliFilled : Icon
+public class BilibiliFilled : AntDesignIcon
 {
     public BilibiliFilled()
     {

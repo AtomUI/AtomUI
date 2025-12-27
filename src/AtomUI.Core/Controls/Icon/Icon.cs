@@ -12,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
@@ -249,15 +250,7 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         {
             SetCurrentValue(RenderTransformProperty, new RotateTransform(AngleAnimationRotate));
         }
-
-        else if (change.Property == LoadingAnimationProperty)
-        {
-            SetupRotateAnimation();
-            if (_animation != null)
-            {
-                StartLoadingAnimation();
-            }
-        }
+        
         else if (change.Property == FillAnimationDurationProperty)
         {
             ConfigureTransitions(true);
@@ -295,6 +288,30 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         {
             HandleLineJoinChanged(StrokeLineJoin);
         }
+
+        if (this.IsAttachedToVisualTree())
+        {
+            if (change.Property == IsVisibleProperty)
+            {
+                if (IsVisible)
+                {
+                    StartLoadingAnimationDelay();
+                }
+                else
+                {
+                    _animationCancellationTokenSource?.Cancel();
+                    _animationCancellationTokenSource = null;
+                }
+            }
+            else if (change.Property == LoadingAnimationProperty)
+            {
+                SetupRotateAnimation();
+                if (_animation != null && IsVisible)
+                {
+                    StartLoadingAnimationDelay();
+                }
+            }
+        }
         
         if (IsLoaded)
         {
@@ -303,6 +320,14 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
                 ConfigureTransitions(true);
             }
         }
+    }
+
+    private void StartLoadingAnimationDelay()
+    {
+        DispatcherTimer.RunOnce(() =>
+        {
+            Dispatcher.UIThread.InvokeAsync(StartLoadingAnimationAsync);
+        }, TimeSpan.FromMilliseconds(200));
     }
 
     private void HandleBrushChanged(IconBrushType brushType, IBrush? brush)
@@ -394,12 +419,9 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
     {
         base.OnAttachedToVisualTree(e);
 
-        if (_animation is not null)
+        if (_animation is not null && IsVisible)
         {
-            DispatcherTimer.RunOnce(() =>
-            {
-                Dispatcher.UIThread.InvokeAsync(StartLoadingAnimationAsync);
-            }, TimeSpan.FromMilliseconds(200));
+            StartLoadingAnimationDelay();
         }
     }
 
@@ -407,7 +429,7 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
     {
         base.OnDetachedFromVisualTree(e);
         _animationCancellationTokenSource?.Cancel();
-        Transitions = null;
+        _animationCancellationTokenSource = null;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -444,30 +466,125 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         {
             return;
         }
-
-        var realSize   = DesiredSize.Deflate(Margin);
-        var scale      = new Vector(realSize.Width / ViewBox.Width, realSize.Height / ViewBox.Height);
-        var translateX = 0.0d;
-        var translateY = 0.0d;
-        if (Bounds.Width > realSize.Width)
+        var       realSize             = DesiredSize.Deflate(Margin);
+        var       scale                = new Vector(realSize.Width / ViewBox.Width, realSize.Height / ViewBox.Height);
+        var       globalGeometryMatrix = CalculateGlobalGeometryMatrix();
+        using var transformState       = context.PushTransform(Matrix.CreateScale(scale));
+        foreach (var instruction in DrawingInstructions)
         {
-            translateX = (Bounds.Width - realSize.Width) / 2;
+            instruction.Draw(context, in globalGeometryMatrix, this);
         }
+    }
 
-        if (Bounds.Height > realSize.Height)
+    protected virtual Matrix CalculateGlobalGeometryMatrix()
+    {
+        return Matrix.Identity;
+    }
+    
+    protected Rect CalculateGeometryBounds()
+    {
+        var group = new GeometryGroup();
+        foreach (var instruction in DrawingInstructions)
         {
-            translateY = (Bounds.Height - realSize.Height) / 2;
-        }
-        var translate = new Vector(translateX, translateY);
-        var matrix = Matrix.CreateScale(scale);
-        matrix *= Matrix.CreateTranslation(translate);
-        using (context.PushTransform(matrix))
-        {
-            foreach (var instruction in DrawingInstructions)
+            if (instruction is RectDrawingInstruction rectDrawingInstruction)
             {
-                instruction.Draw(context, this);
+                var rectangleGeometry = new RectangleGeometry(rectDrawingInstruction.Rect,
+                    rectDrawingInstruction.RadiusX, rectDrawingInstruction.RadiusY);
+                if (rectDrawingInstruction.Transform != null)
+                {
+                    rectangleGeometry.Transform = new MatrixTransform(rectDrawingInstruction.Transform.Value);
+                }
+
+                group.Children.Add(rectangleGeometry);
+            }
+            else if (instruction is CircleDrawingInstruction circleDrawingInstruction)
+            {
+                var circleGeometry = new EllipseGeometry()
+                {
+                    Center  = circleDrawingInstruction.Center,
+                    RadiusX = circleDrawingInstruction.Radius,
+                    RadiusY = circleDrawingInstruction.Radius
+                };
+                if (circleDrawingInstruction.Transform != null)
+                {
+                    circleGeometry.Transform = new MatrixTransform(circleDrawingInstruction.Transform.Value);
+                }
+
+                group.Children.Add(circleGeometry);
+            }
+            else if (instruction is EllipseDrawingInstruction ellipseDrawingInstruction)
+            {
+                var ellipseGeometry = new EllipseGeometry()
+                {
+                    Center  = ellipseDrawingInstruction.Center,
+                    RadiusX = ellipseDrawingInstruction.RadiusX,
+                    RadiusY = ellipseDrawingInstruction.RadiusY
+                };
+                if (ellipseDrawingInstruction.Transform != null)
+                {
+                    ellipseGeometry.Transform = new MatrixTransform(ellipseDrawingInstruction.Transform.Value);
+                }
+
+                group.Children.Add(ellipseGeometry);
+            }
+            else if (instruction is LineDrawingInstruction lineDrawingInstruction)
+            {
+                var lineGeometry = new LineGeometry()
+                {
+                    StartPoint = lineDrawingInstruction.StartPoint,
+                    EndPoint   = lineDrawingInstruction.EndPoint
+                };
+                if (lineDrawingInstruction.Transform != null)
+                {
+                    lineGeometry.Transform = new MatrixTransform(lineDrawingInstruction.Transform.Value);
+                }
+
+                group.Children.Add(lineGeometry);
+            }
+            else if (instruction is PolylineDrawingInstruction polylineDrawingInstruction)
+            {
+                var polylineGeometry = new PolylineGeometry()
+                {
+                    Points   = polylineDrawingInstruction.Points,
+                    IsFilled = false
+                };
+                if (polylineDrawingInstruction.Transform != null)
+                {
+                    polylineGeometry.Transform = new MatrixTransform(polylineDrawingInstruction.Transform.Value);
+                }
+
+                group.Children.Add(polylineGeometry);
+            }
+            else if (instruction is PolygonDrawingInstruction polygonDrawingInstruction)
+            {
+                var polygonGeometry = new PolylineGeometry()
+                {
+                    Points   = polygonDrawingInstruction.Points,
+                    IsFilled = true
+                };
+                if (polygonDrawingInstruction.Transform != null)
+                {
+                    polygonGeometry.Transform = new MatrixTransform(polygonDrawingInstruction.Transform.Value);
+                }
+
+                group.Children.Add(polygonGeometry);
+            }
+            else if (instruction is PathDrawingInstruction pathDrawingInstruction)
+            {
+                var geometry = pathDrawingInstruction.Data?.Clone();
+                if (geometry != null)
+                {
+                    if (pathDrawingInstruction.Transform != null)
+                    {
+                        geometry.Transform = new MatrixTransform(pathDrawingInstruction.Transform.Value);
+                    }
+
+                    group.Children.Add(geometry);
+                }
             }
         }
+
+        return group.Bounds;
     }
 
     protected virtual void ValidateThemeChange()

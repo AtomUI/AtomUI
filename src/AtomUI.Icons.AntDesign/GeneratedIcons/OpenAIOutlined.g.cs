@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class OpenAIOutlined : Icon
+public class OpenAIOutlined : AntDesignIcon
 {
     public OpenAIOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FileZipFilled : Icon
+public class FileZipFilled : AntDesignIcon
 {
     public FileZipFilled()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RedditSquareFilled : Icon
+public class RedditSquareFilled : AntDesignIcon
 {
     public RedditSquareFilled()
     {

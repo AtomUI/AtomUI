@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FontSizeOutlined : Icon
+public class FontSizeOutlined : AntDesignIcon
 {
     public FontSizeOutlined()
     {

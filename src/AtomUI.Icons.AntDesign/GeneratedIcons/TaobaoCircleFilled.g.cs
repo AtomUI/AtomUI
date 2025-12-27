@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TaobaoCircleFilled : Icon
+public class TaobaoCircleFilled : AntDesignIcon
 {
     public TaobaoCircleFilled()
     {

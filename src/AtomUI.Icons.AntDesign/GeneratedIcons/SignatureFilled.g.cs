@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SignatureFilled : Icon
+public class SignatureFilled : AntDesignIcon
 {
     public SignatureFilled()
     {

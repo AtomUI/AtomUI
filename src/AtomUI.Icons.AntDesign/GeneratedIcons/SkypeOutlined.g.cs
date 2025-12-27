@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SkypeOutlined : Icon
+public class SkypeOutlined : AntDesignIcon
 {
     public SkypeOutlined()
     {

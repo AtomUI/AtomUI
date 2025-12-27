@@ -56,7 +56,7 @@ public class IconGallery : TemplatedControl
     private void ReLoadIcons()
     {
         var allIconClasses = CachedLoadedAssemblyTypeScanner.GetInheritedTypes<Icon>("AtomUI.Icons.AntDesign");
-        var targetClasses = allIconClasses.Where(t => t.FullName?.EndsWith(IconThemeType.ToString()!) ?? false).ToList();
+        var targetClasses = allIconClasses.Where(t => t.FullName?.EndsWith(IconThemeType.ToString()!) ?? false).OrderBy(t => t.Name).ToList();
         var list = new AvaloniaList<PackageIconItem>();
         foreach (var iconInfoType in targetClasses)
         {

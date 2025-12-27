@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RightCircleOutlined : Icon
+public class RightCircleOutlined : AntDesignIcon
 {
     public RightCircleOutlined()
     {

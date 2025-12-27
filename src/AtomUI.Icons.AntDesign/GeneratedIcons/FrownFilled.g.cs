@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FrownFilled : Icon
+public class FrownFilled : AntDesignIcon
 {
     public FrownFilled()
     {

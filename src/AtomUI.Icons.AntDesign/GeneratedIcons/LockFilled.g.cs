@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class LockFilled : Icon
+public class LockFilled : AntDesignIcon
 {
     public LockFilled()
     {

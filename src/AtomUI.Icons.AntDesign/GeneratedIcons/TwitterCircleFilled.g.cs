@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TwitterCircleFilled : Icon
+public class TwitterCircleFilled : AntDesignIcon
 {
     public TwitterCircleFilled()
     {

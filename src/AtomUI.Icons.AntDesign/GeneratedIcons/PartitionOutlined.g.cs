@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PartitionOutlined : Icon
+public class PartitionOutlined : AntDesignIcon
 {
     public PartitionOutlined()
     {

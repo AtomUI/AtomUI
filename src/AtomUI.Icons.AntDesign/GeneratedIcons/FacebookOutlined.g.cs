@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FacebookOutlined : Icon
+public class FacebookOutlined : AntDesignIcon
 {
     public FacebookOutlined()
     {

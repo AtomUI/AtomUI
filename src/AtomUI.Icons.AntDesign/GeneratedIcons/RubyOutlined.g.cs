@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RubyOutlined : Icon
+public class RubyOutlined : AntDesignIcon
 {
     public RubyOutlined()
     {

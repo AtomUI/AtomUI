@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ZoomOutOutlined : Icon
+public class ZoomOutOutlined : AntDesignIcon
 {
     public ZoomOutOutlined()
     {

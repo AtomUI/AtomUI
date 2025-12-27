@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DollarCircleOutlined : Icon
+public class DollarCircleOutlined : AntDesignIcon
 {
     public DollarCircleOutlined()
     {

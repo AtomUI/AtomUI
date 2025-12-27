@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class TrademarkCircleOutlined : Icon
+public class TrademarkCircleOutlined : AntDesignIcon
 {
     public TrademarkCircleOutlined()
     {

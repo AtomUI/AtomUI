@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AlipayOutlined : Icon
+public class AlipayOutlined : AntDesignIcon
 {
     public AlipayOutlined()
     {

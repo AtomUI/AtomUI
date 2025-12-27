@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class MergeCellsOutlined : Icon
+public class MergeCellsOutlined : AntDesignIcon
 {
     public MergeCellsOutlined()
     {

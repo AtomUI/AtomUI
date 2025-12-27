@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AliwangwangFilled : Icon
+public class AliwangwangFilled : AntDesignIcon
 {
     public AliwangwangFilled()
     {

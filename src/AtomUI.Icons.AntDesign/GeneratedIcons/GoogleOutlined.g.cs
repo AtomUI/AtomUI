@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class GoogleOutlined : Icon
+public class GoogleOutlined : AntDesignIcon
 {
     public GoogleOutlined()
     {

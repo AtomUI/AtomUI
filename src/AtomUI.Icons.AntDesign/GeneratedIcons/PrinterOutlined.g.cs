@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PrinterOutlined : Icon
+public class PrinterOutlined : AntDesignIcon
 {
     public PrinterOutlined()
     {

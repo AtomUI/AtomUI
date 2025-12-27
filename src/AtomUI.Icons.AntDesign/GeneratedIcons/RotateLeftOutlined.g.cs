@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class RotateLeftOutlined : Icon
+public class RotateLeftOutlined : AntDesignIcon
 {
     public RotateLeftOutlined()
     {

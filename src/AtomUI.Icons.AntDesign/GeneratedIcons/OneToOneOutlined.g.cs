@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class OneToOneOutlined : Icon
+public class OneToOneOutlined : AntDesignIcon
 {
     public OneToOneOutlined()
     {

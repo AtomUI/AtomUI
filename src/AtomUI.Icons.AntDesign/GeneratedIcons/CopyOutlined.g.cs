@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CopyOutlined : Icon
+public class CopyOutlined : AntDesignIcon
 {
     public CopyOutlined()
     {

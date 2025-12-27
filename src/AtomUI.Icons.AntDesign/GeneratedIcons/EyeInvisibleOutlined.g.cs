@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class EyeInvisibleOutlined : Icon
+public class EyeInvisibleOutlined : AntDesignIcon
 {
     public EyeInvisibleOutlined()
     {

@@ -317,21 +317,7 @@ public static class TransformParser
                     
                     double angleRad = ToRadians(in angle);
                     
-                    // 计算旋转矩阵（绕指定点旋转）
-                    // M = T(cx, cy) × R(angle) × T(-cx, -cy)
-                    double cos = Math.Cos(angleRad);
-                    double sin = Math.Sin(angleRad);
-                    
-                    double dx = centerX.Value * (1 - cos) + centerY.Value * sin;
-                    double dy = centerY.Value * (1 - cos) - centerX.Value * sin;
-                    
-                    var matrix = new Matrix(
-                        cos, -sin,  // M11, M12
-                        sin, cos,   // M21, M22
-                        dx, dy      // OffsetX, OffsetY
-                    );
-                    
-                    builder.AppendMatrix(matrix);
+                    builder.AppendMatrix(Matrix.CreateRotation(angleRad, new Point(centerX.Value, centerY.Value)));
                 }
                 break;
             }

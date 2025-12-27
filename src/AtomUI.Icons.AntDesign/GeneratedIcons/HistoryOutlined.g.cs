@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class HistoryOutlined : Icon
+public class HistoryOutlined : AntDesignIcon
 {
     public HistoryOutlined()
     {

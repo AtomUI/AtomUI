@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DingtalkSquareFilled : Icon
+public class DingtalkSquareFilled : AntDesignIcon
 {
     public DingtalkSquareFilled()
     {

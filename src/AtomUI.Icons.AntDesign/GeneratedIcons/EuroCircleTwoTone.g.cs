@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class EuroCircleTwoTone : Icon
+public class EuroCircleTwoTone : AntDesignIcon
 {
     public EuroCircleTwoTone()
     {

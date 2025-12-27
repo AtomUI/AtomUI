@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class StopFilled : Icon
+public class StopFilled : AntDesignIcon
 {
     public StopFilled()
     {

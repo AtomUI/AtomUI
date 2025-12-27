@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AlipaySquareFilled : Icon
+public class AlipaySquareFilled : AntDesignIcon
 {
     public AlipaySquareFilled()
     {

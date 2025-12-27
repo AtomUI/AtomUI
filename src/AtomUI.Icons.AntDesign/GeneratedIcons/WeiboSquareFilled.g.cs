@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class WeiboSquareFilled : Icon
+public class WeiboSquareFilled : AntDesignIcon
 {
     public WeiboSquareFilled()
     {

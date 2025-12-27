@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class GooglePlusCircleFilled : Icon
+public class GooglePlusCircleFilled : AntDesignIcon
 {
     public GooglePlusCircleFilled()
     {

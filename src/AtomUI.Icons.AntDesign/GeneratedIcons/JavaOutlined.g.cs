@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class JavaOutlined : Icon
+public class JavaOutlined : AntDesignIcon
 {
     public JavaOutlined()
     {

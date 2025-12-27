@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class CreditCardFilled : Icon
+public class CreditCardFilled : AntDesignIcon
 {
     public CreditCardFilled()
     {

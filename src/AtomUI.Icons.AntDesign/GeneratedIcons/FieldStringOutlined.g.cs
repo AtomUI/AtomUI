@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FieldStringOutlined : Icon
+public class FieldStringOutlined : AntDesignIcon
 {
     public FieldStringOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FieldBinaryOutlined : Icon
+public class FieldBinaryOutlined : AntDesignIcon
 {
     public FieldBinaryOutlined()
     {

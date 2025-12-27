@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class UndoOutlined : Icon
+public class UndoOutlined : AntDesignIcon
 {
     public UndoOutlined()
     {

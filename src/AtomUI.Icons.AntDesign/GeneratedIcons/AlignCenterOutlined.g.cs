@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AlignCenterOutlined : Icon
+public class AlignCenterOutlined : AntDesignIcon
 {
     public AlignCenterOutlined()
     {

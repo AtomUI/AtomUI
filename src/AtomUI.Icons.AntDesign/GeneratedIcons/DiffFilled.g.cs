@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DiffFilled : Icon
+public class DiffFilled : AntDesignIcon
 {
     public DiffFilled()
     {

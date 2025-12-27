@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class VideoCameraAddOutlined : Icon
+public class VideoCameraAddOutlined : AntDesignIcon
 {
     public VideoCameraAddOutlined()
     {

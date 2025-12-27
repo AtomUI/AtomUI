@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class UnlockFilled : Icon
+public class UnlockFilled : AntDesignIcon
 {
     public UnlockFilled()
     {

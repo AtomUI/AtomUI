@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SafetyCertificateOutlined : Icon
+public class SafetyCertificateOutlined : AntDesignIcon
 {
     public SafetyCertificateOutlined()
     {

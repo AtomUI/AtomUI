@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class HourglassFilled : Icon
+public class HourglassFilled : AntDesignIcon
 {
     public HourglassFilled()
     {

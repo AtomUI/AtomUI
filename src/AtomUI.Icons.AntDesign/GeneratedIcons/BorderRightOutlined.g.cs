@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class BorderRightOutlined : Icon
+public class BorderRightOutlined : AntDesignIcon
 {
     public BorderRightOutlined()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class FunnelPlotFilled : Icon
+public class FunnelPlotFilled : AntDesignIcon
 {
     public FunnelPlotFilled()
     {

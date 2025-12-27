@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class IeSquareFilled : Icon
+public class IeSquareFilled : AntDesignIcon
 {
     public IeSquareFilled()
     {

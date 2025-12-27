@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class ThunderboltFilled : Icon
+public class ThunderboltFilled : AntDesignIcon
 {
     public ThunderboltFilled()
     {

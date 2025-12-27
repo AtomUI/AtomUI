@@ -17,8 +17,8 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
         <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
-        <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
-        <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
+        <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIconHover}}" />
+        <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIconHover}}" />
         <Setter Property="StrokeWidth" Value="{DynamicResource {x:Static atom:IconTokenKey.StrokeWidth}}" />
         <Setter Property="StrokeLineCap" Value="{DynamicResource {x:Static atom:IconTokenKey.StrokeLineCap}}" />
         <Setter Property="StrokeLineJoin" Value="{DynamicResource {x:Static atom:IconTokenKey.StrokeLineJoin}}" />
@@ -29,7 +29,7 @@
         </Style>
         
         <Style Selector="^[IconTheme=MultiColor]">
-            <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
+            <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIconHover}}" />
             <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
         </Style>
         

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class IdcardFilled : Icon
+public class IdcardFilled : AntDesignIcon
 {
     public IdcardFilled()
     {

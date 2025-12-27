@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class PinterestOutlined : Icon
+public class PinterestOutlined : AntDesignIcon
 {
     public PinterestOutlined()
     {

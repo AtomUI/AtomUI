@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class SoundFilled : Icon
+public class SoundFilled : AntDesignIcon
 {
     public SoundFilled()
     {

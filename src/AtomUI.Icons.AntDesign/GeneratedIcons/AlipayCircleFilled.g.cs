@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class AlipayCircleFilled : Icon
+public class AlipayCircleFilled : AntDesignIcon
 {
     public AlipayCircleFilled()
     {

@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class InsuranceOutlined : Icon
+public class InsuranceOutlined : AntDesignIcon
 {
     public InsuranceOutlined()
     {

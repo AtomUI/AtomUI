@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class Loading3QuartersOutlined : Icon
+public class Loading3QuartersOutlined : AntDesignIcon
 {
     public Loading3QuartersOutlined()
     {

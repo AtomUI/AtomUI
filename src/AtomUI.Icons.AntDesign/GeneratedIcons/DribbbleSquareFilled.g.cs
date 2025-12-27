@@ -9,7 +9,7 @@ using AtomUI.Controls;
 using AtomUI.Media;
 namespace AtomUI.Icons.AntDesign;
 
-public class DribbbleSquareFilled : Icon
+public class DribbbleSquareFilled : AntDesignIcon
 {
     public DribbbleSquareFilled()
     {

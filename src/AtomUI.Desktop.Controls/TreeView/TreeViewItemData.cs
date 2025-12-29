@@ -5,7 +5,7 @@ namespace AtomUI.Desktop.Controls;
 
 public record TreeViewItemData : ITreeViewItemData
 {
-    public ITreeNode<ITreeViewItemData>? ParentNode { get; internal set; }
+    public ITreeNode<ITreeViewItemData>? ParentNode { get; private set; }
     public TreeNodeKey? ItemKey { get; init; }
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
@@ -14,8 +14,10 @@ public record TreeViewItemData : ITreeViewItemData
     public bool IsSelected { get; init; }
     public bool IsExpanded { get; init; }
     public bool IsIndicatorEnabled { get; init; } = true;
-    public string? GroupName { get; init; }
     
+    public string? GroupName { get; init; }
+    public bool IsLeaf { get; init; } = false;
+
     private IList<ITreeViewItemData> _children = [];
     public IList<ITreeViewItemData> Children
     {
@@ -31,5 +33,10 @@ public record TreeViewItemData : ITreeViewItemData
                 }
             }
         }
+    }
+    
+    public void UpdateParentNode(ITreeViewItemData? parentNode)
+    {
+        ParentNode = parentNode;
     }
 }

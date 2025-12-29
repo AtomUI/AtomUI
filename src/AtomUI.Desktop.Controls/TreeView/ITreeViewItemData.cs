@@ -9,4 +9,10 @@ public interface ITreeViewItemData : ITreeNode<ITreeViewItemData>
     bool IsExpanded { get; }
     bool IsIndicatorEnabled { get; }
     string? GroupName { get; }
+    bool IsLeaf { get; }
+
+    void UpdateParentNode(ITreeViewItemData? parentNode)
+    {
+        throw new NotImplementedException();
+    }
 }

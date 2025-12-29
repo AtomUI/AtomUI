@@ -83,6 +83,11 @@ public partial class TreeView
             DragIndicatorBrushProperty,
             DragIndicatorLineWidthProperty,
             NodeHoverModeProperty);
+
+        NodeSwitcherButton.NodeLoadRequestEvent.AddClassHandler<TreeView>((tree, args) =>
+        {
+            tree.HandleNodeLoadRequest(args.Node);
+        });
     }
     
     // 自己优先的查找，用于确认拖动发生的节点

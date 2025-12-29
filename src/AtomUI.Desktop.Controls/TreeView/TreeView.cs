@@ -93,6 +93,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             nameof(DefaultExpandedPaths),
             o => o.DefaultExpandedPaths,
             (o, v) => o.DefaultExpandedPaths = v);
+    
+    public static readonly DirectProperty<TreeView, ITreeNodeDataLoader?> TreeItemDataLoaderProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, ITreeNodeDataLoader?>(
+            nameof(TreeItemDataLoader),
+            o => o.TreeItemDataLoader,
+            (o, v) => o.TreeItemDataLoader = v);
 
     public bool IsDraggable
     {
@@ -207,6 +213,14 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         get => _defaultExpandedPaths;
         set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
     }
+        
+    private ITreeNodeDataLoader? _treeItemDataLoader;
+    
+    public ITreeNodeDataLoader? TreeItemDataLoader
+    {
+        get => _treeItemDataLoader;
+        set => SetAndRaise(TreeItemDataLoaderProperty, ref _treeItemDataLoader, value);
+    }
     
     public bool IsDefaultExpandAll { get; set; } = false;
     
@@ -243,17 +257,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     #endregion
 
     #region 公共事件定义
-
-    public static readonly RoutedEvent<TreeViewCheckedItemsChangedEventArgs> CheckedItemsChangedEvent =
-        RoutedEvent.Register<TreeView, TreeViewCheckedItemsChangedEventArgs>(
-            nameof(CheckedItemsChangedEvent),
-            RoutingStrategies.Bubble);
     
-    public event EventHandler<TreeViewCheckedItemsChangedEventArgs>? CheckedItemsChanged
-    {
-        add => AddHandler(CheckedItemsChangedEvent, value);
-        remove => RemoveHandler(CheckedItemsChangedEvent, value);
-    }
+    public event EventHandler<TreeViewCheckedItemsChangedEventArgs>? CheckedItemsChanged;
+    public event EventHandler<TreeViewItemLoadedEventArgs>? TreeItemLoaded;
 
     #endregion
 
@@ -536,6 +542,8 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 TreeViewItem.IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, TreeViewItem.IsSwitcherRotationProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
+                TreeViewItem.HasTreeItemDataLoaderProperty));
             
             PrepareTreeViewItem(treeViewItem, item, index, disposables);
             
@@ -563,7 +571,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             treeViewItem.SetValue(iconProperty, iconTemplate.Build());
         }
     }
-    
     
     protected virtual void PrepareTreeViewItem(TreeViewItem treeViewItem, object? item, int index, CompositeDisposable compositeDisposable)
     {
@@ -680,11 +687,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
         if (added?.Count > 0 || removed?.Count > 0)
         {
-            var changed = new TreeViewCheckedItemsChangedEventArgs(
-                CheckedItemsChangedEvent,
+            CheckedItemsChanged?.Invoke(this, new TreeViewCheckedItemsChangedEventArgs(
                 removed ?? Empty,
-                added ?? Empty);
-            RaiseEvent(changed);
+                added ?? Empty));
         }
     }
     
@@ -1021,6 +1026,10 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         else if (change.Property == SwitcherLeafIconProperty)
         {
             HandleSwitcherLeafIconChanged();
+        }
+        else if (change.Property == TreeItemDataLoaderProperty)
+        {
+            HasTreeItemDataLoader = TreeItemDataLoader != null;
         }
     }
 

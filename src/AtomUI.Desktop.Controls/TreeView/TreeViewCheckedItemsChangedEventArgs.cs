@@ -3,7 +3,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TreeViewCheckedItemsChangedEventArgs : RoutedEventArgs
+public class TreeViewCheckedItemsChangedEventArgs : EventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TreeViewCheckedItemsChangedEventArgs"/> class.
@@ -11,8 +11,7 @@ public class TreeViewCheckedItemsChangedEventArgs : RoutedEventArgs
     /// <param name="routedEvent">The event being raised.</param>
     /// <param name="removedItems">The items removed from the check.</param>
     /// <param name="addedItems">The items added to the check.</param>
-    public TreeViewCheckedItemsChangedEventArgs(RoutedEvent routedEvent, IList<ITreeViewItemData> removedItems, IList<ITreeViewItemData> addedItems)
-        : base(routedEvent)
+    public TreeViewCheckedItemsChangedEventArgs(IList<ITreeViewItemData> removedItems, IList<ITreeViewItemData> addedItems)
     {
         RemovedItems = removedItems;
         AddedItems   = addedItems;

@@ -159,6 +159,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     internal static readonly StyledProperty<bool> IsShowLeafIconProperty =
         AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsShowLeafIcon));
     
+    internal static readonly DirectProperty<TreeViewItem, bool> HasTreeItemDataLoaderProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(HasTreeItemDataLoader),
+            o => o.HasTreeItemDataLoader,
+            (o, v) => o.HasTreeItemDataLoader = v);
+    
     internal PathIcon? SwitcherExpandIcon
     {
         get => GetValue(SwitcherExpandIconProperty);
@@ -255,6 +260,14 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         set => SetValue(IsShowLeafIconProperty, value);
     }
     
+    private bool _hasTreeItemDataLoader;
+
+    internal bool HasTreeItemDataLoader
+    {
+        get => _hasTreeItemDataLoader;
+        set => SetAndRaise(HasTreeItemDataLoaderProperty, ref _hasTreeItemDataLoader, value);
+    }
+    
     internal TreeView? OwnerTreeView { get; set; }
 
     private ITreeViewInteractionHandler? TreeViewInteractionHandler => this.FindLogicalAncestorOfType<TreeView>()?.InteractionHandler;
@@ -266,6 +279,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     private readonly BorderRenderHelper _borderRenderHelper;
     private TreeViewItemHeader? _header;
     private readonly Dictionary<TreeViewItem, CompositeDisposable> _itemsBindingDisposables = new();
+    internal bool AsyncLoaded;
 
     static TreeViewItem()
     {
@@ -317,11 +331,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         base.OnPropertyChanged(change);
         
-        if (change.Property == ItemCountProperty)
+        if (change.Property == ItemCountProperty ||
+            change.Property == HasTreeItemDataLoaderProperty)
         {
-            IsLeaf = ItemCount == 0;
+            ConfigureIsLeaf();
         }
- 
         else if (change.Property == GroupNameProperty)
         {
             HandleGroupNameChanged(change);
@@ -444,8 +458,8 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         _header             = e.NameScope.Find<TreeViewItemHeader>(TreeViewItemThemeConstants.HeaderPart);
         _itemsPresenterMotionActor =
             e.NameScope.Find<BaseMotionActor>(TreeViewItemThemeConstants.ItemsPresenterMotionActorPart);
-
-        IsLeaf = ItemCount == 0;
+        
+        ConfigureIsLeaf();
         
         var originIsMotionEnabled = IsMotionEnabled;
         try
@@ -634,17 +648,19 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             
             if (ItemTemplate != null)
             {
-                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, treeViewItem, TreeViewItem.HeaderTemplateProperty));
+                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, treeViewItem, HeaderTemplateProperty));
             }
             
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, TreeViewItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, TreeViewItem.NodeHoverModeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, TreeViewItem.IsShowLineProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, treeViewItem, TreeViewItem.IsShowIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, NodeHoverModeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, IsShowLineProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, treeViewItem, IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLeafIconProperty, treeViewItem,
-                TreeViewItem.IsShowLeafIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, TreeViewItem.IsSwitcherRotationProperty));
-            disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
+                    IsShowLeafIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, IsSwitcherRotationProperty));
+            disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
+                HasTreeItemDataLoaderProperty));
             
             PrepareTreeViewItem(treeViewItem, item, index, disposables);
             
@@ -669,14 +685,14 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         if (treeViewItemData is not Visual)
         {
-            if (!treeViewItem.IsSet(TreeViewItem.HeaderProperty))
+            if (!treeViewItem.IsSet(HeaderProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.HeaderProperty, treeViewItem);
+                treeViewItem.SetCurrentValue(HeaderProperty, treeViewItem);
             }
                     
-            if (!treeViewItem.IsSet(TreeViewItem.IconProperty))
+            if (!treeViewItem.IsSet(IconProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IconProperty, treeViewItemData.Icon);
+                treeViewItem.SetCurrentValue(IconProperty, treeViewItemData.Icon);
             }
                     
             if (treeViewItem.ItemKey == null)
@@ -684,29 +700,53 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
                 treeViewItem.ItemKey = treeViewItemData.ItemKey;
             }
                     
-            if (!treeViewItem.IsSet(TreeViewItem.IsCheckedProperty))
+            if (!treeViewItem.IsSet(IsCheckedProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, treeViewItemData.IsChecked);
+                treeViewItem.SetCurrentValue(IsCheckedProperty, treeViewItemData.IsChecked);
             }
                     
-            if (!treeViewItem.IsSet(TreeViewItem.IsSelectedProperty))
+            if (!treeViewItem.IsSet(IsSelectedProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IsSelectedProperty, treeViewItemData.IsSelected);
+                treeViewItem.SetCurrentValue(IsSelectedProperty, treeViewItemData.IsSelected);
             }
                     
-            if (!treeViewItem.IsSet(TreeViewItem.IsEnabledProperty))
+            if (!treeViewItem.IsSet(IsEnabledProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IsEnabledProperty, treeViewItemData.IsEnabled);
+                treeViewItem.SetCurrentValue(IsEnabledProperty, treeViewItemData.IsEnabled);
             }
                     
-            if (!treeViewItem.IsSet(TreeViewItem.IsExpandedProperty))
+            if (!treeViewItem.IsSet(IsExpandedProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IsExpandedProperty, treeViewItemData.IsExpanded);
+                treeViewItem.SetCurrentValue(IsExpandedProperty, treeViewItemData.IsExpanded);
             }
-            if (!treeViewItem.IsSet(TreeViewItem.IsIndicatorEnabledProperty))
+            if (!treeViewItem.IsSet(IsIndicatorEnabledProperty))
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IsIndicatorEnabledProperty, treeViewItemData.IsIndicatorEnabled);
+                treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeViewItemData.IsIndicatorEnabled);
             }
+            
+            if (!treeViewItem.IsSet(IsLeafProperty))
+            {
+                treeViewItem.IsLeaf = treeViewItemData.IsLeaf;
+            }
+        }
+    }
+
+    private void ConfigureIsLeaf()
+    {
+        if (HasTreeItemDataLoader)
+        {
+            if (ItemCount > 0)
+            {
+                IsLeaf = false;
+            }
+            else if (AsyncLoaded)
+            {
+                IsLeaf = true;
+            }
+        }
+        else
+        {
+            IsLeaf = ItemCount == 0;
         }
     }
 }

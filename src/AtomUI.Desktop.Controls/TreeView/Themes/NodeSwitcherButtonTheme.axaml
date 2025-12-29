@@ -70,9 +70,14 @@
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"/>
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"/>
         </Style>
+        
         <Style Selector="^ /template/ atom|IconPresenter#RotationIconPresenter">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeXS}}"/>
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeXS}}"/>
+        </Style>
+        
+        <Style Selector="^ /template/ atom|IconPresenter#LoadingIconPresenter">
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}"/>
         </Style>
         
         <Style Selector="^:checked[IconMode=Rotation]">

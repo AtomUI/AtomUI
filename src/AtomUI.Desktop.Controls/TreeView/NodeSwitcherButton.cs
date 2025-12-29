@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -81,6 +82,19 @@ internal class NodeSwitcherButton : ToggleButton
     
     #endregion
 
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<TreeViewItemLoadRequestEventArgs> NodeLoadRequestEvent =
+        RoutedEvent.Register<NodeSwitcherButton, TreeViewItemLoadRequestEventArgs>(nameof(NodeLoadRequest), RoutingStrategies.Bubble);
+    
+    public event EventHandler<TreeViewItemLoadRequestEventArgs>? NodeLoadRequest
+    {
+        add => AddHandler(NodeLoadRequestEvent, value);
+        remove => RemoveHandler(NodeLoadRequestEvent, value);
+    }
+
+    #endregion
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<bool> IsLeafIconVisibleProperty =
@@ -129,6 +143,7 @@ internal class NodeSwitcherButton : ToggleButton
     #endregion
 
     private readonly BorderRenderHelper _borderRenderHelper;
+    private TreeViewItem? _owningTreeItem;
 
     static NodeSwitcherButton()
     {
@@ -167,7 +182,6 @@ internal class NodeSwitcherButton : ToggleButton
         }
     }
     
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -231,12 +245,32 @@ internal class NodeSwitcherButton : ToggleButton
             ClearValue(LeafIconProperty);
             SetValue(LeafIconProperty, new FileOutlined(), BindingPriority.Template);
         }
+
+        if (LoadingIcon == null)
+        {
+            ClearValue(LoadingIconProperty);
+            SetValue(LoadingIconProperty, new LoadingOutlined()
+            {
+                LoadingAnimation = IconAnimation.Spin
+            }, BindingPriority.Template);
+        }
     }
 
     protected override void Toggle()
     {
         if (IsNodeAnimating)
         {
+            return;
+        }
+
+        _owningTreeItem ??= this.FindAncestorOfType<TreeViewItem>();
+        Debug.Assert(_owningTreeItem != null);
+        if (_owningTreeItem.HasTreeItemDataLoader && !_owningTreeItem.AsyncLoaded)
+        {
+            RaiseEvent(new TreeViewItemLoadRequestEventArgs(_owningTreeItem)
+            {
+                RoutedEvent = NodeLoadRequestEvent
+            });
             return;
         }
         base.Toggle();
@@ -253,5 +287,4 @@ internal class NodeSwitcherButton : ToggleButton
         base.OnUnloaded(e);
         Transitions = null;
     }
-
 }

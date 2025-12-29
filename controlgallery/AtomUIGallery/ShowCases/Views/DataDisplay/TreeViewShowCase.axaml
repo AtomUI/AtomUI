@@ -177,6 +177,20 @@
                 </atom:TreeViewItem>
             </atom:TreeView>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="load data asynchronously"
+            Description="To load data asynchronously when click to expand a treeNode.">
+            <atom:TreeView x:DataType="viewModels:TreeViewViewModel"
+                           ItemsSource="{Binding AsyncLoadTreeNodes}"
+                           TreeItemDataLoader="{Binding AsyncLoadTreeNodeLoader}">
+                <atom:TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" />
+                    </TreeDataTemplate>
+                </atom:TreeView.ItemTemplate>
+            </atom:TreeView>
+        </gallery:ShowCaseItem>
 
     </gallery:ShowCasePanel>
 </UserControl>

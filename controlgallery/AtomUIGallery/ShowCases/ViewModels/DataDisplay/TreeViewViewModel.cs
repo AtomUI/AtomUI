@@ -84,9 +84,61 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
         get => _basicTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _basicTreeNodes, value);
     }
+    
+    private List<ITreeViewItemData> _asyncLoadTreeNodes = [];
+    
+    public List<ITreeViewItemData> AsyncLoadTreeNodes
+    {
+        get => _asyncLoadTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodes, value);
+    }
+
+    private TreeItemDataLoader? _asyncLoadTreeNodeLoader;
+    
+    public TreeItemDataLoader? AsyncLoadTreeNodeLoader
+    {
+        get => _asyncLoadTreeNodeLoader;
+        set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodeLoader, value);
+    }
 
     public TreeViewViewModel(IScreen screen)
     {
         HostScreen = screen;
+    }
+}
+
+public class TreeItemDataLoader : ITreeNodeDataLoader
+{
+    public async Task<TreeNodeLoadResult> LoadAsync(ITreeViewItemData targetTreeItemData, CancellationToken token)
+    {
+        var                           level   = 0;
+        ITreeNode<ITreeViewItemData>? current = targetTreeItemData;
+        while (current != null)
+        {
+            level++;
+            current = current.ParentNode;
+        }
+        await Task.Delay(TimeSpan.FromMilliseconds(600), token);
+        var children = new List<TreeViewItemData>();
+        if (level < 3)
+        {
+            children.AddRange([
+                new TreeViewItemData()
+                {
+                    ItemKey = $"{targetTreeItemData.ItemKey}-0",
+                    Header  = "Child Node"
+                },
+                new TreeViewItemData()
+                {
+                    ItemKey = $"{targetTreeItemData.ItemKey}-1",
+                    Header  = "Child Node"
+                }
+            ]);
+        }
+        return new TreeNodeLoadResult()
+        {
+            IsSuccess = true,
+            Data = children
+        };
     }
 }

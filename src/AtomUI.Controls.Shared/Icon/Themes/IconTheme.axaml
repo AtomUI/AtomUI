@@ -35,6 +35,7 @@
         
         <Setter Property="SecondaryFillBrush" Value="{DynamicResource {x:Static atom:IconTokenKey.SecondaryFillColor}}" />
         <Setter Property="SecondaryStrokeBrush" Value="{DynamicResource {x:Static atom:IconTokenKey.SecondaryStrokeColor}}" />
+        <Setter Property="FallbackBrush" Value="White" />
         <Setter Property="FillAnimationDuration" Value="{DynamicResource {x:Static atom:SharedTokenKey.MotionDurationMid}}" />
         
     </ControlTheme>

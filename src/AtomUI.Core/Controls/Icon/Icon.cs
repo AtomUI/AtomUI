@@ -6,6 +6,7 @@ using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -154,11 +155,24 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
     internal static readonly StyledProperty<double> AngleAnimationRotateProperty =
         AvaloniaProperty.Register<Icon, double>(
             nameof(AngleAnimationRotate));
+    
+    internal static readonly DirectProperty<Icon, bool> IsSupportSimpleTransitionProperty =
+        AvaloniaProperty.RegisterDirect<Icon, bool>(nameof(IsSupportSimpleTransition),
+            o => o.IsSupportSimpleTransition,
+            (o, v) => o.IsSupportSimpleTransition = v);
 
     internal double AngleAnimationRotate
     {
         get => GetValue(AngleAnimationRotateProperty);
         set => SetValue(AngleAnimationRotateProperty, value);
+    }
+    
+    private bool _isSupportSimpleTransition;
+
+    internal bool IsSupportSimpleTransition
+    {
+        get => _isSupportSimpleTransition;
+        set => SetAndRaise(IsSupportSimpleTransitionProperty, ref _isSupportSimpleTransition, value);
     }
 
     #endregion
@@ -193,7 +207,7 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         var secondaryStrokeIndex = (int)IconBrushType.SecondaryStroke;
         var secondaryFillIndex   = (int)IconBrushType.SecondaryFill;
         var fallbackIndex        = (int)IconBrushType.Fallback;
-
+        
         var strokeBrush          = ProcessBrush(StrokeBrush);
         var fillBrush            = ProcessBrush(FillBrush);
         var secondaryStrokeBrush = ProcessBrush(SecondaryStrokeBrush);
@@ -232,6 +246,8 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
                     BaseTransitionUtils.CreateTransition<SolidColorBrushTransition>(SecondaryFillBrushProperty,
                         FillAnimationDuration),
                     BaseTransitionUtils.CreateTransition<SolidColorBrushTransition>(SecondaryStrokeBrushProperty,
+                        FillAnimationDuration),
+                    BaseTransitionUtils.CreateTransition<SolidColorBrushTransition>(FallbackBrushProperty,
                         FillAnimationDuration)
                 ];
             }
@@ -258,23 +274,23 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
 
         if (change.Property == StrokeBrushProperty)
         {
-            HandleBrushChanged(IconBrushType.Stroke, StrokeBrush);
+            HandleBrushChanged(IconBrushType.Stroke, StrokeBrush, change.Priority);
         }
         else if (change.Property == FillBrushProperty)
         {
-            HandleBrushChanged(IconBrushType.Fill, FillBrush);
+            HandleBrushChanged(IconBrushType.Fill, FillBrush, change.Priority);
         }
         else if (change.Property == SecondaryStrokeBrushProperty)
         {
-            HandleBrushChanged(IconBrushType.SecondaryStroke, SecondaryStrokeBrush);
+            HandleBrushChanged(IconBrushType.SecondaryStroke, SecondaryStrokeBrush, change.Priority);
         }
         else if (change.Property == SecondaryFillBrushProperty)
         {
-            HandleBrushChanged(IconBrushType.SecondaryFill, SecondaryFillBrush);
+            HandleBrushChanged(IconBrushType.SecondaryFill, SecondaryFillBrush, change.Priority);
         }
         else if (change.Property == FallbackBrushProperty)
         {
-            HandleBrushChanged(IconBrushType.Fallback, FallbackBrush);
+            HandleBrushChanged(IconBrushType.Fallback, FallbackBrush, change.Priority);
         }
         else if (change.Property == StrokeWidthProperty)
         {
@@ -287,6 +303,20 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         else if (change.Property == StrokeLineJoinProperty)
         {
             HandleLineJoinChanged(StrokeLineJoin);
+        }
+        else if (change.Property == IconThemeProperty)
+        {
+            if (IconTheme == IconThemeType.Filled ||
+                IconTheme == IconThemeType.Outlined ||
+                IconTheme == IconThemeType.Rounded ||
+                IconTheme == IconThemeType.Sharp)
+            {
+                IsSupportSimpleTransition = true;
+            }
+            else
+            {
+                IsSupportSimpleTransition = false;
+            }
         }
 
         if (this.IsAttachedToVisualTree())
@@ -330,14 +360,22 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         }, TimeSpan.FromMilliseconds(200));
     }
 
-    private void HandleBrushChanged(IconBrushType brushType, IBrush? brush)
+    private void HandleBrushChanged(IconBrushType brushType, IBrush? brush, BindingPriority priority)
     {
         if (brushType == IconBrushType.None)
         {
             return;
         }
         var brushIndex = (int)brushType;
-        DrawBrushes[brushIndex] = ProcessBrush(brush);
+        if (priority > BindingPriority.Animation)
+        {
+            DrawBrushes[brushIndex] = ProcessBrush(brush);
+        }
+        else
+        {
+            DrawBrushes[brushIndex] = brush;
+        }
+   
         DrawPens[brushIndex]    = new Pen(DrawBrushes[brushIndex], StrokeWidth, lineCap: StrokeLineCap, lineJoin: StrokeLineJoin);
     }
 

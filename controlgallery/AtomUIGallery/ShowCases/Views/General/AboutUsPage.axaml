@@ -32,7 +32,6 @@
                     <Run Text="使命：" Foreground="Red" />
                     <Run Text="让数字世界建设者更高效" />
                 </atom:TextBlock>
-    
             </StackPanel>
     
             <Image Source="/Assets/AtomUIOSS-release-banner.png"

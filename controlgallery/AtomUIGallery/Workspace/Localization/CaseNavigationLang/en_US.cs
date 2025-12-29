@@ -19,6 +19,7 @@ internal class en_US : LanguageProvider
     public const string Layout = "Layout";
     public const string Layout_BoxPanel = "BoxPanel";
     public const string Layout_FlexPanel = "FlexPanel";
+    public const string Layout_Grid = "Grid";
     public const string Layout_BoxPanel_DeprecationNotice = "BoxPanel will be deprecated in a future release. Use FlexPanel for page layout.";
     
     public const string Navigation = "Navigation";

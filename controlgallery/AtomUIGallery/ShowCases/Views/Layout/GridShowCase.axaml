@@ -1,0 +1,649 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.GridShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <UserControl.Styles>
+        <Style Selector="Border.grid-cell">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Background" Value="#1677FF" />
+        </Style>
+        <Style Selector="Border.grid-cell.alt">
+            <Setter Property="Background" Value="#4096FF" />
+        </Style>
+        <Style Selector="Border.grid-row-surface">
+            <Setter Property="Background" Value="#F5F5F5" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+        <Style Selector="TextBlock.grid-cell-text">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.grid-section-title">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,8,0,4" />
+        </Style>
+    </UserControl.Styles>
+
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem Title="Basic Grid" Description="Basic 24-column layout." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="24">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="12">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-12</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="12">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-12</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="8">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-8</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="8">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-8</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="8">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-8</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Gutter" Description="Horizontal, vertical, and responsive gutter." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <TextBlock Classes="grid-section-title">Horizontal</TextBlock>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+
+                <TextBlock Classes="grid-section-title">Responsive</TextBlock>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Xs="24" Sm="12" Md="16" Lg="6" Xl="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Xs="24" Sm="12" Md="16" Lg="6" Xl="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Xs="24" Sm="12" Md="16" Lg="6" Xl="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Xs="24" Sm="12" Md="16" Lg="6" Xl="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+
+                <TextBlock Classes="grid-section-title">Vertical</TextBlock>
+                <atom:Row Gutter="16,24" Wrap="True">
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+
+                <TextBlock Classes="grid-section-title">Gutter (string)</TextBlock>
+                <atom:Row Gutter="16">
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Offset" Description="Move columns to the right." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="8">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-8</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="8" Offset="8">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-8 col-offset-8</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="6" Offset="6">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6 col-offset-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="12" Offset="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-12 col-offset-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="6" Offset="18">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6 col-offset-18</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Push &amp; Pull" Description="Change column order with push/pull." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="18" Push="6">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-18 col-push-6</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Pull="18">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-6 col-pull-18</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Justify" Description="Sub-element alignment on the main axis." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <TextBlock Classes="grid-section-title">sub-element align left</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="start">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">sub-element align center</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="center">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">sub-element align end</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="end">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">sub-element   align between</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="SpaceBetween">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">sub-element align around</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="SpaceAround">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">sub-element align evenly</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="SpaceEvenly">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Align" Description="Sub-element alignment on the cross axis." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <TextBlock Classes="grid-section-title">Align Top</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="center" Align="top">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell" Height="72">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt" Height="48">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell" Height="64">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt" Height="56">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">Align Middle</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="center" Align="middle">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell" Height="72">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt" Height="48">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell" Height="64">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt" Height="56">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+
+                <TextBlock Classes="grid-section-title">Align Bottom</TextBlock>
+                <Border Classes="grid-row-surface">
+                    <atom:Row Gutter="16,16" Justify="center" Align="bottom">
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell" Height="72">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt" Height="48">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell" Height="64">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                        <atom:Col Span="4">
+                            <Border Classes="grid-cell alt" Height="56">
+                                <TextBlock Classes="grid-cell-text">col-4</TextBlock>
+                            </Border>
+                        </atom:Col>
+                    </atom:Row>
+                </Border>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Order" Description="Change column order." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <TextBlock Classes="grid-section-title">Normal</TextBlock>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="6" Order="1">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">4 col-order-1</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Order="2">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">3 col-order-2</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Order="3">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">2 col-order-3</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Order="4">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">1 col-order-4</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+
+                <TextBlock Classes="grid-section-title">Responsive</TextBlock>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="6" Order="1" Sm="{atom:ColInfo Order=2}">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">3 col-order-responsive</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Order="2" Sm="{atom:ColInfo Order=1}">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">4 col-order-responsive</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Order="3" Sm="{atom:ColInfo Order=4}">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">2 col-order-responsive</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="6" Order="4" Sm="{atom:ColInfo Order=3}">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">1 col-order-responsive</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="ColInfo" Description="Use ColInfo for responsive overrides." IsOccupyEntireRow="True">
+            <StackPanel Margin="20" Spacing="12">
+                <StackPanel.Resources>
+                    <atom:ColInfo x:Key="MdCol1" Span="12" Order="2" />
+                    <atom:ColInfo x:Key="MdCol2" Span="12" Order="1" />
+                    <atom:ColInfo x:Key="MdCol3" Span="12" Order="4" />
+                    <atom:ColInfo x:Key="MdCol4" Span="12" Order="3" />
+                    <atom:ColInfo x:Key="LgCol1" Span="6" Order="1" />
+                    <atom:ColInfo x:Key="LgCol2" Span="6" Order="2" />
+                    <atom:ColInfo x:Key="LgCol3" Span="6" Order="3" />
+                    <atom:ColInfo x:Key="LgCol4" Span="6" Order="4" />
+                </StackPanel.Resources>
+                <TextBlock Classes="grid-section-title">Base + Md/Lg overrides</TextBlock>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="24">
+                        <atom:Col.Md>
+                            <atom:ColInfo Span="12" Order="2" />
+                        </atom:Col.Md>
+                        <atom:Col.Lg>
+                            <atom:ColInfo Span="6" Order="1" />
+                        </atom:Col.Lg>
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-1 with ColInfo</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="24">
+                        <atom:Col.Md>
+                            <atom:ColInfo Span="12" Order="1" />
+                        </atom:Col.Md>
+                        <atom:Col.Lg>
+                            <atom:ColInfo Span="6" Order="2" />
+                        </atom:Col.Lg>
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-2 with ColInfo</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="24">
+                        <atom:Col.Md>
+                            <atom:ColInfo Span="12" Order="3" />
+                        </atom:Col.Md>
+                        <atom:Col.Lg>
+                            <atom:ColInfo Span="6" Order="3" />
+                        </atom:Col.Lg>
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">col-3 with ColInfo</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="24">
+                        <atom:Col.Md>
+                            <atom:ColInfo Span="12" Order="4" />
+                        </atom:Col.Md>
+                        <atom:Col.Lg>
+                            <atom:ColInfo Span="6" Order="4" />
+                        </atom:Col.Lg>
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">col-4 with ColInfo</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+                <TextBlock Classes="grid-section-title">Shared resources</TextBlock>
+                <atom:Row Gutter="16,16">
+                    <atom:Col Span="24" Md="{StaticResource MdCol1}" Lg="{StaticResource LgCol1}">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">res-col-1</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="24" Md="{StaticResource MdCol2}" Lg="{StaticResource LgCol2}">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">res-col-2</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="24" Md="{StaticResource MdCol3}" Lg="{StaticResource LgCol3}">
+                        <Border Classes="grid-cell">
+                            <TextBlock Classes="grid-cell-text">res-col-3</TextBlock>
+                        </Border>
+                    </atom:Col>
+                    <atom:Col Span="24" Md="{StaticResource MdCol4}" Lg="{StaticResource LgCol4}">
+                        <Border Classes="grid-cell alt">
+                            <TextBlock Classes="grid-cell-text">res-col-4</TextBlock>
+                        </Border>
+                    </atom:Col>
+                </atom:Row>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+    </gallery:ShowCasePanel>
+</UserControl>

@@ -50,9 +50,10 @@
                                 </MultiBinding>
                             </atom:IconPresenter.IsVisible>
                         </atom:IconPresenter>
-                        <atom:TextBlock
-                            Name="{x:Static atom:ButtonThemeConstants.LabelPart}"
-                            Text="{TemplateBinding Content}" />
+                        <ContentPresenter
+                            Name="{x:Static atom:ButtonThemeConstants.ContentPresenterPart}"
+                            Content="{TemplateBinding Content}" 
+                            ContentTemplate="{TemplateBinding ContentTemplate}"/>
                     </DockPanel>
                 </atom:DashedBorder>
                 <Border Name="FocusVisual"

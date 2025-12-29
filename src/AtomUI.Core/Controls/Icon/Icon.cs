@@ -484,7 +484,7 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
 
     public async Task StartLoadingAnimationAsync()
     {
-        if (_animation is not null)
+        if (_animation is not null && _animationCancellationTokenSource == null)
         {
             _animationCancellationTokenSource = new CancellationTokenSource();
             await _animation.RunAsync(this, _animationCancellationTokenSource.Token);
@@ -537,7 +537,7 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
             }
             else if (instruction is CircleDrawingInstruction circleDrawingInstruction)
             {
-                var circleGeometry = new EllipseGeometry()
+                var circleGeometry = new EllipseGeometry
                 {
                     Center  = circleDrawingInstruction.Center,
                     RadiusX = circleDrawingInstruction.Radius,
@@ -552,7 +552,7 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
             }
             else if (instruction is EllipseDrawingInstruction ellipseDrawingInstruction)
             {
-                var ellipseGeometry = new EllipseGeometry()
+                var ellipseGeometry = new EllipseGeometry
                 {
                     Center  = ellipseDrawingInstruction.Center,
                     RadiusX = ellipseDrawingInstruction.RadiusX,

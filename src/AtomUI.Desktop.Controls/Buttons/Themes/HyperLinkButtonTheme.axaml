@@ -23,10 +23,10 @@
                             Name="{x:Static atom:ButtonThemeConstants.ButtonIconPart}"
                             Icon="{TemplateBinding Icon}"
                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <atom:TextBlock
-                            Name="{x:Static atom:ButtonThemeConstants.LabelPart}"
-                            VerticalAlignment="Center"
-                            Text="{TemplateBinding Content}" />
+                        <ContentPresenter
+                            Name="{x:Static atom:ButtonThemeConstants.ContentPresenterPart}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
                     </StackPanel>
                 </Border>
             </ControlTemplate>
@@ -69,7 +69,7 @@
                 <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ButtonTokenKey.IconOnyPaddingSM}}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorLink}}" />
         </Style>
@@ -97,14 +97,15 @@
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorLinkActive}}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
                 <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
             </Style>
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
-                <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+                <Setter Property="StrokeBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
             </Style>
         </Style>
 
@@ -119,35 +120,44 @@
 
             <Style Selector="^:pointerover">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
                 </Style>
             </Style>
 
             <Style Selector="^:pressed">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
                 </Style>
             </Style>
-            
+
             <Style Selector="^:disabled">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
                 </Style>
             </Style>
         </Style>
-        
+
         <!--  text 和 icon 都存在的情况 -->
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">

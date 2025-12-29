@@ -82,11 +82,11 @@ public class IconPresenter : Control, IMotionAwareControl
         {
             _disposables?.Dispose();
             _disposables = new CompositeDisposable(4);
-            _disposables.Add(BindUtils.RelayBind(this, WidthProperty, newChild, WidthProperty, BindingMode.Default, BindingPriority.Template));
-            _disposables.Add(BindUtils.RelayBind(this, HeightProperty, newChild, HeightProperty, BindingMode.Default, BindingPriority.Template));
+            _disposables.Add(BindUtils.RelayBind(this, WidthProperty, newChild, WidthProperty));
+            _disposables.Add(BindUtils.RelayBind(this, HeightProperty, newChild, HeightProperty));
             if (newChild is Icon icon)
             {
-                _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, icon, IconControl.IsMotionEnabledProperty, BindingMode.Default, BindingPriority.Template));
+                _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, icon, IconControl.IsMotionEnabledProperty));
                 _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.StrokeBrushProperty, BindingMode.Default, BindingPriority.Template));
                 _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.FillBrushProperty, BindingMode.Default, BindingPriority.Template));
             }

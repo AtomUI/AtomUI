@@ -13,6 +13,7 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DropdownButton">
             <Border Name="Frame"
+                    Background="{TemplateBinding Background}"
                     Padding="{TemplateBinding Padding}"
                     BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -36,10 +37,10 @@
                             Name="{x:Static atom:ButtonThemeConstants.ButtonIconPart}"
                             Icon="{TemplateBinding Icon}"
                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <atom:TextBlock
-                            Name="{x:Static atom:ButtonThemeConstants.LabelPart}"
-                            VerticalAlignment="Center"
-                            Text="{TemplateBinding Content}" />
+                        <ContentPresenter
+                            Name="{x:Static atom:ButtonThemeConstants.ContentPresenterPart}"
+                            Content="{TemplateBinding Content}" 
+                            ContentTemplate="{TemplateBinding ContentTemplate}"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
@@ -48,6 +49,7 @@
 
     <Style Selector="^:is(atom|DropdownButton):link">
         <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}"></Setter>
+        <Setter Property="Background" Value="Transparent" />
         <Style Selector="^ /template/ atom|Icon#PART_DropdownIndicator">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />

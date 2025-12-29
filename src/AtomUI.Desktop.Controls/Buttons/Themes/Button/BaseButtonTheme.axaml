@@ -26,6 +26,7 @@
                                VerticalAlignment="Center">
                         <antdicons:LoadingOutlined
                             Name="{x:Static atom:ButtonThemeConstants.LoadingIconPart}"
+                            LoadingAnimation="Spin"
                             Margin="{Binding (atom:IconPresenter.Margin),
                                    ElementName={x:Static atom:ButtonThemeConstants.ButtonIconPart}}"
                             DockPanel.Dock="Left" />
@@ -43,9 +44,11 @@
                                 </MultiBinding>
                             </atom:IconPresenter.IsVisible>
                         </atom:IconPresenter>
-                        <atom:TextBlock
-                            Name="{x:Static atom:ButtonThemeConstants.LabelPart}"
-                            Text="{TemplateBinding Content}" />
+                        <ContentPresenter
+                            Name="{x:Static atom:ButtonThemeConstants.ContentPresenterPart}"
+                            Content="{TemplateBinding Content}" 
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                     </DockPanel>
                 </Border>
                 <Border Name="FocusVisual"
@@ -224,7 +227,7 @@
                     <Setter Property="Height"
                             Value="{DynamicResource {x:Static atom:ButtonTokenKey.OnlyIconSizeSM}}" />
                 </Style>
-                <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon"> 
+                <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                     <Setter Property="Width"
                             Value="{DynamicResource {x:Static atom:ButtonTokenKey.OnlyIconSizeSM}}" />
                     <Setter Property="Height"
@@ -252,7 +255,6 @@
             </Style>
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
-                <Setter Property="LoadingAnimation" Value="Spin" />
             </Style>
             <Setter Property="Opacity" Value="{DynamicResource {x:Static atom:SharedTokenKey.OpacityLoading}}" />
         </Style>

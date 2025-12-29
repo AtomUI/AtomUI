@@ -42,10 +42,10 @@
                                 Name="{x:Static atom:ButtonThemeConstants.ButtonIconPart}"
                                 Icon="{TemplateBinding Icon}"
                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                            <atom:TextBlock
-                                Name="{x:Static atom:ButtonThemeConstants.LabelPart}"
-                                VerticalAlignment="Center"
-                                Text="{TemplateBinding Content}" />
+                            <ContentPresenter
+                                Name="{x:Static atom:ButtonThemeConstants.ContentPresenterPart}"
+                                Content="{TemplateBinding Content}" 
+                                ContentTemplate="{TemplateBinding ContentTemplate}"/>
                         </StackPanel>
                     </DockPanel>
                 </Border>

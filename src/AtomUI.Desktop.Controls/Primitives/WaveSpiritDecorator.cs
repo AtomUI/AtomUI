@@ -264,6 +264,11 @@ internal class WaveSpiritDecorator : Control
             return;
         }
         
+        if (SizeMotionDuration <= TimeSpan.Zero || OpacityMotionDuration <= TimeSpan.Zero)
+        {
+            return; // Skip animation if durations are invalid
+        }
+        
         BuildWavePainter(false);
         
         Debug.Assert(_wavePainter != null);

@@ -34,6 +34,7 @@ internal static class ShowCaseRegister
     {
         Locator.CurrentMutable.Register(() => new BoxPanelShowCase(), typeof(IViewFor<BoxPanelViewModel>));
         Locator.CurrentMutable.Register(() => new FlexPanelShowCase(), typeof(IViewFor<FlexPanelViewModel>));
+        Locator.CurrentMutable.Register(() => new GridShowCase(), typeof(IViewFor<GridViewModel>));
     }
     
     private static void RegisterDataDisplayCases()

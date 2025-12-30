@@ -1,0 +1,10 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:Splitter}" TargetType="atom:Splitter">
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="HandleSize" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarHandleSize}}" />
+    </ControlTheme>
+</ResourceDictionary>

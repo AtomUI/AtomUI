@@ -1,0 +1,9 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="SplitterTheme.axaml" />
+        <ResourceInclude Source="SplitterPanelTheme.axaml" />
+        <ResourceInclude Source="SplitterHandleTheme.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

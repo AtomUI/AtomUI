@@ -43,12 +43,14 @@
                                    HorizontalAlignment="Stretch" 
                                    DockPanel.Dock="Bottom"/>
                         
-                        <atom:IndicatorScrollViewer>
+                        <atom:ScrollViewer IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                           IsLiteMode="True"
+                                           AllowAutoHide="True">
                             <ItemsPresenter Name="{x:Static atom:MenuFlyoutThemeConstants.ItemsPresenterPart}"
                                             ItemsPanel="{TemplateBinding ItemsPanel}"
                                             KeyboardNavigation.TabNavigation="Continue"
                                             Grid.IsSharedSizeScope="True" />
-                        </atom:IndicatorScrollViewer>
+                        </atom:ScrollViewer>
                     </DockPanel>
                 </atom:ArrowDecoratedBox>
             </ControlTemplate>

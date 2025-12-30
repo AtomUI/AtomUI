@@ -4,7 +4,7 @@
     xmlns:atom="https://atomui.net"
     xmlns:converters="using:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
-    <converters:NavMenuIsSubMenuOpenConverter x:Key="IsSubMenuOpenConverter"/>
+    <converters:NavMenuIsSubMenuOpenConverter x:Key="IsSubMenuOpenConverter" />
     <ControlTheme x:Key="{x:Static atom:NavMenuThemeConstants.HorizontalNavMenuItemThemeId}"
                   TargetType="atom:NavMenuItem">
         <Setter Property="Template">
@@ -35,19 +35,21 @@
                         </atom:Popup.IsMotionAwareOpen>
                         <Border Name="{x:Static atom:NavMenuItemThemeConstants.PopupFramePart}"
                                 MinWidth="{TemplateBinding EffectivePopupMinWidth}">
-                            <atom:IndicatorScrollViewer IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                            <atom:ScrollViewer IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                               IsLiteMode="True"
+                                               AllowAutoHide="True">
                                 <ItemsPresenter
                                     Name="{x:Static atom:NavMenuItemThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     Grid.IsSharedSizeScope="True"
                                     KeyboardNavigation.TabNavigation="Continue" />
-                            </atom:IndicatorScrollViewer>
+                            </atom:ScrollViewer>
                         </Border>
                     </atom:Popup>
                 </Panel>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="PopupMinWidth" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupMinWidth}}" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="Placement" Value="RightEdgeAlignedTop" />
@@ -56,7 +58,7 @@
             <Setter Property="MaskShadows"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupBoxShadows}}" />
         </Style>
-        
+
         <Style Selector="^ /template/ Border#PART_PopupFrame">
             <Setter Property="Background"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
@@ -65,7 +67,7 @@
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupContentPadding}}" />
         </Style>
-        
+
         <Style Selector="^[IsDarkStyle=True]">
             <Style Selector="^ /template/ Border#PART_PopupFrame">
                 <Setter Property="Background"

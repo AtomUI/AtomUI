@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -191,9 +192,14 @@ public class ScrollViewer : AvaloniaScrollViewer,
     {
         if (e is RawPointerEventArgs mouseEventArgs)
         {
+            if (mouseEventArgs.GetInputRoot() != TopLevel.GetTopLevel(this))
+            {
+                return;
+            }
+            
             if (mouseEventArgs.Type == RawPointerEventType.Move)
             {
-                if (IsMousePointValid(mouseEventArgs.Position))
+                if (IsMousePointIn(mouseEventArgs))
                 {
                     if (!_isPointerInside)
                     {
@@ -216,11 +222,13 @@ public class ScrollViewer : AvaloniaScrollViewer,
         }
     }
     
-    private bool IsMousePointValid(Point point)
+    private bool IsMousePointIn(RawPointerEventArgs args)
     {
-        var localPoint       = TopLevel.GetTopLevel(this)?.TranslatePoint(point, this) ?? default;
-        var constraintBounds = new Rect(Bounds.Size);
-        if (constraintBounds.Contains(localPoint))
+        var pointRoot        = args.Root as Control;
+        var localPoint       = pointRoot?.PointToScreen(args.Position) ?? default;
+        var offset           = this.PointToScreen(new Point(0, 0));
+        var constraintBounds = new Rect(new Point(offset.X, offset.Y), Bounds.Size);
+        if (constraintBounds.Contains(new Point(localPoint.X, localPoint.Y)))
         {
             return true;
         }

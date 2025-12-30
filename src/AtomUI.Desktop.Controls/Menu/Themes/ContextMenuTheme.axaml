@@ -11,17 +11,19 @@
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}"
                         MaxHeight="{TemplateBinding MaxPopupHeight}">
-                    <atom:IndicatorScrollViewer IsScrollChainingEnabled="False"
-                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                    <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                       IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                       IsLiteMode="True"
+                                       AllowAutoHide="True">
                         <ItemsPresenter Name="{x:Static atom:ContextMenuThemeConstants.ItemsPresenterPart}"
                                         ItemsPanel="{TemplateBinding ItemsPanel}"
                                         KeyboardNavigation.TabNavigation="Continue"
                                         Grid.IsSharedSizeScope="True" />
-                    </atom:IndicatorScrollViewer>
+                    </atom:ScrollViewer>
                 </Border>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />

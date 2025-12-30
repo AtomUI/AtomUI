@@ -60,16 +60,17 @@
                         <Border
                             Name="PopupFrame"
                             MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                            HorizontalAlignment="Stretch"
                             MinWidth="{TemplateBinding EffectivePopupWidth}"
                             Padding="{TemplateBinding PopupContentPadding}">
-                            <atom:IndicatorScrollViewer
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                            <atom:ScrollViewer
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                IsLiteMode="True"
+                                AllowAutoHide="True">
                                 <ItemsPresenter
                                     Name="{x:Static atom:ComboBoxThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     Grid.IsSharedSizeScope="True" />
-                            </atom:IndicatorScrollViewer>
+                            </atom:ScrollViewer>
                         </Border>
                     </atom:Popup>
                 </Panel>

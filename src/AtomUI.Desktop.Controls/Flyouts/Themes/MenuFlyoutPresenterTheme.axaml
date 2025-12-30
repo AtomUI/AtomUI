@@ -11,14 +11,16 @@
                                     ArrowPosition="{TemplateBinding ArrowPosition}"
                                     Padding="{TemplateBinding Padding}"
                                     MaxHeight="{TemplateBinding MaxPopupHeight}">
-                <atom:IndicatorScrollViewer HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                <atom:ScrollViewer HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"
+                                   IsLiteMode="True"
+                                   AllowAutoHide="True"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
                     <ItemsPresenter Name="{x:Static atom:MenuFlyoutThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     KeyboardNavigation.TabNavigation="Continue"
                                     Grid.IsSharedSizeScope="True" />
-                </atom:IndicatorScrollViewer>
+                </atom:ScrollViewer>
             </atom:ArrowDecoratedBox>
         </ControlTemplate>
     </Setter>
@@ -29,7 +31,7 @@
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />
         <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemHeight}}" />
-        
+
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
             <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupMinWidth}}" />

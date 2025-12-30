@@ -36,6 +36,8 @@
                               ItemKey="{x:Static viewmodels:FlexPanelViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_Grid}}"
                               ItemKey="{x:Static viewmodels:GridViewModel.ID}" />
+            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_Splitter}}"
+                              ItemKey="{x:Static viewmodels:SplitterViewModel.ID}" />
         </atom:NavMenuItem>
 
         <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Navigation}}"

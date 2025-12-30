@@ -748,13 +748,13 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class ScrollViewerTokenKey
     {
-        public static readonly TokenResourceKey IndicatorModeThumbCornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.IndicatorModeThumbCornerRadius");
-        public static readonly TokenResourceKey IndicatorModeThumbThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.IndicatorModeThumbThickness");
-        public static readonly TokenResourceKey NormalModeThumbCornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.NormalModeThumbCornerRadius");
+        public static readonly TokenResourceKey LiteModeThumbThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.LiteModeThumbThickness");
         public static readonly TokenResourceKey NormalModeThumbThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.NormalModeThumbThickness");
         public static readonly TokenResourceKey ScrollBarContentHPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ScrollBarContentHPadding");
         public static readonly TokenResourceKey ScrollBarContentVPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ScrollBarContentVPadding");
+        public static readonly TokenResourceKey ThumbActiveBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ThumbActiveBg");
         public static readonly TokenResourceKey ThumbBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ThumbBg");
+        public static readonly TokenResourceKey ThumbCornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ThumbCornerRadius");
         public static readonly TokenResourceKey ThumbHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ThumbHoverBg");
     }
 

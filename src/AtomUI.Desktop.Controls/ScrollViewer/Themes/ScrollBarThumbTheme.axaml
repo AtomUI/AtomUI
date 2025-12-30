@@ -9,17 +9,59 @@
                 <Border Name="Frame"
                         UseLayoutRounding="False"
                         Background="{TemplateBinding Background}"
-                        Margin="{TemplateBinding Margin}"/>
+                        Margin="{TemplateBinding Margin}"
+                        CornerRadius="{TemplateBinding CornerRadius}" />
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="Background" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ThumbBg}}"/>
-        <Style Selector="^ /template/ Border#Frame">
-            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbCornerRadius}}"/>
-        </Style>
-        
+
+        <Setter Property="Background" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ThumbBg}}" />
+        <Setter Property="CornerRadius"
+                Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ThumbCornerRadius}}" />
+
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ThumbHoverBg}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ThumbHoverBg}}" />
+            <Style Selector="^[IsLiteMode=True]">
+                <Setter Property="IsExpanded" Value="True" />
+            </Style>
         </Style>
+
+        <Style Selector="^:pressed">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ThumbActiveBg}}" />
+            <Style Selector="^[IsLiteMode=True]">
+                <Setter Property="IsExpanded" Value="True" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[Orientation=Vertical]">
+            <Style Selector="^[IsLiteMode=True]">
+                <Setter Property="Width"
+                        Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.LiteModeThumbThickness}}" />
+                <Style Selector="^[IsExpanded=True]">
+                    <Setter Property="Width"
+                            Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
+                </Style>
+            </Style>
+            <Style Selector="^[IsLiteMode=False]">
+                <Setter Property="Width"
+                        Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
+            </Style>
+        </Style>
+        <Style Selector="^[Orientation=Horizontal]">
+            <Style Selector="^[IsLiteMode=True]">
+                <Setter Property="Height"
+                        Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.LiteModeThumbThickness}}" />
+
+                <Style Selector="^[IsExpanded=True]">
+                    <Setter Property="Height"
+                            Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
+                </Style>
+
+            </Style>
+            <Style Selector="^[IsLiteMode=False]">
+                <Setter Property="Height"
+                        Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
+            </Style>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

@@ -18,15 +18,20 @@
                                    ViewportSize="{TemplateBinding ViewportSize}"
                                    Orientation="{TemplateBinding Orientation}">
                                 <Track.Thumb>
-                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" />
+                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}"
+                                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                         IsLiteMode="{TemplateBinding IsLiteMode}"
+                                                         Orientation="{TemplateBinding Orientation}"
+                                                         IsExpanded="{TemplateBinding IsEffectiveExpanded, Mode=TwoWay}"/>
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
-                                    <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
-                                                                MinHeight="0"
-                                                                HorizontalAlignment="Stretch"
-                                                                VerticalAlignment="Stretch"
-                                                                CornerRadius="0"
-                                                                Focusable="False" />
+                                    <atom:ScrollBarRepeatButton
+                                        Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
+                                        MinHeight="0"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        CornerRadius="0"
+                                        Focusable="False" />
                                 </Track.DecreaseButton>
                                 <Track.IncreaseButton>
                                     <atom:ScrollBarRepeatButton
@@ -56,17 +61,22 @@
                                    Value="{TemplateBinding RangeBase.Value, Mode=TwoWay}"
                                    DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                                    ViewportSize="{TemplateBinding ViewportSize}"
-                                   Orientation="{TemplateBinding Orientation}" >
+                                   Orientation="{TemplateBinding Orientation}">
                                 <Track.Thumb>
-                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" />
+                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}"
+                                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                         IsLiteMode="{TemplateBinding IsLiteMode}"
+                                                         Orientation="{TemplateBinding Orientation}" 
+                                                         IsExpanded="{TemplateBinding IsEffectiveExpanded, Mode=TwoWay}"/>
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
-                                    <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
-                                                                MinHeight="0"
-                                                                HorizontalAlignment="Stretch"
-                                                                VerticalAlignment="Stretch"
-                                                                CornerRadius="0"
-                                                                Focusable="False" />
+                                    <atom:ScrollBarRepeatButton
+                                        Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
+                                        MinHeight="0"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        CornerRadius="0"
+                                        Focusable="False" />
                                 </Track.DecreaseButton>
                                 <Track.IncreaseButton>
                                     <atom:ScrollBarRepeatButton
@@ -83,23 +93,20 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        
+
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Style Selector="^:vertical">
             <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ScrollBarContentVPadding}}" />
-            </Style>
-            <Style Selector="^ /template/ atom|ScrollBarThumb#PART_Thumb">
-                <Setter Property="Width" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
+                <Setter Property="Margin"
+                        Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ScrollBarContentVPadding}}" />
             </Style>
         </Style>
         <Style Selector="^:horizontal">
             <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ScrollBarContentHPadding}}" />
-            </Style>
-            <Style Selector="^ /template/ atom|ScrollBarThumb#PART_Thumb">
-                <Setter Property="Height" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
+                <Setter Property="Margin"
+                        Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ScrollBarContentHPadding}}" />
             </Style>
         </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

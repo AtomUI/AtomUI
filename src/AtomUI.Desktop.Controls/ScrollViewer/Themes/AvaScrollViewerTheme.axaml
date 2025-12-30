@@ -27,11 +27,13 @@
                     <ScrollBar Name="PART_HorizontalScrollBar"
                                Orientation="Horizontal"
                                Grid.Row="1"
-                               Grid.Column="0" />
+                               Grid.Column="0"
+                               AllowAutoHide="{TemplateBinding AllowAutoHide}"/>
                     <ScrollBar Name="PART_VerticalScrollBar"
                                Orientation="Vertical"
                                Grid.Row="0"
-                               Grid.Column="1" />
+                               Grid.Column="1" 
+                               AllowAutoHide="{TemplateBinding AllowAutoHide}"/>
                     <Panel Name="ScrollBarsSeparator"
                            Grid.Row="1"
                            Grid.Column="1"

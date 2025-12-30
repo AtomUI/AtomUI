@@ -1,22 +1,31 @@
 using AtomUI.Controls;
 using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
+using Avalonia.Controls.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaScrollBar = Avalonia.Controls.Primitives.ScrollBar;
 
+[PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
 public class ScrollBar : AvaloniaScrollBar,
                          IMotionAwareControl,
                          IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
+    public static readonly StyledProperty<bool> IsLiteModeProperty =
+        ScrollViewer.IsLiteModeProperty.AddOwner<ScrollBar>();
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ScrollViewer>();
+    
+    public bool IsLiteMode
+    {
+        get => GetValue(IsLiteModeProperty);
+        set => SetValue(IsLiteModeProperty, value);
+    }
     
     public bool IsMotionEnabled
     {
@@ -28,49 +37,59 @@ public class ScrollBar : AvaloniaScrollBar,
     
     #region 内部属性定义
 
+    internal static readonly StyledProperty<bool> IsEffectiveExpandedProperty =
+        AvaloniaProperty.Register<ScrollBar, bool>(nameof(IsEffectiveExpanded));
+    
+    internal bool IsEffectiveExpanded
+    {
+        get => GetValue(IsEffectiveExpandedProperty);
+        set => SetValue(IsEffectiveExpandedProperty, value);
+    }
+
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ScrollViewerToken.ID;
 
     #endregion
-    
-    private void ConfigureTransitions(bool force)
+
+    public ScrollBar()
     {
-        if (IsMotionEnabled)
-        {
-            if (force || Transitions == null)
-            {
-                Transitions =
-                [
-                ];
-            }
-        }
-        else
-        {
-            Transitions = null;
-        }
+        this.RegisterResources();
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-        if (IsLoaded)
+        if (change.Property == AllowAutoHideProperty)
         {
-            if (change.Property == IsMotionEnabledProperty)
+            UpdateIsExpandedState();
+        }
+        else
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == IsEffectiveExpandedProperty)
             {
-                ConfigureTransitions(false);
+                this.SetIsExpanded(IsEffectiveExpanded);
             }
         }
     }
-
-    protected override void OnLoaded(RoutedEventArgs e)
+    
+    private void UpdateIsExpandedState()
     {
-        base.OnLoaded(e);
-        ConfigureTransitions(false);
-    }
-
-    protected override void OnUnloaded(RoutedEventArgs e)
-    {
-        base.OnUnloaded(e);
-        Transitions = null;
+        if (!IsLiteMode)
+        {
+            if (!AllowAutoHide)
+            {
+                var timer = this.GetTimer();
+                timer?.Stop();
+                IsEffectiveExpanded = false;
+            }
+        }
+        else
+        {
+            if (!AllowAutoHide)
+            {
+                var timer = this.GetTimer();
+                timer?.Stop();
+            }
+        }
     }
 }

@@ -1,3 +1,4 @@
+using AtomUI.Media;
 using AtomUI.Theme.TokenSystem;
 using Avalonia;
 using Avalonia.Media;
@@ -10,9 +11,9 @@ internal class ScrollViewerToken : AbstractControlDesignToken
     public const string ID = "ScrollViewer";
     
     /// <summary>
-    /// 指示器模式下，滚动条滑块的粗细
+    /// 极简模式下，滚动条滑块的粗细
     /// </summary>
-    public double IndicatorModeThumbThickness { get; set; }
+    public double LiteModeThumbThickness { get; set; }
     
     /// <summary>
     /// 正常模式下，滚动条滑块的粗细
@@ -20,14 +21,9 @@ internal class ScrollViewerToken : AbstractControlDesignToken
     public double NormalModeThumbThickness { get; set; }
     
     /// <summary>
-    /// 指示器模式下，滚动条滑块的圆角大小
+    /// 滚动条滑块的圆角大小
     /// </summary>
-    public CornerRadius IndicatorModeThumbCornerRadius { get; set; }
-    
-    /// <summary>
-    /// 正常模式下，滚动条滑块的圆角大小
-    /// </summary>
-    public CornerRadius NormalModeThumbCornerRadius { get; set; }
+    public CornerRadius ThumbCornerRadius { get; set; }
 
     /// <summary>
     /// 滚动条滑块背景颜色
@@ -38,6 +34,11 @@ internal class ScrollViewerToken : AbstractControlDesignToken
     /// 滚动条滑块鼠标 hover 背景颜色
     /// </summary>
     public Color ThumbHoverBg { get; set; }
+    
+    /// <summary>
+    /// 滚动条滑块鼠标按下的背景颜色
+    /// </summary>
+    public Color ThumbActiveBg { get; set; }
     
     #region 内部 Token 定义
     /// <summary>
@@ -59,13 +60,23 @@ internal class ScrollViewerToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        IndicatorModeThumbThickness = SharedToken.LineWidthBold;
-        NormalModeThumbThickness    = SharedToken.SizeXS;
-        
-        ThumbBg                     = SharedToken.ColorBorderSecondary;
-        ThumbHoverBg                = SharedToken.ColorBorder;
-        NormalModeThumbCornerRadius = new CornerRadius(SharedToken.SizeXS / 2.0);
-        ScrollBarContentHPadding    = new Thickness(SharedToken.UniformlyPaddingXXS, 0d);
-        ScrollBarContentVPadding    = new Thickness(0d, SharedToken.UniformlyPaddingXXS);
+        LiteModeThumbThickness   = SharedToken.LineWidthBold;
+        NormalModeThumbThickness = SharedToken.SizeXS;
+
+        if (isDarkMode)
+        {
+            ThumbBg       = SharedToken.ColorBorder;
+            ThumbHoverBg  = ThumbBg.Lighten();
+            ThumbActiveBg = ThumbHoverBg.Lighten();
+        }
+        else
+        {
+            ThumbBg       = SharedToken.ColorBorder;
+            ThumbHoverBg  = ThumbBg.Darken();
+            ThumbActiveBg = ThumbHoverBg.Darken();
+        }
+        ThumbCornerRadius        = new CornerRadius(NormalModeThumbThickness / 2);
+        ScrollBarContentHPadding = new Thickness(SharedToken.UniformlyPaddingXXS, 0d);
+        ScrollBarContentVPadding = new Thickness(0d, SharedToken.UniformlyPaddingXXS);
     }
 }

@@ -5,7 +5,9 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:viewmodels="using:AtomUIGallery.ShowCases.ViewModels"
              xmlns:lang="using:AtomUIGallery.Workspace.Localization.CaseNavigationLang">
-    <atom:NavMenu Mode="Inline" Width="260" Name="ShowCaseNavMenu">
+    <atom:NavMenu Mode="Inline" Width="260" Name="ShowCaseNavMenu"
+                  atom:ScrollViewer.IsLiteMode="True"
+                  ScrollViewer.AllowAutoHide="True">
         <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.General}}"
                           Icon="{antdicons:AntDesignIconProvider Kind=WindowsOutlined}">
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.General_AboutUs}}"

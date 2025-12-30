@@ -28,10 +28,16 @@
                                     Orientation="Horizontal"
                                     Grid.Row="1"
                                     Grid.Column="0" 
-                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                                    IsLiteMode="{TemplateBinding IsLiteMode}"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    AllowAutoHide="{TemplateBinding AllowAutoHide}"
+                                    Opacity="{TemplateBinding ScrollBarOpacity}"/>
                     <atom:ScrollBar Name="PART_VerticalScrollBar"
                                     Orientation="Vertical"
+                                    IsLiteMode="{TemplateBinding IsLiteMode}"
+                                    AllowAutoHide="{TemplateBinding AllowAutoHide}"
                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    Opacity="{TemplateBinding ScrollBarOpacity}"
                                     Grid.Row="0"
                                     Grid.Column="1" />
                     <Panel Name="ScrollBarsSeparator"
@@ -50,10 +56,22 @@
             <Setter Property="ScrollBarsSeparatorOpacity" Value="1" />
         </Style>
 
-        <Style Selector="^[AllowAutoHide=True] /template/ ScrollContentPresenter#ContentPresenter">
+        <Style Selector="^[AllowAutoHide=True] /template/ ScrollContentPresenter#PART_ContentPresenter">
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="Grid.RowSpan" Value="2" />
+        </Style>
+        
+        <Style Selector="^[IsLiteMode=True] /template/ ScrollContentPresenter#PART_ContentPresenter">
             <Setter Property="Grid.ColumnSpan" Value="2" />
             <Setter Property="Grid.RowSpan" Value="2" />
         </Style>
 
+        <Style Selector="^[IsLiteMode=False]">
+            <Setter Property="ScrollBarOpacity" Value="1" />
+        </Style>
+        <Style Selector="^[IsLiteMode=True]">
+            <Setter Property="ScrollBarOpacity" Value="0" />
+        </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

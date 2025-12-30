@@ -34,9 +34,6 @@ internal abstract class BaseTabScrollViewer : ScrollViewer
         AvaloniaProperty.RegisterDirect<BaseTabScrollViewer, double>(nameof(MenuEdgeThickness),
             o => o.MenuEdgeThickness,
             (o, v) => o.MenuEdgeThickness = v);
-    
-    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<BaseTabScrollViewer>();
 
     private Dock _tabStripPlacement;
 
@@ -60,12 +57,6 @@ internal abstract class BaseTabScrollViewer : ScrollViewer
     {
         get => _menuEdgeThickness;
         set => SetAndRaise(MenuEdgeThicknessProperty, ref _menuEdgeThickness, value);
-    }
-    
-    internal bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
     }
     
     #endregion

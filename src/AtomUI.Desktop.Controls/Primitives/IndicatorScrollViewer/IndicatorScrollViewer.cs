@@ -8,25 +8,8 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
-internal class IndicatorScrollViewer : ScrollViewer, IMotionAwareControl, IControlSharedTokenResourcesHost
+internal class IndicatorScrollViewer : ScrollViewer, IControlSharedTokenResourcesHost
 {
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<IndicatorScrollViewer>();
-    
-    public static readonly StyledProperty<double> ScrollBarOpacityProperty =
-        AvaloniaProperty.Register<IndicatorScrollViewer, double>(nameof(ScrollBarOpacity));
-    
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-
-    public double ScrollBarOpacity
-    {
-        get => GetValue(ScrollBarOpacityProperty);
-        set => SetValue(ScrollBarOpacityProperty, value);
-    }
     #region 内部属性定义
     
     Control IControlSharedTokenResourcesHost.HostControl => this;

@@ -1,8 +1,12 @@
 using AtomUI.Controls;
 using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
@@ -14,9 +18,18 @@ public class ScrollViewer : AvaloniaScrollViewer,
                             IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-
+    public static readonly AttachedProperty<bool> IsLiteModeProperty =
+        AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+            nameof(IsLiteMode));
+    
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ScrollViewer>();
+    
+    public bool IsLiteMode
+    {
+        get => GetValue(IsLiteModeProperty);
+        set => SetValue(IsLiteModeProperty, value);
+    }
     
     public bool IsMotionEnabled
     {
@@ -25,11 +38,14 @@ public class ScrollViewer : AvaloniaScrollViewer,
     }
     
     #endregion
-
+    
     #region 内部属性定义
 
     internal static readonly StyledProperty<double> ScrollBarsSeparatorOpacityProperty =
         AvaloniaProperty.Register<ScrollViewer, double>(nameof(ScrollBarsSeparatorOpacity));
+    
+    internal static readonly StyledProperty<double> ScrollBarOpacityProperty =
+        AvaloniaProperty.Register<ScrollViewer, double>(nameof(ScrollBarOpacity));
     
     internal double ScrollBarsSeparatorOpacity
     {
@@ -37,10 +53,47 @@ public class ScrollViewer : AvaloniaScrollViewer,
         set => SetValue(ScrollBarsSeparatorOpacityProperty, value);
     }
     
+    internal double ScrollBarOpacity
+    {
+        get => GetValue(ScrollBarOpacityProperty);
+        set => SetValue(ScrollBarOpacityProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ScrollViewerToken.ID;
 
     #endregion
+    
+    private bool _scrollBarDragging = false;
+    private bool _isPointerInside = false;
+    private IDisposable? _pointerMoveSubscription;
+
+    static ScrollViewer()
+    {
+        Thumb.DragStartedEvent.AddClassHandler<ScrollViewer>((view, evt) =>
+        {
+            view.HandleScrollBarDragStarted();
+        });
+        Thumb.DragCompletedEvent.AddClassHandler<ScrollViewer>((view, evt) =>
+        {
+            view.HandleScrollBarDragCompleted();
+        });
+    }
+    
+    public ScrollViewer()
+    {
+        this.RegisterResources();
+    }
+    
+    public static bool GetIsLiteMode(Control control)
+    {
+        return control.GetValue(IsLiteModeProperty);
+    }
+    
+    public static void SetIsLiteMode(Control control, bool value)
+    {
+        control.SetValue(IsLiteModeProperty, value);
+    }
     
     private void ConfigureTransitions(bool force)
     {
@@ -51,6 +104,7 @@ public class ScrollViewer : AvaloniaScrollViewer,
                 Transitions =
                 [
                     TransitionUtils.CreateTransition<DoubleTransition>(ScrollBarsSeparatorOpacityProperty),
+                    TransitionUtils.CreateTransition<DoubleTransition>(ScrollBarOpacityProperty),
                 ];
             }
         }
@@ -70,6 +124,19 @@ public class ScrollViewer : AvaloniaScrollViewer,
                 ConfigureTransitions(false);
             }
         }
+
+        if (change.Property == AllowAutoHideProperty)
+        {
+            if (AllowAutoHide)
+            {
+                ConfigureInputManager();
+            }
+            else
+            {
+                _pointerMoveSubscription?.Dispose();
+                _pointerMoveSubscription = null;
+            }
+        }
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -82,5 +149,81 @@ public class ScrollViewer : AvaloniaScrollViewer,
     {
         base.OnUnloaded(e);
         Transitions = null;
+    }
+
+    private void HandleScrollBarDragStarted()
+    {
+        _scrollBarDragging = true;
+    }
+    
+    private void HandleScrollBarDragCompleted()
+    {
+        _scrollBarDragging = false;
+        if (AllowAutoHide && !_isPointerInside)
+        {
+            ScrollBarOpacity = 0.0;
+        }
+    }
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureInputManager();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _pointerMoveSubscription?.Dispose();
+        _pointerMoveSubscription = null;
+    }
+
+    private void ConfigureInputManager()
+    {
+        if (AllowAutoHide)
+        {
+            var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
+            _pointerMoveSubscription = inputManager?.Process.Subscribe(ListenForMouseEvent);
+        }
+    }
+    
+    private void ListenForMouseEvent(RawInputEventArgs e)
+    {
+        if (e is RawPointerEventArgs mouseEventArgs)
+        {
+            if (mouseEventArgs.Type == RawPointerEventType.Move)
+            {
+                if (IsMousePointValid(mouseEventArgs.Position))
+                {
+                    if (!_isPointerInside)
+                    {
+                        _isPointerInside = true;
+                        ScrollBarOpacity = 1.0;
+                    }
+                }
+                else
+                {
+                    if (_isPointerInside)
+                    {
+                        _isPointerInside = false;
+                        if (!_scrollBarDragging)
+                        {
+                            ScrollBarOpacity = 0.0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private bool IsMousePointValid(Point point)
+    {
+        var localPoint       = TopLevel.GetTopLevel(this)?.TranslatePoint(point, this) ?? default;
+        var constraintBounds = new Rect(Bounds.Size);
+        if (constraintBounds.Contains(localPoint))
+        {
+            return true;
+        }
+        return false;
     }
 }

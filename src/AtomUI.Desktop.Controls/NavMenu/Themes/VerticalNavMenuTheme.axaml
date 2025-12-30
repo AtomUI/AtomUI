@@ -6,11 +6,12 @@
     <ControlTheme x:Key="{x:Static atom:NavMenuThemeConstants.VerticalNavMenuThemeId}" TargetType="atom:NavMenu">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:ScrollViewer AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
-                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                              IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
-                              IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}">
+                <atom:ScrollViewer AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                   IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                   HorizontalScrollBarVisibility="{TemplateBinding atom:ScrollViewer.HorizontalScrollBarVisibility}"
+                                   VerticalScrollBarVisibility="{TemplateBinding atom:ScrollViewer.VerticalScrollBarVisibility}"
+                                   IsScrollChainingEnabled="{TemplateBinding atom:ScrollViewer.IsScrollChainingEnabled}"
+                                   IsDeferredScrollingEnabled="{TemplateBinding atom:ScrollViewer.IsDeferredScrollingEnabled}">
                     <Border HorizontalAlignment="Stretch"
                             Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}"
@@ -34,7 +35,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
-        
+
         <Style Selector="^[Mode=Vertical]">
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"

@@ -875,6 +875,22 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey IndicatorSizeSM = new TokenResourceKey("AtomUI.Desktop.Controls.Spin.IndicatorSizeSM");
     }
 
+    public static class SplitterTokenKey
+    {
+        public static readonly TokenResourceKey HandleIconColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleIconColor");
+        public static readonly TokenResourceKey HandleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleIconSize");
+        public static readonly TokenResourceKey HandleLineColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineColor");
+        public static readonly TokenResourceKey HandleLineHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineHoverColor");
+        public static readonly TokenResourceKey HandleLineThickness = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineThickness");
+        public static readonly TokenResourceKey SplitBarCollapseCrossOffset = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarCollapseCrossOffset");
+        public static readonly TokenResourceKey SplitBarCollapseOffset = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarCollapseOffset");
+        public static readonly TokenResourceKey SplitBarCollapseOffsetNegative = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarCollapseOffsetNegative");
+        public static readonly TokenResourceKey SplitBarDraggableSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarDraggableSize");
+        public static readonly TokenResourceKey SplitBarHandleSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarHandleSize");
+        public static readonly TokenResourceKey SplitBarSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarSize");
+        public static readonly TokenResourceKey SplitTriggerSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitTriggerSize");
+    }
+
     public static class SplitViewTokenKey
     {
         public static readonly TokenResourceKey CompactPaneThemeLength = new TokenResourceKey("AtomUI.Desktop.Controls.SplitView.CompactPaneThemeLength");

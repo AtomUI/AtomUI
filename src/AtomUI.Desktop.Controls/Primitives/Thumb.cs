@@ -1,8 +1,10 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -18,7 +20,9 @@ public class Thumb : TemplatedControl
     public static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
         RoutedEvent.Register<Thumb, VectorEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
 
-    private Point? _lastPoint;
+    private Point? _dragStartPoint;
+    private Point? _currentPoint;
+    private Visual? _dragRoot;
 
     static Thumb()
     {
@@ -47,9 +51,9 @@ public class Thumb : TemplatedControl
 
     internal void AdjustDrag(Vector v)
     {
-        if (_lastPoint.HasValue)
+        if (_dragStartPoint.HasValue)
         {
-            _lastPoint = _lastPoint.Value + v;
+            _dragStartPoint = _dragStartPoint.Value + v;
         }
     }
     
@@ -67,15 +71,18 @@ public class Thumb : TemplatedControl
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
-        if (_lastPoint.HasValue)
+        if (_dragStartPoint.HasValue)
         {
+            var endPoint = _currentPoint ?? _dragStartPoint.Value;
             var ev = new VectorEventArgs
             {
                 RoutedEvent = DragCompletedEvent,
-                Vector      = _lastPoint.Value,
+                Vector      = endPoint - _dragStartPoint.Value,
             };
 
-            _lastPoint = null;
+            _dragStartPoint = null;
+            _currentPoint = null;
+            _dragRoot = null;
 
             RaiseEvent(ev);
         }
@@ -87,12 +94,14 @@ public class Thumb : TemplatedControl
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (_lastPoint.HasValue)
+        if (_dragStartPoint.HasValue)
         {
+            var position = e.GetPosition(_dragRoot ?? this);
+            _currentPoint = position;
             var ev = new VectorEventArgs
             {
                 RoutedEvent = DragDeltaEvent,
-                Vector      = e.GetPosition(this) - _lastPoint.Value,
+                Vector      = position - _dragStartPoint.Value,
             };
 
             RaiseEvent(ev);
@@ -102,12 +111,15 @@ public class Thumb : TemplatedControl
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         e.Handled  = true;
-        _lastPoint = e.GetPosition(this);
+        var topLevel = TopLevel.GetTopLevel(this) as Visual;
+        _dragRoot = this.GetVisualRoot() as Visual ?? topLevel ?? this;
+        _dragStartPoint = e.GetPosition(_dragRoot);
+        _currentPoint = _dragStartPoint;
 
         var ev = new VectorEventArgs
         {
             RoutedEvent = DragStartedEvent,
-            Vector      = (Vector)_lastPoint,
+            Vector      = (Vector)_dragStartPoint.Value,
         };
 
         PseudoClasses.Add(StdPseudoClass.Pressed);
@@ -119,15 +131,20 @@ public class Thumb : TemplatedControl
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        if (_lastPoint.HasValue)
+        if (_dragStartPoint.HasValue)
         {
             e.Handled  = true;
-            _lastPoint = null;
+            var position = e.GetPosition(_dragRoot ?? this);
+            _currentPoint = position;
+            var delta = position - _dragStartPoint.Value;
+            _dragStartPoint = null;
+            _currentPoint = null;
+            _dragRoot = null;
 
             var ev = new VectorEventArgs
             {
                 RoutedEvent = DragCompletedEvent,
-                Vector      = e.GetPosition(this),
+                Vector      = delta,
             };
 
             RaiseEvent(ev);

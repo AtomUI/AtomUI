@@ -55,7 +55,7 @@
                                         IsVisible="{TemplateBinding IsShowCount}"/>
                     </StackPanel>
             
-                    <ScrollViewer
+                    <atom:ScrollViewer
                         Name="ScrollViewer"
                         Cursor="Ibeam"
                         AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
@@ -91,7 +91,7 @@
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}" />
                         </Panel>
-                    </ScrollViewer>
+                    </atom:ScrollViewer>
                 </DockPanel>
             </Border>
         </ControlTemplate>

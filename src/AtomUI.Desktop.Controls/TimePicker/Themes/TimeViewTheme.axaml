@@ -23,14 +23,14 @@
                               ColumnDefinitions="*, Auto, *, Auto, *, Auto, *">
                             <Panel Name="PART_HourHost"
                                    Grid.Column="0">
-                                <ScrollViewer
+                                <atom:ScrollViewer
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_HourSelector"
                                                               PanelType="Hour"
                                                               ShouldLoop="True"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                                </ScrollViewer>
+                                </atom:ScrollViewer>
                             </Panel>
                             <Rectangle Name="{x:Static atom:TimeViewThemeConstants.FirstSpacerPart}"
                                        Grid.Column="1"
@@ -38,14 +38,14 @@
                                        Width="{TemplateBinding SpacerWidth}" />
                             <Panel Name="PART_MinuteHost"
                                    Grid.Column="2">
-                                <ScrollViewer
+                                <atom:ScrollViewer
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_MinuteSelector"
                                                               PanelType="Minute"
                                                               ShouldLoop="True"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                                </ScrollViewer>
+                                </atom:ScrollViewer>
                             </Panel>
                             <Rectangle Name="PART_SecondSpacer"
                                        Grid.Column="3"
@@ -53,14 +53,14 @@
                                        Width="{TemplateBinding SpacerWidth}" />
                             <Panel Name="PART_SecondHost"
                                    Grid.Column="4">
-                                <ScrollViewer
+                                <atom:ScrollViewer
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_SecondSelector"
                                                               PanelType="Second"
                                                               ShouldLoop="True"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                                </ScrollViewer>
+                                </atom:ScrollViewer>
                             </Panel>
                             <Rectangle Name="{x:Static atom:TimeViewThemeConstants.ThirdSpacerPart}"
                                        Grid.Column="5"
@@ -68,14 +68,14 @@
                                        Width="{TemplateBinding SpacerWidth}" />
                             <Panel Name="PART_PeriodHost"
                                    Grid.Column="6">
-                                <ScrollViewer
+                                <atom:ScrollViewer
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_PeriodSelector"
                                                               PanelType="TimePeriod"
                                                               ShouldLoop="False"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                                </ScrollViewer>
+                                </atom:ScrollViewer>
                             </Panel>
                         </Grid>
                     </Grid>

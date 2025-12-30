@@ -7,7 +7,7 @@
     <Setter Property="Template">
         <ControlTemplate>
             <Border Name="Frame">
-                <ScrollViewer
+                <atom:ScrollViewer
                     AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
                     HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                     VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
@@ -15,7 +15,7 @@
                     IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}">
                     <ItemsPresenter Name="ItemsPresenter"
                                     ItemsPanel="{TemplateBinding ItemsPanel}" />
-                </ScrollViewer>
+                </atom:ScrollViewer>
             </Border>
         </ControlTemplate>
     </Setter>

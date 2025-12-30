@@ -8,7 +8,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <ScrollViewer Name="{x:Static atom:CarouselThemeConstants.ScrollViewerPart}"
+                    <atom:ScrollViewer Name="{x:Static atom:CarouselThemeConstants.ScrollViewerPart}"
                                   Background="{TemplateBinding Background}"
                                   HorizontalScrollBarVisibility="Hidden"
                                   VerticalScrollBarVisibility="Hidden">
@@ -16,7 +16,7 @@
                             Name="PART_ItemsPresenter"
                             Margin="{TemplateBinding Padding}"
                             ItemsPanel="{TemplateBinding ItemsPanel}" />
-                    </ScrollViewer>
+                    </atom:ScrollViewer>
                     <atom:CarouselNavButton Name="{x:Static atom:CarouselThemeConstants.PreviousButtonPart}"
                                             Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
                                             Margin="{TemplateBinding EffectivePreviousButtonMargin}"

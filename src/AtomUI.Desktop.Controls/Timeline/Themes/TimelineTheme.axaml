@@ -11,7 +11,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
                         Padding="{TemplateBinding Padding}">
-                    <ScrollViewer Name="{x:Static atom:TimelineThemeConstants.ScrollViewerPart}"
+                    <atom:ScrollViewer Name="{x:Static atom:TimelineThemeConstants.ScrollViewerPart}"
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Auto"
                                   IsScrollChainingEnabled="True">
@@ -22,7 +22,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsPresenter.ItemsPanel>
                         </ItemsPresenter>
-                    </ScrollViewer>
+                    </atom:ScrollViewer>
                 </Border>
             </ControlTemplate>
         </Setter>

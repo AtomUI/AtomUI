@@ -49,7 +49,7 @@
                         </StackPanel>
                     </atom:SearchEditDecoratedBox.ContentRightAddOn>
                     
-                    <ScrollViewer
+                    <atom:ScrollViewer
                         Name="PART_ScrollViewer"
                         Cursor="Ibeam"
                         AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
@@ -85,7 +85,7 @@
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}" />
                         </Panel>
-                    </ScrollViewer>
+                    </atom:ScrollViewer>
                 </atom:SearchEditDecoratedBox>
             </ControlTemplate>
         </Setter>

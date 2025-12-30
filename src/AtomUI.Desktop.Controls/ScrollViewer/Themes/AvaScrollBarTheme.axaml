@@ -10,7 +10,7 @@
                     <Border Name="Frame"
                             UseLayoutRounding="False">
                         <Grid Name="RootLayout" RowDefinitions="*">
-                            <Track Name="{x:Static atom:ScrollBarThemeConstants.TrackPart}"
+                            <Track Name="{x:Static atom:ScrollViewerThemeConstants.TrackPart}"
                                    IsDirectionReversed="True"
                                    Minimum="{TemplateBinding Minimum}"
                                    Maximum="{TemplateBinding Maximum}"
@@ -19,10 +19,10 @@
                                    ViewportSize="{TemplateBinding ViewportSize}"
                                    Orientation="{TemplateBinding Orientation}">
                                 <Track.Thumb>
-                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollBarThemeConstants.ThumbPart}" />
+                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" />
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
-                                    <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollBarThemeConstants.PageUpButtonPart}"
+                                    <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
                                                                 MinHeight="0"
                                                                 HorizontalAlignment="Stretch"
                                                                 VerticalAlignment="Stretch"
@@ -31,7 +31,7 @@
                                 </Track.DecreaseButton>
                                 <Track.IncreaseButton>
                                     <atom:ScrollBarRepeatButton
-                                        Name="{x:Static atom:ScrollBarThemeConstants.PageDownButtonPart}"
+                                        Name="{x:Static atom:ScrollViewerThemeConstants.PageDownButtonPart}"
                                         MinHeight="0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"
@@ -52,7 +52,7 @@
                             UseLayoutRounding="False">
                         <Grid Name="RootLayout"
                               ColumnDefinitions="*">
-                            <Track Name="{x:Static atom:ScrollBarThemeConstants.TrackPart}"
+                            <Track Name="{x:Static atom:ScrollViewerThemeConstants.TrackPart}"
                                    Minimum="{TemplateBinding Minimum}"
                                    Maximum="{TemplateBinding Maximum}"
                                    Value="{TemplateBinding RangeBase.Value, Mode=TwoWay}"
@@ -60,10 +60,10 @@
                                    ViewportSize="{TemplateBinding ViewportSize}"
                                    Orientation="{TemplateBinding Orientation}" >
                                 <Track.Thumb>
-                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollBarThemeConstants.ThumbPart}" />
+                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" />
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
-                                    <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollBarThemeConstants.PageUpButtonPart}"
+                                    <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
                                                                 MinHeight="0"
                                                                 HorizontalAlignment="Stretch"
                                                                 VerticalAlignment="Stretch"
@@ -72,7 +72,7 @@
                                 </Track.DecreaseButton>
                                 <Track.IncreaseButton>
                                     <atom:ScrollBarRepeatButton
-                                        Name="{x:Static atom:ScrollBarThemeConstants.PageDownButtonPart}"
+                                        Name="{x:Static atom:ScrollViewerThemeConstants.PageDownButtonPart}"
                                         MinHeight="0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"
@@ -87,25 +87,19 @@
         </Style>
         
         <Style Selector="^:vertical">
-            <Setter Property="Width" Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ScrollBarThickness}}" />
             <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ContentVPadding}}" />
+                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ScrollBarContentVPadding}}" />
             </Style>
             <Style Selector="^ /template/ atom|ScrollBarThumb#PART_Thumb">
-                <Setter Property="MinHeight"
-                        Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ScrollBarThickness}}" />
-                <Setter Property="Width" Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ThumbThickness}}" />
+                <Setter Property="Width" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
             </Style>
         </Style>
         <Style Selector="^:horizontal">
-            <Setter Property="Height" Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ScrollBarThickness}}" />
             <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ContentHPadding}}" />
+                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.ScrollBarContentHPadding}}" />
             </Style>
             <Style Selector="^ /template/ atom|ScrollBarThumb#PART_Thumb">
-                <Setter Property="MinWidth"
-                        Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ScrollBarThickness}}" />
-                <Setter Property="Height" Value="{DynamicResource {x:Static atom:ScrollBarTokenKey.ThumbThickness}}" />
+                <Setter Property="Height" Value="{DynamicResource {x:Static atom:ScrollViewerTokenKey.NormalModeThumbThickness}}" />
             </Style>
         </Style>
     </ControlTheme>

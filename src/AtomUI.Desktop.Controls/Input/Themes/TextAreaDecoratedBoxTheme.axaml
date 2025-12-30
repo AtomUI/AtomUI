@@ -16,7 +16,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
                         BackgroundSizing="OuterBorderEdge">
-                     <ScrollViewer
+                     <atom:ScrollViewer
                             Name="{x:Static atom:TextAreaThemeConstants.ScrollViewerPart}"
                             AllowAutoHide="{TemplateBinding  IsAllowAutoHide}"
                             HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
@@ -52,7 +52,7 @@
                                         ContentTemplate="{TemplateBinding ContentTemplate}" />
                                 </DockPanel>
                             </Border>
-                        </ScrollViewer>
+                        </atom:ScrollViewer>
                 </Border>
             </ControlTemplate>
         </Setter>

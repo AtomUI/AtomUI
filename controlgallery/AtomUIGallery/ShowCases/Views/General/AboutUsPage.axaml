@@ -14,7 +14,7 @@
             </Style>
         </Style>
     </UserControl.Styles>
-    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+    <atom:ScrollViewer HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   AllowAutoHide="False">
         <StackPanel MinWidth="800" MinHeight="600">
@@ -71,5 +71,5 @@
                 </atom:GroupBox>
             </StackPanel>
         </StackPanel>
-    </ScrollViewer>
+    </atom:ScrollViewer>
 </UserControl>

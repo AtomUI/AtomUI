@@ -19,15 +19,16 @@
                                ViewportSize="{TemplateBinding ViewportSize}"
                                Orientation="{TemplateBinding Orientation}">
                             <Track.Thumb>
-                                <primitives:IndicatorScrollBarThumb/>
+                                <primitives:IndicatorScrollBarThumb />
                             </Track.Thumb>
                         </Track>
                     </Grid>
                 </Border>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="Width" Value="{DynamicResource {x:Static atom:IndicatorScrollViewerTokenKey.ScrollBarThickness}}" />
-       
+
+        <Setter Property="Width"
+                Value="{DynamicResource {x:Static atom:IndicatorScrollViewerTokenKey.ScrollBarThickness}}" />
+
     </ControlTheme>
 </ResourceDictionary>

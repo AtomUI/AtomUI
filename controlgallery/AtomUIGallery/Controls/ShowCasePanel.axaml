@@ -1,19 +1,20 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
     xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <ControlTheme x:Key="{x:Type gallery:ShowCasePanel}"
                   TargetType="{x:Type gallery:ShowCasePanel}">
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type gallery:ShowCasePanel}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" AllowAutoHide="False" BringIntoViewOnFocusChange="False">
+                <atom:ScrollViewer VerticalScrollBarVisibility="Auto" AllowAutoHide="False" BringIntoViewOnFocusChange="False">
                     <Grid Margin="5" Name="PART_MainPanel" RowSpacing="15" ColumnSpacing="15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"></ColumnDefinition>
                             <ColumnDefinition Width="*"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                     </Grid>
-                </ScrollViewer>
+                </atom:ScrollViewer>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

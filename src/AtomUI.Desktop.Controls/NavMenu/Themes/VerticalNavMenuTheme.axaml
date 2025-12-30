@@ -6,7 +6,7 @@
     <ControlTheme x:Key="{x:Static atom:NavMenuThemeConstants.VerticalNavMenuThemeId}" TargetType="atom:NavMenu">
         <Setter Property="Template">
             <ControlTemplate>
-                <ScrollViewer AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
+                <atom:ScrollViewer AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
                               HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                               VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                               IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
@@ -27,7 +27,7 @@
                             </ItemsPresenter.ItemsPanel>
                         </ItemsPresenter>
                     </Border>
-                </ScrollViewer>
+                </atom:ScrollViewer>
             </ControlTemplate>
         </Setter>
 

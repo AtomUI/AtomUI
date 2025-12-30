@@ -10,7 +10,7 @@
 
     <atom:TabControl SizeType="Large">
         <atom:TabItem Header="Light">
-            <ScrollViewer>
+            <atom:ScrollViewer>
                 <ItemsControl ItemsSource="{Binding PresetPaletteInfos}" Padding="10">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -28,10 +28,10 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </ScrollViewer>
+            </atom:ScrollViewer>
         </atom:TabItem>
         <atom:TabItem Header="Dark">
-            <ScrollViewer>
+            <atom:ScrollViewer>
                 <Border Background="Black">
                     <ItemsControl ItemsSource="{Binding PresetPaletteInfos}" Padding="10">
                         <ItemsControl.ItemsPanel>
@@ -55,7 +55,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </Border>
-            </ScrollViewer>
+            </atom:ScrollViewer>
         </atom:TabItem>
     </atom:TabControl>
 </UserControl>

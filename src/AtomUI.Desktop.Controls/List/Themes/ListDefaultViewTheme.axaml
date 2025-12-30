@@ -6,7 +6,7 @@
               x:ClassModifier="internal">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListDefaultView">
-            <ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+            <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
                           AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
                           HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                           VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
@@ -15,7 +15,7 @@
                           IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
                 <ItemsPresenter Name="ItemsPresenter"
                                 ItemsPanel="{TemplateBinding ItemsPanel}" />
-            </ScrollViewer>
+            </atom:ScrollViewer>
         </ControlTemplate>
     </Setter>
     

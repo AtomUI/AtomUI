@@ -746,15 +746,16 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey SubHeaderFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Result.SubHeaderFontSize");
     }
 
-    public static class ScrollBarTokenKey
+    public static class ScrollViewerTokenKey
     {
-        public static readonly TokenResourceKey ContentHPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ContentHPadding");
-        public static readonly TokenResourceKey ContentVPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ContentVPadding");
-        public static readonly TokenResourceKey ScrollBarThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ScrollBarThickness");
-        public static readonly TokenResourceKey ThumbBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ThumbBg");
-        public static readonly TokenResourceKey ThumbCornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ThumbCornerRadius");
-        public static readonly TokenResourceKey ThumbHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ThumbHoverBg");
-        public static readonly TokenResourceKey ThumbThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollBar.ThumbThickness");
+        public static readonly TokenResourceKey IndicatorModeThumbCornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.IndicatorModeThumbCornerRadius");
+        public static readonly TokenResourceKey IndicatorModeThumbThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.IndicatorModeThumbThickness");
+        public static readonly TokenResourceKey NormalModeThumbCornerRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.NormalModeThumbCornerRadius");
+        public static readonly TokenResourceKey NormalModeThumbThickness = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.NormalModeThumbThickness");
+        public static readonly TokenResourceKey ScrollBarContentHPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ScrollBarContentHPadding");
+        public static readonly TokenResourceKey ScrollBarContentVPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ScrollBarContentVPadding");
+        public static readonly TokenResourceKey ThumbBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ThumbBg");
+        public static readonly TokenResourceKey ThumbHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.ScrollViewer.ThumbHoverBg");
     }
 
     public static class SegmentedTokenKey

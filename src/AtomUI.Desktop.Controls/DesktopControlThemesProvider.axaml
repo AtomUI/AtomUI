@@ -48,7 +48,7 @@
         <ResourceInclude Source="RadioButton/Themes/RadioButtonThemes.axaml" />
         <ResourceInclude Source="Rate/Themes/RateThemes.axaml" />
         <ResourceInclude Source="Result/Themes/ResultTheme.axaml" />
-        <ResourceInclude Source="ScrollBar/Themes/ScrollBarThemes.axaml" />
+        <ResourceInclude Source="ScrollViewer/Themes/ScrollViewerThemes.axaml" />
         <ResourceInclude Source="Segmented/Themes/SegmentedThemes.axaml" />
         <ResourceInclude Source="Separator/Themes/SeparatorTheme.axaml" />
         <ResourceInclude Source="Skeleton/Themes/SkeletonThemes.axaml" />

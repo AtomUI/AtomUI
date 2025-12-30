@@ -52,7 +52,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.RadioButtonToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.RateToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ResultToken));
-            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ScrollBarToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ScrollViewerToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SegmentedToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SelectToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SeparatorToken));

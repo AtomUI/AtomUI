@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls.Themes;
 
-internal static class ScrollBarThemeConstants
+internal class ScrollViewerThemeConstants
 {
     public const string PageUpButtonPart = "PART_PageUpButton";
     public const string PageDownButtonPart = "PART_PageDownButton";

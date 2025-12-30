@@ -117,7 +117,7 @@
                     <atom:RadioButton x:Name="WrapDisabled" GroupName="WrapMode">nowrap</atom:RadioButton>
                 </StackPanel>
                 <Border BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
-                    <ScrollViewer x:Name="WrapScrollViewer"
+                    <atom:ScrollViewer x:Name="WrapScrollViewer"
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Disabled">
                         <atom:FlexPanel x:Name="WrapFlexPanel"
@@ -142,7 +142,7 @@
                             <atom:Button ButtonType="Primary">Button</atom:Button>
                             <atom:Button ButtonType="Primary">Button</atom:Button>
                         </atom:FlexPanel>
-                    </ScrollViewer>
+                    </atom:ScrollViewer>
                 </Border>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -223,8 +223,6 @@
                 </Border>
             </StackPanel>
         </gallery:ShowCaseItem>
-
-
 
         <gallery:ShowCaseItem Title="Flex Grow" Description="Distribute free space with Flex.Grow." IsOccupyEntireRow="True">
             <StackPanel Margin="20" Spacing="12">

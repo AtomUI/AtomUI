@@ -43,6 +43,7 @@ public partial class TreeView
                 var result = await _treeItemDataLoader.LoadAsync(treeItemData, cts.Token);
                 item.IsLoading   = false;
                 item.AsyncLoaded = true; // TODO 是不是应该多给几次机会？
+                TreeItemLoaded?.Invoke(this, new TreeViewItemLoadedEventArgs(item, result));
                 if (result.IsSuccess)
                 {
                     if (result.Data?.Count > 0)

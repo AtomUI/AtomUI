@@ -1,6 +1,7 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Desktop.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -49,7 +50,7 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
     #endregion
     
     private IDisposable? _clickSubscription;
-    private Point? _latestClickPosition;
+    private RawPointerEventArgs? _latestClickEventArgs;
     private ContentPresenter? _trigger;
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -78,34 +79,35 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
             {
                 if (mouseEventArgs.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    if (IsMousePointValid(mouseEventArgs.Position))
+                    if (mouseEventArgs.GetInputRoot() == TopLevel.GetTopLevel(this) && IsMousePointValid(mouseEventArgs))
                     {
-                        _latestClickPosition = mouseEventArgs.Position;
+                        _latestClickEventArgs = mouseEventArgs;
                     }
                 }
                 else if (mouseEventArgs.Type == RawPointerEventType.LeftButtonUp)
                 {
-                    if (_latestClickPosition != null && IsMousePointValid(_latestClickPosition.Value))
+                    if (_latestClickEventArgs != null && IsMousePointValid(_latestClickEventArgs))
                     {
                         RaiseEvent(new RoutedEventArgs(FileSelectRequestEvent, this));
                     }
 
-                    _latestClickPosition = null;
+                    _latestClickEventArgs = null;
                 }
             }
         }
     }
-
-    private bool IsMousePointValid(Point point)
+    
+    private bool IsMousePointValid(RawPointerEventArgs args)
     {
         if (_trigger == null || _trigger.Child == null)
         {
             return false;
         }
-        var localPoint       = TopLevel.GetTopLevel(this)?.TranslatePoint(point, this) ?? default;
-        var constraintOffset = _trigger.Child.TranslatePoint(new Point(0, 0), this) ?? default;
-        var constraintBounds = new Rect(constraintOffset, _trigger.Child.Bounds.Size);
-        if (constraintBounds.Contains(localPoint))
+        var pointRoot        = args.Root as Control;
+        var localPoint       = pointRoot?.PointToScreen(args.Position) ?? default;
+        var offset           = _trigger.Child.PointToScreen(new Point(0, 0));
+        var constraintBounds = new Rect(new Point(offset.X, offset.Y), _trigger.Child.Bounds.Size);
+        if (constraintBounds.Contains(new Point(localPoint.X, localPoint.Y)))
         {
             return true;
         }

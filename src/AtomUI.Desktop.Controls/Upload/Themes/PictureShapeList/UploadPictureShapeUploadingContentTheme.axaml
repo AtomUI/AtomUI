@@ -17,7 +17,6 @@
                                    BorderThickness="{TemplateBinding BorderThickness}"
                                    CornerRadius="{TemplateBinding CornerRadius}">
                     <Border Name="ContentFrame"
-                            CornerRadius="{TemplateBinding CornerRadius}"
                             ClipToBounds="True"
                             Margin="{TemplateBinding Padding}">
                         <Panel>
@@ -44,6 +43,12 @@
 
         <Style Selector="^ /template/ atom|DashedBorder#Frame">
             <Setter Property="StrokeDashArray" Value="4, 2" />
+        </Style>
+        
+        <Style Selector="^[ListType=PictureCircle]">
+            <Style Selector="^ /template/ Border#ContentFrame">
+                <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+            </Style>
         </Style>
         
         <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />

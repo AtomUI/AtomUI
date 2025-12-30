@@ -16,9 +16,7 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}">
-                    <Border Name="ContentFrame"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            ClipToBounds="True">
+                    <Border Name="ContentFrame" ClipToBounds="True">
                         <Panel>
                             <atom:UploadImagePreviewer Name="{x:Static atom:UploadThemeConstants.ImagePreviewerPart}"
                                                        IsShowCoverMask="False"
@@ -46,6 +44,12 @@
 
         <Style Selector="^ /template/ StackPanel#ActionsLayout">
             <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
+        </Style>
+        
+        <Style Selector="^[ListType=PictureCircle]">
+            <Style Selector="^ /template/ Border#ContentFrame">
+                <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+            </Style>
         </Style>
         
         <Setter Property="Width" Value="{DynamicResource {x:Static atom:UploadTokenKey.PictureCardSize}}" />

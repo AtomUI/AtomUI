@@ -17,7 +17,6 @@
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}">
                     <Border Name="ContentFrame"
-                            CornerRadius="{TemplateBinding CornerRadius}"
                             ClipToBounds="True">
                         <Panel>
                             <StackPanel HorizontalAlignment="Center"
@@ -66,6 +65,12 @@
         <Style Selector="^[Status=Success]">
             <Style Selector="^ /template/ atom|Icon">
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
+            </Style>
+        </Style>
+                
+        <Style Selector="^[ListType=PictureCircle]">
+            <Style Selector="^ /template/ Border#ContentFrame">
+                <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
             </Style>
         </Style>
 

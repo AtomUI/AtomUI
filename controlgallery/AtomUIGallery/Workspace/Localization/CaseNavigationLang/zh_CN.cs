@@ -20,6 +20,7 @@ internal class zh_CN : LanguageProvider
     public const string Layout_BoxPanel = "BoxPanel 盒子布局";
     public const string Layout_FlexPanel = "FlexPanel 弹性布局";
     public const string Layout_Grid = "Grid 栅格布局";
+    public const string Layout_Splitter = "Splitter 分隔面板";
     public const string Layout_BoxPanel_DeprecationNotice = "BoxPanel 将在后续版本弃用，建议使用 FlexPanel 进行页面布局。";
     
     public const string Navigation = "导航";

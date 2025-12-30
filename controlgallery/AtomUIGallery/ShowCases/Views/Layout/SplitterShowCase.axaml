@@ -1,0 +1,171 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.SplitterShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <UserControl.Styles>
+        <Style Selector="Border.splitter-surface">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BoxShadow" Value="0 0 10 0 #1A000000" />
+        </Style>
+        <Style Selector="Border.splitter-panel">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+        <Style Selector="Border.splitter-panel.alt">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillAlter}}" />
+        </Style>
+        <Style Selector="TextBlock.splitter-label">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
+
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem Title="Basic" Description="Initial sizes with min/max constraints." IsOccupyEntireRow="True">
+            <Border Classes="splitter-surface">
+                <atom:Splitter Layout="Vertical" Height="220">
+                    <atom:SplitterPanel Size="30%">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">First</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel Min="60">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">Second</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                </atom:Splitter>
+            </Border>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Resizable Disabled" Description="If either side disables resizable, dragging is blocked." IsOccupyEntireRow="True">
+            <Border Classes="splitter-surface">
+                <atom:Splitter Layout="Vertical" Height="220">
+                    <atom:SplitterPanel Size="35%">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">Resizable</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel DefaultSize="120" IsResizable="False">
+                        <Border Classes="splitter-panel alt">
+                            <TextBlock Classes="splitter-label">Not Resizable</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel DefaultSize="120">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">Resizable</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                </atom:Splitter>
+            </Border>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="ShowCollapsibleIcon"
+                              Description="Three panels with hover and always-visible collapsible icons."
+                              IsOccupyEntireRow="True">
+            <Border Classes="splitter-surface" Padding="16">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">ShowCollapsibleIcon:</TextBlock>
+                        <atom:RadioButton GroupName="ShowCollapsibleIconMode"
+                                          Tag="Hover"
+                                          IsCheckedChanged="HandleShowCollapsibleIconChanged">Hover</atom:RadioButton>
+                        <atom:RadioButton GroupName="ShowCollapsibleIconMode"
+                                          Tag="True"
+                                          IsChecked="True"
+                                          IsCheckedChanged="HandleShowCollapsibleIconChanged">True</atom:RadioButton>
+                        <atom:RadioButton GroupName="ShowCollapsibleIconMode"
+                                          Tag="False"
+                                          IsCheckedChanged="HandleShowCollapsibleIconChanged">False</atom:RadioButton>
+                    </StackPanel>
+                    <atom:Splitter Layout="Vertical" Height="220">
+                        <atom:SplitterPanel x:Name="ShowCollapsiblePanelFirst" DefaultSize="33%">
+                            <Border Classes="splitter-panel">
+                                <TextBlock Classes="splitter-label">First</TextBlock>
+                            </Border>
+                        </atom:SplitterPanel>
+                        <atom:SplitterPanel x:Name="ShowCollapsiblePanelSecond" DefaultSize="34%">
+                            <Border Classes="splitter-panel alt">
+                                <TextBlock Classes="splitter-label">Second</TextBlock>
+                            </Border>
+                        </atom:SplitterPanel>
+                        <atom:SplitterPanel x:Name="ShowCollapsiblePanelThird">
+                            <Border Classes="splitter-panel">
+                                <TextBlock Classes="splitter-label">Third</TextBlock>
+                            </Border>
+                        </atom:SplitterPanel>
+                    </atom:Splitter>
+                </StackPanel>
+            </Border>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Multi Panels" Description="Multiple panels in vertical layout." IsOccupyEntireRow="True">
+            <Border Classes="splitter-surface">
+                <atom:Splitter Layout="Vertical" Height="240">
+                    <atom:SplitterPanel Size="20%">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">A</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel Size="20%">
+                        <Border Classes="splitter-panel alt">
+                            <TextBlock Classes="splitter-label">B</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel>
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">C</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel>
+                        <Border Classes="splitter-panel alt">
+                            <TextBlock Classes="splitter-label">D</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                </atom:Splitter>
+            </Border>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Composite + Lazy" Description="Nested panels, quick collapse, locked size, and lazy dragging." IsOccupyEntireRow="True">
+            <Border Classes="splitter-surface">
+                <atom:Splitter Layout="Vertical" Height="260" IsLazy="True">
+                    <atom:SplitterPanel Size="25%" Collapsible="Always">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">Outer Left</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel DefaultSize="50%">
+                        <Border Classes="splitter-panel alt" Padding="6">
+                            <atom:Splitter Layout="Vertical" Height="200">
+                                <atom:SplitterPanel Collapsible="Always" IsResizable="False">
+                                    <Border Classes="splitter-panel">
+                                        <TextBlock Classes="splitter-label">Inner A</TextBlock>
+                                    </Border>
+                                </atom:SplitterPanel>
+                                <atom:SplitterPanel IsResizable="False">
+                                    <Border Classes="splitter-panel alt">
+                                        <TextBlock Classes="splitter-label">Inner B</TextBlock>
+                                    </Border>
+                                </atom:SplitterPanel>
+                            </atom:Splitter>
+                        </Border>
+                    </atom:SplitterPanel>
+                    <atom:SplitterPanel DefaultSize="25%" IsResizable="False" Collapsible="Always">
+                        <Border Classes="splitter-panel">
+                            <TextBlock Classes="splitter-label">Outer Locked</TextBlock>
+                        </Border>
+                    </atom:SplitterPanel>
+                </atom:Splitter>
+            </Border>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

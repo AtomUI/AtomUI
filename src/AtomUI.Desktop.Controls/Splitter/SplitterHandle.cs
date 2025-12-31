@@ -80,6 +80,7 @@ internal class SplitterHandle : AtomUIThumb
     internal bool IsNextCollapsed { get; set; }
     internal bool ShowPreviousButton { get; set; } = true;
     internal bool ShowNextButton { get; set; } = true;
+    internal bool ShowBothButtonsOnHover { get; set; }
     internal bool PreviousButtonControlsNext { get; set; }
     internal bool NextButtonControlsPrevious { get; set; }
     internal SplitterCollapsibleIconDisplayMode PreviousShowMode { get; set; } =
@@ -262,7 +263,8 @@ internal class SplitterHandle : AtomUIThumb
             SplitterCollapsibleIconDisplayMode.Always => true,
             SplitterCollapsibleIconDisplayMode.Hidden => false,
             SplitterCollapsibleIconDisplayMode.Hover => _isPointerOver &&
-                                                        (isOnly ||
+                                                        (ShowBothButtonsOnHover ||
+                                                         isOnly ||
                                                          _hoverSide == (isPrevious ? HoverSide.Previous : HoverSide.Next)),
             _ => false
         };

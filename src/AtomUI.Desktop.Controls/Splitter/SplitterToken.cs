@@ -34,7 +34,10 @@ internal class SplitterToken : AbstractControlDesignToken
 
     public Color HandleLineColor { get; set; }
     public Color HandleLineHoverColor { get; set; }
+    public Color HandleLineDragColor { get; set; }
     public Color HandleIconColor { get; set; }
+    public Color HandleIconHoverColor { get; set; }
+    public Color HandleIconPressedColor { get; set; }
     public double HandleLineThickness { get; set; }
     public double HandleIconSize { get; set; }
 
@@ -51,7 +54,10 @@ internal class SplitterToken : AbstractControlDesignToken
         SplitBarCollapseCrossOffset = -SplitBarDraggableSize / 2d;
         HandleLineColor       = SharedToken.ControlItemBgHover;
         HandleLineHoverColor  = SharedToken.ControlItemBgActive;
+        HandleLineDragColor   = SharedToken.ControlItemBgActiveHover;
         HandleIconColor       = SharedToken.ColorText;
+        HandleIconHoverColor  = HandleIconColor;
+        HandleIconPressedColor = HandleIconColor;
         HandleLineThickness   = SplitBarSize;
         HandleIconSize        = SharedToken.FontSizeSM;
     }

@@ -31,6 +31,12 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<double> HandleSizeProperty =
         AvaloniaProperty.Register<Splitter, double>(nameof(HandleSize));
 
+    public static readonly StyledProperty<IconTemplate?> CollapsePreviousIconProperty =
+        AvaloniaProperty.Register<Splitter, IconTemplate?>(nameof(CollapsePreviousIcon));
+
+    public static readonly StyledProperty<IconTemplate?> CollapseNextIconProperty =
+        AvaloniaProperty.Register<Splitter, IconTemplate?>(nameof(CollapseNextIcon));
+
     public SplitterLayout Layout
     {
         get => GetValue(LayoutProperty);
@@ -47,6 +53,18 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     {
         get => GetValue(HandleSizeProperty);
         set => SetValue(HandleSizeProperty, value);
+    }
+
+    public IconTemplate? CollapsePreviousIcon
+    {
+        get => GetValue(CollapsePreviousIconProperty);
+        set => SetValue(CollapsePreviousIconProperty, value);
+    }
+
+    public IconTemplate? CollapseNextIcon
+    {
+        get => GetValue(CollapseNextIconProperty);
+        set => SetValue(CollapseNextIconProperty, value);
     }
 
     #endregion
@@ -99,6 +117,12 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         if (change.Property == HandleSizeProperty)
+        {
+            UpdateHandleLayouts();
+        }
+
+        if (change.Property == CollapsePreviousIconProperty ||
+            change.Property == CollapseNextIconProperty)
         {
             UpdateHandleLayouts();
         }
@@ -275,14 +299,17 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         var availableLength = GetAvailablePanelLength(GetLayoutLength(_lastLayoutSize));
 
         var canDrag = CanDragBetween(previous, next, availableLength);
-        if (!canDrag && next.IsCollapsed && index + 2 < _panels.Count)
+        if (!canDrag)
         {
-            canDrag = CanDragBetween(next, _panels[index + 2], availableLength);
-        }
+            if (previous.IsCollapsed && index - 1 >= 0)
+            {
+                canDrag = CanDragBetween(_panels[index - 1], previous, availableLength);
+            }
 
-        if (!canDrag && previous.IsCollapsed && index - 1 >= 0)
-        {
-            canDrag = CanDragBetween(_panels[index - 1], previous, availableLength);
+            if (!canDrag && next.IsCollapsed && index + 2 < _panels.Count)
+            {
+                canDrag = CanDragBetween(next, _panels[index + 2], availableLength);
+            }
         }
         handle.IsDragEnabled = canDrag;
         handle.Cursor = canDrag
@@ -293,6 +320,8 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
         handle.PreviousButtonControlsNext = false;
         handle.NextButtonControlsPrevious = false;
+        handle.PreviousIconTemplate = CollapsePreviousIcon;
+        handle.NextIconTemplate = CollapseNextIcon;
 
         if (!TryGetBoundaryForHandle(index, out var leftVisible, out var rightVisible))
         {
@@ -387,7 +416,9 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         if (restoreIndex.HasValue)
         {
             var ownerIndex = ResolveOwnerIndex(restoreIndex.Value);
-            if (ownerIndex >= 0)
+            if (ownerIndex >= 0 &&
+                _panels[restoreIndex.Value].IsResizable &&
+                _panels[ownerIndex].IsResizable)
             {
                 ApplyCollapseForIndices(restoreIndex.Value, ownerIndex, availableLength);
             }
@@ -395,6 +426,11 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         if (rightVisible < 0)
+        {
+            return;
+        }
+
+        if (!_panels[leftVisible].IsResizable || !_panels[rightVisible].IsResizable)
         {
             return;
         }
@@ -424,7 +460,9 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         if (restoreIndex.HasValue)
         {
             var ownerIndex = ResolveOwnerIndex(restoreIndex.Value);
-            if (ownerIndex >= 0)
+            if (ownerIndex >= 0 &&
+                _panels[restoreIndex.Value].IsResizable &&
+                _panels[ownerIndex].IsResizable)
             {
                 ApplyCollapseForIndices(restoreIndex.Value, ownerIndex, availableLength);
             }
@@ -432,6 +470,11 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         if (leftVisible < 0)
+        {
+            return;
+        }
+
+        if (!_panels[leftVisible].IsResizable || !_panels[rightVisible].IsResizable)
         {
             return;
         }
@@ -499,7 +542,26 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         var restoreIndex = FindRestoreCandidateLeft(leftVisible, rightVisible);
-        if (!restoreIndex.HasValue && rightVisible < 0)
+        if (restoreIndex.HasValue)
+        {
+            var ownerIndex = ResolveOwnerIndex(restoreIndex.Value);
+            if (ownerIndex < 0)
+            {
+                return false;
+            }
+
+            if (!_panels[restoreIndex.Value].IsResizable || !_panels[ownerIndex].IsResizable)
+            {
+                return false;
+            }
+        }
+        else if (rightVisible < 0)
+        {
+            return false;
+        }
+
+        if (!restoreIndex.HasValue &&
+            (!_panels[leftVisible].IsResizable || !_panels[rightVisible].IsResizable))
         {
             return false;
         }
@@ -511,7 +573,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         var targetPanel = _panels[targetIndex];
-        if (!targetPanel.IsCollapsible)
+        if (!targetPanel.IsCollapsible || !targetPanel.IsResizable)
         {
             return false;
         }
@@ -532,7 +594,26 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         var restoreIndex = FindRestoreCandidateRight(leftVisible, rightVisible);
-        if (!restoreIndex.HasValue && leftVisible < 0)
+        if (restoreIndex.HasValue)
+        {
+            var ownerIndex = ResolveOwnerIndex(restoreIndex.Value);
+            if (ownerIndex < 0)
+            {
+                return false;
+            }
+
+            if (!_panels[restoreIndex.Value].IsResizable || !_panels[ownerIndex].IsResizable)
+            {
+                return false;
+            }
+        }
+        else if (leftVisible < 0)
+        {
+            return false;
+        }
+
+        if (!restoreIndex.HasValue &&
+            (!_panels[leftVisible].IsResizable || !_panels[rightVisible].IsResizable))
         {
             return false;
         }
@@ -544,7 +625,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         var targetPanel = _panels[targetIndex];
-        if (!targetPanel.IsCollapsible)
+        if (!targetPanel.IsCollapsible || !targetPanel.IsResizable)
         {
             return false;
         }
@@ -966,8 +1047,20 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return;
         }
 
-        var index = ResolveHandleIndexForDrag(handle, e.Vector);
-        var context = CreateDragContext(handle, index, index, index + 1);
+        if (!TryCreateBoundaryDragContext(handle, e.Vector, out var context, out var index))
+        {
+            index = ResolveHandleIndexForDrag(handle, e.Vector);
+            context = CreateDragContext(handle, index, index, index + 1);
+            if (context == null)
+            {
+                var fallbackIndex = FindFallbackDragIndex(index);
+                if (fallbackIndex.HasValue)
+                {
+                    index = fallbackIndex.Value;
+                    context = CreateDragContext(handle, index, index, index + 1);
+                }
+            }
+        }
         if (context == null)
         {
             return;
@@ -977,6 +1070,110 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
         handle.SetDragging(true);
         RaiseResizeStarted(index, BuildSizesWithDelta(context.StartPreviousSize, context.StartNextSize, 0));
+    }
+
+    private bool TryCreateBoundaryDragContext(
+        SplitterHandle handle,
+        Vector startVector,
+        out DragContext? context,
+        out int handleIndex)
+    {
+        context = null;
+        handleIndex = handle.HandleIndex;
+
+        if (!TryGetBoundaryForHandle(handle.HandleIndex, out var leftVisible, out var rightVisible))
+        {
+            return false;
+        }
+
+        if (leftVisible < 0 || rightVisible < 0 || rightVisible == leftVisible + 1)
+        {
+            return false;
+        }
+
+        var preferLeft = !IsPointerOnNextSide(handle, startVector);
+        var leftCandidate = FindRestoreCandidateLeft(leftVisible, rightVisible);
+        var rightCandidate = FindRestoreCandidateRight(leftVisible, rightVisible);
+
+        if (!leftCandidate.HasValue && !rightCandidate.HasValue)
+        {
+            return false;
+        }
+
+        var candidates = preferLeft
+            ? new[] { leftCandidate, rightCandidate }
+            : new[] { rightCandidate, leftCandidate };
+
+        foreach (var candidate in candidates)
+        {
+            if (!candidate.HasValue)
+            {
+                continue;
+            }
+
+            var ownerIndex = ResolveOwnerIndex(candidate.Value);
+            if (ownerIndex < 0)
+            {
+                continue;
+            }
+
+            var previousIndex = Math.Min(ownerIndex, candidate.Value);
+            var nextIndex = Math.Max(ownerIndex, candidate.Value);
+            var dragContext = CreateDragContext(handle, handle.HandleIndex, previousIndex, nextIndex, false);
+            if (dragContext == null)
+            {
+                continue;
+            }
+
+            context = dragContext;
+            handleIndex = previousIndex;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsPointerOnNextSide(SplitterHandle handle, Vector startVector)
+    {
+        var root = handle.GetVisualRoot() as Visual ?? handle;
+        var origin = handle.TranslatePoint(new Point(0, 0), root);
+        if (!origin.HasValue)
+        {
+            return true;
+        }
+
+        var local = new Point(startVector.X - origin.Value.X, startVector.Y - origin.Value.Y);
+        var compare = Layout == SplitterLayout.Vertical ? local.X : local.Y;
+        var center = Layout == SplitterLayout.Vertical ? handle.Bounds.Width * 0.5 : handle.Bounds.Height * 0.5;
+        return compare >= center;
+    }
+
+    private int? FindFallbackDragIndex(int handleIndex)
+    {
+        if (handleIndex < 0 || handleIndex + 1 >= _panels.Count)
+        {
+            return null;
+        }
+
+        var availableLength = GetAvailablePanelLength(GetLayoutLength(_lastLayoutSize));
+
+        if (_panels[handleIndex].IsCollapsed && handleIndex - 1 >= 0)
+        {
+            if (CanDragBetween(_panels[handleIndex - 1], _panels[handleIndex], availableLength))
+            {
+                return handleIndex - 1;
+            }
+        }
+
+        if (handleIndex + 2 < _panels.Count && _panels[handleIndex + 1].IsCollapsed)
+        {
+            if (CanDragBetween(_panels[handleIndex + 1], _panels[handleIndex + 2], availableLength))
+            {
+                return handleIndex + 1;
+            }
+        }
+
+        return null;
     }
 
     private void HandleDragDelta(object? sender, VectorEventArgs e)

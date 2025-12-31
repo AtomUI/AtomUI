@@ -877,8 +877,11 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     public static class SplitterTokenKey
     {
         public static readonly TokenResourceKey HandleIconColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleIconColor");
+        public static readonly TokenResourceKey HandleIconHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleIconHoverColor");
+        public static readonly TokenResourceKey HandleIconPressedColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleIconPressedColor");
         public static readonly TokenResourceKey HandleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleIconSize");
         public static readonly TokenResourceKey HandleLineColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineColor");
+        public static readonly TokenResourceKey HandleLineDragColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineDragColor");
         public static readonly TokenResourceKey HandleLineHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineHoverColor");
         public static readonly TokenResourceKey HandleLineThickness = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.HandleLineThickness");
         public static readonly TokenResourceKey SplitBarCollapseCrossOffset = new TokenResourceKey("AtomUI.Desktop.Controls.Splitter.SplitBarCollapseCrossOffset");

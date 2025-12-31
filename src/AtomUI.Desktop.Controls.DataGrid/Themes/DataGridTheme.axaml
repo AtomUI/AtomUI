@@ -128,13 +128,13 @@
                                     Grid.Row="2"
                                     Grid.Column="2" />
 
-                                <ScrollBar
+                                <atom:ScrollBar
                                     Name="{x:Static atom:DataGridThemeConstants.VerticalScrollbarPart}"
                                     Grid.Row="1"
                                     Grid.Column="2"
                                     Orientation="Vertical" />
 
-                                <ScrollBar
+                                <atom:ScrollBar
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     Name="{x:Static atom:DataGridThemeConstants.HorizontalScrollbarPart}"

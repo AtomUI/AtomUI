@@ -103,10 +103,12 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
         {
             return false;
         }
+
+        var scaling          = TopLevelUtils.GetDesktopScaling(this);
         var pointRoot        = args.Root as Control;
         var localPoint       = pointRoot?.PointToScreen(args.Position) ?? default;
         var offset           = _trigger.Child.PointToScreen(new Point(0, 0));
-        var constraintBounds = new Rect(new Point(offset.X, offset.Y), _trigger.Child.Bounds.Size);
+        var constraintBounds = new Rect(new Point(offset.X, offset.Y), _trigger.Child.Bounds.Size * scaling);
         if (constraintBounds.Contains(new Point(localPoint.X, localPoint.Y)))
         {
             return true;

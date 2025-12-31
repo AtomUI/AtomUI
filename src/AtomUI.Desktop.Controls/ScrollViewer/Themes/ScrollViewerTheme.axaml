@@ -50,6 +50,7 @@
         </Setter>
 
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="IsLiteMode" Value="False" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="ScrollBarsSeparatorOpacity" Value="0" />
         <Style Selector="^[IsExpanded=true]">

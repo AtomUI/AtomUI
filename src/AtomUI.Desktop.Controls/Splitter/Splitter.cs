@@ -291,28 +291,32 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
                 : new Cursor(StandardCursorType.SizeNorthSouth)
             : Cursor.Default;
 
-        handle.IsPreviousCollapsible = previous.IsCollapsible;
-        handle.IsNextCollapsible = next.IsCollapsible;
-        handle.IsPreviousCollapsed = previous.IsCollapsed;
-        handle.IsNextCollapsed = next.IsCollapsed;
-        var previousShowMode = previous.Collapsible?.ShowCollapsibleIcon ?? SplitterCollapsibleIconDisplayMode.Hover;
-        var nextShowMode = next.Collapsible?.ShowCollapsibleIcon ?? SplitterCollapsibleIconDisplayMode.Hover;
-
         handle.PreviousButtonControlsNext = false;
         handle.NextButtonControlsPrevious = false;
-        handle.ShowPreviousButton = true;
-        handle.ShowNextButton = true;
-        handle.PreviousShowMode = previousShowMode;
-        handle.NextShowMode = nextShowMode;
 
-        if (previous.IsCollapsed && !next.IsCollapsed)
+        if (!TryGetBoundaryForHandle(index, out var leftVisible, out var rightVisible))
         {
-            handle.ShowNextButton = false;
-        }
-        else if (next.IsCollapsed && !previous.IsCollapsed)
-        {
+            handle.IsPreviousCollapsible = false;
+            handle.IsNextCollapsible = false;
             handle.ShowPreviousButton = false;
+            handle.ShowNextButton = false;
+            handle.IsPreviousCollapsed = false;
+            handle.IsNextCollapsed = false;
+            handle.UpdateCollapseButtons();
+            return;
         }
+
+        var hasLeftButton = TryGetExpandLeftState(leftVisible, rightVisible, out var leftShowMode);
+        var hasRightButton = TryGetExpandRightState(leftVisible, rightVisible, out var rightShowMode);
+
+        handle.IsPreviousCollapsible = hasLeftButton;
+        handle.IsNextCollapsible = hasRightButton;
+        handle.ShowPreviousButton = hasLeftButton;
+        handle.ShowNextButton = hasRightButton;
+        handle.PreviousShowMode = leftShowMode;
+        handle.NextShowMode = rightShowMode;
+        handle.IsPreviousCollapsed = false;
+        handle.IsNextCollapsed = false;
 
         handle.UpdateCollapseButtons();
     }
@@ -347,7 +351,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     {
         if (sender is SplitterHandle handle)
         {
-            TogglePanelCollapse(handle, collapsePrevious: true);
+            ExpandLeftAtHandle(handle);
         }
     }
 
@@ -355,24 +359,299 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     {
         if (sender is SplitterHandle handle)
         {
-            TogglePanelCollapse(handle, collapsePrevious: false);
+            ExpandRightAtHandle(handle);
         }
     }
 
-    private void TogglePanelCollapse(SplitterHandle handle, bool collapsePrevious)
+    private void ExpandLeftAtHandle(SplitterHandle handle)
     {
-        var index = handle.HandleIndex;
-        if (index < 0 || index + 1 >= _panels.Count)
+        if (!TryGetBoundaryForHandle(handle.HandleIndex, out var leftVisible, out var rightVisible))
         {
             return;
         }
 
-        var previous = _panels[index];
-        var next = _panels[index + 1];
-        var availableLength = GetAvailablePanelLength(GetLayoutLength(_lastLayoutSize));
-
-        if (collapsePrevious)
+        if (!IsPrimaryHandleForBoundary(handle.HandleIndex, leftVisible, rightVisible))
         {
+            return;
+        }
+
+        if (leftVisible < 0)
+        {
+            return;
+        }
+
+        var availableLength = GetAvailablePanelLength(GetLayoutLength(_lastLayoutSize));
+        var restoreIndex = FindRestoreCandidateLeft(leftVisible, rightVisible);
+        if (restoreIndex.HasValue)
+        {
+            var ownerIndex = ResolveOwnerIndex(restoreIndex.Value);
+            if (ownerIndex >= 0)
+            {
+                ApplyCollapseForIndices(restoreIndex.Value, ownerIndex, availableLength);
+            }
+            return;
+        }
+
+        if (rightVisible < 0)
+        {
+            return;
+        }
+
+        ApplyCollapseForIndices(leftVisible, rightVisible, availableLength);
+    }
+
+    private void ExpandRightAtHandle(SplitterHandle handle)
+    {
+        if (!TryGetBoundaryForHandle(handle.HandleIndex, out var leftVisible, out var rightVisible))
+        {
+            return;
+        }
+
+        if (!IsPrimaryHandleForBoundary(handle.HandleIndex, leftVisible, rightVisible))
+        {
+            return;
+        }
+
+        if (rightVisible < 0)
+        {
+            return;
+        }
+
+        var availableLength = GetAvailablePanelLength(GetLayoutLength(_lastLayoutSize));
+        var restoreIndex = FindRestoreCandidateRight(leftVisible, rightVisible);
+        if (restoreIndex.HasValue)
+        {
+            var ownerIndex = ResolveOwnerIndex(restoreIndex.Value);
+            if (ownerIndex >= 0)
+            {
+                ApplyCollapseForIndices(restoreIndex.Value, ownerIndex, availableLength);
+            }
+            return;
+        }
+
+        if (leftVisible < 0)
+        {
+            return;
+        }
+
+        ApplyCollapseForIndices(rightVisible, leftVisible, availableLength);
+    }
+
+    private bool TryGetBoundaryForHandle(int handleIndex, out int leftVisible, out int rightVisible)
+    {
+        leftVisible = FindLeftVisibleIndex(handleIndex);
+        rightVisible = FindRightVisibleIndex(handleIndex);
+        return leftVisible != -1 || rightVisible != -1;
+    }
+
+    private int FindLeftVisibleIndex(int handleIndex)
+    {
+        for (var i = handleIndex; i >= 0; i--)
+        {
+            if (!_panels[i].IsCollapsed)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private int FindRightVisibleIndex(int handleIndex)
+    {
+        for (var i = handleIndex + 1; i < _panels.Count; i++)
+        {
+            if (!_panels[i].IsCollapsed)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private bool IsPrimaryHandleForBoundary(int handleIndex, int leftVisible, int rightVisible)
+    {
+        if (rightVisible >= 0)
+        {
+            return handleIndex == rightVisible - 1;
+        }
+
+        if (leftVisible >= 0)
+        {
+            return handleIndex == leftVisible;
+        }
+
+        return false;
+    }
+
+    private bool TryGetExpandLeftState(
+        int leftVisible,
+        int rightVisible,
+        out SplitterCollapsibleIconDisplayMode showMode)
+    {
+        showMode = SplitterCollapsibleIconDisplayMode.Hover;
+        if (leftVisible < 0)
+        {
+            return false;
+        }
+
+        var restoreIndex = FindRestoreCandidateLeft(leftVisible, rightVisible);
+        if (!restoreIndex.HasValue && rightVisible < 0)
+        {
+            return false;
+        }
+
+        var targetIndex = restoreIndex ?? leftVisible;
+        if (targetIndex < 0)
+        {
+            return false;
+        }
+
+        var targetPanel = _panels[targetIndex];
+        if (!targetPanel.IsCollapsible)
+        {
+            return false;
+        }
+
+        showMode = targetPanel.Collapsible?.ShowCollapsibleIcon ?? SplitterCollapsibleIconDisplayMode.Hover;
+        return true;
+    }
+
+    private bool TryGetExpandRightState(
+        int leftVisible,
+        int rightVisible,
+        out SplitterCollapsibleIconDisplayMode showMode)
+    {
+        showMode = SplitterCollapsibleIconDisplayMode.Hover;
+        if (rightVisible < 0)
+        {
+            return false;
+        }
+
+        var restoreIndex = FindRestoreCandidateRight(leftVisible, rightVisible);
+        if (!restoreIndex.HasValue && leftVisible < 0)
+        {
+            return false;
+        }
+
+        var targetIndex = restoreIndex ?? rightVisible;
+        if (targetIndex < 0)
+        {
+            return false;
+        }
+
+        var targetPanel = _panels[targetIndex];
+        if (!targetPanel.IsCollapsible)
+        {
+            return false;
+        }
+
+        showMode = targetPanel.Collapsible?.ShowCollapsibleIcon ?? SplitterCollapsibleIconDisplayMode.Hover;
+        return true;
+    }
+
+    private int? FindRestoreCandidateLeft(int leftVisible, int rightVisible)
+    {
+        if (leftVisible < 0)
+        {
+            return null;
+        }
+
+        var owner = leftVisible;
+        var start = rightVisible >= 0 ? rightVisible - 1 : _panels.Count - 1;
+        var end = leftVisible;
+
+        for (var i = start; i > end; i--)
+        {
+            var panel = _panels[i];
+            if (!panel.IsCollapsed || !panel.IsCollapsible)
+            {
+                continue;
+            }
+
+            if (ResolveOwnerIndex(i) != owner)
+            {
+                continue;
+            }
+
+            return i;
+        }
+
+        return null;
+    }
+
+    private int? FindRestoreCandidateRight(int leftVisible, int rightVisible)
+    {
+        if (rightVisible < 0)
+        {
+            return null;
+        }
+
+        var owner = rightVisible;
+        var start = leftVisible >= 0 ? leftVisible + 1 : 0;
+        var end = rightVisible;
+
+        for (var i = start; i < end; i++)
+        {
+            var panel = _panels[i];
+            if (!panel.IsCollapsed || !panel.IsCollapsible)
+            {
+                continue;
+            }
+
+            if (ResolveOwnerIndex(i) != owner)
+            {
+                continue;
+            }
+
+            return i;
+        }
+
+        return null;
+    }
+
+    private int ResolveOwnerIndex(int panelIndex)
+    {
+        if (panelIndex < 0 || panelIndex >= _panels.Count)
+        {
+            return -1;
+        }
+
+        var index = panelIndex;
+        var guard = 0;
+        while (index >= 0 && index < _panels.Count && _panels[index].IsCollapsed)
+        {
+            var next = _panels[index].LastCollapsedIntoIndex;
+            if (!next.HasValue || next.Value == index)
+            {
+                return -1;
+            }
+
+            index = next.Value;
+            guard++;
+            if (guard > _panels.Count)
+            {
+                return -1;
+            }
+        }
+
+        return index;
+    }
+
+    private void ApplyCollapseForIndices(int collapseIndex, int partnerIndex, double availableLength)
+    {
+        if (collapseIndex < 0 || collapseIndex >= _panels.Count ||
+            partnerIndex < 0 || partnerIndex >= _panels.Count ||
+            collapseIndex == partnerIndex)
+        {
+            return;
+        }
+
+        if (collapseIndex < partnerIndex)
+        {
+            var previous = _panels[collapseIndex];
+            var next = _panels[partnerIndex];
             if (!previous.IsCollapsed && previous.EffectiveSize > 0)
             {
                 previous.LastNonCollapsedSize = previous.EffectiveSize;
@@ -382,10 +661,12 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
                 ? GetRestoreSize(previous, availableLength)
                 : 0;
             var targetDelta = targetPrevious - previous.EffectiveSize;
-            ApplyCollapseDelta(previous, next, targetDelta, availableLength);
+            ApplyCollapseDelta(previous, next, targetDelta, availableLength, collapseIndex, partnerIndex);
         }
         else
         {
+            var previous = _panels[partnerIndex];
+            var next = _panels[collapseIndex];
             if (!next.IsCollapsed && next.EffectiveSize > 0)
             {
                 next.LastNonCollapsedSize = next.EffectiveSize;
@@ -395,7 +676,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
                 ? GetRestoreSize(next, availableLength)
                 : 0;
             var targetDelta = next.EffectiveSize - targetNext;
-            ApplyCollapseDelta(previous, next, targetDelta, availableLength);
+            ApplyCollapseDelta(previous, next, targetDelta, availableLength, partnerIndex, collapseIndex);
         }
     }
 
@@ -411,7 +692,9 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         SplitterPanel previous,
         SplitterPanel next,
         double targetDelta,
-        double availableLength)
+        double availableLength,
+        int previousIndex,
+        int nextIndex)
     {
         var prevSize = previous.EffectiveSize;
         var nextSize = next.EffectiveSize;
@@ -439,6 +722,34 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         var clampedDelta = Math.Clamp(targetDelta, minDelta, maxDelta);
         var newPrev = prevSize + clampedDelta;
         var newNext = nextSize - clampedDelta;
+
+        if (prevSize > 0 && newPrev <= 0)
+        {
+            previous.LastNonCollapsedSize = prevSize;
+        }
+
+        if (nextSize > 0 && newNext <= 0)
+        {
+            next.LastNonCollapsedSize = nextSize;
+        }
+
+        if (newPrev > 0)
+        {
+            previous.LastCollapsedIntoIndex = null;
+        }
+        else if (prevSize > 0 && newPrev <= 0)
+        {
+            previous.LastCollapsedIntoIndex = nextIndex;
+        }
+
+        if (newNext > 0)
+        {
+            next.LastCollapsedIntoIndex = null;
+        }
+        else if (nextSize > 0 && newNext <= 0)
+        {
+            next.LastCollapsedIntoIndex = previousIndex;
+        }
 
         SetPanelSize(previous, newPrev, availableLength, updateLastSize: newPrev > 0);
         SetPanelSize(next, newNext, availableLength, updateLastSize: newNext > 0);
@@ -587,7 +898,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
                     ? new Rect(handlePosition, 0, HandleSize, finalSize.Height)
                     : new Rect(0, handlePosition, finalSize.Width, HandleSize);
                 _handles[i].Arrange(handleRect);
-                _handles[i].IsVisible = !(i > 0 && i + 1 < _panels.Count && _panels[i].IsCollapsed);
+                _handles[i].IsVisible = IsHandleVisibleForLayout(i);
                 offset += GetHandleSpacingForIndex(i, handleSpacing);
             }
         }
@@ -1156,16 +1467,16 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return 0;
         }
 
-        var count = _panels.Count - 1;
-        for (var i = 1; i < _panels.Count - 1; i++)
+        var count = 0;
+        for (var i = 0; i < _panels.Count - 1; i++)
         {
-            if (_panels[i].IsCollapsed)
+            if (IsHandleVisibleForLayout(i))
             {
-                count--;
+                count++;
             }
         }
 
-        return Math.Max(0, count);
+        return count;
     }
 
     private double GetHandleSpacingForIndex(int handleIndex, double spacing)
@@ -1175,12 +1486,27 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return 0;
         }
 
-        if (handleIndex + 1 < _panels.Count - 1 && _panels[handleIndex + 1].IsCollapsed)
+        if (!IsHandleVisibleForLayout(handleIndex))
         {
             return 0;
         }
 
         return spacing;
+    }
+
+    private bool IsHandleVisibleForLayout(int handleIndex)
+    {
+        if (handleIndex < 0 || handleIndex + 1 >= _panels.Count)
+        {
+            return false;
+        }
+
+        if (!TryGetBoundaryForHandle(handleIndex, out var leftVisible, out var rightVisible))
+        {
+            return false;
+        }
+
+        return IsPrimaryHandleForBoundary(handleIndex, leftVisible, rightVisible);
     }
 
     private IReadOnlyList<double> BuildSizesWithDelta(double previousSize, double nextSize, double delta)

@@ -206,11 +206,23 @@ internal class SplitterHandle : AtomUIThumb
 
     private void HandleCollapsePrevClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (PreviousButtonControlsNext)
+        {
+            CollapseNextRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         CollapsePreviousRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void HandleCollapseNextClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (NextButtonControlsPrevious)
+        {
+            CollapsePreviousRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         CollapseNextRequested?.Invoke(this, EventArgs.Empty);
     }
 

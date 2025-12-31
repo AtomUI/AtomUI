@@ -90,6 +90,7 @@ public class SplitterPanel : ContentControl
 
     internal double EffectiveSize { get; set; }
     internal double? LastNonCollapsedSize { get; set; }
+    internal int? LastCollapsedIntoIndex { get; set; }
     internal Splitter? Owner { get; set; }
 
     internal bool IsCollapsible => Collapsible?.IsEnabled == true;

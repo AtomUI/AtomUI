@@ -94,7 +94,7 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
     #endregion
     
     #region 公共事件定义
-    public event EventHandler<PageChangedArgs>? CurrentPageChanged;
+    public event EventHandler<PageChangedEventArgs>? CurrentPageChanged;
     #endregion
     
     #region 内部属性定义
@@ -158,7 +158,7 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
 
     protected void EmitCurrentPageChanged(int currentPage, int pageCount, int pageSize)
     {
-        CurrentPageChanged?.Invoke(this, new PageChangedArgs(currentPage, pageCount, pageSize));
+        CurrentPageChanged?.Invoke(this, new PageChangedEventArgs(currentPage, pageCount, pageSize));
     }
     
 }

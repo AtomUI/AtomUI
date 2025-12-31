@@ -942,6 +942,16 @@ public partial class DataGrid : TemplatedControl,
     /// Event listeners can modify or add to the row clipboard content.
     /// </summary>
     public event EventHandler<DataGridRowClipboardEventArgs>? CopyingRowClipboardContent;
+    
+    /// <summary>
+    /// Raised when a page index change completed
+    /// </summary>
+    public event EventHandler<PageChangedEventArgs>? PageChanged;
+
+    /// <summary>
+    /// Raised when a page index change is requested
+    /// </summary>
+    public event EventHandler<PageChangingEventArgs>? PageChanging;
 
     #endregion
 

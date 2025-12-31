@@ -3400,7 +3400,6 @@ public partial class DataGrid
                 _topPagination.Total       = collectionView.ItemCount;
                 _topPagination.PageSize    = PageSize;
                 _topPagination.CurrentPage = Pagination.DefaultCurrentPage;
-              
             }
             if (_bottomPagination != null)
             {
@@ -3411,11 +3410,11 @@ public partial class DataGrid
         }
     }
 
-    private void HandlePageChangeRequest(object? sender, PageChangedArgs args)
+    private void HandlePageChangeRequest(object? sender, PageChangedEventArgs args)
     {
         if (CollectionView is DataGridCollectionView collectionView)
         {
-            collectionView.MoveToPage(args.PageNumber - 1);
+            collectionView.MoveToPage(args.PageIndex - 1);
         }
     }
 
@@ -3431,5 +3430,11 @@ public partial class DataGrid
         {
             _bottomPagination.CurrentPage = targetPage;
         }
+        PageChanging?.Invoke(this, args);
+    }
+    
+    private void HandlePageChanged(object? sender, PageChangedEventArgs args)
+    {
+        PageChanged?.Invoke(this, args);
     }
 }

@@ -1,15 +1,15 @@
 namespace AtomUI.Desktop.Controls;
 
-public class PageChangedArgs
+public class PageChangedEventArgs
 {
-    public PageChangedArgs(int pageNumber, int totalPages, int pageSize)
+    public PageChangedEventArgs(int pageIndex, int totalPages, int pageSize)
     {
-        PageNumber = pageNumber;
+        PageIndex  = pageIndex;
         TotalPages = totalPages;
-        PageSize = pageSize;
+        PageSize   = pageSize;
     }
     
     public int PageSize { get; }
     public int TotalPages { get; }
-    public int PageNumber { get; }
+    public int PageIndex { get; }
 }

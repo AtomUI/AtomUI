@@ -248,7 +248,7 @@ public sealed class DataGridCollectionView : IDataGridCollectionView, IDataGridE
     /// Raised when a page index change completed
     /// </summary>
     //TODO Paging
-    public event EventHandler<EventArgs>? PageChanged;
+    public event EventHandler<PageChangedEventArgs>? PageChanged;
 
     /// <summary>
     /// Raised when a page index change is requested
@@ -3545,7 +3545,7 @@ public sealed class DataGridCollectionView : IDataGridCollectionView, IDataGridE
     /// </summary>
     private void RaisePageChanged()
     {
-        PageChanged?.Invoke(this, EventArgs.Empty);
+        PageChanged?.Invoke(this, new PageChangedEventArgs(PageIndex, PageCount, PageSize));
     }
 
     /// <summary>

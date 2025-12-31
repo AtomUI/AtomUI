@@ -1393,6 +1393,7 @@ public partial class DataGrid
                 if (oldCollectionView is DataGridCollectionView oldDataGridCollectionView)
                 {
                     oldDataGridCollectionView.PageChanging -= HandlePageChanging;
+                    oldDataGridCollectionView.PageChanged  -= HandlePageChanged;
                 }
             }
 
@@ -1402,6 +1403,7 @@ public partial class DataGrid
                 if (newCollectionView is DataGridCollectionView newDataGridCollectionView)
                 {
                     newDataGridCollectionView.PageChanging += HandlePageChanging;
+                    newDataGridCollectionView.PageChanged  += HandlePageChanged;
                 }
                 IsEmptyDataSource                   =  newCollectionView.IsEmpty;
                 if (newCollectionView.Filter == null)
@@ -4758,11 +4760,11 @@ public partial class DataGrid
     {
         if (PageSize == 0)
         {
-            SetCurrentValue(EffectivePaginationVisibilityProperty, DataGridPaginationVisibility.None);
+            EffectivePaginationVisibility = DataGridPaginationVisibility.None;
         }
         else
         {
-            SetCurrentValue(EffectivePaginationVisibilityProperty, PaginationVisibility);
+            EffectivePaginationVisibility = PaginationVisibility;
         }
     }
 }

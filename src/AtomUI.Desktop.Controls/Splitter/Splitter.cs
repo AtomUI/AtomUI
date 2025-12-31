@@ -308,11 +308,13 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
         var hasLeftButton = TryGetExpandLeftState(leftVisible, rightVisible, out var leftShowMode);
         var hasRightButton = TryGetExpandRightState(leftVisible, rightVisible, out var rightShowMode);
+        var showBothOnHover = leftVisible >= 0 && rightVisible >= 0 && rightVisible == leftVisible + 1;
 
         handle.IsPreviousCollapsible = hasLeftButton;
         handle.IsNextCollapsible = hasRightButton;
         handle.ShowPreviousButton = hasLeftButton;
         handle.ShowNextButton = hasRightButton;
+        handle.ShowBothButtonsOnHover = showBothOnHover;
         handle.PreviousShowMode = leftShowMode;
         handle.NextShowMode = rightShowMode;
         handle.IsPreviousCollapsed = false;
@@ -558,24 +560,49 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return null;
         }
 
-        var owner = leftVisible;
-        var start = rightVisible >= 0 ? rightVisible - 1 : _panels.Count - 1;
-        var end = leftVisible;
-
-        for (var i = start; i > end; i--)
+        if (rightVisible >= 0)
         {
-            var panel = _panels[i];
-            if (!panel.IsCollapsed || !panel.IsCollapsible)
-            {
-                continue;
-            }
+            var start = rightVisible - 1;
+            var end = leftVisible;
 
-            if (ResolveOwnerIndex(i) != owner)
+            var owner = leftVisible;
+            for (var i = start; i > end; i--)
             {
-                continue;
-            }
+                var panel = _panels[i];
+                if (!panel.IsCollapsed || !panel.IsCollapsible)
+                {
+                    continue;
+                }
 
-            return i;
+                if (!panel.LastCollapsedIntoIndex.HasValue || panel.LastCollapsedIntoIndex.Value != owner)
+                {
+                    continue;
+                }
+
+                return i;
+            }
+        }
+        else
+        {
+            var start = _panels.Count - 1;
+            var end = leftVisible + 1;
+
+            var owner = leftVisible;
+            for (var i = start; i >= end; i--)
+            {
+                var panel = _panels[i];
+                if (!panel.IsCollapsed || !panel.IsCollapsible)
+                {
+                    continue;
+                }
+
+                if (!panel.LastCollapsedIntoIndex.HasValue || panel.LastCollapsedIntoIndex.Value != owner)
+                {
+                    continue;
+                }
+
+                return i;
+            }
         }
 
         return null;
@@ -588,24 +615,49 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return null;
         }
 
-        var owner = rightVisible;
-        var start = leftVisible >= 0 ? leftVisible + 1 : 0;
-        var end = rightVisible;
-
-        for (var i = start; i < end; i++)
+        if (leftVisible >= 0)
         {
-            var panel = _panels[i];
-            if (!panel.IsCollapsed || !panel.IsCollapsible)
-            {
-                continue;
-            }
+            var start = leftVisible + 1;
+            var end = rightVisible;
 
-            if (ResolveOwnerIndex(i) != owner)
+            var owner = rightVisible;
+            for (var i = start; i < end; i++)
             {
-                continue;
-            }
+                var panel = _panels[i];
+                if (!panel.IsCollapsed || !panel.IsCollapsible)
+                {
+                    continue;
+                }
 
-            return i;
+                if (!panel.LastCollapsedIntoIndex.HasValue || panel.LastCollapsedIntoIndex.Value != owner)
+                {
+                    continue;
+                }
+
+                return i;
+            }
+        }
+        else
+        {
+            var start = 0;
+            var end = rightVisible;
+
+            var owner = rightVisible;
+            for (var i = start; i < end; i++)
+            {
+                var panel = _panels[i];
+                if (!panel.IsCollapsed || !panel.IsCollapsible)
+                {
+                    continue;
+                }
+
+                if (!panel.LastCollapsedIntoIndex.HasValue || panel.LastCollapsedIntoIndex.Value != owner)
+                {
+                    continue;
+                }
+
+                return i;
+            }
         }
 
         return null;
@@ -991,6 +1043,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         handle.SetDragging(false);
+        FinalizeResizeSizes(_dragContext);
         var completedSizes = BuildSizesWithDelta(_dragContext.StartPreviousSize, _dragContext.StartNextSize, delta);
         RaiseResizeCompleted(_dragContext.HandleIndex, completedSizes);
         _dragContext = null;
@@ -1003,8 +1056,10 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         previousSize = ClampPanelSize(context.PreviousPanel, previousSize, context.AvailableLength);
         nextSize = ClampPanelSize(context.NextPanel, nextSize, context.AvailableLength);
 
-        SetPanelSize(context.PreviousPanel, previousSize, context.AvailableLength, updateLastSize: true);
-        SetPanelSize(context.NextPanel, nextSize, context.AvailableLength, updateLastSize: true);
+        UpdateCollapseRecordForResize(context, previousSize, nextSize);
+
+        SetPanelSize(context.PreviousPanel, previousSize, context.AvailableLength, updateLastSize: false);
+        SetPanelSize(context.NextPanel, nextSize, context.AvailableLength, updateLastSize: false);
 
         UpdatePanelCollapsedState(context.PreviousPanel, previousSize);
         UpdatePanelCollapsedState(context.NextPanel, nextSize);
@@ -1044,6 +1099,50 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         UpdateHandlesForPanel(panel);
+    }
+
+    private void UpdateCollapseRecordForResize(DragContext context, double newPrev, double newNext)
+    {
+        var previous = context.PreviousPanel;
+        var next = context.NextPanel;
+        var prevSize = previous.EffectiveSize;
+        var nextSize = next.EffectiveSize;
+
+        if (prevSize > 0 && newPrev <= 0)
+        {
+            previous.LastNonCollapsedSize = context.StartPreviousSize;
+            previous.LastCollapsedIntoIndex = context.NextIndex;
+        }
+        else if (newPrev > 0)
+        {
+            previous.LastCollapsedIntoIndex = null;
+        }
+
+        if (nextSize > 0 && newNext <= 0)
+        {
+            next.LastNonCollapsedSize = context.StartNextSize;
+            next.LastCollapsedIntoIndex = context.PreviousIndex;
+        }
+        else if (newNext > 0)
+        {
+            next.LastCollapsedIntoIndex = null;
+        }
+    }
+
+    private void FinalizeResizeSizes(DragContext context)
+    {
+        var previous = context.PreviousPanel;
+        var next = context.NextPanel;
+
+        if (previous.EffectiveSize > 0)
+        {
+            previous.LastNonCollapsedSize = previous.EffectiveSize;
+        }
+
+        if (next.EffectiveSize > 0)
+        {
+            next.LastNonCollapsedSize = next.EffectiveSize;
+        }
     }
 
     private void SetPanelSize(SplitterPanel panel, double size, double availableLength, bool updateLastSize)

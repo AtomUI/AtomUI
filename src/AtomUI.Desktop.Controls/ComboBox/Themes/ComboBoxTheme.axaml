@@ -62,10 +62,10 @@
                             MaxHeight="{TemplateBinding MaxDropDownHeight}"
                             MinWidth="{TemplateBinding EffectivePopupWidth}"
                             Padding="{TemplateBinding PopupContentPadding}">
-                            <atom:ScrollViewer
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                IsLiteMode="True"
-                                AllowAutoHide="True">
+                            <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                               IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                               AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                                 <ItemsPresenter
                                     Name="{x:Static atom:ComboBoxThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -77,6 +77,8 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />

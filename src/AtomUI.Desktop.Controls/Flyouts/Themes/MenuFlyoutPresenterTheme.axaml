@@ -11,11 +11,10 @@
                                     ArrowPosition="{TemplateBinding ArrowPosition}"
                                     Padding="{TemplateBinding Padding}"
                                     MaxHeight="{TemplateBinding MaxPopupHeight}">
-                <atom:ScrollViewer HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Stretch"
-                                   IsLiteMode="True"
-                                   AllowAutoHide="True"
-                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                   IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                   AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                     <ItemsPresenter Name="{x:Static atom:MenuFlyoutThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     KeyboardNavigation.TabNavigation="Continue"
@@ -26,6 +25,8 @@
     </Setter>
 
     <Style Selector="^:is(atom|MenuFlyoutPresenter)">
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
         <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />

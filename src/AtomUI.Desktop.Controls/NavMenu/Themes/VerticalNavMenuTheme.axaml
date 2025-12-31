@@ -34,8 +34,9 @@
 
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
-        <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
-
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        
         <Style Selector="^[Mode=Vertical]">
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"

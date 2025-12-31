@@ -9,7 +9,6 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 
@@ -73,6 +72,7 @@ public class Menu : AvaloniaMenu,
     private bool _isClosing;
 
     public Menu()
+        : base(new DefaultMenuInteractionHandler(false))
     {
         LogicalChildren.CollectionChanged += HandleItemsCollectionChanged;
         this.RegisterResources();

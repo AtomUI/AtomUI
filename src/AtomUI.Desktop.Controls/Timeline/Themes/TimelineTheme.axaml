@@ -12,13 +12,16 @@
                         Background="{TemplateBinding Background}"
                         Padding="{TemplateBinding Padding}">
                     <atom:ScrollViewer Name="{x:Static atom:TimelineThemeConstants.ScrollViewerPart}"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  VerticalScrollBarVisibility="Auto"
-                                  IsScrollChainingEnabled="True">
+                                       IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                       AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                       HorizontalScrollBarVisibility="Disabled"
+                                       VerticalScrollBarVisibility="Auto"
+                                       IsScrollChainingEnabled="{TemplateBinding atom:ScrollViewer.IsScrollChainingEnabled}">
                         <ItemsPresenter Name="{x:Static atom:TimelineThemeConstants.ItemsPresenterPart}">
                             <ItemsPresenter.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <atom:TimelineStackPanel IsReverse="{Binding IsReverse, RelativeSource={RelativeSource AncestorType=atom:Timeline}}"/>
+                                    <atom:TimelineStackPanel
+                                        IsReverse="{Binding IsReverse, RelativeSource={RelativeSource AncestorType=atom:Timeline}}" />
                                 </ItemsPanelTemplate>
                             </ItemsPresenter.ItemsPanel>
                         </ItemsPresenter>
@@ -26,11 +29,13 @@
                 </Border>
             </ControlTemplate>
         </Setter>
-        
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="TemplatedControl.BorderBrush"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="TemplatedControl.Background"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
-        
+
     </ControlTheme>
 </ResourceDictionary>

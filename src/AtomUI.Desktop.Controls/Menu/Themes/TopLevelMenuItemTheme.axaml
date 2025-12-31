@@ -28,15 +28,17 @@
                         <Border Name="PopupFrame"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 Padding="{TemplateBinding PopupPadding}">
-                            <atom:IndicatorScrollViewer
+                            <atom:ScrollViewer
                                 IsScrollChainingEnabled="False"
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                                 <ItemsPresenter
                                     Name="{x:Static atom:TopLevelMenuItemThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     Grid.IsSharedSizeScope="True"
                                     KeyboardNavigation.TabNavigation="Continue" />
-                            </atom:IndicatorScrollViewer>
+                            </atom:ScrollViewer>
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -44,8 +46,13 @@
         </Setter>
 
         <Style Selector="^:toplevel">
+            <Style Selector="^ /template/ Border#Frame">
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+            <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+         
             <Setter Property="PopupPadding"
                     Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />
             <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemHeight}}" />

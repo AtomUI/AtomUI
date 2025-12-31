@@ -8,7 +8,8 @@
         <ControlTemplate>
             <Border Name="Frame">
                 <atom:ScrollViewer
-                    AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
+                    IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                    AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
                     HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                     VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                     IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
@@ -21,6 +22,9 @@
     </Setter>
 
     <Style Selector="^:is(atom|TreeView)">
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="MotionDuration" Value="{DynamicResource {x:Static atom:SharedTokenKey.MotionDurationSlow}}" />
         <Setter Property="DragIndicatorLineWidth"

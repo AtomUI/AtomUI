@@ -44,8 +44,9 @@
                                    DockPanel.Dock="Bottom"/>
                         
                         <atom:ScrollViewer IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                           IsLiteMode="True"
-                                           AllowAutoHide="True">
+                                           IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                           AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                           IsScrollChainingEnabled="False">
                             <ItemsPresenter Name="{x:Static atom:MenuFlyoutThemeConstants.ItemsPresenterPart}"
                                             ItemsPanel="{TemplateBinding ItemsPanel}"
                                             KeyboardNavigation.TabNavigation="Continue"
@@ -55,6 +56,9 @@
                 </atom:ArrowDecoratedBox>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         
         <Style Selector="^ /template/ StackPanel#ButtonLayout">
             <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableFilterButtonSpacing}}" />

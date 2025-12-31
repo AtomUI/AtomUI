@@ -13,8 +13,8 @@
                         MaxHeight="{TemplateBinding MaxPopupHeight}">
                     <atom:ScrollViewer IsScrollChainingEnabled="False"
                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                       IsLiteMode="True"
-                                       AllowAutoHide="True">
+                                       IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                       AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                         <ItemsPresenter Name="{x:Static atom:ContextMenuThemeConstants.ItemsPresenterPart}"
                                         ItemsPanel="{TemplateBinding ItemsPanel}"
                                         KeyboardNavigation.TabNavigation="Continue"
@@ -24,6 +24,8 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />

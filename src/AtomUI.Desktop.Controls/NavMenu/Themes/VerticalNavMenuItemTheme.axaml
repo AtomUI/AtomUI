@@ -36,16 +36,22 @@
                         </atom:Popup.IsMotionAwareOpen>
                         
                         <Border Name="{x:Static atom:NavMenuItemThemeConstants.PopupFramePart}">
-                            <atom:IndicatorScrollViewer>
+                            <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                               IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                               AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                                 <ItemsPresenter Name="{x:Static atom:NavMenuItemThemeConstants.ItemsPresenterPart}"
                                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                                 Grid.IsSharedSizeScope="True" />
-                            </atom:IndicatorScrollViewer>
+                            </atom:ScrollViewer>
                         </Border>
                     </atom:Popup>
                 </Panel>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"

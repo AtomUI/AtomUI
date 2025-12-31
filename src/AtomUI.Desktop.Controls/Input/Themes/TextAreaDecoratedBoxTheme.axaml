@@ -18,7 +18,8 @@
                         BackgroundSizing="OuterBorderEdge">
                      <atom:ScrollViewer
                             Name="{x:Static atom:TextAreaThemeConstants.ScrollViewerPart}"
-                            AllowAutoHide="{TemplateBinding  IsAllowAutoHide}"
+                            IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                            AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
                             HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
                             VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
                             IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
@@ -58,6 +59,8 @@
         </Setter>
 
         <Style Selector="^:is(atom|TextAreaDecoratedBox)">
+            <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+            <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="ResizeIndicatorLineBrush"

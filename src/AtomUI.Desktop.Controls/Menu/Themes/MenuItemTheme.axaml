@@ -46,12 +46,12 @@
                         </Panel>
 
                         <atom:IconPresenter Name="ItemIconPresenter"
-                                             HorizontalAlignment="Center"
-                                             VerticalAlignment="Center"
-                                             Icon="{TemplateBinding Icon}"
-                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                             Grid.Column="1" />
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Icon="{TemplateBinding Icon}"
+                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                            IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                            Grid.Column="1" />
                         <ContentPresenter Name="ItemTextPresenter"
                                           HorizontalAlignment="Stretch"
                                           VerticalAlignment="Center"
@@ -85,12 +85,14 @@
                     <Border Name="PopupFrame"
                             MaxHeight="{TemplateBinding MaxPopupHeight}"
                             Padding="{TemplateBinding PopupPadding}">
-                        <atom:IndicatorScrollViewer IsScrollChainingEnabled="False"
-                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                        <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                           IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                           IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                           AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                             <ItemsPresenter Name="{x:Static atom:MenuItemThemeConstants.ItemsPresenterPart}"
                                             ItemsPanel="{TemplateBinding ItemsPanel}"
                                             Grid.IsSharedSizeScope="True" />
-                        </atom:IndicatorScrollViewer>
+                        </atom:ScrollViewer>
                     </Border>
                 </atom:Popup>
             </Panel>
@@ -100,7 +102,13 @@
     <Style Selector="^:is(atom|MenuItem)">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemColor}}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+
+        <Style Selector="^ /template/ Border#Frame">
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
         <Setter Property="PopupPadding" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />
         <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemHeight}}" />
         <Setter Property="Height" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemHeight}}" />

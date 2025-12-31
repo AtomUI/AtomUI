@@ -35,9 +35,10 @@
                         </atom:Popup.IsMotionAwareOpen>
                         <Border Name="{x:Static atom:NavMenuItemThemeConstants.PopupFramePart}"
                                 MinWidth="{TemplateBinding EffectivePopupMinWidth}">
-                            <atom:ScrollViewer IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                               IsLiteMode="True"
-                                               AllowAutoHide="True">
+                            <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                               IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                               AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}">
                                 <ItemsPresenter
                                     Name="{x:Static atom:NavMenuItemThemeConstants.ItemsPresenterPart}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -50,6 +51,8 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="PopupMinWidth" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupMinWidth}}" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="Placement" Value="RightEdgeAlignedTop" />

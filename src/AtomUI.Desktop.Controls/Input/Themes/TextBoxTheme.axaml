@@ -58,7 +58,8 @@
                     <atom:ScrollViewer
                         Name="ScrollViewer"
                         Cursor="Ibeam"
-                        AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
+                        IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                        AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
                         HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                         IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
@@ -98,6 +99,8 @@
     </Setter>
 
     <Style Selector="^:is(atom|TextBox)">
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.SelectionBackground}}" />
         <Setter Property="CaretBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />

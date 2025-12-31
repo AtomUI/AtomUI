@@ -24,6 +24,7 @@
                             <Panel Name="PART_HourHost"
                                    Grid.Column="0">
                                 <atom:ScrollViewer
+                                    IsScrollChainingEnabled="False"
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_HourSelector"
@@ -39,6 +40,7 @@
                             <Panel Name="PART_MinuteHost"
                                    Grid.Column="2">
                                 <atom:ScrollViewer
+                                    IsScrollChainingEnabled="False"
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_MinuteSelector"
@@ -54,6 +56,7 @@
                             <Panel Name="PART_SecondHost"
                                    Grid.Column="4">
                                 <atom:ScrollViewer
+                                    IsScrollChainingEnabled="False"
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_SecondSelector"
@@ -69,6 +72,7 @@
                             <Panel Name="PART_PeriodHost"
                                    Grid.Column="6">
                                 <atom:ScrollViewer
+                                    IsScrollChainingEnabled="False"
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
                                     <atom:DateTimePickerPanel Name="PART_PeriodSelector"

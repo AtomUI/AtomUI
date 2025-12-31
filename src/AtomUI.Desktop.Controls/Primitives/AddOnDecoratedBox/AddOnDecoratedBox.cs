@@ -14,7 +14,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -343,14 +342,12 @@ internal class AddOnDecoratedBox : ContentControl,
             ConfigureInnerBoxBorderThickness();
         }
 
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == LeftAddOnProperty || 
+            change.Property == RightAddOnProperty ||
+            change.Property == CornerRadiusProperty ||
+            change.Property == StyleVariantProperty)
         {
-            if (change.Property == LeftAddOnProperty || 
-                change.Property == RightAddOnProperty ||
-                change.Property == CornerRadiusProperty)
-            {
-                ConfigureInnerBoxCornerRadius();
-            }
+            ConfigureInnerBoxCornerRadius();
         }
 
         if (change.Property == BorderThicknessProperty)

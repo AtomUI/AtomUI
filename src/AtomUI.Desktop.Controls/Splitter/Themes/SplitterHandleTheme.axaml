@@ -42,7 +42,7 @@
         </Style>
 
         <Style Selector="^:dragging">
-            <Setter Property="LineBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgActiveHover}}" />
+            <Setter Property="LineBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleLineDragColor}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton">
@@ -64,12 +64,12 @@
 
         <Style Selector="^ /template/ atom|IconButton#PART_CollapsePrevButton:pointerover">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgActive}}" />
-            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconColor}}" />
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconHoverColor}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CollapsePrevButton:pressed">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgActiveHover}}" />
-            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconColor}}" />
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconPressedColor}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CollapseNextButton">
@@ -84,12 +84,12 @@
 
         <Style Selector="^ /template/ atom|IconButton#PART_CollapseNextButton:pointerover">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgActive}}" />
-            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconColor}}" />
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconHoverColor}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CollapseNextButton:pressed">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlItemBgActiveHover}}" />
-            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconColor}}" />
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconPressedColor}}" />
         </Style>
 
         <Style Selector="^[Layout=Vertical] /template/ Border#PART_HandleLine">

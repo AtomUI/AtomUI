@@ -1,5 +1,6 @@
 using System;
 using AtomUI;
+using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Themes;
@@ -83,6 +84,8 @@ internal class SplitterHandle : AtomUIThumb
     internal bool ShowBothButtonsOnHover { get; set; }
     internal bool PreviousButtonControlsNext { get; set; }
     internal bool NextButtonControlsPrevious { get; set; }
+    internal IIconTemplate? PreviousIconTemplate { get; set; }
+    internal IIconTemplate? NextIconTemplate { get; set; }
     internal SplitterCollapsibleIconDisplayMode PreviousShowMode { get; set; } =
         SplitterCollapsibleIconDisplayMode.Hover;
     internal SplitterCollapsibleIconDisplayMode NextShowMode { get; set; } =
@@ -243,6 +246,7 @@ internal class SplitterHandle : AtomUIThumb
 
         if (_collapsePrevButton != null)
         {
+            ApplyCustomIconBackground(_collapsePrevButton, PreviousIconTemplate != null);
             _collapsePrevButton.IsVisible = hasPrevious &&
                                             ShouldShowIcon(PreviousShowMode, true, onlyPrevious);
             _collapsePrevButton.Icon = CreatePrevIcon();
@@ -250,9 +254,22 @@ internal class SplitterHandle : AtomUIThumb
 
         if (_collapseNextButton != null)
         {
+            ApplyCustomIconBackground(_collapseNextButton, NextIconTemplate != null);
             _collapseNextButton.IsVisible = hasNext &&
                                             ShouldShowIcon(NextShowMode, false, onlyNext);
             _collapseNextButton.Icon = CreateNextIcon();
+        }
+    }
+
+    private static void ApplyCustomIconBackground(IconButton button, bool isCustom)
+    {
+        if (isCustom)
+        {
+            button.SetCurrentValue(TemplatedControl.BackgroundProperty, Brushes.Transparent);
+        }
+        else
+        {
+            button.ClearValue(TemplatedControl.BackgroundProperty);
         }
     }
 
@@ -327,6 +344,11 @@ internal class SplitterHandle : AtomUIThumb
 
     private PathIcon? CreatePrevIcon()
     {
+        if (PreviousIconTemplate != null)
+        {
+            return PreviousIconTemplate.Build();
+        }
+
         return Layout switch
         {
             SplitterLayout.Vertical => new LeftOutlined(),
@@ -337,6 +359,11 @@ internal class SplitterHandle : AtomUIThumb
 
     private PathIcon? CreateNextIcon()
     {
+        if (NextIconTemplate != null)
+        {
+            return NextIconTemplate.Build();
+        }
+
         return Layout switch
         {
             SplitterLayout.Vertical => new RightOutlined(),

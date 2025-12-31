@@ -472,7 +472,7 @@ public partial class DataGrid
         RemoveDisplayedColumnHeaders();
 
         _horizontalOffset = _negHorizontalOffset = 0;
-        if (_hScrollBar != null && _hScrollBar.IsVisible) // 
+        if (_hScrollBar != null && _hScrollBar.IsVisible)
         {
             _hScrollBar.Value = 0;
         }

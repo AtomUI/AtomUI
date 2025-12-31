@@ -8,7 +8,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Utils;
@@ -1824,13 +1823,13 @@ public partial class DataGrid
             {
                 if (!isHorizontalScrollBarOverCells)
                 {
-                    cellsHeight += _hScrollBar.DesiredSize.Height;
+                    cellsHeight += _hScrollBar.Bounds.Height;
                 }
             }
 
             if (!isHorizontalScrollBarOverCells)
             {
-                horizScrollBarHeight = _hScrollBar.Height + _hScrollBar.Margin.Top + _hScrollBar.Margin.Bottom;
+                horizScrollBarHeight = _hScrollBar.Bounds.Height + _hScrollBar.Margin.Top + _hScrollBar.Margin.Bottom;
             }
         }
 
@@ -1848,13 +1847,13 @@ public partial class DataGrid
             {
                 if (!isVerticalScrollBarOverCells)
                 {
-                    cellsWidth += _vScrollBar.DesiredSize.Width;
+                    cellsWidth += _vScrollBar.Bounds.Width;
                 }
             }
 
             if (!isVerticalScrollBarOverCells)
             {
-                vertScrollBarWidth = _vScrollBar.Width + _vScrollBar.Margin.Left + _vScrollBar.Margin.Right;
+                vertScrollBarWidth = _vScrollBar.Bounds.Width + _vScrollBar.Margin.Left + _vScrollBar.Margin.Right;
             }
         }
 
@@ -4088,8 +4087,11 @@ public partial class DataGrid
         }
     }
 
-    private void UpdateHorizontalScrollBar(bool needHorizScrollbar, bool forceHorizScrollbar, double totalVisibleWidth,
-                                           double totalVisibleFrozenWidth, double cellsWidth)
+    private void UpdateHorizontalScrollBar(bool needHorizScrollbar, 
+                                           bool forceHorizScrollbar,
+                                           double totalVisibleWidth,
+                                           double totalVisibleFrozenWidth,
+                                           double cellsWidth)
     {
         if (_hScrollBar != null)
         {

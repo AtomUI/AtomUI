@@ -7,4 +7,5 @@ internal static class SplitterThemeConstants
     public const string CollapseIconsHostPart = "PART_CollapseIconsHost";
     public const string CollapsePrevButtonPart = "PART_CollapsePrevButton";
     public const string CollapseNextButtonPart = "PART_CollapseNextButton";
+    public const string SplitterPanelPart = "PART_SplitterPanel";
 }

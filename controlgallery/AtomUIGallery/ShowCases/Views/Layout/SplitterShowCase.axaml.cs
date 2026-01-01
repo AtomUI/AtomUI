@@ -1,9 +1,10 @@
-using System;
 using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
+using RadioButton = AtomUI.Desktop.Controls.RadioButton;
 
 namespace AtomUIGallery.ShowCases.Views;
 
@@ -55,12 +56,12 @@ public partial class SplitterShowCase : ReactiveUserControl<SplitterViewModel>
         ApplyShowMode(ShowCollapsiblePanelThird, mode);
     }
 
-    private static void ApplyShowMode(SplitterPanel panel, SplitterCollapsibleIconDisplayMode mode)
+    private static void ApplyShowMode(Control panel, SplitterCollapsibleIconDisplayMode mode)
     {
-        panel.Collapsible = new SplitterPanelCollapsible
+        Splitter.SetCollapsible(panel, new SplitterPanelCollapsible()
         {
-            IsEnabled = true,
+            IsEnabled           = true,
             ShowCollapsibleIcon = mode
-        };
+        });
     }
 }

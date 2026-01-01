@@ -4,6 +4,19 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Splitter}" TargetType="atom:Splitter">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Frame">
+                    <atom:SplitterPanel Name="{x:Static atom:SplitterThemeConstants.SplitterPanelPart}"
+                                        HandleSize="{TemplateBinding HandleSize}" 
+                                        Orientation="{TemplateBinding Orientation}"
+                                        IsLazy="{TemplateBinding IsLazy}"
+                                        CollapsePreviousIcon="{TemplateBinding CollapsePreviousIcon}"
+                                        CollapseNextIcon="{TemplateBinding CollapseNextIcon}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
         <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="HandleSize" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarHandleSize}}" />
     </ControlTheme>

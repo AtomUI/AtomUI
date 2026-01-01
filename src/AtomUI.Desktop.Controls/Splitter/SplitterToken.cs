@@ -49,16 +49,16 @@ internal class SplitterToken : AbstractControlDesignToken
         SplitTriggerSize      = 6;
         SplitBarHandleSize    = SplitTriggerSize + SharedToken.FontSizeSM * 2;
         var collapseOffset = SplitBarSize / 2d + 1d;
-        SplitBarCollapseOffset = collapseOffset;
+        SplitBarCollapseOffset         = collapseOffset;
         SplitBarCollapseOffsetNegative = -(SharedToken.FontSizeSM + collapseOffset);
-        SplitBarCollapseCrossOffset = -SplitBarDraggableSize / 2d;
-        HandleLineColor       = SharedToken.ControlItemBgHover;
-        HandleLineHoverColor  = SharedToken.ControlItemBgActive;
-        HandleLineDragColor   = SharedToken.ControlItemBgActiveHover;
-        HandleIconColor       = SharedToken.ColorText;
-        HandleIconHoverColor  = HandleIconColor;
-        HandleIconPressedColor = HandleIconColor;
-        HandleLineThickness   = SplitBarSize;
-        HandleIconSize        = SharedToken.FontSizeSM;
+        SplitBarCollapseCrossOffset    = -SplitBarDraggableSize / 2d;
+        HandleLineColor                = SharedToken.ControlItemBgHover;
+        HandleLineHoverColor           = SharedToken.ControlItemBgActive;
+        HandleLineDragColor            = SharedToken.ControlItemBgActiveHover;
+        HandleIconColor                = SharedToken.ColorText;
+        HandleIconHoverColor           = HandleIconColor;
+        HandleIconPressedColor         = HandleIconColor;
+        HandleLineThickness            = SplitBarSize;
+        HandleIconSize                 = SharedToken.FontSizeSM;
     }
 }

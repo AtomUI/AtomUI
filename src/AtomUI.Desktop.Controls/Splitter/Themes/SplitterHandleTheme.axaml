@@ -18,7 +18,7 @@
                                 Width="0"
                                 Height="0"
                                 ClipToBounds="False"
-                                Panel.ZIndex="{DynamicResource {x:Static atom:SharedTokenKey.ZIndexPopupBase}}"
+                                ZIndex="{DynamicResource {x:Static atom:SharedTokenKey.ZIndexPopupBase}}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
                             <atom:IconButton Name="{x:Static atom:SplitterThemeConstants.CollapsePrevButtonPart}"
@@ -77,7 +77,7 @@
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusXS}}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Panel.ZIndex" Value="{DynamicResource {x:Static atom:SharedTokenKey.ZIndexPopupBase}}" />
+            <Setter Property="ZIndex" Value="{DynamicResource {x:Static atom:SharedTokenKey.ZIndexPopupBase}}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
@@ -92,33 +92,33 @@
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SplitterTokenKey.HandleIconPressedColor}}" />
         </Style>
 
-        <Style Selector="^[Layout=Vertical] /template/ Border#PART_HandleLine">
+        <Style Selector="^[Orientation=Vertical] /template/ Border#PART_HandleLine">
             <Setter Property="Width" Value="{Binding LineThickness, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
         </Style>
 
-        <Style Selector="^[Layout=Vertical] /template/ Border#PART_HandleGrip">
+        <Style Selector="^[Orientation=Vertical] /template/ Border#PART_HandleGrip">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarSize}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarDraggableSize}}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <Style Selector="^[Layout=Horizontal] /template/ Border#PART_HandleLine">
+        <Style Selector="^[Orientation=Horizontal] /template/ Border#PART_HandleLine">
             <Setter Property="Height" Value="{Binding LineThickness, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
 
-        <Style Selector="^[Layout=Horizontal] /template/ Border#PART_HandleGrip">
+        <Style Selector="^[Orientation=Horizontal] /template/ Border#PART_HandleGrip">
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarSize}}" />
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarDraggableSize}}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <Style Selector="^[Layout=Vertical] /template/ atom|IconButton#PART_CollapsePrevButton">
+        <Style Selector="^[Orientation=Vertical] /template/ atom|IconButton#PART_CollapsePrevButton">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeSM}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarDraggableSize}}" />
             <Setter Property="Canvas.Left"
@@ -127,7 +127,7 @@
                     Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarCollapseCrossOffset}}" />
         </Style>
 
-        <Style Selector="^[Layout=Vertical] /template/ atom|IconButton#PART_CollapseNextButton">
+        <Style Selector="^[Orientation=Vertical] /template/ atom|IconButton#PART_CollapseNextButton">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeSM}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarDraggableSize}}" />
             <Setter Property="Canvas.Left"
@@ -136,7 +136,7 @@
                     Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarCollapseCrossOffset}}" />
         </Style>
 
-        <Style Selector="^[Layout=Horizontal] /template/ atom|IconButton#PART_CollapsePrevButton">
+        <Style Selector="^[Orientation=Horizontal] /template/ atom|IconButton#PART_CollapsePrevButton">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarDraggableSize}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeSM}}" />
             <Setter Property="Canvas.Left"
@@ -145,7 +145,7 @@
                     Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarCollapseOffsetNegative}}" />
         </Style>
 
-        <Style Selector="^[Layout=Horizontal] /template/ atom|IconButton#PART_CollapseNextButton">
+        <Style Selector="^[Orientation=Horizontal] /template/ atom|IconButton#PART_CollapseNextButton">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SplitterTokenKey.SplitBarDraggableSize}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeSM}}" />
             <Setter Property="Canvas.Left"

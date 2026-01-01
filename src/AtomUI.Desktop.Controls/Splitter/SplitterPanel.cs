@@ -1,4 +1,3 @@
-using AtomUI;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;

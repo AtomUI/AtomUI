@@ -1,6 +1,4 @@
 using System.Collections.Specialized;
-using System.Linq;
-using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
@@ -9,9 +7,8 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -22,8 +19,8 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<SplitterLayout> LayoutProperty =
-        AvaloniaProperty.Register<Splitter, SplitterLayout>(nameof(Layout), SplitterLayout.Vertical);
+    public static readonly StyledProperty<Orientation> OrientationProperty =
+        AvaloniaProperty.Register<Splitter, Orientation>(nameof(Orientation), Orientation.Vertical);
 
     public static readonly StyledProperty<bool> IsLazyProperty =
         AvaloniaProperty.Register<Splitter, bool>(nameof(IsLazy));
@@ -37,10 +34,10 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<IconTemplate?> CollapseNextIconProperty =
         AvaloniaProperty.Register<Splitter, IconTemplate?>(nameof(CollapseNextIcon));
 
-    public SplitterLayout Layout
+    public Orientation Orientation
     {
-        get => GetValue(LayoutProperty);
-        set => SetValue(LayoutProperty, value);
+        get => GetValue(OrientationProperty);
+        set => SetValue(OrientationProperty, value);
     }
 
     public bool IsLazy
@@ -69,7 +66,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
     #endregion
 
-    #region 事件
+    #region 公共事件定义
 
     public event EventHandler<SplitterResizeEventArgs>? ResizeStarted;
     public event EventHandler<SplitterResizeEventArgs>? ResizeDelta;
@@ -95,8 +92,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
     static Splitter()
     {
-        AffectsMeasure<Splitter>(LayoutProperty, HandleSizeProperty);
-        AffectsArrange<Splitter>(LayoutProperty, HandleSizeProperty);
+        AffectsMeasure<Splitter>(OrientationProperty, HandleSizeProperty);
     }
 
     public Splitter()
@@ -109,7 +105,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == LayoutProperty)
+        if (change.Property == OrientationProperty)
         {
             UpdatePseudoClasses();
             UpdateHandleLayouts();
@@ -201,7 +197,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
     {
         var handle = new SplitterHandle
         {
-            Layout = Layout,
+            Orientation = Orientation,
             HandleIndex = index
         };
 
@@ -272,7 +268,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         for (var i = 0; i < _handles.Count; i++)
         {
             var handle = _handles[i];
-            handle.Layout = Layout;
+            handle.Orientation = Orientation;
             UpdateHandleState(i, handle);
         }
     }
@@ -313,7 +309,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
         handle.IsDragEnabled = canDrag;
         handle.Cursor = canDrag
-            ? Layout == SplitterLayout.Vertical
+            ? Orientation == Orientation.Vertical
                 ? new Cursor(StandardCursorType.SizeWestEast)
                 : new Cursor(StandardCursorType.SizeNorthSouth)
             : Cursor.Default;
@@ -940,9 +936,9 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return default;
         }
 
-        var isVertical = Layout == SplitterLayout.Vertical;
+        var isVertical      = Orientation == Orientation.Vertical;
         var availableLength = GetLayoutLength(availableSize);
-        var availableCross = GetCrossLength(availableSize);
+        var availableCross  = GetCrossLength(availableSize);
 
         if (double.IsInfinity(availableLength))
         {
@@ -973,10 +969,10 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
     private Size MeasureWithInfiniteLength(Size availableSize)
     {
-        var isVertical = Layout == SplitterLayout.Vertical;
+        var isVertical     = Orientation == Orientation.Vertical;
         var availableCross = GetCrossLength(availableSize);
-        var length = 0d;
-        var cross = 0d;
+        var length         = 0d;
+        var cross          = 0d;
 
         foreach (var panel in _panels)
         {
@@ -1005,11 +1001,11 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return finalSize;
         }
 
-        var isVertical = Layout == SplitterLayout.Vertical;
+        var isVertical      = Orientation == Orientation.Vertical;
         var availableLength = GetLayoutLength(finalSize);
-        var sizes = ComputePanelSizes(availableLength);
-        var handleSpacing = GetHandleSpacing();
-        var handleOffset = (HandleSize - handleSpacing) / 2d;
+        var sizes           = ComputePanelSizes(availableLength);
+        var handleSpacing   = GetHandleSpacing();
+        var handleOffset    = (HandleSize - handleSpacing) / 2d;
 
         var offset = 0d;
         for (var i = 0; i < _panels.Count; i++)
@@ -1142,9 +1138,9 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return true;
         }
 
-        var local = new Point(startVector.X - origin.Value.X, startVector.Y - origin.Value.Y);
-        var compare = Layout == SplitterLayout.Vertical ? local.X : local.Y;
-        var center = Layout == SplitterLayout.Vertical ? handle.Bounds.Width * 0.5 : handle.Bounds.Height * 0.5;
+        var local   = new Point(startVector.X - origin.Value.X, startVector.Y - origin.Value.Y);
+        var compare = Orientation == Orientation.Vertical ? local.X : local.Y;
+        var center  = Orientation == Orientation.Vertical ? handle.Bounds.Width * 0.5 : handle.Bounds.Height * 0.5;
         return compare >= center;
     }
 
@@ -1189,7 +1185,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return;
         }
 
-        var delta = Layout == SplitterLayout.Vertical ? e.Vector.X : e.Vector.Y;
+        var delta = Orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
         if (TrySwitchDragContext(handle, delta))
         {
             delta = 0;
@@ -1198,7 +1194,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         var adjust = delta - clampedDelta;
         if (Math.Abs(adjust) > 0.001)
         {
-            handle.AdjustDrag(Layout == SplitterLayout.Vertical
+            handle.AdjustDrag(Orientation == Orientation.Vertical
                 ? new Vector(adjust, 0)
                 : new Vector(0, adjust));
         }
@@ -1230,7 +1226,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         var delta = IsLazy ? _dragContext.CurrentDelta :
-            Math.Clamp(Layout == SplitterLayout.Vertical ? e.Vector.X : e.Vector.Y,
+            Math.Clamp(Orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y,
                 _dragContext.MinDelta, _dragContext.MaxDelta);
 
         if (IsLazy)
@@ -1266,7 +1262,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
     private void ApplyHandlePreview(SplitterHandle handle, double delta)
     {
-        handle.RenderTransform = Layout == SplitterLayout.Vertical
+        handle.RenderTransform = Orientation == Orientation.Vertical
             ? new TranslateTransform(delta, 0)
             : new TranslateTransform(0, delta);
     }
@@ -1580,12 +1576,12 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
     private double GetLayoutLength(Size size)
     {
-        return Layout == SplitterLayout.Vertical ? size.Width : size.Height;
+        return Orientation == Orientation.Vertical ? size.Width : size.Height;
     }
 
     private double GetCrossLength(Size size)
     {
-        return Layout == SplitterLayout.Vertical ? size.Height : size.Width;
+        return Orientation == Orientation.Vertical ? size.Height : size.Width;
     }
 
     private double GetAvailablePanelLength(double totalLength)
@@ -1704,7 +1700,7 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
         }
 
         _dragContext = context;
-        handle.AdjustDrag(Layout == SplitterLayout.Vertical
+        handle.AdjustDrag(Orientation == Orientation.Vertical
             ? new Vector(delta, 0)
             : new Vector(0, delta));
 
@@ -1727,9 +1723,9 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
             return index;
         }
 
-        var local = new Point(startVector.X - origin.Value.X, startVector.Y - origin.Value.Y);
-        var compare = Layout == SplitterLayout.Vertical ? local.X : local.Y;
-        var center = Layout == SplitterLayout.Vertical ? handle.Bounds.Width * 0.5 : handle.Bounds.Height * 0.5;
+        var local      = new Point(startVector.X - origin.Value.X, startVector.Y - origin.Value.Y);
+        var compare    = Orientation == Orientation.Vertical ? local.X : local.Y;
+        var center     = Orientation == Orientation.Vertical ? handle.Bounds.Width * 0.5 : handle.Bounds.Height * 0.5;
         var isNextSide = compare >= center;
 
         if (isNextSide && index + 2 < _panels.Count && _panels[index + 1].IsCollapsed)
@@ -1848,8 +1844,8 @@ public class Splitter : Panel, IControlSharedTokenResourcesHost
 
     private void UpdatePseudoClasses()
     {
-        PseudoClasses.Set(StdPseudoClass.Vertical, Layout == SplitterLayout.Vertical);
-        PseudoClasses.Set(StdPseudoClass.Horizontal, Layout == SplitterLayout.Horizontal);
+        PseudoClasses.Set(StdPseudoClass.Vertical, Orientation == Orientation.Vertical);
+        PseudoClasses.Set(StdPseudoClass.Horizontal, Orientation == Orientation.Horizontal);
     }
 
     private class DragContext

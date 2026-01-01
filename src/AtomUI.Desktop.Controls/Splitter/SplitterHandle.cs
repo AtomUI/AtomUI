@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -21,8 +22,8 @@ namespace AtomUI.Desktop.Controls;
 [TemplatePart(SplitterThemeConstants.CollapseNextButtonPart, typeof(IconButton))]
 internal class SplitterHandle : AtomUIThumb
 {
-    public static readonly StyledProperty<SplitterLayout> LayoutProperty =
-        AvaloniaProperty.Register<SplitterHandle, SplitterLayout>(nameof(Layout), SplitterLayout.Vertical);
+    public static readonly StyledProperty<Orientation> OrientationProperty =
+        AvaloniaProperty.Register<SplitterHandle, Orientation>(nameof(Orientation), Orientation.Vertical);
 
     public static readonly StyledProperty<IBrush?> LineBrushProperty =
         AvaloniaProperty.Register<SplitterHandle, IBrush?>(nameof(LineBrush));
@@ -33,10 +34,10 @@ internal class SplitterHandle : AtomUIThumb
     public static readonly StyledProperty<bool> IsDragEnabledProperty =
         AvaloniaProperty.Register<SplitterHandle, bool>(nameof(IsDragEnabled), true);
 
-    public SplitterLayout Layout
+    public Orientation Orientation
     {
-        get => GetValue(LayoutProperty);
-        set => SetValue(LayoutProperty, value);
+        get => GetValue(OrientationProperty);
+        set => SetValue(OrientationProperty, value);
     }
 
     public IBrush? LineBrush
@@ -195,7 +196,7 @@ internal class SplitterHandle : AtomUIThumb
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IsDragEnabledProperty || change.Property == LayoutProperty)
+        if (change.Property == IsDragEnabledProperty || change.Property == OrientationProperty)
         {
             if (_isPointerOver && _hasPointerPosition)
             {
@@ -295,9 +296,9 @@ internal class SplitterHandle : AtomUIThumb
         }
 
         var position = e.GetPosition(this);
-        var compare = Layout == SplitterLayout.Vertical ? position.X : position.Y;
-        var center = Layout == SplitterLayout.Vertical ? Bounds.Width * 0.5 : Bounds.Height * 0.5;
-        var newSide = compare < center ? HoverSide.Previous : HoverSide.Next;
+        var compare  = Orientation == Orientation.Vertical ? position.X : position.Y;
+        var center   = Orientation == Orientation.Vertical ? Bounds.Width * 0.5 : Bounds.Height * 0.5;
+        var newSide  = compare < center ? HoverSide.Previous : HoverSide.Next;
 
         if (_hoverSide == newSide)
         {
@@ -337,7 +338,7 @@ internal class SplitterHandle : AtomUIThumb
 
     private Cursor GetDragCursor()
     {
-        return Layout == SplitterLayout.Vertical
+        return Orientation == Orientation.Vertical
             ? new Cursor(StandardCursorType.SizeWestEast)
             : new Cursor(StandardCursorType.SizeNorthSouth);
     }
@@ -349,10 +350,10 @@ internal class SplitterHandle : AtomUIThumb
             return PreviousIconTemplate.Build();
         }
 
-        return Layout switch
+        return Orientation switch
         {
-            SplitterLayout.Vertical => new LeftOutlined(),
-            SplitterLayout.Horizontal => new UpOutlined(),
+            Orientation.Vertical => new LeftOutlined(),
+            Orientation.Horizontal => new UpOutlined(),
             _ => new LeftOutlined()
         };
     }
@@ -364,10 +365,10 @@ internal class SplitterHandle : AtomUIThumb
             return NextIconTemplate.Build();
         }
 
-        return Layout switch
+        return Orientation switch
         {
-            SplitterLayout.Vertical => new RightOutlined(),
-            SplitterLayout.Horizontal => new DownOutlined(),
+            Orientation.Vertical => new RightOutlined(),
+            Orientation.Horizontal => new DownOutlined(),
             _ => new RightOutlined()
         };
     }
@@ -386,7 +387,7 @@ internal class SplitterHandle : AtomUIThumb
         }
 
         var half = triggerSize * 0.5;
-        if (Layout == SplitterLayout.Vertical)
+        if (Orientation == Orientation.Vertical)
         {
             return Math.Abs(position.X - Bounds.Width * 0.5) <= half;
         }
@@ -410,9 +411,9 @@ internal class SplitterHandle : AtomUIThumb
 
         if (!double.IsNaN(LineThickness) && !double.IsInfinity(LineThickness))
         {
-            return Math.Max(0, LineThickness);
+            return Math.Max(0.0, LineThickness);
         }
 
-        return 0;
+        return 0.0;
     }
 }

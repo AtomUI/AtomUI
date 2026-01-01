@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace AtomUI.Desktop.Controls;
 
 public class SplitterResizeEventArgs : EventArgs

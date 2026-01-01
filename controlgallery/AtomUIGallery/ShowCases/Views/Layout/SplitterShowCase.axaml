@@ -33,7 +33,7 @@
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem Title="Basic" Description="Initial sizes with min/max constraints." IsOccupyEntireRow="True">
             <Border Classes="splitter-surface">
-                <atom:Splitter Layout="Vertical" Height="220">
+                <atom:Splitter Orientation="Vertical" Height="220">
                     <atom:SplitterPanel Size="30%">
                         <Border Classes="splitter-panel">
                             <TextBlock Classes="splitter-label">First</TextBlock>
@@ -50,7 +50,7 @@
 
         <gallery:ShowCaseItem Title="Horizontal" Description="Top-bottom splitter with collapsible icons." IsOccupyEntireRow="True">
             <Border Classes="splitter-surface">
-                <atom:Splitter Layout="Horizontal" Height="220">
+                <atom:Splitter Orientation="Horizontal" Height="220">
                     <atom:SplitterPanel Size="40%" >
                         <Border Classes="splitter-panel">
                             <TextBlock Classes="splitter-label">Top</TextBlock>
@@ -68,7 +68,7 @@
 
         <gallery:ShowCaseItem Title="Composite" Description="Nested horizontal inside vertical layout." IsOccupyEntireRow="True">
             <Border Classes="splitter-surface">
-                <atom:Splitter Layout="Vertical" Height="260">
+                <atom:Splitter Orientation="Vertical" Height="260">
                     <atom:SplitterPanel Size="40%" >
                         <Border Classes="splitter-panel">
                             <TextBlock Classes="splitter-label">Left</TextBlock>
@@ -76,7 +76,7 @@
                     </atom:SplitterPanel>
                     <atom:SplitterPanel>
                         <Border Classes="splitter-panel alt" Padding="0">
-                            <atom:Splitter Layout="Horizontal">
+                            <atom:Splitter Orientation="Horizontal">
                                 <atom:SplitterPanel >
                                     <Border Classes="splitter-panel">
                                         <TextBlock Classes="splitter-label">Top</TextBlock>
@@ -96,7 +96,7 @@
 
         <gallery:ShowCaseItem Title="Resizable Disabled" Description="If either side disables resizable, dragging is blocked." IsOccupyEntireRow="True">
             <Border Classes="splitter-surface">
-                <atom:Splitter Layout="Vertical" Height="220">
+                <atom:Splitter Orientation="Vertical" Height="220">
                     <atom:SplitterPanel Size="35%">
                         <Border Classes="splitter-panel">
                             <TextBlock Classes="splitter-label">Resizable</TextBlock>
@@ -134,7 +134,7 @@
                                           Tag="False"
                                           IsCheckedChanged="HandleShowCollapsibleIconChanged">False</atom:RadioButton>
                     </StackPanel>
-                    <atom:Splitter Layout="Vertical" Height="220">
+                    <atom:Splitter Orientation="Vertical" Height="220">
                         <atom:SplitterPanel  x:Name="ShowCollapsiblePanelFirst" DefaultSize="33%">
                             <Border Classes="splitter-panel">
                                 <TextBlock Classes="splitter-label">First</TextBlock>
@@ -159,7 +159,7 @@
 
         <gallery:ShowCaseItem Title="Multi Panels" Description="Multiple panels in vertical layout." IsOccupyEntireRow="True">
             <Border Classes="splitter-surface">
-                <atom:Splitter Layout="Vertical" Height="240">
+                <atom:Splitter Orientation="Vertical" Height="240">
                     <atom:SplitterPanel Size="20%">
                         <Border Classes="splitter-panel">
                             <TextBlock Classes="splitter-label">A</TextBlock>
@@ -189,7 +189,7 @@
                               IsOccupyEntireRow="True">
             <Border Classes="splitter-surface" Padding="16">
                 <StackPanel Spacing="12">
-                    <atom:Splitter Layout="Vertical" Height="140" IsLazy="True">
+                    <atom:Splitter Orientation="Vertical" Height="140" IsLazy="True">
                         <atom:SplitterPanel Size="50%">
                             <Border Classes="splitter-panel">
                                 <TextBlock Classes="splitter-label">First</TextBlock>
@@ -201,7 +201,7 @@
                             </Border>
                         </atom:SplitterPanel>
                     </atom:Splitter>
-                    <atom:Splitter Layout="Horizontal" Height="140" IsLazy="True">
+                    <atom:Splitter Orientation="Horizontal" Height="140" IsLazy="True">
                         <atom:SplitterPanel Size="50%">
                             <Border Classes="splitter-panel">
                                 <TextBlock Classes="splitter-label">First</TextBlock>

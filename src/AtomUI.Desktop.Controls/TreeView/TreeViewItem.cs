@@ -91,14 +91,23 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-        RoutedEvent.Register<MenuItem, RoutedEventArgs>(
+        RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(
             nameof(Click),
             RoutingStrategies.Bubble);
+    
+    public static readonly RoutedEvent<RoutedEventArgs> ContextMenuRequestEvent =
+        RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(nameof(ContextMenuRequest), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
     
     public event EventHandler<RoutedEventArgs>? Click
     {
         add => AddHandler(ClickEvent, value);
         remove => RemoveHandler(ClickEvent, value);
+    }
+    
+    public event EventHandler<RoutedEventArgs>? ContextMenuRequest
+    {
+        add => AddHandler(ContextMenuRequestEvent, value);
+        remove => RemoveHandler(ContextMenuRequestEvent, value);
     }
     #endregion
 
@@ -628,6 +637,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     }
     
     internal void RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
+    internal void RaiseContextMenuRequest() => RaiseEvent(new RoutedEventArgs
+    {
+        Source = this,
+        RoutedEvent = ContextMenuRequestEvent
+    });
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {

@@ -276,6 +276,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public event EventHandler<TreeViewDroppedEventArgs>? ItemDropped;
     public event EventHandler<TreeItemExpandedEventArgs>? ItemExpanded;
     public event EventHandler<TreeItemCollapsedEventArgs>? ItemCollapsed;
+    public event EventHandler<TreeItemContextMenuEventArgs>? ItemContextMenuRequest;
     #endregion
 
     #region 内部属性定义
@@ -309,6 +310,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         ConfigureDragAndDrop();
         TreeViewItem.ExpandedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemExpanded(args));
         TreeViewItem.CollapsedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemCollapsed(args));
+        TreeViewItem.ContextMenuRequestEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemContextMenuRequest(args));
     }
 
     public TreeView()
@@ -1130,6 +1132,14 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         if (args.Source is TreeViewItem item)
         {
             ItemCollapsed?.Invoke(this, new TreeItemCollapsedEventArgs(item));
+        }
+    }
+
+    private void HandleTreeItemContextMenuRequest(RoutedEventArgs args)
+    {
+        if (args.Source is TreeViewItem item)
+        {
+            ItemContextMenuRequest?.Invoke(this, new TreeItemContextMenuEventArgs(item));
         }
     }
 }

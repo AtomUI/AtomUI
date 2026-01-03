@@ -122,6 +122,15 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
                 e.Handled = true;
             }
         }
+
+        if (e.InitialPressMouseButton == MouseButton.Right && item != null)
+        {
+            if (item.PointInHeaderBounds(e))
+            {
+                item.RaiseContextMenuRequest();
+                e.Handled = true;
+            }
+        }
     }
 
     internal void Click(TreeViewItem item)

@@ -30,7 +30,9 @@ public enum TreeItemHoverMode
 public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-
+    public static readonly StyledProperty<bool> IsAutoExpandParentProperty =
+        AvaloniaProperty.Register<TreeView, bool>(nameof(IsAutoExpandParent));
+    
     public static readonly StyledProperty<bool> IsDraggableProperty =
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsDraggable));
 
@@ -99,6 +101,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             nameof(TreeItemDataLoader),
             o => o.TreeItemDataLoader,
             (o, v) => o.TreeItemDataLoader = v);
+    
+    public bool IsAutoExpandParent
+    {
+        get => GetValue(IsAutoExpandParentProperty);
+        set => SetValue(IsAutoExpandParentProperty, value);
+    }
 
     public bool IsDraggable
     {
@@ -222,7 +230,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(TreeItemDataLoaderProperty, ref _treeItemDataLoader, value);
     }
     
-    public bool IsDefaultExpandAll { get; set; } = false;
+    public bool IsDefaultExpandAll { get; set; }
     
     /// <summary>
     /// Gets or sets the selected items.
@@ -260,7 +268,14 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     public event EventHandler<TreeViewCheckedItemsChangedEventArgs>? CheckedItemsChanged;
     public event EventHandler<TreeViewItemLoadedEventArgs>? TreeItemLoaded;
-
+    public event EventHandler<TreeViewDragStartedEventArgs>? ItemDragStarted;
+    public event EventHandler<TreeViewDragCompletedEventArgs>? ItemDragCompleted;
+    public event EventHandler<TreeViewDragEnterEventArgs>? ItemDragEnter;
+    public event EventHandler<TreeViewDragLeaveEventArgs>? ItemDragLeave;
+    public event EventHandler<TreeViewDragOverEventArgs>? ItemDragOver;
+    public event EventHandler<TreeViewDroppedEventArgs>? ItemDropped;
+    public event EventHandler<TreeItemExpandedEventArgs>? ItemExpanded;
+    public event EventHandler<TreeItemCollapsedEventArgs>? ItemCollapsed;
     #endregion
 
     #region 内部属性定义
@@ -288,6 +303,13 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     internal bool IsExpandAllProcess { get; set; }
     internal bool IsCollapseAllProcess { get; set; }
+
+    static TreeView()
+    {
+        ConfigureDragAndDrop();
+        TreeViewItem.ExpandedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemExpanded(args));
+        TreeViewItem.CollapsedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemCollapsed(args));
+    }
 
     public TreeView()
         : this(new DefaultTreeViewInteractionHandler(false))
@@ -544,6 +566,8 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
                 TreeViewItem.HasTreeItemDataLoaderProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, treeViewItem,
+                TreeViewItem.IsAutoExpandParentProperty));
             
             PrepareTreeViewItem(treeViewItem, item, index, disposables);
             
@@ -1090,6 +1114,22 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             {
                 SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLeafIconProperty, SwitcherLeafIcon);
             }
+        }
+    }
+
+    private void HandleTreeItemExpanded(RoutedEventArgs args)
+    {
+        if (args.Source is TreeViewItem item)
+        {
+            ItemExpanded?.Invoke(this, new TreeItemExpandedEventArgs(item));
+        }
+    }
+    
+    private void HandleTreeItemCollapsed(RoutedEventArgs args)
+    {
+        if (args.Source is TreeViewItem item)
+        {
+            ItemCollapsed?.Invoke(this, new TreeItemCollapsedEventArgs(item));
         }
     }
 }

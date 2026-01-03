@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Utils;
 using Avalonia;
@@ -77,7 +78,7 @@ public partial class TreeView
     private TreeViewItem? _dropTargetNode; // 目标释放节点
     private DropTargetInfo? _dropTargetInfo;
     
-    static TreeView()
+    private static void ConfigureDragAndDrop()
     {
         AffectsRender<TreeView>(DragIndicatorRenderInfoProperty,
             DragIndicatorBrushProperty,
@@ -263,6 +264,8 @@ public partial class TreeView
                 {
                     HandlePrepareDrag();
                     IsDragging = true;
+                    Debug.Assert(_beingDraggedTreeItem != null);
+                    ItemDragStarted?.Invoke(this, new TreeViewDragStartedEventArgs(_beingDraggedTreeItem));
                 }
 
                 HandleDragging(e.GetPosition(this), delta);
@@ -288,9 +291,9 @@ public partial class TreeView
         if (_lastPoint.HasValue)
         {
             e.Handled = true;
-            HandleDragCompleted(e.GetPosition(this));
             _lastPoint = null;
             IsDragging = false;
+            HandleDragCompleted(e.GetPosition(this));
         }
     }
 
@@ -435,21 +438,35 @@ public partial class TreeView
             if (_currentDragOver != treeViewItem)
             {
                 _currentDragOver.IsDragOver = false;
+                Debug.Assert(_beingDraggedTreeItem != null);
+                ItemDragLeave?.Invoke(this, new TreeViewDragLeaveEventArgs(_beingDraggedTreeItem, _currentDragOver));
             }
             else
             {
                 _currentDragOver.IsDragOver = true;
+                Debug.Assert(_beingDraggedTreeItem != null);
+                ItemDragOver?.Invoke(this, new TreeViewDragOverEventArgs(_beingDraggedTreeItem, _currentDragOver));
                 return;
             }
         }
 
         if (treeViewItem is not null)
         {
-            _currentDragOver            = treeViewItem;
-            _currentDragOver.IsDragOver = true;
+            _currentDragOver = treeViewItem;
+            if (!_currentDragOver.IsDragOver)
+            {
+                _currentDragOver.IsDragOver = true;
+                Debug.Assert(_beingDraggedTreeItem != null);
+                ItemDragEnter?.Invoke(this, new TreeViewDragEnterEventArgs(_beingDraggedTreeItem, _currentDragOver));
+            }
         }
         else
         {
+            if (_currentDragOver != null)
+            {
+                Debug.Assert(_beingDraggedTreeItem != null);
+                ItemDragLeave?.Invoke(this, new TreeViewDragLeaveEventArgs(_beingDraggedTreeItem, _currentDragOver));
+            }
             _currentDragOver = null;
         }
     }
@@ -469,9 +486,10 @@ public partial class TreeView
 
             _dropTargetNode = null;
         }
-
+        
         if (_beingDraggedTreeItem is not null)
         {
+            ItemDragCompleted?.Invoke(this, new TreeViewDragCompletedEventArgs(_beingDraggedTreeItem));
             _beingDraggedTreeItem.IsDragging = false;
             _beingDraggedTreeItem            = null;
         }
@@ -488,10 +506,12 @@ public partial class TreeView
         {
             return;
         }
-
+        
         object? sourceItem                 = default;
         var     beingDraggedTreeItemParent = _beingDraggedTreeItem.Parent;
         var     sourceIsRoot               = false;
+        
+        
         if (_beingDraggedTreeItem.Parent is TreeViewItem parentItem)
         {
             sourceItem = parentItem.ItemFromContainer(_beingDraggedTreeItem);
@@ -519,6 +539,7 @@ public partial class TreeView
             }
 
             Items.Insert(Math.Max(_dropTargetInfo.Index - indexDelta, 0), sourceItem);
+            ItemDropped?.Invoke(this, new TreeViewDroppedEventArgs(_beingDraggedTreeItem, null, _dropTargetInfo.Index));
         }
         else if (_dropTargetInfo.TargetTreeItem is not null)
         {
@@ -527,7 +548,7 @@ public partial class TreeView
             {
                 indexDelta = 1;
             }
-
+            ItemDropped?.Invoke(this, new TreeViewDroppedEventArgs(_beingDraggedTreeItem, _dropTargetInfo.TargetTreeItem, _dropTargetInfo.Index));
             _dropTargetInfo.TargetTreeItem.Items.Insert(Math.Max(_dropTargetInfo.Index - indexDelta, 0), sourceItem);
         }
     }

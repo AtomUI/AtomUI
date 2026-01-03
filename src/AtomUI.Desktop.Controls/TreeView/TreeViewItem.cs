@@ -164,6 +164,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             o => o.HasTreeItemDataLoader,
             (o, v) => o.HasTreeItemDataLoader = v);
     
+    internal static readonly DirectProperty<TreeViewItem, bool> IsAutoExpandParentProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsAutoExpandParent),
+            o => o.IsAutoExpandParent,
+            (o, v) => o.IsAutoExpandParent = v);
+    
     internal PathIcon? SwitcherExpandIcon
     {
         get => GetValue(SwitcherExpandIconProperty);
@@ -267,7 +272,14 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         get => _hasTreeItemDataLoader;
         set => SetAndRaise(HasTreeItemDataLoaderProperty, ref _hasTreeItemDataLoader, value);
     }
-    
+        
+    private bool _isAutoExpandParent;
+
+    internal bool IsAutoExpandParent
+    {
+        get => _isAutoExpandParent;
+        set => SetAndRaise(IsAutoExpandParentProperty, ref _isAutoExpandParent, value);
+    }
     internal TreeView? OwnerTreeView { get; set; }
 
     private ITreeViewInteractionHandler? TreeViewInteractionHandler => this.FindLogicalAncestorOfType<TreeView>()?.InteractionHandler;
@@ -661,6 +673,8 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
                 HasTreeItemDataLoaderProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, treeViewItem,
+                IsAutoExpandParentProperty));
             
             PrepareTreeViewItem(treeViewItem, item, index, disposables);
             

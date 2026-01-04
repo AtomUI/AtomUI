@@ -68,7 +68,7 @@
                                 Background="{TemplateBinding ContentFrameBackground}">
                             <ContentPresenter Name="{x:Static atom:TreeViewItemHeaderThemeConstants.HeaderPresenterPart}"
                                               VerticalContentAlignment="Center"
-                                              Content="{TemplateBinding Content, Converter={x:Static atom:TreeViewItemTheme.StringToTextBlockConverter}}"
+                                              Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}" />
                         </Border>
                     </Grid>

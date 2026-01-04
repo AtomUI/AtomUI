@@ -10,6 +10,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -296,6 +297,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     #endregion
     
     private bool _animating;
+    private bool _isRealExpanded;
     private BaseMotionActor? _itemsPresenterMotionActor;
     private readonly BorderRenderHelper _borderRenderHelper;
     private TreeViewItemHeader? _header;
@@ -417,7 +419,8 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         if (_itemsPresenterMotionActor is null ||
             _animating ||
-            OwnerTreeView is null)
+            OwnerTreeView is null ||
+            _isRealExpanded)
         {
             return;
         }
@@ -426,6 +429,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         {
             _itemsPresenterMotionActor.Opacity   = 1.0;
             _itemsPresenterMotionActor.IsVisible = true;
+            _isRealExpanded                      = true;
             return;
         }
 
@@ -440,6 +444,14 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             {
                 _animating = false;
                 _header?.NotifyAnimating(false);
+                _isRealExpanded = true;
+                if (IsAutoExpandParent)
+                {
+                    if (Parent is TreeViewItem parentTreeItem)
+                    {
+                        parentTreeItem.SetCurrentValue(IsExpandedProperty, true);
+                    }
+                }
             });
     }
 
@@ -447,7 +459,8 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         if (_itemsPresenterMotionActor is null ||
             _animating ||
-            OwnerTreeView is null)
+            OwnerTreeView is null ||
+            !_isRealExpanded)
         {
             return;
         }
@@ -456,6 +469,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         {
             _itemsPresenterMotionActor.Opacity   = 0.0;
             _itemsPresenterMotionActor.IsVisible = false;
+            _isRealExpanded                      = false;
             return;
         }
 
@@ -470,6 +484,8 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             _itemsPresenterMotionActor.IsVisible = false;
             _animating                           = false;
             _header?.NotifyAnimating(false);
+            _isRealExpanded = false;
+            
         });
     }
 
@@ -669,7 +685,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             
             if (item != null && item is not Visual && item is ITreeViewItemData treeViewItemData)
             {
-                ApplyNodeData(treeViewItem, treeViewItemData);
+                ApplyNodeData(treeViewItem, treeViewItemData, disposables);
             }
             
             if (ItemTemplate != null)
@@ -709,47 +725,20 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
     }
 
-    internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeViewItemData treeViewItemData)
+    internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeViewItemData treeViewItemData, CompositeDisposable disposables)
     {
         if (treeViewItemData is not Visual)
         {
-            if (!treeViewItem.IsSet(HeaderProperty))
-            {
-                treeViewItem.SetCurrentValue(HeaderProperty, treeViewItem);
-            }
-                    
-            if (!treeViewItem.IsSet(IconProperty))
-            {
-                treeViewItem.SetCurrentValue(IconProperty, treeViewItemData.Icon);
-            }
-                    
+            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.Icon), treeViewItem, IconProperty, mode:BindingMode.TwoWay));
+            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsChecked), treeViewItem, IsCheckedProperty, mode:BindingMode.TwoWay));
+            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsSelected), treeViewItem, IsSelectedProperty, mode:BindingMode.TwoWay));
+            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsEnabled), treeViewItem, IsEnabledProperty, mode:BindingMode.TwoWay));
+            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsExpanded), treeViewItem, IsExpandedProperty, mode:BindingMode.TwoWay));
+            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsIndicatorEnabled), treeViewItem, IsIndicatorEnabledProperty, mode:BindingMode.TwoWay));
+            
             if (treeViewItem.ItemKey == null)
             {
                 treeViewItem.ItemKey = treeViewItemData.ItemKey;
-            }
-                    
-            if (!treeViewItem.IsSet(IsCheckedProperty))
-            {
-                treeViewItem.SetCurrentValue(IsCheckedProperty, treeViewItemData.IsChecked);
-            }
-                    
-            if (!treeViewItem.IsSet(IsSelectedProperty))
-            {
-                treeViewItem.SetCurrentValue(IsSelectedProperty, treeViewItemData.IsSelected);
-            }
-                    
-            if (!treeViewItem.IsSet(IsEnabledProperty))
-            {
-                treeViewItem.SetCurrentValue(IsEnabledProperty, treeViewItemData.IsEnabled);
-            }
-                    
-            if (!treeViewItem.IsSet(IsExpandedProperty))
-            {
-                treeViewItem.SetCurrentValue(IsExpandedProperty, treeViewItemData.IsExpanded);
-            }
-            if (!treeViewItem.IsSet(IsIndicatorEnabledProperty))
-            {
-                treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeViewItemData.IsIndicatorEnabled);
             }
             
             if (!treeViewItem.IsSet(IsLeafProperty))

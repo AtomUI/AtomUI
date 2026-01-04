@@ -39,6 +39,23 @@ public static class BindUtils
         };
         return target.Bind(targetProperty, binding);
     }
+    
+    public static IDisposable RelayBind(object source, 
+                                        string sourcePropertyName, 
+                                        AvaloniaObject target,
+                                        AvaloniaProperty targetProperty,
+                                        BindingMode mode = BindingMode.Default,
+                                        BindingPriority priority = BindingPriority.LocalValue)
+    {
+        var binding = new Binding
+        {
+            Source   = source,
+            Path     = sourcePropertyName,
+            Priority = priority,
+            Mode     = mode
+        };
+        return target.Bind(targetProperty, binding);
+    }
 
     public static IDisposable RelayBind<TSource, TResult>(AvaloniaObject source,
                                                           AvaloniaProperty<TSource> sourceProperty,

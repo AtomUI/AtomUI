@@ -87,7 +87,7 @@ public partial class TreeView
 
         NodeSwitcherButton.NodeLoadRequestEvent.AddClassHandler<TreeView>((tree, args) =>
         {
-            tree.HandleNodeLoadRequest(args.Node);
+            tree.HandleNodeLoadRequest(args.Item);
         });
     }
     

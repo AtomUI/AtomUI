@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls;
 
-public enum TreeNodeLoadErrorCode
+public enum TreeItemLoadErrorCode
 {
     None = 0,           // 无错误
     NetworkError,       // 网络连接/超时问题

@@ -26,12 +26,20 @@ public enum TreeItemHoverMode
     WholeLine
 }
 
+[Flags]
+public enum TreeItemFilterAction
+{
+    Highlighted = 0x01,
+    ExpandPath = 0x02,
+    HideUnMatched = 0x04
+}
+
 [PseudoClasses(StdPseudoClass.Draggable)]
 public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAutoExpandParentProperty =
-        AvaloniaProperty.Register<TreeView, bool>(nameof(IsAutoExpandParent));
+        AvaloniaProperty.Register<TreeView, bool>(nameof(IsAutoExpandParent), true);
     
     public static readonly StyledProperty<bool> IsDraggableProperty =
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsDraggable));
@@ -96,11 +104,29 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.DefaultExpandedPaths,
             (o, v) => o.DefaultExpandedPaths = v);
     
-    public static readonly DirectProperty<TreeView, ITreeNodeDataLoader?> TreeItemDataLoaderProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, ITreeNodeDataLoader?>(
-            nameof(TreeItemDataLoader),
-            o => o.TreeItemDataLoader,
-            (o, v) => o.TreeItemDataLoader = v);
+    public static readonly DirectProperty<TreeView, ITreeItemDataLoader?> ItemDataLoaderProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, ITreeItemDataLoader?>(
+            nameof(ItemDataLoader),
+            o => o.ItemDataLoader,
+            (o, v) => o.ItemDataLoader = v);
+    
+    public static readonly DirectProperty<TreeView, ITreeItemFilter?> ItemFilterProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, ITreeItemFilter?>(
+            nameof(ItemFilter),
+            o => o.ItemFilter,
+            (o, v) => o.ItemFilter = v);
+    
+    public static readonly DirectProperty<TreeView, string?> ItemFilterPropertyPathProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, string?>(
+            nameof(ItemFilterPropertyPath),
+            o => o.ItemFilterPropertyPath,
+            (o, v) => o.ItemFilterPropertyPath = v);
+    
+    public static readonly DirectProperty<TreeView, TreeItemFilterAction> ItemFilterActionProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, TreeItemFilterAction>(
+            nameof(ItemFilterAction),
+            o => o.ItemFilterAction,
+            (o, v) => o.ItemFilterAction = v);
     
     public bool IsAutoExpandParent
     {
@@ -222,12 +248,36 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
     }
         
-    private ITreeNodeDataLoader? _treeItemDataLoader;
+    private ITreeItemDataLoader? _treeItemDataLoader;
     
-    public ITreeNodeDataLoader? TreeItemDataLoader
+    public ITreeItemDataLoader? ItemDataLoader
     {
         get => _treeItemDataLoader;
-        set => SetAndRaise(TreeItemDataLoaderProperty, ref _treeItemDataLoader, value);
+        set => SetAndRaise(ItemDataLoaderProperty, ref _treeItemDataLoader, value);
+    }
+    
+    private ITreeItemFilter? _itemFilter;
+    
+    public ITreeItemFilter? ItemFilter
+    {
+        get => _itemFilter;
+        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+    }
+    
+    private string? _itemFilterPropertyPath;
+    
+    public string? ItemFilterPropertyPath
+    {
+        get => _itemFilterPropertyPath;
+        set => SetAndRaise(ItemFilterPropertyPathProperty, ref _itemFilterPropertyPath, value);
+    }
+    
+    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.ExpandPath | TreeItemFilterAction.Highlighted;
+    
+    public TreeItemFilterAction ItemFilterAction
+    {
+        get => _itemFilterAction;
+        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
     }
     
     public bool IsDefaultExpandAll { get; set; }
@@ -544,7 +594,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             
             if (item != null && item is not Visual && item is ITreeViewItemData treeViewItemData)
             {
-                TreeViewItem.ApplyNodeData(treeViewItem, treeViewItemData);
+                TreeViewItem.ApplyNodeData(treeViewItem, treeViewItemData, disposables);
             }
             
             if (ItemTemplate != null)
@@ -1053,9 +1103,15 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             HandleSwitcherLeafIconChanged();
         }
-        else if (change.Property == TreeItemDataLoaderProperty)
+        else if (change.Property == ItemDataLoaderProperty)
         {
-            HasTreeItemDataLoader = TreeItemDataLoader != null;
+            HasTreeItemDataLoader = ItemDataLoader != null;
+        }
+        else if (change.Property == ItemFilterProperty ||
+                 change.Property == ItemFilterPropertyPathProperty ||
+                 change.Property == ItemFilterActionProperty)
+        {
+            HandleTreeItemFilter();
         }
     }
 
@@ -1141,5 +1197,10 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             ItemContextMenuRequest?.Invoke(this, new TreeItemContextMenuEventArgs(item));
         }
+    }
+
+    private void HandleTreeItemFilter()
+    {
+        
     }
 }

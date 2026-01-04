@@ -107,9 +107,9 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
     }
 }
 
-public class TreeItemDataLoader : ITreeNodeDataLoader
+public class TreeItemDataLoader : ITreeItemDataLoader
 {
-    public async Task<TreeNodeLoadResult> LoadAsync(ITreeViewItemData targetTreeItemData, CancellationToken token)
+    public async Task<TreeItemLoadResult> LoadAsync(ITreeViewItemData targetTreeItemData, CancellationToken token)
     {
         var                           level   = 0;
         ITreeNode<ITreeViewItemData>? current = targetTreeItemData;
@@ -135,7 +135,7 @@ public class TreeItemDataLoader : ITreeNodeDataLoader
                 }
             ]);
         }
-        return new TreeNodeLoadResult()
+        return new TreeItemLoadResult()
         {
             IsSuccess = true,
             Data = children

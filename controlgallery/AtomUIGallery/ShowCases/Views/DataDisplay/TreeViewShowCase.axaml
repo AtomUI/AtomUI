@@ -118,8 +118,7 @@
         
         <gallery:ShowCaseItem
             Title="draggable"
-            Description="Drag treeNode to insert after the other treeNode or insert into the other parent TreeNode."
-            Margin="0, 0, 10, 0">
+            Description="Drag treeNode to insert after the other treeNode or insert into the other parent TreeNode.">
             <atom:TreeView IsDraggable="True" NodeHoverMode="Block">
                 <atom:TreeViewItem Header="0-0">
                     <atom:TreeViewItem Header="0-0-0">

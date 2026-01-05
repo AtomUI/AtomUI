@@ -39,7 +39,7 @@
 
         <gallery:ShowCaseItem
             Title="Customized description"
-            Description="Customized description" IsOccupyEntireRow="True">
+            Description="Customized description">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <atom:Spin IsSpinning="True" SizeType="Small"
@@ -75,6 +75,7 @@
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:Spin IsSpinning="{Binding IsLoadingSwitchChecked}"
                            IsShowTip="True"
+                           HorizontalAlignment="Stretch"
                            Tip="Loading...">
                     <atom:Alert Message="Alert message title"
                                 Description="Further details about the context of this alert."
@@ -84,6 +85,7 @@
                 <atom:Spin IsSpinning="{Binding IsLoadingSwitchChecked}"
                            IsShowTip="True"
                            Tip="Loading..."
+                           HorizontalAlignment="Stretch"
                            IsMaskBlurEnabled="True">
                     <atom:Alert Message="Alert message title"
                                 Description="Further details about the context of this alert."

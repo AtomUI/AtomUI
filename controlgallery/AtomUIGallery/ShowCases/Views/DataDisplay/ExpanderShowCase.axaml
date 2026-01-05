@@ -68,7 +68,7 @@ If a large or small Expander is desired, set the size property to either large o
 
         <gallery:ShowCaseItem
             Title="Nested panel"
-            Description="Expander is nested inside the Collapse." Margin="0, 0, 10, 0">
+            Description="Expander is nested inside the Collapse.">
             <atom:Expander Header="This is panel header 1">
                 <atom:Expander Header="This is nested panel header">
                     <atom:TextBlock TextWrapping="Wrap">
@@ -80,7 +80,7 @@ If a large or small Expander is desired, set the size property to either large o
 
         <gallery:ShowCaseItem
             Title="Borderless"
-            Description="A borderless style of Expander." Margin="0, 0, 10, 0">
+            Description="A borderless style of Expander.">
             <atom:Expander IsBorderless="True" Header="This is panel header 1">
                 <atom:TextBlock TextWrapping="Wrap">
                     A dog is a type of domesticated animal. Known for its loyalty and faithfulness, it can be found as a welcome guest in many households across the world.
@@ -90,8 +90,7 @@ If a large or small Expander is desired, set the size property to either large o
 
         <gallery:ShowCaseItem
             Title="No Arrow"
-            Description="You can hide the arrow icon by passing IsShowExpandIcon={False} to CollapsePanel component."
-            Margin="0, 0, 10, 0">
+            Description="You can hide the arrow icon by passing IsShowExpandIcon={False} to CollapsePanel component.">
             <atom:Expander Header="This is panel header 1" IsShowExpandIcon="False">
                 <atom:TextBlock TextWrapping="Wrap">
                     A dog is a type of domesticated animal. Known for its loyalty and faithfulness, it can be found as a welcome guest in many households across the world.
@@ -101,7 +100,7 @@ If a large or small Expander is desired, set the size property to either large o
 
         <gallery:ShowCaseItem
             Title="Expand icon location"
-            Description="The expand icon can be placed in front or in the back." Margin="0, 0, 10, 0">
+            Description="The expand icon can be placed in front or in the back.">
             <StackPanel Orientation="Vertical" Spacing="20">
                 <atom:Expander Header="This is panel header 1"
                                AddOnContent="{antdicons:AntDesignIconProvider Kind=SettingOutlined}"
@@ -124,7 +123,7 @@ If a large or small Expander is desired, set the size property to either large o
 
         <gallery:ShowCaseItem
             Title="Ghost Collapse"
-            Description="Making collapse's background to transparent." Margin="0, 0, 10, 0">
+            Description="Making collapse's background to transparent.">
             <atom:Expander IsGhostStyle="True" Header="This is panel header 1">
                 <atom:TextBlock TextWrapping="Wrap">
                     A dog is a type of domesticated animal. Known for its loyalty and faithfulness, it can be found as a welcome guest in many households across the world.
@@ -134,7 +133,7 @@ If a large or small Expander is desired, set the size property to either large o
 
         <gallery:ShowCaseItem
             Title="Collapsible"
-            Description="Specify the trigger area of collapsible by collapsible." Margin="0, 0, 10, 0">
+            Description="Specify the trigger area of collapsible by collapsible.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:Expander Header="This panel can only be collapsed by clicking text">
                     <atom:TextBlock TextWrapping="Wrap">

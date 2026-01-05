@@ -2,7 +2,6 @@
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Themes.TextBoxTheme"
-              xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:ClassModifier="internal"
               TargetType="atom:TextBox">
     <Setter Property="Template">

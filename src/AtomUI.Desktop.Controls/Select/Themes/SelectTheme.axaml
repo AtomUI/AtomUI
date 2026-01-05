@@ -4,7 +4,7 @@
     xmlns:atom="https://atomui.net"
     xmlns:converters="clr-namespace:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
-    <converters:OptionHeaderConverter x:Key="OptionHeaderConverter"/>
+    <converters:OptionHeaderConverter x:Key="OptionHeaderConverter" />
     <ControlTheme x:Key="{x:Type atom:Select}" TargetType="atom:Select">
         <Setter Property="Template">
             <ControlTemplate>
@@ -38,7 +38,7 @@
                                     ContentTemplate="{Binding ContentLeftAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:Select}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                 <atom:SelectHandle
-                                    IsSearchEnabled="{Binding IsEffectiveSearchEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}" 
+                                    IsSearchEnabled="{Binding IsEffectiveSearchEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsLoading="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=atom:Select}}"
@@ -46,7 +46,7 @@
                                     IsSelectionEmpty="{Binding IsSelectionEmpty, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsDropDownOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsInputHover="{Binding IsInnerBoxHover, RelativeSource={RelativeSource AncestorType=atom:AddOnDecoratedBox}}"
-                                    IsInputPressed="{Binding IsInnerBoxPressed, RelativeSource={RelativeSource AncestorType=atom:AddOnDecoratedBox}}"/>
+                                    IsInputPressed="{Binding IsInnerBoxPressed, RelativeSource={RelativeSource AncestorType=atom:AddOnDecoratedBox}}" />
                             </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Panel>
@@ -55,23 +55,22 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
-                                Text="{TemplateBinding PlaceholderText}" 
+                                Text="{TemplateBinding PlaceholderText}"
                                 IsVisible="{TemplateBinding IsPlaceholderTextVisible}"
-                                Foreground="{TemplateBinding PlaceholderForeground}"/>
+                                Foreground="{TemplateBinding PlaceholderForeground}" />
                             <ContentPresenter Name="SingleSelectResultPresenter"
                                               Content="{TemplateBinding SelectedOption}"
                                               IsVisible="False">
                                 <ContentPresenter.ContentTemplate>
                                     <DataTemplate x:DataType="atom:ISelectOption">
-                                        <TextBlock Text="{Binding Header}"/>
+                                        <TextBlock Text="{Binding Header}" />
                                     </DataTemplate>
                                 </ContentPresenter.ContentTemplate>
                             </ContentPresenter>
-                            <atom:SelectSearchTextBox Name="{x:Static atom:SelectThemeConstants.SingleSearchInputPart}" 
+                            <atom:SelectSearchTextBox Name="{x:Static atom:SelectThemeConstants.SingleSearchInputPart}"
                                                       IsVisible="False"
-                                                      IsReadOnly="True"
                                                       SizeType="{TemplateBinding SizeType}"
-                                                      Watermark="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}"/>
+                                                      Watermark="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}" />
                             <atom:SelectResultOptionsBox
                                 Name="SelectedOptionsBox"
                                 HorizontalAlignment="Stretch"
@@ -84,7 +83,7 @@
                                 MaxTagCount="{TemplateBinding MaxTagCount}"
                                 IsResponsiveMaxTagCount="{TemplateBinding IsResponsiveMaxTagCount}"
                                 IsVisible="False"
-                                Focusable="True"/>
+                                Focusable="True" />
                         </Panel>
                     </atom:SelectAddOnDecoratedBox>
                     <atom:Popup Name="{x:Static atom:SelectThemeConstants.PopupPart}"
@@ -107,8 +106,7 @@
                                 MaxCount="{TemplateBinding MaxCount}"
                                 AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedOptions}"
                                 ItemTemplate="{TemplateBinding OptionTemplate}"
-                                ItemsSource="{Binding Options, RelativeSource={RelativeSource TemplatedParent}}"
-                            />
+                                ItemsSource="{Binding Options, RelativeSource={RelativeSource TemplatedParent}}" />
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -123,8 +121,9 @@
                 Value="{DynamicResource {x:Static atom:SelectTokenKey.PopupContentPadding}}" />
         <Setter Property="OptionFontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
         <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
-        <Setter Property="PlaceholderForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
-        
+        <Setter Property="PlaceholderForeground"
+                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeLG}}" />
         </Style>
@@ -145,16 +144,16 @@
             <Setter Property="CornerRadius"
                     Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupBorderRadius}}" />
         </Style>
-        
+
         <Style Selector="^[Mode=Single]">
             <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
                 <Setter Property="IsShowSelectedIndicator" Value="False" />
             </Style>
             <Style Selector="^[IsSearchEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
-                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Cursor" Value="Hand" />
                 </Style>
-              
+
                 <Style Selector="^ /template/ ContentPresenter#SingleSelectResultPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
@@ -162,26 +161,25 @@
             <Style Selector="^[IsSearchEnabled=True]">
                 <Style Selector="^ /template/ atom|SelectSearchTextBox#PART_SingleSearchInput">
                     <Setter Property="IsVisible" Value="True" />
-                    <Setter Property="WatermarkForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
+                    <Setter Property="WatermarkForeground"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
                     <Style Selector="^ /template/ atom|SelectSearchTextBox#PART_SingleSearchInput">
-                        <Setter Property="IsReadOnly" Value="False" />
-                    </Style>
-                    <Style Selector="^ /template/ atom|SelectSearchTextBox#PART_SingleSearchInput">
-                        <Setter Property="WatermarkForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
+                        <Setter Property="WatermarkForeground"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
                     </Style>
                 </Style>
             </Style>
         </Style>
-        
+
         <Style Selector="^[Mode=Multiple]">
             <Style Selector="^ /template/ atom|SelectResultOptionsBox#SelectedOptionsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsSearchEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
-                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Cursor" Value="Hand" />
                 </Style>
             </Style>
             <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
@@ -189,14 +187,14 @@
                 <Setter Property="SelectionMode" Value="Multiple" />
             </Style>
         </Style>
-        
+
         <Style Selector="^[Mode=Tags]">
             <Style Selector="^ /template/ atom|SelectResultOptionsBox#SelectedOptionsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsSearchEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
-                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Cursor" Value="Hand" />
                 </Style>
             </Style>
             <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">

@@ -12,7 +12,7 @@
 
         <Setter Property="Template">
             <ControlTemplate>
-                <DockPanel Name="RootLayout" LastChildFill="True" ClipToBounds="False">
+                <atom:SearchEditPanel Name="RootLayout" ClipToBounds="False">
                     <ContentPresenter
                         Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.LeftAddOnPart}"
                         VerticalAlignment="Stretch"
@@ -73,7 +73,7 @@
                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
                         </DockPanel>
                     </Border>
-                </DockPanel>
+                </atom:SearchEditPanel>
             </ControlTemplate>
         </Setter>
 

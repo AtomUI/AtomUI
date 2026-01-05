@@ -25,7 +25,7 @@
                     VerticalContentAlignment="Center"
                     DockPanel.Dock="Right"
                     Focusable="False"
-                    BackgroundSizing="OuterBorderEdge"
+                    BackgroundSizing="InnerBorderEdge"
                     Content="{TemplateBinding RightAddOn}"
                     ContentTemplate="{TemplateBinding RightAddOnTemplate}"
                     BorderThickness="{TemplateBinding RightAddOnBorderThickness}"
@@ -37,7 +37,7 @@
                         CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
-                        BackgroundSizing="OuterBorderEdge">
+                        BackgroundSizing="InnerBorderEdge">
                     <DockPanel Name="ContentLayout" LastChildFill="True">
                         <ContentPresenter
                             Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart}"
@@ -74,6 +74,7 @@
     <Style Selector="^:is(atom|AddOnDecoratedBox)">
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="UseLayoutRounding" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />

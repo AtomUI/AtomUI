@@ -50,19 +50,6 @@ internal class SearchEditDecoratedBox : AddOnDecoratedBox
         RightAddOnBorderThickness = BorderThickness;
     }
 
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        var size = base.ArrangeOverride(finalSize);
-        var originRect = _rightAddOn?.Bounds;
-
-        if (_rightAddOn is not null && originRect.HasValue)
-        {
-            _rightAddOn.Arrange(originRect.Value.Inflate(new Thickness(BorderThickness.Left, 0, 0, 0)));
-        }
-
-        return size;
-    }
-
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);

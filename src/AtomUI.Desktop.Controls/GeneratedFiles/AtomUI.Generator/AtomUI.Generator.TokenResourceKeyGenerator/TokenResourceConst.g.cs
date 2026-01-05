@@ -1088,6 +1088,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey DirectoryNodeSelectedBg = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.DirectoryNodeSelectedBg");
         public static readonly TokenResourceKey DirectoryNodeSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.DirectoryNodeSelectedColor");
         public static readonly TokenResourceKey DragIndicatorLineWidth = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.DragIndicatorLineWidth");
+        public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.FilterHighlightColor");
         public static readonly TokenResourceKey NodeHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.NodeHoverBg");
         public static readonly TokenResourceKey NodeSelectedBg = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.NodeSelectedBg");
         public static readonly TokenResourceKey TitleHeight = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.TitleHeight");

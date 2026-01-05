@@ -34,7 +34,10 @@
                                          ToggleType="{TemplateBinding ToggleType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
-                                         IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"/>
+                                         IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
+                                         IsFilterMatch="{TemplateBinding IsFilterMatch}"
+                                         FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
+                                         ItemFilterAction="{TemplateBinding ItemFilterAction}"/>
                 <atom:LayoutAwareMotionActor
                     Name="{x:Static atom:TreeViewItemThemeConstants.ItemsPresenterMotionActorPart}"
                     ClipToBounds="True"

@@ -68,6 +68,11 @@ internal class TreeViewToken : AbstractControlDesignToken
     /// 拖动指示器
     /// </summary>
     public double DragIndicatorLineWidth { get; set; }
+    
+    /// <summary>
+    /// 过滤高亮颜色
+    /// </summary>
+    public Color FilterHighlightColor { get; set; }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -84,7 +89,7 @@ internal class TreeViewToken : AbstractControlDesignToken
         TreeItemHeaderMargin   = new Thickness(SharedToken.UniformlyMarginXXS, 0, 0, 0);
         TreeNodeSwitcherMargin = new Thickness(0, 0, SharedToken.UniformlyPaddingXS / 2, 0);
         TreeNodeIconMargin     = new Thickness(SharedToken.UniformlyPaddingXS / 2, 0, 0, 0);
-
+        FilterHighlightColor   = SharedToken.ColorError;
         DragIndicatorLineWidth = SharedToken.LineWidthFocus;
     }
 }

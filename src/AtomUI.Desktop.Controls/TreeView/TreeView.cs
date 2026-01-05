@@ -30,8 +30,10 @@ public enum TreeItemHoverMode
 public enum TreeItemFilterAction
 {
     Highlighted = 0x01,
-    ExpandPath = 0x02,
-    HideUnMatched = 0x04
+    HighlightedBold = 0x02,
+    ExpandPath = 0x04,
+    HideUnMatched = 0x08,
+    All = Highlighted | HighlightedBold | ExpandPath | HideUnMatched
 }
 
 [PseudoClasses(StdPseudoClass.Draggable)]
@@ -116,11 +118,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.ItemFilter,
             (o, v) => o.ItemFilter = v);
     
-    public static readonly DirectProperty<TreeView, string?> ItemFilterPropertyPathProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, string?>(
-            nameof(ItemFilterPropertyPath),
-            o => o.ItemFilterPropertyPath,
-            (o, v) => o.ItemFilterPropertyPath = v);
+    public static readonly DirectProperty<TreeView, object?> ItemFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, object?>(
+            nameof(ItemFilterValue),
+            o => o.ItemFilterValue,
+            (o, v) => o.ItemFilterValue = v);
     
     public static readonly DirectProperty<TreeView, TreeItemFilterAction> ItemFilterActionProperty =
         AvaloniaProperty.RegisterDirect<TreeView, TreeItemFilterAction>(
@@ -264,15 +266,15 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
     }
     
-    private string? _itemFilterPropertyPath;
+    private object? _itemFilterValue;
     
-    public string? ItemFilterPropertyPath
+    public object? ItemFilterValue
     {
-        get => _itemFilterPropertyPath;
-        set => SetAndRaise(ItemFilterPropertyPathProperty, ref _itemFilterPropertyPath, value);
+        get => _itemFilterValue;
+        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
     }
-    
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.ExpandPath | TreeItemFilterAction.Highlighted;
+
+    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
     
     public TreeItemFilterAction ItemFilterAction
     {
@@ -407,9 +409,10 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             {
                 SetCurrentValue(IsMotionEnabledProperty, motionEnabled.Value);
             }
-            foreach (var item in Items)
+
+            for (var i = 0; i < ItemCount; i++)
             {
-                if (item is TreeViewItem treeItem)
+                if (ContainerFromIndex(i) is TreeViewItem treeItem)
                 {
                     ExpandSubTree(treeItem);
                 }
@@ -435,9 +438,10 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             {
                 SetCurrentValue(IsMotionEnabledProperty, motionEnabled.Value);
             }
-            foreach (var item in Items)
+
+            for (var i = 0; i < ItemCount; i++)
             {
-                if (item is TreeViewItem treeItem)
+                if (ContainerFromIndex(i) is TreeViewItem treeItem)
                 {
                     CollapseSubTree(treeItem);
                 }
@@ -608,6 +612,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLoadingIconProperty, SwitcherLoadingIcon);
             SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLeafIconProperty, SwitcherLeafIcon);
             
+            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, treeViewItem, TreeViewItem.ItemFilterActionProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, TreeViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, TreeViewItem.NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, TreeViewItem.IsShowLineProperty));
@@ -914,8 +919,8 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     private (ISet<TreeViewItem>, ISet<TreeViewItem>) SetupParentNodeCheckedStatus(TreeViewItem item)
     {
-        var parent         = item.Parent;
-        var checkedParents =  new HashSet<TreeViewItem>();
+        var parent           = item.Parent;
+        var checkedParents   =  new HashSet<TreeViewItem>();
         var unCheckedParents =  new HashSet<TreeViewItem>();
         while (parent is TreeViewItem parentTreeItem && parentTreeItem.IsEnabled)
         {
@@ -1039,7 +1044,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     private void ConfigureDefaultSelectedPaths()
     {
-        if (DefaultSelectedPaths != null)
+        if (SelectedItems.Count == 0 && DefaultSelectedPaths != null)
         {
             foreach (var defaultSelectedPath in DefaultSelectedPaths)
             {
@@ -1066,12 +1071,13 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         
         if (IsDefaultExpandAll)
         {
-            ExpandAll(true);
+            ExpandAll(false);
         }
         else
         {
             ConfigureDefaultExpandedPaths();
         }
+        Filter();
     }
 
     #endregion
@@ -1108,10 +1114,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             HasTreeItemDataLoader = ItemDataLoader != null;
         }
         else if (change.Property == ItemFilterProperty ||
-                 change.Property == ItemFilterPropertyPathProperty ||
-                 change.Property == ItemFilterActionProperty)
+                 change.Property == ItemFilterActionProperty ||
+                 change.Property == ItemsSourceProperty ||
+                 change.Property == ItemFilterValueProperty)
         {
-            HandleTreeItemFilter();
+            Filter();
         }
     }
 
@@ -1197,10 +1204,5 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             ItemContextMenuRequest?.Invoke(this, new TreeItemContextMenuEventArgs(item));
         }
-    }
-
-    private void HandleTreeItemFilter()
-    {
-        
     }
 }

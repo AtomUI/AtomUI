@@ -9,7 +9,6 @@ internal static class TreeViewItemThemeConstants
 internal static class TreeViewItemHeaderThemeConstants
 {
     public const string FramePart = "PART_Frame";
-    public const string HeaderPresenterPart = "PART_HeaderPresenter";
     public const string IconPresenterPart = "PART_IconPresenter";
     public const string NodeSwitcherButtonPart = "PART_NodeSwitcherButton";
     public const string HeaderContentFramePart = "PART_HeaderContentFrame";

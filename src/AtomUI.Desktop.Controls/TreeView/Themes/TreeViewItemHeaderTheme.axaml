@@ -64,12 +64,18 @@
                                             IsVisible="{TemplateBinding IconEffectiveVisible}" />
                         <Border Name="{x:Static atom:TreeViewItemHeaderThemeConstants.HeaderContentFramePart}"
                                 Grid.Column="3" IsEnabled="{TemplateBinding IsEnabled}"
-                                Cursor="Hand"
                                 Background="{TemplateBinding ContentFrameBackground}">
-                            <ContentPresenter Name="{x:Static atom:TreeViewItemHeaderThemeConstants.HeaderPresenterPart}"
-                                              VerticalContentAlignment="Center"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            <Panel>
+                                <ContentPresenter Name="HeaderPresenter"
+                                                  VerticalContentAlignment="Center"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                                  IsVisible="False"/>
+                                <TextBlock Name="FilterHighlighter"
+                                           VerticalAlignment="Center"
+                                           IsVisible="False"
+                                           Inlines="{TemplateBinding FilterHighlightRuns}"/>
+                            </Panel>
                         </Border>
                     </Grid>
                 </Border>
@@ -77,6 +83,7 @@
         </Setter>
         
         <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="FilterHighlightColor" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.FilterHighlightColor}}" />
         <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TitleHeight}}" />
         <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeItemMargin}}" />
         <Setter Property="CornerRadius"
@@ -93,6 +100,7 @@
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeItemHeaderMargin}}" />
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeItemHeaderPadding}}" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
 
         <Style Selector="^:not(^[NodeHoverMode=WholeLine])">
@@ -183,6 +191,17 @@
             </Style>
             <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
                 <Setter Property="Opacity" Value="0.3" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^[IsFilterMatch=True]">
+            <Style Selector="^ /template/ TextBlock#FilterHighlighter">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+        <Style Selector="^[IsFilterMatch=False]">
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
     </ControlTheme>

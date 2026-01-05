@@ -191,6 +191,63 @@
                 </atom:TreeView.ItemTemplate>
             </atom:TreeView>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Searchable by TreeDataTemplate"
+            Description="Searchable Tree use ItemsSource datasource.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:SearchEdit Watermark="Search"
+                                 SearchButtonClick="HandleFilterItemsSourceTreeClicked"/>
+                <atom:TreeView Name="SearchTreeViewByItemsSource"
+                               x:DataType="viewModels:TreeViewViewModel"
+                               ItemsSource="{Binding FilterTreeNodes}">
+                    <atom:TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" />
+                        </TreeDataTemplate>
+                    </atom:TreeView.ItemTemplate>
+                </atom:TreeView>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Searchable"
+            Description="Searchable Tree.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:SearchEdit Watermark="Search"
+                                 SearchButtonClick="HandleFilterTreeClicked"/>
+                <atom:TreeView Name="SearchTreeView">
+                    <atom:TreeViewItem Header="0-0">
+                        <atom:TreeViewItem Header="0-0-0">
+                            <atom:TreeViewItem Header="0-0-0-0"/>
+                            <atom:TreeViewItem Header="0-0-0-1"/>
+                            <atom:TreeViewItem Header="0-0-0-2"/>
+                        </atom:TreeViewItem>
+                        <atom:TreeViewItem Header="0-0-1">
+                            <atom:TreeViewItem Header="0-0-1-0"/>
+                            <atom:TreeViewItem Header="0-0-1-1"/>
+                            <atom:TreeViewItem Header="0-0-1-2"/>
+                        </atom:TreeViewItem>
+                        <atom:TreeViewItem Header="0-0-2"/>
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="0-1">
+                        <atom:TreeViewItem Header="0-1-0">
+                            <atom:TreeViewItem Header="0-1-0-0"/>
+                            <atom:TreeViewItem Header="0-1-0-1"/>
+                            <atom:TreeViewItem Header="0-1-0-2"/>
+                        </atom:TreeViewItem>
+                        <atom:TreeViewItem Header="0-1-1">
+                            <atom:TreeViewItem Header="0-1-1-0"/>
+                            <atom:TreeViewItem Header="0-1-1-1"/>
+                            <atom:TreeViewItem Header="0-1-1-2"/>
+                        </atom:TreeViewItem>
+                        <atom:TreeViewItem Header="0-0-2"/>
+                    </atom:TreeViewItem>
+                    <atom:TreeViewItem Header="0-2">
+                    </atom:TreeViewItem>
+                </atom:TreeView>
+            </StackPanel>
+        </gallery:ShowCaseItem>
 
     </gallery:ShowCasePanel>
 </UserControl>

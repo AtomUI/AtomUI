@@ -92,6 +92,14 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
         get => _asyncLoadTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodes, value);
     }
+    
+    private List<ITreeViewItemData> _filterTreeNodes = [];
+    
+    public List<ITreeViewItemData> FilterTreeNodes
+    {
+        get => _filterTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _filterTreeNodes, value);
+    }
 
     private TreeItemDataLoader? _asyncLoadTreeNodeLoader;
     

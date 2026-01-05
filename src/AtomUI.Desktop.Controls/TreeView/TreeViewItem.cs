@@ -15,7 +15,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -179,6 +178,27 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             o => o.IsAutoExpandParent,
             (o, v) => o.IsAutoExpandParent = v);
     
+    internal static readonly DirectProperty<TreeViewItem, bool> IsFilterModeProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsFilterMode),
+            o => o.IsFilterMode,
+            (o, v) => o.IsFilterMode = v);
+    
+    internal static readonly DirectProperty<TreeViewItem, bool> IsFilterMatchProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsFilterMatch),
+            o => o.IsFilterMatch,
+            (o, v) => o.IsFilterMatch = v);
+    
+    internal static readonly DirectProperty<TreeViewItem, string?> FilterHighlightWordsProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, string?>(nameof(FilterHighlightWords),
+            o => o.FilterHighlightWords,
+            (o, v) => o.FilterHighlightWords = v);
+    
+    public static readonly DirectProperty<TreeViewItem, TreeItemFilterAction> ItemFilterActionProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeItemFilterAction>(
+            nameof(ItemFilterAction),
+            o => o.ItemFilterAction,
+            (o, v) => o.ItemFilterAction = v);
+    
     internal PathIcon? SwitcherExpandIcon
     {
         get => GetValue(SwitcherExpandIconProperty);
@@ -290,6 +310,39 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         get => _isAutoExpandParent;
         set => SetAndRaise(IsAutoExpandParentProperty, ref _isAutoExpandParent, value);
     }
+    
+    private bool _isFilterMode;
+
+    internal bool IsFilterMode
+    {
+        get => _isFilterMode;
+        set => SetAndRaise(IsFilterModeProperty, ref _isFilterMode, value);
+    }
+    
+    private bool _isFilterMatch;
+
+    internal bool IsFilterMatch
+    {
+        get => _isFilterMatch;
+        set => SetAndRaise(IsFilterMatchProperty, ref _isFilterMatch, value);
+    }
+    
+    private string? _filterHighlightWords;
+
+    internal string? FilterHighlightWords
+    {
+        get => _filterHighlightWords;
+        set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
+    }
+    
+    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    
+    public TreeItemFilterAction ItemFilterAction
+    {
+        get => _itemFilterAction;
+        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+    }
+    
     internal TreeView? OwnerTreeView { get; set; }
 
     private ITreeViewInteractionHandler? TreeViewInteractionHandler => this.FindLogicalAncestorOfType<TreeView>()?.InteractionHandler;
@@ -303,6 +356,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     private TreeViewItemHeader? _header;
     private readonly Dictionary<TreeViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     internal bool AsyncLoaded;
+    private FilterContextBackup? _filterContextBackup;
 
     static TreeViewItem()
     {
@@ -320,10 +374,10 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     public TreeViewItem()
     {
         _borderRenderHelper               =  new BorderRenderHelper();
-        LogicalChildren.CollectionChanged += HandleItemsCollectionChanged;
+        LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
     }
     
-    private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void HandleLogicalChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.Action == NotifyCollectionChangedAction.Remove)
         {
@@ -371,13 +425,9 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         {
             HandleToggleTypeChanged(change);
         }
-
-        if (this.IsAttachedToVisualTree())
+        else if (change.Property == IsExpandedProperty)
         {
-            if (change.Property == IsExpandedProperty)
-            {
-                HandleExpandedChanged();
-            }
+            HandleExpandedChanged();
         }
     }
 
@@ -692,7 +742,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, treeViewItem, HeaderTemplateProperty));
             }
-            
+            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, treeViewItem, ItemFilterActionProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, IsShowLineProperty));
@@ -765,5 +815,32 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         {
             IsLeaf = ItemCount == 0;
         }
+    }
+
+    internal void CreateFilterContextBackup()
+    {
+        _filterContextBackup = new FilterContextBackup()
+        {
+            IsVisible = IsVisible,
+        };
+    }
+
+    internal void ClearFilterMode()
+    {
+        if (_filterContextBackup != null)
+        {
+            SetCurrentValue(IsVisibleProperty, _filterContextBackup.IsVisible);
+        }
+        SetCurrentValue(IsExpandedProperty, false);
+        IsFilterMatch        = false;
+        IsFilterMode         = false;
+        FilterHighlightWords = null;
+        _filterContextBackup = null;
+    }
+
+    // 用户保存在树处于过滤状态结束后的节点原始上下文属性的恢复
+    private record FilterContextBackup
+    {
+        public bool IsVisible { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -201,6 +202,32 @@ internal class TreeViewItemHeader : ContentControl
             o => o.Level,
             (o, v) => o.Level = v);
     
+    internal static readonly DirectProperty<TreeViewItemHeader, bool> IsFilterMatchProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsFilterMatch),
+            o => o.IsFilterMatch,
+            (o, v) => o.IsFilterMatch = v);
+    
+    internal static readonly DirectProperty<TreeViewItemHeader, string?> FilterHighlightWordsProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, string?>(nameof(FilterHighlightWords),
+            o => o.FilterHighlightWords,
+            (o, v) => o.FilterHighlightWords = v);
+    
+    internal static readonly DirectProperty<TreeViewItemHeader, InlineCollection?> FilterHighlightRunsProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, InlineCollection?>(
+            nameof(FilterHighlightRuns), t => t.FilterHighlightRuns, 
+            (t, v) => t.FilterHighlightRuns = v);
+    
+    internal static readonly DirectProperty<TreeViewItemHeader, IBrush?> FilterHighlightColorProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, IBrush?>(
+            nameof(FilterHighlightRuns), t => t.FilterHighlightColor, 
+            (t, v) => t.FilterHighlightColor = v);
+    
+    public static readonly DirectProperty<TreeViewItemHeader, TreeItemFilterAction> ItemFilterActionProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, TreeItemFilterAction>(
+            nameof(ItemFilterAction),
+            o => o.ItemFilterAction,
+            (o, v) => o.ItemFilterAction = v);
+    
     internal bool IsHover
     {
         get => GetValue(IsHoverProperty);
@@ -303,6 +330,44 @@ internal class TreeViewItemHeader : ContentControl
         set => SetAndRaise(LevelProperty, ref _level, value);
     }
     
+    private bool _isFilterMatch;
+
+    internal bool IsFilterMatch
+    {
+        get => _isFilterMatch;
+        set => SetAndRaise(IsFilterMatchProperty, ref _isFilterMatch, value);
+    }
+    
+    private string? _filterHighlightWords;
+
+    internal string? FilterHighlightWords
+    {
+        get => _filterHighlightWords;
+        set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
+    }
+    
+    private IBrush? _filterHighlightColor;
+
+    internal IBrush? FilterHighlightColor
+    {
+        get => _filterHighlightColor;
+        set => SetAndRaise(FilterHighlightColorProperty, ref _filterHighlightColor, value);
+    }
+    
+    private InlineCollection? _filterHighlightRuns;
+    public InlineCollection? FilterHighlightRuns
+    {
+        get => _filterHighlightRuns;
+        set => SetAndRaise(FilterHighlightRunsProperty, ref _filterHighlightRuns, value);
+    }
+    
+    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    
+    public TreeItemFilterAction ItemFilterAction
+    {
+        get => _itemFilterAction;
+        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+    }
     #endregion
     
     private Border? _headerContentFrame;
@@ -326,7 +391,11 @@ internal class TreeViewItemHeader : ContentControl
         {
             HandleToggleTypeChanged(change);
         }
-        
+        else if (change.Property == FilterHighlightWordsProperty ||
+                 change.Property == IsFilterMatchProperty)
+        {
+            BuildFilterHighlightRuns();
+        }
         if (IsLoaded)
         {
             if (change.Property == IsMotionEnabledProperty)
@@ -503,5 +572,80 @@ internal class TreeViewItemHeader : ContentControl
         }
 
         return this.TranslatePoint(new Point(offsetX, offsetY), relativeTo) ?? default;
+    }
+    
+    private void BuildFilterHighlightRuns()
+    {
+        if (!IsFilterMatch)
+        {
+            FilterHighlightRuns = null;
+        }
+        else if (FilterHighlightWords != null)
+        { 
+            string? headerText   = null;
+            if (Content is ITreeViewItemData treeViewItemData)
+            {
+                headerText = treeViewItemData.Header as string;
+            }
+            else if (Content is string strContent)
+            {
+                headerText = strContent;
+            }
+
+            if (string.IsNullOrWhiteSpace(headerText))
+            {
+                return;
+            }
+            var ranges       = new List<(int, int)>();
+            int currentIndex    = 0;
+            var highlightLength = FilterHighlightWords.Length;
+        
+            while (true)
+            {
+                int foundIndex = headerText.IndexOf(FilterHighlightWords, currentIndex, StringComparison.Ordinal);
+                if (foundIndex == -1) // 如果没有找到，退出循环
+                {
+                    break;
+                }
+                
+                currentIndex = foundIndex + highlightLength;
+                ranges.Add((foundIndex, currentIndex));
+            }
+            Debug.Assert(headerText != null);
+            var runs = new InlineCollection();
+            for (var i = 0; i < headerText.Length; i++)
+            {
+                var c   =  headerText[i];
+                var run = new Run($"{c}");
+                if (IsNeedHighlight(i, ranges))
+                {
+                    if (ItemFilterAction.HasFlag(TreeItemFilterAction.Highlighted))
+                    {
+                        run.Foreground = FilterHighlightColor;
+                    }
+
+                    if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedBold))
+                    {
+                        run.FontWeight = FontWeight.Bold;
+                    }
+                }
+                runs.Add(run);
+            }
+
+            FilterHighlightRuns = runs;
+        }
+    }
+
+    private bool IsNeedHighlight(int pos, in List<(int, int)> ranges)
+    {
+        foreach (var range in ranges)
+        {
+            if (pos >= range.Item1 && pos < range.Item2)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -208,53 +208,51 @@
         <gallery:ShowCaseItem
             Title="Search box"
             Description="Example of creating a search box by grouping a standard input with a search button.">
-            <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
+            <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:Separator Title="Search" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left" SizeType="Large" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch" SizeType="Large" />
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search" />
 
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary" SearchButtonText="Search" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary" SearchButtonText="Search" />
 
                 <atom:SearchEdit Watermark="input search text"
-                                 Width="400"
-                                 HorizontalAlignment="Left"
+                                 HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search"
                                  IsEnableClearButton="True" />
                 <atom:SearchEdit Watermark="input search text"
-                                 Width="400"
-                                 HorizontalAlignment="Left"
+                                 HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="搜索一下"
                                  InnerRightContent="{antdicons:AntDesignIconProvider Kind=AudioOutlined, StrokeBrush=#1677ff, Width=16, Height=16}"
                                  IsEnableClearButton="True"
                                  SizeType="Large" />
                 <atom:Separator Title="Filled" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search"
                                  LeftAddOn="https://"
                                  StyleVariant="Filled" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  LeftAddOn="https://"
                                  StyleVariant="Filled" />
                 <atom:Separator Title="Borderless" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search"
                                  LeftAddOn="https://"
                                  StyleVariant="Borderless" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  LeftAddOn="https://"
                                  StyleVariant="Borderless" />
                 <atom:Separator Title="Underlined" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search"
                                  LeftAddOn="https://"
                                  StyleVariant="Underlined" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
                                  LeftAddOn="https://"
                                  StyleVariant="Underlined" />
             </StackPanel>

@@ -13,5 +13,5 @@ public class OptionButtonData : IOptionButtonData
 {
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
-    public bool IsEnabled { get; init; }
+    public bool IsEnabled { get; init; } = true;
 }

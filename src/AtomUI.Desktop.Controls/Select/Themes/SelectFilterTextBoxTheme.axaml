@@ -4,9 +4,9 @@
     xmlns:atom="https://atomui.net"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:SelectSearchTextBox}" TargetType="atom:SelectSearchTextBox">
+    <ControlTheme x:Key="{x:Type atom:SelectFilterTextBox}" TargetType="atom:SelectFilterTextBox">
         <ControlTheme.BasedOn>
-            <themes:TextBoxTheme TargetType="{x:Type atom:SelectSearchTextBox}" />
+            <themes:TextBoxTheme TargetType="{x:Type atom:SelectFilterTextBox}" />
         </ControlTheme.BasedOn>
         
         <Style Selector="^[IsCustomFontSize=False]">

@@ -102,6 +102,8 @@ public class TreeViewItemData : AvaloniaObject, ITreeViewItemData
     
     public string? GroupName { get; init; }
     public bool IsLeaf { get; init; } = false;
+    
+    public object? Value { get; set; }
 
     private IList<ITreeViewItemData> _children = [];
     public IList<ITreeViewItemData> Children

@@ -1,9 +1,13 @@
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input.Raw;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -33,8 +37,8 @@ public class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
         AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsPopupMatchSelectWidth), true);
     
-    public static readonly StyledProperty<bool> IsSearchEnabledProperty =
-        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsSearchEnabled));
+    public static readonly StyledProperty<bool> IsFilterEnabledProperty =
+        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsFilterEnabled));
     
     public static readonly StyledProperty<int> DisplayPageSizeProperty = 
         AvaloniaProperty.Register<AbstractSelect, int>(nameof (DisplayPageSize), 10);
@@ -53,9 +57,6 @@ public class AbstractSelect : TemplatedControl,
     
     public static readonly StyledProperty<string?> MaxTagPlaceholderProperty =
         AvaloniaProperty.Register<AbstractSelect, string?>(nameof(MaxTagPlaceholder));
-    
-    public static readonly StyledProperty<SelectMode> ModeProperty =
-        AvaloniaProperty.Register<AbstractSelect, SelectMode>(nameof(Mode));
     
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<AbstractSelect>();
@@ -90,8 +91,8 @@ public class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<SelectPopupPlacement> PlacementProperty =
         AvaloniaProperty.Register<AbstractSelect, SelectPopupPlacement>(nameof(Placement));
     
-    public static readonly StyledProperty<object?> SearchValueProperty =
-        AvaloniaProperty.Register<AbstractSelect, object?>(nameof(SearchValue));
+    public static readonly StyledProperty<object?> FilterValueProperty =
+        AvaloniaProperty.Register<AbstractSelect, object?>(nameof(FilterValue));
     
     public static readonly StyledProperty<PathIcon?> SuffixIconProperty =
         AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(SuffixIcon));
@@ -101,6 +102,33 @@ public class AbstractSelect : TemplatedControl,
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractSelect>();
+    
+    public static readonly StyledProperty<bool> IsOperatingProperty =
+        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsOperating));
+    
+    public static readonly StyledProperty<string?> OperatingMsgProperty =
+        AvaloniaProperty.Register<AbstractSelect, string?>(nameof(OperatingMsg));
+    
+    public static readonly StyledProperty<object?> CustomOperatingIndicatorProperty =
+        AvaloniaProperty.Register<AbstractSelect, object?>(nameof(CustomOperatingIndicator));
+
+    public static readonly StyledProperty<IDataTemplate?> CustomOperatingIndicatorTemplateProperty =
+        AvaloniaProperty.Register<AbstractSelect, IDataTemplate?>(nameof(CustomOperatingIndicatorTemplate));
+    
+    public static readonly StyledProperty<object?> EmptyIndicatorProperty =
+        AvaloniaProperty.Register<AbstractSelect, object?>(nameof(EmptyIndicator));
+    
+    public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
+        AvaloniaProperty.Register<AbstractSelect, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
+    
+    public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
+        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsShowEmptyIndicator), true);
+    
+    public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
+        AvaloniaProperty.Register<AbstractSelect, Thickness>(nameof(EmptyIndicatorPadding));
+    
+    public static readonly StyledProperty<bool> IsLoadingProperty =
+        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsLoading));
     
     public bool IsAllowClear
     {
@@ -144,10 +172,10 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(IsPopupMatchSelectWidthProperty, value);
     }
     
-    public bool IsSearchEnabled
+    public bool IsFilterEnabled
     {
-        get => GetValue(IsSearchEnabledProperty);
-        set => SetValue(IsSearchEnabledProperty, value);
+        get => GetValue(IsFilterEnabledProperty);
+        set => SetValue(IsFilterEnabledProperty, value);
     }
     
     public int DisplayPageSize
@@ -184,12 +212,6 @@ public class AbstractSelect : TemplatedControl,
     {
         get => GetValue(MaxTagPlaceholderProperty);
         set => SetValue(MaxTagPlaceholderProperty, value);
-    }
-    
-    public SelectMode Mode
-    {
-        get => GetValue(ModeProperty);
-        set => SetValue(ModeProperty, value);
     }
     
     public object? LeftAddOn
@@ -258,10 +280,10 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(PlacementProperty, value);
     }
     
-    public object? SearchValue
+    public object? FilterValue
     {
-        get => GetValue(SearchValueProperty);
-        set => SetValue(SearchValueProperty, value);
+        get => GetValue(FilterValueProperty);
+        set => SetValue(FilterValueProperty, value);
     }
     
     public PathIcon? SuffixIcon
@@ -282,5 +304,246 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(SizeTypeProperty, value);
     }
     
+    public bool IsOperating
+    {
+        get => GetValue(IsOperatingProperty);
+        set => SetValue(IsOperatingProperty, value);
+    }
+    
+    public string? OperatingMsg
+    {
+        get => GetValue(OperatingMsgProperty);
+        set => SetValue(OperatingMsgProperty, value);
+    }
+    
+    [DependsOn(nameof(CustomOperatingIndicatorTemplate))]
+    public object? CustomOperatingIndicator
+    {
+        get => GetValue(CustomOperatingIndicatorProperty);
+        set => SetValue(CustomOperatingIndicatorProperty, value);
+    }
+    
+    public IDataTemplate? CustomOperatingIndicatorTemplate
+    {
+        get => GetValue(CustomOperatingIndicatorTemplateProperty);
+        set => SetValue(CustomOperatingIndicatorTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(EmptyIndicatorTemplate))]
+    public object? EmptyIndicator
+    {
+        get => GetValue(EmptyIndicatorProperty);
+        set => SetValue(EmptyIndicatorProperty, value);
+    }
+
+    public IDataTemplate? EmptyIndicatorTemplate
+    {
+        get => GetValue(EmptyIndicatorTemplateProperty);
+        set => SetValue(EmptyIndicatorTemplateProperty, value);
+    }
+    
+    public bool IsShowEmptyIndicator
+    {
+        get => GetValue(IsShowEmptyIndicatorProperty);
+        set => SetValue(IsShowEmptyIndicatorProperty, value);
+    }
+    
+    public Thickness EmptyIndicatorPadding
+    {
+        get => GetValue(EmptyIndicatorPaddingProperty);
+        set => SetValue(EmptyIndicatorPaddingProperty, value);
+    }
+    
+    public bool IsLoading
+    {
+        get => GetValue(IsLoadingProperty);
+        set => SetValue(IsLoadingProperty, value);
+    }
     #endregion
+    
+    #region 公共事件定义
+    
+    public event EventHandler? DropDownClosed;
+    public event EventHandler? DropDownOpened;
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<double> ItemHeightProperty =
+        AvaloniaProperty.Register<AbstractSelect, double>(nameof(ItemHeight));
+    
+    internal static readonly StyledProperty<double> MaxPopupHeightProperty =
+        AvaloniaProperty.Register<AbstractSelect, double>(nameof(MaxPopupHeight));
+    
+    internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
+        AvaloniaProperty.Register<AbstractSelect, Thickness>(nameof(PopupContentPadding));
+    
+    internal static readonly DirectProperty<AbstractSelect, bool> IsEffectiveShowClearButtonProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(nameof(IsEffectiveShowClearButton),
+            o => o.IsEffectiveShowClearButton,
+            (o, v) => o.IsEffectiveShowClearButton = v);
+    
+    internal static readonly DirectProperty<AbstractSelect, double> EffectivePopupWidthProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
+            nameof(EffectivePopupWidth),
+            o => o.EffectivePopupWidth,
+            (o, v) => o.EffectivePopupWidth = v);
+    
+    internal static readonly DirectProperty<AbstractSelect, bool> IsPlaceholderTextVisibleProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(
+            nameof(IsPlaceholderTextVisible),
+            o => o.IsPlaceholderTextVisible,
+            (o, v) => o.IsPlaceholderTextVisible = v);
+    
+    internal static readonly DirectProperty<AbstractSelect, bool> IsSelectionEmptyProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(
+            nameof(IsSelectionEmpty),
+            o => o.IsSelectionEmpty,
+            (o, v) => o.IsSelectionEmpty = v);
+
+    internal static readonly DirectProperty<AbstractSelect, int> SelectedCountProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, int>(nameof(SelectedCount),
+            o => o.SelectedCount,
+            (o, v) => o.SelectedCount = v);
+    
+    internal static readonly DirectProperty<AbstractSelect, string?> ActivateFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, string?>(nameof(ActivateFilterValue),
+            o => o.ActivateFilterValue,
+            (o, v) => o.ActivateFilterValue = v);
+    
+    internal static readonly DirectProperty<AbstractSelect, bool> IsEffectiveFilterEnabledProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(nameof(IsEffectiveFilterEnabled),
+            o => o.IsEffectiveFilterEnabled,
+            (o, v) => o.IsEffectiveFilterEnabled = v);
+    
+    internal double ItemHeight
+    {
+        get => GetValue(ItemHeightProperty);
+        set => SetValue(ItemHeightProperty, value);
+    }
+    
+    internal double MaxPopupHeight
+    {
+        get => GetValue(MaxPopupHeightProperty);
+        set => SetValue(MaxPopupHeightProperty, value);
+    }
+    
+    internal Thickness PopupContentPadding
+    {
+        get => GetValue(PopupContentPaddingProperty);
+        set => SetValue(PopupContentPaddingProperty, value);
+    }
+    
+    private bool _isEffectiveShowClearButton;
+
+    internal bool IsEffectiveShowClearButton
+    {
+        get => _isEffectiveShowClearButton;
+        set => SetAndRaise(IsEffectiveShowClearButtonProperty, ref _isEffectiveShowClearButton, value);
+    }
+    
+    private double _effectivePopupWidth;
+
+    internal double EffectivePopupWidth
+    {
+        get => _effectivePopupWidth;
+        set => SetAndRaise(EffectivePopupWidthProperty, ref _effectivePopupWidth, value);
+    }
+    
+    private bool _isPlaceholderTextVisible;
+
+    internal bool IsPlaceholderTextVisible
+    {
+        get => _isPlaceholderTextVisible;
+        set => SetAndRaise(IsPlaceholderTextVisibleProperty, ref _isPlaceholderTextVisible, value);
+    }
+    
+    private bool _isSelectionEmpty = true;
+
+    internal bool IsSelectionEmpty
+    {
+        get => _isSelectionEmpty;
+        set => SetAndRaise(IsSelectionEmptyProperty, ref _isSelectionEmpty, value);
+    }
+
+    private int _selectedCount;
+
+    internal int SelectedCount
+    {
+        get => _selectedCount;
+        set => SetAndRaise(SelectedCountProperty, ref _selectedCount, value);
+    }
+    
+    private string? _activateFilterValue;
+
+    internal string? ActivateFilterValue
+    {
+        get => _activateFilterValue;
+        set => SetAndRaise(ActivateFilterValueProperty, ref _activateFilterValue, value);
+    }
+    
+    private bool _isEffectiveFilterEnabled;
+
+    internal bool IsEffectiveFilterEnabled
+    {
+        get => _isEffectiveFilterEnabled;
+        set => SetAndRaise(IsEffectiveFilterEnabledProperty, ref _isEffectiveFilterEnabled, value);
+    }
+    #endregion
+    
+    private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
+    private protected Popup? Popup;
+    private protected bool ClickInTagCloseButton;
+
+    protected void NotifyPopupClosed()
+    {
+        DropDownClosed?.Invoke(this, EventArgs.Empty);
+    }
+    
+    protected void NotifyPopupOpened()
+    {
+        DropDownOpened?.Invoke(this, EventArgs.Empty);
+    }
+    
+    protected bool PopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)
+    {
+        var popupRoots = new HashSet<PopupRoot>();
+        if (Popup?.Host is PopupRoot popupRoot)
+        {
+            popupRoots.Add(popupRoot);
+        }
+
+        if (ClickInTagCloseButton)
+        {
+            ClickInTagCloseButton = false;
+            return false;
+        }
+        return !popupRoots.Contains(args.Root);
+    }
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated += HandleWindowDeactivated;
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated -= HandleWindowDeactivated;
+        }
+    }
+
+    private void HandleWindowDeactivated(object? sender, EventArgs e)
+    {
+        SetCurrentValue(IsDropDownOpenProperty, false);
+    }
 }

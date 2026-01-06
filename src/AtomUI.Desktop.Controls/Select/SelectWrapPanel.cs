@@ -6,7 +6,7 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SelectWrapPanel : WrapPanel
 {
-    private SelectSearchTextBox? _searchTextBox;
+    private SelectFilterTextBox? _searchTextBox;
     
     protected override Size ArrangeOverride(Size finalSize)
     {
@@ -53,7 +53,7 @@ internal class SelectWrapPanel : WrapPanel
         {
             foreach (var oldItem in e.OldItems)
             {
-                if (oldItem is SelectSearchTextBox)
+                if (oldItem is SelectFilterTextBox)
                 {
                     _searchTextBox = null;
                 }
@@ -64,7 +64,7 @@ internal class SelectWrapPanel : WrapPanel
         {
             foreach (var newItem in e.NewItems)
             {
-                if (newItem is SelectSearchTextBox searchTextBox)
+                if (newItem is SelectFilterTextBox searchTextBox)
                 {
                     _searchTextBox = searchTextBox;
                 }

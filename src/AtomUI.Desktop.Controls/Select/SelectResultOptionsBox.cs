@@ -102,7 +102,7 @@ internal class SelectResultOptionsBox : TemplatedControl
 
     private WrapPanel? _defaultPanel;
     private SelectMaxTagAwarePanel? _maxCountAwarePanel;
-    private SelectSearchTextBox? _searchTextBox;
+    private SelectFilterTextBox? _searchTextBox;
     private SelectRemainInfoTag? _collapsedInfoTag;
     private protected readonly Dictionary<object, IDisposable> TagsBindingDisposables = new();
 
@@ -170,7 +170,7 @@ internal class SelectResultOptionsBox : TemplatedControl
         base.OnApplyTemplate(e);
         _defaultPanel  = e.NameScope.Find<WrapPanel>(SelectResultOptionsBoxThemeConstants.DefaultPanelPart);
         _maxCountAwarePanel = e.NameScope.Find<SelectMaxTagAwarePanel>(SelectResultOptionsBoxThemeConstants.MaxCountAwarePanelPart);
-        _searchTextBox = new SelectSearchTextBox
+        _searchTextBox = new SelectFilterTextBox
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
         };

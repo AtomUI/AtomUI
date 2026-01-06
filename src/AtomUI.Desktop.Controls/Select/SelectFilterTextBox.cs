@@ -2,7 +2,7 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class SelectSearchTextBox : TextBox
+internal class SelectFilterTextBox : TextBox
 {
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {

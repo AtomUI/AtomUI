@@ -196,12 +196,27 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         style.Add(MaskShadowsProperty, SharedTokenKey.BoxShadowsSecondary);
         style.Add(MotionDurationProperty, SharedTokenKey.MotionDurationMid);
     }
+
+    private bool _isPopupRootPositionSpontaneous;
     
     private void HandlePopupHostChanged(IPopupHost? popupHost)
     {
         if (popupHost is PopupRoot popupRoot)
         {
             MotionActor = popupRoot.FindDescendantOfType<MotionActor>();
+            popupRoot.PositionChanged += (sender, args) =>
+            {
+                if (!_isPopupRootPositionSpontaneous)
+                { 
+                    var placementTarget = GetEffectivePlacementTarget();
+                    if (placementTarget is not null)
+                    {
+                        _isPopupRootPositionSpontaneous = true;
+                        AdjustPopupHostPosition(placementTarget);
+                        _isPopupRootPositionSpontaneous = false;
+                    }
+                }
+            };
         }
         else if (popupHost is OverlayPopupHost overlayPopupHost)
         {

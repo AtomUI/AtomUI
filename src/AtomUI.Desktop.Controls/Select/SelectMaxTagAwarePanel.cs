@@ -9,7 +9,7 @@ namespace AtomUI.Desktop.Controls;
 internal class SelectMaxTagAwarePanel : StackPanel
 {
     private SelectRemainInfoTag? _infoTag;
-    private SelectSearchTextBox? _searchTextBox;
+    private SelectFilterTextBox? _searchTextBox;
     
     private int _remainCount = 0;
 
@@ -155,7 +155,7 @@ internal class SelectMaxTagAwarePanel : StackPanel
                 {
                     _infoTag = null;
                 }
-                if (oldItem is SelectSearchTextBox)
+                if (oldItem is SelectFilterTextBox)
                 {
                     _searchTextBox = null;
                 }
@@ -171,7 +171,7 @@ internal class SelectMaxTagAwarePanel : StackPanel
                     _infoTag = selectTag;
                     _infoTag.SetRemainText(0);
                 }
-                if (newItem is SelectSearchTextBox searchTextBox)
+                if (newItem is SelectFilterTextBox searchTextBox)
                 {
                     _searchTextBox = searchTextBox;
                 }

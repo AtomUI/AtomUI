@@ -40,6 +40,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     public static readonly StyledProperty<string?> GroupNameProperty =
         RadioButton.GroupNameProperty.AddOwner<TreeViewItem>();
     
+    public static readonly DirectProperty<TreeViewItem, object?> ValueProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, object?>(nameof(Value),
+            o => o.Value,
+           (o, v) => o.Value = v);
+    
     public static readonly StyledProperty<bool> IsIndicatorEnabledProperty =
         AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsIndicatorEnabled), true);
 
@@ -61,6 +66,14 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         get => _isLeaf;
         internal set => SetAndRaise(IsLeafProperty, ref _isLeaf, value);
+    }
+    
+    private object? _value;
+
+    public object? Value
+    {
+        get => _value;
+        set => SetAndRaise(ValueProperty, ref _value, value);
     }
 
     public bool IsLoading
@@ -693,7 +706,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     
     internal bool PointInHeaderBounds(PointerReleasedEventArgs e)
     {
-        var bounds = new Rect(new Point(0, 0), _header?.DesiredSize ?? default);
+        var bounds = new Rect(new Point(0, 0), _header?.Bounds.Size ?? default);
         var point  = e.GetPosition(_header);
         return bounds.Contains(point);
     }

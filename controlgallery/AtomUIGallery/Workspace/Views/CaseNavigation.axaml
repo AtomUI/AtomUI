@@ -84,6 +84,8 @@
                               ItemKey="{x:Static viewmodels:SliderViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_ToggleSwitch}}"
                               ItemKey="{x:Static viewmodels:ToggleSwitchViewModel.ID}" />
+            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_TreeSelect}}"
+                              ItemKey="{x:Static viewmodels:TreeSelectViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_Upload}}"
                               ItemKey="{x:Static viewmodels:UploadViewModel.ID}" />
         </atom:NavMenuItem>

@@ -45,6 +45,7 @@ internal class zh_CN : LanguageProvider
     public const string DataEntry_Slider = "Slider 滑动输入条";
     public const string DataEntry_DatePicker = "DatePicker 日期选择器";
     public const string DataEntry_TimePicker = "TimePicker 时间选择器";
+    public const string DataEntry_TreeSelect = "TreeSelect 树选择";
     public const string DataEntry_Upload = "Upload 上传";
     
     public const string DataDisplay = "数据展示";

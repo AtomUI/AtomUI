@@ -6,7 +6,195 @@
     <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect">
         <Setter Property="Template">
             <ControlTemplate>
+                <Panel>
+                    <atom:TreeSelectAddOnDecoratedBox
+                        Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        StyleVariant="{TemplateBinding StyleVariant}"
+                        SizeType="{TemplateBinding SizeType}"
+                        Status="{TemplateBinding Status}"
+                        LeftAddOn="{TemplateBinding LeftAddOn}"
+                        LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
+                        RightAddOn="{TemplateBinding RightAddOn}"
+                        RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
+                        IsEnabled="{TemplateBinding IsEnabled}"
+                        ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
+                        ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
+                        IsMultiple="{TemplateBinding IsMultiple}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsSelectionEmpty="{TemplateBinding IsSelectionEmpty}"
+                        IsDropDownOpen="{TemplateBinding IsDropDownOpen}">
+                        <atom:AddOnDecoratedBox.ContentRightAddOn>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">
+                                <atom:SelectMaxCountIndicator
+                                    MaxCount="{Binding MaxCount, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    SelectedCount="{Binding SelectedCount, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsVisible="{Binding IsShowMaxCountIndicator, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}" />
+                                <ContentPresenter
+                                    Content="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    ContentTemplate="{Binding ContentLeftAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <atom:SelectHandle
+                                    IsFilterEnabled="{Binding IsEffectiveFilterEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsLoading="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsClearable="{Binding IsAllowClear, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsSelectionEmpty="{Binding IsSelectionEmpty, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsDropDownOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsInputHover="{Binding IsInnerBoxHover, RelativeSource={RelativeSource AncestorType=atom:AddOnDecoratedBox}}"
+                                    IsInputPressed="{Binding IsInnerBoxPressed, RelativeSource={RelativeSource AncestorType=atom:AddOnDecoratedBox}}" />
+                            </StackPanel>
+                        </atom:AddOnDecoratedBox.ContentRightAddOn>
+                        <Panel>
+                            <atom:TextBlock
+                                Name="PlaceholderText"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                TextTrimming="CharacterEllipsis"
+                                Text="{TemplateBinding PlaceholderText}"
+                                IsVisible="{TemplateBinding IsPlaceholderTextVisible}"
+                                Foreground="{TemplateBinding PlaceholderForeground}" />
+                            <ContentPresenter Name="SingleSelectResultPresenter"
+                                              Content="{TemplateBinding SelectedItem}"
+                                              IsVisible="False">
+                                <ContentPresenter.ContentTemplate>
+                                    <DataTemplate x:DataType="atom:ITreeViewItemData">
+                                        <TextBlock Text="{Binding Header}" />
+                                    </DataTemplate>
+                                </ContentPresenter.ContentTemplate>
+                            </ContentPresenter>
+                            <!-- <atom:SelectSearchTextBox Name="{x:Static atom:SelectThemeConstants.SingleSearchInputPart}" -->
+                            <!--                           IsVisible="False" -->
+                            <!--                           SizeType="{TemplateBinding SizeType}" -->
+                            <!--                           Watermark="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}" /> -->
+                            <!-- <atom:SelectResultOptionsBox -->
+                            <!--     Name="SelectedOptionsBox" -->
+                            <!--     HorizontalAlignment="Stretch" -->
+                            <!--     VerticalAlignment="Center" -->
+                            <!--     Mode="{TemplateBinding Mode}" -->
+                            <!--     SizeType="{TemplateBinding SizeType}" -->
+                            <!--     SelectedOptions="{TemplateBinding SelectedOptions}" -->
+                            <!--     IsFilterEnabled="{TemplateBinding IsEffectiveSearchEnabled}" -->
+                            <!--     IsDropDownOpen="{TemplateBinding IsDropDownOpen}" -->
+                            <!--     MaxTagCount="{TemplateBinding MaxTagCount}" -->
+                            <!--     IsResponsiveMaxTagCount="{TemplateBinding IsResponsiveMaxTagCount}" -->
+                            <!--     IsVisible="False" -->
+                            <!--     Focusable="True" /> -->
+                        </Panel>
+                    </atom:TreeSelectAddOnDecoratedBox>
+                    <atom:Popup Name="{x:Static atom:SelectThemeConstants.PopupPart}"
+                                WindowManagerAddShadowHint="False"
+                                IsLightDismissEnabled="False"
+                                IsDetectMouseClickEnabled="True"
+                                Placement="BottomEdgeAlignedLeft"
+                                IsMotionAwareOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}">
+                        <Border Name="PopupFrame"
+                                MaxHeight="{TemplateBinding MaxPopupHeight}"
+                                MinWidth="{TemplateBinding EffectivePopupWidth}"
+                                Padding="{TemplateBinding PopupContentPadding}">
+                            <atom:TreeView HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"
+                                           NodeHoverMode="Block"
+                                           ItemsSource="{TemplateBinding TreeItemsSource}"
+                                           ItemTemplate="{TemplateBinding TreeItemTemplate}" 
+                                           SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
+                                           SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"/>
+                        </Border>
+                    </atom:Popup>
+                </Panel>
             </ControlTemplate>
         </Setter>
+
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="PopupContentPadding"
+                Value="{DynamicResource {x:Static atom:SelectTokenKey.PopupContentPadding}}" />
+        <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
+        <Setter Property="PlaceholderForeground"
+                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
+
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeLG}}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|Popup#PART_Popup">
+            <Setter Property="MarginToAnchor"
+                    Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupMarginToAnchor}}" />
+            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupBoxShadows}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PopupFrame">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupBorderRadius}}" />
+        </Style>
+
+        <Style Selector="^[IsMultiple=False]">
+            <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
+                <Setter Property="IsShowSelectedIndicator" Value="False" />
+            </Style>
+            <Style Selector="^[IsFilterEnabled=False]">
+                <Style Selector="^ /template/ atom|TreeSelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
+                    <Setter Property="Cursor" Value="Hand" />
+                </Style>
+
+                <Style Selector="^ /template/ ContentPresenter#SingleSelectResultPresenter">
+                    <Setter Property="IsVisible" Value="True" />
+                    <Setter Property="Foreground"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
+                </Style>
+                <Style Selector="^[IsDropDownOpen=True]">
+                    <Style Selector="^ /template/ ContentPresenter#SingleSelectResultPresenter">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
+                    </Style>
+                </Style>
+            </Style>
+            <Style Selector="^[IsFilterEnabled=True]">
+                <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleSearchInput">
+                    <Setter Property="IsVisible" Value="True" />
+                    <Setter Property="WatermarkForeground"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
+                </Style>
+                <Style Selector="^[IsDropDownOpen=True]">
+                    <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleSearchInput">
+                        <Setter Property="WatermarkForeground"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
+                    </Style>
+                </Style>
+            </Style>
+        </Style>
+
+        <Style Selector="^[IsMultiple=True]">
+            <Style Selector="^ /template/ atom|SelectResultOptionsBox#SelectedOptionsBox">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^[IsFilterEnabled=False]">
+                <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
+                    <Setter Property="Cursor" Value="Hand" />
+                </Style>
+            </Style>
+            <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
+                <Setter Property="IsShowSelectedIndicator" Value="True" />
+                <Setter Property="SelectionMode" Value="Multiple" />
+            </Style>
+        </Style>
+
+        <Setter Property="TreeItemTemplate">
+            <TreeDataTemplate x:DataType="atom:ITreeViewItemData"
+                              ItemsSource="{Binding Children}">
+                <atom:TextBlock Text="{Binding Header}" />
+            </TreeDataTemplate>
+        </Setter>
+
     </ControlTheme>
 </ResourceDictionary>

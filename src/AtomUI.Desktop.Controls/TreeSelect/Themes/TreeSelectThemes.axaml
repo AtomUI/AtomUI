@@ -3,5 +3,6 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="TreeSelectTheme.axaml"/>
+        <ResourceInclude Source="TreeSelectAddOnDecoratedBoxTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

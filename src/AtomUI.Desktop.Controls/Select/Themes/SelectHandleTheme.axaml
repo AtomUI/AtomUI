@@ -41,7 +41,7 @@
             </Style>
         </Style>
 
-        <Style Selector="^[IsSearchEnabled=True][IsDropDownOpen=True]">
+        <Style Selector="^[IsFilterEnabled=True][IsDropDownOpen=True]">
             <Style Selector="^ /template/ atom|Icon#OpenIndicator">
                 <Setter Property="IsVisible" Value="False" />
             </Style>

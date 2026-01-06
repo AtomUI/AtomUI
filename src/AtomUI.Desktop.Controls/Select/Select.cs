@@ -15,7 +15,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -458,10 +457,10 @@ public class Select : TemplatedControl,
             o => o.ActivateFilterValue,
             (o, v) => o.ActivateFilterValue = v);
     
-    internal static readonly DirectProperty<Select, bool> IsEffectiveSearchEnabledProperty =
-        AvaloniaProperty.RegisterDirect<Select, bool>(nameof(IsEffectiveSearchEnabled),
-            o => o.IsEffectiveSearchEnabled,
-            (o, v) => o.IsEffectiveSearchEnabled = v);
+    internal static readonly DirectProperty<Select, bool> IsEffectiveFilterEnabledProperty =
+        AvaloniaProperty.RegisterDirect<Select, bool>(nameof(IsEffectiveFilterEnabled),
+            o => o.IsEffectiveFilterEnabled,
+            (o, v) => o.IsEffectiveFilterEnabled = v);
     
     internal double ItemHeight
     {
@@ -537,12 +536,12 @@ public class Select : TemplatedControl,
         set => SetAndRaise(ActivateFilterValueProperty, ref _activateFilterValue, value);
     }
     
-    private bool _isEffectiveSearchEnabled;
+    private bool _isEffectiveFilterEnabled;
 
-    internal bool IsEffectiveSearchEnabled
+    internal bool IsEffectiveFilterEnabled
     {
-        get => _isEffectiveSearchEnabled;
-        set => SetAndRaise(IsEffectiveSearchEnabledProperty, ref _isEffectiveSearchEnabled, value);
+        get => _isEffectiveFilterEnabled;
+        set => SetAndRaise(IsEffectiveFilterEnabledProperty, ref _isEffectiveFilterEnabled, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -555,7 +554,7 @@ public class Select : TemplatedControl,
     
     private Popup? _popup;
     private SelectOptions? _optionsBox;
-    private SelectSearchTextBox? _singleSearchInput;
+    private SelectFilterTextBox? _singleSearchInput;
     private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
@@ -570,8 +569,8 @@ public class Select : TemplatedControl,
             target.HandleClearRequest();
         });
         OptionsSourceProperty.Changed.AddClassHandler<Select>((x, e) => x.HandleOptionsSourcePropertyChanged(e));
-        SelectSearchTextBox.TextChangedEvent.AddClassHandler<Select>((x, e) => x.HandleSearchInputTextChanged(e));
-        SelectSearchTextBox.KeyDownEvent.AddClassHandler<Select>(
+        SelectFilterTextBox.TextChangedEvent.AddClassHandler<Select>((x, e) => x.HandleSearchInputTextChanged(e));
+        SelectFilterTextBox.KeyDownEvent.AddClassHandler<Select>(
             (x, e) => x.HandleSearchInputKeyDown(e),
             RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         SelectResultOptionsBox.KeyDownEvent.AddClassHandler<Select>(
@@ -846,7 +845,7 @@ public class Select : TemplatedControl,
             _popup.Closed -= PopupClosed;
         }
         _optionsBox        = e.NameScope.Get<SelectOptions>(SelectThemeConstants.OptionsBoxPart);
-        _singleSearchInput = e.NameScope.Get<SelectSearchTextBox>(SelectThemeConstants.SingleSearchInputPart);
+        _singleSearchInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleSearchInputPart);
         if (_optionsBox != null)
         {
             _optionsBox.Select = this;
@@ -1368,12 +1367,12 @@ public class Select : TemplatedControl,
         if (Mode == SelectMode.Tags)
         {
             SetCurrentValue(
-                IsEffectiveSearchEnabledProperty, true);
+                IsEffectiveFilterEnabledProperty, true);
         }
         else
         {
             SetCurrentValue(
-                IsEffectiveSearchEnabledProperty,
+                IsEffectiveFilterEnabledProperty,
                 IsSearchEnabled);
         }
     }
@@ -1423,9 +1422,9 @@ public class Select : TemplatedControl,
         }
     }
 
-    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnDetachedFromLogicalTree(e);
+        base.OnDetachedFromVisualTree(e);
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is Window window)
         {

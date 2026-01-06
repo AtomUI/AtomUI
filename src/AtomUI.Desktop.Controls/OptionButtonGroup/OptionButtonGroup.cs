@@ -200,7 +200,6 @@ public class OptionButtonGroup : SelectingItemsControl,
                         if (ItemTemplate != null)
                         {
                             optionButton.SetCurrentValue(OptionButton.ContentProperty, item);
-                            
                         }
                         else
                         {

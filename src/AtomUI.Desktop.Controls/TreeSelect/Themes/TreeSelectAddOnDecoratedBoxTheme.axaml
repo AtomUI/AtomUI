@@ -1,0 +1,217 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TreeSelectAddOnDecoratedBox}" TargetType="atom:TreeSelectAddOnDecoratedBox">
+        <ControlTheme.BasedOn>
+            <themes:AddOnDecoratedBoxTheme TargetType="atom:TreeSelectAddOnDecoratedBox" />
+        </ControlTheme.BasedOn>
+
+        <Style Selector="^:is(atom|TreeSelectAddOnDecoratedBox)">
+            <Style Selector="^^[IsMultiple=True]">
+                <Style Selector="^[IsSelectionEmpty=False]">
+                    <Style Selector="^[SizeType=Large]">
+                        <Style Selector="^ /template/ Border#PART_ContentFrame">
+                            <Setter Property="Padding"
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.MultiModePaddingLG}}" />
+                        </Style>
+                    </Style>
+                    <Style Selector="^[SizeType=Middle]">
+                        <Style Selector="^ /template/ Border#PART_ContentFrame">
+                            <Setter Property="Padding"
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.MultiModePadding}}" />
+                        </Style>
+
+                    </Style>
+                    <Style Selector="^[SizeType=Small]">
+                        <Style Selector="^ /template/ Border#PART_ContentFrame">
+                            <Setter Property="Padding"
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.MultiModePaddingSM}}" />
+                        </Style>
+                    </Style>
+                </Style>
+                
+                <Style Selector="^[IsSelectionEmpty=True]">
+                    <Style Selector="^[SizeType=Large]">
+                        <Style Selector="^ /template/ Border#PART_ContentFrame">
+                            <Setter Property="Padding"
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.PaddingLG}}" />
+                        </Style>
+                    </Style>
+                    <Style Selector="^[SizeType=Middle]">
+                        <Style Selector="^ /template/ Border#PART_ContentFrame">
+                            <Setter Property="Padding"
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.Padding}}" />
+                        </Style>
+
+                    </Style>
+                    <Style Selector="^[SizeType=Small]">
+                        <Style Selector="^ /template/ Border#PART_ContentFrame">
+                            <Setter Property="Padding"
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.Padding}}" />
+                        </Style>
+                    </Style>
+                </Style>
+            </Style>
+
+            <Style Selector="^[StyleVariant=Outline]">
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+
+                <Style Selector="^[IsInnerBoxHover=True]">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.HoverBorderColor}}" />
+                </Style>
+
+                <Style Selector="^:focus-within">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBorderColor}}" />
+                </Style>
+
+                <Style Selector="^:pressed">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBorderColor}}" />
+                </Style>
+                
+                <Style Selector="^[IsDropDownOpen=True]">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBorderColor}}" />
+                </Style>
+
+                <Style Selector="^[Status=Error]">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+
+                    <Style Selector="^[IsInnerBoxHover=True]">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
+                    </Style>
+
+                    <Style Selector="^:focus-within">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+                    </Style>
+
+                    <Style Selector="^:pressed">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+                    </Style>
+                    
+                    <Style Selector="^[IsDropDownOpen=True]">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+                    </Style>
+                </Style>
+
+                <Style Selector="^[Status=Warning]">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+
+                    <Style Selector="^[IsInnerBoxHover=True]">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningBorderHover}}" />
+                    </Style>
+
+                    <Style Selector="^:focus-within">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+                    </Style>
+
+                    <Style Selector="^:pressed">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+                    </Style>
+                    <Style Selector="^[IsDropDownOpen=True]">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+                    </Style>
+                </Style>
+            </Style>
+
+            <Style Selector="^[StyleVariant=Filled]">
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
+
+                <Style Selector="^[IsInnerBoxHover=True]">
+                    <Setter Property="Background"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillSecondary}}" />
+                </Style>
+
+                <Style Selector="^:focus-within">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBorderColor}}" />
+                    <Setter Property="Background" Value="Transparent" />
+                </Style>
+
+                <Style Selector="^:pressed">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBorderColor}}" />
+                </Style>
+                
+                <Style Selector="^[IsDropDownOpen=True]">
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBorderColor}}" />
+                </Style>
+
+                <Style Selector="^[Status=Error]">
+                    <Setter Property="BorderBrush"
+                            Value="Transparent" />
+                    <Setter Property="Background"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBg}}" />
+
+                    <Style Selector="^[IsInnerBoxHover=True]">
+                        <Setter Property="Background"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBgHover}}" />
+                    </Style>
+
+                    <Style Selector="^:focus-within">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+                        <Setter Property="Background"
+                                Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBg}}" />
+                    </Style>
+
+                    <Style Selector="^:pressed">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+                    </Style>
+                    
+                    <Style Selector="^[IsDropDownOpen=True]">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+                    </Style>
+                </Style>
+
+                <Style Selector="^[Status=Warning]">
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="Background"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningBg}}" />
+
+                    <Style Selector="^[IsInnerBoxHover=True]">
+                        <Setter Property="Background"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningBgHover}}" />
+                    </Style>
+
+                    <Style Selector="^:focus-within">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+                        <Setter Property="Background"
+                                Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ActiveBg}}" />
+                    </Style>
+
+                    <Style Selector="^:pressed">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+                    </Style>
+                    
+                    <Style Selector="^[IsDropDownOpen=True]">
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+                    </Style>
+                </Style>
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

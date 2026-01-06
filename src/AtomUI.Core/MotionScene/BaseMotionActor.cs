@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
 
@@ -40,9 +41,24 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     #endregion
 
     #region 公共事件定义
+    
+    public static readonly RoutedEvent<RoutedEventArgs> PreStartEvent = 
+        RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(PreStart), RoutingStrategies.Bubble);
+    
+    public static readonly RoutedEvent<RoutedEventArgs> CompletedEvent = 
+        RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(Completed), RoutingStrategies.Bubble);
 
-    public event EventHandler? PreStart;
-    public event EventHandler? Completed;
+    public event EventHandler<RoutedEventArgs>? PreStart
+    {
+        add => AddHandler(PreStartEvent, value);
+        remove => RemoveHandler(PreStartEvent, value);
+    }
+ 
+    public event EventHandler<RoutedEventArgs>? Completed
+    {
+        add => AddHandler(CompletedEvent, value);
+        remove => RemoveHandler(CompletedEvent, value);
+    }
 
     #endregion
 
@@ -164,7 +180,7 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     
     public virtual void NotifyMotionPreStart()
     {
-        PreStart?.Invoke(this, EventArgs.Empty);
+        RaiseEvent(new RoutedEventArgs(PreStartEvent, this));
         Animating = true;
     }
 
@@ -172,7 +188,7 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     {
         Animating = false;
         InvalidateMeasure();
-        Completed?.Invoke(this, EventArgs.Empty);
+        RaiseEvent(new RoutedEventArgs(CompletedEvent, this));
     }
     
     /// <summary>

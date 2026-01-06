@@ -15,8 +15,8 @@ internal class SelectHandle : TemplatedControl
     public static readonly StyledProperty<bool> IsInputPressedProperty =
         AvaloniaProperty.Register<SelectHandle, bool>(nameof(IsInputPressed));
     
-    public static readonly StyledProperty<bool> IsSearchEnabledProperty =
-        AvaloniaProperty.Register<SelectHandle, bool>(nameof(IsSearchEnabled));
+    public static readonly StyledProperty<bool> IsFilterEnabledProperty =
+        AvaloniaProperty.Register<SelectHandle, bool>(nameof(IsFilterEnabled));
         
     public static readonly StyledProperty<bool> IsClearableProperty =
         AvaloniaProperty.Register<SelectHandle, bool>(nameof(IsClearable));
@@ -45,10 +45,10 @@ internal class SelectHandle : TemplatedControl
         set => SetValue(IsInputPressedProperty, value);
     }
     
-    public bool IsSearchEnabled
+    public bool IsFilterEnabled
     {
-        get => GetValue(IsSearchEnabledProperty);
-        set => SetValue(IsSearchEnabledProperty, value);
+        get => GetValue(IsFilterEnabledProperty);
+        set => SetValue(IsFilterEnabledProperty, value);
     }
     
     public bool IsClearable

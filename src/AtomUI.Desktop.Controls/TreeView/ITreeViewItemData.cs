@@ -10,6 +10,7 @@ public interface ITreeViewItemData : ITreeNode<ITreeViewItemData>
     bool IsIndicatorEnabled { get; }
     string? GroupName { get; }
     bool IsLeaf { get; }
+    object? Value { get; set; }
 
     void UpdateParentNode(ITreeViewItemData? parentNode)
     {

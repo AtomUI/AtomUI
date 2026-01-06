@@ -7,24 +7,26 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:MotionActor ClipToBounds="False">
-                    <atom:VisualLayerManager IsPopup="True" ClipToBounds="False">
-                        <atom:OverlayPopupContent
-                            Name="{x:Static atom:OverlayPopupHostThemeConstants.ContentPresenterPart}"
-                            Background="{TemplateBinding Background}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
-                            Padding="{TemplateBinding Padding}"/>
-                    </atom:VisualLayerManager>
+                    <atom:PlacementAwareDecorator>
+                        <atom:VisualLayerManager IsPopup="True" ClipToBounds="False">
+                            <atom:OverlayPopupContent
+                                Name="{x:Static atom:OverlayPopupHostThemeConstants.ContentPresenterPart}"
+                                Background="{TemplateBinding Background}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
+                                Padding="{TemplateBinding Padding}" />
+                        </atom:VisualLayerManager>
+                    </atom:PlacementAwareDecorator>
                 </atom:MotionActor>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
         <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
         <Setter Property="FontFamily" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontFamily}}" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontStyle" Value="Normal" />
         <Setter Property="ClipToBounds" Value="False" />
-        
+
     </ControlTheme>
 </ResourceDictionary>

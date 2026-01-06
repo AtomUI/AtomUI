@@ -6,5 +6,6 @@
         <ResourceInclude Source="PopupBuddyLayer.axaml"/>
         <ResourceInclude Source="PopupRoot.axaml"/>
         <ResourceInclude Source="OverlayPopupContentTheme.axaml"/>
+        <ResourceInclude Source="PlacementAwareDecoratorTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

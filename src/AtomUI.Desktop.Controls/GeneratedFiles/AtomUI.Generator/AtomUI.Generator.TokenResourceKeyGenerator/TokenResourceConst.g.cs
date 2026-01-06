@@ -371,6 +371,11 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey RightExpandButtonVMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Expander.RightExpandButtonVMargin");
     }
 
+    public static class FlyoutHostTokenKey
+    {
+        public static readonly TokenResourceKey MarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.FlyoutHost.MarginToAnchor");
+    }
+
     public static class TreeFlyoutTokenKey
     {
         public static readonly TokenResourceKey PopupBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupBgColor");

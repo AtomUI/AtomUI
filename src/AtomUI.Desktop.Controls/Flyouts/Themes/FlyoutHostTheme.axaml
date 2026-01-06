@@ -13,7 +13,7 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}"/>
+        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:FlyoutHostTokenKey.MarginToAnchor}}"/>
         <Setter Property="MotionDuration" Value="{DynamicResource {x:Static atom:SharedTokenKey.MotionDurationMid}}"/>
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
         <Setter Property="ClipToBounds" Value="False"/>

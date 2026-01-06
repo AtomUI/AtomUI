@@ -21,6 +21,7 @@
         </Setter>
         
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:ToolTipTokenKey.ToolTipBackground}}" />
         
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ToolTipContainer">

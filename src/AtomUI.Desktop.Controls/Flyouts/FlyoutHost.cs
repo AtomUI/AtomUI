@@ -4,6 +4,8 @@ using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.MotionScene;
+using AtomUI.Theme;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -21,7 +23,9 @@ public enum FlyoutTriggerType
     Focus,
 }
 
-public class FlyoutHost : ContentControl, IMotionAwareControl
+public class FlyoutHost : ContentControl,
+                          IMotionAwareControl,
+                          IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     
@@ -170,6 +174,13 @@ public class FlyoutHost : ContentControl, IMotionAwareControl
 
     #endregion
     
+    #region 内部属性定义
+
+    Control IControlSharedTokenResourcesHost.HostControl => this;
+    string IControlSharedTokenResourcesHost.TokenId => FlyoutHostToken.ID;
+
+    #endregion
+    
     private readonly FlyoutStateHelper _flyoutStateHelper;
     private CompositeDisposable? _flyoutStateHelperDisposables;
     private CompositeDisposable? _flyoutDisposables;
@@ -182,6 +193,7 @@ public class FlyoutHost : ContentControl, IMotionAwareControl
     
     public FlyoutHost()
     {
+        this.RegisterResources();
         _flyoutStateHelper = new FlyoutStateHelper();
     }
 

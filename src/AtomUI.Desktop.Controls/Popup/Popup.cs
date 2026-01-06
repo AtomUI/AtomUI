@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
@@ -32,7 +33,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         AvaloniaProperty.Register<Popup, BoxShadows>(nameof(MaskShadows));
 
     public static readonly StyledProperty<double> MarginToAnchorProperty =
-        AvaloniaProperty.Register<Popup, double>(nameof(MarginToAnchor), 4);
+        AvaloniaProperty.Register<Popup, double>(nameof(MarginToAnchor));
 
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<Popup>();
@@ -134,6 +135,11 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     internal static readonly StyledProperty<bool> IsDetectMouseClickEnabledProperty =
         AvaloniaProperty.Register<Popup, bool>(nameof(IsDetectMouseClickEnabled), true);
+    
+    internal static readonly DirectProperty<Popup, Direction> HostDecoratorDirectionProperty =
+        AvaloniaProperty.RegisterDirect<Popup, Direction>(nameof(HostDecoratorDirection),
+            o => o.HostDecoratorDirection,
+            (o, v) => o.HostDecoratorDirection = v);
 
     internal bool IsDetectMouseClickEnabled
     {
@@ -141,14 +147,24 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         set => SetValue(IsDetectMouseClickEnabledProperty, value);
     }
     
+    private Direction _hostDecoratorDirection;
+
+    internal Direction HostDecoratorDirection
+    {
+        get => _hostDecoratorDirection;
+        private set => SetAndRaise(HostDecoratorDirectionProperty, ref _hostDecoratorDirection, value);
+    }
+    
     #endregion
 
     internal BaseMotionActor? MotionActor;
+    private PlacementAwareDecorator? _placementAwareDecorator;
     private PopupBuddyLayer? _buddyLayer;
     private IDisposable? _selfLightDismissDisposable;
     private IManagedPopupPositionerPopup? _managedPopupPositioner;
     private bool _isNeedDetectFlip = true;
     private bool _ignoreIsOpenChanged;
+    private CompositeDisposable? _hostDecoratorDisposable;
 
     // 在翻转之后或者恢复正常，会有属性的变动，在变动之后捕捉动画需要等一个事件循环，保证布局已经生效
     private bool _openAnimating;
@@ -199,16 +215,26 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     
     private void HandlePopupHostChanged(IPopupHost? popupHost)
     {
+        _hostDecoratorDisposable?.Dispose();
+        _placementAwareDecorator = null;
         if (popupHost is PopupRoot popupRoot)
         {
-            MotionActor = popupRoot.FindDescendantOfType<MotionActor>();
+            MotionActor              = popupRoot.FindDescendantOfType<MotionActor>();
+            _placementAwareDecorator = popupRoot.FindDescendantOfType<PlacementAwareDecorator>();
         }
         else if (popupHost is OverlayPopupHost overlayPopupHost)
         {
-            MotionActor = overlayPopupHost.FindDescendantOfType<MotionActor>();
+            MotionActor              = overlayPopupHost.FindDescendantOfType<MotionActor>();
+            _placementAwareDecorator = overlayPopupHost.FindDescendantOfType<PlacementAwareDecorator>();
             var popupContent = overlayPopupHost.FindDescendantOfType<OverlayPopupContent>();
             Debug.Assert(popupContent != null);
             BindUtils.RelayBind(this, IsFlippedProperty, popupContent, OverlayPopupContent.IsFlippedProperty);
+        }
+        if (_placementAwareDecorator != null)
+        {
+            _hostDecoratorDisposable = new CompositeDisposable(2);
+            _hostDecoratorDisposable.Add(BindUtils.RelayBind(this, MarginToAnchorProperty, _placementAwareDecorator, PlacementAwareDecorator.MarginToAnchorProperty));
+            _hostDecoratorDisposable.Add(BindUtils.RelayBind(this, HostDecoratorDirectionProperty, _placementAwareDecorator, PlacementAwareDecorator.MarginPlacementProperty));
         }
     }
     
@@ -483,7 +509,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     /// </summary>
     internal void AdjustPopupHostPosition(Control placementTarget)
     {
-        var direction = PopupUtils.GetDirection(Placement);
         var topLevel  = TopLevel.GetTopLevel(placementTarget)!;
 
         Point location  = default;
@@ -548,42 +573,18 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 var flipPlacement        = GetFlipPlacement(Placement, flipInfo.Item1, flipInfo.Item2);
                 var flipAnchorAndGravity = PopupUtils.GetAnchorAndGravity(flipPlacement);
-                var flipOffset = PopupUtils.CalculateMarginToAnchorOffset(flipPlacement,
-                    MarginToAnchor,
-                    PlacementAnchor,
-                    PlacementGravity);
 
                 Placement        = flipPlacement;
                 PlacementAnchor  = flipAnchorAndGravity.Item1;
                 PlacementGravity = flipAnchorAndGravity.Item2;
-
-                if (direction == Direction.Top || direction == Direction.Bottom)
-                {
-                    effectiveOffsetY += flipOffset.Y * scaling;
-                }
-                else
-                {
-                    effectiveOffsetX += flipOffset.X * scaling;
-                }
+                
                 IsFlipped           = true;
             }
             else
             {
-                var deltaOffset = PopupUtils.CalculateMarginToAnchorOffset(Placement,
-                    MarginToAnchor,
-                    PlacementAnchor,
-                    PlacementGravity);
-                if (direction == Direction.Top || direction == Direction.Bottom)
-                {
-                    effectiveOffsetY += deltaOffset.Y * scaling;
-                }
-                else
-                {
-                    effectiveOffsetX += deltaOffset.X * scaling;
-                }
                 IsFlipped = false;
             }
-            
+
             var effectivePosition = new Point(effectiveOffsetX, effectiveOffsetY);
             positionerPopup.MoveAndResize(effectivePosition, popupSize);
             PositionFlipped?.Invoke(this, new PopupFlippedEventArgs(IsFlipped));
@@ -905,6 +906,23 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 }
             }
         }
+        else if (change.Property == PlacementProperty)
+        {
+            HostDecoratorDirection = GetHostDecoratorDirection(Placement);
+        }
+    }
+
+    private Direction GetHostDecoratorDirection(PlacementMode placement)
+    {
+        var direction = PopupUtils.GetDirection(Placement);
+        return direction switch
+        {
+            Direction.Left => Direction.Right,
+            Direction.Top => Direction.Bottom,
+            Direction.Right => Direction.Left,
+            Direction.Bottom => Direction.Top,
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, "Invalid value for direction for Placement.")
+        };
     }
     
     private IgnoreIsOpenScope BeginIgnoringIsOpen() => new IgnoreIsOpenScope(this);

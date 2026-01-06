@@ -58,7 +58,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     
     #endregion
 
-        #region 内部属性定义
+    #region 内部属性定义
     
     internal static readonly DirectProperty<PopupBuddyLayer, CornerRadius> MaskShadowsContentCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<PopupBuddyLayer, CornerRadius>(
@@ -89,6 +89,9 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             nameof(MotionPadding),
             o => o.MotionPadding,
             (o, v) => o.MotionPadding = v);
+    
+    internal static readonly StyledProperty<double> MarginToAnchorProperty =
+        Popup.MarginToAnchorProperty.AddOwner<PopupBuddyLayer>();
     
     private CornerRadius _maskShadowsContentCornerRadius;
 
@@ -138,6 +141,11 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         set => SetAndRaise(MotionPaddingProperty, ref _motionPadding, value);
     }
     
+    internal double MarginToAnchor
+    {
+        get => GetValue(MarginToAnchorProperty);
+        set => SetValue(MarginToAnchorProperty, value);
+    }
     #endregion
     
     private Popup _buddyPopup;
@@ -315,6 +323,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.MotionDurationProperty, this, MotionDurationProperty));
         _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.OpenMotionProperty, this, OpenMotionProperty));
         _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.CloseMotionProperty, this, CloseMotionProperty));
+        _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.MarginToAnchorProperty, this, MarginToAnchorProperty));
         SetupPopupHost();
     }
     
@@ -592,7 +601,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         {
             _ghostContentPresenter.Content = new MotionTargetBitmapControl(popupPresenter.CaptureCurrentBitmap())
             {
-                Width = popupPresenter.DesiredSize.Width,
+                Width  = popupPresenter.DesiredSize.Width,
                 Height = popupPresenter.DesiredSize.Height,
             };
             _ghostContentPresenter.Opacity = 1.0;
@@ -618,7 +627,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             _arrowIndicatorLayout.IsVisible = true;
         }
         _ghostContentPresenter.Opacity = 0.0;
-        _ghostContentPresenter.Content   = null;
+        _ghostContentPresenter.Content = null;
     }
     
     void IShadowAwareLayer.NotifyCloseMotionAboutToStart()

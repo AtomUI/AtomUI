@@ -1,0 +1,48 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:PlacementAwareDecorator}" TargetType="atom:PlacementAwareDecorator">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DockPanel LastChildFill="True">
+                    <Control Name="PlacementBlank"/>
+                    <ContentPresenter Name="ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+        
+        <Setter Property="ClipToBounds" Value="False"/>
+        <Style Selector="^[MarginPlacement=Bottom]">
+            <Style Selector="^ /template/ Control#PlacementBlank">
+                <Setter Property="DockPanel.Dock" Value="Bottom"/>
+                <Setter Property="Height" Value="{TemplateBinding MarginToAnchor}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[MarginPlacement=Top]">
+            <Style Selector="^ /template/ Control#PlacementBlank">
+                <Setter Property="DockPanel.Dock" Value="Top"/>
+                <Setter Property="Height" Value="{TemplateBinding MarginToAnchor}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[MarginPlacement=Left]">
+            <Style Selector="^ /template/ Control#PlacementBlank">
+                <Setter Property="DockPanel.Dock" Value="Left"/>
+                <Setter Property="Width" Value="{TemplateBinding MarginToAnchor}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[MarginPlacement=Right]">
+            <Style Selector="^ /template/ Control#PlacementBlank">
+                <Setter Property="DockPanel.Dock" Value="Right"/>
+                <Setter Property="Width" Value="{TemplateBinding MarginToAnchor}"/>
+            </Style>
+        </Style>
+ 
+    </ControlTheme>
+</ResourceDictionary>

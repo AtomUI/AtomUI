@@ -30,7 +30,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.DrawerToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.EmptyToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ExpanderToken));
-            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.FlyoutPresenterToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.FlyoutHostToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.GroupBoxToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ImagePreviewerToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.LineEditToken));

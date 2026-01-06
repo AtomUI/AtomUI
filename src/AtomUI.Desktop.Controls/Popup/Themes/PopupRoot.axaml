@@ -7,17 +7,19 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}">
-                    <Panel>
-                        <Border Name="{x:Static atom:PopupThemeConstants.TransparencyFallbackPart}"
-                                IsHitTestVisible="False" />
-                        <atom:VisualLayerManager IsPopup="True">
-                            <ContentPresenter Name="{x:Static atom:PopupThemeConstants.ContentPresenterPart}"
-                                              Background="{TemplateBinding Background}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              Content="{TemplateBinding Content}"
-                                              Padding="{TemplateBinding Padding}" />
-                        </atom:VisualLayerManager>
-                    </Panel>
+                    <atom:PlacementAwareDecorator>
+                        <Panel>
+                            <Border Name="{x:Static atom:PopupThemeConstants.TransparencyFallbackPart}"
+                                    IsHitTestVisible="False" />
+                            <atom:VisualLayerManager IsPopup="True">
+                                <ContentPresenter Name="{x:Static atom:PopupThemeConstants.ContentPresenterPart}"
+                                                  Background="{TemplateBinding Background}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Content="{TemplateBinding Content}"
+                                                  Padding="{TemplateBinding Padding}" />
+                            </atom:VisualLayerManager>
+                        </Panel>
+                    </atom:PlacementAwareDecorator>
                 </atom:MotionActor>
             </ControlTemplate>
         </Setter>

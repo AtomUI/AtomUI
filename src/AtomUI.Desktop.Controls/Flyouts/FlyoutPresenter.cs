@@ -13,7 +13,7 @@ public class FlyoutPresenter : ArrowDecoratedBox,
     #region 内部属性定义
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
-    string IControlSharedTokenResourcesHost.TokenId => FlyoutPresenterToken.ID;
+    string IControlSharedTokenResourcesHost.TokenId => FlyoutHostToken.ID;
 
     #endregion
     

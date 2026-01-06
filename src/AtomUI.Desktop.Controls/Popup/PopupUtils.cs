@@ -247,44 +247,6 @@ internal static class PopupUtils
         return anchorPoint + new Point(x, y);
     }
 
-    internal static Point CalculateMarginToAnchorOffset(PlacementMode placement,
-        double margin,
-        PopupAnchor? popupAnchor = null,
-        PopupGravity? popupGravity = null)
-    {
-        var offsetX = 0d;
-        var offsetY = 0d;
-        if (placement != PlacementMode.Center &&
-            placement != PlacementMode.Pointer &&
-            IsCanonicalAnchorType(placement, popupAnchor, popupGravity))
-        {
-            var direction = GetDirection(placement);
-            if (direction == Direction.Bottom)
-            {
-                offsetY += margin;
-            }
-            else if (direction == Direction.Top)
-            {
-                offsetY += -margin;
-            }
-            else if (direction == Direction.Left)
-            {
-                offsetX += -margin;
-            }
-            else
-            {
-                offsetX += margin;
-            }
-        }
-        else if (placement == PlacementMode.Pointer)
-        {
-            offsetX += margin;
-            offsetY += margin;
-        }
-
-        return new Point(offsetX, offsetY);
-    }
-
     internal static Direction GetDirection(PlacementMode placement)
     {
         return placement switch

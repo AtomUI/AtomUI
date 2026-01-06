@@ -61,7 +61,7 @@ public class ToolTip : ContentControl,
     /// 距离 anchor 的边距，根据垂直和水平进行设置
     /// </summary>
     public static readonly AttachedProperty<double> MarginToAnchorProperty =
-        AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("MarginToAnchor", 2);
+        AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("MarginToAnchor", 4);
 
     public static readonly AttachedProperty<int> ShowDelayProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);

@@ -77,8 +77,8 @@ public class NavMenu : ItemsControl,
             o => o.DefaultOpenPaths,
             (o, v) => o.DefaultOpenPaths = v);
     
-    public static readonly StyledProperty<bool> IsUseOverlayLayerProperty = 
-        AvaloniaProperty.Register<NavMenu, bool>(nameof (IsUseOverlayLayer));
+    public static readonly StyledProperty<bool> ShouldUseOverlayLayerProperty = 
+        AvaloniaProperty.Register<NavMenu, bool>(nameof (ShouldUseOverlayLayer));
 
     public INavMenuItemData? _selectedItem;
 
@@ -136,10 +136,10 @@ public class NavMenu : ItemsControl,
         set => SetValue(IsDarkStyleProperty, value);
     }
     
-    public bool IsUseOverlayLayer
+    public bool ShouldUseOverlayLayer
     {
-        get => GetValue(IsUseOverlayLayerProperty);
-        set => SetValue(IsUseOverlayLayerProperty, value);
+        get => GetValue(ShouldUseOverlayLayerProperty);
+        set => SetValue(ShouldUseOverlayLayerProperty, value);
     }
 
     #endregion
@@ -445,7 +445,7 @@ public class NavMenu : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, ModeProperty, navMenuItem, NavMenuItem.ModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsDarkStyleProperty, navMenuItem, NavMenuItem.IsDarkStyleProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, navMenuItem, NavMenuItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsUseOverlayLayerProperty, navMenuItem, NavMenuItem.IsUseOverlayLayerProperty));
+            disposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, navMenuItem, NavMenuItem.ShouldUseOverlayLayerProperty));
             
             PrepareNavMenuItem(navMenuItem, item, index, disposables);
             

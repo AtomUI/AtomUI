@@ -26,7 +26,7 @@
                                 IsLightDismissEnabled="False"
                                 IsDetectMouseClickEnabled="False"
                                 Placement="RightEdgeAlignedTop"
-                                ShouldUseOverlayLayer="{TemplateBinding IsUseOverlayLayer}"
+                                ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayLayer}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
                         <atom:Popup.IsMotionAwareOpen>
                             <MultiBinding Converter="{StaticResource IsSubMenuOpenConverter}">

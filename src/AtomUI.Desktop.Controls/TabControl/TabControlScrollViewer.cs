@@ -37,7 +37,7 @@ internal class TabControlScrollViewer : BaseTabScrollViewer
         {
             IsShowArrow              = false,
             ClickHideFlyoutPredicate = ClickHideFlyoutPredicate,
-            IsUseOverlayLayer = true
+            ShouldUseOverlayLayer = true
         };
         MenuFlyout.Closed += (o, eventArgs) =>
         {

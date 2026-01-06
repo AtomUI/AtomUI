@@ -25,7 +25,7 @@
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"
                                 IsDetectMouseClickEnabled="False"
-                                ShouldUseOverlayLayer="{TemplateBinding IsUseOverlayLayer}"
+                                ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayLayer}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
                         <atom:Popup.IsMotionAwareOpen>
                             <MultiBinding Converter="{StaticResource IsSubMenuOpenConverter}">

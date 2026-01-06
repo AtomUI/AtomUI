@@ -44,7 +44,7 @@ internal class DataGridMenuFilterFlyout : MenuFlyout
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsShowArrowEffectiveProperty, Presenter, MenuFlyoutPresenter.IsShowArrowProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, Presenter, MenuFlyoutPresenter.IsMotionEnabledProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ArrowPositionProperty, Presenter, MenuFlyoutPresenter.ArrowPositionProperty));
-        _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsUseOverlayLayerProperty, Presenter, MenuFlyoutPresenter.IsUseOverlayLayerProperty));
+        _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, Presenter, MenuFlyoutPresenter.ShouldUseOverlayLayerProperty));
         ConfigureShowArrowEffective();
         ConfigureArrowPosition();
         return Presenter;

@@ -35,8 +35,8 @@ public class ContextMenu : AvaloniaContextMenu,
     public static readonly StyledProperty<int> DisplayPageSizeProperty = 
         Menu.DisplayPageSizeProperty.AddOwner<ContextMenu>();
     
-    public static readonly StyledProperty<bool> IsUseOverlayLayerProperty = 
-        Menu.IsUseOverlayLayerProperty.AddOwner<ContextMenu>();
+    public static readonly StyledProperty<bool> ShouldUseOverlayLayerProperty = 
+        Menu.ShouldUseOverlayLayerProperty.AddOwner<ContextMenu>();
     
     public static readonly StyledProperty<BoxShadows> MaskShadowsProperty =
         Popup.MaskShadowsProperty.AddOwner<ContextMenu>();
@@ -59,10 +59,10 @@ public class ContextMenu : AvaloniaContextMenu,
         set => SetValue(DisplayPageSizeProperty, value);
     }
     
-    public bool IsUseOverlayLayer
+    public bool ShouldUseOverlayLayer
     {
-        get => GetValue(IsUseOverlayLayerProperty);
-        set => SetValue(IsUseOverlayLayerProperty, value);
+        get => GetValue(ShouldUseOverlayLayerProperty);
+        set => SetValue(ShouldUseOverlayLayerProperty, value);
     }
     
     public BoxShadows MaskShadows
@@ -121,7 +121,7 @@ public class ContextMenu : AvaloniaContextMenu,
         _popup.AddClosingEventHandler(this.CreateEventHandler<CancelEventArgs>("PopupClosing")!);
         _popup.KeyUp += this.CreateEventHandler<KeyEventArgs>("PopupKeyUp");
 
-        BindUtils.RelayBind(this, IsUseOverlayLayerProperty, _popup, Popup.ShouldUseOverlayLayerProperty);
+        BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, _popup, Popup.ShouldUseOverlayLayerProperty);
         BindUtils.RelayBind(this, MaskShadowsProperty, _popup, Popup.MaskShadowsProperty);
         
         if (_popup is IPopupHostProvider popupHostProvider)
@@ -264,7 +264,7 @@ public class ContextMenu : AvaloniaContextMenu,
             disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, menuItem, MenuItem.ItemTemplateProperty));
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, menuItem, MenuItem.SizeTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, DisplayPageSizeProperty, menuItem, MenuItem.DisplayPageSizeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsUseOverlayLayerProperty, menuItem, MenuItem.IsUseOverlayLayerProperty));
+            disposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, menuItem, MenuItem.ShouldUseOverlayLayerProperty));
             
             PrepareMenuItem(menuItem, item, index, disposables);
             

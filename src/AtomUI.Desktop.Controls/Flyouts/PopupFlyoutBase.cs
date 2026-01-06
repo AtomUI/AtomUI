@@ -90,8 +90,8 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     public static readonly StyledProperty<bool> IsDetectMouseClickEnabledProperty =
         AvaloniaProperty.Register<PopupFlyoutBase, bool>(nameof(IsDetectMouseClickEnabled), true);
     
-    public static readonly StyledProperty<bool> IsUseOverlayLayerProperty = 
-        AvaloniaProperty.Register<PopupFlyoutBase, bool>(nameof (IsUseOverlayLayer));
+    public static readonly StyledProperty<bool> ShouldUseOverlayLayerProperty = 
+        AvaloniaProperty.Register<PopupFlyoutBase, bool>(nameof (ShouldUseOverlayLayer));
 
     public double MarginToAnchor
     {
@@ -184,10 +184,10 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
         set => SetValue(IsDetectMouseClickEnabledProperty, value);
     }
     
-    public bool IsUseOverlayLayer
+    public bool ShouldUseOverlayLayer
     {
-        get => GetValue(IsUseOverlayLayerProperty);
-        set => SetValue(IsUseOverlayLayerProperty, value);
+        get => GetValue(ShouldUseOverlayLayerProperty);
+        set => SetValue(ShouldUseOverlayLayerProperty, value);
     }
     
     #endregion
@@ -238,7 +238,7 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
         _popupBindingDisposables.Add(BindUtils.RelayBind(this, MotionDurationProperty, popup, Popup.MotionDurationProperty));
         _popupBindingDisposables.Add(BindUtils.RelayBind(this, OpenMotionProperty, popup, Popup.OpenMotionProperty));
         _popupBindingDisposables.Add(BindUtils.RelayBind(this, CloseMotionProperty, popup, Popup.CloseMotionProperty));
-        _popupBindingDisposables.Add(BindUtils.RelayBind(this, IsUseOverlayLayerProperty, popup, Popup.ShouldUseOverlayLayerProperty));
+        _popupBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, popup, Popup.ShouldUseOverlayLayerProperty));
         PopupCreated?.Invoke(this, new FlyoutPopupCreatedEventArgs(popup));
     }
 

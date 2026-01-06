@@ -80,7 +80,7 @@
                             IsDetectMouseClickEnabled="True"
                             Placement="RightEdgeAlignedTop"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                            ShouldUseOverlayLayer="{TemplateBinding IsUseOverlayLayer}"
+                            ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayLayer}"
                             IsMotionAwareOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
                     <Border Name="PopupFrame"
                             MaxHeight="{TemplateBinding MaxPopupHeight}"

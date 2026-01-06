@@ -43,8 +43,8 @@ public class MenuFlyoutPresenter : MenuBase,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<MenuFlyoutPresenter>();
     
-    public static readonly StyledProperty<bool> IsUseOverlayLayerProperty = 
-        Menu.IsUseOverlayLayerProperty.AddOwner<MenuFlyoutPresenter>();
+    public static readonly StyledProperty<bool> ShouldUseOverlayLayerProperty = 
+        Menu.ShouldUseOverlayLayerProperty.AddOwner<MenuFlyoutPresenter>();
 
     /// <summary>
     /// 是否显示指示箭头
@@ -88,10 +88,10 @@ public class MenuFlyoutPresenter : MenuBase,
         remove => RemoveHandler(MenuItemClickedEvent, value);
     }
 
-    public bool IsUseOverlayLayer
+    public bool ShouldUseOverlayLayer
     {
-        get => GetValue(IsUseOverlayLayerProperty);
-        set => SetValue(IsUseOverlayLayerProperty, value);
+        get => GetValue(ShouldUseOverlayLayerProperty);
+        set => SetValue(ShouldUseOverlayLayerProperty, value);
     }
     
     public MenuFlyout? MenuFlyout { get; set; }
@@ -251,7 +251,7 @@ public class MenuFlyoutPresenter : MenuBase,
             disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, menuItem, MenuItem.ItemTemplateProperty));
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, menuItem, MenuItem.SizeTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, DisplayPageSizeProperty, menuItem, MenuItem.DisplayPageSizeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsUseOverlayLayerProperty, menuItem, MenuItem.IsUseOverlayLayerProperty));
+            disposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, menuItem, MenuItem.ShouldUseOverlayLayerProperty));
             
             PrepareMenuItem(menuItem, item, index, disposables);
             

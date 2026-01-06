@@ -138,7 +138,7 @@ internal class DataGridFilterIndicator : IconButton
                 IsShowArrow               = false,
                 Placement                 = PlacementMode.BottomEdgeAlignedRight,
                 IsDetectMouseClickEnabled = false,
-                IsUseOverlayLayer = true,
+                ShouldUseOverlayLayer = true,
             };
             _bindingDisposables.Add(BindUtils.RelayBind(owningGrid, MotionAwareControlProperty.IsMotionEnabledProperty, menuFlyout,
                 MotionAwareControlProperty.IsMotionEnabledProperty));
@@ -161,7 +161,7 @@ internal class DataGridFilterIndicator : IconButton
                 IsShowArrow               = false,
                 Placement                 = PlacementMode.BottomEdgeAlignedRight,
                 IsDetectMouseClickEnabled = false,
-                IsUseOverlayLayer         = true
+                ShouldUseOverlayLayer         = true
             };
             _bindingDisposables.Add(BindUtils.RelayBind(this, FilterMultipleProperty, treeFlyout, DataGridTreeFilterFlyout.ToggleTypeProperty, (v) =>
             {

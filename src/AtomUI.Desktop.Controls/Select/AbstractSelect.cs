@@ -508,18 +508,22 @@ public class AbstractSelect : TemplatedControl,
     
     protected bool PopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)
     {
-        var popupRoots = new HashSet<PopupRoot>();
-        if (Popup?.Host is PopupRoot popupRoot)
-        {
-            popupRoots.Add(popupRoot);
-        }
-
         if (ClickInTagCloseButton)
         {
             ClickInTagCloseButton = false;
             return false;
         }
-        return !popupRoots.Contains(args.Root);
+        if (hostProvider.PopupHost is OverlayPopupHost overlayPopupHost && args.Root is Control root)
+        {
+            var offset = overlayPopupHost.TranslatePoint(default, root);
+            if (offset.HasValue)
+            {
+                var bounds = new Rect(offset.Value, overlayPopupHost.Bounds.Size);
+                return !bounds.Contains(args.Position);
+            }
+        }
+                
+        return false;
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -72,7 +72,7 @@ public class MenuFlyout : Flyout
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ItemContainerThemeProperty, Presenter, MenuFlyoutPresenter.ItemContainerThemeProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsShowArrowEffectiveProperty, Presenter, MenuFlyoutPresenter.IsShowArrowProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, Presenter, MenuFlyoutPresenter.IsMotionEnabledProperty));
-        _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsUseOverlayLayerProperty, Presenter, MenuFlyoutPresenter.IsUseOverlayLayerProperty));
+        _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayLayerProperty, Presenter, MenuFlyoutPresenter.ShouldUseOverlayLayerProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ArrowPositionProperty, Presenter, MenuFlyoutPresenter.ArrowPositionProperty));
         ConfigureArrowPosition();
         ConfigureShowArrowEffective();

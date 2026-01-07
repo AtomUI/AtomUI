@@ -1205,7 +1205,7 @@ public class Select : TemplatedControl,
         {
             return;
         }
-        if (e.Source is SelectTag tag && tag.Option != null)
+        if (e.Source is SelectTag tag && tag.Item is  ISelectOption tagOption)
         {
             if (SelectedOptions != null)
             {
@@ -1214,9 +1214,9 @@ public class Select : TemplatedControl,
                 {
                     selectedOptions.Add(selectedItem);
                 }
-                if (selectedOptions.Contains(tag.Option))
+                if (selectedOptions.Contains(tagOption))
                 {
-                    selectedOptions.Remove(tag.Option);
+                    selectedOptions.Remove(tagOption);
                 }
                 SelectedOptions = selectedOptions;
                 SyncSelection();
@@ -1224,10 +1224,11 @@ public class Select : TemplatedControl,
 
             if (Mode == SelectMode.Tags)
             {
-                if (tag.Option != null && tag.Option.IsDynamicAdded)
+                if (tag.Item is ISelectOption selectOption && selectOption.IsDynamicAdded)
                 {
-                    Options.Remove(tag.Option);
+                    Options.Remove(selectOption);
                 }
+          
             }
         }
         e.Handled = true;

@@ -214,8 +214,8 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ActiveColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.ActiveColor");
         public static readonly TokenResourceKey ActiveHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.ActiveHoverBgColor");
         public static readonly TokenResourceKey ActivePressedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.ActivePressedBgColor");
+        public static readonly TokenResourceKey CaptionButtonIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.CaptionButtonIconSize");
         public static readonly TokenResourceKey CaptionButtonPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.CaptionButtonPadding");
-        public static readonly TokenResourceKey CaptionButtonSize = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.CaptionButtonSize");
         public static readonly TokenResourceKey CaptionGroupSpacing = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.CaptionGroupSpacing");
         public static readonly TokenResourceKey CloseHoverBackgroundColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.CloseHoverBackgroundColor");
         public static readonly TokenResourceKey ClosePressedBackgroundColor = new TokenResourceKey("AtomUI.Desktop.Controls.Chrome.ClosePressedBackgroundColor");

@@ -58,7 +58,7 @@ internal class ChromeToken : AbstractControlDesignToken
     /// <summary>
     /// 标题按钮的大小
     /// </summary>
-    public double CaptionButtonSize {  get; set; }
+    public double CaptionButtonIconSize {  get; set; }
     
     /// <summary>
     /// 应用程序图标大小
@@ -145,7 +145,7 @@ internal class ChromeToken : AbstractControlDesignToken
         PressedBackgroundColor      = SharedToken.ColorBgTextActive;
         LogoAndTitleSpacing         = SharedToken.SizeUnit * 2;
         TitleBarPadding             = new Thickness(LogoAndTitleSpacing * 1.8, LogoAndTitleSpacing);
-        CaptionButtonSize           = SharedToken.IconSize;
+        CaptionButtonIconSize       = SharedToken.IconSizeSM;
         LogoSize                    = SharedToken.SizeUnit * 4;
         
         ActiveColor   = SharedToken.ColorTextSecondary;

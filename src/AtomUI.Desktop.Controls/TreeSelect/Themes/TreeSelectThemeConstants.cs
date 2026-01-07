@@ -5,3 +5,9 @@ internal static class TreeSelectThemeConstants
     public const string PopupPart = "PART_Popup";
     public const string SingleFilterInputPart = "PART_SingleFilterInput";
 }
+
+internal static class TreeSelectTagAwareTextBoxThemeConstants
+{
+    public const string DefaultPanelPart = "PART_DefaultPanel";
+    public const string MaxCountAwarePanelPart = "PART_MaxCountAwarePanel";
+}

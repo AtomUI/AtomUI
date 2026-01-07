@@ -4,5 +4,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="TreeSelectTheme.axaml"/>
         <ResourceInclude Source="TreeSelectAddOnDecoratedBoxTheme.axaml"/>
+        <ResourceInclude Source="TreeSelectTagAwareTextBoxTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

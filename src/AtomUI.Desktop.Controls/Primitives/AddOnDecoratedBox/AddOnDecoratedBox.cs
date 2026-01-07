@@ -455,6 +455,7 @@ internal class AddOnDecoratedBox : ContentControl,
     private void HandleContentFramePointerReleased(object? sender, PointerEventArgs args)
     {
         IsInnerBoxPressed = false;
+        IsInnerBoxHover   = true;
     }
     
     protected virtual void NotifyAddOnBorderInfoCalculated()

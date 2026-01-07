@@ -1,3 +1,4 @@
+using System.Collections;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -9,46 +10,37 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class SelectResultOptionsBox : TemplatedControl
+internal class TreeSelectTagAwareTextBox : TemplatedControl
 {
     #region 公共属性定义
 
-    public static readonly DirectProperty<SelectResultOptionsBox, IList<ISelectOption>?> SelectedOptionsProperty =
-        AvaloniaProperty.RegisterDirect<SelectResultOptionsBox, IList<ISelectOption>?>(
-            nameof(SelectedOptions),
-            o => o.SelectedOptions,
-            (o, v) => o.SelectedOptions = v);
-    
-    public static readonly StyledProperty<SelectMode> ModeProperty =
-        AvaloniaProperty.Register<SelectResultOptionsBox, SelectMode>(nameof(Mode));
+    public static readonly DirectProperty<TreeSelectTagAwareTextBox, IList?> SelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelectTagAwareTextBox, IList?>(
+            nameof(SelectedItems),
+            o => o.SelectedItems,
+            (o, v) => o.SelectedItems = v);
     
     public static readonly StyledProperty<bool> IsFilterEnabledProperty =
-        Select.IsFilterEnabledProperty.AddOwner<SelectResultOptionsBox>();
+        Select.IsFilterEnabledProperty.AddOwner<TreeSelectTagAwareTextBox>();
     
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
-        AvaloniaProperty.Register<SelectResultOptionsBox, bool>(nameof(IsDropDownOpen));
+        AvaloniaProperty.Register<TreeSelectTagAwareTextBox, bool>(nameof(IsDropDownOpen));
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<SelectResultOptionsBox>();
+        SizeTypeControlProperty.SizeTypeProperty.AddOwner<TreeSelectTagAwareTextBox>();
     
     public static readonly StyledProperty<int?> MaxTagCountProperty =
-        Select.MaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
+        Select.MaxTagCountProperty.AddOwner<TreeSelectTagAwareTextBox>();
     
     public static readonly StyledProperty<bool?> IsResponsiveMaxTagCountProperty =
-        Select.IsResponsiveMaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
+        Select.IsResponsiveMaxTagCountProperty.AddOwner<TreeSelectTagAwareTextBox>();
     
-    private IList<ISelectOption>? _selectedOptions;
+    private IList? _selectedItems;
 
-    public IList<ISelectOption>? SelectedOptions
+    public IList? SelectedItems
     {
-        get => _selectedOptions;
-        set => SetAndRaise(SelectedOptionsProperty, ref _selectedOptions, value);
-    }
-    
-    public SelectMode Mode
-    {
-        get => GetValue(ModeProperty);
-        set => SetValue(ModeProperty, value);
+        get => _selectedItems;
+        set => SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
     }
     
     public bool IsFilterEnabled
@@ -85,8 +77,8 @@ internal class SelectResultOptionsBox : TemplatedControl
 
     #region 内部属性定义
 
-    public static readonly DirectProperty<SelectResultOptionsBox, bool> IsShowDefaultPanelProperty =
-        AvaloniaProperty.RegisterDirect<SelectResultOptionsBox, bool>(
+    public static readonly DirectProperty<TreeSelectTagAwareTextBox, bool> IsShowDefaultPanelProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelectTagAwareTextBox, bool>(
             nameof(IsShowDefaultPanel),
             o => o.IsShowDefaultPanel,
             (o, v) => o.IsShowDefaultPanel = v);
@@ -109,12 +101,11 @@ internal class SelectResultOptionsBox : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == SelectedOptionsProperty)
+        if (change.Property == SelectedItemsProperty)
         {
-            HandleSelectedOptionsChanged();
+            HandleSelectedItemsChanged();
         }
-        else if (change.Property == IsFilterEnabledProperty ||
-                 change.Property == ModeProperty)
+        else if (change.Property == IsFilterEnabledProperty)
         {
             ConfigureSearchTextControl();
         }
@@ -138,18 +129,18 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             _defaultPanel?.Children.Clear();
             _maxCountAwarePanel?.Children.Clear();
-            HandleSelectedOptionsChanged();
+            HandleSelectedItemsChanged();
         }
         
         if (change.Property == MaxTagCountProperty ||
-            change.Property == SelectedOptionsProperty)
+            change.Property == SelectedItemsProperty)
         {
             ConfigureMaxTagCountInfoVisible();
         }
 
         if (change.Property == MaxTagCountProperty)
         {
-            HandleSelectedOptionsChanged();
+            HandleSelectedItemsChanged();
         }
     }
 
@@ -181,17 +172,14 @@ internal class SelectResultOptionsBox : TemplatedControl
         BindUtils.RelayBind(this, SizeTypeProperty, _searchTextBox, SizeTypeProperty);
         if (IsFilterEnabled)
         {
-            if (Mode == SelectMode.Multiple)
+            if (IsShowDefaultPanel)
             {
-                if (IsShowDefaultPanel)
-                {
-                    _defaultPanel?.Children.Add(_searchTextBox);
-                }
+                _defaultPanel?.Children.Add(_searchTextBox);
             }
         }
 
         ConfigureSearchTextControl();
-        HandleSelectedOptionsChanged();
+        HandleSelectedItemsChanged();
         if (IsResponsiveMaxTagCount == true)
         {
             SetCurrentValue(IsShowDefaultPanelProperty, false);
@@ -204,7 +192,7 @@ internal class SelectResultOptionsBox : TemplatedControl
         ConfigureMaxTagCountInfoVisible();
     }
 
-    private void HandleSelectedOptionsChanged()
+    private void HandleSelectedItemsChanged()
     {
         if (_isShowDefaultPanel)
         {
@@ -217,30 +205,33 @@ internal class SelectResultOptionsBox : TemplatedControl
                     entry.Value.Dispose();
                 }
                 TagsBindingDisposables.Clear();
-                if (_selectedOptions != null)
+                if (_selectedItems != null)
                 {
-                    for (var i = 0; i < _selectedOptions.Count; i++)
+                    for (var i = 0; i < _selectedItems.Count; i++)
                     {
-                        var option = _selectedOptions[i];
-                        var tag = new SelectTag
+                        var item = _selectedItems[i];
+                        if (item is ITreeViewItemData treeItemData)
                         {
-                            TagText = option.Header,
-                            Item  = option
-                        };
-                        if (MaxTagCount.HasValue)
-                        {
-                            if (i < MaxTagCount)
+                            var tag = new SelectTag
                             {
-                                tag.IsVisible = true;
-                            }
-                            else
+                                TagText = treeItemData.Header?.ToString(),
+                                Item  = item
+                            };
+                            if (MaxTagCount.HasValue)
                             {
-                                tag.IsVisible = false;
+                                if (i < MaxTagCount)
+                                {
+                                    tag.IsVisible = true;
+                                }
+                                else
+                                {
+                                    tag.IsVisible = false;
+                                }
                             }
-                        }
                        
-                        TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
-                        _defaultPanel.Children.Add(tag);
+                            TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
+                            _defaultPanel.Children.Add(tag);
+                        }
                     }
                 }
                 
@@ -268,17 +259,21 @@ internal class SelectResultOptionsBox : TemplatedControl
                 }
                 
                 TagsBindingDisposables.Clear();
-                if (_selectedOptions != null)
+                if (_selectedItems != null)
                 {
-                    foreach (var option in _selectedOptions)
+                    foreach (var item in _selectedItems)
                     {
-                        var tag = new SelectTag
+                        if (item is ITreeViewItemData treeItemData)
                         {
-                            TagText = option.Header,
-                            Item  = option
-                        };
-                        TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
-                        _maxCountAwarePanel.Children.Add(tag);
+                            var tag = new SelectTag
+                            {
+                                TagText = treeItemData.Header?.ToString(),
+                                Item    = item
+                            };
+                            TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
+                            _maxCountAwarePanel.Children.Add(tag);
+                        }
+
                     }
                 }
                 
@@ -300,10 +295,7 @@ internal class SelectResultOptionsBox : TemplatedControl
     {
         if (_searchTextBox != null)
         {
-            if (Mode == SelectMode.Multiple)
-            {
-                _searchTextBox.IsVisible = IsFilterEnabled;
-            }
+            _searchTextBox.IsVisible = IsFilterEnabled;
         }
     }
 
@@ -327,10 +319,10 @@ internal class SelectResultOptionsBox : TemplatedControl
     {
         if (_collapsedInfoTag != null)
         {
-            if (MaxTagCount != null && SelectedOptions != null && SelectedOptions.Count > 0 && MaxTagCount < SelectedOptions.Count)
+            if (MaxTagCount != null && SelectedItems != null && SelectedItems.Count > 0 && MaxTagCount < SelectedItems.Count)
             {
                 _collapsedInfoTag.IsVisible = true;
-                _collapsedInfoTag.SetRemainText(SelectedOptions.Count - MaxTagCount.Value);
+                _collapsedInfoTag.SetRemainText(SelectedItems.Count - MaxTagCount.Value);
             }
             else
             {

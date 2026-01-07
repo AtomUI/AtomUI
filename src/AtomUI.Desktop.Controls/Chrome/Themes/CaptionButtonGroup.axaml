@@ -185,8 +185,8 @@
         </Style>
 
         <Style Selector="^ /template/ :is(atom|CaptionButton)">
-            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:ChromeTokenKey.CaptionButtonSize}}" />
-            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:ChromeTokenKey.CaptionButtonSize}}" />
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:ChromeTokenKey.CaptionButtonIconSize}}" />
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:ChromeTokenKey.CaptionButtonIconSize}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

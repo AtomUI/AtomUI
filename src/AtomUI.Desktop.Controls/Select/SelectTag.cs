@@ -15,7 +15,7 @@ internal class SelectTag : Tag
         set => SetValue(SizeTypeProperty, value);
     }
     
-    public ISelectOption? Option { get; set; }
+    public object? Item { get; set; }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {

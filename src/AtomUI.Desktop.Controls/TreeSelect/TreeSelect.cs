@@ -255,6 +255,15 @@ public class TreeSelect : AbstractSelect,
                  change.Property == SelectedItemProperty)
         {
             ConfigurePlaceholderVisible();
+            ConfigureSelectionIsEmpty();
+            if (IsMultiple)
+            {
+                SetCurrentValue(SelectedCountProperty, SelectedItems?.Count ?? 0);
+            }
+            else
+            {
+                SetCurrentValue(SelectedCountProperty, SelectedItem != null ? 1 : 0);
+            }
         }
     }
 

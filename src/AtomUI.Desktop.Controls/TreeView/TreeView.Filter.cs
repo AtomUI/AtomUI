@@ -1,4 +1,6 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -16,6 +18,58 @@ public partial class TreeView
         get => _isFilterMode;
         set => SetAndRaise(IsFilterModeProperty, ref _isFilterMode, value);
     }
+
+    internal ISet<TreeViewItem> SelectedItemsClosure = new HashSet<TreeViewItem>();
+
+    private static void ConfigureFilter()
+    {
+        SelectingItemsControl.SelectionChangedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleSelectionChanged());
+    }
+
+    private void HandleSelectionChanged()
+    {
+        if (IsFilterMode)
+        {
+            SelectedItemsClosure.Clear();
+            var startupItems = new List<TreeViewItem>();
+            if (SelectionMode.HasFlag(SelectionMode.Single))
+            {
+                if (SelectedItem != null && TreeContainerFromItem(SelectedItem) is TreeViewItem item)
+                {
+                    startupItems.Add(item);
+                }
+            }
+            else if (SelectionMode.HasFlag(SelectionMode.Multiple))
+            {
+                foreach (var entry in SelectedItems)
+                {
+                    if (entry != null && TreeContainerFromItem(entry) is TreeViewItem item)
+                    {
+                        startupItems.Add(item);
+                    }
+                }
+            }
+
+            foreach (var item in startupItems)
+            {
+                var closure = CalculateSelectItemClosure(item);
+                SelectedItemsClosure.UnionWith(closure);
+            }
+        }
+    }
+
+    private ISet<TreeViewItem> CalculateSelectItemClosure(TreeViewItem treeItem)
+    {
+        var closure = new HashSet<TreeViewItem>(); 
+        StyledElement? current = treeItem;
+        while (current != null && current is TreeViewItem currentTreeViewItem)
+        {
+            closure.Add(currentTreeViewItem);
+            current = current.Parent;
+        }
+
+        return closure;
+    }
     
     public void Filter()
     {
@@ -23,8 +77,11 @@ public partial class TreeView
         {
             if (ItemFilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
             {
-                ClearFilter();
-                return;
+                using (BeginTurnOffMotion())
+                {
+                    ClearFilter();
+                    return;
+                }
             }
 
             var originIsFilterMode = IsFilterMode;
@@ -43,6 +100,7 @@ public partial class TreeView
             }
  
             ExpandAll(false); // TODO 这样合适吗？
+            using var state = BeginTurnOffMotion();
             if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath) && originExpandedItems != null)
             {
                 RestoreItemExpandedStates(originExpandedItems);
@@ -91,7 +149,8 @@ public partial class TreeView
         treeItem.IsFilterMatch = filterResult;
         if (filterResult)
         {
-            if (ItemFilterAction.HasFlag(TreeItemFilterAction.Highlighted))
+            if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch) ||
+                ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
             {
                 treeItem.FilterHighlightWords = ItemFilterValue?.ToString();
             }
@@ -189,6 +248,7 @@ public partial class TreeView
         }
 
         IsFilterMode = false;
+        SelectedItemsClosure.Clear();
     }
     
     private void ClearItemFilterMode(TreeViewItem treeItem)
@@ -264,6 +324,29 @@ public partial class TreeView
         else
         {
             treeItem.SetCurrentValue(TreeViewItem.IsExpandedProperty, false);
+        }
+    }
+
+    private IDisposable BeginTurnOffMotion()
+    {
+        var originMotionEnabled = IsMotionEnabled;
+        var disposable = new MotionScopeDisposable(this, originMotionEnabled);
+        SetCurrentValue(IsMotionEnabledProperty, false);
+        return disposable;
+    }
+
+    private class MotionScopeDisposable : IDisposable
+    {
+        private readonly TreeView _treeView;
+        private bool _originMotionEnabled;
+        public MotionScopeDisposable(TreeView treeView, bool originMotionEnabled)
+        {
+            _treeView            = treeView;
+            _originMotionEnabled = originMotionEnabled;
+        }
+        public void Dispose()
+        {
+            _treeView.SetCurrentValue(TreeView.IsMotionEnabledProperty, _originMotionEnabled);
         }
     }
 }

@@ -70,8 +70,8 @@ public class Select : TemplatedControl,
     public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
         AvaloniaProperty.Register<Select, bool>(nameof(IsPopupMatchSelectWidth), true);
     
-    public static readonly StyledProperty<bool> IsSearchEnabledProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsSearchEnabled));
+    public static readonly StyledProperty<bool> IsFilterEnabledProperty =
+        AvaloniaProperty.Register<Select, bool>(nameof(IsFilterEnabled));
     
     public static readonly StyledProperty<bool> IsHideSelectedOptionsProperty =
         AvaloniaProperty.Register<Select, bool>(nameof(IsHideSelectedOptions));
@@ -227,10 +227,10 @@ public class Select : TemplatedControl,
         set => SetValue(IsPopupMatchSelectWidthProperty, value);
     }
     
-    public bool IsSearchEnabled
+    public bool IsFilterEnabled
     {
-        get => GetValue(IsSearchEnabledProperty);
-        set => SetValue(IsSearchEnabledProperty, value);
+        get => GetValue(IsFilterEnabledProperty);
+        set => SetValue(IsFilterEnabledProperty, value);
     }
     
     public bool IsHideSelectedOptions
@@ -554,7 +554,7 @@ public class Select : TemplatedControl,
     
     private Popup? _popup;
     private SelectOptions? _optionsBox;
-    private SelectFilterTextBox? _singleSearchInput;
+    private SelectFilterTextBox? _singleFilterInput;
     private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
@@ -588,7 +588,13 @@ public class Select : TemplatedControl,
     {
         Clear();
     }
-    
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ConfigureDefaultValues();
+    }
+
     private bool OptionEqualByValue(object value, ISelectOption selectOption)
     {
         if (DefaultValueCompareFn != null)
@@ -845,7 +851,7 @@ public class Select : TemplatedControl,
             _popup.Closed -= PopupClosed;
         }
         _optionsBox        = e.NameScope.Get<SelectOptions>(SelectThemeConstants.OptionsBoxPart);
-        _singleSearchInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleSearchInputPart);
+        _singleFilterInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleFilterInputPart);
         if (_optionsBox != null)
         {
             _optionsBox.Select = this;
@@ -860,8 +866,8 @@ public class Select : TemplatedControl,
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
-        ConfigureSingleSearchTextBox();
-        ConfigureDefaultValues();
+        UpdatePseudoClasses();
+        ConfigureSingleFilterTextBox();
         ConfigureEffectiveSearchEnabled();
     }
     
@@ -887,9 +893,9 @@ public class Select : TemplatedControl,
         var selectedOptions = new List<ISelectOption>();
         if (Mode == SelectMode.Single)
         {
-            if (_singleSearchInput != null)
+            if (_singleFilterInput != null)
             {
-                _singleSearchInput.Width = double.NaN;
+                _singleFilterInput.Width = double.NaN;
             }
         
             selectedOptions.Add(selectOption);
@@ -926,8 +932,8 @@ public class Select : TemplatedControl,
         base.OnPropertyChanged(change);
         if (change.Property == IsDropDownOpenProperty)
         {
-            PseudoClasses.Set(SelectPseudoClass.DropdownOpen, change.GetNewValue<bool>());
-            ConfigureSingleSearchTextBox();
+            UpdatePseudoClasses();
+            ConfigureSingleFilterTextBox();
         }
         else if (change.Property == DisplayPageSizeProperty ||
                  change.Property == ItemHeightProperty)
@@ -969,7 +975,7 @@ public class Select : TemplatedControl,
             }
         }
         
-        if (change.Property == IsSearchEnabledProperty ||
+        if (change.Property == IsFilterEnabledProperty ||
             change.Property == ModeProperty)
         {
             ConfigureEffectiveSearchEnabled();
@@ -982,10 +988,10 @@ public class Select : TemplatedControl,
         DropDownClosed?.Invoke(this, EventArgs.Empty);
         if (Mode == SelectMode.Single)
         {
-            if (_singleSearchInput != null)
+            if (_singleFilterInput != null)
             {
-                _singleSearchInput.Clear();
-                _singleSearchInput.Width = double.NaN;
+                _singleFilterInput.Clear();
+                _singleFilterInput.Width = double.NaN;
             }
         }
     }
@@ -1002,7 +1008,7 @@ public class Select : TemplatedControl,
         DropDownOpened?.Invoke(this, EventArgs.Empty);
         if (Mode == SelectMode.Single)
         {
-            _singleSearchInput?.Focus();
+            _singleFilterInput?.Focus();
         }
 
         SyncSelection();
@@ -1088,6 +1094,7 @@ public class Select : TemplatedControl,
     
     private void UpdatePseudoClasses()
     {
+        PseudoClasses.Set(SelectPseudoClass.DropdownOpen, IsDropDownOpen);
         PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
         PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
         PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
@@ -1105,13 +1112,13 @@ public class Select : TemplatedControl,
         SetCurrentValue(IsSelectionEmptyProperty, SelectedOptions == null || SelectedOptions?.Count == 0);
     }
 
-    private void ConfigureSingleSearchTextBox()
+    private void ConfigureSingleFilterTextBox()
     {
-        if (_singleSearchInput != null)
+        if (_singleFilterInput != null)
         {
             if (IsDropDownOpen)
             {
-                _singleSearchInput.Width = _singleSearchInput.Bounds.Width;
+                _singleFilterInput.Width = _singleFilterInput.Bounds.Width;
             }
         }
     }
@@ -1373,7 +1380,7 @@ public class Select : TemplatedControl,
         {
             SetCurrentValue(
                 IsEffectiveFilterEnabledProperty,
-                IsSearchEnabled);
+                IsFilterEnabled);
         }
     }
 

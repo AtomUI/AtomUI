@@ -22,6 +22,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|TreeView)">
+        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.FilterHighlightColor}}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />

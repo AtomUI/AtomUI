@@ -9,7 +9,7 @@ internal static class SelectThemeConstants
 {
     public const string OptionsBoxPart = "PART_OptionsBox";
     public const string PopupPart = "PART_Popup";
-    public const string SingleSearchInputPart = "PART_SingleSearchInput";
+    public const string SingleFilterInputPart = "PART_SingleFilterInput";
 }
 
 internal static class SelectResultOptionsBoxThemeConstants

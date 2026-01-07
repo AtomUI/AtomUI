@@ -67,7 +67,7 @@
                                     </DataTemplate>
                                 </ContentPresenter.ContentTemplate>
                             </ContentPresenter>
-                            <atom:SelectFilterTextBox Name="{x:Static atom:SelectThemeConstants.SingleSearchInputPart}"
+                            <atom:SelectFilterTextBox Name="{x:Static atom:SelectThemeConstants.SingleFilterInputPart}"
                                                       IsVisible="False"
                                                       SizeType="{TemplateBinding SizeType}"
                                                       Watermark="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}" />
@@ -78,7 +78,7 @@
                                 Mode="{TemplateBinding Mode}"
                                 SizeType="{TemplateBinding SizeType}"
                                 SelectedOptions="{TemplateBinding SelectedOptions}"
-                                IsSearchEnabled="{TemplateBinding IsEffectiveFilterEnabled}"
+                                IsFilterEnabled="{TemplateBinding IsEffectiveFilterEnabled}"
                                 IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                                 MaxTagCount="{TemplateBinding MaxTagCount}"
                                 IsResponsiveMaxTagCount="{TemplateBinding IsResponsiveMaxTagCount}"
@@ -149,7 +149,7 @@
             <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
                 <Setter Property="IsShowSelectedIndicator" Value="False" />
             </Style>
-            <Style Selector="^[IsSearchEnabled=False]">
+            <Style Selector="^[IsFilterEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
                     <Setter Property="Cursor" Value="Hand" />
                 </Style>
@@ -158,14 +158,14 @@
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
             </Style>
-            <Style Selector="^[IsSearchEnabled=True]">
-                <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleSearchInput">
+            <Style Selector="^[IsFilterEnabled=True]">
+                <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                     <Setter Property="IsVisible" Value="True" />
                     <Setter Property="WatermarkForeground"
                             Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
-                    <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleSearchInput">
+                    <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                         <Setter Property="WatermarkForeground"
                                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
                     </Style>
@@ -177,7 +177,7 @@
             <Style Selector="^ /template/ atom|SelectResultOptionsBox#SelectedOptionsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <Style Selector="^[IsSearchEnabled=False]">
+            <Style Selector="^[IsFilterEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
                     <Setter Property="Cursor" Value="Hand" />
                 </Style>
@@ -192,7 +192,7 @@
             <Style Selector="^ /template/ atom|SelectResultOptionsBox#SelectedOptionsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <Style Selector="^[IsSearchEnabled=False]">
+            <Style Selector="^[IsFilterEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
                     <Setter Property="Cursor" Value="Hand" />
                 </Style>

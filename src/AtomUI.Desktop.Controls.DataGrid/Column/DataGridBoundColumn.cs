@@ -118,7 +118,7 @@ public abstract class DataGridBoundColumn : DataGridColumn
         } 
 
         return null;
-    } 
+    }
 
     protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem); 
 

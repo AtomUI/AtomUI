@@ -2,7 +2,9 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:converters="clr-namespace:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
+    <converters:TreeItemDataConverter x:Key="TreeItemDataConverter" />
     <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect">
         <Setter Property="Template">
             <ControlTemplate>
@@ -65,10 +67,10 @@
                                     </DataTemplate>
                                 </ContentPresenter.ContentTemplate>
                             </ContentPresenter>
-                            <!-- <atom:SelectSearchTextBox Name="{x:Static atom:SelectThemeConstants.SingleSearchInputPart}" -->
-                            <!--                           IsVisible="False" -->
-                            <!--                           SizeType="{TemplateBinding SizeType}" -->
-                            <!--                           Watermark="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}" /> -->
+                            <atom:SelectFilterTextBox Name="{x:Static atom:TreeSelectThemeConstants.SingleFilterInputPart}"
+                                                      IsVisible="False"
+                                                      SizeType="{TemplateBinding SizeType}"
+                                                      Watermark="{TemplateBinding SelectedItem, Converter={StaticResource TreeItemDataConverter}}"/>
                             <!-- <atom:SelectResultOptionsBox -->
                             <!--     Name="SelectedOptionsBox" -->
                             <!--     HorizontalAlignment="Stretch" -->
@@ -84,7 +86,7 @@
                             <!--     Focusable="True" /> -->
                         </Panel>
                     </atom:TreeSelectAddOnDecoratedBox>
-                    <atom:Popup Name="{x:Static atom:SelectThemeConstants.PopupPart}"
+                    <atom:Popup Name="{x:Static atom:TreeSelectThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"
                                 IsDetectMouseClickEnabled="True"
@@ -98,16 +100,21 @@
                             <atom:TreeView HorizontalAlignment="Stretch"
                                            VerticalAlignment="Stretch"
                                            NodeHoverMode="Block"
+                                           IsDefaultExpandAll="{TemplateBinding IsTreeDefaultExpandAll}"
+                                           ItemFilterValue="{TemplateBinding ActivateFilterValue}"
+                                           ItemFilter="{TemplateBinding ItemFilter}"
+                                           ItemFilterAction="{TemplateBinding ItemFilterAction}"
                                            ItemsSource="{TemplateBinding TreeItemsSource}"
                                            ItemTemplate="{TemplateBinding TreeItemTemplate}" 
                                            SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
-                                           SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"/>
+                                           SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"
+                                           FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"/>
                         </Border>
                     </atom:Popup>
                 </Panel>
             </ControlTemplate>
         </Setter>
-
+        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
@@ -140,9 +147,6 @@
         </Style>
 
         <Style Selector="^[IsMultiple=False]">
-            <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
-                <Setter Property="IsShowSelectedIndicator" Value="False" />
-            </Style>
             <Style Selector="^[IsFilterEnabled=False]">
                 <Style Selector="^ /template/ atom|TreeSelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
                     <Setter Property="Cursor" Value="Hand" />
@@ -161,13 +165,13 @@
                 </Style>
             </Style>
             <Style Selector="^[IsFilterEnabled=True]">
-                <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleSearchInput">
+                <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                     <Setter Property="IsVisible" Value="True" />
                     <Setter Property="WatermarkForeground"
                             Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
-                    <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleSearchInput">
+                    <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                         <Setter Property="WatermarkForeground"
                                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
                     </Style>

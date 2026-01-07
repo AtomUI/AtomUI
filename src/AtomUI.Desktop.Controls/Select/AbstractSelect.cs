@@ -494,7 +494,7 @@ public class AbstractSelect : TemplatedControl,
     
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
     private protected Popup? Popup;
-    private protected bool ClickInTagCloseButton;
+    private protected bool IgnorePopupClose;
 
     protected void NotifyPopupClosed()
     {
@@ -508,9 +508,9 @@ public class AbstractSelect : TemplatedControl,
     
     protected bool PopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)
     {
-        if (ClickInTagCloseButton)
+        if (IgnorePopupClose)
         {
-            ClickInTagCloseButton = false;
+            IgnorePopupClose = false;
             return false;
         }
         if (hostProvider.PopupHost is OverlayPopupHost overlayPopupHost && args.Root is Control root)
@@ -548,6 +548,6 @@ public class AbstractSelect : TemplatedControl,
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        SetCurrentValue(IsDropDownOpenProperty, false);
+        // SetCurrentValue(IsDropDownOpenProperty, false);
     }
 }

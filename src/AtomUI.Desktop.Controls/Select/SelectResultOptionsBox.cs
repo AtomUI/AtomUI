@@ -22,8 +22,8 @@ internal class SelectResultOptionsBox : TemplatedControl
     public static readonly StyledProperty<SelectMode> ModeProperty =
         AvaloniaProperty.Register<SelectResultOptionsBox, SelectMode>(nameof(Mode));
     
-    public static readonly StyledProperty<bool> IsSearchEnabledProperty =
-        Select.IsSearchEnabledProperty.AddOwner<SelectResultOptionsBox>();
+    public static readonly StyledProperty<bool> IsFilterEnabledProperty =
+        Select.IsFilterEnabledProperty.AddOwner<SelectResultOptionsBox>();
     
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
         AvaloniaProperty.Register<SelectResultOptionsBox, bool>(nameof(IsDropDownOpen));
@@ -51,10 +51,10 @@ internal class SelectResultOptionsBox : TemplatedControl
         set => SetValue(ModeProperty, value);
     }
     
-    public bool IsSearchEnabled
+    public bool IsFilterEnabled
     {
-        get => GetValue(IsSearchEnabledProperty);
-        set => SetValue(IsSearchEnabledProperty, value);
+        get => GetValue(IsFilterEnabledProperty);
+        set => SetValue(IsFilterEnabledProperty, value);
     }
     
     public bool IsDropDownOpen
@@ -113,7 +113,7 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             HandleSelectedOptionsChanged();
         }
-        else if (change.Property == IsSearchEnabledProperty ||
+        else if (change.Property == IsFilterEnabledProperty ||
                  change.Property == ModeProperty)
         {
             ConfigureSearchTextControl();
@@ -179,7 +179,7 @@ internal class SelectResultOptionsBox : TemplatedControl
             IsClosable = false
         };
         BindUtils.RelayBind(this, SizeTypeProperty, _searchTextBox, SizeTypeProperty);
-        if (IsSearchEnabled)
+        if (IsFilterEnabled)
         {
             if (Mode == SelectMode.Multiple)
             {
@@ -302,7 +302,7 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             if (Mode == SelectMode.Multiple)
             {
-                _searchTextBox.IsVisible = IsSearchEnabled;
+                _searchTextBox.IsVisible = IsFilterEnabled;
             }
         }
     }

@@ -217,16 +217,14 @@ internal class TreeViewItemHeader : ContentControl
             nameof(FilterHighlightRuns), t => t.FilterHighlightRuns, 
             (t, v) => t.FilterHighlightRuns = v);
     
-    internal static readonly DirectProperty<TreeViewItemHeader, IBrush?> FilterHighlightColorProperty =
-        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, IBrush?>(
-            nameof(FilterHighlightRuns), t => t.FilterHighlightColor, 
-            (t, v) => t.FilterHighlightColor = v);
-    
-    public static readonly DirectProperty<TreeViewItemHeader, TreeItemFilterAction> ItemFilterActionProperty =
+    internal static readonly DirectProperty<TreeViewItemHeader, TreeItemFilterAction> ItemFilterActionProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItemHeader, TreeItemFilterAction>(
             nameof(ItemFilterAction),
             o => o.ItemFilterAction,
             (o, v) => o.ItemFilterAction = v);
+    
+    internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
+        TreeView.FilterHighlightForegroundProperty.AddOwner<TreeViewItemHeader>();
     
     internal bool IsHover
     {
@@ -346,16 +344,8 @@ internal class TreeViewItemHeader : ContentControl
         set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
     }
     
-    private IBrush? _filterHighlightColor;
-
-    internal IBrush? FilterHighlightColor
-    {
-        get => _filterHighlightColor;
-        set => SetAndRaise(FilterHighlightColorProperty, ref _filterHighlightColor, value);
-    }
-    
     private InlineCollection? _filterHighlightRuns;
-    public InlineCollection? FilterHighlightRuns
+    internal InlineCollection? FilterHighlightRuns
     {
         get => _filterHighlightRuns;
         set => SetAndRaise(FilterHighlightRunsProperty, ref _filterHighlightRuns, value);
@@ -367,6 +357,12 @@ internal class TreeViewItemHeader : ContentControl
     {
         get => _itemFilterAction;
         set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+    }
+    
+    internal IBrush? FilterHighlightForeground
+    {
+        get => GetValue(FilterHighlightForegroundProperty);
+        set => SetValue(FilterHighlightForegroundProperty, value);
     }
     #endregion
     
@@ -396,6 +392,7 @@ internal class TreeViewItemHeader : ContentControl
         {
             BuildFilterHighlightRuns();
         }
+        
         if (IsLoaded)
         {
             if (change.Property == IsMotionEnabledProperty)
@@ -596,7 +593,7 @@ internal class TreeViewItemHeader : ContentControl
             {
                 return;
             }
-            var ranges       = new List<(int, int)>();
+            var ranges          = new List<(int, int)>();
             int currentIndex    = 0;
             var highlightLength = FilterHighlightWords.Length;
         
@@ -617,17 +614,22 @@ internal class TreeViewItemHeader : ContentControl
             {
                 var c   =  headerText[i];
                 var run = new Run($"{c}");
-                if (IsNeedHighlight(i, ranges))
+                
+                if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch))
                 {
-                    if (ItemFilterAction.HasFlag(TreeItemFilterAction.Highlighted))
+                    if (IsNeedHighlight(i, ranges))
                     {
-                        run.Foreground = FilterHighlightColor;
+                        run.Foreground = FilterHighlightForeground;
                     }
-
-                    if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedBold))
-                    {
-                        run.FontWeight = FontWeight.Bold;
-                    }
+                }
+                else if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
+                {
+                    run.Foreground = FilterHighlightForeground;
+                }
+         
+                if (ItemFilterAction.HasFlag(TreeItemFilterAction.BoldedMatch))
+                {
+                    run.FontWeight = FontWeight.Bold;
                 }
                 runs.Add(run);
             }

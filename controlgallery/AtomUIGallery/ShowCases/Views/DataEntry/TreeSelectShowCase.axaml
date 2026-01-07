@@ -13,6 +13,7 @@
                              HorizontalAlignment="Stretch"
                              IsTreeDefaultExpandAll="True"
                              IsAllowClear="True"
+                             IsFilterEnabled="True"
                              PlaceholderText="Please select"/>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

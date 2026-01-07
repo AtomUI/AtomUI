@@ -25,50 +25,57 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
         [
             new TreeViewItemData()
             {
-                Header = "parent 1-0",
-                Value  = "parent 1-0",
+                Header = "parent 1",
+                Value  = "parent 1",
                 Children = [
                     new TreeViewItemData()
                     {
-                        Header = "leaf1",
-                        Value  = "leaf1",
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf1",
+                                Value  = "leaf1",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf2",
+                                Value  = "leaf2",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf3",
+                                Value  = "leaf3",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf4",
+                                Value  = "leaf4",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf5",
+                                Value  = "leaf5",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf6",
+                                Value  = "leaf6",
+                            },
+                        ]
                     },
                     new TreeViewItemData()
                     {
-                        Header = "leaf2",
-                        Value  = "leaf2",
-                    },
-                    new TreeViewItemData()
-                    {
-                        Header = "leaf3",
-                        Value  = "leaf3",
-                    },
-                    new TreeViewItemData()
-                    {
-                        Header = "leaf4",
-                        Value  = "leaf4",
-                    },
-                    new TreeViewItemData()
-                    {
-                        Header = "leaf5",
-                        Value  = "leaf5",
-                    },
-                    new TreeViewItemData()
-                    {
-                        Header = "leaf6",
-                        Value  = "leaf6",
-                    },
-                ]
-            },
-            new TreeViewItemData()
-            {
-                Header = "parent 1-1",
-                Value  = "parent 1-1",
-                Children = [
-                    new TreeViewItemData()
-                    {
-                        Header = "leaf11",
-                        Value  = "leaf11",
+                        Header = "parent 1-1",
+                        Value  = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "leaf11",
+                                Value  = "leaf11",
+                            }
+                        ]
                     }
                 ]
             }

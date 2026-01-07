@@ -37,7 +37,8 @@
                                          IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
                                          IsFilterMatch="{TemplateBinding IsFilterMatch}"
                                          FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
-                                         ItemFilterAction="{TemplateBinding ItemFilterAction}"/>
+                                         ItemFilterAction="{TemplateBinding ItemFilterAction}"
+                                         FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"/>
                 <atom:LayoutAwareMotionActor
                     Name="{x:Static atom:TreeViewItemThemeConstants.ItemsPresenterMotionActorPart}"
                     ClipToBounds="True"

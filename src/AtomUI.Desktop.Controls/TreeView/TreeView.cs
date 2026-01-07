@@ -13,6 +13,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -29,11 +30,12 @@ public enum TreeItemHoverMode
 [Flags]
 public enum TreeItemFilterAction
 {
-    Highlighted = 0x01,
-    HighlightedBold = 0x02,
-    ExpandPath = 0x04,
-    HideUnMatched = 0x08,
-    All = Highlighted | HighlightedBold | ExpandPath | HideUnMatched
+    HighlightedMatch = 0x01,
+    HighlightedWhole = 0x02,
+    BoldedMatch = 0x04,
+    ExpandPath = 0x08,
+    HideUnMatched = 0x10,
+    All = HighlightedMatch | BoldedMatch | ExpandPath | HideUnMatched
 }
 
 [PseudoClasses(StdPseudoClass.Draggable)]
@@ -51,6 +53,10 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
     public static readonly StyledProperty<bool> IsShowLineProperty =
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsShowLine));
+    
+    public static readonly StyledProperty<bool> IsDefaultExpandAllProperty =
+        AvaloniaProperty.Register<TreeView, bool>(
+            nameof(IsDefaultExpandAll));
 
     public static readonly StyledProperty<TreeItemHoverMode> NodeHoverModeProperty =
         AvaloniaProperty.Register<TreeView, TreeItemHoverMode>(nameof(NodeHoverMode), TreeItemHoverMode.Default);
@@ -130,6 +136,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.ItemFilterAction,
             (o, v) => o.ItemFilterAction = v);
     
+    public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
+        AvaloniaProperty.Register<TreeView, IBrush?>(nameof(FilterHighlightForeground));
+    
     public bool IsAutoExpandParent
     {
         get => GetValue(IsAutoExpandParentProperty);
@@ -152,6 +161,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     {
         get => GetValue(IsShowLineProperty);
         set => SetValue(IsShowLineProperty, value);
+    }
+    
+    public bool IsDefaultExpandAll
+    {
+        get => GetValue(IsDefaultExpandAllProperty);
+        set => SetValue(IsDefaultExpandAllProperty, value);
     }
 
     public TreeItemHoverMode NodeHoverMode
@@ -282,7 +297,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
     }
     
-    public bool IsDefaultExpandAll { get; set; }
+    public IBrush? FilterHighlightForeground
+    {
+        get => GetValue(FilterHighlightForegroundProperty);
+        set => SetValue(FilterHighlightForegroundProperty, value);
+    }
     
     /// <summary>
     /// Gets or sets the selected items.
@@ -363,6 +382,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         TreeViewItem.ExpandedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemExpanded(args));
         TreeViewItem.CollapsedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemCollapsed(args));
         TreeViewItem.ContextMenuRequestEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemContextMenuRequest(args));
+        ConfigureFilter();
     }
 
     public TreeView()
@@ -621,6 +641,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 TreeViewItem.IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, TreeViewItem.IsSwitcherRotationProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, treeViewItem, TreeViewItem.FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
                 TreeViewItem.HasTreeItemDataLoaderProperty));
             disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, treeViewItem,
@@ -1069,6 +1090,8 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         ConfigureDefaultSelectedPaths();
         ConfigureDefaultCheckedPaths();
         
+        Filter();
+        
         if (IsDefaultExpandAll)
         {
             ExpandAll(false);
@@ -1077,7 +1100,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             ConfigureDefaultExpandedPaths();
         }
-        Filter();
     }
 
     #endregion

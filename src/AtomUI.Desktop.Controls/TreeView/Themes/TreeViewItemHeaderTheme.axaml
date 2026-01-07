@@ -83,7 +83,6 @@
         </Setter>
         
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="FilterHighlightColor" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.FilterHighlightColor}}" />
         <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TitleHeight}}" />
         <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeItemMargin}}" />
         <Setter Property="CornerRadius"

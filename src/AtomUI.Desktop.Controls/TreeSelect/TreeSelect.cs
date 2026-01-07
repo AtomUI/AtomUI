@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -65,6 +66,9 @@ public class TreeSelect : AbstractSelect,
             nameof(ItemFilterAction),
             o => o.ItemFilterAction,
             (o, v) => o.ItemFilterAction = v);
+    
+    public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
+        AvaloniaProperty.Register<TreeSelect, IBrush?>(nameof(FilterHighlightForeground));
     
     public static readonly DirectProperty<TreeSelect, object?> SelectedItemProperty =
         SelectingItemsControl.SelectedItemProperty.AddOwner<TreeSelect>(
@@ -142,12 +146,18 @@ public class TreeSelect : AbstractSelect,
         set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
     }
 
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.HighlightedWhole | TreeItemFilterAction.BoldedMatch | TreeItemFilterAction.ExpandPath | TreeItemFilterAction.HideUnMatched;
     
     public TreeItemFilterAction ItemFilterAction
     {
         get => _itemFilterAction;
         set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+    }
+    
+    public IBrush? FilterHighlightForeground
+    {
+        get => GetValue(FilterHighlightForegroundProperty);
+        set => SetValue(FilterHighlightForegroundProperty, value);
     }
 
     private object? _selectedItem;
@@ -175,6 +185,8 @@ public class TreeSelect : AbstractSelect,
 
     #endregion
     
+    private SelectFilterTextBox? _singleFilterInput;
+    
     static TreeSelect()
     {
         FocusableProperty.OverrideDefaultValue<TreeSelect>(true);
@@ -189,13 +201,23 @@ public class TreeSelect : AbstractSelect,
                 select.HandleTreeViewItemClicked(item);
             }
         });
+        SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleSearchInputTextChanged(e));
     }
     
     public TreeSelect()
     {
         this.RegisterResources();
     }
-    
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (ItemFilter == null)
+        {
+            ItemFilter = new DefaultTreeItemFilter();
+        }
+    }
+
     private void HandleClearRequest()
     {
         Clear();
@@ -210,6 +232,11 @@ public class TreeSelect : AbstractSelect,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == IsDropDownOpenProperty)
+        {
+            PseudoClasses.Set(SelectPseudoClass.DropdownOpen, change.GetNewValue<bool>());
+            ConfigureSingleFilterTextBox();
+        }
         if (change.Property == StyleVariantProperty ||
             change.Property == StatusProperty)
         {
@@ -277,14 +304,8 @@ public class TreeSelect : AbstractSelect,
             Popup.Opened -= PopupOpened;
             Popup.Closed -= PopupClosed;
         }
-        // _optionsBox        = e.NameScope.Get<SelectOptions>(SelectThemeConstants.OptionsBoxPart);
-        // _singleSearchInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleSearchInputPart);
-        // if (_optionsBox != null)
-        // {
-        //     _optionsBox.Select = this;
-        //     ConfigureOptionsBoxSelectionMode();
-        // }
-        //
+
+        _singleFilterInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleFilterInputPart);
         Popup                    =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
         Popup.ClickHidePredicate =  PopupClosePredicate;
         Popup.Opened             += PopupOpened;
@@ -293,9 +314,8 @@ public class TreeSelect : AbstractSelect,
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
-        // ConfigureSingleSearchTextBox();
+        ConfigureSingleFilterTextBox();
         // ConfigureDefaultValues();
-        // ConfigureEffectiveSearchEnabled();
         
         ConfigurePlaceholderVisible();
         UpdatePseudoClasses();
@@ -305,6 +325,15 @@ public class TreeSelect : AbstractSelect,
     {
         SubscriptionsOnOpen.Clear();
         NotifyPopupClosed();
+        if (!IsMultiple)
+        {
+            if (_singleFilterInput != null)
+            {
+                _singleFilterInput.Clear();
+                _singleFilterInput.Width = double.NaN;
+                ActivateFilterValue      = null;
+            }
+        }
     }
 
     private void PopupOpened(object? sender, EventArgs e)
@@ -316,6 +345,10 @@ public class TreeSelect : AbstractSelect,
             parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
         }
         NotifyPopupOpened();
+        if (!IsMultiple)
+        {
+            _singleFilterInput?.Focus();
+        }
     }
     
     private void IsVisibleChanged(bool isVisible)
@@ -329,6 +362,17 @@ public class TreeSelect : AbstractSelect,
     private void ConfigureSelectionIsEmpty()
     {
         SetCurrentValue(IsSelectionEmptyProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0));
+    }
+    
+    private void ConfigureSingleFilterTextBox()
+    {
+        if (_singleFilterInput != null)
+        {
+            if (IsDropDownOpen)
+            {
+                _singleFilterInput.Width = _singleFilterInput.Bounds.Width;
+            }
+        }
     }
     
      protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -349,11 +393,21 @@ public class TreeSelect : AbstractSelect,
             // is pressed, close the drop-down
             if (e.Source is Control sourceControl)
             {
-                var parent = sourceControl.FindAncestorOfType<IconButton>();
-                var tag    = parent?.FindAncestorOfType<SelectTag>();
+                if (!IsMultiple)
+                {
+                    var filterTextBox = sourceControl.FindAncestorOfType<SelectFilterTextBox>();
+                    if (filterTextBox != null)
+                    {
+                        IgnorePopupClose = true;
+                        return;
+                    }
+                }
+       
+                var parent        = sourceControl.FindAncestorOfType<IconButton>();
+                var tag           = parent?.FindAncestorOfType<SelectTag>();
                 if (tag != null)
                 {
-                    ClickInTagCloseButton = true;
+                    IgnorePopupClose = true;
                 }
             }
             else
@@ -393,7 +447,6 @@ public class TreeSelect : AbstractSelect,
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                 }
-    
                 e.Handled = true;
             }
         }
@@ -410,4 +463,17 @@ public class TreeSelect : AbstractSelect,
         }
     }
     
+     private void HandleSearchInputTextChanged(TextChangedEventArgs e)
+    {
+        if (ItemFilter != null)
+        {
+            if (e.Source is TextBox textBox)
+            {
+                ActivateFilterValue = textBox.Text?.Trim();
+            }
+            ConfigurePlaceholderVisible();
+        }
+
+        e.Handled = true;
+    }
 }

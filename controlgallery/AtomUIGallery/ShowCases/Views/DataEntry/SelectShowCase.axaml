@@ -38,7 +38,7 @@
         <gallery:ShowCaseItem
             Title="Select with search field"
             Description="Search the options while expanded.">
-            <atom:Select Mode="Single" PlaceholderText="Please select" IsSearchEnabled="True">
+            <atom:Select Mode="Single" PlaceholderText="Please select" IsFilterEnabled="True">
                 <atom:SelectOption Header="Jack" Value="jack" />
                 <atom:SelectOption Header="Lucy" Value="lucy" />
                 <atom:SelectOption Header="Tom" Value="tom" />
@@ -51,7 +51,7 @@
             <atom:Select Name="CustomSearchSelect"
                          Mode="Single"
                          PlaceholderText="Select a person"
-                         IsSearchEnabled="True"
+                         IsFilterEnabled="True"
                          OptionFilterProp="Header">
                 <atom:SelectOption Header="Jack" Value="jack" />
                 <atom:SelectOption Header="Lucy" Value="lucy" />
@@ -67,7 +67,7 @@
                              PlaceholderText="Select a person"
                              IsAllowClear="True"
                              HorizontalAlignment="Stretch"
-                             IsSearchEnabled="False"
+                             IsFilterEnabled="False"
                              x:DataType="viewModels:SelectViewModel"
                              OptionsSource="{Binding RandomOptions}"
                              DefaultValues="a10, c12" />
@@ -89,7 +89,7 @@
                 <atom:Select Mode="Tags"
                              PlaceholderText="Tags Mode"
                              HorizontalAlignment="Stretch"
-                             IsSearchEnabled="False"
+                             IsFilterEnabled="False"
                              x:DataType="viewModels:SelectViewModel"
                              OptionsSource="{Binding RandomOptions}"/>
             </StackPanel>
@@ -109,7 +109,7 @@
                 <atom:Select Mode="Single"
                              SizeType="{Binding SelectSizeType}"
                              PlaceholderText="Select a person"
-                             IsSearchEnabled="False"
+                             IsFilterEnabled="False"
                              x:DataType="viewModels:SelectViewModel"
                              OptionsSource="{Binding RandomOptions}"
                              DefaultValues="a10"
@@ -120,7 +120,7 @@
                              PlaceholderText="Select a person"
                              IsAllowClear="True"
                              HorizontalAlignment="Stretch"
-                             IsSearchEnabled="False"
+                             IsFilterEnabled="False"
                              x:DataType="viewModels:SelectViewModel"
                              OptionsSource="{Binding RandomOptions}"
                              DefaultValues="a10, c12" />
@@ -131,7 +131,7 @@
         <gallery:ShowCaseItem
             Title="Custom dropdown options"
             Description="Use optionRender to customize the rendering dropdown options">
-            <atom:Select Mode="Multiple" PlaceholderText="Please select" IsSearchEnabled="True"
+            <atom:Select Mode="Multiple" PlaceholderText="Please select" IsFilterEnabled="True"
                          HorizontalAlignment="Stretch">
                 <views:CustomOption Header="China" Value="china" Description="China (中国)" Emoji="🇨🇳" />
                 <views:CustomOption Header="USA" Value="usa" Description="USA (美国)" Emoji="🇺🇸" />
@@ -175,7 +175,7 @@
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  DefaultValues="lucy"
-                                 IsSearchEnabled="True">
+                                 IsFilterEnabled="True">
                         <atom:SelectOption Header="Jack" Value="jack" />
                         <atom:SelectOption Header="Lucy" Value="lucy" />
                         <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
@@ -194,7 +194,7 @@
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  StyleVariant="Filled"
-                                 IsSearchEnabled="True"
+                                 IsFilterEnabled="True"
                                  DefaultValues="lucy">
                         <atom:SelectOption Header="Jack" Value="jack" />
                         <atom:SelectOption Header="Lucy" Value="lucy" />
@@ -214,7 +214,7 @@
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  StyleVariant="Borderless"
-                                 IsSearchEnabled="True"
+                                 IsFilterEnabled="True"
                                  DefaultValues="lucy">
                         <atom:SelectOption Header="Jack" Value="jack" />
                         <atom:SelectOption Header="Lucy" Value="lucy" />
@@ -278,7 +278,7 @@
                              OptionsSource="{Binding MaxTagCountOptions}"
                              PlaceholderText="Select Item..."
                              HorizontalAlignment="Stretch"
-                             IsSearchEnabled="True"
+                             IsFilterEnabled="True"
                              IsResponsiveMaxTagCount="True"/>
         
                 <atom:Select Mode="Multiple"
@@ -287,7 +287,7 @@
                              PlaceholderText="Select Item..."
                              IsEnabled="False"
                              HorizontalAlignment="Stretch"
-                             IsSearchEnabled="True"
+                             IsFilterEnabled="True"
                              IsResponsiveMaxTagCount="True"/>
         
                 <atom:Select Mode="Multiple"
@@ -295,7 +295,7 @@
                              OptionsSource="{Binding MaxTagCountOptions}"
                              PlaceholderText="Select Item..."
                              HorizontalAlignment="Stretch"
-                             IsSearchEnabled="True"
+                             IsFilterEnabled="True"
                              MaxTagCount="5"/>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -318,7 +318,7 @@
                     <atom:Select Mode="Single" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  DefaultValues="lucy"
-                                 IsSearchEnabled="True"
+                                 IsFilterEnabled="True"
                                  Width="200"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
                         <atom:SelectOption Header="Jack" Value="jack" />
@@ -329,7 +329,7 @@
                     <atom:Select Mode="Single" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  DefaultValues="lucy"
-                                 IsSearchEnabled="True"
+                                 IsFilterEnabled="True"
                                  Width="200"
                                  IsEnabled="False"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
@@ -353,7 +353,7 @@
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  DefaultValues="lucy"
-                                 IsSearchEnabled="True"
+                                 IsFilterEnabled="True"
                                  Width="200"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
                         <atom:SelectOption Header="Jack" Value="jack" />
@@ -364,7 +364,7 @@
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  DefaultValues="lucy"
-                                 IsSearchEnabled="True"
+                                 IsFilterEnabled="True"
                                  Width="200"
                                  IsEnabled="False"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">

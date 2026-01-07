@@ -185,15 +185,12 @@ internal class NodeSwitcherButton : ToggleButton
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == CollapseIconProperty ||
+            change.Property == ExpandIconProperty ||
+            change.Property == LoadingIconProperty ||
+            change.Property == RotationIconProperty)
         {
-            if (change.Property == CollapseIconProperty ||
-                change.Property == ExpandIconProperty ||
-                change.Property == LoadingIconProperty ||
-                change.Property == RotationIconProperty)
-            {
-                SetupDefaultIcons();
-            }
+            SetupDefaultIcons();
         }
 
         if (IsLoaded)
@@ -262,7 +259,7 @@ internal class NodeSwitcherButton : ToggleButton
         {
             return;
         }
-
+        
         _owningTreeItem ??= this.FindAncestorOfType<TreeViewItem>();
         Debug.Assert(_owningTreeItem != null);
         if (_owningTreeItem.HasTreeItemDataLoader && !_owningTreeItem.AsyncLoaded)

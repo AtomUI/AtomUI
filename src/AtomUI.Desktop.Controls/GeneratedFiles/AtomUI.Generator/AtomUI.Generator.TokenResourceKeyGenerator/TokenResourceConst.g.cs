@@ -460,6 +460,8 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     public static class MenuTokenKey
     {
         public static readonly TokenResourceKey ContextMenuBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuBgColor");
+        public static readonly TokenResourceKey ContextMenuOffsetX = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuOffsetX");
+        public static readonly TokenResourceKey ContextMenuOffsetY = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuOffsetY");
         public static readonly TokenResourceKey DangerItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.DangerItemColor");
         public static readonly TokenResourceKey DangerItemHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.DangerItemHoverColor");
         public static readonly TokenResourceKey ItemBg = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ItemBg");

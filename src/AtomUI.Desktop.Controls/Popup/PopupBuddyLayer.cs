@@ -93,6 +93,11 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     internal static readonly StyledProperty<double> MarginToAnchorProperty =
         Popup.MarginToAnchorProperty.AddOwner<PopupBuddyLayer>();
     
+    internal static readonly DirectProperty<PopupBuddyLayer, PopupHostMarginPlacement> HostDecoratorDirectionProperty =
+        AvaloniaProperty.RegisterDirect<PopupBuddyLayer, PopupHostMarginPlacement>(nameof(HostDecoratorDirection),
+            o => o.HostDecoratorDirection,
+            (o, v) => o.HostDecoratorDirection = v);
+    
     private CornerRadius _maskShadowsContentCornerRadius;
 
     internal CornerRadius MaskShadowsContentCornerRadius
@@ -145,6 +150,14 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     {
         get => GetValue(MarginToAnchorProperty);
         set => SetValue(MarginToAnchorProperty, value);
+    }
+    
+    private PopupHostMarginPlacement _hostDecoratorDirection;
+
+    internal PopupHostMarginPlacement HostDecoratorDirection
+    {
+        get => _hostDecoratorDirection;
+        private set => SetAndRaise(HostDecoratorDirectionProperty, ref _hostDecoratorDirection, value);
     }
     #endregion
     
@@ -324,6 +337,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.OpenMotionProperty, this, OpenMotionProperty));
         _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.CloseMotionProperty, this, CloseMotionProperty));
         _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.MarginToAnchorProperty, this, MarginToAnchorProperty));
+        _bindingDisposables.Add(BindUtils.RelayBind(_buddyPopup, Popup.HostDecoratorDirectionProperty, this, HostDecoratorDirectionProperty));
         SetupPopupHost();
     }
     
@@ -434,22 +448,16 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
             }
 
             ConfigurePaddingForShadows();
-        }
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == MaskShadowsProperty)
+            if (_shadowRendererPanel != null)
             {
-                if (_shadowRendererPanel != null)
+                _shadowRendererPanel.Children.Clear();
+                var shadowControls = BuildShadowRenderers(MaskShadows);
+                _shadowRendererPanel.Children.AddRange(shadowControls);
+                for (var i = 0; i < MaskShadows.Count; ++i)
                 {
-                    _shadowRendererPanel.Children.Clear();
-                    var shadowControls = BuildShadowRenderers(MaskShadows);
-                    _shadowRendererPanel.Children.AddRange(shadowControls);
-                    for (var i = 0; i < MaskShadows.Count; ++i)
+                    if (_shadowRendererPanel.Children[i] is Border shadowControl)
                     {
-                        if (_shadowRendererPanel.Children[i] is Border shadowControl)
-                        {
-                            shadowControl.BoxShadow = new BoxShadows(MaskShadows[i]);
-                        }
+                        shadowControl.BoxShadow = new BoxShadows(MaskShadows[i]);
                     }
                 }
             }

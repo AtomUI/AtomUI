@@ -54,11 +54,11 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     public static readonly StyledProperty<PlacementMode> PlacementProperty =
         Popup.PlacementProperty.AddOwner<PopupFlyoutBase>();
     
-    public static readonly StyledProperty<double> HorizontalOffsetProperty =
-        Popup.HorizontalOffsetProperty.AddOwner<PopupFlyoutBase>();
+    public static readonly AttachedProperty<double> HorizontalOffsetProperty = 
+        AvaloniaProperty.RegisterAttached<PopupFlyoutBase, Control, double>("HorizontalOffset");
     
-    public static readonly StyledProperty<double> VerticalOffsetProperty =
-        Popup.VerticalOffsetProperty.AddOwner<PopupFlyoutBase>();
+    public static readonly AttachedProperty<double> VerticalOffsetProperty = 
+        AvaloniaProperty.RegisterAttached<PopupFlyoutBase, Control, double>("VerticalOffset");
     
     public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
         Popup.PlacementAnchorProperty.AddOwner<PopupFlyoutBase>();
@@ -115,18 +115,6 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     {
         get => GetValue(PlacementAnchorProperty);
         set => SetValue(PlacementAnchorProperty, value);
-    }
-    
-    public double HorizontalOffset
-    {
-        get => GetValue(HorizontalOffsetProperty);
-        set => SetValue(HorizontalOffsetProperty, value);
-    }
-    
-    public double VerticalOffset
-    {
-        get => GetValue(VerticalOffsetProperty);
-        set => SetValue(VerticalOffsetProperty, value);
     }
 
     /// <summary>
@@ -221,11 +209,43 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     static PopupFlyoutBase()
     {
         Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
+        HorizontalOffsetProperty.OverrideDefaultValue<PopupFlyoutBase>(5);
+        VerticalOffsetProperty.OverrideDefaultValue<PopupFlyoutBase>(5);
     }
 
     public PopupFlyoutBase()
     {
         _popupLazy = new Lazy<Popup>(CreatePopup);
+    }
+    
+    public static double GetHorizontalOffset(AvaloniaObject control)
+    {
+        return control.GetValue(HorizontalOffsetProperty);
+    }
+    
+    public static void SetHorizontalOffset(AvaloniaObject control, double value)
+    {
+        control.SetValue(HorizontalOffsetProperty, value);
+    }
+    
+    public static bool IsSetHorizontalOffset(AvaloniaObject control)
+    {
+        return control.IsSet(HorizontalOffsetProperty);
+    }
+    
+    public static double GetVerticalOffset(AvaloniaObject control)
+    {
+        return control.GetValue(VerticalOffsetProperty);
+    }
+    
+    public static void SetVerticalOffset(AvaloniaObject control, double value)
+    {
+        control.SetValue(VerticalOffsetProperty, value);
+    }
+    
+    public static bool IsSetVerticalOffset(AvaloniaObject control)
+    {
+        return control.IsSet(VerticalOffsetProperty);
     }
 
     protected internal virtual void NotifyPopupCreated(Popup popup)
@@ -250,9 +270,9 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
             LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
         }
 
-        Popup.VerticalOffset   = VerticalOffset;
-        Popup.HorizontalOffset = HorizontalOffset;
-
+        var offset = GetPopupOffset();
+        Popup.VerticalOffset   = offset.Y;
+        Popup.HorizontalOffset = offset.X;
         Popup.PlacementAnchor  = PlacementAnchor;
         Popup.PlacementGravity = PlacementGravity;
 
@@ -265,6 +285,35 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
             Popup.Placement                     = Placement;
             Popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
         }
+    }
+
+    protected Point GetPopupOffset()
+    {
+        var verticalOffset   = 0.0d;
+        var horizontalOffset = 0.0d;
+
+        if (Target != null)
+        {
+            if (IsSetHorizontalOffset(Target))
+            {
+                horizontalOffset = GetHorizontalOffset(Target);
+            }
+            else
+            {
+                horizontalOffset = GetHorizontalOffset(this);
+            }
+
+            if (IsSetVerticalOffset(Target))
+            {
+                verticalOffset = GetVerticalOffset(Target);
+            }
+            else
+            {
+                verticalOffset = GetVerticalOffset(this);
+            }
+        }
+        
+        return new Point(horizontalOffset, verticalOffset);
     }
 
     /// <summary>

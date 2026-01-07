@@ -225,6 +225,16 @@ internal class MenuToken : AbstractControlDesignToken
     /// 菜单分割项的高度
     /// </summary>
     public double SeparatorItemHeight { get; set; }
+    
+    /// <summary>
+    /// 上下文菜单水平位移
+    /// </summary>
+    public double ContextMenuOffsetX { get; set; }
+    
+    /// <summary>
+    /// 上下文菜单垂直位移
+    /// </summary>
+    public double ContextMenuOffsetY { get; set; }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -312,5 +322,8 @@ internal class MenuToken : AbstractControlDesignToken
 
         MenuPopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS, MenuPopupBorderRadius.TopLeft / 2);
         MenuPopupBoxShadows     = SharedToken.BoxShadowsSecondary;
+
+        ContextMenuOffsetX = SharedToken.SpacingXXS;
+        ContextMenuOffsetY = SharedToken.SpacingXXS;
     }
 }

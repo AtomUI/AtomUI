@@ -124,6 +124,36 @@ public class Flyout : PopupFlyoutBase
     {
         IsShowArrowProperty.OverrideDefaultValue<Flyout>(false);
     }
+    
+    public new static double GetHorizontalOffset(AvaloniaObject control)
+    {
+        return control.GetValue(HorizontalOffsetProperty);
+    }
+    
+    public new static void SetHorizontalOffset(AvaloniaObject control, double value)
+    {
+        control.SetValue(HorizontalOffsetProperty, value);
+    }
+    
+    public new static bool IsSetHorizontalOffset(AvaloniaObject control)
+    {
+        return control.IsSet(HorizontalOffsetProperty);
+    }
+    
+    public new static double GetVerticalOffset(AvaloniaObject control)
+    {
+        return control.GetValue(VerticalOffsetProperty);
+    }
+    
+    public new static void SetVerticalOffset(AvaloniaObject control, double value)
+    {
+        control.SetValue(VerticalOffsetProperty, value);
+    }
+    
+    public new static bool IsSetVerticalOffset(AvaloniaObject control)
+    {
+        return control.IsSet(VerticalOffsetProperty);
+    }
 
     protected override Control CreatePresenter()
     {
@@ -348,8 +378,10 @@ public class Flyout : PopupFlyoutBase
             CalculatePopupPositionDelta(Target!, Popup.Child, Popup.Placement, Popup.PlacementAnchor,
                 Popup.PlacementGravity);
 
-        var offsetX = HorizontalOffset;
-        var offsetY = VerticalOffset;
+        var offset = GetPopupOffset();
+        
+        var offsetX = offset.X;
+        var offsetY = offset.Y;
 
         if (IsPointAtCenter)
         {

@@ -113,7 +113,9 @@ public class ContextMenu : AvaloniaContextMenu,
             IsDetectMouseClickEnabled      = true,
             IgnoreFirstDetected            = false
         };
-       
+
+        VerticalOffset            =  10;
+        HorizontalOffset          =  10;
         _popup.Opened             += this.CreateEventHandler("PopupOpened");
         _popup.Closed             += this.CreateEventHandler<EventArgs>("PopupClosed");
         _popup.ClickHidePredicate =  MenuPopupClosePredicate;

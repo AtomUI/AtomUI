@@ -8,7 +8,7 @@
             <ControlTemplate>
                 <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}">
                     <atom:PlacementAwareDecorator
-                        MarginPlacement="{TemplateBinding ArrowDirection}"
+                        MarginPlacement="{TemplateBinding HostDecoratorDirection}"
                         MarginToAnchor="{TemplateBinding MarginToAnchor}">
                         <Panel>
                             <Decorator Padding="{TemplateBinding Padding}">

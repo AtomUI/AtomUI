@@ -40,7 +40,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty = 
         AvaloniaProperty.Register<Popup, AbstractMotion?>(nameof(OpenMotion));
-        
+    
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty = 
         AvaloniaProperty.Register<Popup, AbstractMotion?>(nameof(CloseMotion));
 
@@ -136,8 +136,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     internal static readonly StyledProperty<bool> IsDetectMouseClickEnabledProperty =
         AvaloniaProperty.Register<Popup, bool>(nameof(IsDetectMouseClickEnabled), true);
     
-    internal static readonly DirectProperty<Popup, Direction> HostDecoratorDirectionProperty =
-        AvaloniaProperty.RegisterDirect<Popup, Direction>(nameof(HostDecoratorDirection),
+    internal static readonly DirectProperty<Popup, PopupHostMarginPlacement> HostDecoratorDirectionProperty =
+        AvaloniaProperty.RegisterDirect<Popup, PopupHostMarginPlacement>(nameof(HostDecoratorDirection),
             o => o.HostDecoratorDirection,
             (o, v) => o.HostDecoratorDirection = v);
 
@@ -147,9 +147,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         set => SetValue(IsDetectMouseClickEnabledProperty, value);
     }
     
-    private Direction _hostDecoratorDirection;
+    private PopupHostMarginPlacement _hostDecoratorDirection;
 
-    internal Direction HostDecoratorDirection
+    internal PopupHostMarginPlacement HostDecoratorDirection
     {
         get => _hostDecoratorDirection;
         private set => SetAndRaise(HostDecoratorDirectionProperty, ref _hostDecoratorDirection, value);
@@ -268,7 +268,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             }
 #endif
         }
-
+        
         var placementTarget = GetEffectivePlacementTarget();
         if (placementTarget is not null)
         {
@@ -912,16 +912,26 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         }
     }
 
-    private Direction GetHostDecoratorDirection(PlacementMode placement)
+    private PopupHostMarginPlacement GetHostDecoratorDirection(PlacementMode placement)
     {
-        var direction = PopupUtils.GetDirection(Placement);
-        return direction switch
+        return placement switch
         {
-            Direction.Left => Direction.Right,
-            Direction.Top => Direction.Bottom,
-            Direction.Right => Direction.Left,
-            Direction.Bottom => Direction.Top,
-            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, "Invalid value for direction for Placement.")
+            PlacementMode.Left => PopupHostMarginPlacement.Right,
+            PlacementMode.LeftEdgeAlignedBottom => PopupHostMarginPlacement.Right,
+            PlacementMode.LeftEdgeAlignedTop => PopupHostMarginPlacement.Right,
+
+            PlacementMode.Top => PopupHostMarginPlacement.Bottom,
+            PlacementMode.TopEdgeAlignedLeft => PopupHostMarginPlacement.Bottom,
+            PlacementMode.TopEdgeAlignedRight => PopupHostMarginPlacement.Bottom,
+
+            PlacementMode.Right => PopupHostMarginPlacement.Left,
+            PlacementMode.RightEdgeAlignedBottom => PopupHostMarginPlacement.Left,
+            PlacementMode.RightEdgeAlignedTop => PopupHostMarginPlacement.Left,
+
+            PlacementMode.Bottom => PopupHostMarginPlacement.Top,
+            PlacementMode.BottomEdgeAlignedLeft => PopupHostMarginPlacement.Top,
+            PlacementMode.BottomEdgeAlignedRight => PopupHostMarginPlacement.Top,
+            _ => PopupHostMarginPlacement.None
         };
     }
     

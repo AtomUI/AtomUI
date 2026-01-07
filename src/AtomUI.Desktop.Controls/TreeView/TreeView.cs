@@ -11,9 +11,11 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -136,8 +138,25 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.ItemFilterAction,
             (o, v) => o.ItemFilterAction = v);
     
+    public static readonly DirectProperty<TreeView, int> FilterResultCountProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, int>(nameof(FilterResultCount),
+            o => o.FilterResultCount,
+            (o, v) => o.FilterResultCount = v);
+    
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<TreeView, IBrush?>(nameof(FilterHighlightForeground));
+    
+    public static readonly StyledProperty<object?> EmptyIndicatorProperty =
+        AvaloniaProperty.Register<TreeView, object?>(nameof(EmptyIndicator));
+    
+    public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
+        AvaloniaProperty.Register<TreeView, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
+    
+    public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
+        AvaloniaProperty.Register<TreeView, bool>(nameof(IsShowEmptyIndicator), true);
+    
+    public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
+        AvaloniaProperty.Register<TreeView, Thickness>(nameof(EmptyIndicatorPadding));
     
     public bool IsAutoExpandParent
     {
@@ -296,6 +315,39 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         get => _itemFilterAction;
         set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
     }
+
+    private int _filterResultCount;
+    
+    public int FilterResultCount
+    {
+        get => _filterResultCount;
+        set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
+    }
+    
+    [DependsOn(nameof(EmptyIndicatorTemplate))]
+    public object? EmptyIndicator
+    {
+        get => GetValue(EmptyIndicatorProperty);
+        set => SetValue(EmptyIndicatorProperty, value);
+    }
+
+    public IDataTemplate? EmptyIndicatorTemplate
+    {
+        get => GetValue(EmptyIndicatorTemplateProperty);
+        set => SetValue(EmptyIndicatorTemplateProperty, value);
+    }
+    
+    public bool IsShowEmptyIndicator
+    {
+        get => GetValue(IsShowEmptyIndicatorProperty);
+        set => SetValue(IsShowEmptyIndicatorProperty, value);
+    }
+    
+    public Thickness EmptyIndicatorPadding
+    {
+        get => GetValue(EmptyIndicatorPaddingProperty);
+        set => SetValue(EmptyIndicatorPaddingProperty, value);
+    }
     
     public IBrush? FilterHighlightForeground
     {
@@ -355,10 +407,23 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<TreeView>();
     
-    public TimeSpan MotionDuration
+    internal static readonly DirectProperty<TreeView, bool> IsEffectiveEmptyVisibleProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, bool>(
+            nameof(IsEffectiveEmptyVisible),
+            o => o.IsEffectiveEmptyVisible,
+            (o, v) => o.IsEffectiveEmptyVisible = v);
+    
+    internal TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
+    }
+    
+    private bool _isEffectiveEmptyVisible = false;
+    internal bool IsEffectiveEmptyVisible
+    {
+        get => _isEffectiveEmptyVisible;
+        set => SetAndRaise(IsEffectiveEmptyVisibleProperty, ref _isEffectiveEmptyVisible, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -388,17 +453,19 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public TreeView()
         : this(new DefaultTreeViewInteractionHandler(false))
     {
-        LogicalChildren.CollectionChanged += HandleCollectionChanged;
+        LogicalChildren.CollectionChanged += HandleLogicalChildrenCollectionChanged;
+        Items.CollectionChanged           += HandleCollectionChanged;
     }
     
     protected TreeView(ITreeViewInteractionHandler interactionHandler)
     {
         InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
         this.RegisterResources();
-        LogicalChildren.CollectionChanged += HandleCollectionChanged;
+        LogicalChildren.CollectionChanged += HandleLogicalChildrenCollectionChanged;
+        Items.CollectionChanged           += HandleCollectionChanged;
     }
 
-    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void HandleLogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.OldItems != null)
         {
@@ -417,6 +484,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 }
             }
         }
+    }
+    
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        ConfigureEmptyIndicator();
     }
     
     public void ExpandAll(bool? motionEnabled = null)
@@ -1142,6 +1214,13 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             Filter();
         }
+
+        if (change.Property == IsShowEmptyIndicatorProperty ||
+            change.Property == ItemsSourceProperty ||
+            change.Property == FilterResultCountProperty)
+        {
+            ConfigureEmptyIndicator();
+        }
     }
 
     protected void HandleSwitcherRotationIconChanged()
@@ -1226,5 +1305,31 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             ItemContextMenuRequest?.Invoke(this, new TreeItemContextMenuEventArgs(item));
         }
+    }
+    
+    protected virtual void ConfigureEmptyIndicator()
+    {
+        var isEmpty = false;
+        if (IsFilterMode)
+        {
+            isEmpty = FilterResultCount == 0;
+        }
+        else
+        {
+            if (ItemsSource != null)
+            {
+                var enumerator = ItemsSource.GetEnumerator();
+                isEmpty = !enumerator.MoveNext();
+                if (enumerator is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            else
+            {
+                isEmpty = Items.Count == 0;
+            }
+        }
+        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && isEmpty);
     }
 }

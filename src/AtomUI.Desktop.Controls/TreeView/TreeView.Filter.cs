@@ -85,7 +85,8 @@ public partial class TreeView
             }
 
             var originIsFilterMode = IsFilterMode;
-            IsFilterMode = true;
+            IsFilterMode      = true;
+            FilterResultCount = 0;
             HashSet<TreeViewItem>? originExpandedItems = null;
             if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath))
             {
@@ -149,12 +150,14 @@ public partial class TreeView
         treeItem.IsFilterMatch = filterResult;
         if (filterResult)
         {
+            ++FilterResultCount;
             if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch) ||
                 ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
             {
                 treeItem.FilterHighlightWords = ItemFilterValue?.ToString();
             }
         }
+        ConfigureEmptyIndicator();
         
         if (ItemFilterAction.HasFlag(TreeItemFilterAction.HideUnMatched))
         {
@@ -247,7 +250,8 @@ public partial class TreeView
             }
         }
 
-        IsFilterMode = false;
+        IsFilterMode      = false;
+        FilterResultCount = 0;
         SelectedItemsClosure.Clear();
     }
     

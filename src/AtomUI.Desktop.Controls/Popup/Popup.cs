@@ -665,11 +665,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
         _openAnimating = true;
-        using (BeginIgnoringIsOpen())
-        {
-            SetCurrentValue(IsMotionAwareOpenProperty, true);
-        }
-        
+
         if (!ShouldUseOverlayLayer)
         {
             OpenPopupRootHost(opened);
@@ -692,7 +688,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             opened?.Invoke();
             _openAnimating     = false;
             _motionAwareOpened = true;
-        
+            using (BeginIgnoringIsOpen())
+            {
+                SetCurrentValue(IsMotionAwareOpenProperty, true);
+            }
             if (RequestCloseWhereAnimationCompleted)
             {
                 RequestCloseWhereAnimationCompleted = false;
@@ -727,6 +726,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 opened?.Invoke();
                 _openAnimating      = false;
                 _motionAwareOpened  = true;
+                using (BeginIgnoringIsOpen())
+                {
+                    SetCurrentValue(IsMotionAwareOpenProperty, true);
+                }
                 completedFuncCalled = true;
             }
         
@@ -741,7 +744,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 opened?.Invoke();
                 _openAnimating     = false;
                 _motionAwareOpened = true;
-        
+                using (BeginIgnoringIsOpen())
+                {
+                    SetCurrentValue(IsMotionAwareOpenProperty, true);
+                }
                 if (RequestCloseWhereAnimationCompleted)
                 {
                     RequestCloseWhereAnimationCompleted = false;
@@ -799,11 +805,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
         
-        using (BeginIgnoringIsOpen())
-        {
-            SetCurrentValue(IsMotionAwareOpenProperty, false);
-        }
-        
         _closeAnimating    = true;
 
         if (!ShouldUseOverlayLayer)
@@ -828,6 +829,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             closed?.Invoke();
             _closeAnimating    = false;
             _motionAwareOpened = false;
+            using (BeginIgnoringIsOpen())
+            {
+                SetCurrentValue(IsMotionAwareOpenProperty, false);
+            }
             _isNeedDetectFlip  = true;
         });
     }
@@ -840,6 +845,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             closed?.Invoke();
             _closeAnimating    = false;
             _motionAwareOpened = false;
+            using (BeginIgnoringIsOpen())
+            {
+                SetCurrentValue(IsMotionAwareOpenProperty, false);
+            }
             _isNeedDetectFlip  = true;
             return;
         }
@@ -861,6 +870,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 closed?.Invoke();
                 _closeAnimating     = false;
                 _motionAwareOpened  = false;
+                using (BeginIgnoringIsOpen())
+                {
+                    SetCurrentValue(IsMotionAwareOpenProperty, false);
+                }
                 _isNeedDetectFlip   = true;
                 completedFuncCalled = true;
             }
@@ -877,6 +890,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 _closeAnimating     = false;
                 _motionAwareOpened  = false;
                 _isNeedDetectFlip   = true;
+                using (BeginIgnoringIsOpen())
+                {
+                    SetCurrentValue(IsMotionAwareOpenProperty, false);
+                }
                 completedFuncCalled = true;
             }
         });

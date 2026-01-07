@@ -1,4 +1,6 @@
-﻿using System.Reactive.Linq;
+﻿using System.ComponentModel;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Animation;
@@ -95,39 +97,37 @@ public class AbstractMotion : IMotion
         actor.Transitions           = null;
         ConfigureMotionStartValue(actor);
         
-        Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            var observables = new List<IObservable<bool>>();
+            var tasks = new List<Task<bool>>();
             var transitions = new Transitions();
             // 暂时先不保存 actor 原有的 transitions
+            TimeSpan maxDuration = TimeSpan.Zero;
             foreach (var transition in Transitions)
             {
-                observables.Add(transition.CompletedObservable);
                 transitions.Add(transition);
+                tasks.Add(transition.CompletedObservable.ToTask());
+                if (transition.Duration > maxDuration)
+                {
+                    maxDuration = transition.Duration;
+                }
             }
+
+            var delta = maxDuration * 0.1;
+            if (delta > TimeSpan.FromMilliseconds(100))
+            {
+                delta = TimeSpan.FromMilliseconds(100);
+            }
+
+            maxDuration += delta;
             actor.Transitions = transitions;
-
-            void FinishedCallback () {
-                actor.NotifyMotionCompleted();
-                NotifyCompleted(actor);
-                completedAction?.Invoke();
-                actor.RenderTransformOrigin = originRenderTransformOrigin;
-                actor.MotionTransform       = null;
-            }
-
             ConfigureMotionEndValue(actor);
-
-            if (!actor.IsVisible)
-            {
-                Dispatcher.UIThread.Post(FinishedCallback);
-            }
-            else
-            {
-                observables.Zip()
-                           .LastAsync()
-                           .ObserveOn(AvaloniaScheduler.Instance)
-                           .Subscribe(list => Dispatcher.UIThread.Post(FinishedCallback));
-            }
+            await Task.WhenAny(Task.WhenAny(tasks), Task.Delay(maxDuration));
+            actor.NotifyMotionCompleted();
+            NotifyCompleted(actor);
+            completedAction?.Invoke();
+            actor.RenderTransformOrigin = originRenderTransformOrigin;
+            actor.MotionTransform       = null;
         });
     }
 

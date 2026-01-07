@@ -16,4 +16,5 @@ public interface INotifyTransitionCompleted : ITransition
 {
     public IObservable<bool> CompletedObservable { get; }
     public event EventHandler<TransitionCompletedEventArgs>? TransitionCompleted;
+    public TimeSpan Duration { get; }
 }

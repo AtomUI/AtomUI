@@ -82,7 +82,7 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     /// <summary>
     /// 动画是否在
     /// </summary>
-    protected bool Animating = false;
+    internal bool Animating = false;
 
     private BaseMotionActor? _followTarget;
     private CompositeDisposable? _followDisposables;

@@ -34,8 +34,8 @@ internal class SelectResultOptionsBox : TemplatedControl
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         Select.MaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
     
-    public static readonly StyledProperty<bool?> IsResponsiveMaxTagCountProperty =
-        Select.IsResponsiveMaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
+    public static readonly StyledProperty<bool?> IsResponsiveTagModeProperty =
+        Select.IsResponsiveTagModeProperty.AddOwner<SelectResultOptionsBox>();
     
     private IList<ISelectOption>? _selectedOptions;
 
@@ -75,17 +75,17 @@ internal class SelectResultOptionsBox : TemplatedControl
         set => SetValue(MaxTagCountProperty, value);
     }
     
-    public bool? IsResponsiveMaxTagCount
+    public bool? IsResponsiveTagMode
     {
-        get => GetValue(IsResponsiveMaxTagCountProperty);
-        set => SetValue(IsResponsiveMaxTagCountProperty, value);
+        get => GetValue(IsResponsiveTagModeProperty);
+        set => SetValue(IsResponsiveTagModeProperty, value);
     }
 
     #endregion
 
     #region 内部属性定义
 
-    public static readonly DirectProperty<SelectResultOptionsBox, bool> IsShowDefaultPanelProperty =
+    internal static readonly DirectProperty<SelectResultOptionsBox, bool> IsShowDefaultPanelProperty =
         AvaloniaProperty.RegisterDirect<SelectResultOptionsBox, bool>(
             nameof(IsShowDefaultPanel),
             o => o.IsShowDefaultPanel,
@@ -93,7 +93,10 @@ internal class SelectResultOptionsBox : TemplatedControl
     
     private bool _isShowDefaultPanel;
 
-    public bool IsShowDefaultPanel
+    /// <summary>
+    /// 当不是响应式的时候，IsShowDefaultPanel 为 true，这样标签的现实不会根据宽度换行，性能更高
+    /// </summary>
+    internal bool IsShowDefaultPanel
     {
         get => _isShowDefaultPanel;
         set => SetAndRaise(IsShowDefaultPanelProperty, ref _isShowDefaultPanel, value);
@@ -122,9 +125,9 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             ConfigureSearchTextReadOnly();
         }
-        else if (change.Property == IsResponsiveMaxTagCountProperty)
+        else if (change.Property == IsResponsiveTagModeProperty)
         {
-            if (IsResponsiveMaxTagCount == true)
+            if (IsResponsiveTagMode == true)
             {
                 SetCurrentValue(IsShowDefaultPanelProperty, false);
             }
@@ -192,7 +195,7 @@ internal class SelectResultOptionsBox : TemplatedControl
 
         ConfigureSearchTextControl();
         HandleSelectedOptionsChanged();
-        if (IsResponsiveMaxTagCount == true)
+        if (IsResponsiveTagMode == true)
         {
             SetCurrentValue(IsShowDefaultPanelProperty, false);
         }
@@ -225,7 +228,7 @@ internal class SelectResultOptionsBox : TemplatedControl
                         var tag = new SelectTag
                         {
                             TagText = option.Header,
-                            Item  = option
+                            Item    = option
                         };
                         if (MaxTagCount.HasValue)
                         {
@@ -275,7 +278,7 @@ internal class SelectResultOptionsBox : TemplatedControl
                         var tag = new SelectTag
                         {
                             TagText = option.Header,
-                            Item  = option
+                            Item    = option
                         };
                         TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
                         _maxCountAwarePanel.Children.Add(tag);

@@ -52,8 +52,8 @@ public class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         AvaloniaProperty.Register<AbstractSelect, int?>(nameof(MaxTagCount));
     
-    public static readonly StyledProperty<bool?> IsResponsiveMaxTagCountProperty =
-        AvaloniaProperty.Register<AbstractSelect, bool?>(nameof(IsResponsiveMaxTagCount));
+    public static readonly StyledProperty<bool?> IsResponsiveTagModeProperty =
+        AvaloniaProperty.Register<AbstractSelect, bool?>(nameof(IsResponsiveTagMode));
     
     public static readonly StyledProperty<string?> MaxTagPlaceholderProperty =
         AvaloniaProperty.Register<AbstractSelect, string?>(nameof(MaxTagPlaceholder));
@@ -202,10 +202,10 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(MaxTagCountProperty, value);
     }
     
-    public bool? IsResponsiveMaxTagCount
+    public bool? IsResponsiveTagMode
     {
-        get => GetValue(IsResponsiveMaxTagCountProperty);
-        set => SetValue(IsResponsiveMaxTagCountProperty, value);
+        get => GetValue(IsResponsiveTagModeProperty);
+        set => SetValue(IsResponsiveTagModeProperty, value);
     }
     
     public string? MaxTagPlaceholder
@@ -412,11 +412,6 @@ public class AbstractSelect : TemplatedControl,
             o => o.ActivateFilterValue,
             (o, v) => o.ActivateFilterValue = v);
     
-    internal static readonly DirectProperty<AbstractSelect, bool> IsEffectiveFilterEnabledProperty =
-        AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(nameof(IsEffectiveFilterEnabled),
-            o => o.IsEffectiveFilterEnabled,
-            (o, v) => o.IsEffectiveFilterEnabled = v);
-    
     internal double ItemHeight
     {
         get => GetValue(ItemHeightProperty);
@@ -483,13 +478,6 @@ public class AbstractSelect : TemplatedControl,
         set => SetAndRaise(ActivateFilterValueProperty, ref _activateFilterValue, value);
     }
     
-    private bool _isEffectiveFilterEnabled;
-
-    internal bool IsEffectiveFilterEnabled
-    {
-        get => _isEffectiveFilterEnabled;
-        set => SetAndRaise(IsEffectiveFilterEnabledProperty, ref _isEffectiveFilterEnabled, value);
-    }
     #endregion
     
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
@@ -548,6 +536,6 @@ public class AbstractSelect : TemplatedControl,
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        // SetCurrentValue(IsDropDownOpenProperty, false);
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 }

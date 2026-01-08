@@ -4,6 +4,7 @@ internal static class TreeSelectThemeConstants
 {
     public const string PopupPart = "PART_Popup";
     public const string SingleFilterInputPart = "PART_SingleFilterInput";
+    public const string TreeViewPart = "PART_TreeView";
 }
 
 internal static class TreeSelectTagAwareTextBoxThemeConstants

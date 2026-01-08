@@ -32,8 +32,8 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         Select.MaxTagCountProperty.AddOwner<TreeSelectTagAwareTextBox>();
     
-    public static readonly StyledProperty<bool?> IsResponsiveMaxTagCountProperty =
-        Select.IsResponsiveMaxTagCountProperty.AddOwner<TreeSelectTagAwareTextBox>();
+    public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
+        AvaloniaProperty.Register<TreeSelect, bool>(nameof(IsResponsiveTagMode));
     
     private IList? _selectedItems;
 
@@ -67,29 +67,12 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
         set => SetValue(MaxTagCountProperty, value);
     }
     
-    public bool? IsResponsiveMaxTagCount
+    public bool IsResponsiveTagMode
     {
-        get => GetValue(IsResponsiveMaxTagCountProperty);
-        set => SetValue(IsResponsiveMaxTagCountProperty, value);
+        get => GetValue(IsResponsiveTagModeProperty);
+        set => SetValue(IsResponsiveTagModeProperty, value);
     }
 
-    #endregion
-
-    #region 内部属性定义
-
-    public static readonly DirectProperty<TreeSelectTagAwareTextBox, bool> IsShowDefaultPanelProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelectTagAwareTextBox, bool>(
-            nameof(IsShowDefaultPanel),
-            o => o.IsShowDefaultPanel,
-            (o, v) => o.IsShowDefaultPanel = v);
-    
-    private bool _isShowDefaultPanel;
-
-    public bool IsShowDefaultPanel
-    {
-        get => _isShowDefaultPanel;
-        set => SetAndRaise(IsShowDefaultPanelProperty, ref _isShowDefaultPanel, value);
-    }
     #endregion
 
     private WrapPanel? _defaultPanel;
@@ -97,7 +80,7 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     private SelectFilterTextBox? _searchTextBox;
     private SelectRemainInfoTag? _collapsedInfoTag;
     private protected readonly Dictionary<object, IDisposable> TagsBindingDisposables = new();
-
+    
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -113,19 +96,7 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
         {
             ConfigureSearchTextReadOnly();
         }
-        else if (change.Property == IsResponsiveMaxTagCountProperty)
-        {
-            if (IsResponsiveMaxTagCount == true)
-            {
-                SetCurrentValue(IsShowDefaultPanelProperty, false);
-            }
-            else
-            {
-                SetCurrentValue(IsShowDefaultPanelProperty, true);
-            }
-        }
-        
-        if (change.Property == IsShowDefaultPanelProperty)
+        else if (change.Property == IsResponsiveTagModeProperty)
         {
             _defaultPanel?.Children.Clear();
             _maxCountAwarePanel?.Children.Clear();
@@ -159,8 +130,8 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _defaultPanel  = e.NameScope.Find<WrapPanel>(SelectResultOptionsBoxThemeConstants.DefaultPanelPart);
-        _maxCountAwarePanel = e.NameScope.Find<SelectMaxTagAwarePanel>(SelectResultOptionsBoxThemeConstants.MaxCountAwarePanelPart);
+        _defaultPanel  = e.NameScope.Find<WrapPanel>(TreeSelectTagAwareTextBoxThemeConstants.DefaultPanelPart);
+        _maxCountAwarePanel = e.NameScope.Find<SelectMaxTagAwarePanel>(TreeSelectTagAwareTextBoxThemeConstants.MaxCountAwarePanelPart);
         _searchTextBox = new SelectFilterTextBox
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
@@ -172,7 +143,7 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
         BindUtils.RelayBind(this, SizeTypeProperty, _searchTextBox, SizeTypeProperty);
         if (IsFilterEnabled)
         {
-            if (IsShowDefaultPanel)
+            if (!IsResponsiveTagMode)
             {
                 _defaultPanel?.Children.Add(_searchTextBox);
             }
@@ -180,21 +151,12 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
 
         ConfigureSearchTextControl();
         HandleSelectedItemsChanged();
-        if (IsResponsiveMaxTagCount == true)
-        {
-            SetCurrentValue(IsShowDefaultPanelProperty, false);
-        }
-        else
-        {
-            SetCurrentValue(IsShowDefaultPanelProperty, true);
-        }
-
         ConfigureMaxTagCountInfoVisible();
     }
 
     private void HandleSelectedItemsChanged()
     {
-        if (_isShowDefaultPanel)
+        if (!IsResponsiveTagMode)
         {
             if (_defaultPanel != null)
             {
@@ -217,29 +179,12 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                                 TagText = treeItemData.Header?.ToString(),
                                 Item  = item
                             };
-                            if (MaxTagCount.HasValue)
-                            {
-                                if (i < MaxTagCount)
-                                {
-                                    tag.IsVisible = true;
-                                }
-                                else
-                                {
-                                    tag.IsVisible = false;
-                                }
-                            }
-                       
                             TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
                             _defaultPanel.Children.Add(tag);
                         }
                     }
                 }
-                
-                if (_collapsedInfoTag != null)
-                {
-                    _defaultPanel.Children.Add(_collapsedInfoTag);
-                }
-
+        
                 if (_searchTextBox != null)
                 {
                     _defaultPanel.Children.Add(_searchTextBox);
@@ -273,7 +218,6 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                             TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
                             _maxCountAwarePanel.Children.Add(tag);
                         }
-
                     }
                 }
                 
@@ -319,14 +263,17 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     {
         if (_collapsedInfoTag != null)
         {
-            if (MaxTagCount != null && SelectedItems != null && SelectedItems.Count > 0 && MaxTagCount < SelectedItems.Count)
+            if (MaxTagCount != null)
             {
-                _collapsedInfoTag.IsVisible = true;
-                _collapsedInfoTag.SetRemainText(SelectedItems.Count - MaxTagCount.Value);
-            }
-            else
-            {
-                _collapsedInfoTag.IsVisible = false;
+                if (SelectedItems != null && SelectedItems.Count > 0 && MaxTagCount < SelectedItems.Count)
+                {
+                    _collapsedInfoTag.IsVisible = true;
+                    _collapsedInfoTag.SetRemainText(SelectedItems.Count - MaxTagCount.Value);
+                }
+                else
+                {
+                    _collapsedInfoTag.IsVisible = false;
+                }
             }
         }
     }

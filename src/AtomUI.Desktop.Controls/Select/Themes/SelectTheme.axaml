@@ -81,7 +81,7 @@
                                 IsFilterEnabled="{TemplateBinding IsEffectiveFilterEnabled}"
                                 IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                                 MaxTagCount="{TemplateBinding MaxTagCount}"
-                                IsResponsiveMaxTagCount="{TemplateBinding IsResponsiveMaxTagCount}"
+                                IsResponsiveTagMode="{TemplateBinding IsResponsiveTagMode}"
                                 IsVisible="False"
                                 Focusable="True" />
                         </Panel>

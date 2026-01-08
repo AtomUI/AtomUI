@@ -279,7 +279,7 @@
                              PlaceholderText="Select Item..."
                              HorizontalAlignment="Stretch"
                              IsFilterEnabled="True"
-                             IsResponsiveMaxTagCount="True"/>
+                             IsResponsiveTagMode="True"/>
         
                 <atom:Select Mode="Multiple"
                              x:DataType="viewModels:SelectViewModel"
@@ -288,7 +288,7 @@
                              IsEnabled="False"
                              HorizontalAlignment="Stretch"
                              IsFilterEnabled="True"
-                             IsResponsiveMaxTagCount="True"/>
+                             IsResponsiveTagMode="True"/>
         
                 <atom:Select Mode="Multiple"
                              x:DataType="viewModels:SelectViewModel"

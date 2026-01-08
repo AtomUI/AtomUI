@@ -16,5 +16,17 @@
                              IsFilterEnabled="True"
                              PlaceholderText="Please select"/>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Multiple Selection"
+            Description="Multiple selection usage.">
+            <atom:TreeSelect TreeItemsSource="{Binding MultiSelectionTreeSelectNodes}" 
+                             HorizontalAlignment="Stretch"
+                             IsTreeDefaultExpandAll="True"
+                             IsAllowClear="True"
+                             IsFilterEnabled="True"
+                             IsMultiple="True"
+                             PlaceholderText="Please select" />
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

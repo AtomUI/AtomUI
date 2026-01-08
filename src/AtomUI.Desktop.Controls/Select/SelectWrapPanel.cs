@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 
@@ -13,7 +14,7 @@ internal class SelectWrapPanel : WrapPanel
         var size = base.ArrangeOverride(finalSize);
         if (_searchTextBox != null)
         {
-            if (Children.Count == 2)
+            if (Children.Count == 1)
             {
                 _searchTextBox.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));    
             }
@@ -21,6 +22,7 @@ internal class SelectWrapPanel : WrapPanel
             {
                 // 找最后一个
                 var indexOf    = Children.IndexOf(_searchTextBox);
+                Debug.Assert(indexOf != -1);
                 var lastIndex  = indexOf - 1;
                 var lastTag    =  Children[lastIndex];
                 if (!lastTag.IsVisible)

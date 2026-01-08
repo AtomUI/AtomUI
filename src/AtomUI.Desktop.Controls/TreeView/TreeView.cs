@@ -379,7 +379,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                     "Cannot use a fixed size or read-only collection as CheckedItems.");
             }
 
-            UnsubscribeFromSelectedItems();
+            UnsubscribeFromCheckedItems();
             _checkedItems = value ?? new AvaloniaList<ITreeViewItemData>();
             SubscribeToCheckedItems();
         }
@@ -453,8 +453,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public TreeView()
         : this(new DefaultTreeViewInteractionHandler(false))
     {
-        LogicalChildren.CollectionChanged += HandleLogicalChildrenCollectionChanged;
-        Items.CollectionChanged           += HandleCollectionChanged;
     }
     
     protected TreeView(ITreeViewInteractionHandler interactionHandler)
@@ -785,7 +783,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
     
-    private void UnsubscribeFromSelectedItems()
+    private void UnsubscribeFromCheckedItems()
     {
         if (_checkedItems is INotifyCollectionChanged incc)
         {

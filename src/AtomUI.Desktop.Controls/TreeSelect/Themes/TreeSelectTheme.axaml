@@ -38,7 +38,7 @@
                                     ContentTemplate="{Binding ContentLeftAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
                                     IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                 <atom:SelectHandle
-                                    IsFilterEnabled="{Binding IsEffectiveFilterEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
+                                    IsFilterEnabled="{Binding IsFilterEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
                                     IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
                                     IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
                                     IsLoading="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=atom:TreeSelect}}"
@@ -67,23 +67,23 @@
                                     </DataTemplate>
                                 </ContentPresenter.ContentTemplate>
                             </ContentPresenter>
-                            <atom:SelectFilterTextBox Name="{x:Static atom:TreeSelectThemeConstants.SingleFilterInputPart}"
-                                                      IsVisible="False"
-                                                      SizeType="{TemplateBinding SizeType}"
-                                                      Watermark="{TemplateBinding SelectedItem, Converter={StaticResource TreeItemDataConverter}}"/>
-                            <!-- <atom:SelectResultOptionsBox -->
-                            <!--     Name="SelectedOptionsBox" -->
-                            <!--     HorizontalAlignment="Stretch" -->
-                            <!--     VerticalAlignment="Center" -->
-                            <!--     Mode="{TemplateBinding Mode}" -->
-                            <!--     SizeType="{TemplateBinding SizeType}" -->
-                            <!--     SelectedOptions="{TemplateBinding SelectedOptions}" -->
-                            <!--     IsFilterEnabled="{TemplateBinding IsEffectiveSearchEnabled}" -->
-                            <!--     IsDropDownOpen="{TemplateBinding IsDropDownOpen}" -->
-                            <!--     MaxTagCount="{TemplateBinding MaxTagCount}" -->
-                            <!--     IsResponsiveMaxTagCount="{TemplateBinding IsResponsiveMaxTagCount}" -->
-                            <!--     IsVisible="False" -->
-                            <!--     Focusable="True" /> -->
+                            <atom:SelectFilterTextBox
+                                Name="{x:Static atom:TreeSelectThemeConstants.SingleFilterInputPart}"
+                                IsVisible="False"
+                                SizeType="{TemplateBinding SizeType}"
+                                Watermark="{TemplateBinding SelectedItem, Converter={StaticResource TreeItemDataConverter}}" />
+                            <atom:TreeSelectTagAwareTextBox
+                                Name="SelectedItemsBox"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                SizeType="{TemplateBinding SizeType}"
+                                SelectedItems="{TemplateBinding SelectedItems}"
+                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
+                                IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
+                                MaxTagCount="{TemplateBinding MaxTagCount}"
+                                IsResponsiveTagMode="{TemplateBinding IsResponsiveTagMode}"
+                                IsVisible="False"
+                                Focusable="True" />
                         </Panel>
                     </atom:TreeSelectAddOnDecoratedBox>
                     <atom:Popup Name="{x:Static atom:TreeSelectThemeConstants.PopupPart}"
@@ -97,7 +97,8 @@
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding EffectivePopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
-                            <atom:TreeView HorizontalAlignment="Stretch"
+                            <atom:TreeView Name="{x:Static atom:TreeSelectThemeConstants.TreeViewPart}"
+                                           HorizontalAlignment="Stretch"
                                            VerticalAlignment="Stretch"
                                            NodeHoverMode="Block"
                                            IsDefaultExpandAll="{TemplateBinding IsTreeDefaultExpandAll}"
@@ -105,16 +106,16 @@
                                            ItemFilter="{TemplateBinding ItemFilter}"
                                            ItemFilterAction="{TemplateBinding ItemFilterAction}"
                                            ItemsSource="{TemplateBinding TreeItemsSource}"
-                                           ItemTemplate="{TemplateBinding TreeItemTemplate}" 
-                                           SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
-                                           SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"
-                                           FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"/>
+                                           ItemTemplate="{TemplateBinding TreeItemTemplate}"
+                                           FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                           SelectionMode="{TemplateBinding TreeViewSelectionMode}" />
                         </Border>
                     </atom:Popup>
                 </Panel>
             </ControlTemplate>
         </Setter>
-        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
+        <Setter Property="FilterHighlightForeground"
+                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
@@ -180,17 +181,13 @@
         </Style>
 
         <Style Selector="^[IsMultiple=True]">
-            <Style Selector="^ /template/ atom|SelectResultOptionsBox#SelectedOptionsBox">
+            <Style Selector="^ /template/ atom|TreeSelectTagAwareTextBox#SelectedItemsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsFilterEnabled=False]">
                 <Style Selector="^ /template/ atom|SelectAddOnDecoratedBox#PART_AddOnDecoratedBox">
                     <Setter Property="Cursor" Value="Hand" />
                 </Style>
-            </Style>
-            <Style Selector="^ /template/ atom|SelectOptions#PART_OptionsBox">
-                <Setter Property="IsShowSelectedIndicator" Value="True" />
-                <Setter Property="SelectionMode" Value="Multiple" />
             </Style>
         </Style>
 

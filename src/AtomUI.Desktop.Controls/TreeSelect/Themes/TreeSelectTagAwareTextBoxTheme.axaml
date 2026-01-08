@@ -8,11 +8,12 @@
             <ControlTemplate>
                 <Panel Name="RootLayout">
                     <atom:SelectWrapPanel Name="{x:Static atom:TreeSelectTagAwareTextBoxThemeConstants.DefaultPanelPart}"
-                                          IsVisible="{TemplateBinding IsShowDefaultPanel}" />
+                                          IsVisible="{TemplateBinding IsResponsiveTagMode, Converter={x:Static BoolConverters.Not}}" />
                     <atom:SelectMaxTagAwarePanel
                         Name="{x:Static atom:TreeSelectTagAwareTextBoxThemeConstants.MaxCountAwarePanelPart}"
                         Orientation="Horizontal"
-                        IsVisible="{TemplateBinding IsShowDefaultPanel, Converter={x:Static BoolConverters.Not}}" />
+                        MaxTagCount="{TemplateBinding MaxTagCount}"
+                        IsVisible="{TemplateBinding IsResponsiveTagMode}" />
                 </Panel>
             </ControlTemplate>
         </Setter>

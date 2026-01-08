@@ -8,15 +8,30 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SelectMaxTagAwarePanel : StackPanel
 {
+    public static readonly StyledProperty<int?> MaxTagCountProperty =
+        AvaloniaProperty.Register<SelectMaxTagAwarePanel, int?>(nameof(MaxTagCount));
+    
+    public int? MaxTagCount
+    {
+        get => GetValue(MaxTagCountProperty);
+        set => SetValue(MaxTagCountProperty, value);
+    }
+    
     private SelectRemainInfoTag? _infoTag;
     private SelectFilterTextBox? _searchTextBox;
     
     private int _remainCount = 0;
 
+    static SelectMaxTagAwarePanel()
+    {
+        AffectsMeasure<SelectMaxTagAwarePanel>(MaxTagCountProperty);
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var size = base.MeasureOverride(availableSize);
         _remainCount = 0;
+        var maxTagCount    = MaxTagCount ?? int.MaxValue;
         var effectiveWidth = 0d;
         if (Children.Count > 0)
         {
@@ -32,14 +47,14 @@ internal class SelectMaxTagAwarePanel : StackPanel
                     offsetX += child.DesiredSize.Width + Spacing;
                 }
         
-                if (offsetX > availableSize.Width)
+                if (offsetX > availableSize.Width || i > maxTagCount - 1)
                 {
                     break;
                 }
                 effectiveWidth += child.DesiredSize.Width + Spacing;
             }
 
-            if (offsetX > availableSize.Width)
+            if (offsetX > availableSize.Width || i > maxTagCount - 1)
             {
                 _remainCount = Math.Max(0, Children.Count - 2 - i);
                 if (_remainCount > 0)
@@ -111,7 +126,7 @@ internal class SelectMaxTagAwarePanel : StackPanel
                 latestChild = child;
             }
         
-            if (_remainCount > 0 )
+            if (_remainCount > 0)
             {
                 if (_infoTag != null)
                 {

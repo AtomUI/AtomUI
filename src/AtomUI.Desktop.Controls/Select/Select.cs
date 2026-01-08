@@ -91,8 +91,8 @@ public class Select : TemplatedControl,
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         AvaloniaProperty.Register<Select, int?>(nameof(MaxTagCount));
     
-    public static readonly StyledProperty<bool?> IsResponsiveMaxTagCountProperty =
-        AvaloniaProperty.Register<Select, bool?>(nameof(IsResponsiveMaxTagCount));
+    public static readonly StyledProperty<bool?> IsResponsiveTagModeProperty =
+        AvaloniaProperty.Register<Select, bool?>(nameof(IsResponsiveTagMode));
     
     public static readonly StyledProperty<string?> MaxTagPlaceholderProperty =
         AvaloniaProperty.Register<Select, string?>(nameof(MaxTagPlaceholder));
@@ -272,10 +272,10 @@ public class Select : TemplatedControl,
     /// <summary>
     /// 响应式最大显示的 Tags 数量
     /// </summary>
-    public bool? IsResponsiveMaxTagCount
+    public bool? IsResponsiveTagMode
     {
-        get => GetValue(IsResponsiveMaxTagCountProperty);
-        set => SetValue(IsResponsiveMaxTagCountProperty, value);
+        get => GetValue(IsResponsiveTagModeProperty);
+        set => SetValue(IsResponsiveTagModeProperty, value);
     }
     
     /// <summary>
@@ -1214,10 +1214,7 @@ public class Select : TemplatedControl,
                 {
                     selectedOptions.Add(selectedItem);
                 }
-                if (selectedOptions.Contains(tagOption))
-                {
-                    selectedOptions.Remove(tagOption);
-                }
+                selectedOptions.Remove(tagOption);
                 SelectedOptions = selectedOptions;
                 SyncSelection();
             }

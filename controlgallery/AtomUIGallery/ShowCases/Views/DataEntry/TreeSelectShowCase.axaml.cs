@@ -14,6 +14,7 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
             if (DataContext is TreeSelectViewModel vm)
             {
                 InitBasicTreeSelectNodes(vm);
+                InitMultiTreeSelectNodes(vm);
             }
         });
         InitializeComponent();
@@ -79,6 +80,49 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                     }
                 ]
             }
+        ];
+    }
+
+    private void InitMultiTreeSelectNodes(TreeSelectViewModel vm)
+    {
+        vm.MultiSelectionTreeSelectNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header = "parent 1",
+                Value  = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "my leaf",
+                                Value  = "leaf1",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "your leaf",
+                                Value  = "leaf2",
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-1",
+                        Value  = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "sss",
+                                Value  = "sss",
+                            }
+                        ]
+                    }
+                ]
+            },
         ];
     }
 }

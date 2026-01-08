@@ -9,14 +9,14 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TreeSelect : AbstractSelect,
-                          IControlSharedTokenResourcesHost
+public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     
@@ -179,6 +179,15 @@ public class TreeSelect : AbstractSelect,
     #endregion
     
     #region 内部属性定义
+    
+    internal static readonly StyledProperty<SelectionMode> TreeViewSelectionModeProperty = 
+        AvaloniaProperty.Register<TreeSelect, SelectionMode>(nameof (TreeViewSelectionMode));
+    
+    internal SelectionMode TreeViewSelectionMode
+    {
+        get => GetValue(TreeViewSelectionModeProperty);
+        set => SetValue(TreeViewSelectionModeProperty, value);
+    }
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeSelectToken.ID;
@@ -186,6 +195,8 @@ public class TreeSelect : AbstractSelect,
     #endregion
     
     private SelectFilterTextBox? _singleFilterInput;
+    private TreeView? _treeView;
+    private bool _needSkipSyncSelection;
     
     static TreeSelect()
     {
@@ -194,14 +205,15 @@ public class TreeSelect : AbstractSelect,
         {
             target.HandleClearRequest();
         });
-        TreeViewItem.ClickEvent.AddClassHandler<TreeSelect>((select, args) =>
+        TreeViewItem.ClickEvent.AddClassHandler<TreeSelect>((treeSelect, args) =>
         {
             if (args.Source is TreeViewItem item)
             {
-                select.HandleTreeViewItemClicked(item);
+                treeSelect.HandleTreeViewItemClicked(item);
             }
         });
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleSearchInputTextChanged(e));
+        SelectTag.ClosedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleTagCloseRequest(e));
     }
     
     public TreeSelect()
@@ -265,6 +277,25 @@ public class TreeSelect : AbstractSelect,
                 SetCurrentValue(SelectedCountProperty, SelectedItem != null ? 1 : 0);
             }
         }
+        else if (change.Property == IsMultipleProperty)
+        {
+            ConfigureTreeSelectionMode();
+        }
+
+        if (change.Property == SelectedItemsProperty)
+        {
+            SyncSelectedItemsToTreeView();
+        }
+        else if (change.Property == SelectedItemProperty)
+        {
+            if (!_needSkipSyncSelection)
+            {
+                if (_treeView != null)
+                {
+                    _treeView.SelectedItem = SelectedItem;
+                }
+            }
+        }
     }
 
     private void UpdatePseudoClasses()
@@ -310,27 +341,41 @@ public class TreeSelect : AbstractSelect,
         
         if (Popup != null)
         {
-            Popup.Opened -= PopupOpened;
-            Popup.Closed -= PopupClosed;
+            Popup.Opened -= HandlePopupOpened;
+            Popup.Closed -= HandlePopupClosed;
         }
 
-        _singleFilterInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleFilterInputPart);
-        Popup                    =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
-        Popup.ClickHidePredicate =  PopupClosePredicate;
-        Popup.Opened             += PopupOpened;
-        Popup.Closed             += PopupClosed;
+        if (_treeView != null)
+        {
+            _treeView.SelectionChanged -= HandleTreeViewSelectionChanged;
+        }
+
+        _singleFilterInput = e.NameScope.Find<SelectFilterTextBox>(TreeSelectThemeConstants.SingleFilterInputPart);
+        Popup              = e.NameScope.Find<Popup>(TreeSelectThemeConstants.PopupPart);
+        _treeView          = e.NameScope.Find<TreeView>(TreeSelectThemeConstants.TreeViewPart);
+        
+        if (_treeView != null)
+        {
+            _treeView.SelectionChanged += HandleTreeViewSelectionChanged;
+        }
+
+        if (Popup != null)
+        {
+            Popup.ClickHidePredicate =  PopupClosePredicate;
+            Popup.Opened             += HandlePopupOpened;
+            Popup.Closed             += HandlePopupClosed;
+        }
+
         ConfigureMaxDropdownHeight();
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();
-        // ConfigureDefaultValues();
-        
         ConfigurePlaceholderVisible();
         UpdatePseudoClasses();
     }
     
-    private void PopupClosed(object? sender, EventArgs e)
+    private void HandlePopupClosed(object? sender, EventArgs e)
     {
         SubscriptionsOnOpen.Clear();
         NotifyPopupClosed();
@@ -345,7 +390,7 @@ public class TreeSelect : AbstractSelect,
         }
     }
 
-    private void PopupOpened(object? sender, EventArgs e)
+    private void HandlePopupOpened(object? sender, EventArgs e)
     {
         SubscriptionsOnOpen.Clear();
         this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
@@ -357,6 +402,58 @@ public class TreeSelect : AbstractSelect,
         if (!IsMultiple)
         {
             _singleFilterInput?.Focus();
+        }
+    }
+
+    private void HandleTreeViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_treeView == null)
+        {
+            return;
+        }
+        
+        var needSync = false;
+
+        if (IsMultiple)
+        {
+            if (_selectedItems == null || _selectedItems?.Count != _treeView.SelectedItems.Count)
+            {
+                needSync = true;
+            }
+            else
+            {
+                var currentSet  = _selectedItems.Cast<object>().ToHashSet();
+                var treeViewSet = _treeView.SelectedItems.Cast<object>().ToHashSet();
+                if (!currentSet.SetEquals(treeViewSet))
+                {
+                    needSync = true;
+                }
+            }
+        
+            if (needSync)
+            {
+                try
+                {
+                    _needSkipSyncSelection = true;
+                    SelectedItems          = _treeView.SelectedItems.Cast<object>().ToList();
+                }
+                finally
+                {
+                    _needSkipSyncSelection = false;
+                }
+            }
+        }
+        else
+        {
+            try
+            {
+                _needSkipSyncSelection = true;
+                SelectedItem          = _treeView.SelectedItem;
+            }
+            finally
+            {
+                _needSkipSyncSelection = false;
+            }
         }
     }
     
@@ -384,7 +481,7 @@ public class TreeSelect : AbstractSelect,
         }
     }
     
-     protected override void OnPointerPressed(PointerPressedEventArgs e)
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
         if(!e.Handled && e.Source is Visual source)
@@ -395,7 +492,7 @@ public class TreeSelect : AbstractSelect,
                 return;
             }
         }
-
+    
         if (IsDropDownOpen)
         {
             // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
@@ -412,8 +509,8 @@ public class TreeSelect : AbstractSelect,
                     }
                 }
        
-                var parent        = sourceControl.FindAncestorOfType<IconButton>();
-                var tag           = parent?.FindAncestorOfType<SelectTag>();
+                var parent = sourceControl.FindAncestorOfType<IconButton>();
+                var tag    = parent?.FindAncestorOfType<SelectTag>();
                 if (tag != null)
                 {
                     IgnorePopupClose = true;
@@ -451,7 +548,7 @@ public class TreeSelect : AbstractSelect,
                         clickInTagCloseButton = true;
                     }
                 }
-
+    
                 if (!clickInTagCloseButton)
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
@@ -459,7 +556,7 @@ public class TreeSelect : AbstractSelect,
                 e.Handled = true;
             }
         }
-
+    
         PseudoClasses.Set(StdPseudoClass.Pressed, false);
         base.OnPointerReleased(e);
     }
@@ -472,7 +569,7 @@ public class TreeSelect : AbstractSelect,
         }
     }
     
-     private void HandleSearchInputTextChanged(TextChangedEventArgs e)
+    private void HandleSearchInputTextChanged(TextChangedEventArgs e)
     {
         if (ItemFilter != null)
         {
@@ -484,5 +581,79 @@ public class TreeSelect : AbstractSelect,
         }
 
         e.Handled = true;
+    }
+
+    private void ConfigureTreeSelectionMode()
+    {
+        if (IsMultiple)
+        {
+            TreeViewSelectionMode = SelectionMode.Multiple | SelectionMode.Toggle;
+        }
+        else
+        {
+            TreeViewSelectionMode = SelectionMode.Single;
+        }
+    }
+    
+    private void HandleTagCloseRequest(RoutedEventArgs e)
+    {
+        if (!IsMultiple)
+        {
+            return;
+        }
+        if (e.Source is SelectTag tag && tag.Item is ITreeViewItemData treeItemData)
+        {
+            if (SelectedItems != null)
+            {
+                var selectedItems = new List<object>();
+                foreach (var item in SelectedItems)
+                {
+                    selectedItems.AddRange(item);
+                }
+                selectedItems.Remove(treeItemData);
+                SelectedItems = selectedItems;
+            }
+        }
+        e.Handled = true;
+    }
+
+    private void SyncSelectedItemsToTreeView()
+    {
+        if (!_needSkipSyncSelection)
+        {
+            if (_treeView != null)
+            {
+                if (SelectedItems != null)
+                {
+                    if (_treeView.SelectedItems.Count == 0)
+                    {
+                        foreach (var item in SelectedItems)
+                        {
+                            _treeView.SelectedItems.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        var treeViewSet  = _treeView.SelectedItems.Cast<object>().ToList();
+                        var currentSet   = SelectedItems.Cast<object>().ToList();
+                        var deletedItems = treeViewSet.Except(currentSet);
+                        var addedItems = currentSet.Except(treeViewSet);
+                        foreach (var item in deletedItems)
+                        {
+                            _treeView.SelectedItems.Remove(item);
+                        }
+
+                        foreach (var item in addedItems)
+                        {
+                            _treeView.SelectedItems.Add(item);
+                        }
+                    }
+                }
+                else
+                {
+                    _treeView.SelectedItems.Clear();
+                }
+            }
+        }
     }
 }

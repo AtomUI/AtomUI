@@ -426,12 +426,23 @@ public sealed class FlexPanel : Panel
         var hasExplicitMin = isColumn
             ? element.IsSet(Layoutable.MinHeightProperty)
             : element.IsSet(Layoutable.MinWidthProperty);
+        var hasExplicitMain = isColumn
+            ? element.IsSet(Layoutable.HeightProperty)
+            : element.IsSet(Layoutable.WidthProperty);
         var useAutoMeasuredMin = !hasExplicitMin && basisKind != FlexBasisKind.Auto && flexConstraint != max.U;
         var autoMinLength = 0.0;
+        var useAutoBasisLength = basisKind == FlexBasisKind.Auto && !hasExplicitMain && !double.IsInfinity(max.U);
+        var autoBasisLength = 0.0;
         if (useAutoMeasuredMin)
         {
             element.Measure(Uv.ToSize(max.WithU(max.U), isColumn));
             autoMinLength = Uv.FromSize(element.DesiredSize, isColumn).U;
+        }
+
+        if (useAutoBasisLength)
+        {
+            element.Measure(Uv.ToSize(max.WithU(double.PositiveInfinity), isColumn));
+            autoBasisLength = Uv.FromSize(element.DesiredSize, isColumn).U;
         }
 
         element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));
@@ -439,16 +450,28 @@ public sealed class FlexPanel : Panel
         var size = Uv.FromSize(element.DesiredSize, isColumn);
         var minLength = hasExplicitMin
             ? Math.Max(0.0, isColumn ? element.MinHeight : element.MinWidth)
-            : Math.Max(0.0, useAutoMeasuredMin ? autoMinLength : size.U);
+            : Math.Max(0.0, useAutoBasisLength ? autoBasisLength : useAutoMeasuredMin ? autoMinLength : size.U);
         Flex.SetMinLength(element, minLength);
 
+        var baseLength = basisKind == FlexBasisKind.Auto
+            ? useAutoBasisLength ? autoBasisLength : size.U
+            : flexConstraint;
         var flexLength = basisKind switch
         {
-            FlexBasisKind.Auto => Math.Max(size.U, minLength),
-            FlexBasisKind.Absolute or FlexBasisKind.Relative => Math.Max(flexConstraint, minLength),
+            FlexBasisKind.Auto => Math.Max(baseLength, minLength),
+            FlexBasisKind.Absolute or FlexBasisKind.Relative => Math.Max(baseLength, minLength),
             _ => throw new InvalidOperationException()
         };
-        size = size.WithU(flexLength);
+        if (size.U != flexLength)
+        {
+            // Ensure cross-axis measurement matches the final main-axis length.
+            element.Measure(Uv.ToSize(max.WithU(flexLength), isColumn));
+            size = Uv.FromSize(element.DesiredSize, isColumn).WithU(flexLength);
+        }
+        else
+        {
+            size = size.WithU(flexLength);
+        }
 
         Flex.SetBaseLength(element, flexLength);
         Flex.SetCurrentLength(element, flexLength);

@@ -642,6 +642,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             {
                 CheckedItems.Remove(unCheckedItem);
             }
+            var treeItemData = TreeItemFromContainer(item);
+            Debug.Assert(treeItemData != null);
+            CheckedItems.Remove(treeItemData);
         }
         finally
         {
@@ -901,7 +904,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 break;
             }
         }
-
         if (added?.Count > 0 || removed?.Count > 0)
         {
             CheckedItemsChanged?.Invoke(this, new TreeViewCheckedItemsChangedEventArgs(

@@ -1,4 +1,6 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -12,6 +14,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -83,6 +86,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     public static readonly StyledProperty<bool> IsSwitcherRotationProperty = 
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsSwitcherRotation), true);
+    
+    public static readonly StyledProperty<bool> IsSelectableProperty = 
+        AvaloniaProperty.Register<TreeView, bool>(nameof(IsSelectable), true);
+    
+    public static readonly StyledProperty<bool> IsCheckStrictlyProperty = 
+        AvaloniaProperty.Register<TreeView, bool>(nameof(IsCheckStrictly), false);
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TreeView>();
@@ -235,6 +244,18 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         get => GetValue(IsSwitcherRotationProperty);
         set => SetValue(IsSwitcherRotationProperty, value);
     }
+    
+    public bool IsSelectable
+    {
+        get => GetValue(IsSelectableProperty);
+        set => SetValue(IsSelectableProperty, value);
+    }
+    
+    public bool IsCheckStrictly
+    {
+        get => GetValue(IsCheckStrictlyProperty);
+        set => SetValue(IsCheckStrictlyProperty, value);
+    }
 
     public bool IsMotionEnabled
     {
@@ -359,13 +380,13 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     /// Gets or sets the selected items.
     /// </summary>
     [AllowNull]
-    public IList<ITreeViewItemData> CheckedItems
+    public IList CheckedItems
     {
         get
         {
             if (_checkedItems == null)
             {
-                _checkedItems = new AvaloniaList<ITreeViewItemData>();
+                _checkedItems = new AvaloniaList<object>();
                 SubscribeToCheckedItems();
             }
 
@@ -380,7 +401,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             }
 
             UnsubscribeFromCheckedItems();
-            _checkedItems = value ?? new AvaloniaList<ITreeViewItemData>();
+            _checkedItems = value ?? new AvaloniaList<object>();
             SubscribeToCheckedItems();
         }
     }
@@ -399,7 +420,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public event EventHandler<TreeViewDroppedEventArgs>? ItemDropped;
     public event EventHandler<TreeItemExpandedEventArgs>? ItemExpanded;
     public event EventHandler<TreeItemCollapsedEventArgs>? ItemCollapsed;
+    public event EventHandler<TreeItemClickedEventArgs>? ItemClicked;
     public event EventHandler<TreeItemContextMenuEventArgs>? ItemContextMenuRequest;
+    
     #endregion
 
     #region 内部属性定义
@@ -434,8 +457,8 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     #endregion
     
     private readonly Dictionary<TreeViewItem, CompositeDisposable> _itemsBindingDisposables = new();
-    private static readonly IList<ITreeViewItemData> Empty = Array.Empty<ITreeViewItemData>();
-    private IList<ITreeViewItemData>? _checkedItems;
+    private static readonly IList Empty = Array.Empty<object>();
+    private IList? _checkedItems;
     private bool _syncingCheckedItems;
     
     internal bool IsExpandAllProcess { get; set; }
@@ -447,6 +470,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         TreeViewItem.ExpandedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemExpanded(args));
         TreeViewItem.CollapsedEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemCollapsed(args));
         TreeViewItem.ContextMenuRequestEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemContextMenuRequest(args));
+        TreeViewItem.ClickEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemClicked(args));
         ConfigureFilter();
     }
 
@@ -572,23 +596,25 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
 
-    private ISet<TreeViewItem> DoCheckedSubTree(TreeViewItem item)
+    private ISet<object> DoCheckedSubTree(TreeViewItem treeItem)
     {
-        var checkedItems = new HashSet<TreeViewItem>();
-        item.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
-        checkedItems.Add(item);
-        if (item.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
+        var checkedItems = new HashSet<object>();
+        treeItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
+        var treeItemData = TreeItemFromContainer(treeItem);
+        Debug.Assert(treeItemData != null);
+        checkedItems.Add(treeItemData);
+        if (treeItem.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
         {
             var layoutManager = visualRoot.GetLayoutManager();
             layoutManager.ExecuteLayoutPass();
         }
-
-        foreach (var childItem in item.Items)
+        
+        foreach (var childItem in treeItem.Items)
         {
             if (childItem != null)
             {
-                var control = TreeContainerFromItem(childItem);
-                if (control is TreeViewItem treeViewItem && treeViewItem.IsEffectiveCheckable())
+                var container = TreeContainerFromItem(childItem);
+                if (container is TreeViewItem treeViewItem && treeViewItem.IsEffectiveCheckable())
                 {
                     var childCheckedItems = DoCheckedSubTree(treeViewItem);
                     checkedItems.UnionWith(childCheckedItems);
@@ -596,7 +622,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             }
         }
 
-        var (checkedParentItems, _) = SetupParentNodeCheckedStatus(item);
+        var (checkedParentItems, _) = SetupParentNodeCheckedStatus(treeItem);
         checkedItems.UnionWith(checkedParentItems);
         return checkedItems;
     }
@@ -623,21 +649,23 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
 
-    public ISet<TreeViewItem> DoUnCheckedSubTree(TreeViewItem item)
+    public ISet<object> DoUnCheckedSubTree(TreeViewItem treeItem)
     {
-        var unCheckedItems = new HashSet<TreeViewItem>();
-        if (item.IsChecked == true)
+        var unCheckedItems = new HashSet<object>();
+        if (treeItem.IsChecked == true)
         {
-            unCheckedItems.Add(item);
+            var treeItemData = TreeItemFromContainer(treeItem);
+            Debug.Assert(treeItemData != null);
+            unCheckedItems.Add(treeItemData);
         }
-        item.SetCurrentValue(TreeViewItem.IsCheckedProperty, false);
-        if (item.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
+        treeItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, false);
+        if (treeItem.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
         {
             var layoutManager = visualRoot.GetLayoutManager();
             layoutManager.ExecuteLayoutPass();
         }
 
-        foreach (var childItem in item.Items)
+        foreach (var childItem in treeItem.Items)
         {
             if (childItem != null)
             {
@@ -649,7 +677,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 }
             }
         }
-        var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(item);
+        var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(treeItem);
         unCheckedItems.UnionWith(unCheckedParentItems);
         return unCheckedItems;
     }
@@ -711,6 +739,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 TreeViewItem.IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, TreeViewItem.IsSwitcherRotationProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, TreeViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsSelectableProperty, treeViewItem, TreeViewItem.IsSelectableProperty));
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, treeViewItem, TreeViewItem.FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
                 TreeViewItem.HasTreeItemDataLoaderProperty));
@@ -761,7 +790,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         InteractionHandler.Detach(this);
     }
 
-    private TreeViewItem? GetTreeViewItemContainer(ITreeViewItemData childNode, ItemsControl current)
+    private TreeViewItem? GetTreeViewItemContainer(object childNode, ItemsControl current)
     {
         if (current.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
         {
@@ -793,68 +822,84 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     private void HandleCheckedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_syncingCheckedItems)
-        {
-            return;
-        }
-        IList<ITreeViewItemData>? added   = null;
-        IList<ITreeViewItemData>? removed = null;
+        IList? added   = null;
+        IList? removed = null;
 
         switch (e.Action)
         {
             case NotifyCollectionChangedAction.Add:
 
             {
-                var newItems = e.NewItems!.Cast<ITreeViewItemData>().ToArray();
-                CheckedItemsAdded(newItems);
-                added = newItems;
-            }
-                break;
-            case NotifyCollectionChangedAction.Remove:
-                
-                foreach (var item in e.OldItems!)
+                if (e.NewItems != null)
                 {
-                    if (item is ITreeViewItemData treeItemData)
+                    if (!_syncingCheckedItems)
                     {
-                        MarkItemChecked(treeItemData, false);
+                        CheckedItemsAdded(e.NewItems); 
+                    }
+                    added = e.NewItems;
+                }
+               
+                break;
+            }
+            case NotifyCollectionChangedAction.Remove:
+                if (!_syncingCheckedItems)
+                {
+                    if (e.OldItems != null)
+                    {
+                        foreach (var item in e.OldItems)
+                        {
+                            MarkItemChecked(item, false);
+                        }
                     }
                 }
 
-                removed = e.OldItems!.Cast<ITreeViewItemData>().ToArray();
+                removed = e.OldItems;
 
                 break;
             case NotifyCollectionChangedAction.Reset:
-
-                foreach (var container in GetRealizedTreeContainers())
+                if (!_syncingCheckedItems)
                 {
-                    MarkContainerChecked(container, false);
+                    foreach (var container in GetRealizedTreeContainers())
+                    {
+                        MarkContainerChecked(container, false);
+                    }
+                    if (CheckedItems.Count > 0)
+                    {
+                        CheckedItemsAdded(CheckedItems);
+                    }
                 }
+
                 if (CheckedItems.Count > 0)
                 {
-                    CheckedItemsAdded(CheckedItems);
                     added = CheckedItems;
                 }
 
                 break;
             case NotifyCollectionChangedAction.Replace:
             {
-                var newItems = e.NewItems!.Cast<ITreeViewItemData>().ToArray();
-                var oldItems = e.OldItems!.Cast<ITreeViewItemData>().ToArray();
-                foreach (var item in oldItems)
+                if (!_syncingCheckedItems)
                 {
-                    MarkItemChecked(item, false);
+                    if (e.OldItems != null)
+                    {
+                        foreach (var item in e.OldItems)
+                        {
+                            MarkItemChecked(item, false);
+                        }
+                    }
+
+                    if (e.NewItems != null)
+                    {
+                        foreach (var item in e.NewItems)
+                        {
+                            MarkItemChecked(item, true);
+                        }
+                    }
                 }
-
-                foreach (var item in newItems)
-                {
-                    MarkItemChecked(item, true);
-                }
-
-                added   = newItems;
-                removed = oldItems;
-            }
-
+                
+                added   = e.NewItems;
+                removed = e.OldItems;
                 break;
+            }
         }
 
         if (added?.Count > 0 || removed?.Count > 0)
@@ -865,27 +910,24 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
     
-    private void CheckedItemsAdded(IList<ITreeViewItemData> items)
+    private void CheckedItemsAdded(IList items)
     {
         if (items.Count == 0)
         {
             return;
         }
-        foreach (ITreeViewItemData item in items)
+        foreach (var item in items)
         {
             MarkItemChecked(item, true);
         }
     }
     
-    private void MarkItemChecked(ITreeViewItemData item, bool isChecked)
+    private void MarkItemChecked(object item, bool isChecked)
     {
-        if (TreeContainerFromItem(item) is Control container)
+        var container = TreeContainerFromItem(item);
+        if (container != null)
         {
             MarkContainerChecked(container, isChecked);
-        }
-        else if (item is TreeViewItem treeViewItem)
-        {
-            MarkContainerChecked(treeViewItem, isChecked);
         }
     }
     
@@ -896,39 +938,47 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
     #region 默认展开选中
 
-    private IList<ITreeViewItemData> FindTreeItemByPath(TreeNodePath treeNodePath)
+    private IList FindTreeItemByPath(TreeNodePath treeNodePath)
     {
         if (treeNodePath.Length == 0)
         {
-            return [];
+            return Array.Empty<object>();
         }
-        var                      segments  = treeNodePath.Segments;
-        IList<ITreeViewItemData> items     = Items.OfType<ITreeViewItemData>().ToList();
-        IList<ITreeViewItemData> pathNodes = new List<ITreeViewItemData>();
+
+        var   segments  = treeNodePath.Segments;
+        IList items     = Items.ToList();
+        IList pathNodes = new List<object>();
         foreach (var segment in segments)
         {
             bool childFound = false;
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
-                if (item.ItemKey != null && item.ItemKey.Value == segment)
+                if (item != null)
                 {
-                    items      = item.Children;
-                    childFound = true;
-                    pathNodes.Add(item);
-                    break;
+                    var container = TreeContainerFromItem(item);
+                    if (container is ITreeViewItemData treeViewItem)
+                    {
+                        if (treeViewItem.ItemKey != null && treeViewItem.ItemKey.Value == segment)
+                        {
+                            items      = treeViewItem.Children.Cast<object>().ToList();
+                            childFound = true;
+                            pathNodes.Add(item);
+                            break;
+                        }
+                    }
                 }
             }
 
             if (!childFound)
             {
-                return [];
+                return Array.Empty<object>();
             }
         }
         return pathNodes;
     }
     
-    private List<TreeViewItem> ExpandTreeViewPaths(IList<ITreeViewItemData> pathNodes, bool expandLastRecursively = false)
+    private List<TreeViewItem> ExpandTreeViewPaths(IList pathNodes, bool expandLastRecursively = false)
     {
         if (pathNodes.Count == 0)
         {
@@ -941,19 +991,22 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             for (var i = 0; i < pathNodes.Count; i++)
             {
                 var pathNode = pathNodes[i];
-                var child    = GetTreeViewItemContainer(pathNode, current);
-                if (child != null)
+                if (pathNode != null)
                 {
-                    items.Add(child);
-                    current               = child;
-                    child.IsMotionEnabled = false;
-                    if (i == pathNodes.Count - 1 && expandLastRecursively)
+                    var child = GetTreeViewItemContainer(pathNode, current);
+                    if (child != null)
                     {
-                        ExpandSubTree(child);
-                    }
-                    else
-                    {
-                        child.SetCurrentValue(TreeViewItem.IsExpandedProperty, true);
+                        items.Add(child);
+                        current               = child;
+                        child.IsMotionEnabled = false;
+                        if (i == pathNodes.Count - 1 && expandLastRecursively)
+                        {
+                            ExpandSubTree(child);
+                        }
+                        else
+                        {
+                            child.SetCurrentValue(TreeViewItem.IsExpandedProperty, true);
+                        }
                     }
                 }
             }
@@ -968,7 +1021,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
     
-    private List<TreeViewItem> CollapseTreeViewPaths(IList<ITreeViewItemData> pathNodes, bool collapseLastRecursively = false)
+    private List<TreeViewItem> CollapseTreeViewPaths(IList pathNodes, bool collapseLastRecursively = false)
     {
         if (pathNodes.Count == 0)
         {
@@ -981,19 +1034,22 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             for (var i = 0; i < pathNodes.Count; i++)
             {
                 var pathNode = pathNodes[i];
-                var child    = GetTreeViewItemContainer(pathNode, current);
-                if (child != null)
+                if (pathNode != null)
                 {
-                    items.Add(child);
-                    current               = child;
-                    child.IsMotionEnabled = false;
-                    if (i == pathNodes.Count - 1 && collapseLastRecursively)
+                    var child = GetTreeViewItemContainer(pathNode, current);
+                    if (child != null)
                     {
-                        CollapseSubTree(child);
-                    }
-                    else
-                    {
-                        child.SetCurrentValue(TreeViewItem.IsExpandedProperty, false);
+                        items.Add(child);
+                        current               = child;
+                        child.IsMotionEnabled = false;
+                        if (i == pathNodes.Count - 1 && collapseLastRecursively)
+                        {
+                            CollapseSubTree(child);
+                        }
+                        else
+                        {
+                            child.SetCurrentValue(TreeViewItem.IsExpandedProperty, false);
+                        }
                     }
                 }
             }
@@ -1008,11 +1064,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
     
-    private (ISet<TreeViewItem>, ISet<TreeViewItem>) SetupParentNodeCheckedStatus(TreeViewItem item)
+    private (ISet<object>, ISet<object>) SetupParentNodeCheckedStatus(TreeViewItem item)
     {
         var parent           = item.Parent;
-        var checkedParents   =  new HashSet<TreeViewItem>();
-        var unCheckedParents =  new HashSet<TreeViewItem>();
+        var checkedParents   =  new HashSet<object>();
+        var unCheckedParents =  new HashSet<object>();
         while (parent is TreeViewItem parentTreeItem && parentTreeItem.IsEnabled)
         {
             var isAllChecked = false;
@@ -1050,7 +1106,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
             if (parentTreeItem.IsChecked == true && !isAllChecked)
             {
-                unCheckedParents.Add(parentTreeItem);
+                var parentTreeItemData = TreeItemFromContainer(parentTreeItem);
+                Debug.Assert(parentTreeItemData != null);
+                unCheckedParents.Add(parentTreeItemData);
             }
             
             var originMotionEnabled = parentTreeItem.IsMotionEnabled;
@@ -1077,7 +1135,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
        
             if (parentTreeItem.IsChecked == true)
             {
-                checkedParents.Add(parentTreeItem);
+                var parentTreeItemData = TreeItemFromContainer(parentTreeItem);
+                Debug.Assert(parentTreeItemData != null);
+                checkedParents.Add(parentTreeItemData);
             }
             parent = parent.Parent;
         }
@@ -1135,18 +1195,21 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     private void ConfigureDefaultSelectedPaths()
     {
-        if (SelectedItems.Count == 0 && DefaultSelectedPaths != null)
+        if (IsSelectable)
         {
-            foreach (var defaultSelectedPath in DefaultSelectedPaths)
+            if (SelectedItems.Count == 0 && DefaultSelectedPaths != null)
             {
-                var pathNodes = FindTreeItemByPath(defaultSelectedPath);
-              
-                if (pathNodes.Count > 0)
+                foreach (var defaultSelectedPath in DefaultSelectedPaths)
                 {
-                    var targetNode = pathNodes.Last();
-                    if (!SelectedItems.Contains(targetNode))
+                    var pathNodes = FindTreeItemByPath(defaultSelectedPath);
+              
+                    if (pathNodes.Count > 0)
                     {
-                        SelectedItems.Add(targetNode);
+                        var targetNode = pathNodes[^1];
+                        if (!SelectedItems.Contains(targetNode))
+                        {
+                            SelectedItems.Add(targetNode);
+                        }
                     }
                 }
             }
@@ -1156,7 +1219,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-
         ConfigureDefaultSelectedPaths();
         ConfigureDefaultCheckedPaths();
         
@@ -1218,6 +1280,14 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             change.Property == FilterResultCountProperty)
         {
             ConfigureEmptyIndicator();
+        }
+        else if (change.Property == IsSelectableProperty)
+        {
+            if (!IsSelectable)
+            {
+                SetCurrentValue(SelectedItemProperty, null);
+                SelectedItems.Clear();
+            }
         }
     }
 
@@ -1305,6 +1375,19 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
     
+    private void HandleTreeItemClicked(RoutedEventArgs args)
+    {
+        if (args.Source is TreeViewItem item)
+        {
+            NotifyTreeItemClicked(item);
+            ItemClicked?.Invoke(this, new TreeItemClickedEventArgs(item));
+        }
+    }
+
+    protected virtual void NotifyTreeItemClicked(TreeViewItem item)
+    {
+    }
+    
     protected virtual void ConfigureEmptyIndicator()
     {
         var isEmpty = false;
@@ -1329,5 +1412,34 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             }
         }
         SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && isEmpty);
+    }
+    
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+ 
+        if (e.Source is Visual source)
+        {
+            var point = e.GetCurrentPoint(source);
+            if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+            {
+                if (IsSelectable)
+                {
+                    var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
+                    e.Handled = UpdateSelectionFromEventSource(
+                        e.Source,
+                        true,
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                        e.KeyModifiers.HasAllFlags(keymap.CommandModifiers),
+                        point.Properties.IsRightButtonPressed);
+                }
+            }
+        }
+        
+        if (IsDraggable)
+        {
+            e.Handled  = true;
+            _lastPoint = e.GetPosition(this);
+            e.PreventGestureRecognition();
+        }
     }
 }

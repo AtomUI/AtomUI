@@ -240,17 +240,6 @@ public partial class TreeView
         result ??= current.IsDragOverForOffsetY(localPosition) ? current : null;
         return result;
     }
-    
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-        if (IsDraggable)
-        {
-            e.Handled  = true;
-            _lastPoint = e.GetPosition(this);
-            e.PreventGestureRecognition();
-        }
-    }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
@@ -611,6 +600,7 @@ public partial class TreeView
             }
         }
     }
+    
 }
 
 internal class DropTargetInfo

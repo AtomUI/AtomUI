@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using Avalonia;
@@ -56,6 +57,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         {
             throw new NotSupportedException("DefaultTreeViewInteractionHandler is not attached to the TreeView.");
         }
+        
         TreeView.PointerPressed  -= PointerPressed;
         TreeView.PointerReleased -= PointerReleased;
         
@@ -160,28 +162,32 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
                 if (e.Source is ILogical control && !floatableTreeView.IsLogicalAncestorOf(control))
                 {
                     floatableTreeView.Close();
-                } 
+                }
             }
         }
     }
 
     internal void OnCheckedChanged(TreeViewItem item)
     {
-        if (TreeView?.ToggleType == ItemToggleType.Radio && item is IRadioButton radioButton)
+        Debug.Assert(TreeView != null);
+        if (TreeView.ToggleType == ItemToggleType.Radio && item is IRadioButton radioButton)
         {
             _groupManager?.OnCheckedChanged(radioButton);
         }
-        else if (TreeView?.ToggleType == ItemToggleType.CheckBox)
+        else if (TreeView.ToggleType == ItemToggleType.CheckBox)
         {
-            if (item.IsChecked.HasValue)
+            if (!TreeView.IsCheckStrictly)
             {
-                if (item.IsChecked.Value)
+                if (item.IsChecked.HasValue)
                 {
-                    TreeView.CheckedSubTree(item);
-                }
-                else
-                {
-                    TreeView.UnCheckedSubTree(item);
+                    if (item.IsChecked.Value)
+                    {
+                        TreeView.CheckedSubTree(item);
+                    }
+                    else
+                    {
+                        TreeView.UnCheckedSubTree(item);
+                    }
                 }
             }
         }

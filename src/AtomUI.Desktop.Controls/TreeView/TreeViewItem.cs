@@ -215,6 +215,12 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             o => o.ItemFilterAction,
             (o, v) => o.ItemFilterAction = v);
     
+    internal static readonly DirectProperty<TreeViewItem, bool> IsSelectableProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
+            nameof(IsSelectable),
+            o => o.IsSelectable,
+            (o, v) => o.IsSelectable = v);
+    
     internal PathIcon? SwitcherExpandIcon
     {
         get => GetValue(SwitcherExpandIconProperty);
@@ -364,6 +370,14 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         get => _itemFilterAction;
         set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
     }
+
+    private bool _isSelectable = true;
+    
+    internal bool IsSelectable
+    {
+        get => _isSelectable;
+        set => SetAndRaise(IsSelectableProperty, ref _isSelectable, value);
+    }
     
     internal TreeView? OwnerTreeView { get; set; }
 
@@ -450,6 +464,23 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         else if (change.Property == IsExpandedProperty)
         {
             HandleExpandedChanged();
+        }
+
+        if (change.Property == IsSelectedProperty)
+        {
+            if (IsSelected && !IsSelectable)
+            {
+                SetCurrentValue(IsSelectedProperty, false);
+                throw new InvalidOperationException("The IsSelectable property value is False, meaning selection is not supported.");
+            }
+        }
+
+        if (change.Property == IsSelectableProperty)
+        {
+            if (!IsSelectable)
+            {
+                SetCurrentValue(IsSelectedProperty, false);
+            }
         }
     }
 
@@ -772,6 +803,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
                     IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsSwitcherRotationProperty, treeViewItem, IsSwitcherRotationProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, treeViewItem, ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsSelectableProperty, treeViewItem, IsSelectableProperty));
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, treeViewItem, FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasTreeItemDataLoaderProperty, treeViewItem,
                 HasTreeItemDataLoaderProperty));

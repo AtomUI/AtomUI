@@ -38,7 +38,9 @@
                                          IsFilterMatch="{TemplateBinding IsFilterMatch}"
                                          FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
                                          ItemFilterAction="{TemplateBinding ItemFilterAction}"
-                                         FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"/>
+                                         FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                         IsSelectable="{TemplateBinding IsSelectable}"
+                                         Focusable="{TemplateBinding Focusable}"/>
                 <atom:LayoutAwareMotionActor
                     Name="{x:Static atom:TreeViewItemThemeConstants.ItemsPresenterMotionActorPart}"
                     ClipToBounds="True"
@@ -52,6 +54,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|TreeViewItem)">
+        <Setter Property="Focusable" Value="False" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
     </Style>

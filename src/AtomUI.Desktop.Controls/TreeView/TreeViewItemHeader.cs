@@ -142,6 +142,9 @@ internal class TreeViewItemHeader : ContentControl
     internal static readonly StyledProperty<bool> IsHoverProperty =
         AvaloniaProperty.Register<TreeViewItemHeader, bool>(nameof(IsHover), false);
     
+    internal static readonly StyledProperty<bool> IsPressedProperty =
+        AvaloniaProperty.Register<TreeViewItemHeader, bool>(nameof(IsPressed), false);
+    
     public static readonly StyledProperty<IBrush?> ContentFrameBackgroundProperty =
         AvaloniaProperty.Register<TreeViewItemHeader, IBrush?>(nameof (ContentFrameBackground));
 
@@ -226,10 +229,22 @@ internal class TreeViewItemHeader : ContentControl
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         TreeView.FilterHighlightForegroundProperty.AddOwner<TreeViewItemHeader>();
     
+    internal static readonly DirectProperty<TreeViewItemHeader, bool> IsSelectableProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(
+            nameof(IsSelectable),
+            o => o.IsSelectable,
+            (o, v) => o.IsSelectable = v);
+    
     internal bool IsHover
     {
         get => GetValue(IsHoverProperty);
         set => SetValue(IsHoverProperty, value);
+    }
+    
+    internal bool IsPressed
+    {
+        get => GetValue(IsPressedProperty);
+        set => SetValue(IsPressedProperty, value);
     }
     
     internal IBrush? ContentFrameBackground
@@ -363,6 +378,14 @@ internal class TreeViewItemHeader : ContentControl
     {
         get => GetValue(FilterHighlightForegroundProperty);
         set => SetValue(FilterHighlightForegroundProperty, value);
+    }
+    
+    private bool _isSelectable = true;
+    
+    internal bool IsSelectable
+    {
+        get => _isSelectable;
+        set => SetAndRaise(IsSelectableProperty, ref _isSelectable, value);
     }
     #endregion
     
@@ -524,6 +547,18 @@ internal class TreeViewItemHeader : ContentControl
         {
             SetCurrentValue(IsHoverProperty, false);
         }
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        SetCurrentValue(IsPressedProperty, true);
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        SetCurrentValue(IsPressedProperty, false);
     }
 
     internal void NotifyAnimating(bool animating)

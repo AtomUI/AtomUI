@@ -117,9 +117,16 @@
                 <Setter Property="ContentFrameBackground" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeHoverBg}}" />
             </Style>
 
-            <Style Selector="^[IsSelected=True]">
-                <Setter Property="ContentFrameBackground"
-                        Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
+            <Style Selector="^[IsSelectable=True]">
+                <Style Selector="^[IsSelected=True]">
+                    <Setter Property="ContentFrameBackground"
+                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
+                </Style>
+
+                <Style Selector="^[IsPressed=True]">
+                    <Setter Property="ContentFrameBackground"
+                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
+                </Style>
             </Style>
         </Style>
 
@@ -131,9 +138,16 @@
             <Style Selector="^[IsHover=True]">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeHoverBg}}" />
             </Style>
-            <Style Selector="^[IsSelected=True]">
-                <Setter Property="Background"
-                        Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
+
+            <Style Selector="^[IsSelectable=True]">
+                <Style Selector="^[IsSelected=True]">
+                    <Setter Property="Background"
+                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
+                </Style>
+                <Style Selector="^[IsPressed=True]">
+                    <Setter Property="Background"
+                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
+                </Style>
             </Style>
         </Style>
 
@@ -181,7 +195,7 @@
         </Style>
 
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
             </Style>

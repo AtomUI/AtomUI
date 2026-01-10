@@ -43,7 +43,47 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
         get => _checkableTreeSelectNodes;
         set => this.RaiseAndSetIfChanged(ref _checkableTreeSelectNodes, value);
     }
-
+    
+    private List<ITreeViewItemData> _asyncLoadTreeNodes = [];
+    
+    public List<ITreeViewItemData> AsyncLoadTreeNodes
+    {
+        get => _asyncLoadTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodes, value);
+    }
+    
+    private TreeItemDataLoader? _asyncLoadTreeNodeLoader;
+    
+    public TreeItemDataLoader? AsyncLoadTreeNodeLoader
+    {
+        get => _asyncLoadTreeNodeLoader;
+        set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodeLoader, value);
+    }
+    
+    private List<ITreeViewItemData> _showTreeLineTreeNodes = [];
+    
+    public List<ITreeViewItemData> ShowTreeLineTreeNodes
+    {
+        get => _showTreeLineTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _showTreeLineTreeNodes, value);
+    }
+    
+    private List<ITreeViewItemData> _leftAddTreeNodes = [];
+    
+    public List<ITreeViewItemData> LeftAddTreeNodes
+    {
+        get => _leftAddTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _leftAddTreeNodes, value);
+    }
+    
+    private List<ITreeViewItemData> _contentLeftAddTreeNodes = [];
+    
+    public List<ITreeViewItemData> ContentLeftAddTreeNodes
+    {
+        get => _contentLeftAddTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _contentLeftAddTreeNodes, value);
+    }
+    
     public TreeSelectViewModel(IScreen screen)
     {
         HostScreen = screen;

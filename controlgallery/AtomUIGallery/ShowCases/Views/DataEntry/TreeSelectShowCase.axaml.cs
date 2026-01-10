@@ -1,4 +1,5 @@
 using AtomUI.Desktop.Controls;
+using AtomUI.Icons.AntDesign;
 using AtomUIGallery.ShowCases.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -13,16 +14,21 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
         {
             if (DataContext is TreeSelectViewModel vm)
             {
-                InitBasicTreeSelectNodes(vm);
-                InitMultiTreeSelectNodes(vm);
-                InitItemsSourceTreeSelectNodes(vm);
-                InitCheckableTreeSelectNodes(vm);
+                InitBasicTreeNodes(vm);
+                InitMultiTreeNodes(vm);
+                InitItemsSourceTreeNodes(vm);
+                InitCheckableTreeNodes(vm);
+                InitAsyncLoadTreeNodes(vm);
+                InitShowLineTreeNodes(vm);
+                InitLeftAddOnTreeNodes(vm);
+                InitContentLeftAddOnTreeNodes(vm);
+                vm.AsyncLoadTreeNodeLoader = new TreeItemDataLoader();
             }
         });
         InitializeComponent();
     }
 
-    private void InitBasicTreeSelectNodes(TreeSelectViewModel vm)
+    private void InitBasicTreeNodes(TreeSelectViewModel vm)
     {
         vm.BasicTreeSelectNodes =
         [
@@ -85,7 +91,7 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
         ];
     }
 
-    private void InitMultiTreeSelectNodes(TreeSelectViewModel vm)
+    private void InitMultiTreeNodes(TreeSelectViewModel vm)
     {
         vm.MultiSelectionTreeSelectNodes =
         [
@@ -128,7 +134,93 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
         ];
     }
 
-    private void InitItemsSourceTreeSelectNodes(TreeSelectViewModel vm)
+    private void InitLeftAddOnTreeNodes(TreeSelectViewModel vm)
+    {
+        vm.LeftAddTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header = "parent 1",
+                Value  = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "my leaf",
+                                Value  = "leaf1",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "your leaf",
+                                Value  = "leaf2",
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-1",
+                        Value  = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "sss",
+                                Value  = "sss",
+                            }
+                        ]
+                    }
+                ]
+            },
+        ];
+    }
+    
+    private void InitContentLeftAddOnTreeNodes(TreeSelectViewModel vm)
+    {
+        vm.ContentLeftAddTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header = "parent 1",
+                Value  = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "my leaf",
+                                Value  = "leaf1",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "your leaf",
+                                Value  = "leaf2",
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-1",
+                        Value  = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "sss",
+                                Value  = "sss",
+                            }
+                        ]
+                    }
+                ]
+            },
+        ];
+    }
+
+    private void InitItemsSourceTreeNodes(TreeSelectViewModel vm)
     {
         vm.ItemsSourceTreeSelectNodes =
         [
@@ -157,7 +249,7 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
         ];
     }
 
-    private void InitCheckableTreeSelectNodes(TreeSelectViewModel vm)
+    private void InitCheckableTreeNodes(TreeSelectViewModel vm)
     {
         vm.CheckableTreeSelectNodes =
         [
@@ -205,6 +297,80 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                         Header = "Child Node5",
                         Value  = "0-1-2",
                     }
+                ]
+            }
+        ];
+    }
+    
+    private void InitAsyncLoadTreeNodes(TreeSelectViewModel viewModel)
+    {
+        viewModel.AsyncLoadTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header  = "Expand to load",
+                ItemKey = "0",
+            },
+            new TreeViewItemData()
+            {
+                Header  = "Expand to load",
+                ItemKey = "1",
+            },
+            new TreeViewItemData()
+            {
+                Header  = "Tree Node",
+                ItemKey = "2",
+                IsLeaf  = true
+            }
+        ];
+    }
+
+    private void InitShowLineTreeNodes(TreeSelectViewModel viewModel)
+    {
+        viewModel.ShowTreeLineTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header  = "parent 1",
+                ItemKey = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Icon   = new CarryOutOutlined(),
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf1",
+                                ItemKey = "Leaf1",
+                                IsLeaf  = true,
+                                Icon    = new CarryOutOutlined(),
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf2",
+                                ItemKey = "Leaf2",
+                                IsLeaf  = true,
+                                Icon    = new CarryOutOutlined(),
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header  = "parent 1-1",
+                        ItemKey = "parent 1-1",
+                        Icon    = new CarryOutOutlined(),
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "sss",
+                                ItemKey = "sss",
+                                IsLeaf  = true,
+                                Icon    = new CarryOutOutlined(),
+                            }
+                        ]
+                    },
                 ]
             }
         ];

@@ -99,6 +99,7 @@
                                 MinWidth="{TemplateBinding EffectivePopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:TreeSelectTreeView Name="{x:Static atom:TreeSelectThemeConstants.TreeViewPart}"
+                                                     AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}"
                                                      HorizontalAlignment="Stretch"
                                                      VerticalAlignment="Stretch"
                                                      NodeHoverMode="Block"
@@ -109,10 +110,17 @@
                                                      ItemFilterAction="{TemplateBinding ItemFilterAction}"
                                                      ItemsSource="{TemplateBinding TreeItemsSource}"
                                                      ItemTemplate="{TemplateBinding TreeItemTemplate}"
+                                                     ItemDataLoader="{TemplateBinding TreeItemDataLoader}"
                                                      FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                                      SelectionMode="{TemplateBinding TreeViewSelectionMode}"
                                                      IsSelectable="{TemplateBinding IsTreeViewSelectable}"
-                                                     IsCheckStrictly="{TemplateBinding IsTreeCheckStrictly}"/>
+                                                     IsCheckStrictly="{TemplateBinding IsTreeCheckStrictly}"
+                                                     IsShowIcon="{TemplateBinding IsShowIcon}"
+                                                     IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
+                                                     IsShowLine="{TemplateBinding IsShowLine}"
+                                                     IsShowEmptyIndicator="{TemplateBinding IsShowEmptyIndicator}"
+                                                     IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
+                                                     />
                         </Border>
                     </atom:Popup>
                 </Panel>

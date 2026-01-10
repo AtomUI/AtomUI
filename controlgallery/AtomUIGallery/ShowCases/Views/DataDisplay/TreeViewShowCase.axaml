@@ -89,7 +89,7 @@
                                IsShowIcon="{Binding ShowIconSwitchChecked}"
                                IsShowLeafIcon="{Binding ShowLeafIconSwitchChecked}"
                                NodeHoverMode="{Binding TreeViewNodeHoverMode}"
-                               IsSwitcherRotation="False"
+                               IsSwitcherRotation="{Binding ShowLineSwitchChecked, Converter={x:Static BoolConverters.Not}}"
                                x:DataType="viewModels:TreeViewViewModel">
                     <atom:TreeViewItem Header="parent 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
                                        IsExpanded="True">

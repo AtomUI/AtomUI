@@ -305,12 +305,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
     }
         
-    private ITreeItemDataLoader? _treeItemDataLoader;
+    private ITreeItemDataLoader? _itemDataLoader;
     
     public ITreeItemDataLoader? ItemDataLoader
     {
-        get => _treeItemDataLoader;
-        set => SetAndRaise(ItemDataLoaderProperty, ref _treeItemDataLoader, value);
+        get => _itemDataLoader;
+        set => SetAndRaise(ItemDataLoaderProperty, ref _itemDataLoader, value);
     }
     
     private ITreeItemFilter? _itemFilter;
@@ -485,6 +485,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         this.RegisterResources();
         LogicalChildren.CollectionChanged += HandleLogicalChildrenCollectionChanged;
         Items.CollectionChanged           += HandleCollectionChanged;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ConfigureEmptyIndicator();
     }
 
     private void HandleLogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -1279,7 +1285,8 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
         if (change.Property == IsShowEmptyIndicatorProperty ||
             change.Property == ItemsSourceProperty ||
-            change.Property == FilterResultCountProperty)
+            change.Property == FilterResultCountProperty ||
+            change.Property == IsFilterModeProperty)
         {
             ConfigureEmptyIndicator();
         }
@@ -1413,7 +1420,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 isEmpty = Items.Count == 0;
             }
         }
-        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && isEmpty);
+        IsEffectiveEmptyVisible = IsShowEmptyIndicator && isEmpty;
     }
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)

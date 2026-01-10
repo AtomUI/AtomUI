@@ -9,18 +9,18 @@
         <gallery:ShowCaseItem
             Title="Basic"
             Description="The most basic usage.">
-            <atom:TreeSelect TreeItemsSource="{Binding BasicTreeSelectNodes}" 
+            <atom:TreeSelect TreeItemsSource="{Binding BasicTreeSelectNodes}"
                              HorizontalAlignment="Stretch"
                              IsTreeDefaultExpandAll="True"
                              IsAllowClear="True"
                              IsFilterEnabled="True"
-                             PlaceholderText="Please select"/>
+                             PlaceholderText="Please select" />
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
             Title="Multiple Selection"
             Description="Multiple selection usage.">
-            <atom:TreeSelect TreeItemsSource="{Binding MultiSelectionTreeSelectNodes}" 
+            <atom:TreeSelect TreeItemsSource="{Binding MultiSelectionTreeSelectNodes}"
                              HorizontalAlignment="Stretch"
                              IsTreeDefaultExpandAll="True"
                              IsAllowClear="True"
@@ -32,7 +32,7 @@
         <gallery:ShowCaseItem
             Title="Generate from tree data"
             Description="The tree structure can be populated using treeData property. This is a quick and easy way to provide the tree content.">
-            <atom:TreeSelect TreeItemsSource="{Binding ItemsSourceTreeSelectNodes}" 
+            <atom:TreeSelect TreeItemsSource="{Binding ItemsSourceTreeSelectNodes}"
                              HorizontalAlignment="Stretch"
                              IsTreeDefaultExpandAll="True"
                              IsAllowClear="True"
@@ -43,14 +43,102 @@
         <gallery:ShowCaseItem
             Title="Checkable"
             Description="Multiple and checkable.">
-            <atom:TreeSelect TreeItemsSource="{Binding CheckableTreeSelectNodes}" 
+            <atom:TreeSelect TreeItemsSource="{Binding CheckableTreeSelectNodes}"
                              HorizontalAlignment="Stretch"
                              IsTreeDefaultExpandAll="True"
                              IsAllowClear="True"
                              IsFilterEnabled="True"
                              IsTreeCheckable="True"
-                             PlaceholderText="Please select" 
-                             ShowCheckedStrategy="All"/>
+                             PlaceholderText="Please select"
+                             ShowCheckedStrategy="All" />
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Asynchronous loading"
+            Description="Asynchronous loading tree node.">
+            <atom:TreeSelect TreeItemsSource="{Binding AsyncLoadTreeNodes}"
+                             TreeItemDataLoader="{Binding AsyncLoadTreeNodeLoader}"
+                             HorizontalAlignment="Stretch"
+                             IsAllowClear="True"
+                             PlaceholderText="Please select" />
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Show Tree Line"
+            Description="Use treeLine to show the line style.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:ToggleSwitch OnContent="ShowIcon" OffContent="ShowIcon" Name="ShowIconSwitch" />
+                <atom:ToggleSwitch OnContent="TreeLine" OffContent="TreeLine" IsChecked="True"
+                                   Name="ShowTreeLineSwitch" />
+                <atom:ToggleSwitch OnContent="ShowLeafIcon" OffContent="ShowLeafIcon" Name="ShowLeafIconSwitch" />
+                <atom:TreeSelect TreeItemsSource="{Binding ShowTreeLineTreeNodes}"
+                                 HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 IsShowIcon="{Binding #ShowIconSwitch.IsChecked}"
+                                 IsShowLeafIcon="{Binding #ShowLeafIconSwitch.IsChecked}"
+                                 IsShowLine="{Binding #ShowTreeLineSwitch.IsChecked}"
+                                 IsSwitcherRotation="{Binding #ShowTreeLineSwitch.IsChecked, Converter={x:Static BoolConverters.Not}}" />
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Variants"
+            Description="Variants of TreeSelect, there are four variants: outlined filled borderless and underlined.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 StyleVariant="Borderless" />
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 StyleVariant="Filled" />
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 StyleVariant="Outline" />
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 StyleVariant="Underlined" />
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Status"
+            Description="Add status to TreeSelect with status, which could be error or warning.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 Status="Error" />
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 Status="Warning" />
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Prefix and Suffix"
+            Description="Custom prefix and suffixIcon.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 TreeItemsSource="{Binding LeftAddTreeNodes}"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 IsTreeDefaultExpandAll="True"
+                                 LeftAddOn="Prefix"
+                                 IsFilterEnabled="True"/>
+                <atom:TreeSelect HorizontalAlignment="Stretch"
+                                 TreeItemsSource="{Binding ContentLeftAddTreeNodes}"
+                                 IsAllowClear="True"
+                                 PlaceholderText="Please select"
+                                 IsTreeDefaultExpandAll="True"
+                                 ContentLeftAddOn="Prefix"
+                                 IsFilterEnabled="True"/>
+            </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

@@ -27,6 +27,15 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     
     public static readonly StyledProperty<bool> AutoScrollToSelectedItemProperty =
         SelectingItemsControl.AutoScrollToSelectedItemProperty.AddOwner<TreeSelect>();
+
+    public static readonly StyledProperty<bool> IsShowIconProperty =
+        TreeView.IsShowIconProperty.AddOwner<TreeSelect>();
+    
+    public static readonly StyledProperty<bool> IsShowLeafIconProperty =
+        TreeView.IsShowLeafIconProperty.AddOwner<TreeSelect>();
+    
+    public static readonly StyledProperty<bool> IsShowLineProperty =
+        TreeView.IsShowLineProperty.AddOwner<TreeSelect>();
     
     public static readonly StyledProperty<bool> IsTreeCheckableProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
@@ -44,6 +53,9 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsShowTreeLine));
     
+    public static readonly StyledProperty<bool> IsSwitcherRotationProperty = 
+        TreeView.IsSwitcherRotationProperty.AddOwner<TreeSelect>();
+    
     public static readonly StyledProperty<bool> IsTreeCheckStrictlyProperty = 
         AvaloniaProperty.Register<TreeView, bool>(nameof(IsTreeCheckStrictly), false);
     
@@ -58,6 +70,12 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     
     public static readonly StyledProperty<IDataTemplate?> TreeItemTemplateProperty =
         AvaloniaProperty.Register<TreeSelect, IDataTemplate?>(nameof(TreeItemTemplate));
+    
+    public static readonly DirectProperty<TreeSelect, ITreeItemDataLoader?> TreeItemDataLoaderProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemDataLoader?>(
+            nameof(TreeItemDataLoader),
+            o => o.TreeItemDataLoader,
+            (o, v) => o.TreeItemDataLoader = v);
     
     public static readonly DirectProperty<TreeSelect, ITreeItemFilter?> ItemFilterProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemFilter?>(
@@ -97,6 +115,24 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(AutoScrollToSelectedItemProperty, value);
     }
     
+    public bool IsShowIcon
+    {
+        get => GetValue(IsShowIconProperty);
+        set => SetValue(IsShowIconProperty, value);
+    }
+    
+    public bool IsShowLeafIcon
+    {
+        get => GetValue(IsShowLeafIconProperty);
+        set => SetValue(IsShowLeafIconProperty, value);
+    }
+    
+    public bool IsShowLine
+    {
+        get => GetValue(IsShowLineProperty);
+        set => SetValue(IsShowLineProperty, value);
+    }
+    
     public bool IsTreeCheckable
     {
         get => GetValue(IsTreeCheckableProperty);
@@ -119,6 +155,12 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     {
         get => GetValue(IsShowTreeLineProperty);
         set => SetValue(IsShowTreeLineProperty, value);
+    }
+    
+    public bool IsSwitcherRotation
+    {
+        get => GetValue(IsSwitcherRotationProperty);
+        set => SetValue(IsSwitcherRotationProperty, value);
     }
     
     public bool IsTreeCheckStrictly
@@ -146,6 +188,14 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     {
         get => GetValue(TreeItemTemplateProperty);
         set => SetValue(TreeItemTemplateProperty, value);
+    }
+    
+    private ITreeItemDataLoader? _treeItemDataLoader;
+    
+    public ITreeItemDataLoader? TreeItemDataLoader
+    {
+        get => _treeItemDataLoader;
+        set => SetAndRaise(TreeItemDataLoaderProperty, ref _treeItemDataLoader, value);
     }
     
     private ITreeItemFilter? _itemFilter;
@@ -262,10 +312,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (ItemFilter == null)
-        {
-            ItemFilter = new DefaultTreeItemFilter();
-        }
+        ItemFilter ??= new DefaultTreeItemFilter();
     }
 
     private void HandleClearRequest()
@@ -581,14 +628,11 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             // is pressed, close the drop-down
             if (e.Source is Control sourceControl)
             {
-                if (!IsMultiple)
+                var filterTextBox = sourceControl.FindAncestorOfType<SelectFilterTextBox>();
+                if (filterTextBox != null)
                 {
-                    var filterTextBox = sourceControl.FindAncestorOfType<SelectFilterTextBox>();
-                    if (filterTextBox != null)
-                    {
-                        IgnorePopupClose = true;
-                        return;
-                    }
+                    IgnorePopupClose = true;
+                    return;
                 }
        
                 var parent = sourceControl.FindAncestorOfType<IconButton>();
@@ -738,33 +782,63 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             {
                 if (SelectedItems != null)
                 {
-                    if (_treeView.SelectedItems.Count == 0)
+                    if (!IsTreeCheckable)
                     {
-                        foreach (var item in SelectedItems)
+                        if (_treeView.SelectedItems.Count == 0)
                         {
-                            _treeView.SelectedItems.Add(item);
+                            foreach (var item in SelectedItems)
+                            {
+                                _treeView.SelectedItems.Add(item);
+                            }
+                        }
+                        else
+                        {
+                            var treeViewSet  = _treeView.SelectedItems.Cast<object>().ToList();
+                            var currentSet   = SelectedItems.Cast<object>().ToList();
+                            var deletedItems = treeViewSet.Except(currentSet);
+                            var addedItems   = currentSet.Except(treeViewSet);
+                            foreach (var item in deletedItems)
+                            {
+                                _treeView.SelectedItems.Remove(item);
+                            }
+
+                            foreach (var item in addedItems)
+                            {
+                                _treeView.SelectedItems.Add(item);
+                            }
                         }
                     }
                     else
                     {
-                        var treeViewSet  = _treeView.SelectedItems.Cast<object>().ToList();
-                        var currentSet   = SelectedItems.Cast<object>().ToList();
-                        var deletedItems = treeViewSet.Except(currentSet);
-                        var addedItems = currentSet.Except(treeViewSet);
-                        foreach (var item in deletedItems)
+                        if (_treeView.CheckedItems.Count == 0)
                         {
-                            _treeView.SelectedItems.Remove(item);
+                            foreach (var item in SelectedItems)
+                            {
+                                _treeView.CheckedItems.Add(item);
+                            }
                         }
-
-                        foreach (var item in addedItems)
+                        else
                         {
-                            _treeView.SelectedItems.Add(item);
+                            var treeViewSet  = _treeView.CheckedItems.Cast<object>().ToList();
+                            var currentSet   = SelectedItems.Cast<object>().ToList();
+                            var deletedItems = treeViewSet.Except(currentSet);
+                            var addedItems   = currentSet.Except(treeViewSet);
+                            foreach (var item in deletedItems)
+                            {
+                                _treeView.CheckedItems.Remove(item);
+                            }
+
+                            foreach (var item in addedItems)
+                            {
+                                _treeView.CheckedItems.Add(item);
+                            }
                         }
                     }
                 }
                 else
                 {
                     _treeView.SelectedItems.Clear();
+                    _treeView.CheckedItems.Clear();
                 }
             }
         }

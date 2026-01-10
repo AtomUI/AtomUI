@@ -50,6 +50,12 @@ public class MenuFlyout : Flyout
     
     private protected MenuFlyoutPresenter? Presenter;
     private CompositeDisposable? _presenterBindingDisposables;
+
+    static MenuFlyout()
+    {
+        HorizontalOffsetProperty.OverrideDefaultValue<MenuFlyout>(8);
+        VerticalOffsetProperty.OverrideDefaultValue<MenuFlyout>(8);
+    }
     
     public MenuFlyout()
     {

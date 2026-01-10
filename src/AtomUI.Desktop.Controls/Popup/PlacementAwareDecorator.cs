@@ -33,4 +33,5 @@ internal class PlacementAwareDecorator : ContentControl
         set => SetValue(MarginToAnchorProperty, value);
     }
     #endregion
+    
 }

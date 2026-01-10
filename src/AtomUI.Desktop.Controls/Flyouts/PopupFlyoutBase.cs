@@ -209,8 +209,6 @@ public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     static PopupFlyoutBase()
     {
         Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
-        HorizontalOffsetProperty.OverrideDefaultValue<PopupFlyoutBase>(8);
-        VerticalOffsetProperty.OverrideDefaultValue<PopupFlyoutBase>(8);
     }
 
     public PopupFlyoutBase()

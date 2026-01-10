@@ -128,7 +128,7 @@
                                  TreeItemsSource="{Binding LeftAddTreeNodes}"
                                  IsAllowClear="True"
                                  PlaceholderText="Please select"
-                                 IsTreeDefaultExpandAll="True"
+                                 IsTreeDefaultExpandAll="True" 
                                  LeftAddOn="Prefix"
                                  IsFilterEnabled="True"/>
                 <atom:TreeSelect HorizontalAlignment="Stretch"

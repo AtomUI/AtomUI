@@ -28,5 +28,29 @@
                              IsMultiple="True"
                              PlaceholderText="Please select" />
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Generate from tree data"
+            Description="The tree structure can be populated using treeData property. This is a quick and easy way to provide the tree content.">
+            <atom:TreeSelect TreeItemsSource="{Binding ItemsSourceTreeSelectNodes}" 
+                             HorizontalAlignment="Stretch"
+                             IsTreeDefaultExpandAll="True"
+                             IsAllowClear="True"
+                             IsFilterEnabled="True"
+                             PlaceholderText="Please select" />
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Checkable"
+            Description="Multiple and checkable.">
+            <atom:TreeSelect TreeItemsSource="{Binding CheckableTreeSelectNodes}" 
+                             HorizontalAlignment="Stretch"
+                             IsTreeDefaultExpandAll="True"
+                             IsAllowClear="True"
+                             IsFilterEnabled="True"
+                             IsTreeCheckable="True"
+                             PlaceholderText="Please select" 
+                             ShowCheckedStrategy="All"/>
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

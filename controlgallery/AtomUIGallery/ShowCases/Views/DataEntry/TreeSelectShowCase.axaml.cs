@@ -15,6 +15,8 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
             {
                 InitBasicTreeSelectNodes(vm);
                 InitMultiTreeSelectNodes(vm);
+                InitItemsSourceTreeSelectNodes(vm);
+                InitCheckableTreeSelectNodes(vm);
             }
         });
         InitializeComponent();
@@ -123,6 +125,88 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                     }
                 ]
             },
+        ];
+    }
+
+    private void InitItemsSourceTreeSelectNodes(TreeSelectViewModel vm)
+    {
+        vm.ItemsSourceTreeSelectNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header = "Node1",
+                Value  = "0-0",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "Child Node1",
+                        Value  = "0-0-1",
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header = "Child Node2",
+                        Value  = "0-0-2",
+                    }
+                ]
+            },
+            new TreeViewItemData()
+            {
+                Header = "Node2",
+                Value  = "0-1",
+            }
+        ];
+    }
+
+    private void InitCheckableTreeSelectNodes(TreeSelectViewModel vm)
+    {
+        vm.CheckableTreeSelectNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header = "Node1",
+                ItemKey = "0-0",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "Child Node1",
+                        Value  = "0-0-0",
+                    }
+                ]
+            },
+            new TreeViewItemData()
+            {
+                Header = "Node2",
+                ItemKey = "0-1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "Child Node3",
+                        Value  = "0-1-0",
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header = "Child Node4",
+                        Value  = "0-1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header = "Child Node6",
+                                Value  = "0-1-1-0",
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header = "Child Node7",
+                                Value  = "0-1-1-1",
+                            },
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header = "Child Node5",
+                        Value  = "0-1-2",
+                    }
+                ]
+            }
         ];
     }
 }

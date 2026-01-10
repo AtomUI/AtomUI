@@ -13,6 +13,9 @@ namespace AtomUI.Desktop.Controls;
 internal class TreeSelectTagAwareTextBox : TemplatedControl
 {
     #region 公共属性定义
+    
+    public static readonly StyledProperty<TreeSelectCheckedStrategy> ShowCheckedStrategyProperty =
+        TreeSelect.ShowCheckedStrategyProperty.AddOwner<TreeSelectTagAwareTextBox>();
 
     public static readonly DirectProperty<TreeSelectTagAwareTextBox, IList?> SelectedItemsProperty =
         AvaloniaProperty.RegisterDirect<TreeSelectTagAwareTextBox, IList?>(
@@ -34,6 +37,12 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     
     public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(nameof(IsResponsiveTagMode));
+    
+    public TreeSelectCheckedStrategy ShowCheckedStrategy
+    {
+        get => GetValue(ShowCheckedStrategyProperty);
+        set => SetValue(ShowCheckedStrategyProperty, value);
+    }
     
     private IList? _selectedItems;
 
@@ -75,6 +84,24 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
 
     #endregion
 
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<TreeSelectTagAwareTextBox, IList?> EffectiveSelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelectTagAwareTextBox, IList?>(
+            nameof(EffectiveSelectedItems),
+            o => o.EffectiveSelectedItems,
+            (o, v) => o.EffectiveSelectedItems = v);
+    
+    private IList? _effectiveSelectedItems;
+
+    internal IList? EffectiveSelectedItems
+    {
+        get => _effectiveSelectedItems;
+        set => SetAndRaise(EffectiveSelectedItemsProperty, ref _effectiveSelectedItems, value);
+    }
+
+    #endregion
+
     private WrapPanel? _defaultPanel;
     private SelectMaxTagAwarePanel? _maxCountAwarePanel;
     private SelectFilterTextBox? _searchTextBox;
@@ -84,9 +111,9 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == SelectedItemsProperty)
+        if (change.Property == EffectiveSelectedItemsProperty)
         {
-            HandleSelectedItemsChanged();
+            HandleEffectiveSelectedItemsChanged();
         }
         else if (change.Property == IsFilterEnabledProperty)
         {
@@ -100,19 +127,96 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
         {
             _defaultPanel?.Children.Clear();
             _maxCountAwarePanel?.Children.Clear();
-            HandleSelectedItemsChanged();
+            HandleEffectiveSelectedItemsChanged();
         }
         
         if (change.Property == MaxTagCountProperty ||
-            change.Property == SelectedItemsProperty)
+            change.Property == EffectiveSelectedItemsProperty)
         {
             ConfigureMaxTagCountInfoVisible();
         }
 
         if (change.Property == MaxTagCountProperty)
         {
-            HandleSelectedItemsChanged();
+            HandleEffectiveSelectedItemsChanged();
         }
+
+        if (change.Property == SelectedItemsProperty ||
+            change.Property == ShowCheckedStrategyProperty)
+        {
+            BuildEffectiveSelectedItems();
+        }
+    }
+    
+    private void BuildEffectiveSelectedItems()
+    {
+        if (SelectedItems != null)
+        {
+            if (ShowCheckedStrategy == TreeSelectCheckedStrategy.All)
+            {
+                EffectiveSelectedItems = SelectedItems;
+            }
+            else
+            {
+                var effectiveSelectedItems = new List<object>();
+                if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowParent))
+                {
+                    var selectedSet = SelectedItems.Cast<object>().ToHashSet();
+                    var fullySelectedParents = SelectedItems.Cast<ITreeViewItemData>()
+                                               .Where(node => node.Children.All(child => selectedSet.Contains(child)))
+                                               .ToHashSet();
+                    foreach (var node in SelectedItems)
+                    {
+                        if (node is ITreeViewItemData treeViewItemData)
+                        {
+                            bool isDescendantOfFullySelectedParent = fullySelectedParents
+                                .Any(parent => IsDescendantOf(treeViewItemData, parent));
+            
+                            if (!isDescendantOfFullySelectedParent)
+                            {
+                                effectiveSelectedItems.Add(node);
+                            }
+                        }
+                    }
+                }
+                if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowChild))
+                {
+                    foreach (var item in SelectedItems)
+                    {
+                        if (item is ITreeViewItemData treeViewItemData)
+                        {
+                            if (treeViewItemData.Children.Count == 0)
+                            {
+                                effectiveSelectedItems.Add(treeViewItemData);
+                            }
+                        }
+                    }
+                }
+                EffectiveSelectedItems = effectiveSelectedItems;
+            }
+        }
+        else
+        {
+            EffectiveSelectedItems = null;
+        }
+    }
+
+    private bool IsDescendantOf(ITreeViewItemData node, ITreeViewItemData parent)
+    {
+        if (node == parent)
+        {
+            return false;
+        }
+        ITreeNode<ITreeViewItemData>? current = node;
+        while (current != null)
+        {
+            if (current == parent)
+            {
+                return true;
+            }
+            current = current.ParentNode;
+        }
+        return false;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -150,11 +254,11 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
         }
 
         ConfigureSearchTextControl();
-        HandleSelectedItemsChanged();
+        HandleEffectiveSelectedItemsChanged();
         ConfigureMaxTagCountInfoVisible();
     }
 
-    private void HandleSelectedItemsChanged()
+    private void HandleEffectiveSelectedItemsChanged()
     {
         if (!IsResponsiveTagMode)
         {
@@ -167,11 +271,11 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                     entry.Value.Dispose();
                 }
                 TagsBindingDisposables.Clear();
-                if (_selectedItems != null)
+                if (_effectiveSelectedItems != null)
                 {
-                    for (var i = 0; i < _selectedItems.Count; i++)
+                    for (var i = 0; i < _effectiveSelectedItems.Count; i++)
                     {
-                        var item = _selectedItems[i];
+                        var item = _effectiveSelectedItems[i];
                         if (item is ITreeViewItemData treeItemData)
                         {
                             var tag = new SelectTag
@@ -188,7 +292,6 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                 if (_searchTextBox != null)
                 {
                     _defaultPanel.Children.Add(_searchTextBox);
-                    _searchTextBox.Focus();
                 }
             }
         }
@@ -204,9 +307,9 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                 }
                 
                 TagsBindingDisposables.Clear();
-                if (_selectedItems != null)
+                if (_effectiveSelectedItems != null)
                 {
-                    foreach (var item in _selectedItems)
+                    foreach (var item in _effectiveSelectedItems)
                     {
                         if (item is ITreeViewItemData treeItemData)
                         {
@@ -229,7 +332,6 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                 if (_searchTextBox != null)
                 {
                     _maxCountAwarePanel.Children.Add(_searchTextBox);
-                    _searchTextBox.Focus();
                 }
             }
         }
@@ -277,4 +379,5 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
             }
         }
     }
+    
 }

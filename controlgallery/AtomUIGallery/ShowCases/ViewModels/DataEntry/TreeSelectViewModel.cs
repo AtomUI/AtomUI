@@ -27,6 +27,22 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
         get => _multiSelectionTreeSelectNodes;
         set => this.RaiseAndSetIfChanged(ref _multiSelectionTreeSelectNodes, value);
     }
+    
+    private List<ITreeViewItemData> _itemsSourceTreeSelectNodes = [];
+    
+    public List<ITreeViewItemData> ItemsSourceTreeSelectNodes
+    {
+        get => _itemsSourceTreeSelectNodes;
+        set => this.RaiseAndSetIfChanged(ref _itemsSourceTreeSelectNodes, value);
+    }
+    
+    private List<ITreeViewItemData> _checkableTreeSelectNodes = [];
+    
+    public List<ITreeViewItemData> CheckableTreeSelectNodes
+    {
+        get => _checkableTreeSelectNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkableTreeSelectNodes, value);
+    }
 
     public TreeSelectViewModel(IScreen screen)
     {

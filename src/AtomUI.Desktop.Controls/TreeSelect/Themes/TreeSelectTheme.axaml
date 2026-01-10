@@ -76,6 +76,7 @@
                                 Name="SelectedItemsBox"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
+                                ShowCheckedStrategy="{TemplateBinding ShowCheckedStrategy}"
                                 SizeType="{TemplateBinding SizeType}"
                                 SelectedItems="{TemplateBinding SelectedItems}"
                                 IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
@@ -97,18 +98,21 @@
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding EffectivePopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
-                            <atom:TreeView Name="{x:Static atom:TreeSelectThemeConstants.TreeViewPart}"
-                                           HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Stretch"
-                                           NodeHoverMode="Block"
-                                           IsDefaultExpandAll="{TemplateBinding IsTreeDefaultExpandAll}"
-                                           ItemFilterValue="{TemplateBinding ActivateFilterValue}"
-                                           ItemFilter="{TemplateBinding ItemFilter}"
-                                           ItemFilterAction="{TemplateBinding ItemFilterAction}"
-                                           ItemsSource="{TemplateBinding TreeItemsSource}"
-                                           ItemTemplate="{TemplateBinding TreeItemTemplate}"
-                                           FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
-                                           SelectionMode="{TemplateBinding TreeViewSelectionMode}" />
+                            <atom:TreeSelectTreeView Name="{x:Static atom:TreeSelectThemeConstants.TreeViewPart}"
+                                                     HorizontalAlignment="Stretch"
+                                                     VerticalAlignment="Stretch"
+                                                     NodeHoverMode="Block"
+                                                     ToggleType="{TemplateBinding TreeViewToggleType}"
+                                                     IsDefaultExpandAll="{TemplateBinding IsTreeDefaultExpandAll}"
+                                                     ItemFilterValue="{TemplateBinding ActivateFilterValue}"
+                                                     ItemFilter="{TemplateBinding ItemFilter}"
+                                                     ItemFilterAction="{TemplateBinding ItemFilterAction}"
+                                                     ItemsSource="{TemplateBinding TreeItemsSource}"
+                                                     ItemTemplate="{TemplateBinding TreeItemTemplate}"
+                                                     FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                                     SelectionMode="{TemplateBinding TreeViewSelectionMode}"
+                                                     IsSelectable="{TemplateBinding IsTreeViewSelectable}"
+                                                     IsCheckStrictly="{TemplateBinding IsTreeCheckStrictly}"/>
                         </Border>
                     </atom:Popup>
                 </Panel>

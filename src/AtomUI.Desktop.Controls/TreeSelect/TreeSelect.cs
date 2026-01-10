@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Reactive.Disposables.Fluent;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -22,7 +23,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     
     public static readonly StyledProperty<TreeSelectCheckedStrategy> ShowCheckedStrategyProperty =
         AvaloniaProperty.Register<TreeSelect, TreeSelectCheckedStrategy>(
-            nameof(ShowCheckedStrategy), TreeSelectCheckedStrategy.ShowChild);
+            nameof(ShowCheckedStrategy), TreeSelectCheckedStrategy.All);
     
     public static readonly StyledProperty<bool> AutoScrollToSelectedItemProperty =
         SelectingItemsControl.AutoScrollToSelectedItemProperty.AddOwner<TreeSelect>();
@@ -42,6 +43,9 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<bool> IsShowTreeLineProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsShowTreeLine));
+    
+    public static readonly StyledProperty<bool> IsTreeCheckStrictlyProperty = 
+        AvaloniaProperty.Register<TreeView, bool>(nameof(IsTreeCheckStrictly), false);
     
     public static readonly DirectProperty<TreeSelect, IList<TreeNodePath>?> TreeDefaultExpandedPathsProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, IList<TreeNodePath>?>(
@@ -117,6 +121,12 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsShowTreeLineProperty, value);
     }
     
+    public bool IsTreeCheckStrictly
+    {
+        get => GetValue(IsTreeCheckStrictlyProperty);
+        set => SetValue(IsTreeCheckStrictlyProperty, value);
+    }
+    
     private IList<TreeNodePath>? _treeDefaultExpandedPaths;
     
     public IList<TreeNodePath>? TreeDefaultExpandedPaths
@@ -183,12 +193,40 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     internal static readonly StyledProperty<SelectionMode> TreeViewSelectionModeProperty = 
         AvaloniaProperty.Register<TreeSelect, SelectionMode>(nameof (TreeViewSelectionMode));
     
+    internal static readonly DirectProperty<TreeSelect, ItemToggleType> TreeViewToggleTypeProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, ItemToggleType>(
+            nameof(TreeViewToggleType),
+            o => o.TreeViewToggleType,
+            (o, v) => o.TreeViewToggleType = v);
+    
+    internal static readonly DirectProperty<TreeSelect, bool> IsTreeViewSelectableProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, bool>(
+            nameof(IsTreeViewSelectable),
+            o => o.IsTreeViewSelectable,
+            (o, v) => o.IsTreeViewSelectable = v);
+    
     internal SelectionMode TreeViewSelectionMode
     {
         get => GetValue(TreeViewSelectionModeProperty);
         set => SetValue(TreeViewSelectionModeProperty, value);
     }
+    
+    private ItemToggleType _treeViewToggleType = ItemToggleType.None;
 
+    internal ItemToggleType TreeViewToggleType
+    {
+        get => _treeViewToggleType;
+        set => SetAndRaise(TreeViewToggleTypeProperty, ref _treeViewToggleType, value);
+    }
+
+    private bool _isTreeViewSelectable = true;
+
+    internal bool IsTreeViewSelectable
+    {
+        get => _isTreeViewSelectable;
+        set => SetAndRaise(IsTreeViewSelectableProperty, ref _isTreeViewSelectable, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeSelectToken.ID;
 
@@ -281,6 +319,11 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             ConfigureTreeSelectionMode();
         }
+        else if (change.Property == IsTreeCheckableProperty)
+        {
+            SetCurrentValue(IsMultipleProperty, true);
+            HandleIsCheckableChanged();
+        }
 
         if (change.Property == SelectedItemsProperty)
         {
@@ -347,7 +390,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
 
         if (_treeView != null)
         {
-            _treeView.SelectionChanged -= HandleTreeViewSelectionChanged;
+            _treeView.SelectionChanged    -= HandleTreeViewSelectionChanged;
+            _treeView.CheckedItemsChanged -= HandleTreeViewItemsCheckedChanged;
         }
 
         _singleFilterInput = e.NameScope.Find<SelectFilterTextBox>(TreeSelectThemeConstants.SingleFilterInputPart);
@@ -356,7 +400,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         
         if (_treeView != null)
         {
-            _treeView.SelectionChanged += HandleTreeViewSelectionChanged;
+            _treeView.SelectionChanged    += HandleTreeViewSelectionChanged;
+            _treeView.CheckedItemsChanged += HandleTreeViewItemsCheckedChanged;
         }
 
         if (Popup != null)
@@ -456,7 +501,44 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             }
         }
     }
-    
+
+    private void HandleTreeViewItemsCheckedChanged(object? sender, TreeViewCheckedItemsChangedEventArgs e)
+    {
+        if (_treeView == null)
+        {
+            return;
+        }
+        
+        var needSync = false;
+
+        if (_selectedItems == null || _selectedItems?.Count != _treeView.CheckedItems.Count)
+        {
+            needSync = true;
+        }
+        else
+        {
+            var currentSet  = _selectedItems.Cast<object>().ToHashSet();
+            var treeViewSet = _treeView.CheckedItems.Cast<object>().ToHashSet();
+            if (!currentSet.SetEquals(treeViewSet))
+            {
+                needSync = true;
+            }
+        }
+        
+        if (needSync)
+        {
+            try
+            {
+                _needSkipSyncSelection = true;
+                SelectedItems          = _treeView.CheckedItems.Cast<object>().ToList();
+            }
+            finally
+            {
+                _needSkipSyncSelection = false;
+            }
+        }
+    }
+
     private void IsVisibleChanged(bool isVisible)
     {
         if (!isVisible && IsDropDownOpen)
@@ -585,13 +667,44 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void ConfigureTreeSelectionMode()
     {
-        if (IsMultiple)
+        if (!IsTreeCheckable)
         {
-            TreeViewSelectionMode = SelectionMode.Multiple | SelectionMode.Toggle;
+            if (IsMultiple)
+            {
+                TreeViewSelectionMode = SelectionMode.Multiple | SelectionMode.Toggle;
+            }
+            else
+            {
+                TreeViewSelectionMode = SelectionMode.Single;
+            }
+
+            TreeViewToggleType   = ItemToggleType.None;
+            IsTreeViewSelectable = true;
         }
         else
         {
-            TreeViewSelectionMode = SelectionMode.Single;
+            TreeViewSelectionMode = SelectionMode.Toggle;
+            TreeViewToggleType    = ItemToggleType.CheckBox;
+            IsTreeViewSelectable  = false;
+        }
+    }
+
+    private void HandleIsCheckableChanged()
+    {
+        ConfigureTreeSelectionMode();
+        if (_treeView != null)
+        {
+            try
+            {
+                _needSkipSyncSelection = true;
+                _treeView.SelectedItem = null;
+                _treeView.SelectedItems.Clear();
+                _treeView.CheckedItems.Clear();
+            }
+            finally
+            {
+                _needSkipSyncSelection = false;
+            }
         }
     }
     

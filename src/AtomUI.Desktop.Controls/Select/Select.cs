@@ -252,7 +252,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
             return false;
         }
 
-        var newSelection = new List<object>();
+        var newSelection = new List<ISelectOption>();
         foreach (var selectedItem in SelectedOptions)
         {
             newSelection.Add(selectedItem);
@@ -269,10 +269,10 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         SetCurrentValue(SelectedOptionsProperty, newSelection);
         SyncSelection();
 
-        if (Mode == SelectMode.Tags && removedItem is ISelectOption option && option.IsDynamicAdded)
+        if (Mode == SelectMode.Tags && removedItem.IsDynamicAdded)
         {
-            Options.Remove(option);
-            if (ReferenceEquals(_addNewOption, option))
+            Options.Remove(removedItem);
+            if (ReferenceEquals(_addNewOption, removedItem))
             {
                 _addNewOption = null;
             }

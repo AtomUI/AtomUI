@@ -8,12 +8,9 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
@@ -180,10 +177,11 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
     protected virtual IList<DrawingInstruction> DrawingInstructions { get; } = Array.Empty<DrawingInstruction>();
     protected Rect ViewBox;
 
-    private Animation? _animation;
-    private CancellationTokenSource? _animationCancellationTokenSource;
+    // private Animation? _animation;
+    // private CancellationTokenSource? _animationCancellationTokenSource;
     protected readonly IBrush?[] DrawBrushes = new IBrush[5];
     protected readonly Pen?[] DrawPens = new Pen?[5];
+    private Style? _animationStyle;
 
     static Icon()
     {
@@ -318,30 +316,6 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
                 IsSupportSimpleTransition = false;
             }
         }
-
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == IsVisibleProperty)
-            {
-                if (IsVisible)
-                {
-                    StartLoadingAnimationDelay();
-                }
-                else
-                {
-                    _animationCancellationTokenSource?.Cancel();
-                    _animationCancellationTokenSource = null;
-                }
-            }
-            else if (change.Property == LoadingAnimationProperty)
-            {
-                SetupRotateAnimation();
-                if (_animation != null && IsVisible)
-                {
-                    StartLoadingAnimationDelay();
-                }
-            }
-        }
         
         if (IsLoaded)
         {
@@ -349,15 +323,13 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
             {
                 ConfigureTransitions(true);
             }
-        }
-    }
 
-    private void StartLoadingAnimationDelay()
-    {
-        DispatcherTimer.RunOnce(() =>
-        {
-            Dispatcher.UIThread.InvokeAsync(StartLoadingAnimationAsync);
-        }, TimeSpan.FromMilliseconds(200));
+            if (change.Property == LoadingAnimationDurationProperty ||
+                change.Property == LoadingAnimationProperty)
+            {
+                SetupRotateAnimation(true);
+            }
+        }
     }
 
     private void HandleBrushChanged(IconBrushType brushType, IBrush? brush, BindingPriority priority)
@@ -375,8 +347,9 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         {
             DrawBrushes[brushIndex] = brush;
         }
-   
-        DrawPens[brushIndex]    = new Pen(DrawBrushes[brushIndex], StrokeWidth, lineCap: StrokeLineCap, lineJoin: StrokeLineJoin);
+
+        DrawPens[brushIndex] = new Pen(DrawBrushes[brushIndex], StrokeWidth, lineCap: StrokeLineCap,
+            lineJoin: StrokeLineJoin);
     }
 
     private void HandleStrokeWidthChanged(double strokeWidth)
@@ -412,88 +385,65 @@ public abstract class Icon : PathIcon, ICustomHitTest, IMotionAwareControl
         }
     }
     
-    private void SetupRotateAnimation()
+    private void SetupRotateAnimation(bool force)
     {
-        if (_animation is not null)
-        {
-            _animationCancellationTokenSource?.Cancel();
-            _animation = null;
-        }
-
         if (LoadingAnimation == IconAnimation.Spin || LoadingAnimation == IconAnimation.Pulse)
         {
-            _animation = new Animation
+            if (_animationStyle == null || force)
             {
-                Duration       = LoadingAnimationDuration,
-                IterationCount = new IterationCount(ulong.MaxValue),
-                Children =
+                if (_animationStyle != null)
                 {
-                    new KeyFrame
-                    {
-                        Cue     = new Cue(0d),
-                        Setters = { new Setter(AngleAnimationRotateProperty, 0d) }
-                    },
-                    new KeyFrame
-                    {
-                        Cue     = new Cue(1d),
-                        Setters = { new Setter(AngleAnimationRotateProperty, 360d) }
-                    }
+                    Styles.Remove(_animationStyle);
                 }
-            };
-            if (LoadingAnimation == IconAnimation.Pulse)
-            {
-                _animation.Easing = new PulseEasing();
+                _animationStyle = new Style();
+                var animation = new Animation
+                {
+                    Duration       = LoadingAnimationDuration,
+                    IterationCount = IterationCount.Infinite,
+                    FillMode = FillMode.Backward,
+                    Children =
+                    {
+                        new KeyFrame
+                        {
+                            Cue     = new Cue(0d),
+                            Setters = { new Setter(AngleAnimationRotateProperty, 0d) }
+                        },
+                        new KeyFrame
+                        {
+                            Cue     = new Cue(1d),
+                            Setters = { new Setter(AngleAnimationRotateProperty, 360d) }
+                        }
+                    }
+                };
+                if (LoadingAnimation == IconAnimation.Pulse)
+                {
+                    animation.Easing = new PulseEasing();
+                }
+                _animationStyle.Animations.Add(animation);
+                Styles.Add(_animationStyle);
             }
         }
-    }
-    
-    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToLogicalTree(e);
-        SetupRotateAnimation();
-    }
-    
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-
-        if (_animation is not null && IsVisible)
+        else if (_animationStyle != null)
         {
-            StartLoadingAnimationDelay();
+            Styles.Remove(_animationStyle);
         }
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _animationCancellationTokenSource?.Cancel();
-        _animationCancellationTokenSource = null;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         ConfigureTransitions(false);
+        SetupRotateAnimation(false);
     }
 
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         base.OnUnloaded(e);
         Transitions = null;
-    }
-
-    public async Task StartLoadingAnimationAsync()
-    {
-        if (_animation is not null && _animationCancellationTokenSource == null)
+        if (_animationStyle != null)
         {
-            _animationCancellationTokenSource = new CancellationTokenSource();
-            await _animation.RunAsync(this, _animationCancellationTokenSource.Token);
+            Styles.Remove(_animationStyle);  
         }
-    }
-
-    public void StartLoadingAnimation()
-    {
-        Dispatcher.UIThread.InvokeAsync(StartLoadingAnimationAsync);
     }
 
     public override void Render(DrawingContext context)

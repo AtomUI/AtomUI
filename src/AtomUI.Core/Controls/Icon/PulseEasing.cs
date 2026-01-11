@@ -4,15 +4,15 @@ namespace AtomUI.Controls;
 
 public class PulseEasing : Easing
 {
-    private const int Steps = 8;
+    private const int STEPS_COUNT = 8;
 
-    private static readonly IEnumerable<double> _steps = Enumerable
-                                                         .Range(0, Steps + 1)
-                                                         .Select(index => 1.0 / Steps * index)
+    private static readonly IEnumerable<double> Steps = Enumerable
+                                                         .Range(0, STEPS_COUNT + 1)
+                                                         .Select(index => 1.0 / STEPS_COUNT * index)
                                                          .ToArray();
 
     public override double Ease(double progress)
     {
-        return _steps.Last(step => step <= progress);
+        return Steps.Last(step => step <= progress);
     }
 }

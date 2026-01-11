@@ -1081,13 +1081,17 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     public static class ToolTipTokenKey
     {
         public static readonly TokenResourceKey BorderRadiusOuter = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.BorderRadiusOuter");
-        public static readonly TokenResourceKey ToolTipArrowSize = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipArrowSize");
         public static readonly TokenResourceKey ToolTipBackground = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipBackground");
         public static readonly TokenResourceKey ToolTipColor = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipColor");
         public static readonly TokenResourceKey ToolTipMaxWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipMaxWidth");
         public static readonly TokenResourceKey ToolTipMotionDuration = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipMotionDuration");
         public static readonly TokenResourceKey ToolTipPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipPadding");
         public static readonly TokenResourceKey ToolTipShadows = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipShadows");
+    }
+
+    public static class TreeSelectTokenKey
+    {
+        public static readonly TokenResourceKey MinPopupWidth = new TokenResourceKey("AtomUI.Desktop.Controls.TreeSelect.MinPopupWidth");
     }
 
     public static class TreeViewTokenKey

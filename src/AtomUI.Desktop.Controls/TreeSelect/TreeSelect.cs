@@ -402,24 +402,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         SetCurrentValue(MaxPopupHeightProperty, ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom);
     }
     
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        ConfigurePopupMinWith(e.NewSize.Width);
-    }
-
-    private void ConfigurePopupMinWith(double selectWidth)
-    {
-        if (IsPopupMatchSelectWidth)
-        {
-            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
-        }
-        else
-        {
-            SetCurrentValue(EffectivePopupWidthProperty, double.NaN);
-        }
-    }
-    
     private void ConfigurePlaceholderVisible()
     {
         SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));

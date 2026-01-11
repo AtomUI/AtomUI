@@ -22,15 +22,40 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                 InitShowLineTreeNodes(vm);
                 InitLeftAddOnTreeNodes(vm);
                 InitContentLeftAddOnTreeNodes(vm);
+                InitPlacementTreeNodes(vm);
                 vm.AsyncLoadTreeNodeLoader = new TreeItemDataLoader();
             }
         });
+
         InitializeComponent();
+    }
+    
+    public void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)
+    {
+        if (DataContext is TreeSelectViewModel vm)
+        {
+            if (args.Index == 0)
+            {
+                vm.Placement = SelectPopupPlacement.TopEdgeAlignedLeft;
+            }
+            else if (args.Index == 1)
+            {
+                vm.Placement = SelectPopupPlacement.TopEdgeAlignedRight;
+            }
+            else if (args.Index == 2)
+            {
+                vm.Placement = SelectPopupPlacement.BottomEdgeAlignedLeft;
+            }
+            else
+            {
+                vm.Placement = SelectPopupPlacement.BottomEdgeAlignedRight;
+            }
+        }
     }
 
     private void InitBasicTreeNodes(TreeSelectViewModel vm)
     {
-        vm.BasicTreeSelectNodes =
+        vm.BasicTreeNodes =
         [
             new TreeViewItemData()
             {
@@ -93,7 +118,7 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
 
     private void InitMultiTreeNodes(TreeSelectViewModel vm)
     {
-        vm.MultiSelectionTreeSelectNodes =
+        vm.MultiSelectionTreeNodes =
         [
             new TreeViewItemData()
             {
@@ -222,7 +247,7 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
 
     private void InitItemsSourceTreeNodes(TreeSelectViewModel vm)
     {
-        vm.ItemsSourceTreeSelectNodes =
+        vm.ItemsSourceTreeNodes =
         [
             new TreeViewItemData()
             {
@@ -251,7 +276,7 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
 
     private void InitCheckableTreeNodes(TreeSelectViewModel vm)
     {
-        vm.CheckableTreeSelectNodes =
+        vm.CheckableTreeNodes =
         [
             new TreeViewItemData()
             {
@@ -368,6 +393,52 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                                 ItemKey = "sss",
                                 IsLeaf  = true,
                                 Icon    = new CarryOutOutlined(),
+                            }
+                        ]
+                    },
+                ]
+            }
+        ];
+    }
+    
+    private void InitPlacementTreeNodes(TreeSelectViewModel viewModel)
+    {
+        viewModel.PlacementTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header  = "parent 1",
+                ItemKey = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf1",
+                                ItemKey = "Leaf1",
+                                IsLeaf  = true,
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf2",
+                                ItemKey = "Leaf2",
+                                IsLeaf  = true,
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header  = "parent 1-1",
+                        ItemKey = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "sss",
+                                ItemKey = "sss",
+                                IsLeaf  = true,
                             }
                         ]
                     },

@@ -91,12 +91,12 @@
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"
                                 IsDetectMouseClickEnabled="True"
-                                Placement="BottomEdgeAlignedLeft"
+                                Placement="{TemplateBinding PopupPlacement}"
                                 ShouldUseOverlayLayer="True"
-                                IsMotionAwareOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}">
-                        <Border Name="PopupFrame"
+                                IsMotionAwareOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
-                                MinWidth="{TemplateBinding EffectivePopupWidth}"
+                                MinWidth="{TemplateBinding EffectivePopupWidth}">
+                        <Border Name="PopupFrame"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:TreeSelectTreeView Name="{x:Static atom:TreeSelectThemeConstants.TreeViewPart}"
                                                      AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}"
@@ -119,8 +119,7 @@
                                                      IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
                                                      IsShowLine="{TemplateBinding IsShowLine}"
                                                      IsShowEmptyIndicator="{TemplateBinding IsShowEmptyIndicator}"
-                                                     IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
-                                                     />
+                                                     IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"/>
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -209,6 +208,11 @@
                 <atom:TextBlock Text="{Binding Header}" />
             </TreeDataTemplate>
         </Setter>
+        
+        <Style Selector="^ /template/ Border#PopupFrame">
+            <Setter Property="MinWidth"
+                    Value="{DynamicResource {x:Static atom:TreeSelectTokenKey.MinPopupWidth}}" />
+        </Style>
 
     </ControlTheme>
 </ResourceDictionary>

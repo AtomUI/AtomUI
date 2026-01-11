@@ -1,5 +1,7 @@
-﻿using AtomUI.Controls;
+﻿using AtomUI;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using Avalonia.Controls;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.ViewModels;
@@ -12,36 +14,36 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
     
     public string UrlPathSegment { get; } = ID.ToString();
     
-    private List<ITreeViewItemData> _basicTreeSelectNodes = [];
+    private List<ITreeViewItemData> _basicTreeNodes = [];
     
-    public List<ITreeViewItemData> BasicTreeSelectNodes
+    public List<ITreeViewItemData> BasicTreeNodes
     {
-        get => _basicTreeSelectNodes;
-        set => this.RaiseAndSetIfChanged(ref _basicTreeSelectNodes, value);
+        get => _basicTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _basicTreeNodes, value);
     }
     
-    private List<ITreeViewItemData> _multiSelectionTreeSelectNodes = [];
+    private List<ITreeViewItemData> _multiSelectionTreeNodes = [];
     
-    public List<ITreeViewItemData> MultiSelectionTreeSelectNodes
+    public List<ITreeViewItemData> MultiSelectionTreeNodes
     {
-        get => _multiSelectionTreeSelectNodes;
-        set => this.RaiseAndSetIfChanged(ref _multiSelectionTreeSelectNodes, value);
+        get => _multiSelectionTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _multiSelectionTreeNodes, value);
     }
     
-    private List<ITreeViewItemData> _itemsSourceTreeSelectNodes = [];
+    private List<ITreeViewItemData> _itemsSourceTreeNodes = [];
     
-    public List<ITreeViewItemData> ItemsSourceTreeSelectNodes
+    public List<ITreeViewItemData> ItemsSourceTreeNodes
     {
-        get => _itemsSourceTreeSelectNodes;
-        set => this.RaiseAndSetIfChanged(ref _itemsSourceTreeSelectNodes, value);
+        get => _itemsSourceTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _itemsSourceTreeNodes, value);
     }
     
-    private List<ITreeViewItemData> _checkableTreeSelectNodes = [];
+    private List<ITreeViewItemData> _checkableTreeNodes = [];
     
-    public List<ITreeViewItemData> CheckableTreeSelectNodes
+    public List<ITreeViewItemData> CheckableTreeNodes
     {
-        get => _checkableTreeSelectNodes;
-        set => this.RaiseAndSetIfChanged(ref _checkableTreeSelectNodes, value);
+        get => _checkableTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkableTreeNodes, value);
     }
     
     private List<ITreeViewItemData> _asyncLoadTreeNodes = [];
@@ -82,6 +84,22 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _contentLeftAddTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _contentLeftAddTreeNodes, value);
+    }
+    
+    private List<ITreeViewItemData> _placementTreeNodes = [];
+    
+    public List<ITreeViewItemData> PlacementTreeNodes
+    {
+        get => _placementTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _placementTreeNodes, value);
+    }
+
+    private SelectPopupPlacement _placement;
+
+    public SelectPopupPlacement Placement
+    {
+        get => _placement;
+        set => this.RaiseAndSetIfChanged(ref _placement, value);
     }
     
     public TreeSelectViewModel(IScreen screen)

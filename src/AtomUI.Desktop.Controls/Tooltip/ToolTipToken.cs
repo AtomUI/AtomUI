@@ -49,11 +49,6 @@ internal class ToolTipToken : AbstractControlDesignToken
     /// </summary>
     public TimeSpan ToolTipMotionDuration { get; set; }
 
-    /// <summary>
-    /// ToolTip 箭头三角形大小
-    /// </summary>
-    public double ToolTipArrowSize { get; set; }
-
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);

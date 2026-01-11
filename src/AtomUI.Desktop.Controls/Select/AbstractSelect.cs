@@ -89,7 +89,7 @@ public class AbstractSelect : TemplatedControl,
         AddOnDecoratedBox.StatusProperty.AddOwner<AbstractSelect>();
     
     public static readonly StyledProperty<SelectPopupPlacement> PlacementProperty =
-        AvaloniaProperty.Register<AbstractSelect, SelectPopupPlacement>(nameof(Placement));
+        AvaloniaProperty.Register<AbstractSelect, SelectPopupPlacement>(nameof(Placement), SelectPopupPlacement.BottomEdgeAlignedLeft);
     
     public static readonly StyledProperty<object?> FilterValueProperty =
         AvaloniaProperty.Register<AbstractSelect, object?>(nameof(FilterValue));
@@ -412,6 +412,12 @@ public class AbstractSelect : TemplatedControl,
             o => o.ActivateFilterValue,
             (o, v) => o.ActivateFilterValue = v);
     
+    internal static readonly DirectProperty<AbstractSelect, PlacementMode> PopupPlacementProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, PlacementMode>(
+            nameof(PopupPlacement),
+            o => o.PopupPlacement,
+            (o, v) => o.PopupPlacement = v);
+    
     internal double ItemHeight
     {
         get => GetValue(ItemHeightProperty);
@@ -478,11 +484,25 @@ public class AbstractSelect : TemplatedControl,
         set => SetAndRaise(ActivateFilterValueProperty, ref _activateFilterValue, value);
     }
     
+    private PlacementMode _popupPlacement = PlacementMode.BottomEdgeAlignedLeft;
+
+    internal PlacementMode PopupPlacement
+    {
+        get => _popupPlacement;
+        set => SetAndRaise(PopupPlacementProperty, ref _popupPlacement, value);
+    }
+    
     #endregion
     
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
     private protected Popup? Popup;
     private protected bool IgnorePopupClose;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ConfigurePopupPlacement();
+    }
 
     protected void NotifyPopupClosed()
     {
@@ -513,7 +533,16 @@ public class AbstractSelect : TemplatedControl,
                 
         return false;
     }
-    
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == PlacementProperty)
+        {
+            ConfigurePopupPlacement();
+        }
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -537,5 +566,43 @@ public class AbstractSelect : TemplatedControl,
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
         SetCurrentValue(IsDropDownOpenProperty, false);
+    }
+
+    private void ConfigurePopupPlacement()
+    {
+        if (Placement == SelectPopupPlacement.BottomEdgeAlignedLeft)
+        {
+            PopupPlacement = PlacementMode.BottomEdgeAlignedLeft;
+        }
+        else if (Placement == SelectPopupPlacement.BottomEdgeAlignedRight)
+        {
+            PopupPlacement = PlacementMode.BottomEdgeAlignedRight;
+        }
+        else if (Placement == SelectPopupPlacement.TopEdgeAlignedLeft)
+        {
+            PopupPlacement = PlacementMode.TopEdgeAlignedLeft;
+        }
+        else if (Placement == SelectPopupPlacement.TopEdgeAlignedRight)
+        {
+            PopupPlacement = PlacementMode.TopEdgeAlignedRight;
+        }
+    }
+    
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        ConfigurePopupMinWith(e.NewSize.Width);
+    }
+
+    protected virtual void ConfigurePopupMinWith(double selectWidth)
+    {
+        if (IsPopupMatchSelectWidth)
+        {
+            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
+        }
+        else
+        {
+            SetCurrentValue(EffectivePopupWidthProperty, 0.0);
+        }
     }
 }

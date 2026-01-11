@@ -1,0 +1,69 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TreeSelectTreeViewItem}" TargetType="atom:TreeSelectTreeViewItem">
+        <ControlTheme.BasedOn>
+            <atom:TreeViewItemTheme TargetType="atom:TreeSelectTreeViewItem" />
+        </ControlTheme.BasedOn>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Orientation="Vertical">
+                    <atom:TreeViewItemHeader Name="{x:Static atom:TreeViewItemThemeConstants.HeaderPart}"
+                                             Icon="{TemplateBinding Icon}"
+                                             IsShowIcon="{TemplateBinding IsShowIcon}"
+                                             IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
+                                             IsShowLine="{TemplateBinding IsShowLine}"
+                                             IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
+                                             SwitcherExpandIcon="{TemplateBinding SwitcherExpandIcon}"
+                                             SwitcherCollapseIcon="{TemplateBinding SwitcherCollapseIcon}"
+                                             SwitcherRotationIcon="{TemplateBinding SwitcherRotationIcon}"
+                                             SwitcherLoadingIcon="{TemplateBinding SwitcherLoadingIcon}"
+                                             SwitcherLeafIcon="{TemplateBinding SwitcherLeafIcon}"
+                                             GroupName="{TemplateBinding GroupName}"
+                                             Content="{TemplateBinding Header}"
+                                             ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                             NodeHoverMode="{TemplateBinding NodeHoverMode}"
+                                             Level="{TemplateBinding Level}"
+                                             IsExpanded="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                             IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                             IsLeaf="{TemplateBinding IsLeaf}"
+                                             IsLoading="{TemplateBinding IsLoading}"
+                                             IsSelected="{TemplateBinding IsSelected}"
+                                             IsDragging="{TemplateBinding IsDragging}"
+                                             IsDragOver="{TemplateBinding IsDragOver}"
+                                             ToggleType="{TemplateBinding ToggleType}"
+                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                             BorderThickness="{TemplateBinding BorderThickness}"
+                                             IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
+                                             IsFilterMatch="{TemplateBinding IsFilterMatch}"
+                                             FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
+                                             ItemFilterAction="{TemplateBinding ItemFilterAction}"
+                                             FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                             IsSelectable="{TemplateBinding IsSelectable}"
+                                             Focusable="{TemplateBinding Focusable}" />
+                    <atom:LayoutAwareMotionActor
+                        Name="{x:Static atom:TreeViewItemThemeConstants.ItemsPresenterMotionActorPart}"
+                        ClipToBounds="True"
+                        IsVisible="False">
+                        <ItemsPresenter Name="ItemsPresenter"
+                                        Focusable="False"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    </atom:LayoutAwareMotionActor>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+        
+        <Style Selector="^ /template/ atom|TreeViewItemHeader#PART_Header">
+            <Setter Property="IsEnabled" Value="{TemplateBinding IsEnabled}"/>
+        </Style>
+        
+        <Style Selector="^[IsMaxSelectReached=True][IsChecked=False][IsSelected=False]">
+            <Style Selector="^ /template/ atom|TreeViewItemHeader#PART_Header">
+                <Setter Property="IsEnabled" Value="False"/>
+            </Style>
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

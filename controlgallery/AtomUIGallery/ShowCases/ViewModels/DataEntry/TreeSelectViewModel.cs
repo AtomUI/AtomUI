@@ -102,6 +102,22 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _placement, value);
     }
     
+    private List<ITreeViewItemData> _maxSelectedTreeNodes = [];
+    
+    public List<ITreeViewItemData> MaxSelectedTreeNodes
+    {
+        get => _maxSelectedTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _maxSelectedTreeNodes, value);
+    }
+    
+    private List<ITreeViewItemData> _maxCheckedTreeNodes = [];
+    
+    public List<ITreeViewItemData> MaxCheckedTreeNodes
+    {
+        get => _maxCheckedTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _maxCheckedTreeNodes, value);
+    }
+    
     public TreeSelectViewModel(IScreen screen)
     {
         HostScreen = screen;

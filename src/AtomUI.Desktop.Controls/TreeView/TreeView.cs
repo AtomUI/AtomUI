@@ -782,7 +782,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
     
-    protected virtual void PrepareTreeViewItem(TreeViewItem treeViewItem, object? item, int index, CompositeDisposable compositeDisposable)
+    protected virtual void PrepareTreeViewItem(TreeViewItem treeViewItem, object? item, int index, CompositeDisposable disposables)
     {
     }
 

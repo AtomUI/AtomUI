@@ -119,7 +119,8 @@
                                                      IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
                                                      IsShowLine="{TemplateBinding IsShowLine}"
                                                      IsShowEmptyIndicator="{TemplateBinding IsShowEmptyIndicator}"
-                                                     IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"/>
+                                                     IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
+                                                     IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}"/>
                         </Border>
                     </atom:Popup>
                 </Panel>

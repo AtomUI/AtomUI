@@ -23,6 +23,8 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                 InitLeftAddOnTreeNodes(vm);
                 InitContentLeftAddOnTreeNodes(vm);
                 InitPlacementTreeNodes(vm);
+                InitMaxSelectedTreeNodes(vm);
+                InitMaxCheckedTreeNodes(vm);
                 vm.AsyncLoadTreeNodeLoader = new TreeItemDataLoader();
             }
         });
@@ -404,6 +406,98 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     private void InitPlacementTreeNodes(TreeSelectViewModel viewModel)
     {
         viewModel.PlacementTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header  = "parent 1",
+                ItemKey = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf1",
+                                ItemKey = "Leaf1",
+                                IsLeaf  = true,
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf2",
+                                ItemKey = "Leaf2",
+                                IsLeaf  = true,
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header  = "parent 1-1",
+                        ItemKey = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "sss",
+                                ItemKey = "sss",
+                                IsLeaf  = true,
+                            }
+                        ]
+                    },
+                ]
+            }
+        ];
+    }
+    
+    private void InitMaxSelectedTreeNodes(TreeSelectViewModel viewModel)
+    {
+        viewModel.MaxSelectedTreeNodes =
+        [
+            new TreeViewItemData()
+            {
+                Header  = "parent 1",
+                ItemKey = "parent 1",
+                Children = [
+                    new TreeViewItemData()
+                    {
+                        Header = "parent 1-0",
+                        Value  = "parent 1-0",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf1",
+                                ItemKey = "Leaf1",
+                                IsLeaf  = true,
+                            },
+                            new TreeViewItemData()
+                            {
+                                Header  = "Leaf2",
+                                ItemKey = "Leaf2",
+                                IsLeaf  = true,
+                            }
+                        ]
+                    },
+                    new TreeViewItemData()
+                    {
+                        Header  = "parent 1-1",
+                        ItemKey = "parent 1-1",
+                        Children = [
+                            new TreeViewItemData()
+                            {
+                                Header  = "sss",
+                                ItemKey = "sss",
+                                IsLeaf  = true,
+                            }
+                        ]
+                    },
+                ]
+            }
+        ];
+    }
+    
+    private void InitMaxCheckedTreeNodes(TreeSelectViewModel viewModel)
+    {
+        viewModel.MaxCheckedTreeNodes =
         [
             new TreeViewItemData()
             {

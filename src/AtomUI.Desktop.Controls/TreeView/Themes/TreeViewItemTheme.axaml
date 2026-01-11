@@ -54,7 +54,8 @@
     </Setter>
 
     <Style Selector="^:is(atom|TreeViewItem)">
-        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Focusable" Value="False" /> 
+
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
     </Style>

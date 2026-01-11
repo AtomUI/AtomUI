@@ -251,6 +251,14 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         {
             _firstDetected = true;
         }
+        var placementTarget = GetEffectivePlacementTarget();
+        if (placementTarget is not null)
+        {
+            if (TopLevel.GetTopLevel(placementTarget) is Window window)
+            {
+                window.ScrollOccurred += HandlePlacementTargetScrolled; 
+            }
+        }
     }
 
     private void HandleOpened(object? sender, EventArgs? args)
@@ -295,6 +303,20 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
                 _selfLightDismissDisposable = inputManager.Process.Subscribe(HandleMouseClick);
             }
+
+            if (TopLevel.GetTopLevel(placementTarget) is Window window)
+            {
+                window.ScrollOccurred += HandlePlacementTargetScrolled; 
+            }
+        }
+    }
+
+    private void HandlePlacementTargetScrolled(object? sender, EventArgs args)
+    {
+        var placementTarget = GetEffectivePlacementTarget();
+        if (placementTarget != null && Host != null)
+        {
+            this.UpdateHostPosition(Host, placementTarget);
         }
     }
 

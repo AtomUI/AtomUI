@@ -161,6 +161,30 @@
                                  IsFilterEnabled="True"/>
             </StackPanel>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Max Count"
+            Description="You can set the maxCount prop to control the max number of items can be selected. When the limit is exceeded, the options will become disabled.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:TreeSelect TreeItemsSource="{Binding MaxSelectedTreeNodes}"
+                                 HorizontalAlignment="Stretch"
+                                 IsTreeDefaultExpandAll="True"
+                                 IsMultiple="True"
+                                 IsAllowClear="True"
+                                 IsFilterEnabled="True"
+                                 PlaceholderText="Please select"
+                                 MaxCount="3"/>
+                <atom:TreeSelect TreeItemsSource="{Binding MaxCheckedTreeNodes}"
+                                 HorizontalAlignment="Stretch"
+                                 IsTreeDefaultExpandAll="True"
+                                 IsMultiple="True"
+                                 IsTreeCheckable="True"
+                                 IsAllowClear="True"
+                                 IsFilterEnabled="True"
+                                 PlaceholderText="Please select"
+                                 MaxCount="3"/>
+            </StackPanel>
+        </gallery:ShowCaseItem>
 
     </gallery:ShowCasePanel>
 </UserControl>

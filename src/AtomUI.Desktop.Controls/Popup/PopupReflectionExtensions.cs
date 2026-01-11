@@ -22,6 +22,11 @@ internal static class PopupReflectionExtensions
     private static readonly Lazy<MethodInfo> SetPopupParentMethodInfo = new Lazy<MethodInfo>(() =>
         typeof(Popup).GetMethodInfoOrThrow("SetPopupParent",
             BindingFlags.Instance | BindingFlags.NonPublic));
+    
+    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaPopup))]
+    private static readonly Lazy<MethodInfo> UpdateHostPositionMethodInfo = new Lazy<MethodInfo>(() =>
+        typeof(AvaloniaPopup).GetMethodInfoOrThrow("UpdateHostPosition",
+            BindingFlags.Instance | BindingFlags.NonPublic));
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicEvents, typeof(Popup))]
     private static readonly Lazy<EventInfo> ClosingEventInfo = new Lazy<EventInfo>(() =>
@@ -73,5 +78,10 @@ internal static class PopupReflectionExtensions
         var value = IgnoreIsOpenChangedFieldInfo.Value.GetValue(popup) as bool?;
         Debug.Assert(value != null);
         return value.Value;
+    }
+    
+    public static void UpdateHostPosition(this AvaloniaPopup popup, IPopupHost popupHost, Control placementTarget)
+    {
+        UpdateHostPositionMethodInfo.Value.Invoke(popup, [popupHost, placementTarget]);
     }
 }

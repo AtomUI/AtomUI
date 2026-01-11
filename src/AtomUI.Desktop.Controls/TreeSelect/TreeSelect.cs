@@ -255,6 +255,17 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.IsTreeViewSelectable,
             (o, v) => o.IsTreeViewSelectable = v);
     
+    internal static readonly DirectProperty<TreeSelect, bool> IsMaxSelectReachedProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, bool>(nameof(IsMaxSelectReached),
+            o => o.IsMaxSelectReached,
+            (o, v) => o.IsMaxSelectReached = v);
+    
+    internal static readonly DirectProperty<TreeSelect, IList?> EffectiveSelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, IList?>(
+            nameof(EffectiveSelectedItems),
+            o => o.EffectiveSelectedItems,
+            (o, v) => o.EffectiveSelectedItems = v);
+    
     internal SelectionMode TreeViewSelectionMode
     {
         get => GetValue(TreeViewSelectionModeProperty);
@@ -276,6 +287,23 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         get => _isTreeViewSelectable;
         set => SetAndRaise(IsTreeViewSelectableProperty, ref _isTreeViewSelectable, value);
     }
+        
+    private bool _isMaxSelectReached;
+
+    internal bool IsMaxSelectReached
+    {
+        get => _isMaxSelectReached;
+        set => SetAndRaise(IsMaxSelectReachedProperty, ref _isMaxSelectReached, value);
+    }
+    
+    private IList? _effectiveSelectedItems;
+
+    internal IList? EffectiveSelectedItems
+    {
+        get => _effectiveSelectedItems;
+        set => SetAndRaise(EffectiveSelectedItemsProperty, ref _effectiveSelectedItems, value);
+    }
+
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeSelectToken.ID;
@@ -313,6 +341,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     {
         base.OnInitialized();
         ItemFilter ??= new DefaultTreeItemFilter();
+        ConfigureMaxSelectReached();
     }
 
     private void HandleClearRequest()
@@ -385,6 +414,20 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                     _treeView.SelectedItem = SelectedItem;
                 }
             }
+        }
+
+        if (change.Property == IsMultipleProperty ||
+            change.Property == MaxCountProperty ||
+            change.Property == EffectiveSelectedItemsProperty ||
+            change.Property == IsTreeCheckableProperty)
+        {
+            ConfigureMaxSelectReached();
+        }
+        
+        if (change.Property == SelectedItemsProperty ||
+            change.Property == ShowCheckedStrategyProperty)
+        {
+            BuildEffectiveSelectedItems();
         }
     }
 
@@ -522,7 +565,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             try
             {
                 _needSkipSyncSelection = true;
-                SelectedItem          = _treeView.SelectedItem;
+                SelectedItem           = _treeView.SelectedItem;
             }
             finally
             {
@@ -715,6 +758,18 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
 
+    private void ConfigureMaxSelectReached()
+    {
+        if (IsMultiple)
+        {
+            IsMaxSelectReached = MaxCount <= SelectedItems?.Count;
+        }
+        else
+        {
+            IsMaxSelectReached = false;
+        }
+    }
+
     private void HandleIsCheckableChanged()
     {
         ConfigureTreeSelectionMode();
@@ -824,5 +879,76 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 }
             }
         }
+    }
+    
+    private void BuildEffectiveSelectedItems()
+    {
+        if (SelectedItems != null)
+        {
+            if (ShowCheckedStrategy == TreeSelectCheckedStrategy.All)
+            {
+                EffectiveSelectedItems = SelectedItems;
+            }
+            else
+            {
+                var effectiveSelectedItems = new List<object>();
+                if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowParent))
+                {
+                    var selectedSet = SelectedItems.Cast<object>().ToHashSet();
+                    var fullySelectedParents = SelectedItems.Cast<ITreeViewItemData>()
+                                                            .Where(node => node.Children.All(child => selectedSet.Contains(child)))
+                                                            .ToHashSet();
+                    foreach (var node in SelectedItems)
+                    {
+                        if (node is ITreeViewItemData treeViewItemData)
+                        {
+                            bool isDescendantOfFullySelectedParent = fullySelectedParents
+                                .Any(parent => IsDescendantOf(treeViewItemData, parent));
+            
+                            if (!isDescendantOfFullySelectedParent)
+                            {
+                                effectiveSelectedItems.Add(node);
+                            }
+                        }
+                    }
+                }
+                if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowChild))
+                {
+                    foreach (var item in SelectedItems)
+                    {
+                        if (item is ITreeViewItemData treeViewItemData)
+                        {
+                            if (treeViewItemData.Children.Count == 0)
+                            {
+                                effectiveSelectedItems.Add(treeViewItemData);
+                            }
+                        }
+                    }
+                }
+                EffectiveSelectedItems = effectiveSelectedItems;
+            }
+        }
+        else
+        {
+            EffectiveSelectedItems = null;
+        }
+    }
+        
+    private bool IsDescendantOf(ITreeViewItemData node, ITreeViewItemData parent)
+    {
+        if (node == parent)
+        {
+            return false;
+        }
+        ITreeNode<ITreeViewItemData>? current = node;
+        while (current != null)
+        {
+            if (current == parent)
+            {
+                return true;
+            }
+            current = current.ParentNode;
+        }
+        return false;
     }
 }

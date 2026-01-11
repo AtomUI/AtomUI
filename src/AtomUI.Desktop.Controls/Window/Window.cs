@@ -185,6 +185,12 @@ public class Window : AvaloniaWindow,
 
     #endregion
 
+    #region 内部事件定义
+    
+    internal event EventHandler? ScrollOccurred;
+
+    #endregion
+
     #region 内部属性定义
     internal static readonly DirectProperty<Window, Thickness> TitleBarOSOffsetMarginProperty = 
         AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof (TitleBarOSOffsetMargin), 
@@ -239,6 +245,7 @@ public class Window : AvaloniaWindow,
     static Window()
     {
         AffectsRender<Window>(ContentBackgroundProperty);
+        ScrollViewer.ScrollChangedEvent.AddClassHandler<Window>((window, args) => window.HandleScrollOccurred());
     }
 
     public Window()
@@ -511,5 +518,10 @@ public class Window : AvaloniaWindow,
     {
         SetCurrentValue(MediaBreakPointProperty, breakPoint);
         MediaBreakPointChanged?.Invoke(this, new MediaBreakPointChangedEventArgs(breakPoint));
+    }
+
+    private void HandleScrollOccurred()
+    {
+        ScrollOccurred?.Invoke(this, EventArgs.Empty);
     }
 }

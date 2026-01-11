@@ -34,7 +34,7 @@ internal class SelectResultOptionsBox : TemplatedControl
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         Select.MaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
     
-    public static readonly StyledProperty<bool?> IsResponsiveTagModeProperty =
+    public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
         Select.IsResponsiveTagModeProperty.AddOwner<SelectResultOptionsBox>();
     
     private IList<ISelectOption>? _selectedOptions;
@@ -75,32 +75,12 @@ internal class SelectResultOptionsBox : TemplatedControl
         set => SetValue(MaxTagCountProperty, value);
     }
     
-    public bool? IsResponsiveTagMode
+    public bool IsResponsiveTagMode
     {
         get => GetValue(IsResponsiveTagModeProperty);
         set => SetValue(IsResponsiveTagModeProperty, value);
     }
 
-    #endregion
-
-    #region 内部属性定义
-
-    internal static readonly DirectProperty<SelectResultOptionsBox, bool> IsShowDefaultPanelProperty =
-        AvaloniaProperty.RegisterDirect<SelectResultOptionsBox, bool>(
-            nameof(IsShowDefaultPanel),
-            o => o.IsShowDefaultPanel,
-            (o, v) => o.IsShowDefaultPanel = v);
-    
-    private bool _isShowDefaultPanel;
-
-    /// <summary>
-    /// 当不是响应式的时候，IsShowDefaultPanel 为 true，这样标签的现实不会根据宽度换行，性能更高
-    /// </summary>
-    internal bool IsShowDefaultPanel
-    {
-        get => _isShowDefaultPanel;
-        set => SetAndRaise(IsShowDefaultPanelProperty, ref _isShowDefaultPanel, value);
-    }
     #endregion
 
     private WrapPanel? _defaultPanel;
@@ -125,19 +105,8 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             ConfigureSearchTextReadOnly();
         }
-        else if (change.Property == IsResponsiveTagModeProperty)
-        {
-            if (IsResponsiveTagMode == true)
-            {
-                SetCurrentValue(IsShowDefaultPanelProperty, false);
-            }
-            else
-            {
-                SetCurrentValue(IsShowDefaultPanelProperty, true);
-            }
-        }
         
-        if (change.Property == IsShowDefaultPanelProperty)
+        else if (change.Property == IsResponsiveTagModeProperty)
         {
             _defaultPanel?.Children.Clear();
             _maxCountAwarePanel?.Children.Clear();
@@ -186,7 +155,7 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             if (Mode == SelectMode.Multiple)
             {
-                if (IsShowDefaultPanel)
+                if (!IsResponsiveTagMode)
                 {
                     _defaultPanel?.Children.Add(_searchTextBox);
                 }
@@ -195,21 +164,12 @@ internal class SelectResultOptionsBox : TemplatedControl
 
         ConfigureSearchTextControl();
         HandleSelectedOptionsChanged();
-        if (IsResponsiveTagMode == true)
-        {
-            SetCurrentValue(IsShowDefaultPanelProperty, false);
-        }
-        else
-        {
-            SetCurrentValue(IsShowDefaultPanelProperty, true);
-        }
-
         ConfigureMaxTagCountInfoVisible();
     }
 
     private void HandleSelectedOptionsChanged()
     {
-        if (_isShowDefaultPanel)
+        if (!IsResponsiveTagMode)
         {
             if (_defaultPanel != null)
             {
@@ -230,32 +190,15 @@ internal class SelectResultOptionsBox : TemplatedControl
                             TagText = option.Header,
                             Item    = option
                         };
-                        if (MaxTagCount.HasValue)
-                        {
-                            if (i < MaxTagCount)
-                            {
-                                tag.IsVisible = true;
-                            }
-                            else
-                            {
-                                tag.IsVisible = false;
-                            }
-                        }
                        
                         TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
                         _defaultPanel.Children.Add(tag);
                     }
                 }
-                
-                if (_collapsedInfoTag != null)
-                {
-                    _defaultPanel.Children.Add(_collapsedInfoTag);
-                }
 
                 if (_searchTextBox != null)
                 {
                     _defaultPanel.Children.Add(_searchTextBox);
-                    _searchTextBox.Focus();
                 }
             }
         }
@@ -293,7 +236,6 @@ internal class SelectResultOptionsBox : TemplatedControl
                 if (_searchTextBox != null)
                 {
                     _maxCountAwarePanel.Children.Add(_searchTextBox);
-                    _searchTextBox.Focus();
                 }
             }
         }
@@ -330,14 +272,17 @@ internal class SelectResultOptionsBox : TemplatedControl
     {
         if (_collapsedInfoTag != null)
         {
-            if (MaxTagCount != null && SelectedOptions != null && SelectedOptions.Count > 0 && MaxTagCount < SelectedOptions.Count)
+            if (MaxTagCount != null)
             {
-                _collapsedInfoTag.IsVisible = true;
-                _collapsedInfoTag.SetRemainText(SelectedOptions.Count - MaxTagCount.Value);
-            }
-            else
-            {
-                _collapsedInfoTag.IsVisible = false;
+                if (SelectedOptions != null && SelectedOptions.Count > 0 && MaxTagCount < SelectedOptions.Count)
+                {
+                    _collapsedInfoTag.IsVisible = true;
+                    _collapsedInfoTag.SetRemainText(SelectedOptions.Count - MaxTagCount.Value);
+                }
+                else
+                {
+                    _collapsedInfoTag.IsVisible = false;
+                }
             }
         }
     }

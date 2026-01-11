@@ -6,13 +6,14 @@
     <ControlTheme x:Key="{x:Type atom:SelectResultOptionsBox}" TargetType="atom:SelectResultOptionsBox">
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel Name="RootLayout">
+                <Panel Name="RootLayout"> 
                     <atom:SelectWrapPanel Name="{x:Static atom:SelectResultOptionsBoxThemeConstants.DefaultPanelPart}"
-                                          IsVisible="{TemplateBinding IsShowDefaultPanel}" />
+                                          IsVisible="{TemplateBinding IsResponsiveTagMode, Converter={x:Static BoolConverters.Not}}" />
                     <atom:SelectMaxTagAwarePanel
                         Name="{x:Static atom:SelectResultOptionsBoxThemeConstants.MaxCountAwarePanelPart}"
                         Orientation="Horizontal"
-                        IsVisible="{TemplateBinding IsShowDefaultPanel, Converter={x:Static BoolConverters.Not}}" />
+                        MaxTagCount="{TemplateBinding MaxTagCount}"
+                        IsVisible="{TemplateBinding IsResponsiveTagMode}"/>
                 </Panel>
             </ControlTemplate>
         </Setter>

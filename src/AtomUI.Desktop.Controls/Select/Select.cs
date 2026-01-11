@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -9,13 +8,10 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -28,10 +24,7 @@ public enum SelectMode
     Tags
 }
 
-public class Select : TemplatedControl,
-                      IMotionAwareControl,
-                      IControlSharedTokenResourcesHost,
-                      ISizeTypeAware
+public class Select : AbstractSelect, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     public static readonly StyledProperty<IEnumerable<ISelectOption>?> OptionsSourceProperty =
@@ -40,20 +33,8 @@ public class Select : TemplatedControl,
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         AvaloniaProperty.Register<Select, IDataTemplate?>(nameof(OptionTemplate));
     
-    public static readonly StyledProperty<bool> IsAllowClearProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsAllowClear));
-    
-    public static readonly StyledProperty<bool> IsAutoClearSearchValueProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsAutoClearSearchValue));
-    
     public static readonly StyledProperty<bool> IsDefaultActiveFirstOptionProperty =
         AvaloniaProperty.Register<Select, bool>(nameof(IsDefaultActiveFirstOption));
-    
-    public static readonly StyledProperty<bool> IsDefaultOpenProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsDefaultOpen));
-    
-    public static readonly StyledProperty<bool> IsDropDownOpenProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsDropDownOpen));
     
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         List.IsGroupEnabledProperty.AddOwner<Select>();
@@ -61,80 +42,11 @@ public class Select : TemplatedControl,
     public static readonly StyledProperty<string> GroupPropertyPathProperty =
         List.GroupPropertyPathProperty.AddOwner<Select>();
     
-    public static readonly StyledProperty<string?> PlaceholderTextProperty =
-        AvaloniaProperty.Register<Select, string?>(nameof(PlaceholderText));
-    
-    public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
-        AvaloniaProperty.Register<Select, IBrush?>(nameof(PlaceholderForeground));
-    
-    public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsPopupMatchSelectWidth), true);
-    
-    public static readonly StyledProperty<bool> IsFilterEnabledProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsFilterEnabled));
-    
     public static readonly StyledProperty<bool> IsHideSelectedOptionsProperty =
         AvaloniaProperty.Register<Select, bool>(nameof(IsHideSelectedOptions));
-    
-    public static readonly StyledProperty<int> DisplayPageSizeProperty = 
-        AvaloniaProperty.Register<Select, int>(nameof (DisplayPageSize), 10);
-    
-    public static readonly StyledProperty<bool> IsLoadingProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsLoading));
-    
-    public static readonly StyledProperty<int> MaxCountProperty =
-        AvaloniaProperty.Register<Select, int>(nameof(MaxCount), int.MaxValue);
-    
-    public static readonly StyledProperty<bool> IsShowMaxCountIndicatorProperty =
-        AvaloniaProperty.Register<Select, bool>(nameof(IsShowMaxCountIndicator));
-        
-    public static readonly StyledProperty<int?> MaxTagCountProperty =
-        AvaloniaProperty.Register<Select, int?>(nameof(MaxTagCount));
-    
-    public static readonly StyledProperty<bool?> IsResponsiveTagModeProperty =
-        AvaloniaProperty.Register<Select, bool?>(nameof(IsResponsiveTagMode));
-    
-    public static readonly StyledProperty<string?> MaxTagPlaceholderProperty =
-        AvaloniaProperty.Register<Select, string?>(nameof(MaxTagPlaceholder));
 
     public static readonly StyledProperty<SelectMode> ModeProperty =
         AvaloniaProperty.Register<Select, SelectMode>(nameof(Mode));
-   
-    public static readonly StyledProperty<object?> LeftAddOnProperty =
-        AddOnDecoratedBox.LeftAddOnProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
-        AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<Select>();
-
-    public static readonly StyledProperty<object?> RightAddOnProperty =
-        AddOnDecoratedBox.RightAddOnProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
-        AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
-        AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<IDataTemplate?> ContentLeftAddOnTemplateProperty =
-        AddOnDecoratedBox.ContentLeftAddOnTemplateProperty.AddOwner<Select>();
-
-    public static readonly StyledProperty<object?> ContentRightAddOnProperty =
-        AddOnDecoratedBox.ContentRightAddOnProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
-        AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<Select>();
-
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<Select>();
-
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<Select>();
-    
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Select>();
     
     public static readonly DirectProperty<Select, IList<ISelectOption>?> SelectedOptionsProperty =
         AvaloniaProperty.RegisterDirect<Select, IList<ISelectOption>?>(
@@ -167,34 +79,10 @@ public class Select : TemplatedControl,
         set => SetValue(OptionTemplateProperty, value);
     }
     
-    public bool IsAllowClear
-    {
-        get => GetValue(IsAllowClearProperty);
-        set => SetValue(IsAllowClearProperty, value);
-    }
-    
-    public bool IsAutoClearSearchValue
-    {
-        get => GetValue(IsAutoClearSearchValueProperty);
-        set => SetValue(IsAutoClearSearchValueProperty, value);
-    }
-    
     public bool IsDefaultActiveFirstOption
     {
         get => GetValue(IsDefaultActiveFirstOptionProperty);
         set => SetValue(IsDefaultActiveFirstOptionProperty, value);
-    }
-    
-    public bool IsDefaultOpen
-    {
-        get => GetValue(IsDefaultOpenProperty);
-        set => SetValue(IsDefaultOpenProperty, value);
-    }
-    
-    public bool IsDropDownOpen
-    {
-        get => GetValue(IsDropDownOpenProperty);
-        set => SetValue(IsDropDownOpenProperty, value);
     }
     
     public bool IsGroupEnabled
@@ -209,160 +97,16 @@ public class Select : TemplatedControl,
         set => SetValue(GroupPropertyPathProperty, value);
     }
     
-    public string? PlaceholderText
-    {
-        get => GetValue(PlaceholderTextProperty);
-        set => SetValue(PlaceholderTextProperty, value);
-    }
-    
-    public IBrush? PlaceholderForeground
-    {
-        get => GetValue(PlaceholderForegroundProperty);
-        set => SetValue(PlaceholderForegroundProperty, value);
-    }
-
-    public bool IsPopupMatchSelectWidth
-    {
-        get => GetValue(IsPopupMatchSelectWidthProperty);
-        set => SetValue(IsPopupMatchSelectWidthProperty, value);
-    }
-    
-    public bool IsFilterEnabled
-    {
-        get => GetValue(IsFilterEnabledProperty);
-        set => SetValue(IsFilterEnabledProperty, value);
-    }
-    
     public bool IsHideSelectedOptions
     {
         get => GetValue(IsHideSelectedOptionsProperty);
         set => SetValue(IsHideSelectedOptionsProperty, value);
     }
     
-    public int DisplayPageSize
-    {
-        get => GetValue(DisplayPageSizeProperty);
-        set => SetValue(DisplayPageSizeProperty, value);
-    }
-
-    public bool IsLoading
-    {
-        get => GetValue(IsLoadingProperty);
-        set => SetValue(IsLoadingProperty, value);
-    }
-
-    public int MaxCount
-    {
-        get => GetValue(MaxCountProperty);
-        set => SetValue(MaxCountProperty, value);
-    }
-    
-    public bool IsShowMaxCountIndicator
-    {
-        get => GetValue(IsShowMaxCountIndicatorProperty);
-        set => SetValue(IsShowMaxCountIndicatorProperty, value);
-    }
-    
-    public int? MaxTagCount
-    {
-        get => GetValue(MaxTagCountProperty);
-        set => SetValue(MaxTagCountProperty, value);
-    }
-    
-    /// <summary>
-    /// 响应式最大显示的 Tags 数量
-    /// </summary>
-    public bool? IsResponsiveTagMode
-    {
-        get => GetValue(IsResponsiveTagModeProperty);
-        set => SetValue(IsResponsiveTagModeProperty, value);
-    }
-    
-    /// <summary>
-    /// 在响应式情况下，Tags 因为宽度不够被隐藏之后显示的内容
-    /// </summary>
-    public string? MaxTagPlaceholder
-    {
-        get => GetValue(MaxTagPlaceholderProperty);
-        set => SetValue(MaxTagPlaceholderProperty, value);
-    }
-    
     public SelectMode Mode
     {
         get => GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
-    }
-    
-    public object? LeftAddOn
-    {
-        get => GetValue(LeftAddOnProperty);
-        set => SetValue(LeftAddOnProperty, value);
-    }
-    
-    public IDataTemplate? LeftAddOnTemplate
-    {
-        get => GetValue(LeftAddOnTemplateProperty);
-        set => SetValue(LeftAddOnTemplateProperty, value);
-    }
-
-    public object? RightAddOn
-    {
-        get => GetValue(RightAddOnProperty);
-        set => SetValue(RightAddOnProperty, value);
-    }
-    
-    public IDataTemplate? RightAddOnTemplate
-    {
-        get => GetValue(RightAddOnTemplateProperty);
-        set => SetValue(RightAddOnTemplateProperty, value);
-    }
-    
-    public object? ContentLeftAddOn
-    {
-        get => GetValue(ContentLeftAddOnProperty);
-        set => SetValue(ContentLeftAddOnProperty, value);
-    }
-    
-    public IDataTemplate? ContentLeftAddOnTemplate
-    {
-        get => GetValue(ContentLeftAddOnTemplateProperty);
-        set => SetValue(ContentLeftAddOnTemplateProperty, value);
-    }
-
-    public object? ContentRightAddOn
-    {
-        get => GetValue(ContentRightAddOnProperty);
-        set => SetValue(ContentRightAddOnProperty, value);
-    }
-    
-    public IDataTemplate? ContentRightAddOnTemplate
-    {
-        get => GetValue(ContentRightAddOnTemplateProperty);
-        set => SetValue(ContentRightAddOnTemplateProperty, value);
-    }
-    
-    public SizeType SizeType
-    {
-        get => GetValue(SizeTypeProperty);
-        set => SetValue(SizeTypeProperty, value);
-    }
-
-    public AddOnDecoratedVariant StyleVariant
-    {
-        get => GetValue(StyleVariantProperty);
-        set => SetValue(StyleVariantProperty, value);
-    }
-
-    public AddOnDecoratedStatus Status
-    {
-        get => GetValue(StatusProperty);
-        set => SetValue(StatusProperty, value);
-    }
-    
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
     }
     
     public string OptionFilterProp
@@ -399,47 +143,8 @@ public class Select : TemplatedControl,
     
     public Func<object, ISelectOption, bool>? DefaultValueCompareFn { get; set; }
     public IList<object>? DefaultValues { get; set; }
-    
-    #region 公共事件定义
-    
-    public event EventHandler? DropDownClosed;
-    public event EventHandler? DropDownOpened;
-
-    #endregion
 
     #region 内部属性定义
-    
-    internal static readonly StyledProperty<double> ItemHeightProperty =
-        AvaloniaProperty.Register<Select, double>(nameof(ItemHeight));
-    
-    internal static readonly StyledProperty<double> MaxPopupHeightProperty =
-        AvaloniaProperty.Register<Select, double>(nameof(MaxPopupHeight));
-    
-    internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
-        AvaloniaProperty.Register<Select, Thickness>(nameof(PopupContentPadding));
-    
-    internal static readonly DirectProperty<Select, bool> IsEffectiveShowClearButtonProperty =
-        AvaloniaProperty.RegisterDirect<Select, bool>(nameof(IsEffectiveShowClearButton),
-            o => o.IsEffectiveShowClearButton,
-            (o, v) => o.IsEffectiveShowClearButton = v);
-    
-    internal static readonly DirectProperty<Select, double> EffectivePopupWidthProperty =
-        AvaloniaProperty.RegisterDirect<Select, double>(
-            nameof(EffectivePopupWidth),
-            o => o.EffectivePopupWidth,
-            (o, v) => o.EffectivePopupWidth = v);
-    
-    internal static readonly DirectProperty<Select, bool> IsPlaceholderTextVisibleProperty =
-        AvaloniaProperty.RegisterDirect<Select, bool>(
-            nameof(IsPlaceholderTextVisible),
-            o => o.IsPlaceholderTextVisible,
-            (o, v) => o.IsPlaceholderTextVisible = v);
-    
-    internal static readonly DirectProperty<Select, bool> IsSelectionEmptyProperty =
-        AvaloniaProperty.RegisterDirect<Select, bool>(
-            nameof(IsSelectionEmpty),
-            o => o.IsSelectionEmpty,
-            (o, v) => o.IsSelectionEmpty = v);
     
     internal static readonly DirectProperty<Select, ISelectOption?> SelectedOptionProperty =
         AvaloniaProperty.RegisterDirect<Select, ISelectOption?>(
@@ -447,70 +152,10 @@ public class Select : TemplatedControl,
             o => o.SelectedOption,
             (o, v) => o.SelectedOption = v);
     
-    internal static readonly DirectProperty<Select, int> SelectedCountProperty =
-        AvaloniaProperty.RegisterDirect<Select, int>(nameof(SelectedCount),
-            o => o.SelectedCount,
-            (o, v) => o.SelectedCount = v);
-    
-    internal static readonly DirectProperty<Select, string?> ActivateFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<Select, string?>(nameof(ActivateFilterValue),
-            o => o.ActivateFilterValue,
-            (o, v) => o.ActivateFilterValue = v);
-    
     internal static readonly DirectProperty<Select, bool> IsEffectiveFilterEnabledProperty =
         AvaloniaProperty.RegisterDirect<Select, bool>(nameof(IsEffectiveFilterEnabled),
             o => o.IsEffectiveFilterEnabled,
             (o, v) => o.IsEffectiveFilterEnabled = v);
-    
-    internal double ItemHeight
-    {
-        get => GetValue(ItemHeightProperty);
-        set => SetValue(ItemHeightProperty, value);
-    }
-    
-    internal double MaxPopupHeight
-    {
-        get => GetValue(MaxPopupHeightProperty);
-        set => SetValue(MaxPopupHeightProperty, value);
-    }
-    
-    internal Thickness PopupContentPadding
-    {
-        get => GetValue(PopupContentPaddingProperty);
-        set => SetValue(PopupContentPaddingProperty, value);
-    }
-    
-    private bool _isEffectiveShowClearButton;
-
-    internal bool IsEffectiveShowClearButton
-    {
-        get => _isEffectiveShowClearButton;
-        set => SetAndRaise(IsEffectiveShowClearButtonProperty, ref _isEffectiveShowClearButton, value);
-    }
-    
-    private double _effectivePopupWidth;
-
-    internal double EffectivePopupWidth
-    {
-        get => _effectivePopupWidth;
-        set => SetAndRaise(EffectivePopupWidthProperty, ref _effectivePopupWidth, value);
-    }
-    
-    private bool _isPlaceholderTextVisible;
-
-    internal bool IsPlaceholderTextVisible
-    {
-        get => _isPlaceholderTextVisible;
-        set => SetAndRaise(IsPlaceholderTextVisibleProperty, ref _isPlaceholderTextVisible, value);
-    }
-    
-    private bool _isSelectionEmpty = true;
-
-    internal bool IsSelectionEmpty
-    {
-        get => _isSelectionEmpty;
-        set => SetAndRaise(IsSelectionEmptyProperty, ref _isSelectionEmpty, value);
-    }
     
     private ISelectOption? _selectedOption;
 
@@ -518,22 +163,6 @@ public class Select : TemplatedControl,
     {
         get => _selectedOption;
         set => SetAndRaise(SelectedOptionProperty, ref _selectedOption, value);
-    }
-    
-    private int _selectedCount;
-
-    internal int SelectedCount
-    {
-        get => _selectedCount;
-        set => SetAndRaise(SelectedCountProperty, ref _selectedCount, value);
-    }
-    
-    private string? _activateFilterValue;
-
-    internal string? ActivateFilterValue
-    {
-        get => _activateFilterValue;
-        set => SetAndRaise(ActivateFilterValueProperty, ref _activateFilterValue, value);
     }
     
     private bool _isEffectiveFilterEnabled;
@@ -558,7 +187,7 @@ public class Select : TemplatedControl,
     private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
-    private bool _clickInTagCloseButton;
+
     private ISelectOption? _addNewOption;
 
     static Select()
@@ -786,7 +415,7 @@ public class Select : TemplatedControl,
                 var tag    = parent?.FindAncestorOfType<SelectTag>();
                 if (tag != null)
                 {
-                    _clickInTagCloseButton = true;
+                    IgnorePopupClose = true;
                 }
             }
             else if (!IsHideSelectedOptions)
@@ -845,6 +474,7 @@ public class Select : TemplatedControl,
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        base.OnApplyTemplate(e);
         if (_popup != null)
         {
             _popup.Opened -= PopupOpened;
@@ -862,29 +492,12 @@ public class Select : TemplatedControl,
         _popup.ClickHidePredicate =  PopupClosePredicate;
         _popup.Opened             += PopupOpened;
         _popup.Closed             += PopupClosed;
-        ConfigureMaxDropdownHeight();
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
         UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();
         ConfigureEffectiveSearchEnabled();
-    }
-    
-    private bool PopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)
-    {
-        var popupRoots = new HashSet<PopupRoot>();
-        if (_popup?.Host is PopupRoot popupRoot)
-        {
-            popupRoots.Add(popupRoot);
-        }
-
-        if (_clickInTagCloseButton)
-        {
-            _clickInTagCloseButton = false;
-            return false;
-        }
-        return !popupRoots.Contains(args.Root);
     }
 
     internal void NotifyLogicalSelectOption(ISelectOption selectOption)
@@ -935,11 +548,6 @@ public class Select : TemplatedControl,
             UpdatePseudoClasses();
             ConfigureSingleFilterTextBox();
         }
-        else if (change.Property == DisplayPageSizeProperty ||
-                 change.Property == ItemHeightProperty)
-        {
-            ConfigureMaxDropdownHeight();
-        }
         else if (change.Property == IsPopupMatchSelectWidthProperty)
         {
             ConfigurePopupMinWith(DesiredSize.Width);
@@ -985,7 +593,7 @@ public class Select : TemplatedControl,
     private void PopupClosed(object? sender, EventArgs e)
     {
         _subscriptionsOnOpen.Clear();
-        DropDownClosed?.Invoke(this, EventArgs.Empty);
+        NotifyPopupClosed();
         if (Mode == SelectMode.Single)
         {
             if (_singleFilterInput != null)
@@ -1005,7 +613,7 @@ public class Select : TemplatedControl,
             parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
         }
 
-        DropDownOpened?.Invoke(this, EventArgs.Empty);
+        NotifyPopupOpened();
         if (Mode == SelectMode.Single)
         {
             _singleFilterInput?.Focus();
@@ -1067,29 +675,6 @@ public class Select : TemplatedControl,
     public void Clear()
     {
         SelectedOptions = null;
-    }
-    
-    private void ConfigureMaxDropdownHeight()
-    {
-        SetCurrentValue(MaxPopupHeightProperty, ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom);
-    }
-    
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        ConfigurePopupMinWith(e.NewSize.Width);
-    }
-
-    private void ConfigurePopupMinWith(double selectWidth)
-    {
-        if (IsPopupMatchSelectWidth)
-        {
-            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
-        }
-        else
-        {
-            SetCurrentValue(EffectivePopupWidthProperty, double.NaN);
-        }
     }
     
     private void UpdatePseudoClasses()
@@ -1371,14 +956,11 @@ public class Select : TemplatedControl,
     {
         if (Mode == SelectMode.Tags)
         {
-            SetCurrentValue(
-                IsEffectiveFilterEnabledProperty, true);
+            SetCurrentValue(IsEffectiveFilterEnabledProperty, true);
         }
         else
         {
-            SetCurrentValue(
-                IsEffectiveFilterEnabledProperty,
-                IsFilterEnabled);
+            SetCurrentValue(IsEffectiveFilterEnabledProperty, IsFilterEnabled);
         }
     }
 
@@ -1415,30 +997,5 @@ public class Select : TemplatedControl,
                 _addNewOption = null;
             }
         }
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel is Window window)
-        {
-            window.Deactivated += HandleWindowDeactivated;
-        }
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel is Window window)
-        {
-            window.Deactivated -= HandleWindowDeactivated;
-        }
-    }
-
-    private void HandleWindowDeactivated(object? sender, EventArgs e)
-    {
-        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 }

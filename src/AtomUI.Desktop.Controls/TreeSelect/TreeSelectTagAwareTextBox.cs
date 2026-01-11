@@ -36,7 +36,7 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
         Select.MaxTagCountProperty.AddOwner<TreeSelectTagAwareTextBox>();
     
     public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
-        AvaloniaProperty.Register<TreeSelect, bool>(nameof(IsResponsiveTagMode));
+        Select.IsResponsiveTagModeProperty.AddOwner<SelectResultOptionsBox>();
     
     public TreeSelectCheckedStrategy ShowCheckedStrategy
     {

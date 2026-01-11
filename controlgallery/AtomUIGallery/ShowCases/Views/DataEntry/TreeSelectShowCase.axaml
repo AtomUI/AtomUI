@@ -173,6 +173,7 @@
                                  IsAllowClear="True"
                                  IsFilterEnabled="True"
                                  PlaceholderText="Please select"
+                                 IsShowMaxCountIndicator="True"
                                  MaxCount="3"/>
                 <atom:TreeSelect TreeItemsSource="{Binding MaxCheckedTreeNodes}"
                                  HorizontalAlignment="Stretch"
@@ -182,6 +183,7 @@
                                  IsAllowClear="True"
                                  IsFilterEnabled="True"
                                  PlaceholderText="Please select"
+                                 IsShowMaxCountIndicator="True"
                                  MaxCount="3"/>
             </StackPanel>
         </gallery:ShowCaseItem>

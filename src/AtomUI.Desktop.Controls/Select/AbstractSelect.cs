@@ -11,9 +11,7 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AbstractSelect : TemplatedControl,
-                              IMotionAwareControl,
-                              ISizeTypeAware
+public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAllowClearProperty =
@@ -52,8 +50,8 @@ public class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         AvaloniaProperty.Register<AbstractSelect, int?>(nameof(MaxTagCount));
     
-    public static readonly StyledProperty<bool?> IsResponsiveTagModeProperty =
-        AvaloniaProperty.Register<AbstractSelect, bool?>(nameof(IsResponsiveTagMode));
+    public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
+        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsResponsiveTagMode));
     
     public static readonly StyledProperty<string?> MaxTagPlaceholderProperty =
         AvaloniaProperty.Register<AbstractSelect, string?>(nameof(MaxTagPlaceholder));
@@ -196,18 +194,24 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(IsShowMaxCountIndicatorProperty, value);
     }
     
+    /// <summary>
+    /// 响应式最大显示的 Tags 数量
+    /// </summary>
     public int? MaxTagCount
     {
         get => GetValue(MaxTagCountProperty);
         set => SetValue(MaxTagCountProperty, value);
     }
     
-    public bool? IsResponsiveTagMode
+    public bool IsResponsiveTagMode
     {
         get => GetValue(IsResponsiveTagModeProperty);
         set => SetValue(IsResponsiveTagModeProperty, value);
     }
     
+    /// <summary>
+    /// 在响应式情况下，Tags 因为宽度不够被隐藏之后显示的内容
+    /// </summary>
     public string? MaxTagPlaceholder
     {
         get => GetValue(MaxTagPlaceholderProperty);
@@ -530,6 +534,12 @@ public class AbstractSelect : TemplatedControl,
                 return !bounds.Contains(args.Position);
             }
         }
+        else if (hostProvider.PopupHost is PopupRoot popupRoot)
+        {
+            var popupRoots = new HashSet<PopupRoot>();
+            popupRoots.Add(popupRoot);
+            return !popupRoots.Contains(args.Root);
+        }
                 
         return false;
     }
@@ -540,6 +550,11 @@ public class AbstractSelect : TemplatedControl,
         if (change.Property == PlacementProperty)
         {
             ConfigurePopupPlacement();
+        }
+        else if (change.Property == DisplayPageSizeProperty ||
+                 change.Property == ItemHeightProperty)
+        {
+            ConfigureMaxDropdownHeight();
         }
     }
 
@@ -566,6 +581,12 @@ public class AbstractSelect : TemplatedControl,
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
         SetCurrentValue(IsDropDownOpenProperty, false);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        ConfigureMaxDropdownHeight();
     }
 
     private void ConfigurePopupPlacement()
@@ -604,5 +625,10 @@ public class AbstractSelect : TemplatedControl,
         {
             SetCurrentValue(EffectivePopupWidthProperty, 0.0);
         }
+    }
+    
+    protected virtual void ConfigureMaxDropdownHeight()
+    {
+        SetCurrentValue(MaxPopupHeightProperty, ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom);
     }
 }

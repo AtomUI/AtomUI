@@ -368,11 +368,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             UpdatePseudoClasses();
         }
-        else if (change.Property == DisplayPageSizeProperty ||
-                 change.Property == ItemHeightProperty)
-        {
-            ConfigureMaxDropdownHeight();
-        }
         else if (change.Property == IsPopupMatchSelectWidthProperty)
         {
             ConfigurePopupMinWith(DesiredSize.Width);
@@ -440,11 +435,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
     }
     
-    private void ConfigureMaxDropdownHeight()
-    {
-        SetCurrentValue(MaxPopupHeightProperty, ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom);
-    }
-    
     private void ConfigurePlaceholderVisible()
     {
         SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
@@ -482,8 +472,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             Popup.Opened             += HandlePopupOpened;
             Popup.Closed             += HandlePopupClosed;
         }
-
-        ConfigureMaxDropdownHeight();
+        
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();

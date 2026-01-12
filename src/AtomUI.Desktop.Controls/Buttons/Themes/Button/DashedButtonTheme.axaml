@@ -36,7 +36,7 @@
                             Margin="{Binding (atom:IconPresenter.Margin),
                                    ElementName={x:Static atom:ButtonThemeConstants.ButtonIconPart}}"
                             DockPanel.Dock="Left" />
-                        
+
                         <atom:IconPresenter
                             Name="{x:Static atom:ButtonThemeConstants.ButtonIconPart}"
                             Icon="{TemplateBinding Icon}"
@@ -52,8 +52,8 @@
                         </atom:IconPresenter>
                         <ContentPresenter
                             Name="{x:Static atom:ButtonThemeConstants.ContentPresenterPart}"
-                            Content="{TemplateBinding Content}" 
-                            ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
                     </DockPanel>
                 </atom:DashedBorder>
                 <Border Name="FocusVisual"
@@ -152,33 +152,42 @@
 
         <Style Selector="^[IsGhost=True]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
+                <Setter Property="IconBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
             </Style>
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
-                <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
+                <Setter Property="FillBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
+                <Setter Property="StrokeBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextLightSolid}}" />
             </Style>
 
             <Style Selector="^:pointerover">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
                 </Style>
             </Style>
 
             <Style Selector="^:pressed">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryActive}}" />
                 </Style>
             </Style>
-            
+
         </Style>
 
         <Style Selector="^ /template/ Border#FocusVisual">
@@ -199,33 +208,40 @@
 
             <Style Selector="^:pointerover">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBorderHover}}" />
                 </Style>
             </Style>
 
             <Style Selector="^:pressed">
                 <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
-                    <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                    <Setter Property="IconBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
                 </Style>
                 <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
-                    <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
-                    <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                    <Setter Property="FillBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                    <Setter Property="StrokeBrush"
+                            Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
                 </Style>
             </Style>
-            
+
         </Style>
-        
+
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
                 <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
             </Style>
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="FillBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
-                <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+                <Setter Property="StrokeBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
             </Style>
         </Style>
 
@@ -235,6 +251,24 @@
         <Style Selector="^[IsDanger=True]">
             <Style Selector="^ /template/ Border#ShadowsFrame">
                 <Setter Property="BoxShadow" Value="{DynamicResource {x:Static atom:ButtonTokenKey.DangerShadow}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[SizeType=Large]">
+            <Style Selector="^ /template/ atom|DashedBorder#Frame">
+                <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightLG}}" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^[SizeType=Middle]">
+            <Style Selector="^ /template/ atom|DashedBorder#Frame">
+                <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^[SizeType=Small]">
+            <Style Selector="^ /template/ atom|DashedBorder#Frame">
+                <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightSM}}" />
             </Style>
         </Style>
     </Style>

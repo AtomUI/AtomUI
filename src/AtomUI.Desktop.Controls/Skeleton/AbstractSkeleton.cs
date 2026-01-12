@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
 using Avalonia;
@@ -7,6 +8,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -150,11 +152,12 @@ public abstract class AbstractSkeleton : TemplatedControl
 
     protected void StartActiveAnimation()
     {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource = new CancellationTokenSource();
         if (_animation != null)
         {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource = new CancellationTokenSource();
-            _animation?.RunAsync(this, _cancellationTokenSource.Token);
+            Dispatcher.UIThread.InvokeAsync(async () =>
+                await _animation.RunInfiniteAsync(this, _cancellationTokenSource.Token));
         }
     }
 
@@ -179,7 +182,6 @@ public abstract class AbstractSkeleton : TemplatedControl
             _cancellationTokenSource?.Cancel();
             _animation = new Animation
             {
-                IterationCount = IterationCount.Infinite,
                 Easing         = MotionEasingCurve ?? new CubicEaseOut(),
                 Duration       = MotionDuration,
                 Children =

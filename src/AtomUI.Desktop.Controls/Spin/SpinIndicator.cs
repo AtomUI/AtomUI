@@ -1,4 +1,5 @@
-﻿using AtomUI.Controls;
+﻿using AtomUI.Animations;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -15,6 +16,7 @@ using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -139,7 +141,13 @@ public class SpinIndicator : TemplatedControl,
         BuildIndicatorAnimation();
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource = new CancellationTokenSource();
-        _animation?.RunAsync(this, _cancellationTokenSource.Token);
+        if (_animation != null)
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await _animation.RunInfiniteAsync(this, _cancellationTokenSource.Token);
+            });
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -182,7 +190,6 @@ public class SpinIndicator : TemplatedControl,
             _cancellationTokenSource?.Cancel();
             _animation = new Animation
             {
-                IterationCount = IterationCount.Infinite,
                 Easing         = MotionEasingCurve ?? new LinearEasing(),
                 Duration       = MotionDuration,
                 Children =

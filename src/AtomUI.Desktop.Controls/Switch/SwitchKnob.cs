@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Data;
@@ -12,6 +13,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -170,7 +172,6 @@ internal class SwitchKnob : Control
         _bindingDisposable?.Dispose();
         _bindingDisposable = BindUtils.RelayBind(this, LoadingAnimationDurationProperty, loadingAnimation, Animation.DurationProperty);
         loadingAnimation.Duration       = LoadingAnimationDuration;
-        loadingAnimation.IterationCount = IterationCount.Infinite;
         loadingAnimation.Easing         = new LinearEasing();
         loadingAnimation.Children.Add(new KeyFrame
         {
@@ -197,7 +198,7 @@ internal class SwitchKnob : Control
             KeyTime = LoadingAnimationDuration
         });
         _cancellationTokenSource = new CancellationTokenSource();
-        loadingAnimation.RunAsync(this, _cancellationTokenSource!.Token);
+        Dispatcher.UIThread.InvokeAsync(async () => await loadingAnimation.RunInfiniteAsync(this, _cancellationTokenSource.Token));
     }
 
     public void NotifyStopLoading()

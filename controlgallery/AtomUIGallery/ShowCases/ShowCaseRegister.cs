@@ -69,6 +69,7 @@ internal static class ShowCaseRegister
         Locator.CurrentMutable.Register(() => new ColorPickerShowCase(), typeof(IViewFor<ColorPickerViewModel>));
         Locator.CurrentMutable.Register(() => new DatePickerShowCase(), typeof(IViewFor<DatePickerViewModel>));
         Locator.CurrentMutable.Register(() => new LineEditShowCase(), typeof(IViewFor<LineEditViewModel>));
+        Locator.CurrentMutable.Register(() => new MentionsShowCase(), typeof(IViewFor<MentionsViewModel>));
         Locator.CurrentMutable.Register(() => new NumberUpDownShowCase(), typeof(IViewFor<NumberUpDownViewModel>));
         Locator.CurrentMutable.Register(() => new RadioButtonShowCase(), typeof(IViewFor<RadioButtonViewModel>));
         Locator.CurrentMutable.Register(() => new RateShowCase(), typeof(IViewFor<RateViewModel>));

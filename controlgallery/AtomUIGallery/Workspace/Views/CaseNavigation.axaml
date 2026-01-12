@@ -72,6 +72,8 @@
                               ItemKey="{x:Static viewmodels:TimePickerViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_LineEdit}}"
                               ItemKey="{x:Static viewmodels:LineEditViewModel.ID}" />
+            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_Mentions}}"
+                              ItemKey="{x:Static viewmodels:MentionsViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_NumberUpDown}}"
                               ItemKey="{x:Static viewmodels:NumberUpDownViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_RadioButton}}"

@@ -37,6 +37,7 @@ internal class zh_CN : LanguageProvider
     public const string DataEntry_CheckBox = "CheckBox 多选框";
     public const string DataEntry_ColorPicker = "ColorPicker 颜色选择器";
     public const string DataEntry_LineEdit = "LineEdit 输入框";
+    public const string DataEntry_Mentions = "Mentions 提及";
     public const string DataEntry_NumberUpDown = "NumberUpDown 数字输入框";
     public const string DataEntry_RadioButton = "RadioButton 单选框";
     public const string DataEntry_Rate = "Rate 评分";

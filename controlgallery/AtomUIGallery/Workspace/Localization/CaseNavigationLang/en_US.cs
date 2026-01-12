@@ -37,6 +37,7 @@ internal class en_US : LanguageProvider
     public const string DataEntry_CheckBox = "CheckBox";
     public const string DataEntry_ColorPicker = "ColorPicker";
     public const string DataEntry_LineEdit = "LineEdit";
+    public const string DataEntry_Mentions = "Mentions";
     public const string DataEntry_NumberUpDown = "NumberUpDown";
     public const string DataEntry_RadioButton = "RadioButton";
     public const string DataEntry_Rate = "Rate";

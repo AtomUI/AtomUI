@@ -36,6 +36,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.LineEditToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ListToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MarqueeLabelToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MentionsToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MenuToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MessageBoxToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MessageToken));

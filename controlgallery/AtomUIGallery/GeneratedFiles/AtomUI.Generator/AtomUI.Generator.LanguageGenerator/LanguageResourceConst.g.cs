@@ -33,6 +33,7 @@ namespace AtomUIGallery.Workspace.Localization.CaseNavigationLang
         public static readonly LanguageResourceKey DataEntry_ColorPicker = new LanguageResourceKey("CaseNavigation.DataEntry_ColorPicker", "AtomUIGallery");
         public static readonly LanguageResourceKey DataEntry_DatePicker = new LanguageResourceKey("CaseNavigation.DataEntry_DatePicker", "AtomUIGallery");
         public static readonly LanguageResourceKey DataEntry_LineEdit = new LanguageResourceKey("CaseNavigation.DataEntry_LineEdit", "AtomUIGallery");
+        public static readonly LanguageResourceKey DataEntry_Mentions = new LanguageResourceKey("CaseNavigation.DataEntry_Mentions", "AtomUIGallery");
         public static readonly LanguageResourceKey DataEntry_NumberUpDown = new LanguageResourceKey("CaseNavigation.DataEntry_NumberUpDown", "AtomUIGallery");
         public static readonly LanguageResourceKey DataEntry_RadioButton = new LanguageResourceKey("CaseNavigation.DataEntry_RadioButton", "AtomUIGallery");
         public static readonly LanguageResourceKey DataEntry_Rate = new LanguageResourceKey("CaseNavigation.DataEntry_Rate", "AtomUIGallery");

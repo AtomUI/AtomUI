@@ -24,9 +24,8 @@
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:TimelineTokenKey.IndicatorSize}}"/>
         </Style>
         
-        <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter atom|Icon">
-            <Setter Property="FillBrush" Value="{TemplateBinding IndicatorColor}"/>
-            <Setter Property="StrokeBrush" Value="{TemplateBinding IndicatorColor}"/>
+        <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
+            <Setter Property="IconBrush" Value="{TemplateBinding IndicatorColor}"/>
         </Style>
         
     </ControlTheme>

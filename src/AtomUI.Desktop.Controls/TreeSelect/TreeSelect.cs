@@ -791,7 +791,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 var selectedItems = new List<object>();
                 foreach (var item in SelectedItems)
                 {
-                    selectedItems.AddRange(item);
+                    selectedItems.Add(item);
                 }
                 selectedItems.Remove(treeItemData);
                 SelectedItems = selectedItems;

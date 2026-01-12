@@ -8,7 +8,7 @@
         <ResourceInclude Source="SelectFilterTextBoxTheme.axaml"/>
         <ResourceInclude Source="SelectTheme.axaml"/>
         <ResourceInclude Source="SelectTagTheme.axaml"/>
-        <ResourceInclude Source="SelectOptionsTheme.axaml"/>
+        <ResourceInclude Source="SelectOptionListTheme.axaml"/>
         <ResourceInclude Source="SelectOptionItemTheme.axaml"/>
         <ResourceInclude Source="SelectAddOnDecoratedBoxTheme.axaml"/>
         <ResourceInclude Source="SelectMaxCountIndicatorTheme.axaml"/>

@@ -182,7 +182,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         new(() => new VirtualizingStackPanel());
     
     private Popup? _popup;
-    private SelectOptions? _optionsBox;
+    private SelectOptionList? _optionsBox;
     private SelectFilterTextBox? _singleFilterInput;
     private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private ListFilterDescription? _filterDescription;
@@ -480,7 +480,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
             _popup.Opened -= PopupOpened;
             _popup.Closed -= PopupClosed;
         }
-        _optionsBox        = e.NameScope.Get<SelectOptions>(SelectThemeConstants.OptionsBoxPart);
+        _optionsBox        = e.NameScope.Get<SelectOptionList>(SelectThemeConstants.OptionsBoxPart);
         _singleFilterInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleFilterInputPart);
         if (_optionsBox != null)
         {
@@ -648,7 +648,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     }
                 }
             }
-            _optionsBox.SetCurrentValue(SelectOptions.SelectedItemsProperty, selectedItems);
+            _optionsBox.SetCurrentValue(SelectOptionList.SelectedItemsProperty, selectedItems);
             _optionsBox.EnsureActiveOption();
         }
     }

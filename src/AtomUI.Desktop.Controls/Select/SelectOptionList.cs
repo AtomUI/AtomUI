@@ -6,10 +6,10 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class SelectOptions : List
+internal class SelectOptionList : List
 {
     public static readonly StyledProperty<int> MaxCountProperty =
-        Select.MaxCountProperty.AddOwner<SelectOptions>();
+        Select.MaxCountProperty.AddOwner<SelectOptionList>();
     
     public int MaxCount
     {

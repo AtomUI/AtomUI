@@ -4,9 +4,9 @@
     xmlns:atom="https://atomui.net"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:SelectOptions}" TargetType="atom:SelectOptions">
+    <ControlTheme x:Key="{x:Type atom:SelectOptionList}" TargetType="atom:SelectOptionList">
         <ControlTheme.BasedOn>
-            <themes:ListTheme TargetType="atom:SelectOptions" />
+            <themes:ListTheme TargetType="atom:SelectOptionList" />
         </ControlTheme.BasedOn>
     </ControlTheme>
 </ResourceDictionary>

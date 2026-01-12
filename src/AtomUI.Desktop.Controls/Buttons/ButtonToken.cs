@@ -257,6 +257,11 @@ internal class ButtonToken : AbstractControlDesignToken
     /// 小号按钮内容字体行高
     /// </summary>
     public double ContentLineHeightSM { get; set; } = double.NaN;
+    
+    /// <summary>
+    /// 按钮的下拉弹出菜单跟按钮之间的间距大小
+    /// </summary>
+    public double GutterToFlyout { get; set; }
 
     #region 内部 Token 定义
 
@@ -397,5 +402,7 @@ internal class ButtonToken : AbstractControlDesignToken
         IconOnyPadding   = new Thickness(Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
         IconOnyPaddingLG = new Thickness(Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
         IconOnyPaddingSM = new Thickness(Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
+        
+        GutterToFlyout = SharedToken.UniformlyMarginXXS;
     }
 }

@@ -379,7 +379,6 @@ public class Flyout : PopupFlyoutBase
                 Popup.PlacementGravity);
 
         var offset = GetPopupOffset();
-        
         var offsetX = offset.X;
         var offsetY = offset.Y;
 

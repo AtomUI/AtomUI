@@ -67,8 +67,8 @@ public class SplitButton : ContentControl,
     public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
         Avalonia.Controls.Primitives.Popup.PlacementGravityProperty.AddOwner<SplitButton>();
 
-    public static readonly StyledProperty<double> MarginToAnchorProperty =
-        Popup.MarginToAnchorProperty.AddOwner<SplitButton>();
+    public static readonly StyledProperty<double> GutterToFlyoutProperty =
+        AvaloniaProperty.Register<SplitButton, double>(nameof(GutterToFlyout));
 
     public static readonly StyledProperty<int> MouseEnterDelayProperty =
         FlyoutStateHelper.MouseEnterDelayProperty.AddOwner<SplitButton>();
@@ -175,10 +175,10 @@ public class SplitButton : ContentControl,
         set => SetValue(PlacementAnchorProperty, value);
     }
 
-    public double MarginToAnchor
+    public double GutterToFlyout
     {
-        get => GetValue(MarginToAnchorProperty);
-        set => SetValue(MarginToAnchorProperty, value);
+        get => GetValue(GutterToFlyoutProperty);
+        set => SetValue(GutterToFlyoutProperty, value);
     }
 
     public int MouseEnterDelay
@@ -369,15 +369,14 @@ public class SplitButton : ContentControl,
             }
             
             _flyoutBindingDisposables?.Dispose();
-            _flyoutBindingDisposables = new CompositeDisposable(9);
+            _flyoutBindingDisposables = new CompositeDisposable(8);
             
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, flyout));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsShowArrowProperty, flyout));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
-            _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, MarginToAnchorProperty, flyout));
-            _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, MarginToAnchorProperty, flyout));
+            _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
 
             _flyoutBindingDisposables.Add(flyout.GetPropertyChangedObservable(Avalonia.Controls.Primitives.Popup

@@ -107,6 +107,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey FontWeight = new TokenResourceKey("AtomUI.Desktop.Controls.Button.FontWeight");
         public static readonly TokenResourceKey GhostBg = new TokenResourceKey("AtomUI.Desktop.Controls.Button.GhostBg");
         public static readonly TokenResourceKey GroupBorderColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.GroupBorderColor");
+        public static readonly TokenResourceKey GutterToFlyout = new TokenResourceKey("AtomUI.Desktop.Controls.Button.GutterToFlyout");
         public static readonly TokenResourceKey IconMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Button.IconMargin");
         public static readonly TokenResourceKey IconOnyPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Button.IconOnyPadding");
         public static readonly TokenResourceKey IconOnyPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.Button.IconOnyPaddingLG");

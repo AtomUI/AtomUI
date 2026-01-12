@@ -212,7 +212,7 @@ public class DropdownButton : Button
         if (DropdownFlyout is not null)
         {
             _flyoutBindingDisposables?.Dispose();
-            _flyoutBindingDisposables = new CompositeDisposable(7);
+            _flyoutBindingDisposables = new CompositeDisposable(8);
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, DropdownFlyout));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, DropdownFlyout));
             _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, DropdownFlyout));

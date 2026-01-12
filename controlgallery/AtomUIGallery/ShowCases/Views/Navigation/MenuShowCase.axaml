@@ -218,9 +218,11 @@
         
             <StackPanel>
                 <atom:Separator Title="Normal"/>
-                <Border Classes="ContextFlyoutContainer">
+                <Border Classes="ContextFlyoutContainer"> 
                     <Border.ContextFlyout>
-                        <atom:MenuFlyout IsMotionEnabled="True">
+                        <atom:MenuFlyout IsMotionEnabled="True"
+                                         atom:Flyout.HorizontalOffset="10"
+                                         atom:Flyout.VerticalOffset="15">
                             <atom:MenuItem Header="Cut" InputGesture="Ctrl+X"
                                            Icon="{antdicons:AntDesignIconProvider Kind=ScissorOutlined}" />
                             <atom:MenuItem Header="Copy" InputGesture="Ctrl+C" Icon="{antdicons:AntDesignIconProvider Kind=CopyOutlined}" />
@@ -241,7 +243,9 @@
                     <Border.ContextFlyout>
                         <atom:MenuFlyout IsMotionEnabled="True"
                                          ItemsSource="{Binding MenuFlyoutItems}"
-                                         x:DataType="viewModels:MenuViewModel">
+                                         x:DataType="viewModels:MenuViewModel"
+                                         atom:Flyout.HorizontalOffset="10"
+                                         atom:Flyout.VerticalOffset="15">
                             <atom:MenuFlyout.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Children}">
                                     <atom:TextBlock Text="{Binding Header}" />

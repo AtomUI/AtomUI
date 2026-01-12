@@ -31,6 +31,7 @@
         
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="GutterToFlyout" Value="{DynamicResource {x:Static atom:ButtonTokenKey.GutterToFlyout}}"/>
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="IsWaveSpiritEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableWaveSpirit}}" />
         <Setter Property="ClipToBounds" Value="False" />

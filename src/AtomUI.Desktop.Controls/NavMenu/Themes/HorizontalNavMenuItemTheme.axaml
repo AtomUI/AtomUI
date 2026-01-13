@@ -59,14 +59,14 @@
             <Setter Property="MarginToAnchor"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.TopLevelItemPopupMarginToAnchor}}" />
             <Setter Property="MaskShadows"
-                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupBoxShadows}}" />
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
         </Style>
 
         <Style Selector="^ /template/ Border#PART_PopupFrame">
             <Setter Property="Background"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
             <Setter Property="CornerRadius"
-                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupBorderRadius}}" />
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuPopupContentPadding}}" />
         </Style>

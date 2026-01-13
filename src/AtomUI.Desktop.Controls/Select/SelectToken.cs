@@ -92,24 +92,9 @@ internal class SelectToken : AbstractControlDesignToken
     public Thickness FixedItemMargin { get; set; }
     
     /// <summary>
-    /// 菜单的圆角
-    /// </summary>
-    public CornerRadius PopupBorderRadius { get; set; }
-    
-    /// <summary>
-    /// 菜单 Popup 阴影
-    /// </summary>
-    public BoxShadows PopupBoxShadows { get; set; }
-    
-    /// <summary>
     /// 菜单内容边距
     /// </summary>
     public Thickness PopupContentPadding { get; set; }
-    
-    /// <summary>
-    /// 顶层弹出菜单，距离顶层菜单项的边距
-    /// </summary>
-    public double PopupMarginToAnchor { get; set; }
     
     /// <summary>
     /// 多选模式下的输入框内边距
@@ -175,10 +160,7 @@ internal class SelectToken : AbstractControlDesignToken
         MultipleItemColorDisabled = SharedToken.ColorTextDisabled;
         SelectAffixPadding = SharedToken.PaddingXXS;
         
-        PopupBorderRadius   = SharedToken.BorderRadiusLG;
         PopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS / 2);
-        PopupBoxShadows     = SharedToken.BoxShadowsSecondary;
-        PopupMarginToAnchor = SharedToken.UniformlyMarginXXS;
         
         var lineWidth    = SharedToken.LineWidth;
         

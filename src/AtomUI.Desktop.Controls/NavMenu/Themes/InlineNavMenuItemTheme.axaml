@@ -18,7 +18,8 @@
                         IsDarkStyle="{TemplateBinding IsDarkStyle}"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                        IsSelected="{TemplateBinding SelectingItemsControl.IsSelected}"/>
+                        IsSelected="{TemplateBinding SelectingItemsControl.IsSelected}"
+                        Focusable="{TemplateBinding Focusable}"/>
 
                     <atom:LayoutAwareMotionActor
                         Name="{x:Static atom:InlineNavMenuItemThemeConstants.ChildItemsLayoutTransformPart}">
@@ -34,6 +35,7 @@
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.MotionDurationSlow}}" />
         
         <Style Selector="^:is(atom|NavMenuItem)^[Mode=Inline]">
+            <Setter Property="Focusable" Value="False" />
             <Style Selector="^ /template/ ItemsPresenter#ChildItemsPresenter StackPanel">
                 <Setter Property="Spacing"
                         Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalItemsPanelSpacing}}" />

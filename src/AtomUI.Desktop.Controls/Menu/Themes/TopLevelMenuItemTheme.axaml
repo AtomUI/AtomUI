@@ -113,7 +113,7 @@
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
                 <Setter Property="CornerRadius"
-                        Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
+                        Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
                 <Setter Property="MinWidth"
                         Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupMinWidth}}" />
                 <Setter Property="MaxWidth"
@@ -124,7 +124,7 @@
                 <Setter Property="MarginToAnchor"
                         Value="{DynamicResource {x:Static atom:MenuTokenKey.TopLevelItemPopupMarginToAnchor}}" />
                 <Setter Property="MaskShadows"
-                        Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBoxShadows}}" />
+                        Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
             </Style>
 
             <Style Selector="^:disabled">

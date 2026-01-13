@@ -151,12 +151,12 @@
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
                     Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupMarginToAnchor}}" />
-            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupBoxShadows}}" />
+            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
             <Setter Property="CornerRadius"
-                    Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupBorderRadius}}" />
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         </Style>
 
         <Style Selector="^[IsMultiple=False]">

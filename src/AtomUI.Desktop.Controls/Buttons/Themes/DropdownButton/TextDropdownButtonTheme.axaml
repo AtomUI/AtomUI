@@ -1,14 +1,13 @@
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
-              xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               TargetType="{x:Type atom:DropdownButton}"
               x:Class="AtomUI.Desktop.Controls.Themes.TextDropdownButtonTheme"
               x:ClassModifier="internal">
 
     <ControlTheme.BasedOn>
-        <themes:TextButtonTheme TargetType="{x:Type atom:DropdownButton}" />
+        <atom:TextButtonTheme TargetType="{x:Type atom:DropdownButton}" />
     </ControlTheme.BasedOn>
 
     <Setter Property="Template">

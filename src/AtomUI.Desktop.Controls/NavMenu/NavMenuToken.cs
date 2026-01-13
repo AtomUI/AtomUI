@@ -11,16 +11,6 @@ internal class NavMenuToken : AbstractControlDesignToken
     public const string ID = "NavMenu";
     
     /// <summary>
-    /// 菜单的圆角
-    /// </summary>
-    public CornerRadius MenuPopupBorderRadius { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 阴影
-    /// </summary>
-    public BoxShadows MenuPopupBoxShadows { get; set; }
-
-    /// <summary>
     /// 菜单内容边距
     /// </summary>
     public Thickness MenuPopupContentPadding { get; set; }
@@ -462,9 +452,7 @@ internal class NavMenuToken : AbstractControlDesignToken
         TopLevelItemPopupMarginToAnchor = SharedToken.UniformlyMarginXS;
         
         MenuPopupBg               = SharedToken.ColorBgElevated;
-        MenuPopupBorderRadius     = SharedToken.BorderRadiusLG;
-        MenuPopupContentPadding   = new Thickness(SharedToken.UniformlyPaddingXXS, MenuPopupBorderRadius.TopLeft / 2);
-        MenuPopupBoxShadows       = SharedToken.BoxShadowsSecondary;
+        MenuPopupContentPadding   = new Thickness(SharedToken.UniformlyPaddingXXS, SharedToken.BorderRadiusLG.TopLeft / 2);
         VerticalItemsPanelSpacing = SharedToken.UniformlyMarginXXS;
         VerticalChildItemsMargin = new Thickness(0, SharedToken.UniformlyMarginXXS, 0, 0);
 

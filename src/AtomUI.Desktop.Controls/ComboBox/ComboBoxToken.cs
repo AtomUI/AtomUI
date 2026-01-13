@@ -15,16 +15,6 @@ internal class ComboBoxToken : ButtonSpinnerToken
     }
 
     /// <summary>
-    /// 菜单的圆角
-    /// </summary>
-    public CornerRadius PopupBorderRadius { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 阴影
-    /// </summary>
-    public BoxShadows PopupBoxShadows { get; set; }
-
-    /// <summary>
     /// 菜单内容边距
     /// </summary>
     public Thickness PopupContentPadding { get; set; }
@@ -82,9 +72,7 @@ internal class ComboBoxToken : ButtonSpinnerToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        PopupBorderRadius    = SharedToken.BorderRadiusLG;
-        PopupContentPadding  = new Thickness(SharedToken.UniformlyPaddingXXS, PopupBorderRadius.TopLeft / 2);
-        PopupBoxShadows      = SharedToken.BoxShadowsSecondary;
+        PopupContentPadding  = new Thickness(SharedToken.UniformlyPaddingXXS, SharedToken.BorderRadiusLG.TopLeft / 2);
         PopupMarginToAnchor  = SharedToken.UniformlyMarginXXS;
         
         var colorTextDisabled  = SharedToken.ColorTextDisabled;

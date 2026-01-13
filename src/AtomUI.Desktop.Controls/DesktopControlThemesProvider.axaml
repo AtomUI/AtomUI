@@ -32,6 +32,7 @@
         <ResourceInclude Source="Input/Themes/InputThemes.axaml" />
         <ResourceInclude Source="ItemsControl/Themes/ItemsControlTheme.axaml" />
         <ResourceInclude Source="List/Themes/ListThemes.axaml" />
+        <ResourceInclude Source="Mentions/Themes/MentionsThemes.axaml" />
         <ResourceInclude Source="Menu/Themes/MenuThemes.axaml" />
         <ResourceInclude Source="Message/Themes/MessageThemes.axaml" />
         <ResourceInclude Source="MessageBox/Themes/MessageBoxThemes.axaml" />

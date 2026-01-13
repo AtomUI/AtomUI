@@ -28,10 +28,10 @@
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
-        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />
-        <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemHeight}}" />
+        <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MenuTokenKey.ItemHeight}}" /> 
 
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />

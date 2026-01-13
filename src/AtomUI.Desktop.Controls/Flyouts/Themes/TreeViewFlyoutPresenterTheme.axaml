@@ -21,7 +21,7 @@
     
     <Style Selector="^:is(atom|TreeViewFlyoutPresenter)">
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
-        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TreeFlyoutTokenKey.PopupContentPadding}}" />
         
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">

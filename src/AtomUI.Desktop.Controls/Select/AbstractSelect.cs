@@ -374,14 +374,22 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
 
     #region 内部属性定义
 
-    internal static readonly StyledProperty<double> ItemHeightProperty =
-        AvaloniaProperty.Register<AbstractSelect, double>(nameof(ItemHeight));
+    internal static readonly DirectProperty<AbstractSelect, double> ItemHeightProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
+            nameof(ItemHeight),
+            o => o.ItemHeight,
+            (o, v) => o.ItemHeight = v);
     
-    internal static readonly StyledProperty<double> MaxPopupHeightProperty =
-        AvaloniaProperty.Register<AbstractSelect, double>(nameof(MaxPopupHeight));
+    internal static readonly DirectProperty<AbstractSelect, double> MaxPopupHeightProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
+            nameof(MaxPopupHeight),
+            o => o.MaxPopupHeight,
+            (o, v) => o.MaxPopupHeight = v);
     
-    internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
-        AvaloniaProperty.Register<AbstractSelect, Thickness>(nameof(PopupContentPadding));
+    internal static readonly DirectProperty<AbstractSelect, Thickness> PopupContentPaddingProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, Thickness>(nameof(PopupContentPadding),
+            o => o.PopupContentPadding,
+            (o, v) => o.PopupContentPadding = v);
     
     internal static readonly DirectProperty<AbstractSelect, bool> IsEffectiveShowClearButtonProperty =
         AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(nameof(IsEffectiveShowClearButton),
@@ -422,22 +430,28 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             o => o.PopupPlacement,
             (o, v) => o.PopupPlacement = v);
     
+    private double _itemHeight;
+
     internal double ItemHeight
     {
-        get => GetValue(ItemHeightProperty);
-        set => SetValue(ItemHeightProperty, value);
+        get => _itemHeight;
+        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
     }
     
+    private double _maxPopupHeight;
+
     internal double MaxPopupHeight
     {
-        get => GetValue(MaxPopupHeightProperty);
-        set => SetValue(MaxPopupHeightProperty, value);
+        get => _maxPopupHeight;
+        set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
     }
     
+    private Thickness _popupContentPadding;
+
     internal Thickness PopupContentPadding
     {
-        get => GetValue(PopupContentPaddingProperty);
-        set => SetValue(PopupContentPaddingProperty, value);
+        get => _popupContentPadding;
+        set => SetAndRaise(PopupContentPaddingProperty, ref _popupContentPadding, value);
     }
     
     private bool _isEffectiveShowClearButton;
@@ -629,6 +643,6 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     
     protected virtual void ConfigureMaxDropdownHeight()
     {
-        SetCurrentValue(MaxPopupHeightProperty, ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom);
+        MaxPopupHeight = ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom;
     }
 }

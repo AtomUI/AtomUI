@@ -18,16 +18,6 @@ internal class TreeFlyoutToken : AbstractControlDesignToken
     /// 弹出框背景色
     /// </summary>
     public Color PopupBgColor { get; set; }
-    
-    /// <summary>
-    /// 菜单的圆角
-    /// </summary>
-    public CornerRadius PopupBorderRadius { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 阴影
-    /// </summary>
-    public BoxShadows PopupBoxShadows { get; set; }
 
     /// <summary>
     /// 菜单内容边距
@@ -56,15 +46,13 @@ internal class TreeFlyoutToken : AbstractControlDesignToken
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
-        PopupBorderRadius = SharedToken.BorderRadiusLG;
         PopupMinWidth     = 120;
         PopupMaxWidth = 800;
 
         PopupMinHeight = SharedToken.ControlHeightSM * 3;
         PopupMaxHeight = SharedToken.ControlHeightSM * 30;
         
-        PopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS, PopupBorderRadius.TopLeft / 2);
-        PopupBoxShadows     = SharedToken.BoxShadowsSecondary;
+        PopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS, SharedToken.BorderRadiusLG.TopLeft / 2);
         PopupBgColor        = SharedToken.ColorBgElevated;
     }
 }

@@ -28,7 +28,7 @@
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="HorizontalOffset" Value="{DynamicResource {x:Static atom:MenuTokenKey.ContextMenuOffsetX}}" />
         <Setter Property="VerticalOffset" Value="{DynamicResource {x:Static atom:MenuTokenKey.ContextMenuOffsetY}}" />
-        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupContentPadding}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:MenuTokenKey.ContextMenuBgColor}}" />

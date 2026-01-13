@@ -190,13 +190,13 @@
         <Style Selector="^ /template/ Border#PopupFrame">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
             <Setter Property="CornerRadius"
-                    Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBorderRadius}}" />
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
                     Value="{DynamicResource {x:Static atom:MenuTokenKey.TopLevelItemPopupMarginToAnchor}}" />
-            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBoxShadows}}" />
+            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
             <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupMinWidth}}" />
             <Setter Property="MaxWidth" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupMaxWidth}}" />
         </Style>

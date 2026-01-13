@@ -16,16 +16,6 @@ internal class MenuToken : AbstractControlDesignToken
     }
 
     /// <summary>
-    /// 菜单的圆角
-    /// </summary>
-    public CornerRadius MenuPopupBorderRadius { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 阴影
-    /// </summary>
-    public BoxShadows MenuPopupBoxShadows { get; set; }
-
-    /// <summary>
     /// 菜单内容边距
     /// </summary>
     public Thickness MenuPopupContentPadding { get; set; }
@@ -312,16 +302,13 @@ internal class MenuToken : AbstractControlDesignToken
 
         TopLevelItemPopupMarginToAnchor = SharedToken.UniformlyMarginXXS;
 
-        MenuPopupBorderRadius = SharedToken.BorderRadiusLG;
-
         MenuPopupMinWidth = 120;
         MenuPopupMaxWidth = 800;
 
         SeparatorItemHeight = SharedToken.LineWidth * 5; // 上下两像素，留一像素给自己
         MenuTearOffHeight = ItemHeight * 1.2; // 暂时这么定义吧
 
-        MenuPopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS, MenuPopupBorderRadius.TopLeft / 2);
-        MenuPopupBoxShadows     = SharedToken.BoxShadowsSecondary;
+        MenuPopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS, SharedToken.BorderRadiusLG.TopLeft / 2);
 
         ContextMenuOffsetX = SharedToken.SpacingXXS;
         ContextMenuOffsetY = SharedToken.SpacingXXS;

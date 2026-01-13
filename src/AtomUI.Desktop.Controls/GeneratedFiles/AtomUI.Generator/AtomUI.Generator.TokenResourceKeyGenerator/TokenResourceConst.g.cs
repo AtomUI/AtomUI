@@ -267,8 +267,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.ItemPadding");
         public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.ItemSelectedBgColor");
         public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.ItemSelectedColor");
-        public static readonly TokenResourceKey PopupBorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.PopupBorderRadius");
-        public static readonly TokenResourceKey PopupBoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.PopupBoxShadows");
         public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.PopupContentPadding");
         public static readonly TokenResourceKey PopupMarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.PopupMarginToAnchor");
     }
@@ -380,8 +378,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     public static class TreeFlyoutTokenKey
     {
         public static readonly TokenResourceKey PopupBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupBgColor");
-        public static readonly TokenResourceKey PopupBorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupBorderRadius");
-        public static readonly TokenResourceKey PopupBoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupBoxShadows");
         public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupContentPadding");
         public static readonly TokenResourceKey PopupMaxHeight = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupMaxHeight");
         public static readonly TokenResourceKey PopupMaxWidth = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupMaxWidth");
@@ -458,6 +454,13 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey DefaultSpeed = new TokenResourceKey("AtomUI.Desktop.Controls.MarqueeLabel.DefaultSpeed");
     }
 
+    public static class MentionsTokenKey
+    {
+        public static readonly TokenResourceKey MinPopupWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Mentions.MinPopupWidth");
+        public static readonly TokenResourceKey OptionHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Mentions.OptionHeight");
+        public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Mentions.PopupContentPadding");
+    }
+
     public static class MenuTokenKey
     {
         public static readonly TokenResourceKey ContextMenuBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuBgColor");
@@ -478,8 +481,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemPaddingInline = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ItemPaddingInline");
         public static readonly TokenResourceKey KeyGestureColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.KeyGestureColor");
         public static readonly TokenResourceKey MenuBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuBgColor");
-        public static readonly TokenResourceKey MenuPopupBorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupBorderRadius");
-        public static readonly TokenResourceKey MenuPopupBoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupBoxShadows");
         public static readonly TokenResourceKey MenuPopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupContentPadding");
         public static readonly TokenResourceKey MenuPopupMaxWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupMaxWidth");
         public static readonly TokenResourceKey MenuPopupMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupMinWidth");
@@ -579,8 +580,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey MenuArrowSize = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuArrowSize");
         public static readonly TokenResourceKey MenuHorizontalHeight = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuHorizontalHeight");
         public static readonly TokenResourceKey MenuPopupBg = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuPopupBg");
-        public static readonly TokenResourceKey MenuPopupBorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuPopupBorderRadius");
-        public static readonly TokenResourceKey MenuPopupBoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuPopupBoxShadows");
         public static readonly TokenResourceKey MenuPopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuPopupContentPadding");
         public static readonly TokenResourceKey MenuPopupMaxHeight = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuPopupMaxHeight");
         public static readonly TokenResourceKey MenuPopupMaxWidth = new TokenResourceKey("AtomUI.Desktop.Controls.NavMenu.MenuPopupMaxWidth");
@@ -652,6 +651,13 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PaginationLayoutSpacing = new TokenResourceKey("AtomUI.Desktop.Controls.Pagination.PaginationLayoutSpacing");
         public static readonly TokenResourceKey PaginationMiniQuickJumperInputWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Pagination.PaginationMiniQuickJumperInputWidth");
         public static readonly TokenResourceKey PaginationQuickJumperInputWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Pagination.PaginationQuickJumperInputWidth");
+    }
+
+    public static class PopupHostTokenKey
+    {
+        public static readonly TokenResourceKey BorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.BorderRadius");
+        public static readonly TokenResourceKey BoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.BoxShadows");
+        public static readonly TokenResourceKey MarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.MarginToAnchor");
     }
 
     public static class PopupConfirmTokenKey
@@ -806,10 +812,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey Padding = new TokenResourceKey("AtomUI.Desktop.Controls.Select.Padding");
         public static readonly TokenResourceKey PaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.Select.PaddingLG");
         public static readonly TokenResourceKey PaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.Select.PaddingSM");
-        public static readonly TokenResourceKey PopupBorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.Select.PopupBorderRadius");
-        public static readonly TokenResourceKey PopupBoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.Select.PopupBoxShadows");
         public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Select.PopupContentPadding");
-        public static readonly TokenResourceKey PopupMarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.Select.PopupMarginToAnchor");
         public static readonly TokenResourceKey SelectAffixPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Select.SelectAffixPadding");
     }
 

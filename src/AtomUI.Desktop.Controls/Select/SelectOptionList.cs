@@ -22,15 +22,6 @@ internal class SelectOptionList : List
     private ISelectOption? _activeOption;
     private int _activeIndex = -1;
     
-    internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
-    {
-        if (item is ListGroupData)
-        {
-            return new SelectGroupHeader();
-        }
-        return new SelectOptionItem();
-    }
-    
     internal void EnsureActiveOption()
     {
         if (ListDefaultView == null)
@@ -198,6 +189,15 @@ internal class SelectOptionList : List
             return true;
         }
         return false;
+    }
+    
+    internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        if (item is ListGroupData)
+        {
+            return new SelectGroupHeader();
+        }
+        return new SelectOptionItem();
     }
     
     internal override void PrepareContainerForItemOverride(CompositeDisposable disposables, Control container, object? item, int index)
@@ -393,7 +393,8 @@ internal class SelectOptionList : List
         }
 
         var scroll = ListDefaultView.Scroll;
-        if (ListDefaultView.ContainerFromIndex(_activeIndex) is Control container)
+        var container = ListDefaultView.ContainerFromIndex(_activeIndex);
+        if (container != null)
         {
             container.BringIntoView();
             return;

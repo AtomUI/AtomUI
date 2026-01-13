@@ -46,6 +46,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.OptionButtonToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.PaginationToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.PopupConfirmToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.PopupHostToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.Primitives.IndicatorScrollViewerToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.Primitives.InfoPickerInputToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ProgressBarToken));

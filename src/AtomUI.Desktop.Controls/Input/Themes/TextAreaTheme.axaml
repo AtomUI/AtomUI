@@ -75,7 +75,8 @@
                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                 Text="{TemplateBinding Text, Mode=TwoWay}"
                                 TextAlignment="{TemplateBinding TextAlignment}"
-                                TextWrapping="{TemplateBinding TextWrapping}" />
+                                TextWrapping="{TemplateBinding TextWrapping}" 
+                                Focusable="False"/>
                         </Panel>
                     </atom:TextAreaDecoratedBox>
                     <atom:ResizeHandle Name="{x:Static atom:TextAreaThemeConstants.ResizeHandle}"

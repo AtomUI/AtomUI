@@ -23,7 +23,9 @@
                                           MinLines="{TemplateBinding MinLines}"
                                           Watermark="{TemplateBinding PlaceholderText}"
                                           Text="{TemplateBinding Value, Mode=TwoWay}"
-                                          TriggerPrefix="{TemplateBinding TriggerPrefix}"/>
+                                          TriggerPrefix="{TemplateBinding TriggerPrefix}"
+                                          IsReadOnly="{TemplateBinding IsReadOnly}"
+                                          Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"/>
                     <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"

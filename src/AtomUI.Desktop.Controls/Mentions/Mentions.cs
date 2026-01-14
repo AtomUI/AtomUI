@@ -121,6 +121,9 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     public static readonly StyledProperty<int> DisplayCandidateCountProperty = 
         AvaloniaProperty.Register<Mentions, int>(nameof (DisplayCandidateCount), 10);
     
+    public static readonly StyledProperty<bool> IsReadOnlyProperty =
+        TextArea.IsReadOnlyProperty.AddOwner<Mentions>();
+    
     public string? Value
     {
         get => GetValue(ValueProperty);
@@ -302,6 +305,12 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         get => GetValue(DisplayCandidateCountProperty);
         set => SetValue(DisplayCandidateCountProperty, value);
     }
+    
+    public bool IsReadOnly
+    {
+        get => GetValue(IsReadOnlyProperty);
+        set => SetValue(IsReadOnlyProperty, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -309,7 +318,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     public event EventHandler<MentionOptionLoadedEventArgs>? OptionsLoaded;
     public event EventHandler? CandidatePopupClosed;
     public event EventHandler? CandidatePopupOpened;
-    
+    public event EventHandler<MentionCandidateTriggeredEventArgs>? CandidateTriggered;
     #endregion
 
     #region 内部属性定义
@@ -540,6 +549,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
 
     private void HandleCandidateOpenRequest(object? sender, ShowMentionCandidateRequestEventArgs eventArgs)
     {
+        CandidateTriggered?.Invoke(this, new MentionCandidateTriggeredEventArgs(eventArgs.TriggerChar));
         IsPopupOpen = true;
         if (_popup != null && _textArea != null)
         {
@@ -593,7 +603,6 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
                             newFilterDescriptions.Add(description);
                         }
                     }
-             
                 }
                 else
                 {
@@ -623,7 +632,10 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         IsPopupOpen        = false;
         _candidateList?.FilterDescriptions?.Clear();
         _filterDescriptions = null;
-        OptionsSource       = null;
+        if (_optionAsyncLoader != null)
+        {
+            OptionsSource       = null;
+        }
     }
 
     protected override void OnInitialized()
@@ -733,7 +745,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        //IsPopupOpen = false;
+        IsPopupOpen = false;
     }
     
     private void HandleKeyDown(KeyEventArgs e)
@@ -773,7 +785,6 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
             {
                 IsPopupOpen = false;
             }
-            return;
         }
     }
     

@@ -29,5 +29,60 @@
             <atom:Mentions HorizontalAlignment="Stretch" OptionAsyncLoader="{Binding MentionOptionAsyncLoader}"/>
         </gallery:ShowCaseItem>
         
+        <gallery:ShowCaseItem
+            Title="Customize Trigger Token"
+            Description="Customize Trigger Token by prefix props. Default to @, array also supported.">
+            <atom:Mentions HorizontalAlignment="Stretch"
+                           TriggerPrefix="{Binding MentionTriggers}"
+                           CandidateTriggered="HandleCandidateTriggered"
+                           PlaceholderText="input @ to mention people, # to mention tag"/>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="disabled or readOnly"
+            Description="Configure disabled and readOnly.">
+           <StackPanel Orientation="Vertical" Spacing="10">
+               <atom:Mentions HorizontalAlignment="Stretch"
+                              IsEnabled="False"
+                              OptionsSource="{Binding BasicMentionOptions}"
+                              PlaceholderText="this is disabled Mentions"/>
+               <atom:Mentions HorizontalAlignment="Stretch"
+                              OptionsSource="{Binding BasicMentionOptions}"
+                              PlaceholderText="this is readOnly Mentions"
+                              IsReadOnly="True"/>
+           </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Placement"
+            Description="Change the suggestions placement.">
+            <atom:Mentions HorizontalAlignment="Stretch"
+                           OptionsSource="{Binding BasicMentionOptions}"
+                           Placement="Top"/>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Status"
+            Description="Add status to Mentions with status, which could be error or warning.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:Mentions HorizontalAlignment="Stretch"
+                               OptionsSource="{Binding BasicMentionOptions}"
+                               Status="Error"
+                               DefaultValue="@afc163"/>
+                <atom:Mentions HorizontalAlignment="Stretch"
+                               OptionsSource="{Binding BasicMentionOptions}"
+                               DefaultValue="@afc163"
+                               Status="Warning"/>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="autoSize"
+            Description="Height autoSize.">
+            <atom:Mentions HorizontalAlignment="Stretch"
+                           OptionsSource="{Binding BasicMentionOptions}"
+                           IsAutoSize="True"/>
+        </gallery:ShowCaseItem>
+        
     </gallery:ShowCasePanel>
 </UserControl>

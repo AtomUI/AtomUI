@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Text;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Utils;
@@ -8,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -29,8 +28,27 @@ internal class MentionTextArea : TextArea
 
     #endregion
 
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<MentionTextArea, bool> TriggerStateProperty =
+        AvaloniaProperty.RegisterDirect<MentionTextArea, bool>(
+            nameof(TriggerState),
+            o => o.TriggerState,
+            (o, v) => o.TriggerState = v);
+    
+    private bool _triggerState;
+    
+    internal bool TriggerState
+    {
+        get => _triggerState;
+        set => SetAndRaise(TriggerStateProperty, ref _triggerState, value);
+    }
+
+    #endregion
+
     private TextPresenter? _textPresenter;
     internal Mentions? Owner;
+    private int _lastTriggerCached = -1;
     
     static MentionTextArea()
     {
@@ -52,9 +70,21 @@ internal class MentionTextArea : TextArea
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == TextProperty || change.Property == CaretIndexProperty)
+        if (change.Property == TextProperty)
         {
+            if (change.Property == TextProperty)
+            {
+                _lastTriggerCached = HashCode.Combine(Text);
+            }
             CheckTriggerState();
+        }
+        else if (change.Property == CaretIndexProperty)
+        {
+            var cached = HashCode.Combine(Text);
+            if (cached == _lastTriggerCached)
+            {
+                CheckTriggerState();
+            }
         }
     }
 
@@ -64,11 +94,13 @@ internal class MentionTextArea : TextArea
         {
             var triggerFound = false;
             var index        = CaretIndex;
+            char triggerCh    = default;
             while (index > 0)
             {
                 var ch = Text[index - 1];
                 if (TriggerPrefix != null && TriggerPrefix.Contains(ch.ToString()))
                 {
+                    triggerCh    = ch;
                     triggerFound = true;
                     break;
                 }
@@ -86,16 +118,29 @@ internal class MentionTextArea : TextArea
                 var textLayout    = presenter.TextLayout;
                 var triggerBounds = textLayout.HitTestTextPosition(triggerIndex);
                 var predicate     = Text.Substring(index, length);
-                CandidateOpenRequest?.Invoke(this, new ShowMentionCandidateRequestEventArgs(triggerBounds, predicate));
+                if (!TriggerState)
+                {
+                    TriggerState = true;
+                    CandidateOpenRequest?.Invoke(this, new ShowMentionCandidateRequestEventArgs(triggerBounds, predicate, triggerCh.ToString()));
+                }
+
             }
             else
             {
-                CandidateCloseRequest?.Invoke(this, EventArgs.Empty);
+                if (TriggerState)
+                {
+                    TriggerState = false;
+                    CandidateCloseRequest?.Invoke(this, EventArgs.Empty);
+                }
             }
         }
         else if (CaretIndex == 0 || string.IsNullOrWhiteSpace(Text))
         {
-            CandidateCloseRequest?.Invoke(this, EventArgs.Empty);
+            if (TriggerState)
+            {
+                TriggerState = false;
+                CandidateCloseRequest?.Invoke(this, EventArgs.Empty);
+            }
         }
     }
     

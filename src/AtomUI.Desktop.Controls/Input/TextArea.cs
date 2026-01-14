@@ -5,7 +5,6 @@ using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -295,6 +294,7 @@ public class TextArea : AvaloniaTextBox,
                     var verticalSpace = this.GetVerticalSpaceBetweenScrollViewerAndPresenter();
                     height = Math.Ceiling(textLayout.Height + verticalSpace);
                     _scrollViewer.SetCurrentValue(MinHeightProperty, height);
+                    _scrollViewer.SetCurrentValue(MaxHeightProperty, height);
                 }
             }
         }

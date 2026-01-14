@@ -29,6 +29,14 @@ public class MentionsViewModel : ReactiveObject, IRoutableViewModel
         get => _mentionOptionAsyncLoader;
         set => this.RaiseAndSetIfChanged(ref _mentionOptionAsyncLoader, value);
     }
+    
+    private List<string> _mentionTriggers = [];
+    
+    public List<string> MentionTriggers
+    {
+        get => _mentionTriggers;
+        set => this.RaiseAndSetIfChanged(ref _mentionTriggers, value);
+    }
 
     public MentionsViewModel(IScreen screen)
     {

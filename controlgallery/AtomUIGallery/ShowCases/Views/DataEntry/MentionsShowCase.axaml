@@ -84,5 +84,18 @@
                            IsAutoSize="True"/>
         </gallery:ShowCaseItem>
         
+        <gallery:ShowCaseItem
+            Title="With clear icon"
+            Description="Customize clear button.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:Mentions HorizontalAlignment="Stretch"
+                               OptionsSource="{Binding BasicMentionOptions}"
+                               IsAllowClear="True"/>
+                <atom:Mentions HorizontalAlignment="Stretch"
+                               OptionsSource="{Binding BasicMentionOptions}"
+                               IsAllowClear="True"
+                               Lines="3"/>
+            </StackPanel>
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

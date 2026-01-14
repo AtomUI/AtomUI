@@ -34,13 +34,15 @@
                         <atom:InputClearIconButton
                             Name="{x:Static atom:TextBoxThemeConstants.ClearButtonPart}"
                             IsVisible="{TemplateBinding IsEffectiveShowClearButton}" 
-                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                            VerticalAlignment="Center"/>
                         <!-- 新增显示密码按钮 -->
                         <atom:RevealButton
                             Name="{x:Static atom:TextBoxThemeConstants.RevealButtonPart}"
                             IsChecked="{TemplateBinding RevealPassword, Mode=TwoWay}"
                             IsVisible="{TemplateBinding IsEnableRevealButton}" 
-                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                            VerticalAlignment="Center"/>
                         <ContentPresenter
                             Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.RightAddOnPart}"
                             VerticalAlignment="Stretch"

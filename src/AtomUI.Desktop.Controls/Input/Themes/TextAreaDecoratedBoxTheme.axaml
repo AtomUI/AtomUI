@@ -16,44 +16,42 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
                         BackgroundSizing="OuterBorderEdge">
-                     <atom:ScrollViewer
-                            Name="{x:Static atom:TextAreaThemeConstants.ScrollViewerPart}"
-                            IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
-                            AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
-                            HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
-                            VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
-                            IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
-                            <Border Name="ScrollViewerContent">
-                                <DockPanel Name="ContentLayout" LastChildFill="True">
-                                    <ContentPresenter
-                                        Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart}"
-                                        DockPanel.Dock="Left"
-                                        VerticalAlignment="Top"
-                                        VerticalContentAlignment="Center"
-                                        HorizontalAlignment="Left"
-                                        Focusable="False"
-                                        Content="{TemplateBinding ContentLeftAddOn}"
-                                        ContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
-                                        IsVisible="{TemplateBinding ContentLeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
-
-                                    <ContentPresenter
-                                        DockPanel.Dock="Right"
-                                        Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart}"
-                                        VerticalAlignment="Top"
-                                        VerticalContentAlignment="Center"
-                                        HorizontalAlignment="Right"
-                                        Focusable="False"
-                                        Content="{TemplateBinding ContentRightAddOn}"
-                                        ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
-                                        IsVisible="{TemplateBinding ContentRightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
-
-                                    <ContentPresenter
-                                        Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentPresenterPart}"
-                                        Content="{TemplateBinding Content}"
-                                        ContentTemplate="{TemplateBinding ContentTemplate}" />
-                                </DockPanel>
-                            </Border>
-                        </atom:ScrollViewer>
+                    <Border Name="ScrollViewerContent">
+                        <DockPanel Name="ContentLayout" LastChildFill="True">
+                            <ContentPresenter
+                                Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart}"
+                                DockPanel.Dock="Left"
+                                VerticalAlignment="Top"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Focusable="False"
+                                Content="{TemplateBinding ContentLeftAddOn}"
+                                ContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
+                                IsVisible="{TemplateBinding ContentLeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <ContentPresenter
+                                DockPanel.Dock="Right"
+                                Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart}"
+                                VerticalAlignment="Top"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Right"
+                                Focusable="False"
+                                Content="{TemplateBinding ContentRightAddOn}"
+                                ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
+                                IsVisible="{TemplateBinding ContentRightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <atom:ScrollViewer
+                                Name="{x:Static atom:TextAreaThemeConstants.ScrollViewerPart}"
+                                IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                                VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
+                                IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
+                                <ContentPresenter
+                                    Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentPresenterPart}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            </atom:ScrollViewer>
+                        </DockPanel>
+                    </Border>
                 </Border>
             </ControlTemplate>
         </Setter>

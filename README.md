@@ -44,16 +44,6 @@
 
 Documentation Language: [English](README.md) | [简体中文](README.zh-CN.md)
 
-#### Gitee 2025 Open Source Project Selection
-
-<img src="./resources/images/readme/Gitee2025.png"/>
-
-Developing foundational software can be exceptionally tedious. Dear developer friends, if you have a Gitee account, we
-would greatly appreciate your valuable vote for AtomUI OSS. Our project is also free for commercial use, empowering
-small and medium-sized enterprises in their digital transformation. Your precious vote is our driving force forward.
-
-[Click to Vote](https://gitee.com/activity/2025opensource?ident=IAHHVA)
-
 #### Introduce
 
 AtomUI is an implementation of Ant Design based on .NET technology, dedicated to bringing the excellent and efficient

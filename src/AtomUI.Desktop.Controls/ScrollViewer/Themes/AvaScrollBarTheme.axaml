@@ -7,8 +7,7 @@
         <Style Selector="^:vertical">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Name="Frame"
-                            UseLayoutRounding="False">
+                    <Border Name="Frame" UseLayoutRounding="False">
                         <Grid Name="RootLayout" RowDefinitions="*">
                             <Track Name="{x:Static atom:ScrollViewerThemeConstants.TrackPart}"
                                    IsDirectionReversed="True"
@@ -19,7 +18,8 @@
                                    ViewportSize="{TemplateBinding ViewportSize}"
                                    Orientation="{TemplateBinding Orientation}">
                                 <Track.Thumb>
-                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" />
+                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" 
+                                                         Orientation="Vertical"/>
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
                                     <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"
@@ -60,7 +60,8 @@
                                    ViewportSize="{TemplateBinding ViewportSize}"
                                    Orientation="{TemplateBinding Orientation}" >
                                 <Track.Thumb>
-                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}" />
+                                    <atom:ScrollBarThumb Name="{x:Static atom:ScrollViewerThemeConstants.ThumbPart}"
+                                                         Orientation="Horizontal"/>
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
                                     <atom:ScrollBarRepeatButton Name="{x:Static atom:ScrollViewerThemeConstants.PageUpButtonPart}"

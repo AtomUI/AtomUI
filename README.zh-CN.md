@@ -42,14 +42,6 @@
 
 文档语言: [English](README.md) | [简体中文](README.zh-CN.md)
 
-#### Gitee 2025 年度开源项目评选
-
-<img src="./resources/images/readme/Gitee2025.png"/>
-
-研发基础软件过程异常枯燥，各位开发者朋友，如果您有 Gitee 账户，辛苦给 AtomUI OSS
-投下宝贵一票，因为我们项目也是免费商用，赋能中小企业数字化转型，您宝贵的投票就是我们前进的动力。
-[点击投票](https://gitee.com/activity/2025opensource?ident=IAHHVA)
-
 #### 介绍
 
 AtomUI 是基于 .NET 技术的 Ant Design 实现，致力于将 Ant Design 优秀而高效的设计语言和体验带入 Avalonia/.NET 跨平台桌面软件开发领域。

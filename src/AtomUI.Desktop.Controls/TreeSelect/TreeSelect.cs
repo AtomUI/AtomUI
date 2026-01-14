@@ -499,10 +499,10 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandlePopupOpened(object? sender, EventArgs e)
     {
         SubscriptionsOnOpen.Clear();
-        this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
+        this.GetObservable(IsVisibleProperty).Subscribe(HandleIsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
         foreach (var parent in this.GetVisualAncestors().OfType<Control>())
         {
-            parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
+            parent.GetObservable(IsVisibleProperty).Subscribe(HandleIsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
         }
         NotifyPopupOpened();
         if (!IsMultiple)
@@ -600,7 +600,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
 
-    private void IsVisibleChanged(bool isVisible)
+    private void HandleIsVisibleChanged(bool isVisible)
     {
         if (!isVisible && IsDropDownOpen)
         {

@@ -69,6 +69,14 @@ public class List : TemplatedControl,
     public static readonly StyledProperty<string> GroupPropertyPathProperty =
         AvaloniaProperty.Register<List, string>(nameof(GroupPropertyPath), "Group");
     
+    public static readonly DirectProperty<List, int> SelectedIndexProperty =
+        AvaloniaProperty.RegisterDirect<List, int>(
+            nameof(SelectedIndex),
+            o => o.SelectedIndex,
+            (o, v) => o.SelectedIndex = v,
+            unsetValue: -1,
+            defaultBindingMode: BindingMode.TwoWay);
+    
     public static readonly DirectProperty<List, IList?> SelectedItemsProperty =
         AvaloniaProperty.RegisterDirect<List, IList?>(nameof(SelectedItems), 
             o => o.SelectedItems, 
@@ -174,6 +182,14 @@ public class List : TemplatedControl,
     {
         get => GetValue(GroupPropertyPathProperty);
         set => SetValue(GroupPropertyPathProperty, value);
+    }
+    
+    private int _selectedIndex;
+
+    public int SelectedIndex
+    {
+        get => _selectedIndex;
+        set => SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value);
     }
     
     private IList? _selectedItems;
@@ -573,6 +589,7 @@ public class List : TemplatedControl,
             _measured     = false;
             SelectedItems = null;
             SelectedItem  = null;
+            SelectedIndex = -1;
             ReConfigurePagination();
             InvalidateMeasure();
             UpdatePseudoClasses();
@@ -813,7 +830,7 @@ public class List : TemplatedControl,
         if (ListDefaultView != null)
         {
             _relayBindingDisposables?.Dispose();
-            _relayBindingDisposables = new CompositeDisposable(4); 
+            _relayBindingDisposables = new CompositeDisposable(2); 
             _relayBindingDisposables.Add(BindUtils.RelayBind(this, SelectionModeProperty, ListDefaultView, ListDefaultView.SelectionModeProperty));
         }
     }

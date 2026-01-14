@@ -8,6 +8,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -24,6 +25,7 @@ public enum SelectMode
     Tags
 }
 
+[PseudoClasses(SelectPseudoClass.DropdownOpen)]
 public class Select : AbstractSelect, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义

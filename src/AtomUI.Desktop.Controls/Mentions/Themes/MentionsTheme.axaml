@@ -6,8 +6,61 @@
     <ControlTheme x:Key="{x:Type atom:Mentions}" TargetType="atom:Mentions">
         <Setter Property="Template">
             <ControlTemplate>
-                
+                <Panel>
+                    <atom:MentionTextArea Name="{x:Static atom:MentionsThemeConstants.TextAreaPart}"
+                                          IsAutoSize="{TemplateBinding IsAutoSize}"
+                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                          IsEnableClearButton="{TemplateBinding IsAllowClear}"
+                                          StyleVariant="{TemplateBinding StyleVariant}"
+                                          Status="{TemplateBinding Status}"
+                                          InnerLeftContent="{TemplateBinding ContentLeftAddOn}"
+                                          InnerLeftContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
+                                          InnerRightContent="{TemplateBinding ContentRightAddOn}"
+                                          InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
+                                          Lines="{TemplateBinding Lines}"
+                                          MaxLines="{TemplateBinding MaxLines}"
+                                          MinLines="{TemplateBinding MinLines}"
+                                          Watermark="{TemplateBinding PlaceholderText}"
+                                          Text="{TemplateBinding Value, Mode=TwoWay}"
+                                          TriggerPrefix="{TemplateBinding TriggerPrefix}"/>
+                    <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"
+                                WindowManagerAddShadowHint="False"
+                                IsLightDismissEnabled="False"
+                                IsDetectMouseClickEnabled="True"
+                                IsMotionEnabled="False"
+                                Placement="{TemplateBinding PopupPlacement}"
+                                IsMotionAwareOpen="{TemplateBinding IsPopupOpen, Mode=TwoWay}">
+                        <Border Name="PopupFrame"
+                                MaxHeight="{TemplateBinding MaxPopupHeight}"
+                                MinWidth="{TemplateBinding MinPopupWidth}"
+                                Padding="{TemplateBinding PopupContentPadding}">
+                            <atom:MentionOptionList
+                                Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
+                                IsBorderless="True"
+                                SelectionMode="Single"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                AutoScrollToSelectedItem="True"
+                                SelectedIndex="1"
+                                ItemTemplate="{TemplateBinding OptionTemplate}"
+                                ItemsSource="{Binding OptionsSource, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Border>
+                    </atom:Popup>
+                </Panel>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MentionsTokenKey.OptionHeight}}" />
+        <Setter Property="PopupContentPadding" Value="{DynamicResource {x:Static atom:MentionsTokenKey.PopupContentPadding}}" />
+        <Setter Property="MinPopupWidth" Value="{DynamicResource {x:Static atom:MentionsTokenKey.MinPopupWidth}}" />
+        <Style Selector="^ /template/ atom|Popup#PART_Popup">
+            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:SharedTokenKey.BoxShadowsSecondary}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PopupFrame">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
+        </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

@@ -7,6 +7,9 @@
         <gallery:ShowCaseItem
             Title="Basic"
             Description="The simplest use.">
+            <atom:Mentions HorizontalAlignment="Stretch"
+                           OptionsSource="{Binding BasicMentionOptions}"
+                           DefaultValue="@afc163"/>
         </gallery:ShowCaseItem>
         
     </gallery:ShowCasePanel>

@@ -1,0 +1,11 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:MentionTextArea}" TargetType="atom:MentionTextArea">
+        <ControlTheme.BasedOn>
+            <atom:TextAreaTheme TargetType="{x:Type atom:MentionTextArea}" />
+        </ControlTheme.BasedOn>
+    </ControlTheme>
+</ResourceDictionary>

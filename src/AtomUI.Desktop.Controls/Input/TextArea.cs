@@ -5,6 +5,7 @@ using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -229,7 +230,7 @@ public class TextArea : AvaloniaTextBox,
             _clearButton.Click -= HandleClearButtonClicked;
         }
 
-        _clearButton = e.NameScope.Find<IconButton>(TextAreaThemeConstants.ClearButtonPart);
+        _clearButton   = e.NameScope.Find<IconButton>(TextAreaThemeConstants.ClearButtonPart);
         if (_clearButton != null)
         {
             _clearButton.Click += HandleClearButtonClicked;

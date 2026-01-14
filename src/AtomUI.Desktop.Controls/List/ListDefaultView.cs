@@ -247,6 +247,8 @@ internal class ListDefaultView : SelectingItemsControl
             if (!IsItemSelectable)
             {
                 SetCurrentValue(SelectedItemsProperty, null);
+                SetCurrentValue(SelectedItemProperty, null);
+                SetCurrentValue(SelectedIndexProperty, -1);
             }
         }
         else if (change.Property == SelectionModeProperty)

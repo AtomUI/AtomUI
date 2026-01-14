@@ -28,6 +28,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|ListItem)">
+        <Setter Property="Focusable" Value="False" />
         <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemMargin}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemColor}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemBgColor}}" />

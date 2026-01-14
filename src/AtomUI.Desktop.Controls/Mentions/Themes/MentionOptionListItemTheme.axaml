@@ -1,0 +1,28 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:MentionOptionListItem}" TargetType="atom:MentionOptionListItem">
+        <ControlTheme.BasedOn>
+            <themes:ListItemTheme TargetType="atom:MentionOptionListItem" />
+        </ControlTheme.BasedOn>
+        
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Focusable" Value="False"/>
+        
+        <Style Selector="^[DisabledItemHoverEffect=False]:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemHoverBgColor}}" />
+        </Style>
+        
+        <Style Selector="^[IsSelected=True]">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemHoverBgColor}}" />
+        </Style>
+        
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionPadding}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionHeight}}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

@@ -14,6 +14,7 @@ public partial class MentionsShowCase : ReactiveUserControl<MentionsViewModel>
             if (DataContext is MentionsViewModel vm)
             {
                 InitBasicMentionOptions(vm);
+                vm.MentionOptionAsyncLoader = new MentionOptionAsyncLoader();
             }
         });
         InitializeComponent();

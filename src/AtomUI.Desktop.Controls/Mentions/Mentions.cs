@@ -309,7 +309,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     public event EventHandler<MentionOptionLoadedEventArgs>? OptionsLoaded;
     public event EventHandler? CandidatePopupClosed;
     public event EventHandler? CandidatePopupOpened;
-
+    
     #endregion
 
     #region 内部属性定义
@@ -418,6 +418,8 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     private bool _ignorePopupClose;
     private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private IList<ListFilterDescription>? _filterDescriptions;
+    private CancellationTokenSource? _asyncLoadCTS;
+    private int _loadTaskCount;
 
     static Mentions()
     {
@@ -554,6 +556,11 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
             }
         }
 
+        if (_optionAsyncLoader != null)
+        {
+            HandleNodeLoadRequest(eventArgs.Predicate);
+        }
+        
         if (_candidateList != null)
         {
             var filterValue = eventArgs.Predicate;
@@ -616,6 +623,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         IsPopupOpen        = false;
         _candidateList?.FilterDescriptions?.Clear();
         _filterDescriptions = null;
+        OptionsSource       = null;
     }
 
     protected override void OnInitialized()
@@ -655,17 +663,45 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
             return;
         }
         
-        var cts = new CancellationTokenSource(); // TODO 做一个超时结束
-        IsLoading = true;
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
             Debug.Assert(_optionAsyncLoader != null);
-            var result = await _optionAsyncLoader.LoadAsync(predicate, cts.Token);
-            IsLoading = false;
-            OptionsLoaded?.Invoke(this, new MentionOptionLoadedEventArgs(predicate, result));
-            if (result.IsSuccess)
+            try
             {
-                SetCurrentValue(OptionsSourceProperty, result.Data);
+                if (_asyncLoadCTS != null)
+                {
+                    await _asyncLoadCTS.CancelAsync();
+                }
+
+                _asyncLoadCTS = new CancellationTokenSource();
+                IsLoading     = true;
+                _loadTaskCount++;
+                var result = await _optionAsyncLoader.LoadAsync(predicate, _asyncLoadCTS.Token);
+                _loadTaskCount--;
+                IsLoading = false;
+                OptionsLoaded?.Invoke(this, new MentionOptionLoadedEventArgs(predicate, result));
+                if (result.IsSuccess)
+                {
+                    SetCurrentValue(OptionsSourceProperty, result.Data);
+                    if (_candidateList != null)
+                    {
+                        _candidateList.SelectedIndex = 0;
+                    }
+                }
+            }
+            catch (OperationCanceledException e)
+            {
+                IsLoading = false;
+                OptionsLoaded?.Invoke(this, new MentionOptionLoadedEventArgs(predicate, new MentionOptionLoadResult()
+                {
+                    IsSuccess = false,
+                    UserFriendlyMessage = e.Message,
+                    ErrorCode = MentionOptionLoadErrorCode.Cancelled
+                }));
+                if (_loadTaskCount == 0)
+                {
+                    --_loadTaskCount;
+                }
             }
         });
     }

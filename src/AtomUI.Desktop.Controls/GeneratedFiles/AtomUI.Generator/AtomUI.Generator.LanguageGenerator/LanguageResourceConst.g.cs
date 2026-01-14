@@ -44,6 +44,14 @@ namespace AtomUI.Desktop.Controls.ImagePreviewerLang
     }
 }
 
+namespace AtomUI.Desktop.Controls.MentionsLang
+{
+    internal static class MentionsLangResourceKey
+    {
+        public static readonly LanguageResourceKey LoadingOptions = new LanguageResourceKey("Mentions.LoadingOptions", "AtomUI.Lang");
+    }
+}
+
 namespace AtomUI.Desktop.Controls.PaginationLang
 {
     internal static class PaginationLangResourceKey

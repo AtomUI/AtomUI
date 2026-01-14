@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:mentionsLang="using:AtomUI.Desktop.Controls.MentionsLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Mentions}" TargetType="atom:Mentions">
         <Setter Property="Template">
@@ -34,15 +35,23 @@
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
-                            <atom:MentionOptionList
-                                Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
-                                IsBorderless="True"
-                                SelectionMode="Single"
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                AutoScrollToSelectedItem="True"
-                                SelectedIndex="1"
-                                ItemTemplate="{TemplateBinding OptionTemplate}"
-                                ItemsSource="{Binding OptionsSource, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Panel>
+                                <atom:Spin Name="LoadingIndicator" SizeType="Middle" 
+                                           IsShowTip="True" 
+                                           IsSpinning="True"
+                                           Tip="{DynamicResource {x:Static mentionsLang:MentionsLangResourceKey.LoadingOptions}}"
+                                           HorizontalAlignment="Center"
+                                           IsVisible="{TemplateBinding IsLoading}"/>
+                                <atom:MentionOptionList
+                                    Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
+                                    IsBorderless="True"
+                                    SelectionMode="Single"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    AutoScrollToSelectedItem="True"
+                                    ItemTemplate="{TemplateBinding OptionTemplate}"
+                                    ItemsSource="{Binding OptionsSource, RelativeSource={RelativeSource TemplatedParent}}"
+                                    IsVisible="{TemplateBinding IsLoading, Converter={x:Static BoolConverters.Not}}"/>
+                            </Panel>
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -62,5 +71,8 @@
                     Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         </Style>
         
+        <Style Selector="^ /template/ atom|Spin#LoadingIndicator">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginLG}}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

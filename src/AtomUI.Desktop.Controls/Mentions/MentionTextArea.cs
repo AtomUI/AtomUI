@@ -37,17 +37,6 @@ internal class MentionTextArea : TextArea
         LinesProperty.OverrideDefaultValue<MentionTextArea>(1);
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        base.OnKeyDown(e);
-        if (e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Up ||
-            e.Key == Key.Down || e.Key == Key.Home || 
-            e.Key == Key.End || e.Key == Key.PageUp || e.Key == Key.PageDown)
-        {
-            CheckTriggerState();
-        }
-    }
-
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
@@ -63,7 +52,7 @@ internal class MentionTextArea : TextArea
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == TextProperty)
+        if (change.Property == TextProperty || change.Property == CaretIndexProperty)
         {
             CheckTriggerState();
         }

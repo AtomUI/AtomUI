@@ -11,6 +11,7 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -234,7 +235,19 @@ public class ComboBox : AvaloniaComboBox,
     {
         base.OnApplyTemplate(e);
         this.SetPopup(null); // 情况父类，方式鼠标点击的错误处理
+
+        if (_popup != null)
+        {
+            _popup.ClickHidePredicate  =  PopupClosePredicate;
+        }
+        
         _popup = e.NameScope.Find<Popup>(ComboBoxThemeConstants.PopupPart);
+        
+        if (_popup != null)
+        {
+            _popup.ClickHidePredicate  =  PopupClosePredicate;
+        }
+
         var addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
         if (addOnDecoratedBox != null)
         {
@@ -247,13 +260,36 @@ public class ComboBox : AvaloniaComboBox,
                 }
             }
         }
-       
-        if (_popup is IPopupHostProvider popupHostProvider)
-        {
-            popupHostProvider.PopupHostChanged += HandlePopupHostChanged;
-        }
+        
         UpdatePseudoClasses();
         ConfigureMaxDropdownHeight();
+    }
+    
+    protected bool PopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)
+    {
+        var (inputElement, _) = args.GetInputHitTestResult();
+        var comboBoxItem = GetComboBoxItemCore(inputElement as Control);
+        if (comboBoxItem != null)
+        {
+            return true;
+        }
+        if (hostProvider.PopupHost is OverlayPopupHost overlayPopupHost && args.Root is Control root)
+        {
+            var offset = overlayPopupHost.TranslatePoint(default, root);
+            if (offset.HasValue)
+            {
+                var bounds = new Rect(offset.Value, overlayPopupHost.Bounds.Size);
+                return !bounds.Contains(args.Position);
+            }
+        }
+        else if (hostProvider.PopupHost is PopupRoot popupRoot)
+        {
+            var popupRoots = new HashSet<PopupRoot>();
+            popupRoots.Add(popupRoot);
+            return !popupRoots.Contains(args.Root);
+        }
+        
+        return false;
     }
 
     private void HandleOpenPopupClicked(object? sender, EventArgs e)
@@ -261,18 +297,29 @@ public class ComboBox : AvaloniaComboBox,
         SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
     }
     
-    private void HandlePopupHostChanged(IPopupHost? host)
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        if (host is PopupRoot popupRoot)
+        base.OnAttachedToVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
         {
-            if (popupRoot.ParentTopLevel is WindowBase window)
-            {
-                window.Deactivated += (sender, args) =>
-                {
-                    IsDropDownOpen = false;
-                };
-            }
+            window.Deactivated += HandleWindowDeactivated;
         }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated -= HandleWindowDeactivated;
+        }
+    }
+    
+    private void HandleWindowDeactivated(object? sender, EventArgs e)
+    {
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -342,19 +389,32 @@ public class ComboBox : AvaloniaComboBox,
         }
     }
     
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        if (!IsDropDownOpen)
+        {
+            PseudoClasses.Set(StdPseudoClass.Pressed, true);
+        }
+    }
+    
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
+        if (e.Source == this
+            && !e.Handled
+            && e.InitialPressMouseButton == MouseButton.Right)
+        {
+            var args = new ContextRequestedEventArgs(e);
+            RaiseEvent(args);
+            e.Handled = args.Handled;
+        }
         if (!e.Handled && e.Source is Visual source)
         {
-            if (_popup?.IsInsidePopup(source) == true)
+            if (PseudoClasses.Contains(StdPseudoClass.Pressed))
             {
-                if (UpdateSelectionFromEventSource(e.Source))
-                {
-                    e.Handled = true;
-                }
+                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
             }
         }
-        base.OnPointerReleased(e);
+        PseudoClasses.Set(StdPseudoClass.Pressed, false);
     }
 
     private void UpdatePseudoClasses()
@@ -372,5 +432,34 @@ public class ComboBox : AvaloniaComboBox,
     private void ConfigureMaxDropdownHeight()
     {
         SetCurrentValue(MaxDropDownHeightProperty, DropDownDisplayPageSize * ItemHeight + PopupContentPadding.Top + PopupContentPadding.Bottom);
+    }
+    
+    protected internal virtual bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+    {
+        var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+        var toggle  = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+        return UpdateSelectionFromEventSource(
+            source,
+            true,
+            e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+            toggle,
+            e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
+    }
+    
+    internal static ComboBoxItem? GetComboBoxItemCore(StyledElement? item)
+    {
+        while (true)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (item is ComboBoxItem menuItem)
+            {
+                return menuItem;
+            }
+            item = item.Parent;
+        }
     }
 }

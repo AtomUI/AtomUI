@@ -256,7 +256,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         {
             if (TopLevel.GetTopLevel(placementTarget) is Window window)
             {
-                window.ScrollOccurred += HandlePlacementTargetScrolled; 
+                window.ScrollOccurred -= HandlePlacementTargetScrolled; 
             }
         }
     }
@@ -298,16 +298,26 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             }
 
             // 如果没有启动，我们使用自己的处理函数，一般是为了增加我们自己的动画效果
-            if (!IsLightDismissEnabled)
-            {
-                var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
-                _selfLightDismissDisposable = inputManager.Process.Subscribe(HandleMouseClick);
-            }
+            HandleIsLightDismissEnabledChanged();
 
             if (TopLevel.GetTopLevel(placementTarget) is Window window)
             {
                 window.ScrollOccurred += HandlePlacementTargetScrolled; 
             }
+        }
+    }
+    
+    private void HandleIsLightDismissEnabledChanged()
+    {
+        if (!IsLightDismissEnabled)
+        {
+            var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
+            _selfLightDismissDisposable = inputManager.Process.Subscribe(HandleMouseClick);
+        }
+        else
+        {
+            _selfLightDismissDisposable?.Dispose();
+            _selfLightDismissDisposable = null;
         }
     }
 
@@ -938,6 +948,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         else if (change.Property == PlacementProperty)
         {
             HostDecoratorDirection = GetHostDecoratorDirection(Placement);
+        }
+        else if (change.Property == IsLightDismissEnabledProperty)
+        {
+            HandleIsLightDismissEnabledChanged();
         }
     }
 

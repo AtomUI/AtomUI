@@ -810,9 +810,11 @@ public class NavMenu : ItemsControl,
 
     private async Task<List<NavMenuItem>> OpenMenuItemPathAsync(IList<INavMenuItemData> pathNodes)
     {
-        List<NavMenuItem> items = new List<NavMenuItem>();
+        List<NavMenuItem> items                 = new List<NavMenuItem>();
+        var               originIsMotionEnabled = IsMotionEnabled;
         try
         {
+            SetCurrentValue(IsMotionEnabledProperty, false);
             ItemsControl current = this;
             foreach (var pathNode in pathNodes)
             {
@@ -822,17 +824,13 @@ public class NavMenu : ItemsControl,
                 {
                     items.Add(child);
                     current               = child;
-                    child.IsMotionEnabled = false;
                     child.IsSubMenuOpen   = true;
                 }
             }
         }
         finally
         {
-            foreach (var item in items)
-            {
-                item.IsMotionEnabled = true;
-            }
+            SetCurrentValue(IsMotionEnabledProperty, originIsMotionEnabled);
         }
 
         return items;

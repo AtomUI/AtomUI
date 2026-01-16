@@ -1,9 +1,11 @@
+using AtomUI.Controls;
+
 namespace AtomUI.Desktop.Controls;
 
 public record TreeItemLoadResult
 {
     public bool IsSuccess { get; init; } = true;
-    public TreeItemLoadErrorCode ErrorCode { get; init; } = TreeItemLoadErrorCode.None;
+    public RpcErrorCode ErrorCode { get; init; } = RpcErrorCode.Unknown;
     public string? UserFriendlyMessage { get; init; }
     public IReadOnlyList<ITreeViewItemData>? Data { get; init; }
 }

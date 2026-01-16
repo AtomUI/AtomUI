@@ -1,0 +1,11 @@
+namespace AtomUI.Desktop.Controls;
+
+public class CascaderItemClickedEventArgs : EventArgs
+{
+    public CascaderViewItem Item { get; }
+
+    public CascaderItemClickedEventArgs(CascaderViewItem item)
+    {
+        Item = item;
+    }
+}

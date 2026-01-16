@@ -3,34 +3,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:TreeViewItemHeader}" TargetType="atom:TreeViewItemHeader">
+    <ControlTheme x:Key="{x:Type atom:CascaderViewItemHeader}" TargetType="atom:CascaderViewItemHeader">
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="{x:Static atom:TreeViewItemHeaderThemeConstants.FramePart}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
-                        Background="{TemplateBinding Background}">
+                        Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}">
                     <Grid Name="ItemsLayout"
                           ColumnDefinitions="Auto, Auto, Auto, *"
                           Margin="{TemplateBinding Level, Mode=OneWay, Converter={x:Static atom:TreeViewItemTheme.MarginMultiplierConverter}}">
-                        <atom:NodeSwitcherButton
-                            Name="{x:Static atom:TreeViewItemHeaderThemeConstants.NodeSwitcherButtonPart}"
-                            Grid.Column="0"
-                            Focusable="False"
-                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                            IconMode="{TemplateBinding SwitcherMode}"
-                            CollapseIcon="{TemplateBinding SwitcherCollapseIcon}"
-                            ExpandIcon="{TemplateBinding SwitcherExpandIcon}"
-                            LoadingIcon="{TemplateBinding SwitcherLoadingIcon}"
-                            RotationIcon="{TemplateBinding SwitcherRotationIcon}"
-                            LeafIcon="{TemplateBinding SwitcherLeafIcon}"
-                            IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
-                            IsLoading="{TemplateBinding IsLoading}" />
-
+                        
                         <atom:CheckBox Name="ToggleCheckbox"
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
-                                       Grid.Column="1"
+                                       Grid.Column="0"
                                        IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
                                        IsVisible="False" >
                             <atom:RadioButton.IsEnabled>
@@ -44,7 +32,7 @@
                         <atom:RadioButton Name="ToggleRadio"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
-                                          Grid.Column="1"
+                                          Grid.Column="0"
                                           IsChecked="{TemplateBinding IsChecked}"
                                           GroupName="{TemplateBinding GroupName}"
                                           IsVisible="False">
@@ -58,12 +46,12 @@
                         </atom:RadioButton>
 
                         <atom:IconPresenter Name="{x:Static atom:TreeViewItemHeaderThemeConstants.IconPresenterPart}"
-                                            Grid.Column="2"
+                                            Grid.Column="1"
                                             Icon="{TemplateBinding Icon}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
                                             IsVisible="{TemplateBinding IconEffectiveVisible}" />
                         <Border Name="{x:Static atom:TreeViewItemHeaderThemeConstants.HeaderContentFramePart}"
-                                Grid.Column="3" IsEnabled="{TemplateBinding IsEnabled}"
+                                Grid.Column="2" IsEnabled="{TemplateBinding IsEnabled}"
                                 Background="{TemplateBinding ContentFrameBackground}">
                             <Panel>
                                 <ContentPresenter Name="HeaderPresenter"
@@ -83,8 +71,8 @@
         </Setter>
         
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.HeaderHeight}}" />
-        <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeItemMargin}}" />
+        <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:CascaderTokenKey.HeaderHeight}}" />
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:CascaderTokenKey.OptionPadding}}" />
         <Setter Property="CornerRadius"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
 
@@ -101,53 +89,23 @@
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeItemHeaderPadding}}" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
-
-        <Style Selector="^:not(^[NodeHoverMode=WholeLine])">
-            <Setter Property="ContentFrameBackground" Value="Transparent" />
-            <Style Selector="^ /template/ Border#PART_HeaderContentFrame">
-                <Setter Property="HorizontalAlignment" Value="Left" />
-            </Style>
-            <Style Selector="^[NodeHoverMode=Block]">
-                <Style Selector="^ /template/ Border#PART_HeaderContentFrame">
-                    <Setter Property="HorizontalAlignment" Value="Stretch" />
-                </Style>
-            </Style>
-
-            <Style Selector="^[IsHover=True]">
-                <Setter Property="ContentFrameBackground" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeHoverBg}}" />
-            </Style>
-
-            <Style Selector="^[IsSelectable=True]">
-                <Style Selector="^[IsSelected=True]">
-                    <Setter Property="ContentFrameBackground"
-                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
-                </Style>
-
-                <Style Selector="^[IsPressed=True]">
-                    <Setter Property="ContentFrameBackground"
-                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
-                </Style>
-            </Style>
+        
+        <Setter Property="Background" Value="Transparent" />
+        <Style Selector="^ /template/ Border#PART_Frame">
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeHoverBg}}" />
         </Style>
 
-        <Style Selector="^[NodeHoverMode=WholeLine]">
-            <Setter Property="Background" Value="Transparent" />
-            <Style Selector="^ /template/ Border#PART_Frame">
-                <Setter Property="Cursor" Value="Hand" />
+        <Style Selector="^[IsSelectable=True]">
+            <Style Selector="^[IsSelected=True]">
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
             </Style>
-            <Style Selector="^[IsHover=True]">
-                <Setter Property="Background" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeHoverBg}}" />
-            </Style>
-
-            <Style Selector="^[IsSelectable=True]">
-                <Style Selector="^[IsSelected=True]">
-                    <Setter Property="Background"
-                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
-                </Style>
-                <Style Selector="^[IsPressed=True]">
-                    <Setter Property="Background"
-                            Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
-                </Style>
+            <Style Selector="^:pressed">
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:TreeViewTokenKey.NodeSelectedBg}}" />
             </Style>
         </Style>
 
@@ -162,47 +120,13 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-
-        <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-            <Setter Property="Width" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.HeaderHeight}}" />
-            <Setter Property="Height" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.HeaderHeight}}" />
-            <Setter Property="Cursor" Value="Hand" />
-        </Style>
-
-        <Style Selector="^[IsLeaf=True]">
-            <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-                <Setter Property="Cursor" Value="Arrow" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[IsLeaf=True][IsShowLeafIcon=False], ^[IsLeaf=False]">
-            <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-                <Setter Property="IsLeafIconVisible" Value="False" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[ToggleType=CheckBox], ^[ToggleType=Radio]">
-            <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-                <Setter Property="Margin"
-                        Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeNodeSwitcherMargin}}" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[IsDragging=True]">
-            <Style Selector="^ /template/ Border#PART_Frame">
-                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
-            </Style>
-        </Style>
-
+        
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-                <Setter Property="Opacity" Value="0.3" />
-            </Style>
-            <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
                 <Setter Property="Opacity" Value="0.3" />
             </Style>
         </Style>
@@ -212,6 +136,7 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
+        
         <Style Selector="^[IsFilterMatch=False]">
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="IsVisible" Value="True" />

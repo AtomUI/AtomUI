@@ -201,6 +201,20 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PaginationOffset = new TokenResourceKey("AtomUI.Desktop.Controls.Carousel.PaginationOffset");
     }
 
+    public static class CascaderTokenKey
+    {
+        public static readonly TokenResourceKey ControlItemWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.ControlItemWidth");
+        public static readonly TokenResourceKey ControlWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.ControlWidth");
+        public static readonly TokenResourceKey DropdownHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.DropdownHeight");
+        public static readonly TokenResourceKey HeaderHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.HeaderHeight");
+        public static readonly TokenResourceKey MenuPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.MenuPadding");
+        public static readonly TokenResourceKey OptionHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionHoverBg");
+        public static readonly TokenResourceKey OptionPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionPadding");
+        public static readonly TokenResourceKey OptionSelectedBg = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionSelectedBg");
+        public static readonly TokenResourceKey OptionSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionSelectedColor");
+        public static readonly TokenResourceKey OptionSelectedFontWeight = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionSelectedFontWeight");
+    }
+
     public static class CheckBoxTokenKey
     {
         public static readonly TokenResourceKey CheckedMarkSize = new TokenResourceKey("AtomUI.Desktop.Controls.CheckBox.CheckedMarkSize");
@@ -1104,9 +1118,9 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey DirectoryNodeSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.DirectoryNodeSelectedColor");
         public static readonly TokenResourceKey DragIndicatorLineWidth = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.DragIndicatorLineWidth");
         public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.FilterHighlightColor");
+        public static readonly TokenResourceKey HeaderHeight = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.HeaderHeight");
         public static readonly TokenResourceKey NodeHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.NodeHoverBg");
         public static readonly TokenResourceKey NodeSelectedBg = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.NodeSelectedBg");
-        public static readonly TokenResourceKey TitleHeight = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.TitleHeight");
         public static readonly TokenResourceKey TreeItemHeaderMargin = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.TreeItemHeaderMargin");
         public static readonly TokenResourceKey TreeItemHeaderPadding = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.TreeItemHeaderPadding");
         public static readonly TokenResourceKey TreeItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.TreeView.TreeItemMargin");

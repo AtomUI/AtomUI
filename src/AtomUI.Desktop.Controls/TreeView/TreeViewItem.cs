@@ -136,7 +136,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLoadingIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
         AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLeafIcon));
@@ -891,21 +891,6 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         IsFilterMode         = false;
         FilterHighlightWords = null;
         _filterContextBackup = null;
-    }
-
-    private bool HasChildSelected()
-    {
-        for (var i = 0; i < ItemCount; i++)
-        {
-            if (ContainerFromIndex(i) is TreeViewItem childTreeViewItem)
-            {
-                if (childTreeViewItem.IsSelected)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     // 用户保存在树处于过滤状态结束后的节点原始上下文属性的恢复

@@ -1,0 +1,51 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:ClassModifier="internal"
+              TargetType="atom:CascaderViewItem">
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:CascaderViewItem">
+            <StackPanel Orientation="Vertical">
+                <atom:CascaderViewItemHeader Name="{x:Static atom:CascaderViewItemThemeConstants.HeaderPart}"
+                                             Icon="{TemplateBinding Icon}"
+                                             IsShowIcon="{TemplateBinding IsShowIcon}"
+                                             ExpandIcon="{TemplateBinding ExpandIcon}"
+                                             LoadingIcon="{TemplateBinding LoadingIcon}"
+                                             GroupName="{TemplateBinding GroupName}"
+                                             Content="{TemplateBinding Header}"
+                                             ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                             Level="{TemplateBinding Level}"
+                                             IsExpanded="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                             IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                             IsLeaf="{TemplateBinding IsLeaf}"
+                                             IsLoading="{TemplateBinding IsLoading}"
+                                             IsEnabled="{TemplateBinding IsEnabled}"
+                                             IsSelected="{TemplateBinding IsSelected}"
+                                             ToggleType="{TemplateBinding ToggleType}"
+                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                             BorderThickness="{TemplateBinding BorderThickness}"
+                                             IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
+                                             IsFilterMatch="{TemplateBinding IsFilterMatch}"
+                                             FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
+                                             ItemFilterAction="{TemplateBinding ItemFilterAction}"
+                                             FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                             IsSelectable="{TemplateBinding IsSelectable}"
+                                             Focusable="{TemplateBinding Focusable}" />
+                <atom:LayoutAwareMotionActor
+                    Name="{x:Static atom:CascaderViewItemThemeConstants.ItemsPresenterMotionActorPart}"
+                    ClipToBounds="True"
+                    IsVisible="False">
+                    <ItemsPresenter Name="ItemsPresenter"
+                                    Focusable="False"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </atom:LayoutAwareMotionActor>
+            </StackPanel>
+        </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:is(atom|CascaderViewItem)">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+    </Style>
+</ControlTheme>

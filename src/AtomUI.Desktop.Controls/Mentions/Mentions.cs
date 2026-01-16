@@ -708,7 +708,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
                 {
                     IsSuccess = false,
                     UserFriendlyMessage = e.Message,
-                    ErrorCode = MentionOptionLoadErrorCode.Cancelled
+                    ErrorCode = RpcErrorCode.Cancelled
                 }));
                 if (_loadTaskCount == 0)
                 {

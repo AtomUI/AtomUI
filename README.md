@@ -105,6 +105,14 @@ The packages we have released are as follows:
 dotnet add package AtomUI --version 5.1.0
 ```
 
+You can install nuget packages one by one directly. If the above command line fails to complete the installation, please go to the NuGet package manager. In Rider, you can click on the following steps:
+
+nuget -> packages
+
+Searching for "AtomUI" will find available AtomUI packages. Then, install them one by one.
+
+> Before installation, please click on "Framework and Dependencies" on the right to ensure that the corresponding dependency packages are compatible.
+
 ##### Enable AtomUI library
 
 ###### Project Configure
@@ -165,9 +173,9 @@ public partial class App : Application
         {
             builder.WithDefaultLanguageVariant(LanguageVariant.zh_CN);
             builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont(); // 配置字体
+            builder.UseAlibabaSansFont(); // front setting.
             builder.UseDesktopControls();
-            builder.UseGalleryControls();
+            builder.UseGalleryControls(); // This API may be removed in a future version. If your IDE indicates that this API does not exist, simply delete it.
             builder.UseDesktopDataGrid();
             builder.UseDesktopColorPicker(); 
         });
@@ -208,6 +216,10 @@ You can start using it in your own projects
 </atom:Window>
 ```
 
+> In AtomUI version 5.1.0, the namespace xmlns:atom="using:AtomUI.Controls" works correctly. However, in AtomUI versions 5.1.4 and later, this namespace may not work correctly. Please use xmlns:atom="https://atomui.net" or import it directly through your IDE.
+
+> We apologize for the poor experience caused by the differences between versions and the outdated documentation. Due to the heavy workload of development, some documentation cannot be updated in a timely manner, and most of the development work is handled by a small number of people, who simply do not have time to maintain the documentation. We apologise from the bottom of our hearts. 
+
 <div style="height:50px"></div>
 
 #### All Control Gallery
@@ -221,6 +233,15 @@ dotnet run --project controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.
 ```
 
 <div style="height:50px"></div>
+
+
+#### Simple Examples
+
+AtomUI's gallery project can be quite large and complex, and if you're new to AtomUI, you might feel overwhelmed. You can visit 
+
+[AtomUI/AtomUI.Examples](https://github.com/AtomUI/AtomUI.Samples)
+
+to check out our simple and compact sample projects to help you get started with AtomUI.
 
 #### Acknowledgements
 

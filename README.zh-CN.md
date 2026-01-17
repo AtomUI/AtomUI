@@ -109,6 +109,14 @@ AtomUI 推荐的以 nuget 包的方式进行安装，我们已经将 AtomUI OSS 
 dotnet add package AtomUI --version 5.1.0
 ```
 
+您也可以直接依次安装各个nuget包。如果上述命令行无法完成正常安装，请移步nuget包管理器，在rider中，您可以依次点击
+
+nuget -> 软件包
+
+搜索AtomUI，即可搜索到可用的AtomUI包。然后依次安装即可。
+
+> 安装前请点击右侧 框架 和 依赖，确保满足相应的依赖包版本
+
 ##### 启用 AtomUI 库
 
 ###### 配置项目文件
@@ -171,7 +179,7 @@ public partial class App : Application
             builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
             builder.UseAlibabaSansFont(); // 配置字体
             builder.UseDesktopControls();
-            builder.UseGalleryControls();
+            builder.UseGalleryControls(); // 此 API 在未来版本可能被删除。如果IDE提示此 API 不存在。直接删除该行即可
             builder.UseDesktopDataGrid();
             builder.UseDesktopColorPicker(); 
         });
@@ -212,6 +220,10 @@ public partial class App : Application
 </atom:Window>
 ```
 
+> 在 AtomUI 5.1.0 的版本中，命名空间 xmlns:atom="using:AtomUI.Controls" 可以正常使用。在 AtomUI 5.1.4 的版本及以后的版本中，该命名空间可能无法正常使用。请使用 xmlns:atom="https://atomui.net" 或者直接依赖 IDE 导入。
+
+> 很抱歉因各个版本之间的差距以及落后的文档为您带来不好的体验。因开发任务繁重，部分文档不能及时更新，且大部分开发工作由少数几人承担，实在无暇顾及文档，还望见谅。
+
 <div style="height:50px"></div>
 
 #### 体验所有控件
@@ -225,6 +237,14 @@ dotnet run --project controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.
 ```
 
 <div style="height:50px"></div>
+
+#### 小的示例项目
+
+AtomUI 的 gallery 项目可能过于庞大繁杂，如果您刚开始接触 AtomUI，可能会感到无从下手，您可以前往
+
+[AtomUI/AtomUI.Examples](https://github.com/AtomUI/AtomUI.Samples)
+
+查看简单且小巧的示例项目。帮助您更好的上手 AtomUI。
 
 #### 致谢
 

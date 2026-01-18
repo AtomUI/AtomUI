@@ -321,7 +321,6 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
     
     #endregion
     
-    private readonly BorderRenderHelper _borderRenderHelper;
     private CascaderViewItemHeader? _header;
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     internal bool AsyncLoaded;
@@ -345,7 +344,6 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
 
     public CascaderViewItem()
     {
-        _borderRenderHelper               =  new BorderRenderHelper();
         LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
         Items.CollectionChanged           += HandleCollectionChanged;
     }
@@ -383,7 +381,21 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
     {
         base.OnAttachedToLogicalTree(e);
         _cascaderView = this.GetLogicalAncestors().OfType<CascaderView>().FirstOrDefault();
-        Level         = CalculateDistanceFromLogicalParent<CascaderView>(this) - 1;
+        if (DataContext is ICascaderViewItemData cascaderViewItemData)
+        {
+            var                              level   = 0;
+            ITreeNode<ICascaderViewItemData>? current = cascaderViewItemData;
+            while (current != null)
+            {
+                level++;
+                current = current.ParentNode;
+            }
+            Level = level - 1;
+        }
+        else
+        {
+            Level = CalculateDistanceFromLogicalParent<CascaderView>(this) - 1;
+        }
         if (ItemTemplate == null && _cascaderView?.ItemTemplate != null)
         {
             SetCurrentValue(ItemTemplateProperty, _cascaderView.ItemTemplate);
@@ -610,21 +622,6 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
         }
 
         return true;
-    }
-
-    public override void Render(DrawingContext context)
-    {
-        if (_header != null)
-        {
-            using var state = context.PushTransform(Matrix.CreateTranslation(_header.Bounds.X, 0));
-            _borderRenderHelper.Render(context,
-                _header.Bounds.Size,
-                new Thickness(),
-                CornerRadius,
-                BackgroundSizing.InnerBorderEdge,
-                Background,
-                null);
-        }
     }
     
     internal bool PointInHeaderBounds(PointerReleasedEventArgs e)

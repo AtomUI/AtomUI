@@ -1059,32 +1059,78 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             return;
         }
-        
-        // 保证当前 Item 的父亲都在了
-        var parents = new List<CascaderViewItem>();
-        var parent     = cascaderViewItem.Parent;
-        while (parent != null && parent is CascaderViewItem parentCascaderItem)
-        {
-            parents.Add(parentCascaderItem);
-            parent = parent.Parent;
-        }
-        
-        parents.Reverse();
         try
         {
             _ignoreExpandAndCollapse = true;
-            foreach (var parentItem in parents)
+
+            if (cascaderViewItem.ItemsSource == null)
             {
-                if (!parentItem.IsExpanded)
+                // 保证当前 Item 的父亲都在了
+                var parents = new List<CascaderViewItem>();
+                var parent  = cascaderViewItem.Parent;
+                while (parent != null && parent is CascaderViewItem parentCascaderItem)
                 {
-                    var parentList = new CascaderViewLevelList()
+                    parents.Add(parentCascaderItem);
+                    parent = parent.Parent;
+                }
+
+                parents.Reverse();
+
+                foreach (var parentItem in parents)
+                {
+                    if (!parentItem.IsExpanded)
                     {
-                        ItemsPanel = ItemsPanel,
-                    };
-                    BindUtils.RelayBind(this, IsMotionEnabledProperty, parentList, CascaderViewLevelList.IsMotionEnabledProperty);
-                    parentList.ItemsSource = parentItem.Items;
-                    _itemsPanel.Children.Add(parentList);
-                    parentItem.IsExpanded = true;
+                        var parentList = new CascaderViewLevelList()
+                        {
+                            ItemsPanel = ItemsPanel,
+                            OwnerView  = this
+                        };
+                        if (parentItem.ItemsSource == null)
+                        {
+                            foreach (var item in parentItem.Items)
+                            {
+                                parentList.Items.Add(item);
+                            }
+                        }
+
+                        BindUtils.RelayBind(parentItem, CascaderViewItem.ItemsSourceProperty, parentList,
+                            CascaderViewLevelList.ItemsSourceProperty);
+                        BindUtils.RelayBind(parentItem, CascaderViewItem.ItemTemplateProperty, parentList,
+                            CascaderViewLevelList.ItemTemplateProperty);
+                        _itemsPanel.Children.Add(parentList);
+                        parentItem.IsExpanded = true;
+                    }
+                }
+            }
+            else
+            {
+                // 保证当前 Item 的父亲都在了
+                var parents = new List<ICascaderViewItemData>();
+                var parent  = cascaderViewItem.DataContext as ICascaderViewItemData;
+                while (parent != null)
+                {
+                    parents.Add(parent);
+                    parent = parent.ParentNode as ICascaderViewItemData;
+                }
+                parents.Reverse();
+                foreach (var parentItem in parents)
+                {
+                    if (!parentItem.IsExpanded)
+                    {
+                        var parentList = new CascaderViewLevelList()
+                        {
+                            ItemsPanel = ItemsPanel,
+                            OwnerView  = this
+                        };
+                        
+                        BindUtils.RelayBind(this, ItemTemplateProperty, parentList,
+                            CascaderViewLevelList.ItemTemplateProperty);
+                        _itemsPanel.Children.Add(parentList);
+                        if (parentItem is CascaderViewItemData cascaderViewItemData)
+                        {
+                            cascaderViewItemData.IsExpanded = true;
+                        }
+                    }
                 }
             }
 
@@ -1099,6 +1145,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 if (_itemsPanel.Children[count] is CascaderViewLevelList levelList)
                 {
                     levelList.ItemsSource = null;
+                    levelList.Items.Clear(); 
                 }
                 _itemsPanel.Children.RemoveAt(count);
             }
@@ -1106,9 +1153,18 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             var childList = new CascaderViewLevelList()
             {
                 ItemsPanel = ItemsPanel,
+                OwnerView  = this
             };
-            BindUtils.RelayBind(this, IsMotionEnabledProperty, childList, CascaderViewLevelList.IsMotionEnabledProperty);
-            childList.ItemsSource = cascaderViewItem.Items;
+
+            BindUtils.RelayBind(cascaderViewItem, CascaderViewItem.ItemsSourceProperty, childList, CascaderViewLevelList.ItemsSourceProperty);
+            BindUtils.RelayBind(cascaderViewItem, CascaderViewItem.ItemTemplateProperty, childList, CascaderViewLevelList.ItemTemplateProperty);
+            if (cascaderViewItem.ItemsSource == null)
+            {
+                foreach (var item in cascaderViewItem.Items)
+                {
+                    childList.Items.Add(item);
+                }
+            }
             _itemsPanel.Children.Add(childList);
             InvalidateMeasure();
         }
@@ -1138,6 +1194,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 if (_itemsPanel.Children[count] is CascaderViewLevelList levelList)
                 {
                     levelList.ItemsSource = null;
+                    levelList.Items.Clear();
                 }
 
                 _itemsPanel.Children.RemoveAt(count);

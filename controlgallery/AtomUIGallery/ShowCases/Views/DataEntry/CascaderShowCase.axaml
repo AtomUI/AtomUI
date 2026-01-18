@@ -2,12 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Views.CascaderShowCase"
              xmlns:atom="https://atomui.net"
+             xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.ViewModels"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem
             Title="Basic CascaderView"
-            Description="The most basic usage."
-            IsOccupyEntireRow="True">
+            Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:CascaderView>
                     <atom:CascaderViewItem Header="Zhejiang">
@@ -21,9 +21,23 @@
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                 </atom:CascaderView>
-                
+        
                 <atom:CascaderView/>
             </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Generate by template"
+            Description="You can use the Template mechanism to generate tree nodes">
+            <atom:CascaderView
+                x:DataType="viewModels:CascaderViewModel"
+                ItemsSource="{Binding BasicCascaderNodes}">
+                <atom:CascaderView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" />
+                    </TreeDataTemplate>
+                </atom:CascaderView.ItemTemplate>
+            </atom:CascaderView>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

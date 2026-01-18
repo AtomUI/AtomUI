@@ -1,24 +1,17 @@
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Reactive.Disposables;
-using AtomUI.Controls;
 using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class CascaderViewLevelList : ItemsControl, IMotionAwareControl
+internal class CascaderViewLevelList : ItemsControl
 {
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CascaderViewLevelList>();
-    
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
+    
+    internal CascaderView? OwnerView { get; set; }
     
     public CascaderViewLevelList()
     {
@@ -46,13 +39,44 @@ internal class CascaderViewLevelList : ItemsControl, IMotionAwareControl
         }
     }
     
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        return new CascaderViewItem();
+    }
+
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        return NeedsContainer<CascaderViewItem>(item, out recycleKey);
+    }
+    
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
+        Debug.Assert(OwnerView != null);
         if (container is CascaderViewItem cascaderViewItem)
         {
             var disposables = new CompositeDisposable(2);
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, IsMotionEnabledProperty));
+            
+            if (item != null && item is not Visual && item is ICascaderViewItemData cascaderViewItemData)
+            {
+                CascaderViewItem.ApplyNodeData(cascaderViewItem, cascaderViewItemData, disposables);
+            }
+            
+            if (ItemTemplate != null)
+            {
+                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, CascaderViewItem.HeaderTemplateProperty));
+            }
+            
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ItemFilterActionProperty, cascaderViewItem, CascaderViewItem.ItemFilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.FilterHighlightForegroundProperty, cascaderViewItem, CascaderViewItem.FilterHighlightForegroundProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.HasItemAsyncDataLoaderProperty, cascaderViewItem,
+                CascaderViewItem.HasItemAsyncDataLoaderProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsAutoExpandParentProperty, cascaderViewItem,
+                CascaderViewItem.IsAutoExpandParentProperty));
+            
             if (_itemsBindingDisposables.TryGetValue(cascaderViewItem, out var oldDisposables))
             {
                 oldDisposables.Dispose();

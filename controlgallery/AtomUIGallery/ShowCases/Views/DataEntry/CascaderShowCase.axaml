@@ -8,18 +8,22 @@
             Title="Basic CascaderView"
             Description="The most basic usage."
             IsOccupyEntireRow="True">
-            <atom:CascaderView>
-                <atom:CascaderViewItem Header="Zhejiang">
-                    <atom:CascaderViewItem Header="Hangzhou">
-                        <atom:CascaderViewItem Header="West Lake"/>
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:CascaderView>
+                    <atom:CascaderViewItem Header="Zhejiang">
+                        <atom:CascaderViewItem Header="Hangzhou">
+                            <atom:CascaderViewItem Header="West Lake" />
+                        </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
-                </atom:CascaderViewItem>
-                <atom:CascaderViewItem Header="jiangsu">
-                    <atom:CascaderViewItem Header="Nanjing">
-                        <atom:CascaderViewItem Header="Zhong Hua Men"/>
+                    <atom:CascaderViewItem Header="jiangsu">
+                        <atom:CascaderViewItem Header="Nanjing">
+                            <atom:CascaderViewItem Header="Zhong Hua Men" />
+                        </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
-                </atom:CascaderViewItem>
-            </atom:CascaderView>
+                </atom:CascaderView>
+                
+                <atom:CascaderView/>
+            </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

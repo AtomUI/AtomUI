@@ -43,7 +43,7 @@
     
     <Style Selector="^:is(atom|CascaderView)">
         <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:CascaderTokenKey.FilterHighlightColor}}" />
-        <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXXS}}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />

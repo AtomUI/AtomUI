@@ -23,53 +23,53 @@ public partial class CascaderView
 
     private static void ConfigureFilter()
     {
-        SelectingItemsControl.SelectionChangedEvent.AddClassHandler<CascaderView>((cascaderView, args) => cascaderView.HandleSelectionChanged());
+        // SelectingItemsControl.SelectionChangedEvent.AddClassHandler<CascaderView>((cascaderView, args) => cascaderView.HandleSelectionChanged());
     }
 
-    private void HandleSelectionChanged()
-    {
-        if (IsFilterMode)
-        {
-            SelectedItemsClosure.Clear();
-            var startupItems = new List<CascaderViewItem>();
-            if (SelectionMode.HasFlag(SelectionMode.Single))
-            {
-                if (SelectedItem != null && TreeContainerFromItem(SelectedItem) is CascaderViewItem item)
-                {
-                    startupItems.Add(item);
-                }
-            }
-            else if (SelectionMode.HasFlag(SelectionMode.Multiple))
-            {
-                foreach (var entry in SelectedItems)
-                {
-                    if (entry != null && TreeContainerFromItem(entry) is CascaderViewItem item)
-                    {
-                        startupItems.Add(item);
-                    }
-                }
-            }
+    // private void HandleSelectionChanged()
+    // {
+    //     if (IsFilterMode)
+    //     {
+    //         SelectedItemsClosure.Clear();
+    //         var startupItems = new List<CascaderViewItem>();
+    //         if (SelectionMode.HasFlag(SelectionMode.Single))
+    //         {
+    //             if (SelectedItem != null && TreeContainerFromItem(SelectedItem) is CascaderViewItem item)
+    //             {
+    //                 startupItems.Add(item);
+    //             }
+    //         }
+    //         else if (SelectionMode.HasFlag(SelectionMode.Multiple))
+    //         {
+    //             foreach (var entry in SelectedItems)
+    //             {
+    //                 if (entry != null && TreeContainerFromItem(entry) is CascaderViewItem item)
+    //                 {
+    //                     startupItems.Add(item);
+    //                 }
+    //             }
+    //         }
+    //
+    //         foreach (var item in startupItems)
+    //         {
+    //             var closure = CalculateSelectItemClosure(item);
+    //             SelectedItemsClosure.UnionWith(closure);
+    //         }
+    //     }
+    // }
 
-            foreach (var item in startupItems)
-            {
-                var closure = CalculateSelectItemClosure(item);
-                SelectedItemsClosure.UnionWith(closure);
-            }
-        }
-    }
-
-    private ISet<CascaderViewItem> CalculateSelectItemClosure(CascaderViewItem cascaderViewItem)
-    {
-        var            closure = new HashSet<CascaderViewItem>(); 
-        StyledElement? current = cascaderViewItem;
-        while (current != null && current is CascaderViewItem currentCascaderViewItem)
-        {
-            closure.Add(currentCascaderViewItem);
-            current = current.Parent;
-        }
-
-        return closure;
-    }
+    // private ISet<CascaderViewItem> CalculateSelectItemClosure(CascaderViewItem cascaderViewItem)
+    // {
+    //     var            closure = new HashSet<CascaderViewItem>(); 
+    //     StyledElement? current = cascaderViewItem;
+    //     while (current != null && current is CascaderViewItem currentCascaderViewItem)
+    //     {
+    //         closure.Add(currentCascaderViewItem);
+    //         current = current.Parent;
+    //     }
+    //
+    //     return closure;
+    // }
     
     public void Filter()
     {
@@ -100,7 +100,7 @@ public partial class CascaderView
                 }
             }
  
-            ExpandAll(false); // TODO 这样合适吗？
+            // ExpandAll(false); // TODO 这样合适吗？
             using var state = BeginTurnOffMotion();
             if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath) && originExpandedItems != null)
             {
@@ -291,7 +291,6 @@ public partial class CascaderView
         var originMotionEnabled = IsMotionEnabled;
         try
         {
-            IsExpandAllProcess = true;
             SetCurrentValue(IsMotionEnabledProperty, false);
 
             for (int i = 0; i < ItemCount; i++)
@@ -304,7 +303,6 @@ public partial class CascaderView
         }
         finally
         {
-            IsExpandAllProcess = false;
             SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
         }
     }

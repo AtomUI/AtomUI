@@ -32,7 +32,7 @@ public partial class CascaderView
         {
             throw new InvalidOperationException("ITreeNodeDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
-        var data = TreeItemFromContainer(item);
+        var data = CascaderItemFromContainer(item);
         if (data is ICascaderViewItemData cascaderViewItemData)
         {
             var cts = new CancellationTokenSource(); // TODO 做一个超时结束

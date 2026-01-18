@@ -6,7 +6,13 @@
               TargetType="atom:CascaderView">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:CascaderView">
-            <Border Name="Frame">
+            <Border Name="Frame"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalAlignment}">
                 <Panel>
                     <atom:ScrollViewer
                         IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
@@ -16,8 +22,11 @@
                         IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
                         IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                         IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}">
-                        <ItemsPresenter Name="ItemsPresenter"
-                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        <StackPanel Orientation="Horizontal"
+                                    Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
+                            <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" 
+                                            VerticalAlignment="Stretch"/>
+                        </StackPanel>
                     </atom:ScrollViewer>
                     <ContentPresenter
                         Name="EmptyIndicator"
@@ -33,17 +42,32 @@
     </Setter>
     
     <Style Selector="^:is(atom|CascaderView)">
-        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.FilterHighlightColor}}" />
-        <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXL}}" />
+        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:CascaderTokenKey.FilterHighlightColor}}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXXS}}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="IsShowEmptyIndicator" Value="True" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="EmptyIndicatorTemplate">
             <DataTemplate>
                 <atom:Empty SizeType="Small" PresetImage="Simple"/>
             </DataTemplate>
+        </Setter>
+            
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
+        
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" 
+                            Margin="{DynamicResource {x:Static atom:CascaderTokenKey.MenuPadding}}"
+                            HorizontalAlignment="Left"
+                            MinWidth="{DynamicResource {x:Static atom:CascaderTokenKey.ControlItemWidth}}"/>
+            </ItemsPanelTemplate>
         </Setter>
     </Style>
 </ControlTheme>

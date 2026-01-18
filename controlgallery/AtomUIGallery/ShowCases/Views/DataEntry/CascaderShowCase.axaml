@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.CascaderShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem
+            Title="Basic CascaderView"
+            Description="The most basic usage."
+            IsOccupyEntireRow="True">
+            <atom:CascaderView>
+                <atom:CascaderViewItem Header="Zhejiang">
+                    <atom:CascaderViewItem Header="Hangzhou">
+                        <atom:CascaderViewItem Header="West Lake"/>
+                    </atom:CascaderViewItem>
+                </atom:CascaderViewItem>
+                <atom:CascaderViewItem Header="jiangsu">
+                    <atom:CascaderViewItem Header="Nanjing">
+                        <atom:CascaderViewItem Header="Zhong Hua Men"/>
+                    </atom:CascaderViewItem>
+                </atom:CascaderViewItem>
+            </atom:CascaderView>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

@@ -34,6 +34,7 @@ internal class en_US : LanguageProvider
     public const string Navigation_TabControl = "TabControl";
     
     public const string DataEntry = "Data Entry";
+    public const string DataEntry_Cascader = "Cascader";
     public const string DataEntry_CheckBox = "CheckBox";
     public const string DataEntry_ColorPicker = "ColorPicker";
     public const string DataEntry_LineEdit = "LineEdit";

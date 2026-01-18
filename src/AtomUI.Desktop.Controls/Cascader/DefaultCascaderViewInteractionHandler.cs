@@ -66,7 +66,7 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
         _root        = null;
     }
 
-    internal static CascaderViewItem? GetTreeViewItemCore(StyledElement? item)
+    internal static CascaderViewItem? GetCascaderViewItemCore(StyledElement? item)
     {
         while (true)
         {
@@ -86,7 +86,7 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
 
     protected internal virtual void PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        var item = GetTreeViewItemCore(e.Source as Control);
+        var item = GetCascaderViewItemCore(e.Source as Control);
 
         if (sender is Visual visual &&
             e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item?.ItemCount > 0)
@@ -97,7 +97,7 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
 
     protected internal virtual void PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        var item = GetTreeViewItemCore(e.Source as Control);
+        var item = GetCascaderViewItemCore(e.Source as Control);
 
         if (e.InitialPressMouseButton == MouseButton.Left && item != null)
         {

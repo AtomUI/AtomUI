@@ -3,26 +3,43 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
-using AtomUI.Desktop.Controls.Themes;
-using AtomUI.MotionScene;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-using AvaloniaTreeItem = Avalonia.Controls.TreeViewItem;
-
-[PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, CascaderViewPseudoClass.NodeToggleTypeRadio)]
-public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewItemData
+[PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, 
+    CascaderViewPseudoClass.NodeToggleTypeRadio,
+    StdPseudoClass.Pressed, StdPseudoClass.Expanded)]
+public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderViewItemData
 {
     #region 公共属性定义
+    public static readonly StyledProperty<bool> IsExpandedProperty =
+        AvaloniaProperty.Register<CascaderViewItem, bool>(
+            nameof(IsExpanded),
+            defaultBindingMode: BindingMode.TwoWay);
+    
+    public static readonly DirectProperty<CascaderViewItem, int> LevelProperty =
+        AvaloniaProperty.RegisterDirect<CascaderViewItem, int>(
+            nameof(Level), o => o.Level);
+    
+    public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Expanded), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
+    public static readonly RoutedEvent<RoutedEventArgs> CollapsedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Collapsed), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<CascaderViewItem, PathIcon?>(nameof(Icon));
 
@@ -46,6 +63,31 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
     
     public static readonly StyledProperty<bool> IsIndicatorEnabledProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsIndicatorEnabled), true);
+    
+    public bool IsExpanded
+    {
+        get => GetValue(IsExpandedProperty);
+        set => SetValue(IsExpandedProperty, value);
+    }
+
+    private int _level;
+    public int Level
+    {
+        get => _level;
+        private set => SetAndRaise(LevelProperty, ref _level, value);
+    }
+    
+    public event EventHandler<RoutedEventArgs>? Expanded
+    {
+        add => AddHandler(ExpandedEvent, value);
+        remove => RemoveHandler(ExpandedEvent, value);
+    }
+    
+    public event EventHandler<RoutedEventArgs>? Collapsed
+    {
+        add => AddHandler(CollapsedEvent, value);
+        remove => RemoveHandler(CollapsedEvent, value);
+    }
 
     public PathIcon? Icon
     {
@@ -93,6 +135,12 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         set => SetValue(IsIndicatorEnabledProperty, value);
     }
     
+    private static readonly FuncTemplate<Panel?> DefaultPanel =
+        new(() => new StackPanel());
+    
+    private CascaderView? _cascaderView;
+    internal CascaderView? CascaderViewOwner => _cascaderView;
+    
     IList<ICascaderViewItemData> ITreeNode<ICascaderViewItemData>.Children => Items.OfType<ICascaderViewItemData>().ToList();
     ITreeNode<ICascaderViewItemData>? ITreeNode<ICascaderViewItemData>.ParentNode => Parent as ITreeNode<ICascaderViewItemData>;
     
@@ -103,7 +151,7 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
     #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-        RoutedEvent.Register<AvaloniaTreeItem, RoutedEventArgs>(
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(
             nameof(Click),
             RoutingStrategies.Bubble);
     
@@ -132,9 +180,6 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
     
     internal static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
         TreeView.ToggleTypeProperty.AddOwner<CascaderViewItem>();
-    
-    internal static readonly StyledProperty<bool> IsShowLeafIconProperty =
-        AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsShowLeafIcon));
     
     internal static readonly DirectProperty<CascaderViewItem, bool> HasItemAsyncDataLoaderProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(HasItemAsyncDataLoader),
@@ -170,11 +215,11 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
             o => o.ItemFilterAction,
             (o, v) => o.ItemFilterAction = v);
     
-    internal static readonly DirectProperty<CascaderViewItem, bool> IsSelectableProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(
-            nameof(IsSelectable),
-            o => o.IsSelectable,
-            (o, v) => o.IsSelectable = v);
+    internal static readonly DirectProperty<CascaderViewItem, Rect> HeaderBoundsProperty =
+        AvaloniaProperty.RegisterDirect<CascaderViewItem, Rect>(
+            nameof(HeaderBounds),
+            o => o.HeaderBounds,
+            (o, v) => o.HeaderBounds = v);
     
     internal PathIcon? ExpandIcon
     {
@@ -207,12 +252,6 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         get => GetValue(ToggleTypeProperty);
         set => SetValue(ToggleTypeProperty, value);
     }
-
-    internal bool IsShowLeafIcon
-    {
-        get => GetValue(IsShowLeafIconProperty);
-        set => SetValue(IsShowLeafIconProperty, value);
-    }
     
     private bool _hasItemAsyncDataLoader;
 
@@ -221,7 +260,7 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         get => _hasItemAsyncDataLoader;
         set => SetAndRaise(HasItemAsyncDataLoaderProperty, ref _hasItemAsyncDataLoader, value);
     }
-        
+    
     private bool _isAutoExpandParent;
 
     internal bool IsAutoExpandParent
@@ -268,40 +307,213 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
     }
 
-    private bool _isSelectable = true;
+    private Rect _headerBounds;
     
-    internal bool IsSelectable
+    internal Rect HeaderBounds
     {
-        get => _isSelectable;
-        set => SetAndRaise(IsSelectableProperty, ref _isSelectable, value);
+        get => _headerBounds;
+        set => SetAndRaise(HeaderBoundsProperty, ref _headerBounds, value);
     }
-    
+
     internal CascaderView? OwnerView { get; set; }
 
     private ICascaderViewInteractionHandler? CascaderViewInteractionHandler => this.FindLogicalAncestorOfType<CascaderView>()?.InteractionHandler;
     
     #endregion
     
-    private BaseMotionActor? _itemsPresenterMotionActor;
     private readonly BorderRenderHelper _borderRenderHelper;
-    private TreeViewItemHeader? _header;
-    private readonly Dictionary<AvaloniaTreeItem, CompositeDisposable> _itemsBindingDisposables = new();
+    private CascaderViewItemHeader? _header;
+    private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     internal bool AsyncLoaded;
     private FilterContextBackup? _filterContextBackup;
+    private bool _templateApplied;
+    private bool _deferredBringIntoViewFlag;
 
     static CascaderViewItem()
     {
-        AffectsRender<AvaloniaTreeItem>(
-            IsShowLeafIconProperty,
+        PressedMixin.Attach<CascaderViewItem>();
+        AffectsRender<CascaderViewItem>(
+            IsShowIconProperty,
             BorderBrushProperty,
             BorderThicknessProperty,
             BackgroundProperty);
+        FocusableProperty.OverrideDefaultValue<CascaderViewItem>(true);
+        ItemsPanelProperty.OverrideDefaultValue<CascaderViewItem>(DefaultPanel);
+        RequestBringIntoViewEvent.AddClassHandler<CascaderViewItem>((x, e) => x.HandleRequestBringIntoView(e));
+        IsExpandedProperty.Changed.AddClassHandler<CascaderViewItem, bool>((x, e) => x.HandleIsExpandedChanged(e));
     }
 
     public CascaderViewItem()
     {
         _borderRenderHelper               =  new BorderRenderHelper();
         LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
+        Items.CollectionChanged           += HandleCollectionChanged;
+    }
+    
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (_cascaderView is null)
+        {
+            return;
+        }
+
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+            case NotifyCollectionChangedAction.Replace:
+                foreach (var i in e.OldItems!)
+                {
+                    _cascaderView.CheckedItems.Remove(i);
+                }
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                _cascaderView.CheckedItems.Clear();
+                break;
+        }
+    }
+    
+    private void HandleIsExpandedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
+    {
+        var routedEvent = args.NewValue.Value ? ExpandedEvent : CollapsedEvent;
+        var eventArgs   = new RoutedEventArgs() { RoutedEvent = routedEvent, Source = this };
+        RaiseEvent(eventArgs);
+    }
+    
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        _cascaderView = this.GetLogicalAncestors().OfType<CascaderView>().FirstOrDefault();
+        Level         = CalculateDistanceFromLogicalParent<CascaderView>(this) - 1;
+        if (ItemTemplate == null && _cascaderView?.ItemTemplate != null)
+        {
+            SetCurrentValue(ItemTemplateProperty, _cascaderView.ItemTemplate);
+        }
+        if (ItemContainerTheme == null && _cascaderView?.ItemContainerTheme != null)
+        {
+            SetCurrentValue(ItemContainerThemeProperty, _cascaderView.ItemContainerTheme);
+        }
+    }
+    
+    protected virtual void HandleRequestBringIntoView(RequestBringIntoViewEventArgs e)
+    {
+        if (e.TargetObject == this)
+        {
+            if (!_templateApplied)
+            {
+                _deferredBringIntoViewFlag = true;
+                return;
+            }
+
+            if (_header != null)
+            {
+                var m = _header.TransformToVisual(this);
+
+                if (m.HasValue)
+                {
+                    var bounds = new Rect(_header.Bounds.Size);
+                    var rect   = bounds.TransformToAABB(m.Value);
+                    e.TargetRect = rect;
+                }
+            }
+        }
+    }
+    
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (!e.Handled)
+        {
+            Func<CascaderViewItem, bool>? handler =
+                e.Key switch
+                {
+                    Key.Left => ApplyToItemOrRecursivelyIfCtrl(FocusAwareCollapseItem, e.KeyModifiers),
+                    Key.Right => ApplyToItemOrRecursivelyIfCtrl(ExpandItem, e.KeyModifiers),
+                    Key.Enter => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
+
+                    // do not handle CTRL with numpad keys
+                    Key.Subtract => FocusAwareCollapseItem,
+                    Key.Add => ExpandItem,
+                    Key.Divide => ApplyToSubtree(CollapseItem),
+                    Key.Multiply => ApplyToSubtree(ExpandItem),
+                    _ => null,
+                };
+
+            if (handler is not null)
+            {
+                e.Handled = handler(this);
+            }
+
+            // NOTE: these local functions do not use the TreeView.Expand/CollapseSubtree
+            // function because we want to know if any items were in fact expanded to set the
+            // event handled status. Also the handling here avoids a potential infinite recursion/stack overflow.
+            static Func<CascaderViewItem, bool> ApplyToSubtree(Func<CascaderViewItem, bool> f)
+            {
+                // Calling toList enumerates all items before applying functions. This avoids a
+                // potential infinite loop if there is an infinite tree (the control catalog is
+                // lazily infinite). But also means a lazily loaded tree will not be expanded completely.
+                return t => SubTree(t)
+                            .ToList()
+                            .Select(treeViewItem => f(treeViewItem))
+                            .Aggregate(false, (p, c) => p || c);
+            }
+
+            static Func<CascaderViewItem, bool> ApplyToItemOrRecursivelyIfCtrl(Func<CascaderViewItem,bool> f, KeyModifiers keyModifiers)
+            {
+                if (keyModifiers.HasAllFlags(KeyModifiers.Control))
+                {
+                    return ApplyToSubtree(f);
+                }
+
+                return f;
+            }
+
+            static bool ExpandItem(CascaderViewItem treeViewItem)
+            {
+                if (treeViewItem.ItemCount > 0 && !treeViewItem.IsExpanded)
+                {
+                    treeViewItem.SetCurrentValue(IsExpandedProperty, true);
+                    return true;
+                }
+
+                return false;
+            }
+
+            static bool CollapseItem(CascaderViewItem treeViewItem)
+            {
+                if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
+                {
+                    treeViewItem.SetCurrentValue(IsExpandedProperty, false);
+                    return true;
+                }
+
+                return false;
+            }
+
+            static bool FocusAwareCollapseItem(CascaderViewItem treeViewItem)
+            {
+                if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
+                {
+                    if (treeViewItem.IsFocused)
+                    {
+                        treeViewItem.SetCurrentValue(IsExpandedProperty, false);
+                    }
+                    else
+                    {
+                        treeViewItem.Focus(NavigationMethod.Directional);
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            static IEnumerable<CascaderViewItem> SubTree(CascaderViewItem treeViewItem)
+            {
+                return new[] { treeViewItem }.Concat(treeViewItem.LogicalChildren.OfType<CascaderViewItem>().SelectMany(child => SubTree(child)));
+            }
+        }
+
+        // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
     }
     
     private void HandleLogicalChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -312,7 +524,7 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
             {
                 foreach (var item in e.OldItems)
                 {
-                    if (item is AvaloniaTreeItem cascaderViewItem)
+                    if (item is CascaderViewItem cascaderViewItem)
                     {
                         if (_itemsBindingDisposables.TryGetValue(cascaderViewItem, out var disposable))
                         {
@@ -324,6 +536,9 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
             }
         }
     }
+    
+    private CascaderView EnsureCascaderView() => _cascaderView ??
+                                                 throw new InvalidOperationException("The CascaderViewItem is not part of a CascaderView.");
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -352,39 +567,6 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         {
             HandleToggleTypeChanged(change);
         }
-        else if (change.Property == IsExpandedProperty)
-        {
-            HandleExpandedChanged();
-        }
-
-        if (change.Property == IsSelectedProperty)
-        {
-            if (IsSelected && !IsSelectable)
-            {
-                SetCurrentValue(IsSelectedProperty, false);
-                throw new InvalidOperationException("The IsSelectable property value is False, meaning selection is not supported.");
-            }
-        }
-
-        if (change.Property == IsSelectableProperty)
-        {
-            if (!IsSelectable)
-            {
-                SetCurrentValue(IsSelectedProperty, false);
-            }
-        }
-    }
-
-    private void HandleExpandedChanged()
-    {
-        if (IsExpanded)
-        {
-            ExpandChildren();
-        }
-        else
-        {
-            CollapseChildren();
-        }
     }
 
     private void HandleGroupNameChanged(AvaloniaPropertyChangedEventArgs change)
@@ -406,98 +588,17 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         PseudoClasses.Set(StdPseudoClass.Checked, newValue == true);
         (CascaderViewInteractionHandler as DefaultCascaderViewInteractionHandler)?.OnCheckedChanged(this);
     }
-
-    private void ExpandChildren()
-    {
-        // if (_itemsPresenterMotionActor is null ||
-        //     _animating ||
-        //     OwnerView is null ||
-        //     _isRealExpanded)
-        // {
-        //     return;
-        // }
-        //
-        // if (!IsMotionEnabled || OwnerView.IsExpandAllProcess)
-        // {
-        //     _itemsPresenterMotionActor.Opacity   = 1.0;
-        //     _itemsPresenterMotionActor.IsVisible = true;
-        //     _isRealExpanded                      = true;
-        //     return;
-        // }
-        //
-        // _animating = true;
-        // _header?.NotifyAnimating(true);
-        //
-        // var motion = OwnerView.OpenMotion ?? new ExpandMotion(Direction.Top, null, new CubicEaseOut());
-        // motion.Duration = OwnerView.MotionDuration;
-        //
-        // motion.Run(_itemsPresenterMotionActor, () => { _itemsPresenterMotionActor.IsVisible = true; },
-        //     () =>
-        //     {
-        //         _animating = false;
-        //         _header?.NotifyAnimating(false);
-        //         _isRealExpanded = true;
-        //         if (IsAutoExpandParent)
-        //         {
-        //             if (Parent is AvaloniaTreeItem parentTreeItem)
-        //             {
-        //                 parentTreeItem.SetCurrentValue(IsExpandedProperty, true);
-        //             }
-        //         }
-        //     });
-    }
-
-    private void CollapseChildren()
-    {
-        // if (_itemsPresenterMotionActor is null ||
-        //     _animating ||
-        //     OwnerView is null ||
-        //     !_isRealExpanded)
-        // {
-        //     return;
-        // }
-        //
-        // if (!IsMotionEnabled || OwnerView.IsExpandAllProcess)
-        // {
-        //     _itemsPresenterMotionActor.Opacity   = 0.0;
-        //     _itemsPresenterMotionActor.IsVisible = false;
-        //     _isRealExpanded                      = false;
-        //     return;
-        // }
-        //
-        // _animating = true;
-        // _header?.NotifyAnimating(true);
-        //
-        // var motion = OwnerView.CloseMotion ?? new CollapseMotion(Direction.Top, null, new CubicEaseIn());
-        // motion.Duration = OwnerView.MotionDuration;
-        //
-        // motion.Run(_itemsPresenterMotionActor, null, () =>
-        // {
-        //     _itemsPresenterMotionActor.IsVisible = false;
-        //     _animating                           = false;
-        //     _header?.NotifyAnimating(false);
-        //     _isRealExpanded = false;
-        // });
-    }
-
+    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _header             = e.NameScope.Find<TreeViewItemHeader>(TreeViewItemThemeConstants.HeaderPart);
-        _itemsPresenterMotionActor =
-            e.NameScope.Find<BaseMotionActor>(TreeViewItemThemeConstants.ItemsPresenterMotionActorPart);
-        
+        _header             = e.NameScope.Find<CascaderViewItemHeader>(CascaderViewItemThemeConstants.HeaderPart);
+        _templateApplied = true;
         ConfigureIsLeaf();
-        
-        var originIsMotionEnabled = IsMotionEnabled;
-        try
+        if (_deferredBringIntoViewFlag)
         {
-            SetCurrentValue(IsMotionEnabledProperty, false);
-            HandleExpandedChanged();
-        }
-        finally
-        {
-            SetCurrentValue(IsMotionEnabledProperty, originIsMotionEnabled);
+            _deferredBringIntoViewFlag = false;
+            Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
         }
     }
     
@@ -525,15 +626,6 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
                 null);
         }
     }
-
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        base.OnPointerReleased(e);
-        if (PointInHeaderBounds(e))
-        {
-            NotifyHeaderClick();
-        }
-    }
     
     internal bool PointInHeaderBounds(PointerReleasedEventArgs e)
     {
@@ -542,19 +634,17 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         return bounds.Contains(point);
     }
     
-    protected virtual void NotifyHeaderClick()
-    {
-    }
-    
     internal void RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
+        EnsureCascaderView();
         return new CascaderViewItem();
     }
     
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
+        EnsureCascaderView();
         return NeedsContainer<CascaderViewItem>(item, out recycleKey);
     }
 
@@ -576,12 +666,10 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, HeaderTemplateProperty));
             }
             disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, cascaderViewItem, ItemFilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemsPanelProperty, cascaderViewItem, ItemsPanelProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, IsShowIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowLeafIconProperty, cascaderViewItem,
-                IsShowLeafIconProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsSelectableProperty, cascaderViewItem, IsSelectableProperty));
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, cascaderViewItem, FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 HasItemAsyncDataLoaderProperty));
@@ -613,7 +701,6 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         {
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.Icon), cascaderViewItem, IconProperty, mode:BindingMode.TwoWay));
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsChecked), cascaderViewItem, IsCheckedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsSelected), cascaderViewItem, IsSelectedProperty, mode:BindingMode.TwoWay));
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsEnabled), cascaderViewItem, IsEnabledProperty, mode:BindingMode.TwoWay));
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsExpanded), cascaderViewItem, IsExpandedProperty, mode:BindingMode.TwoWay));
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsIndicatorEnabled), cascaderViewItem, IsIndicatorEnabledProperty, mode:BindingMode.TwoWay));
@@ -647,6 +734,19 @@ public class CascaderViewItem : AvaloniaTreeItem, IRadioButton, ICascaderViewIte
         {
             IsLeaf = ItemCount == 0;
         }
+    }
+    
+    private static int CalculateDistanceFromLogicalParent<T>(ILogical? logical, int @default = -1) where T : class
+    {
+        var result = 0;
+
+        while (logical != null && !(logical is T))
+        {
+            ++result;
+            logical = logical.LogicalParent;
+        }
+
+        return logical != null ? result : @default;
     }
 
     internal void CreateFilterContextBackup()

@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -22,9 +23,6 @@ internal class CascaderViewItemHeader : ContentControl
 
     public static readonly StyledProperty<bool?> IsCheckedProperty =
         CascaderViewItem.IsCheckedProperty.AddOwner<CascaderViewItemHeader>();
-    
-    public static readonly StyledProperty<bool> IsSelectedProperty =
-        CascaderViewItem.IsSelectedProperty.AddOwner<CascaderViewItemHeader>();
 
     public static readonly StyledProperty<PathIcon?> ExpandIconProperty =
         CascaderViewItem.ExpandIconProperty.AddOwner<CascaderViewItemHeader>();
@@ -74,12 +72,6 @@ internal class CascaderViewItemHeader : ContentControl
     {
         get => GetValue(IsCheckedProperty);
         set => SetValue(IsCheckedProperty, value);
-    }
-    
-    public bool IsSelected
-    {
-        get => GetValue(IsSelectedProperty);
-        set => SetValue(IsSelectedProperty, value);
     }
 
     private bool _isLeaf;
@@ -157,13 +149,7 @@ internal class CascaderViewItemHeader : ContentControl
     
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         TreeView.FilterHighlightForegroundProperty.AddOwner<CascaderViewItemHeader>();
-    
-    internal static readonly DirectProperty<CascaderViewItemHeader, bool> IsSelectableProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, bool>(
-            nameof(IsSelectable),
-            o => o.IsSelectable,
-            (o, v) => o.IsSelectable = v);
-    
+
     internal IBrush? ContentFrameBackground
     {
         get => GetValue(ContentFrameBackgroundProperty);
@@ -178,7 +164,7 @@ internal class CascaderViewItemHeader : ContentControl
         set => SetAndRaise(IsShowIconProperty, ref _isShowIcon, value);
     }
 
-    private bool _iconEffectiveVisible = true;
+    private bool _iconEffectiveVisible = false;
 
     internal bool IconEffectiveVisible
     {
@@ -243,16 +229,14 @@ internal class CascaderViewItemHeader : ContentControl
         set => SetValue(FilterHighlightForegroundProperty, value);
     }
     
-    private bool _isSelectable = true;
-    
-    internal bool IsSelectable
-    {
-        get => _isSelectable;
-        set => SetAndRaise(IsSelectableProperty, ref _isSelectable, value);
-    }
     #endregion
     
     private IconPresenter? _iconPresenter;
+
+    static CascaderViewItemHeader()
+    {
+        PressedMixin.Attach<CascaderViewItemHeader>();
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -310,6 +294,12 @@ internal class CascaderViewItemHeader : ContentControl
     {
         base.OnApplyTemplate(e);
         _iconPresenter = e.NameScope.Find<IconPresenter>(CascaderViewItemHeaderThemeConstants.IconPresenterPart);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        IconEffectiveVisible = IsShowIcon && Icon is not null;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)

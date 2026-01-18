@@ -411,6 +411,29 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         _borderRenderHelper               =  new BorderRenderHelper();
         LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
+        Items.CollectionChanged           += HandleCollectionChanged;
+    }
+    
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (OwnerTreeView is null)
+        {
+            return;
+        }
+
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+            case NotifyCollectionChangedAction.Replace:
+                foreach (var i in e.OldItems!)
+                {
+                    OwnerTreeView.CheckedItems.Remove(i);
+                }
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                OwnerTreeView.CheckedItems.Clear();
+                break;
+        }
     }
     
     private void HandleLogicalChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)

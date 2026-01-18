@@ -7,7 +7,6 @@ namespace AtomUI.Desktop.Controls;
 public interface ICascaderViewItemData : ITreeNode<ICascaderViewItemData>
 {
     bool? IsChecked { get; }
-    bool IsSelected { get; }
     bool IsExpanded { get; }
     bool IsIndicatorEnabled { get; }
     string? GroupName { get; }
@@ -41,11 +40,6 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
         AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool?>(nameof(IsChecked),
             o => o.IsChecked,
             (o, v) => o.IsChecked = v);
-    
-    public static readonly DirectProperty<CascaderViewItemData, bool> IsSelectedProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool>(nameof(IsSelected),
-            o => o.IsSelected,
-            (o, v) => o.IsSelected = v);
     
     public static readonly DirectProperty<CascaderViewItemData, bool> IsExpandedProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool>(nameof(IsExpanded),
@@ -90,14 +84,6 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
     {
         get => _isChecked;
         set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-    }
-    
-    private bool _isSelected;
-
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
     }
     
     private bool _isExpanded;

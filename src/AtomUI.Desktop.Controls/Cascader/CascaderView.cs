@@ -12,6 +12,8 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Generators;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -21,8 +23,6 @@ using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
-
-using AvaloniaTreeView = Avalonia.Controls.TreeView;
 
 [Flags]
 public enum CascaderItemFilterAction
@@ -35,18 +35,17 @@ public enum CascaderItemFilterAction
     All = HighlightedMatch | BoldedMatch | ExpandPath | HideUnMatched
 }
 
-public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, IControlSharedTokenResourcesHost
+public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
+    public new TreeItemContainerGenerator ItemContainerGenerator =>
+        (TreeItemContainerGenerator)base.ItemContainerGenerator;
+    
     public static readonly StyledProperty<bool> IsAutoExpandParentProperty =
         AvaloniaProperty.Register<CascaderView, bool>(nameof(IsAutoExpandParent), true);
     
     public static readonly StyledProperty<bool> IsShowIconProperty =
         AvaloniaProperty.Register<CascaderView, bool>(nameof(IsShowIcon));
-    
-    public static readonly StyledProperty<bool> IsDefaultExpandAllProperty =
-        AvaloniaProperty.Register<CascaderView, bool>(
-            nameof(IsDefaultExpandAll));
     
     public static readonly StyledProperty<IconTemplate?> ItemExpandIconProperty =
         AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ItemExpandIcon));
@@ -56,9 +55,6 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     
     public static readonly StyledProperty<IconTemplate?> ItemIconProperty =
         AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ItemIcon));
-    
-    public static readonly StyledProperty<bool> IsSelectableProperty = 
-        AvaloniaProperty.Register<CascaderView, bool>(nameof(IsSelectable), true);
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CascaderView>();
@@ -75,17 +71,11 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
             o => o.DefaultCheckedPaths,
             (o, v) => o.DefaultCheckedPaths = v);
     
-    public static readonly DirectProperty<CascaderView, IList<TreeNodePath>?> DefaultSelectedPathsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, IList<TreeNodePath>?>(
-            nameof(DefaultSelectedPaths),
-            o => o.DefaultSelectedPaths,
-            (o, v) => o.DefaultSelectedPaths = v);
-    
-    public static readonly DirectProperty<CascaderView, IList<TreeNodePath>?> DefaultExpandedPathsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, IList<TreeNodePath>?>(
-            nameof(DefaultExpandedPaths),
-            o => o.DefaultExpandedPaths,
-            (o, v) => o.DefaultExpandedPaths = v);
+    public static readonly DirectProperty<CascaderView, TreeNodePath?> DefaultExpandedPathProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, TreeNodePath?>(
+            nameof(DefaultExpandedPath),
+            o => o.DefaultExpandedPath,
+            (o, v) => o.DefaultExpandedPath = v);
     
     public static readonly DirectProperty<CascaderView, ICascaderItemDataLoader?> ItemDataLoaderProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, ICascaderItemDataLoader?>(
@@ -142,13 +132,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
         get => GetValue(IsShowIconProperty);
         set => SetValue(IsShowIconProperty, value);
     }
-    
-    public bool IsDefaultExpandAll
-    {
-        get => GetValue(IsDefaultExpandAllProperty);
-        set => SetValue(IsDefaultExpandAllProperty, value);
-    }
-    
+
     public IconTemplate? ItemExpandIcon
     {
         get => GetValue(ItemExpandIconProperty);
@@ -165,12 +149,6 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     {
         get => GetValue(ItemIconProperty);
         set => SetValue(ItemIconProperty, value);
-    }
-    
-    public bool IsSelectable
-    {
-        get => GetValue(IsSelectableProperty);
-        set => SetValue(IsSelectableProperty, value);
     }
     
     public bool IsMotionEnabled
@@ -199,20 +177,12 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
         set => SetAndRaise(DefaultCheckedPathsProperty, ref _defaultCheckedPaths, value);
     }
     
-    private IList<TreeNodePath>? _defaultSelectedPaths;
+    private TreeNodePath? _defaultExpandedPath;
     
-    public IList<TreeNodePath>? DefaultSelectedPaths
+    public TreeNodePath? DefaultExpandedPath
     {
-        get => _defaultSelectedPaths;
-        set => SetAndRaise(DefaultSelectedPathsProperty, ref _defaultSelectedPaths, value);
-    }
-    
-    private IList<TreeNodePath>? _defaultExpandedPaths;
-    
-    public IList<TreeNodePath>? DefaultExpandedPaths
-    {
-        get => _defaultExpandedPaths;
-        set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
+        get => _defaultExpandedPath;
+        set => SetAndRaise(DefaultExpandedPathProperty, ref _defaultExpandedPath, value);
     }
     
     private ICascaderItemDataLoader? _itemDataLoader;
@@ -345,14 +315,22 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     string IControlSharedTokenResourcesHost.TokenId => TreeViewToken.ID;
     
     protected internal ICascaderViewInteractionHandler InteractionHandler { get; }
-    internal bool IsExpandAllProcess { get; set; }
-    internal bool IsCollapseAllProcess { get; set; }
     #endregion
     
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     private static readonly IList Empty = Array.Empty<object>();
     private IList? _checkedItems;
     private bool _syncingCheckedItems;
+    private StackPanel? _itemsPanel;
+    private bool _ignoreExpandAndCollapse;
+
+    static CascaderView()
+    {
+        CascaderViewItem.ExpandedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemExpanded(args));
+        CascaderViewItem.CollapsedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemCollapsed(args));
+        CascaderViewItem.ClickEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
+        ConfigureFilter();
+    }
     
     public CascaderView()
         : this(new DefaultCascaderViewInteractionHandler())
@@ -371,6 +349,74 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     {
         base.OnInitialized();
         ConfigureEmptyIndicator();
+    }
+    
+    public IEnumerable<Control> GetRealizedTreeContainers()
+    {
+        return GetRealizedContainers(this);
+    }
+    
+    private static IEnumerable<Control> GetRealizedContainers(ItemsControl itemsControl)
+    {
+        foreach (var container in itemsControl.GetRealizedContainers())
+        {
+            yield return container;
+            if (container is ItemsControl itemsControlContainer)
+            {
+                foreach (var child in GetRealizedContainers(itemsControlContainer))
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
+    
+    public Control? CascaderContainerFromItem(object item)
+    {
+        return CascaderContainerFromItem(this, item);
+    }
+    
+    private static Control? CascaderContainerFromItem(ItemsControl itemsControl, object item)
+    {
+        if (itemsControl.ContainerFromItem(item) is { } container)
+        {
+            return container;
+        }
+
+        foreach (var child in itemsControl.GetRealizedContainers())
+        {
+            if (child is ItemsControl childItemsControl &&
+                CascaderContainerFromItem(childItemsControl, item) is { } childContainer)
+            {
+                return childContainer;
+            }
+        }
+
+        return null;
+    }
+    
+    public object? CascaderItemFromContainer(Control container)
+    {
+        return CascaderItemFromContainer(this, container);
+    }
+    
+    private static object? CascaderItemFromContainer(ItemsControl itemsControl, Control container)
+    {
+        if (itemsControl.ItemFromContainer(container) is { } item)
+        {
+            return item;
+        }
+
+        foreach (var child in itemsControl.GetRealizedContainers())
+        {
+            if (child is ItemsControl childItemsControl &&
+                CascaderItemFromContainer(childItemsControl, container) is { } childContainer)
+            {
+                return childContainer;
+            }
+        }
+
+        return null;
     }
     
     private void HandleLogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -397,64 +443,26 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ConfigureEmptyIndicator();
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+            case NotifyCollectionChangedAction.Replace:
+                foreach (var i in e.OldItems!)
+                    CheckedItems.Remove(i);
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                CheckedItems.Clear();
+                break;
+        }
     }
     
-    public void ExpandAll(bool? motionEnabled = null)
+    protected CascaderViewItem? GetContainerFromEventSource(object eventSource)
     {
-        var originMotionEnabled = IsMotionEnabled;
-        try
-        {
-            IsExpandAllProcess = true;
-            if (motionEnabled.HasValue)
-            {
-                SetCurrentValue(IsMotionEnabledProperty, motionEnabled.Value);
-            }
-
-            for (var i = 0; i < ItemCount; i++)
-            {
-                if (ContainerFromIndex(i) is CascaderViewItem treeItem)
-                {
-                    ExpandSubTree(treeItem);
-                }
-            }
-        }
-        finally
-        {
-            IsExpandAllProcess = false;
-            if (motionEnabled.HasValue)
-            {
-                SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
-            }
-        }
-    }
-
-    public void CollapseAll(bool? motionEnabled = null)
-    {
-        var originMotionEnabled = IsMotionEnabled;
-        try
-        {
-            IsCollapseAllProcess = true;
-            if (motionEnabled.HasValue)
-            {
-                SetCurrentValue(IsMotionEnabledProperty, motionEnabled.Value);
-            }
-
-            for (var i = 0; i < ItemCount; i++)
-            {
-                if (ContainerFromIndex(i) is CascaderViewItem treeItem)
-                {
-                    CollapseSubTree(treeItem);
-                }
-            }
-        }
-        finally
-        {
-            IsCollapseAllProcess = false;
-            if (motionEnabled.HasValue)
-            {
-                SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
-            }
-        }
+        var item = ((Visual)eventSource).GetSelfAndVisualAncestors()
+                                        .OfType<CascaderViewItem>()
+                                        .FirstOrDefault();
+    
+        return item?.CascaderViewOwner == this ? item : null;
     }
     
     public void CheckedSubTree(CascaderViewItem item)
@@ -486,7 +494,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     {
         var checkedItems = new HashSet<object>();
         item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, true);
-        var cascaderItemData = TreeItemFromContainer(item);
+        var cascaderItemData = CascaderItemFromContainer(item);
         Debug.Assert(cascaderItemData != null);
         checkedItems.Add(cascaderItemData);
         if (item.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
@@ -499,7 +507,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
         {
             if (childItem != null)
             {
-                var container = TreeContainerFromItem(childItem);
+                var container = CascaderContainerFromItem(childItem);
                 if (container is CascaderViewItem cascaderViewItem && cascaderViewItem.IsEffectiveCheckable())
                 {
                     var childCheckedItems = DoCheckedSubTree(cascaderViewItem);
@@ -528,7 +536,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
             {
                 CheckedItems.Remove(unCheckedItem);
             }
-            var cascaderItemData = TreeItemFromContainer(item);
+            var cascaderItemData = CascaderItemFromContainer(item);
             Debug.Assert(cascaderItemData != null);
             CheckedItems.Remove(cascaderItemData);
         }
@@ -543,7 +551,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
         var unCheckedItems = new HashSet<object>();
         if (item.IsChecked == true)
         {
-            var cascaderItemData = TreeItemFromContainer(item);
+            var cascaderItemData = CascaderItemFromContainer(item);
             Debug.Assert(cascaderItemData != null);
             unCheckedItems.Add(cascaderItemData);
         }
@@ -558,7 +566,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
         {
             if (childItem != null)
             {
-                var control = TreeContainerFromItem(childItem);
+                var control = CascaderContainerFromItem(childItem);
                 if (control is CascaderViewItem cascaderViewItem && cascaderViewItem.IsEffectiveCheckable())
                 {
                     var childUnCheckedItems = DoUnCheckedSubTree(cascaderViewItem);
@@ -605,7 +613,6 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsSelectableProperty, cascaderViewItem, CascaderViewItem.IsSelectableProperty));
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, cascaderViewItem, CascaderViewItem.FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
@@ -653,6 +660,12 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     {
         base.OnDetachedFromVisualTree(e);
         InteractionHandler.Detach(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _itemsPanel = e.NameScope.Find<StackPanel>(CascaderViewThemeConstants.ItemsPanelPart);
     }
 
     private CascaderViewItem? GetCascaderViewItemContainer(object childNode, ItemsControl current)
@@ -788,7 +801,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     
     private void MarkItemChecked(object item, bool isChecked)
     {
-        var container = TreeContainerFromItem(item);
+        var container = CascaderContainerFromItem(item);
         if (container != null)
         {
             MarkContainerChecked(container, isChecked);
@@ -798,134 +811,6 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     private void MarkContainerChecked(Control container, bool isChecked)
     {
         container.SetCurrentValue(CascaderViewItem.IsCheckedProperty, isChecked);
-    }
-
-    #region 默认展开选中
-
-    private IList FindCascaderItemByPath(TreeNodePath path)
-    {
-        if (path.Length == 0)
-        {
-            return Array.Empty<object>();
-        }
-
-        var   segments  = path.Segments;
-        IList items     = Items.ToList();
-        IList pathNodes = new List<object>();
-        foreach (var segment in segments)
-        {
-            bool childFound = false;
-            for (var i = 0; i < items.Count; i++)
-            {
-                var item = items[i];
-                if (item != null)
-                {
-                    var container = TreeContainerFromItem(item);
-                    if (container is ITreeViewItemData cascaderViewItem)
-                    {
-                        if (cascaderViewItem.ItemKey != null && cascaderViewItem.ItemKey.Value == segment)
-                        {
-                            items      = cascaderViewItem.Children.Cast<object>().ToList();
-                            childFound = true;
-                            pathNodes.Add(item);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!childFound)
-            {
-                return Array.Empty<object>();
-            }
-        }
-        return pathNodes;
-    }
-    
-    private List<CascaderViewItem> ExpandCascaderViewPaths(IList pathNodes, bool expandLastRecursively = false)
-    {
-        if (pathNodes.Count == 0)
-        {
-            return [];
-        }
-        List<CascaderViewItem> items = new List<CascaderViewItem>();
-        try
-        {
-            ItemsControl current = this;
-            for (var i = 0; i < pathNodes.Count; i++)
-            {
-                var pathNode = pathNodes[i];
-                if (pathNode != null)
-                {
-                    var child = GetCascaderViewItemContainer(pathNode, current);
-                    if (child != null)
-                    {
-                        items.Add(child);
-                        current               = child;
-                        child.IsMotionEnabled = false;
-                        if (i == pathNodes.Count - 1 && expandLastRecursively)
-                        {
-                            ExpandSubTree(child);
-                        }
-                        else
-                        {
-                            child.SetCurrentValue(CascaderViewItem.IsExpandedProperty, true);
-                        }
-                    }
-                }
-            }
-            return items;
-        }
-        finally
-        {
-            foreach (var item in items)
-            {
-                item.IsMotionEnabled = true;
-            }
-        }
-    }
-    
-    private List<CascaderViewItem> CollapseCascaderViewPaths(IList pathNodes, bool collapseLastRecursively = false)
-    {
-        if (pathNodes.Count == 0)
-        {
-            return [];
-        }
-        List<CascaderViewItem> items = new List<CascaderViewItem>();
-        try
-        {
-            ItemsControl current = this;
-            for (var i = 0; i < pathNodes.Count; i++)
-            {
-                var pathNode = pathNodes[i];
-                if (pathNode != null)
-                {
-                    var child = GetCascaderViewItemContainer(pathNode, current);
-                    if (child != null)
-                    {
-                        items.Add(child);
-                        current               = child;
-                        child.IsMotionEnabled = false;
-                        if (i == pathNodes.Count - 1 && collapseLastRecursively)
-                        {
-                            CollapseSubTree(child);
-                        }
-                        else
-                        {
-                            child.SetCurrentValue(CascaderViewItem.IsExpandedProperty, false);
-                        }
-                    }
-                }
-            }
-            return items;
-        }
-        finally
-        {
-            foreach (var item in items)
-            {
-                item.IsMotionEnabled = true;
-            }
-        }
     }
     
     private (ISet<object>, ISet<object>) SetupParentNodeCheckedStatus(CascaderViewItem item)
@@ -944,7 +829,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
                 {
                     if (childItem != null)
                     {
-                        var container = TreeContainerFromItem(childItem);
+                        var container = CascaderContainerFromItem(childItem);
                         if (container is CascaderViewItem cascaderViewItem)
                         {
                             return !cascaderViewItem.IsEffectiveCheckable() || cascaderViewItem.IsChecked.HasValue && cascaderViewItem.IsChecked.Value;
@@ -958,7 +843,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
                 {
                     if (childItem != null)
                     {
-                        var container = TreeContainerFromItem(childItem);
+                        var container = CascaderContainerFromItem(childItem);
                         if (container is CascaderViewItem cascaderViewItem)
                         {
                             return cascaderViewItem.IsEffectiveCheckable() && (!cascaderViewItem.IsChecked.HasValue || cascaderViewItem.IsChecked.HasValue && cascaderViewItem.IsChecked.Value);
@@ -970,7 +855,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
 
             if (parentCascaderItem.IsChecked == true && !isAllChecked)
             {
-                var parentTreeItemData = TreeItemFromContainer(parentCascaderItem);
+                var parentTreeItemData = CascaderItemFromContainer(parentCascaderItem);
                 Debug.Assert(parentTreeItemData != null);
                 unCheckedParents.Add(parentTreeItemData);
             }
@@ -999,7 +884,7 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
        
             if (parentCascaderItem.IsChecked == true)
             {
-                var parentTreeItemData = TreeItemFromContainer(parentCascaderItem);
+                var parentTreeItemData = CascaderItemFromContainer(parentCascaderItem);
                 Debug.Assert(parentTreeItemData != null);
                 checkedParents.Add(parentTreeItemData);
             }
@@ -1008,106 +893,17 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
 
         return (checkedParents, unCheckedParents);
     }
-
-    private void ConfigureDefaultCheckedPaths()
-    {
-        if (DefaultCheckedPaths != null)
-        {
-            foreach (var defaultCheckedPath in DefaultCheckedPaths)
-            {
-                var pathNodes = FindCascaderItemByPath(defaultCheckedPath);
-                if (pathNodes.Count > 0)
-                {
-                    try
-                    {
-                        var items = ExpandCascaderViewPaths(pathNodes, true);
-                        if (items.Count > 0)
-                        {
-                            var target              = items.Last();
-                            var originMotionEnabled = target.IsMotionEnabled;
-                            try
-                            {
-                                target.SetCurrentValue(CascaderViewItem.IsMotionEnabledProperty, false);
-                                target.SetCurrentValue(CascaderViewItem.IsCheckedProperty, true);
-                            }
-                            finally
-                            {
-                                target.SetCurrentValue(CascaderViewItem.IsMotionEnabledProperty, originMotionEnabled);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        CollapseCascaderViewPaths(pathNodes, false);
-                    }
-                }
-            }
-        }
-    }
-        
-    private void ConfigureDefaultExpandedPaths()
-    {
-        if (DefaultExpandedPaths != null)
-        {
-            foreach (var defaultExpandedPath in DefaultExpandedPaths)
-            {
-                var pathNodes = FindCascaderItemByPath(defaultExpandedPath);
-                ExpandCascaderViewPaths(pathNodes);
-            }
-        }
-    }
-    
-    private void ConfigureDefaultSelectedPaths()
-    {
-        if (IsSelectable)
-        {
-            if (SelectedItems.Count == 0 && DefaultSelectedPaths != null)
-            {
-                foreach (var defaultSelectedPath in DefaultSelectedPaths)
-                {
-                    var pathNodes = FindCascaderItemByPath(defaultSelectedPath);
-              
-                    if (pathNodes.Count > 0)
-                    {
-                        var targetNode = pathNodes[^1];
-                        if (!SelectedItems.Contains(targetNode))
-                        {
-                            SelectedItems.Add(targetNode);
-                        }
-                    }
-                }
-            }
-        }
-    }
     
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        ConfigureDefaultSelectedPaths();
-        ConfigureDefaultCheckedPaths();
-        
         Filter();
-        
-        if (IsDefaultExpandAll)
-        {
-            ExpandAll(false);
-        }
-        else
-        {
-            ConfigureDefaultExpandedPaths();
-        }
     }
-
-    #endregion
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == DefaultSelectedPathsProperty)
-        {
-            ConfigureDefaultSelectedPaths();
-        }
-        else if (change.Property == ItemExpandIconProperty)
+        if (change.Property == ItemExpandIconProperty)
         {
             HandleItemExpandIconChanged();
         }
@@ -1137,14 +933,6 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
             change.Property == IsFilterModeProperty)
         {
             ConfigureEmptyIndicator();
-        }
-        else if (change.Property == IsSelectableProperty)
-        {
-            if (!IsSelectable)
-            {
-                SetCurrentValue(SelectedItemProperty, null);
-                SelectedItems.Clear();
-            }
         }
     }
     
@@ -1183,33 +971,17 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
             }
         }
     }
-
-    private void HandleCascaderItemExpanded(RoutedEventArgs args)
-    {
-        if (args.Source is CascaderViewItem item)
-        {
-            ItemExpanded?.Invoke(this, new CascaderItemExpandedEventArgs(item));
-        }
-    }
-    
-    private void HandleCascaderItemCollapsed(RoutedEventArgs args)
-    {
-        if (args.Source is CascaderViewItem item)
-        {
-            ItemCollapsed?.Invoke(this, new CascaderItemCollapsedEventArgs(item));
-        }
-    }
     
     private void HandleCascaderItemClicked(RoutedEventArgs args)
     {
         if (args.Source is CascaderViewItem item)
         {
-            NotifyTreeItemClicked(item);
+            NotifyCascaderItemClicked(item);
             ItemClicked?.Invoke(this, new CascaderItemClickedEventArgs(item));
         }
     }
 
-    protected virtual void NotifyTreeItemClicked(CascaderViewItem item)
+    protected virtual void NotifyCascaderItemClicked(CascaderViewItem item)
     {
     }
     
@@ -1241,21 +1013,204 @@ public partial class CascaderView : AvaloniaTreeView, IMotionAwareControl, ICont
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
- 
         if (e.Source is Visual source)
         {
             var point = e.GetCurrentPoint(source);
             if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
             {
-                if (IsSelectable)
+                var cascaderViewItem = GetContainerFromEventSource(e.Source);
+                if (cascaderViewItem != null)
                 {
-                    var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
-                    e.Handled = UpdateSelectionFromEventSource(
-                        e.Source,
-                        true,
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(keymap.CommandModifiers),
-                        point.Properties.IsRightButtonPressed);
+                    cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                }
+            }
+        }
+    }
+    
+    private void HandleCascaderItemExpanded(RoutedEventArgs args)
+    {
+        if (args.Source is CascaderViewItem item)
+        {
+            if (!_ignoreExpandAndCollapse)
+            {
+                ExpandItem(item);
+            }
+    
+            ItemExpanded?.Invoke(this, new CascaderItemExpandedEventArgs(item));
+        }
+    }
+    
+    private void HandleCascaderItemCollapsed(RoutedEventArgs args)
+    {
+        if (args.Source is CascaderViewItem item)
+        {
+            if (!_ignoreExpandAndCollapse)
+            {
+                CollapseItem(item);
+            }
+
+            ItemCollapsed?.Invoke(this, new CascaderItemCollapsedEventArgs(item));
+        }
+    }
+
+    private void ExpandItem(CascaderViewItem cascaderViewItem)
+    {
+        if (_itemsPanel == null || _ignoreExpandAndCollapse || cascaderViewItem.ItemCount == 0)
+        {
+            return;
+        }
+        
+        // 保证当前 Item 的父亲都在了
+        var parents = new List<CascaderViewItem>();
+        var parent     = cascaderViewItem.Parent;
+        while (parent != null && parent is CascaderViewItem parentCascaderItem)
+        {
+            parents.Add(parentCascaderItem);
+            parent = parent.Parent;
+        }
+        
+        parents.Reverse();
+        try
+        {
+            _ignoreExpandAndCollapse = true;
+            foreach (var parentItem in parents)
+            {
+                if (!parentItem.IsExpanded)
+                {
+                    var parentList = new CascaderViewLevelList()
+                    {
+                        ItemsPanel = ItemsPanel,
+                    };
+                    BindUtils.RelayBind(this, IsMotionEnabledProperty, parentList, CascaderViewLevelList.IsMotionEnabledProperty);
+                    parentList.ItemsSource = parentItem.Items;
+                    _itemsPanel.Children.Add(parentList);
+                    parentItem.IsExpanded = true;
+                }
+            }
+
+            ClearExpandedState(cascaderViewItem.Level);
+            
+            cascaderViewItem.IsExpanded = true;
+            var targetIndex = cascaderViewItem.Level + 1;
+            var count       = _itemsPanel.Children.Count;
+            while (count > targetIndex)
+            {
+                --count;
+                if (_itemsPanel.Children[count] is CascaderViewLevelList levelList)
+                {
+                    levelList.ItemsSource = null;
+                }
+                _itemsPanel.Children.RemoveAt(count);
+            }
+
+            var childList = new CascaderViewLevelList()
+            {
+                ItemsPanel = ItemsPanel,
+            };
+            BindUtils.RelayBind(this, IsMotionEnabledProperty, childList, CascaderViewLevelList.IsMotionEnabledProperty);
+            childList.ItemsSource = cascaderViewItem.Items;
+            _itemsPanel.Children.Add(childList);
+            InvalidateMeasure();
+        }
+        finally
+        {
+            _ignoreExpandAndCollapse = false;
+        }
+    }
+    
+    private void CollapseItem(CascaderViewItem cascaderViewItem)
+    {
+        if (_itemsPanel == null || _ignoreExpandAndCollapse || cascaderViewItem.ItemCount == 0)
+        {
+            return;
+        }
+  
+        try
+        {
+            _ignoreExpandAndCollapse = true;
+            ClearExpandedState(cascaderViewItem.Level + 1);
+            cascaderViewItem.IsExpanded = false;
+            var targetIndex = cascaderViewItem.Level + 1;
+            var count       = _itemsPanel.Children.Count;
+            while (count > targetIndex)
+            {
+                --count;
+                if (_itemsPanel.Children[count] is CascaderViewLevelList levelList)
+                {
+                    levelList.ItemsSource = null;
+                }
+
+                _itemsPanel.Children.RemoveAt(count);
+            }
+            InvalidateMeasure();
+        }
+        finally
+        {
+            _ignoreExpandAndCollapse = false;
+        }
+    }
+
+    private void ClearExpandedState(int level)
+    {
+        if (_itemsPanel == null)
+        {
+            return;
+        }
+        for (var i = _itemsPanel.Children.Count - 1; i >= level; i--)
+        {
+            if (_itemsPanel.Children[i] is CascaderViewLevelList levelList)
+            {
+                foreach (var item in levelList.Items)
+                {
+                    if (item != null)
+                    {
+                        if (levelList.ContainerFromItem(item) is CascaderViewItem cascaderViewItem)
+                        {
+                            cascaderViewItem.IsExpanded = false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (var item in Items)
+                {
+                    if (item != null)
+                    {
+                        if (CascaderContainerFromItem(item) is CascaderViewItem cascaderViewItem)
+                        {
+                            cascaderViewItem.IsExpanded = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public override void Render(DrawingContext context)
+    {
+        if (_itemsPanel == null)
+        {
+            return;
+        }
+        var penWidth = BorderThickness.Top;
+        using var state = context.PushRenderOptions(new RenderOptions
+        {
+            EdgeMode = EdgeMode.Aliased
+        });
+        var count = _itemsPanel.Children.Count;
+        var height = DesiredSize.Height;
+        for (var i = 0; i < count; i++)
+        {
+            if (i > 0)
+            {
+                var child      = _itemsPanel.Children[i];
+                var offset     = child.TranslatePoint(new Point(0, 0), this);
+                if (offset != null)
+                {
+                    var pointStart = new Point(offset.Value.X, 0);
+                    var pointEnd   = new Point(offset.Value.X, height);
+                    context.DrawLine(new Pen(BorderBrush, penWidth), pointStart, pointEnd);
                 }
             }
         }

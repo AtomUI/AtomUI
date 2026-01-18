@@ -517,6 +517,17 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ConfigureEmptyIndicator();
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+            case NotifyCollectionChangedAction.Replace:
+                foreach (var i in e.OldItems!)
+                    CheckedItems.Remove(i);
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                CheckedItems.Clear();
+                break;
+        }
     }
     
     public void ExpandAll(bool? motionEnabled = null)
@@ -1451,4 +1462,5 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             e.PreventGestureRecognition();
         }
     }
+    
 }

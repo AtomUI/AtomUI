@@ -67,6 +67,21 @@ internal class CascaderToken : AbstractControlDesignToken
     /// Padding of menu item (single column)
     /// </summary>
     public Thickness MenuPadding { get; set; }
+    
+    /// <summary>
+    /// 过滤高亮颜色
+    /// </summary>
+    public Color FilterHighlightColor { get; set; }
+    
+    /// <summary>
+    /// 展开指示器的外间距
+    /// </summary>
+    public Thickness ExpandIndicatorMargin { get; set; }
+    
+    /// <summary>
+    /// 树节点 Icon 边距
+    /// </summary>
+    public Thickness NodeIconMargin { get; set; }
 
     public CascaderToken()
         : base(ID)
@@ -87,5 +102,8 @@ internal class CascaderToken : AbstractControlDesignToken
         MenuPadding              = SharedToken.PaddingXXS;
         OptionSelectedColor      = SharedToken.ColorText;
         HeaderHeight             = SharedToken.ControlHeightSM;
+        FilterHighlightColor     = SharedToken.ColorError;
+        ExpandIndicatorMargin    = new Thickness(SharedToken.UniformlyPaddingXXS, 0, 0, 0);
+        NodeIconMargin           = new Thickness(SharedToken.UniformlyPaddingXS / 2, 0, 0, 0);
     }
 }

@@ -76,5 +76,11 @@
                 <antdicons:RightOutlined/>
             </atom:IconTemplate>
         </Setter>
+        
+        <Setter Property="ItemLoadingIcon">
+            <atom:IconTemplate>
+                <antdicons:LoadingOutlined LoadingAnimation="Spin"/>
+            </atom:IconTemplate>
+        </Setter>
     </Style>
 </ControlTheme>

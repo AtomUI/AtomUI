@@ -5,5 +5,6 @@ namespace AtomUI.Desktop.Controls.Themes;
 
 internal class CascaderViewItemTheme : ControlTheme
 {
-    public static readonly TreeViewItemIndicatorEnabledConverter CascaderViewItemIndicatorEnabledConverter = new ();
+    public static readonly CascaderViewItemIndicatorEnabledConverter CascaderViewItemIndicatorEnabledConverter = new ();
+    public static readonly CascaderViewItemExpanderIsVisibleConverter CascaderViewItemExpanderIsVisibleConverter = new ();
 }

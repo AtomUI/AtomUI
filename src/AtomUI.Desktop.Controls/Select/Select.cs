@@ -497,7 +497,6 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
-        UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();
         ConfigureEffectiveSearchEnabled();
     }

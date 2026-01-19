@@ -15,6 +15,8 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
             {
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
+                InitAsyncLoadCascaderViewData(vm);
+                vm.AsyncCascaderNodeLoader = new CascaderItemDataLoader();
             }
         });
         InitializeComponent();
@@ -114,6 +116,23 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                         ]
                     }
                 ]
+            }
+        ];
+    }
+
+    private void InitAsyncLoadCascaderViewData(CascaderViewModel viewModel)
+    {
+        viewModel.AsyncLoadCascaderNodes =
+        [
+            new CascaderViewItemData()
+            {
+                Header = "Zhejiang",
+                Value  = "zhejiang"
+            },
+            new CascaderViewItemData()
+            {
+                Header = "Jiangsu",
+                Value  = "jiangsu",
             }
         ];
     }

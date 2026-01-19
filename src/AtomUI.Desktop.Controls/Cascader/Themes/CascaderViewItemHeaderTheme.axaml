@@ -55,8 +55,16 @@
                                        Inlines="{TemplateBinding FilterHighlightRuns}" />
                         </Panel>
                         <atom:IconPresenter Name="ExpandIconPresenter" Grid.Column="3"
-                                            IsVisible="{TemplateBinding IsLeaf, Converter={x:Static BoolConverters.Not}}"
-                                            IconTemplate="{TemplateBinding ExpandIcon}"/>
+                                            IconTemplate="{TemplateBinding ExpandIcon}">
+                            <atom:IconPresenter.IsVisible>
+                                <MultiBinding
+                                    Converter="{x:Static atom:CascaderViewItemTheme.CascaderViewItemExpanderIsVisibleConverter}">
+                                    <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLeaf" />
+                                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                             Path="IsLoading" />
+                                </MultiBinding>
+                            </atom:IconPresenter.IsVisible>
+                        </atom:IconPresenter>
                         <atom:IconPresenter Name="LoadingIconPresenter" Grid.Column="3"
                                             IsVisible="{TemplateBinding IsLoading}"
                                             IconTemplate="{TemplateBinding LoadingIcon}"/>

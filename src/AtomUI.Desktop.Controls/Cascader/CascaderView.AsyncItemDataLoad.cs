@@ -22,7 +22,7 @@ public partial class CascaderView
     }
     #endregion
 
-    private void HandleNodeLoadRequest(CascaderViewItem item)
+    private async Task LoadItemDataAsync(CascaderViewItem item)
     {
         if (_itemDataLoader == null)
         {
@@ -30,14 +30,13 @@ public partial class CascaderView
         }
         if (_itemDataLoader != null && ItemsSource == null)
         {
-            throw new InvalidOperationException("ITreeNodeDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
+            throw new InvalidOperationException("ICascaderItemDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
-        var data = CascaderItemFromContainer(item);
-        if (data is ICascaderViewItemData cascaderViewItemData)
+        if (item.DataContext is ICascaderViewItemData cascaderViewItemData)
         {
             var cts = new CancellationTokenSource(); // TODO 做一个超时结束
             item.IsLoading = true;
-            Dispatcher.UIThread.InvokeAsync(async () =>
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 Debug.Assert(_itemDataLoader != null);
                 var result = await _itemDataLoader.LoadAsync(cascaderViewItemData, cts.Token);
@@ -53,7 +52,6 @@ public partial class CascaderView
                             child.UpdateParentNode(cascaderViewItemData);
                         }
                         cascaderViewItemData.Children.AddRange(result.Data);
-                        item.IsExpanded = true;
                     }
                 }
             });

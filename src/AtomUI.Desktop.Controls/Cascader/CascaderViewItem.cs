@@ -704,6 +704,10 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
             {
                 IsLeaf = true;
             }
+            else if (DataContext is ICascaderViewItemData itemData)
+            {
+                IsLeaf = itemData.IsLeaf;
+            }
         }
         else
         {

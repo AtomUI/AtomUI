@@ -9,19 +9,19 @@
             Title="Basic CascaderView"
             Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <!-- <atom:CascaderView> -->
-                <!--     <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang"> -->
-                <!--         <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou"> -->
-                <!--             <atom:CascaderViewItem Header="West Lake" Value="xihu"/> -->
-                <!--             <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/> -->
-                <!--         </atom:CascaderViewItem> -->
-                <!--     </atom:CascaderViewItem> -->
-                <!--     <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu"> -->
-                <!--         <atom:CascaderViewItem Header="Nanjing" Value="nanjing"> -->
-                <!--             <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/> -->
-                <!--         </atom:CascaderViewItem> -->
-                <!--     </atom:CascaderViewItem> -->
-                <!-- </atom:CascaderView> -->
+                <atom:CascaderView>
+                    <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
+                        <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
+                            <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
+                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
+                        </atom:CascaderViewItem>
+                    </atom:CascaderViewItem>
+                    <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
+                        <atom:CascaderViewItem Header="Nanjing" Value="nanjing">
+                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/>
+                        </atom:CascaderViewItem>
+                    </atom:CascaderViewItem>
+                </atom:CascaderView>
 
                 <atom:CascaderView IsCheckable="True">
                     <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
@@ -37,7 +37,7 @@
                     </atom:CascaderViewItem>
                 </atom:CascaderView>
                 
-                <!-- <atom:CascaderView/> -->
+                <atom:CascaderView/>
             </StackPanel>
         </gallery:ShowCaseItem>
 
@@ -66,6 +66,21 @@
                     </atom:CascaderView.ItemTemplate>
                 </atom:CascaderView>
             </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Load Options Lazily"
+            Description="Load options lazily with loadData.">
+            <atom:CascaderView
+                x:DataType="viewModels:CascaderViewModel"
+                ItemsSource="{Binding AsyncLoadCascaderNodes}"
+                ItemDataLoader="{Binding AsyncCascaderNodeLoader}">
+                <atom:CascaderView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" />
+                    </TreeDataTemplate>
+                </atom:CascaderView.ItemTemplate>
+            </atom:CascaderView>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

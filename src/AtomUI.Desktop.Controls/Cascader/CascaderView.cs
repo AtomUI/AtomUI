@@ -20,6 +20,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -317,7 +318,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     private IList? _checkedItems;
     private bool _syncingCheckedItems;
     private StackPanel? _itemsPanel;
-    private bool _ignoreExpandAndCollapse;
+    private int _ignoreExpandAndCollapseLevel;
 
     static CascaderView()
     {
@@ -1057,11 +1058,10 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     {
         if (args.Source is CascaderViewItem item)
         {
-            if (!_ignoreExpandAndCollapse)
+            if (_ignoreExpandAndCollapseLevel == 0)
             {
-                ExpandItem(item);
+                Dispatcher.UIThread.InvokeAsync(async () => { await ExpandItemAsync(item); });
             }
-    
             ItemExpanded?.Invoke(this, new CascaderItemExpandedEventArgs(item));
         }
     }
@@ -1070,7 +1070,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     {
         if (args.Source is CascaderViewItem item)
         {
-            if (!_ignoreExpandAndCollapse)
+            if (_ignoreExpandAndCollapseLevel == 0)
             {
                 CollapseItem(item);
             }
@@ -1079,15 +1079,15 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         }
     }
 
-    private void ExpandItem(CascaderViewItem cascaderViewItem)
+    private async Task ExpandItemAsync(CascaderViewItem cascaderViewItem)
     {
-        if (_itemsPanel == null || _ignoreExpandAndCollapse || cascaderViewItem.ItemCount == 0)
+        if (_itemsPanel == null || _ignoreExpandAndCollapseLevel > 0)
         {
             return;
         }
         try
         {
-            _ignoreExpandAndCollapse = true;
+            ++_ignoreExpandAndCollapseLevel;
 
             if (cascaderViewItem.ItemsSource == null)
             {
@@ -1152,17 +1152,17 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                         BindUtils.RelayBind(this, ItemTemplateProperty, parentList,
                             CascaderViewLevelList.ItemTemplateProperty);
                         _itemsPanel.Children.Add(parentList);
-                        if (parentItem is CascaderViewItemData cascaderViewItemData)
+                        if (parentItem is CascaderViewItemData parentItemData)
                         {
-                            cascaderViewItemData.IsExpanded = true;
+                            parentItemData.IsExpanded = true;
                         }
                     }
                 }
             }
 
             ClearExpandedState(cascaderViewItem.Level);
-            
             cascaderViewItem.IsExpanded = true;
+            
             var targetIndex = cascaderViewItem.Level + 1;
             var count       = _itemsPanel.Children.Count;
             while (count > targetIndex)
@@ -1175,7 +1175,35 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 }
                 _itemsPanel.Children.RemoveAt(count);
             }
+            
+            if (cascaderViewItem.DataContext is ICascaderViewItemData cascaderViewItemData && 
+                cascaderViewItemData.Children.Count == 0)
+            {
+                if (ItemDataLoader == null || cascaderViewItemData.IsLeaf)
+                {
+                    return;
+                }
 
+                try
+                {
+                    --_ignoreExpandAndCollapseLevel;
+                    await Dispatcher.UIThread.InvokeAsync(async () => { await LoadItemDataAsync(cascaderViewItem); });
+                }
+                finally
+                {
+                    ++_ignoreExpandAndCollapseLevel;
+                }
+                
+                if (!cascaderViewItem.IsExpanded)
+                {
+                    return;
+                }
+            }
+            else if (cascaderViewItem.DataContext is not ICascaderViewItemData && cascaderViewItem.ItemCount == 0)
+            {
+                return;
+            }
+            
             var childList = new CascaderViewLevelList()
             {
                 ItemsPanel = ItemsPanel,
@@ -1196,22 +1224,28 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         }
         finally
         {
-            _ignoreExpandAndCollapse = false;
+            --_ignoreExpandAndCollapseLevel;
         }
     }
     
     private void CollapseItem(CascaderViewItem cascaderViewItem)
     {
-        if (_itemsPanel == null || _ignoreExpandAndCollapse || cascaderViewItem.ItemCount == 0)
+        if (_itemsPanel == null || _ignoreExpandAndCollapseLevel > 0)
         {
             return;
         }
   
         try
         {
-            _ignoreExpandAndCollapse = true;
+            ++_ignoreExpandAndCollapseLevel;
             ClearExpandedState(cascaderViewItem.Level + 1);
             cascaderViewItem.IsExpanded = false;
+            if (cascaderViewItem.ItemCount == 0 && 
+                cascaderViewItem.DataContext is ICascaderViewItemData cascaderViewItemData && cascaderViewItemData.Children.Count == 0)
+            {
+                return;
+            }
+            
             var targetIndex = cascaderViewItem.Level + 1;
             var count       = _itemsPanel.Children.Count;
             while (count > targetIndex)
@@ -1229,7 +1263,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         }
         finally
         {
-            _ignoreExpandAndCollapse = false;
+            --_ignoreExpandAndCollapseLevel;
         }
     }
 

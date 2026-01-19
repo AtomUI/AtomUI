@@ -1,5 +1,6 @@
 ﻿using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.DataLoad;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.ViewModels;
@@ -29,9 +30,51 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _basicCheckableCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _asyncLoadCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> AsyncLoadCascaderNodes
+    {
+        get => _asyncLoadCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _asyncLoadCascaderNodes, value);
+    }
+    
+    private CascaderItemDataLoader? _asyncCascaderNodeLoader;
+    
+    public CascaderItemDataLoader? AsyncCascaderNodeLoader
+    {
+        get => _asyncCascaderNodeLoader;
+        set => this.RaiseAndSetIfChanged(ref _asyncCascaderNodeLoader, value);
+    }
+    
     public CascaderViewModel(IScreen screen)
     {
         HostScreen = screen;
         Activator  = new ViewModelActivator();
+    }
+}
+
+public class CascaderItemDataLoader : ICascaderItemDataLoader
+{
+    public async Task<CascaderItemLoadResult> LoadAsync(ICascaderViewItemData targetCascaderItem, CancellationToken token)
+    {
+        await Task.Delay(TimeSpan.FromMilliseconds(600), token);
+        var children = new List<CascaderViewItemData>();
+        children.AddRange([
+            new CascaderViewItemData()
+            {
+                Header = $"{targetCascaderItem.Value} Dynamic 1",
+                IsLeaf = true
+            },
+            new CascaderViewItemData()
+            {
+                Header = $"{targetCascaderItem.Value} Dynamic 2",
+                IsLeaf = true
+            }
+        ]);
+        return new CascaderItemLoadResult()
+        {
+            IsSuccess = true,
+            Data      = children
+        };
     }
 }

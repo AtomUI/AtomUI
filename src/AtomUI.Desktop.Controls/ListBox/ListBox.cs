@@ -15,6 +15,16 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaListBox = Avalonia.Controls.ListBox;
 
+[Flags]
+public enum ListBoxItemFilterAction
+{
+    HighlightedMatch = 0x01,
+    HighlightedWhole = 0x02,
+    BoldedMatch = 0x04,
+    HideUnMatched = 0x10,
+    All = HighlightedMatch | BoldedMatch | HideUnMatched
+}
+
 public class ListBox : AvaloniaListBox,
                        ISizeTypeAware,
                        IMotionAwareControl,
@@ -56,6 +66,35 @@ public class ListBox : AvaloniaListBox,
     
     public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
         AvaloniaProperty.Register<ListBox, bool>(nameof(IsShowEmptyIndicator), true);
+    
+    public static readonly DirectProperty<ListBox, IListBoxItemFilter?> ItemFilterProperty =
+        AvaloniaProperty.RegisterDirect<ListBox, IListBoxItemFilter?>(
+            nameof(ItemFilter),
+            o => o.ItemFilter,
+            (o, v) => o.ItemFilter = v);
+    
+    public static readonly DirectProperty<ListBox, object?> ItemFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<ListBox, object?>(
+            nameof(ItemFilterValue),
+            o => o.ItemFilterValue,
+            (o, v) => o.ItemFilterValue = v);
+    
+    public static readonly DirectProperty<ListBox, ListBoxItemFilterAction> ItemFilterActionProperty =
+        AvaloniaProperty.RegisterDirect<ListBox, ListBoxItemFilterAction>(
+            nameof(ItemFilterAction),
+            o => o.ItemFilterAction,
+            (o, v) => o.ItemFilterAction = v);
+    
+    public static readonly DirectProperty<ListBox, int> FilterResultCountProperty =
+        AvaloniaProperty.RegisterDirect<ListBox, int>(nameof(FilterResultCount),
+            o => o.FilterResultCount);
+    
+    public static readonly DirectProperty<ListBox, bool> IsFilteringProperty =
+        AvaloniaProperty.RegisterDirect<ListBox, bool>(nameof(IsFiltering),
+            o => o.IsFiltering);
+    
+    public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
+        AvaloniaProperty.Register<ListBox, IBrush?>(nameof(FilterHighlightForeground));
     
     public bool IsItemSelectable
     {
@@ -130,7 +169,52 @@ public class ListBox : AvaloniaListBox,
         get => GetValue(IsShowEmptyIndicatorProperty);
         set => SetValue(IsShowEmptyIndicatorProperty, value);
     }
+    
+    private IListBoxItemFilter? _itemFilter;
+    
+    public IListBoxItemFilter? ItemFilter
+    {
+        get => _itemFilter;
+        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+    }
 
+    private object? _itemFilterValue;
+    
+    public object? ItemFilterValue
+    {
+        get => _itemFilterValue;
+        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
+    }
+    
+    private ListBoxItemFilterAction _itemFilterAction = ListBoxItemFilterAction.All;
+    
+    public ListBoxItemFilterAction ItemFilterAction
+    {
+        get => _itemFilterAction;
+        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+    }
+    
+    private int _filterResultCount;
+    
+    public int FilterResultCount
+    {
+        get => _filterResultCount;
+        private set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
+    }
+    
+    private bool _isFiltering;
+    
+    public bool IsFiltering
+    {
+        get => _isFiltering;
+        private set => SetAndRaise(IsFilteringProperty, ref _isFiltering, value);
+    }
+
+    public IBrush? FilterHighlightForeground
+    {
+        get => GetValue(FilterHighlightForegroundProperty);
+        set => SetValue(FilterHighlightForegroundProperty, value);
+    }
     #endregion
 
     #region 内部属性定义
@@ -167,6 +251,7 @@ public class ListBox : AvaloniaListBox,
     #endregion
     
     private protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
+    private protected readonly Dictionary<object, bool> _filterContext = new();
     
     public ListBox()
     {
@@ -179,6 +264,7 @@ public class ListBox : AvaloniaListBox,
     {
         base.OnInitialized();
         ConfigureEmptyIndicator();
+        ConfigureIsFiltering();
     }
 
     private void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -198,12 +284,15 @@ public class ListBox : AvaloniaListBox,
     private void HandleItemCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ConfigureEmptyIndicator();
+        FilterItems();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ItemsSourceProperty)
+        if (change.Property == ItemsSourceProperty ||
+            change.Property == IsFilteringProperty ||
+            change.Property == FilterResultCountProperty)
         {
             ConfigureEmptyIndicator();
         }
@@ -221,6 +310,17 @@ public class ListBox : AvaloniaListBox,
                 SetCurrentValue(SelectedItemsProperty, null);
             }
         }
+        else if (change.Property == ItemFilterValueProperty ||
+                 change.Property == ItemFilterProperty)
+        {
+            ConfigureIsFiltering();
+            FilterItems();
+        }
+    }
+    
+    private void ConfigureIsFiltering()
+    {
+        IsFiltering = ItemFilter != null && ItemFilterValue != null;
     }
 
     private protected void DisposableListItem(object item)
@@ -294,6 +394,8 @@ public class ListBox : AvaloniaListBox,
             disposables.Add(BindUtils.RelayBind(this, ItemHoverBgProperty, listBoxItem, ListBoxItem.ItemHoverBgProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemSelectedBgProperty, listBoxItem, ListBoxItem.ItemSelectedBgProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowSelectedIndicatorProperty, listBoxItem, ListBoxItem.IsShowSelectedIndicatorProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, listBoxItem, ListBoxItem.FilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, listBoxItem, ListBoxItem.FilterHighlightForegroundProperty));
             
             PrepareListBoxItem(listBoxItem, item, index, disposables);
             
@@ -316,7 +418,7 @@ public class ListBox : AvaloniaListBox,
     
     protected virtual void ConfigureEmptyIndicator()
     {
-        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && ItemCount == 0);
+        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (ItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
     }
     
     private void ConfigureEffectiveBorderThickness()
@@ -347,5 +449,78 @@ public class ListBox : AvaloniaListBox,
                 e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
         }
         return false;
+    }
+
+    protected bool FilterItem(ListBoxItem item)
+    {
+        if (ItemFilter == null)
+        {
+            return false;
+        }
+        return ItemFilter.Filter(this, item, ItemFilterValue);
+    }
+
+    private void FilterItems()
+    {
+        if (ItemFilter != null)
+        {
+            if (ItemFilterValue != null)
+            {
+                if (ItemFilterAction.HasFlag(ListBoxItemFilterAction.HideUnMatched))
+                {
+                    if (_filterContext.Count == 0)
+                    {
+                        foreach (var item in Items)
+                        {
+                            if (item is ListBoxItem listBoxItem)
+                            {
+                                _filterContext[listBoxItem] = listBoxItem.IsVisible;
+                            }
+                        }
+                    }
+                }
+                
+                var count = 0;
+                foreach (var item in Items)
+                {
+                    if (item is ListBoxItem listBoxItem)
+                    {
+                        var filterResult = FilterItem(listBoxItem);
+                        if (filterResult)
+                        {
+                            ++count;
+                        }
+
+                        if (ItemFilterAction.HasFlag(ListBoxItemFilterAction.HideUnMatched))
+                        {
+                            listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, filterResult);
+                        }
+                       
+                        listBoxItem.IsFiltering = true;
+                        listBoxItem.FilterValue = ItemFilterValue;
+                    }
+                }
+                FilterResultCount = count;
+                return;
+            }
+        }
+        ClearFilter();
+    }
+
+    private void ClearFilter()
+    {
+        foreach (var item in Items)
+        {
+            if (item is ListBoxItem listBoxItem)
+            {
+                if (_filterContext.TryGetValue(listBoxItem, out bool value))
+                {
+                    listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, value);
+                }
+                listBoxItem.IsFiltering = false;
+                listBoxItem.FilterValue = null;
+            }
+        }
+        _filterContext.Clear();
     }
 }

@@ -53,6 +53,11 @@ internal class ListBoxToken : AbstractControlDesignToken
     /// 列表项选中背景色
     /// </summary>
     public Color ItemSelectedBgColor { get; set; }
+    
+    /// <summary>
+    /// 过滤高亮颜色
+    /// </summary>
+    public Color FilterHighlightColor { get; set; }
 
     /// <summary>
     /// 列表项小号内间距
@@ -73,6 +78,7 @@ internal class ListBoxToken : AbstractControlDesignToken
     /// 列表项外边距
     /// </summary>
     public Thickness ItemMargin { get; set; }
+    
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -97,5 +103,7 @@ internal class ListBoxToken : AbstractControlDesignToken
 
         ContentPadding   = new Thickness(SharedToken.UniformlyPaddingXXS / 2);
         ItemMargin       = new Thickness(0, 0.5);
+
+        FilterHighlightColor = SharedToken.ColorError;
     }
 }

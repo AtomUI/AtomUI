@@ -149,8 +149,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     public static readonly DirectProperty<TreeView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<TreeView, int>(nameof(FilterResultCount),
-            o => o.FilterResultCount,
-            (o, v) => o.FilterResultCount = v);
+            o => o.FilterResultCount);
     
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<TreeView, IBrush?>(nameof(FilterHighlightForeground));
@@ -342,7 +341,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public int FilterResultCount
     {
         get => _filterResultCount;
-        set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
+        private set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
     }
     
     [DependsOn(nameof(EmptyIndicatorTemplate))]

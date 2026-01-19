@@ -40,6 +40,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ContentPadding}}" />
+        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.FilterHighlightColor}}" />
         
         <Setter Property="SelectedIndicator">
             <atom:IconTemplate>

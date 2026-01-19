@@ -53,17 +53,11 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public static readonly StyledProperty<IconTemplate?> ItemLoadingIconProperty =
         AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ItemLoadingIcon));
     
-    public static readonly StyledProperty<IconTemplate?> ItemIconProperty =
-        AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ItemIcon));
-    
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CascaderView>();
     
-    public static readonly StyledProperty<bool> IsCheckStrictlyProperty = 
-        AvaloniaProperty.Register<CascaderView, bool>(nameof(IsCheckStrictly), false);
-    
-    public static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
-        AvaloniaProperty.Register<CascaderView, ItemToggleType>(nameof(ToggleType), ItemToggleType.None);
+    public static readonly StyledProperty<bool> IsCheckableProperty =
+        AvaloniaProperty.Register<CascaderView, bool>(nameof(IsCheckable));
     
     public static readonly DirectProperty<CascaderView, IList<TreeNodePath>?> DefaultCheckedPathsProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, IList<TreeNodePath>?>(
@@ -145,28 +139,16 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         set => SetValue(ItemLoadingIconProperty, value);
     }
     
-    public IconTemplate? ItemIcon
-    {
-        get => GetValue(ItemIconProperty);
-        set => SetValue(ItemIconProperty, value);
-    }
-    
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public bool IsCheckStrictly
+    public bool IsCheckable
     {
-        get => GetValue(IsCheckStrictlyProperty);
-        set => SetValue(IsCheckStrictlyProperty, value);
-    }
-    
-    public ItemToggleType ToggleType
-    {
-        get => GetValue(ToggleTypeProperty);
-        set => SetValue(ToggleTypeProperty, value);
+        get => GetValue(IsCheckableProperty);
+        set => SetValue(IsCheckableProperty, value);
     }
     
     private IList<TreeNodePath>? _defaultCheckedPaths;
@@ -304,11 +286,24 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             o => o.IsEffectiveEmptyVisible,
             (o, v) => o.IsEffectiveEmptyVisible = v);
     
+    internal static readonly DirectProperty<CascaderView, ItemToggleType> EffectiveToggleTypeProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, ItemToggleType>(
+            nameof(EffectiveToggleType),
+            o => o.EffectiveToggleType,
+            (o, v) => o.EffectiveToggleType = v);
+    
     private bool _isEffectiveEmptyVisible = false;
     internal bool IsEffectiveEmptyVisible
     {
         get => _isEffectiveEmptyVisible;
         set => SetAndRaise(IsEffectiveEmptyVisibleProperty, ref _isEffectiveEmptyVisible, value);
+    }
+    
+    private ItemToggleType _effectiveToggleType = ItemToggleType.None;
+    internal ItemToggleType EffectiveToggleType
+    {
+        get => _effectiveToggleType;
+        set => SetAndRaise(EffectiveToggleTypeProperty, ref _effectiveToggleType, value);
     }
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -349,6 +344,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     {
         base.OnInitialized();
         ConfigureEmptyIndicator();
+        ConfigureEffectiveToggleType();
     }
     
     public IEnumerable<Control> GetRealizedTreeContainers()
@@ -376,19 +372,24 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         return CascaderContainerFromItem(this, item);
     }
     
-    private static Control? CascaderContainerFromItem(ItemsControl itemsControl, object item)
+    private Control? CascaderContainerFromItem(ItemsControl itemsControl, object item)
     {
         if (itemsControl.ContainerFromItem(item) is { } container)
         {
             return container;
         }
-
-        foreach (var child in itemsControl.GetRealizedContainers())
+        
+        if (_itemsPanel != null)
         {
-            if (child is ItemsControl childItemsControl &&
-                CascaderContainerFromItem(childItemsControl, item) is { } childContainer)
+            for (var i = 0; i < _itemsPanel.Children.Count; i++)
             {
-                return childContainer;
+                if (_itemsPanel.Children[i] is CascaderViewLevelList levelList)
+                {
+                    if (levelList.ContainerFromItem(item) is { } childContainer)
+                    {
+                        return childContainer;
+                    }
+                }
             }
         }
 
@@ -400,19 +401,24 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         return CascaderItemFromContainer(this, container);
     }
     
-    private static object? CascaderItemFromContainer(ItemsControl itemsControl, Control container)
+    private object? CascaderItemFromContainer(ItemsControl itemsControl, Control container)
     {
         if (itemsControl.ItemFromContainer(container) is { } item)
         {
             return item;
         }
 
-        foreach (var child in itemsControl.GetRealizedContainers())
+        if (_itemsPanel != null)
         {
-            if (child is ItemsControl childItemsControl &&
-                CascaderItemFromContainer(childItemsControl, container) is { } childContainer)
+            for (var i = 0; i < _itemsPanel.Children.Count; i++)
             {
-                return childContainer;
+                if (_itemsPanel.Children[i] is CascaderViewLevelList levelList)
+                {
+                    if (levelList.ItemFromContainer(container) is { } childItem)
+                    {
+                        return childItem;
+                    }
+                }
             }
         }
 
@@ -472,7 +478,15 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             return;
         }
 
-        var checkedItems = DoCheckedSubTree(item);
+        ISet<object>? checkedItems = null;
+        if (ItemsSource != null && item.DataContext is ICascaderViewItemData itemData)
+        {
+            checkedItems = DoCheckedSubTree(itemData);
+        }
+        else
+        {
+            checkedItems = DoCheckedSubTree(item);
+        }
         try
         {
             _syncingCheckedItems = true;
@@ -494,41 +508,61 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     {
         var checkedItems = new HashSet<object>();
         item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, true);
-        var cascaderItemData = CascaderItemFromContainer(item);
-        Debug.Assert(cascaderItemData != null);
-        checkedItems.Add(cascaderItemData);
-        if (item.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
-        {
-            var layoutManager = visualRoot.GetLayoutManager();
-            layoutManager.ExecuteLayoutPass();
-        }
         
+        checkedItems.Add(item);
+
         foreach (var childItem in item.Items)
         {
-            if (childItem != null)
+            if (childItem is CascaderViewItem cascaderViewItem && (!cascaderViewItem.IsAttachedToVisualTree() || cascaderViewItem.IsEffectiveCheckable()))
             {
-                var container = CascaderContainerFromItem(childItem);
-                if (container is CascaderViewItem cascaderViewItem && cascaderViewItem.IsEffectiveCheckable())
-                {
-                    var childCheckedItems = DoCheckedSubTree(cascaderViewItem);
-                    checkedItems.UnionWith(childCheckedItems);
-                }
+                var childCheckedItems = DoCheckedSubTree(cascaderViewItem);
+                checkedItems.UnionWith(childCheckedItems);
             }
         }
-
+        
         var (checkedParentItems, _) = SetupParentNodeCheckedStatus(item);
         checkedItems.UnionWith(checkedParentItems);
         return checkedItems;
     }
-    
+
+    private ISet<object> DoCheckedSubTree(ICascaderViewItemData item)
+    {
+        var checkedItems = new HashSet<object>();
+        item.IsChecked = true;
+        
+        checkedItems.Add(item);
+
+        foreach (var childItem in item.Children)
+        {
+            if (childItem.IsEnabled)
+            {
+                var childCheckedItems = DoCheckedSubTree(childItem);
+                checkedItems.UnionWith(childCheckedItems);
+            }
+        }
+        
+        var (checkedParentItems, _) = SetupParentNodeCheckedStatus(item);
+        checkedItems.UnionWith(checkedParentItems);
+        return checkedItems;
+    }
+
     public void UnCheckedSubTree(CascaderViewItem item)
     {
         if (!item.IsEffectiveCheckable())
         {
             return;
         }
-
-        var unCheckedItems = DoUnCheckedSubTree(item);
+        
+        ISet<object>? unCheckedItems = null;
+        if (ItemsSource != null && item.DataContext is ICascaderViewItemData itemData)
+        {
+            unCheckedItems = DoUnCheckedSubTree(itemData);
+        }
+        else
+        {
+            unCheckedItems = DoUnCheckedSubTree(item);
+        }
+        
         try
         {
             _syncingCheckedItems = true;
@@ -536,9 +570,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             {
                 CheckedItems.Remove(unCheckedItem);
             }
-            var cascaderItemData = CascaderItemFromContainer(item);
-            Debug.Assert(cascaderItemData != null);
-            CheckedItems.Remove(cascaderItemData);
+            CheckedItems.Remove(item);
         }
         finally
         {
@@ -551,27 +583,39 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         var unCheckedItems = new HashSet<object>();
         if (item.IsChecked == true)
         {
-            var cascaderItemData = CascaderItemFromContainer(item);
-            Debug.Assert(cascaderItemData != null);
-            unCheckedItems.Add(cascaderItemData);
+            unCheckedItems.Add(item);
         }
         item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, false);
-        if (item.Presenter?.Panel == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
-        {
-            var layoutManager = visualRoot.GetLayoutManager();
-            layoutManager.ExecuteLayoutPass();
-        }
 
         foreach (var childItem in item.Items)
         {
-            if (childItem != null)
+            if (childItem is CascaderViewItem cascaderViewItem && (!cascaderViewItem.IsAttachedToVisualTree() || cascaderViewItem.IsEffectiveCheckable()))
             {
-                var control = CascaderContainerFromItem(childItem);
-                if (control is CascaderViewItem cascaderViewItem && cascaderViewItem.IsEffectiveCheckable())
-                {
-                    var childUnCheckedItems = DoUnCheckedSubTree(cascaderViewItem);
-                    unCheckedItems.UnionWith(childUnCheckedItems);
-                }
+                var childUnCheckedItems = DoUnCheckedSubTree(cascaderViewItem);
+                unCheckedItems.UnionWith(childUnCheckedItems);
+            }
+        }
+        var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(item);
+        unCheckedItems.UnionWith(unCheckedParentItems);
+        return unCheckedItems;
+    }
+    
+    public ISet<object> DoUnCheckedSubTree(ICascaderViewItemData item)
+    {
+        var unCheckedItems = new HashSet<object>();
+        if (item.IsChecked == true)
+        {
+            unCheckedItems.Add(item);
+        }
+
+        item.IsChecked = false;
+
+        foreach (var childItem in item.Children)
+        {
+            if (childItem.IsEnabled)
+            {
+                var childUnCheckedItems = DoUnCheckedSubTree(childItem);
+                unCheckedItems.UnionWith(childUnCheckedItems);
             }
         }
         var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(item);
@@ -607,12 +651,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, CascaderViewItem.HeaderTemplateProperty));
             }
             
-            SetCascaderViewItemIcon(cascaderViewItem, CascaderViewItem.ExpandIconProperty, ItemExpandIcon);
-            
+            disposables.Add(BindUtils.RelayBind(this, ItemLoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, cascaderViewItem, CascaderViewItem.ItemFilterActionProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, cascaderViewItem, CascaderViewItem.FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
@@ -631,18 +675,6 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         else
         {
             throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type CascaderViewItem.");
-        }
-    }
-
-    private void SetCascaderViewItemIcon(CascaderViewItem cascaderViewItem, AvaloniaProperty iconProperty, IIconTemplate? iconTemplate)
-    {
-        if (iconTemplate == null)
-        {
-            cascaderViewItem.SetValue(iconProperty, null);
-        }
-        else
-        {
-            cascaderViewItem.SetValue(iconProperty, iconTemplate.Build());
         }
     }
     
@@ -827,27 +859,18 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             {
                 isAllChecked = parentCascaderItem.Items.All(childItem =>
                 {
-                    if (childItem != null)
+                    if (childItem is CascaderViewItem cascaderViewItem)
                     {
-                        var container = CascaderContainerFromItem(childItem);
-                        if (container is CascaderViewItem cascaderViewItem)
-                        {
-                            return !cascaderViewItem.IsEffectiveCheckable() || cascaderViewItem.IsChecked.HasValue && cascaderViewItem.IsChecked.Value;
-                        }
+                        return (cascaderViewItem.IsAttachedToVisualTree() && !cascaderViewItem.IsEffectiveCheckable()) || cascaderViewItem.IsChecked.HasValue && cascaderViewItem.IsChecked.Value;
                     }
-                    
                     return false;
                 });
 
                 isAnyChecked = parentCascaderItem.Items.Any(childItem =>
                 {
-                    if (childItem != null)
+                    if (childItem is CascaderViewItem cascaderViewItem)
                     {
-                        var container = CascaderContainerFromItem(childItem);
-                        if (container is CascaderViewItem cascaderViewItem)
-                        {
-                            return cascaderViewItem.IsEffectiveCheckable() && (!cascaderViewItem.IsChecked.HasValue || cascaderViewItem.IsChecked.HasValue && cascaderViewItem.IsChecked.Value);
-                        }
+                        return (cascaderViewItem.IsEffectiveCheckable() || !cascaderViewItem.IsAttachedToVisualTree()) && (!cascaderViewItem.IsChecked.HasValue || cascaderViewItem.IsChecked.HasValue && cascaderViewItem.IsChecked.Value);
                     }
                     return false;
                 });
@@ -855,9 +878,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
 
             if (parentCascaderItem.IsChecked == true && !isAllChecked)
             {
-                var parentTreeItemData = CascaderItemFromContainer(parentCascaderItem);
-                Debug.Assert(parentTreeItemData != null);
-                unCheckedParents.Add(parentTreeItemData);
+                unCheckedParents.Add(parentCascaderItem);
             }
             
             var originMotionEnabled = parentCascaderItem.IsMotionEnabled;
@@ -884,16 +905,65 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
        
             if (parentCascaderItem.IsChecked == true)
             {
-                var parentTreeItemData = CascaderItemFromContainer(parentCascaderItem);
-                Debug.Assert(parentTreeItemData != null);
-                checkedParents.Add(parentTreeItemData);
+                checkedParents.Add(parentCascaderItem);
             }
             parent = parent.Parent;
         }
 
         return (checkedParents, unCheckedParents);
     }
-    
+
+    private (ISet<object>, ISet<object>) SetupParentNodeCheckedStatus(ICascaderViewItemData item)
+    {
+        var parent           = item.ParentNode;
+        var checkedParents   =  new HashSet<object>();
+        var unCheckedParents =  new HashSet<object>();
+        while (parent is ICascaderViewItemData parentCascaderItemData && parentCascaderItemData.IsEnabled)
+        {
+            var isAllChecked = false;
+            var isAnyChecked = false;
+
+            if (parentCascaderItemData.Children.Count > 0)
+            {
+                isAllChecked = parentCascaderItemData.Children.All(childItem =>
+                {
+                    return !childItem.IsEnabled || childItem.IsChecked.HasValue && childItem.IsChecked.Value;
+                });
+
+                isAnyChecked = parentCascaderItemData.Children.Any(childItem =>
+                {
+                    return childItem.IsEnabled && (!childItem.IsChecked.HasValue || childItem.IsChecked.HasValue && childItem.IsChecked.Value);
+                });
+            }
+
+            if (parentCascaderItemData.IsChecked == true && !isAllChecked)
+            {
+                unCheckedParents.Add(parentCascaderItemData);
+            }
+            
+            if (isAllChecked)
+            {
+                parentCascaderItemData.IsChecked = true;
+            }
+            else if (isAnyChecked)
+            {
+                parentCascaderItemData.IsChecked = null;
+            }
+            else
+            {
+                parentCascaderItemData.IsChecked = false;
+            }
+       
+            if (parentCascaderItemData.IsChecked == true)
+            {
+                checkedParents.Add(parentCascaderItemData);
+            }
+            parent = parent.ParentNode;
+        }
+
+        return (checkedParents, unCheckedParents);
+    }
+
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -903,19 +973,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ItemExpandIconProperty)
-        {
-            HandleItemExpandIconChanged();
-        }
-        else if (change.Property == ItemLoadingIconProperty)
-        {
-            HandleItemLoadingIconChanged();
-        }
-        else if (change.Property == ItemIconProperty)
-        {
-            HandleItemIconChanged();
-        }
-        else if (change.Property == ItemDataLoaderProperty)
+        if (change.Property == ItemDataLoaderProperty)
         {
             HasItemAsyncDataLoader = ItemDataLoader != null;
         }
@@ -934,41 +992,9 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             ConfigureEmptyIndicator();
         }
-    }
-    
-    protected void HandleItemExpandIconChanged()
-    {
-        for (var i = 0; i < ItemCount; i++)
+        else if (change.Property == IsCheckableProperty)
         {
-            var container = ContainerFromIndex(i);
-            if (container is CascaderViewItem cascaderViewItem)
-            {
-                SetCascaderViewItemIcon(cascaderViewItem, CascaderViewItem.ExpandIconProperty, ItemExpandIcon);
-            }
-        }
-    }
-    
-    protected void HandleItemLoadingIconChanged()
-    {
-        for (var i = 0; i < ItemCount; i++)
-        {
-            var container = ContainerFromIndex(i);
-            if (container is CascaderViewItem cascaderViewItem)
-            {
-                SetCascaderViewItemIcon(cascaderViewItem, CascaderViewItem.LoadingIconProperty, ItemLoadingIcon);
-            }
-        }
-    }
-    
-    protected void HandleItemIconChanged()
-    {
-        for (var i = 0; i < ItemCount; i++)
-        {
-            var container = ContainerFromIndex(i);
-            if (container is CascaderViewItem cascaderViewItem)
-            {
-                SetCascaderViewItemIcon(cascaderViewItem, CascaderViewItem.IconProperty, ItemIcon);
-            }
+            ConfigureEffectiveToggleType();
         }
     }
     
@@ -1270,6 +1296,18 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                     context.DrawLine(new Pen(BorderBrush, penWidth), pointStart, pointEnd);
                 }
             }
+        }
+    }
+
+    private void ConfigureEffectiveToggleType()
+    {
+        if (IsCheckable)
+        {
+            EffectiveToggleType = ItemToggleType.CheckBox;
+        }
+        else
+        {
+            EffectiveToggleType = ItemToggleType.None;
         }
     }
 }

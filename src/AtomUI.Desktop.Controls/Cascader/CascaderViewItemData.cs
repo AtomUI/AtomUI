@@ -6,10 +6,9 @@ namespace AtomUI.Desktop.Controls;
 
 public interface ICascaderViewItemData : ITreeNode<ICascaderViewItemData>
 {
-    bool? IsChecked { get; }
-    bool IsExpanded { get; }
-    bool IsIndicatorEnabled { get; }
-    string? GroupName { get; }
+    bool? IsChecked { get; set; }
+    bool IsExpanded { get; set; }
+    bool IsIndicatorEnabled { get; set; }
     bool IsLeaf { get; }
     object? Value { get; set; }
 
@@ -102,7 +101,6 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
         set => SetAndRaise(IsIndicatorEnabledProperty, ref _isIndicatorEnabled, value);
     }
     
-    public string? GroupName { get; init; }
     public bool IsLeaf { get; init; } = false;
     
     public object? Value { get; set; }

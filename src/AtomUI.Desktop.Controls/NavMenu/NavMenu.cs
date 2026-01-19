@@ -216,6 +216,7 @@ public class NavMenu : ItemsControl,
     private readonly Dictionary<NavMenuItem, CompositeDisposable> _itemsBindingDisposables = new();
     private IDisposable? _borderThicknessDisposable;
     private bool _defaultOpenPathsApplied;
+    private bool? _originIsMotionEnabled;
 
     static NavMenu()
     {
@@ -810,8 +811,8 @@ public class NavMenu : ItemsControl,
 
     private async Task<List<NavMenuItem>> OpenMenuItemPathAsync(IList<INavMenuItemData> pathNodes)
     {
-        List<NavMenuItem> items                 = new List<NavMenuItem>();
-        var               originIsMotionEnabled = IsMotionEnabled;
+        List<NavMenuItem> items = new List<NavMenuItem>();
+        _originIsMotionEnabled ??= IsMotionEnabled;
         try
         {
             SetCurrentValue(IsMotionEnabledProperty, false);
@@ -830,7 +831,11 @@ public class NavMenu : ItemsControl,
         }
         finally
         {
-            SetCurrentValue(IsMotionEnabledProperty, originIsMotionEnabled);
+            if (_originIsMotionEnabled != null)
+            {
+                SetCurrentValue(IsMotionEnabledProperty, _originIsMotionEnabled.Value);
+                _originIsMotionEnabled = null;
+            }
         }
 
         return items;

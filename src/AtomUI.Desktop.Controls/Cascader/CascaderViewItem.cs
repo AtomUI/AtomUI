@@ -1,7 +1,6 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
-using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Utils;
 using Avalonia;
@@ -20,9 +19,8 @@ using Avalonia.Threading;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, 
-    CascaderViewPseudoClass.NodeToggleTypeRadio,
     StdPseudoClass.Pressed, StdPseudoClass.Expanded)]
-public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderViewItemData
+public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsExpandedProperty =
@@ -52,9 +50,6 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
 
     public static readonly StyledProperty<bool> IsLoadingProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsLoading), false);
-    
-    public static readonly StyledProperty<string?> GroupNameProperty =
-        RadioButton.GroupNameProperty.AddOwner<CascaderViewItem>();
     
     public static readonly DirectProperty<CascaderViewItem, object?> ValueProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, object?>(nameof(Value),
@@ -122,12 +117,6 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
     }
-
-    public string? GroupName
-    {
-        get => GetValue(GroupNameProperty);
-        set => SetValue(GroupNameProperty, value);
-    }
     
     public bool IsIndicatorEnabled
     {
@@ -164,11 +153,11 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
 
     #region 内部属性定义
     
-    internal static readonly StyledProperty<PathIcon?> ExpandIconProperty =
-        AvaloniaProperty.Register<CascaderViewItem, PathIcon?>(nameof(ExpandIcon));
+    internal static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
+        AvaloniaProperty.Register<CascaderViewItem, IconTemplate?>(nameof(ExpandIcon));
 
-    internal static readonly StyledProperty<PathIcon?> LoadingIconProperty =
-        AvaloniaProperty.Register<CascaderViewItem, PathIcon?>(nameof(LoadingIcon));
+    internal static readonly StyledProperty<IconTemplate?> LoadingIconProperty =
+        AvaloniaProperty.Register<CascaderViewItem, IconTemplate?>(nameof(LoadingIcon));
     
     internal static readonly DirectProperty<CascaderViewItem, bool> IsShowIconProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsShowIcon),
@@ -221,13 +210,13 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
             o => o.HeaderBounds,
             (o, v) => o.HeaderBounds = v);
     
-    internal PathIcon? ExpandIcon
+    internal IconTemplate? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
         set => SetValue(ExpandIconProperty, value);
     }
 
-    internal PathIcon? LoadingIcon
+    internal IconTemplate? LoadingIcon
     {
         get => GetValue(LoadingIconProperty);
         set => SetValue(LoadingIconProperty, value);
@@ -567,10 +556,6 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
         {
             ConfigureIsLeaf();
         }
-        else if (change.Property == GroupNameProperty)
-        {
-            HandleGroupNameChanged(change);
-        }
         else if (change.Property == IsCheckedProperty)
         {
             HandleIsCheckedChanged(change);
@@ -580,18 +565,11 @@ public class CascaderViewItem : HeaderedItemsControl, IRadioButton, ICascaderVie
             HandleToggleTypeChanged(change);
         }
     }
-
-    private void HandleGroupNameChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        (CascaderViewInteractionHandler as DefaultCascaderViewInteractionHandler)?.OnGroupOrTypeChanged(this, change.GetOldValue<string>());
-    }
     
     private void HandleToggleTypeChanged(AvaloniaPropertyChangedEventArgs change)
     {
         var newValue = change.GetNewValue<ItemToggleType>();
-        PseudoClasses.Set(TreeViewPseudoClass.NodeToggleTypeRadio, newValue == ItemToggleType.Radio);
-        PseudoClasses.Set(TreeViewPseudoClass.NodeToggleTypeCheckBox, newValue == ItemToggleType.CheckBox);
-        (CascaderViewInteractionHandler as DefaultCascaderViewInteractionHandler)?.OnGroupOrTypeChanged(this, GroupName);
+        PseudoClasses.Set(CascaderViewPseudoClass.NodeToggleTypeCheckBox, newValue == ItemToggleType.CheckBox);
     }
     
     private void HandleIsCheckedChanged(AvaloniaPropertyChangedEventArgs change)

@@ -206,11 +206,10 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ControlItemWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.ControlItemWidth");
         public static readonly TokenResourceKey ControlWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.ControlWidth");
         public static readonly TokenResourceKey DropdownHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.DropdownHeight");
-        public static readonly TokenResourceKey ExpandIndicatorMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.ExpandIndicatorMargin");
         public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.FilterHighlightColor");
         public static readonly TokenResourceKey HeaderHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.HeaderHeight");
+        public static readonly TokenResourceKey ItemHeaderSpacing = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.ItemHeaderSpacing");
         public static readonly TokenResourceKey MenuPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.MenuPadding");
-        public static readonly TokenResourceKey NodeIconMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.NodeIconMargin");
         public static readonly TokenResourceKey OptionHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionHoverBg");
         public static readonly TokenResourceKey OptionPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionPadding");
         public static readonly TokenResourceKey OptionSelectedBg = new TokenResourceKey("AtomUI.Desktop.Controls.Cascader.OptionSelectedBg");

@@ -2,7 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:antdicons="https://atomui.net/icons/antdesign"
+
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CascaderViewItemHeader}" TargetType="atom:CascaderViewItemHeader">
         <Setter Property="Template">
@@ -27,28 +27,15 @@
                             <atom:CheckBox Name="ToggleCheckbox"
                                            IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
                                            IsVisible="False">
-                                <atom:RadioButton.IsEnabled>
+                                <atom:CheckBox.IsEnabled>
                                     <MultiBinding
                                         Converter="{x:Static atom:CascaderViewItemTheme.CascaderViewItemIndicatorEnabledConverter}">
                                         <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsEnabled" />
                                         <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                                  Path="IsIndicatorEnabled" />
                                     </MultiBinding>
-                                </atom:RadioButton.IsEnabled>
+                                </atom:CheckBox.IsEnabled>
                             </atom:CheckBox>
-                            <atom:RadioButton Name="ToggleRadio"
-                                              IsChecked="{TemplateBinding IsChecked}"
-                                              GroupName="{TemplateBinding GroupName}"
-                                              IsVisible="False">
-                                <atom:RadioButton.IsEnabled>
-                                    <MultiBinding
-                                        Converter="{x:Static atom:TreeViewItemTheme.TreeViewItemIndicatorEnabledConverter}">
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsEnabled" />
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                 Path="IsIndicatorEnabled" />
-                                    </MultiBinding>
-                                </atom:RadioButton.IsEnabled>
-                            </atom:RadioButton>
                         </Panel>
 
                         <atom:IconPresenter Name="IconPresenter"
@@ -67,8 +54,12 @@
                                        IsVisible="False"
                                        Inlines="{TemplateBinding FilterHighlightRuns}" />
                         </Panel>
-                        <antdicons:RightOutlined Grid.Column="3" Name="ExpandIndicator"
-                                                 IsVisible="{TemplateBinding IsLeaf, Converter={x:Static BoolConverters.Not}}"/>
+                        <atom:IconPresenter Name="ExpandIconPresenter" Grid.Column="3"
+                                            IsVisible="{TemplateBinding IsLeaf, Converter={x:Static BoolConverters.Not}}"
+                                            IconTemplate="{TemplateBinding ExpandIcon}"/>
+                        <atom:IconPresenter Name="LoadingIconPresenter" Grid.Column="3"
+                                            IsVisible="{TemplateBinding IsLoading}"
+                                            IconTemplate="{TemplateBinding LoadingIcon}"/>
                     </Grid>
                 </Border>
             </ControlTemplate>
@@ -83,7 +74,6 @@
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
-            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TreeViewTokenKey.TreeNodeIconMargin}}" />
         </Style>
 
         <Setter Property="Background" Value="Transparent" />
@@ -111,11 +101,9 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-
-        <Style Selector="^[ToggleType=Radio][IsLeaf=True]">
-            <Style Selector="^ /template/ atom|RadioButton#ToggleRadio">
-                <Setter Property="IsVisible" Value="True" />
-            </Style>
+        
+        <Style Selector="^ /template/ Grid#ItemsLayout">
+            <Setter Property="ColumnSpacing" Value="{DynamicResource {x:Static atom:CascaderTokenKey.ItemHeaderSpacing}}" />
         </Style>
 
         <Style Selector="^:disabled">
@@ -140,11 +128,10 @@
             </Style>
         </Style>
         
-        <Style Selector="^ /template/ atom|Icon#ExpandIndicator">
-            <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
+        <Style Selector="^ /template/ atom|IconPresenter">
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
-            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:CascaderTokenKey.ExpandIndicatorMargin}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

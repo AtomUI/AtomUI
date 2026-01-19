@@ -21,6 +21,14 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _basicCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _basicCheckableCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> BasicCheckableCascaderNodes
+    {
+        get => _basicCheckableCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _basicCheckableCascaderNodes, value);
+    }
+    
     public CascaderViewModel(IScreen screen)
     {
         HostScreen = screen;

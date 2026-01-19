@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using AtomUI.Controls;
-using AtomUI.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,7 +12,6 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
     protected IInputManager? InputManager { get; }
     internal CascaderView? CascaderView { get; private set; }
     private IRenderRoot? _root;
-    private RadioButtonGroupManager? _groupManager;
 
     public DefaultCascaderViewInteractionHandler()
     {
@@ -27,17 +24,6 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
         CascaderView.PointerPressed  += PointerPressed;
         CascaderView.PointerReleased += PointerReleased;
         _root                        =  CascaderView.GetVisualRoot();
-        if (_root is not null)
-        {
-            _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(_root);
-            for (var i = 0; i < CascaderView.ItemCount; i++)
-            {
-                if (CascaderView.ContainerFromIndex(i) is CascaderViewItem item)
-                {
-                    AddTreeViewItemToRadioGroup(_groupManager, item);
-                }
-            }
-        }
     }
 
     public void Detach(CascaderView cascaderView)
@@ -49,18 +35,6 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
         
         CascaderView.PointerPressed  -= PointerPressed;
         CascaderView.PointerReleased -= PointerReleased;
-        
-        if (_root is not null && _groupManager is { } oldManager)
-        {
-            _groupManager = null;
-            for (var i = 0; i < CascaderView.ItemCount; i++)
-            {
-                if (CascaderView.ContainerFromIndex(i) is CascaderViewItem item)
-                {
-                    RemoveTreeViewItemToRadioGroup(oldManager, item);
-                }
-            }
-        }
 
         CascaderView = null;
         _root        = null;
@@ -117,73 +91,18 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
     internal void OnCheckedChanged(CascaderViewItem item)
     {
         Debug.Assert(CascaderView != null);
-        if (CascaderView.ToggleType == ItemToggleType.Radio && item is IRadioButton radioButton)
+        if (CascaderView.IsCheckable)
         {
-            _groupManager?.OnCheckedChanged(radioButton);
-        }
-        else if (CascaderView.ToggleType == ItemToggleType.CheckBox)
-        {
-            if (!CascaderView.IsCheckStrictly)
+            if (item.IsChecked.HasValue)
             {
-                if (item.IsChecked.HasValue)
+                if (item.IsChecked.Value)
                 {
-                    if (item.IsChecked.Value)
-                    {
-                        CascaderView.CheckedSubTree(item);
-                    }
-                    else
-                    {
-                        CascaderView.UnCheckedSubTree(item);
-                    }
+                    CascaderView.CheckedSubTree(item);
                 }
-            }
-        }
-    }
-
-    internal void OnGroupOrTypeChanged(IRadioButton button, string? oldGroupName)
-    {
-        if (!string.IsNullOrEmpty(oldGroupName))
-        {
-            _groupManager?.Remove(button, oldGroupName);
-        }
-
-        if (!string.IsNullOrEmpty(button.GroupName))
-        {
-            _groupManager?.Add(button);
-        }
-    }
-
-    private static void AddTreeViewItemToRadioGroup(RadioButtonGroupManager manager, CascaderViewItem element)
-    {
-        // Instead add menu item to the group on attached/detached + ensure checked stated on attached.
-        if (element is IRadioButton button)
-        {
-            manager.Add(button);
-        }
-
-        for (var i = 0; i < element.ItemCount; i++)
-        {
-            var item = element.ContainerFromIndex(i);
-            if (item is CascaderViewItem cascaderViewItem)
-            {
-                AddTreeViewItemToRadioGroup(manager, cascaderViewItem);
-            }
-        }
-    }
-
-    private static void RemoveTreeViewItemToRadioGroup(RadioButtonGroupManager manager, CascaderViewItem element)
-    {
-        if (element is IRadioButton button)
-        {
-            manager.Remove(button, button.GroupName);
-        }
-
-        for (var i = 0; i < element.ItemCount; i++)
-        {
-            var item = element.ContainerFromIndex(i);
-            if (item is CascaderViewItem cascaderViewItem)
-            {
-                RemoveTreeViewItemToRadioGroup(manager, cascaderViewItem);
+                else
+                {
+                    CascaderView.UnCheckedSubTree(item);
+                }
             }
         }
     }

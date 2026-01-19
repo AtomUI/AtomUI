@@ -74,14 +74,9 @@ internal class CascaderToken : AbstractControlDesignToken
     public Color FilterHighlightColor { get; set; }
     
     /// <summary>
-    /// 展开指示器的外间距
+    /// Item 头的元素间距
     /// </summary>
-    public Thickness ExpandIndicatorMargin { get; set; }
-    
-    /// <summary>
-    /// 树节点 Icon 边距
-    /// </summary>
-    public Thickness NodeIconMargin { get; set; }
+    public double ItemHeaderSpacing { get; set; }
 
     public CascaderToken()
         : base(ID)
@@ -103,7 +98,6 @@ internal class CascaderToken : AbstractControlDesignToken
         OptionSelectedColor      = SharedToken.ColorText;
         HeaderHeight             = SharedToken.ControlHeightSM;
         FilterHighlightColor     = SharedToken.ColorError;
-        ExpandIndicatorMargin    = new Thickness(SharedToken.UniformlyPaddingXXS, 0, 0, 0);
-        NodeIconMargin           = new Thickness(SharedToken.UniformlyPaddingXS / 2, 0, 0, 0);
+        ItemHeaderSpacing        = SharedToken.SpacingXXS;
     }
 }

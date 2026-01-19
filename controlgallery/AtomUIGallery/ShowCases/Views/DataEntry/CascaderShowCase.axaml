@@ -9,35 +9,63 @@
             Title="Basic CascaderView"
             Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:CascaderView>
-                    <atom:CascaderViewItem Header="Zhejiang">
-                        <atom:CascaderViewItem Header="Hangzhou">
-                            <atom:CascaderViewItem Header="West Lake" />
+                <!-- <atom:CascaderView> -->
+                <!--     <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang"> -->
+                <!--         <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou"> -->
+                <!--             <atom:CascaderViewItem Header="West Lake" Value="xihu"/> -->
+                <!--             <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/> -->
+                <!--         </atom:CascaderViewItem> -->
+                <!--     </atom:CascaderViewItem> -->
+                <!--     <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu"> -->
+                <!--         <atom:CascaderViewItem Header="Nanjing" Value="nanjing"> -->
+                <!--             <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/> -->
+                <!--         </atom:CascaderViewItem> -->
+                <!--     </atom:CascaderViewItem> -->
+                <!-- </atom:CascaderView> -->
+
+                <atom:CascaderView IsCheckable="True">
+                    <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
+                        <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
+                            <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
+                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
-                    <atom:CascaderViewItem Header="jiangsu">
-                        <atom:CascaderViewItem Header="Nanjing">
-                            <atom:CascaderViewItem Header="Zhong Hua Men" />
+                    <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
+                        <atom:CascaderViewItem Header="Nanjing" Value="nanjing">
+                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/>
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                 </atom:CascaderView>
-        
-                <atom:CascaderView/>
+                
+                <!-- <atom:CascaderView/> -->
             </StackPanel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Generate by template"
             Description="You can use the Template mechanism to generate tree nodes">
-            <atom:CascaderView
-                x:DataType="viewModels:CascaderViewModel"
-                ItemsSource="{Binding BasicCascaderNodes}">
-                <atom:CascaderView.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding Children}">
-                        <atom:TextBlock Text="{Binding Header}" />
-                    </TreeDataTemplate>
-                </atom:CascaderView.ItemTemplate>
-            </atom:CascaderView>
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:CascaderView
+                    x:DataType="viewModels:CascaderViewModel"
+                    ItemsSource="{Binding BasicCascaderNodes}">
+                    <atom:CascaderView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" />
+                        </TreeDataTemplate>
+                    </atom:CascaderView.ItemTemplate>
+                </atom:CascaderView>
+                
+                <atom:CascaderView
+                    IsCheckable="True"
+                    x:DataType="viewModels:CascaderViewModel"
+                    ItemsSource="{Binding BasicCheckableCascaderNodes}">
+                    <atom:CascaderView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" />
+                        </TreeDataTemplate>
+                    </atom:CascaderView.ItemTemplate>
+                </atom:CascaderView>
+            </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

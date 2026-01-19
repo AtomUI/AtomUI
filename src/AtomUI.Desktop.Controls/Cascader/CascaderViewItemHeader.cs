@@ -24,10 +24,10 @@ internal class CascaderViewItemHeader : ContentControl
     public static readonly StyledProperty<bool?> IsCheckedProperty =
         CascaderViewItem.IsCheckedProperty.AddOwner<CascaderViewItemHeader>();
 
-    public static readonly StyledProperty<PathIcon?> ExpandIconProperty =
+    public static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
         CascaderViewItem.ExpandIconProperty.AddOwner<CascaderViewItemHeader>();
 
-    public static readonly StyledProperty<PathIcon?> LoadingIconProperty =
+    public static readonly StyledProperty<IconTemplate?> LoadingIconProperty =
         CascaderViewItem.LoadingIconProperty.AddOwner<CascaderViewItemHeader>();
 
     public static readonly DirectProperty<CascaderViewItemHeader, bool> IsLeafProperty =
@@ -41,9 +41,6 @@ internal class CascaderViewItemHeader : ContentControl
     public static readonly StyledProperty<bool> IsIndicatorEnabledProperty =
         CascaderViewItem.IsIndicatorEnabledProperty.AddOwner<CascaderViewItemHeader>();
     
-    public static readonly StyledProperty<string?> GroupNameProperty =
-        CascaderViewItem.GroupNameProperty.AddOwner<CascaderViewItemHeader>();
-    
     public bool IsExpanded
     {
         get => GetValue(IsExpandedProperty);
@@ -56,13 +53,13 @@ internal class CascaderViewItemHeader : ContentControl
         set => SetValue(IconProperty, value);
     }
 
-    public PathIcon? ExpandIcon
+    public IconTemplate? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
         set => SetValue(ExpandIconProperty, value);
     }
     
-    public PathIcon? LoadingIcon
+    public IconTemplate? LoadingIcon
     {
         get => GetValue(LoadingIconProperty);
         set => SetValue(LoadingIconProperty, value);
@@ -86,12 +83,6 @@ internal class CascaderViewItemHeader : ContentControl
     {
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
-    }
-
-    public string? GroupName
-    {
-        get => GetValue(GroupNameProperty);
-        set => SetValue(GroupNameProperty, value);
     }
     
     public bool IsIndicatorEnabled
@@ -230,8 +221,6 @@ internal class CascaderViewItemHeader : ContentControl
     }
     
     #endregion
-    
-    private IconPresenter? _iconPresenter;
 
     static CascaderViewItemHeader()
     {
@@ -288,12 +277,6 @@ internal class CascaderViewItemHeader : ContentControl
         {
             Transitions = null;
         }
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _iconPresenter = e.NameScope.Find<IconPresenter>(CascaderViewItemHeaderThemeConstants.IconPresenterPart);
     }
 
     protected override void OnInitialized()

@@ -1,6 +1,7 @@
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
+              xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.CascaderViewTheme"
               TargetType="atom:CascaderView">
@@ -68,6 +69,12 @@
                             HorizontalAlignment="Left"
                             MinWidth="{DynamicResource {x:Static atom:CascaderTokenKey.ControlItemWidth}}"/>
             </ItemsPanelTemplate>
+        </Setter>
+        
+        <Setter Property="ItemExpandIcon">
+            <atom:IconTemplate>
+                <antdicons:RightOutlined/>
+            </atom:IconTemplate>
         </Setter>
     </Style>
 </ControlTheme>

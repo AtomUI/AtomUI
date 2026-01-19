@@ -10,7 +10,8 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding EffectiveBorderThickness}"
-                    CornerRadius="{TemplateBinding CornerRadius}">
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
                 <atom:Spin IsSpinning="{TemplateBinding IsOperating}"
                            IsShowTip="True"
                            Tip="{TemplateBinding OperatingMsg}"
@@ -72,10 +73,8 @@
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
-        <Style Selector="^ /template/ Border#Frame">
-            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListTokenKey.ContentPadding}}" />
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
-        </Style>
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListTokenKey.ContentPadding}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />

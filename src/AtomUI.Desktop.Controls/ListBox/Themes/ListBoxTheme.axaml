@@ -1,0 +1,66 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              xmlns:antdicons="https://atomui.net/icons/antdesign"
+              x:ClassModifier="internal"
+              x:Class="AtomUI.Desktop.Controls.Themes.ListBoxTheme"
+              TargetType="atom:ListBox">
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:ListBox">
+            <Border Name="Frame"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+                <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+                                   IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                   AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                   HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                   VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                   IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                                   IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                   IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
+                    <ItemsPresenter Name="ItemsPresenter"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </atom:ScrollViewer>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:is(atom|ListBox)">
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
+        <Setter Property="ItemHoverBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverBgColor}}" />
+        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemSelectedBgColor}}" />
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ContentPadding}}" />
+        
+        <Setter Property="SelectedIndicator">
+            <atom:IconTemplate>
+                <antdicons:CheckOutlined />
+            </atom:IconTemplate>
+        </Setter>
+        
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXL}}" />
+        </Style>
+
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
+        </Style>
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
+        </Style>
+    </Style>
+
+</ControlTheme>

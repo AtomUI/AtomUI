@@ -1,0 +1,77 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:ClassModifier="internal"
+              x:Class="AtomUI.Desktop.Controls.Themes.ListBoxItemTheme"
+              TargetType="atom:ListBoxItem">
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:ListBoxItem">
+            <Border Name="Frame"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+                <Panel>
+                    <ContentPresenter Name="ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    <atom:IconPresenter
+                        Name="SelectedIndicator"
+                        IconTemplate="{TemplateBinding SelectedIndicator}"
+                        IsVisible="{TemplateBinding IsSelectedIndicatorVisible}"
+                        HorizontalAlignment="Right" />
+                </Panel>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+    
+    <Style Selector="^:is(atom|ListBoxItem)">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemMargin}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemColor}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemBgColor}}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverColor}}" />
+            <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
+        </Style>
+
+        <Style Selector="^:selected">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemSelectedColor}}" />
+            <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconPresenter#SelectedIndicator">
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+        </Style>
+
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightLG}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemPaddingLG}}" />
+        </Style>
+
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemPadding}}" />
+        </Style>
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusXS}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightSM}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemPaddingSM}}" />
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            </Style>
+        </Style>
+    </Style>
+</ControlTheme>

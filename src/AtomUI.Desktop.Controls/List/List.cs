@@ -21,6 +21,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 public class List : TemplatedControl,
+                    ISizeTypeAware,
                     IMotionAwareControl,
                     IControlSharedTokenResourcesHost
 {
@@ -482,11 +483,11 @@ public class List : TemplatedControl,
     {
         if (IsBorderless)
         {
-            SetCurrentValue(EffectiveBorderThicknessProperty, new Thickness(0));
+            EffectiveBorderThickness = new Thickness(0);
         }
         else
         {
-            SetCurrentValue(EffectiveBorderThicknessProperty, BorderThickness);
+            EffectiveBorderThickness = BorderThickness;
         }
     }
     

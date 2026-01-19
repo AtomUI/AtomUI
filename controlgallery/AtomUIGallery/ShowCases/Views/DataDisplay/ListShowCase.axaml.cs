@@ -56,6 +56,7 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
                 ];
                 InitializeGroupItems(viewModel);
                 InitializeEmptyDemoItems(viewModel);
+                InitializeBasicListBoxItems(viewModel);
                 viewModel.SelectionMode = SelectionMode.Single;
             }
         });
@@ -188,6 +189,32 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
     private void InitializeEmptyDemoItems(ListViewModel viewModel)
     {
         viewModel.EmptyDemoItems = [];
+    }
+
+    private void InitializeBasicListBoxItems(ListViewModel viewModel)
+    {
+        viewModel.BasicListBoxItems = [
+            new ListItemData()
+            {
+                Content = "Racing car sprays burning fuel into crowd."
+            },
+            new ListItemData()
+            {
+                Content = "Japanese princess to wed commoner."
+            },
+            new ListItemData()
+            {
+                Content = "Australian walks 100km after outback crash."
+            },
+            new ListItemData()
+            {
+                Content = "Man charged over missing wedding girl."
+            },
+            new ListItemData()
+            {
+                Content = "Los Angeles battles huge wildfires."
+            },
+        ];
     }
 
     private void HandleAddEmptyItemClicked(object? sender, RoutedEventArgs e)

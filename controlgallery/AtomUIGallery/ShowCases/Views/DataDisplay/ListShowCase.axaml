@@ -141,5 +141,32 @@
             </atom:List>
         </gallery:ShowCaseItem>
         
+        <gallery:ShowCaseItem
+            Title="Simple listbox control"
+            Description="Basic usage example.">
+            <atom:ListBox>
+                <atom:ListBoxItem>Racing car sprays burning fuel into crowd.</atom:ListBoxItem>
+                <atom:ListBoxItem>Japanese princess to wed commoner.</atom:ListBoxItem>
+                <atom:ListBoxItem>Australian walks 100km after outback crash.</atom:ListBoxItem>
+                <atom:ListBoxItem>Man charged over missing wedding girl.</atom:ListBoxItem>
+                <atom:ListBoxItem>Los Angeles battles huge wildfires.</atom:ListBoxItem>
+            </atom:ListBox>
+            
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Simple listbox control"
+            Description="Basic ItemsSource and template usage example.">
+            <atom:ListBox ItemsSource="{Binding BasicListBoxItems}"
+                          x:DataType="viewModels:ListViewModel"
+                          IsShowSelectedIndicator="True">
+                <atom:ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="atom:ListItemData">
+                        <atom:TextBlock Text="{Binding Content}" />
+                    </DataTemplate>
+                </atom:ListBox.ItemTemplate>
+            </atom:ListBox>
+            
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

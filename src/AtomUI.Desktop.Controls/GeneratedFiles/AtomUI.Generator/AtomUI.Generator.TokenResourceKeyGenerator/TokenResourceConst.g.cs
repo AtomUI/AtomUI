@@ -464,6 +464,22 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PaginationMargin = new TokenResourceKey("AtomUI.Desktop.Controls.List.PaginationMargin");
     }
 
+    public static class ListBoxTokenKey
+    {
+        public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ContentPadding");
+        public static readonly TokenResourceKey ItemBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemBgColor");
+        public static readonly TokenResourceKey ItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemColor");
+        public static readonly TokenResourceKey ItemDisabledColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemDisabledColor");
+        public static readonly TokenResourceKey ItemHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemHoverBgColor");
+        public static readonly TokenResourceKey ItemHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemHoverColor");
+        public static readonly TokenResourceKey ItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemMargin");
+        public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPadding");
+        public static readonly TokenResourceKey ItemPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingLG");
+        public static readonly TokenResourceKey ItemPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingSM");
+        public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedBgColor");
+        public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedColor");
+    }
+
     public static class MarqueeLabelTokenKey
     {
         public static readonly TokenResourceKey CycleSpace = new TokenResourceKey("AtomUI.Desktop.Controls.MarqueeLabel.CycleSpace");

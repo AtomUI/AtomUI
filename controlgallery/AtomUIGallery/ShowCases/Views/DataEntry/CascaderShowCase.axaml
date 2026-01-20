@@ -94,6 +94,7 @@
                         <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
                             <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
                             <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
+                            <atom:CascaderViewItem Header="XiSha" Value="xisha" IsEnabled="False"/>
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                     <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
@@ -104,6 +105,5 @@
                 </atom:CascaderView>
             </StackPanel>
         </gallery:ShowCaseItem>
-        
     </gallery:ShowCasePanel>
 </UserControl>

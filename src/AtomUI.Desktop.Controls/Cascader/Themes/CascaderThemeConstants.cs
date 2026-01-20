@@ -8,4 +8,5 @@ internal static class CascaderViewItemThemeConstants
 internal static class CascaderViewThemeConstants
 {
     public const string ItemsPanelPart = "PART_ItemsPanel";
+    public const string FilterListPart = "PART_FilterList";
 }

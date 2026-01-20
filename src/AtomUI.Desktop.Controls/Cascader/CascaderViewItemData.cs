@@ -6,6 +6,7 @@ namespace AtomUI.Desktop.Controls;
 
 public interface ICascaderViewItemData : ITreeNode<ICascaderViewItemData>
 {
+    new object? Header { get; set; }
     bool? IsChecked { get; set; }
     bool IsExpanded { get; set; }
     bool IsIndicatorEnabled { get; set; }

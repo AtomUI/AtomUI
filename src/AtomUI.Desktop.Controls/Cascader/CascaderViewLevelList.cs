@@ -69,11 +69,9 @@ internal class CascaderViewLevelList : ItemsControl
             
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ItemLoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ItemExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
-            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ItemFilterActionProperty, cascaderViewItem, CascaderViewItem.ItemFilterActionProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.FilterHighlightForegroundProperty, cascaderViewItem, CascaderViewItem.FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsAutoExpandParentProperty, cascaderViewItem,

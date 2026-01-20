@@ -2,7 +2,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CascaderViewItemHeader}" TargetType="atom:CascaderViewItemHeader">
         <Setter Property="Template">
@@ -16,7 +15,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Indicator" />
                             <ColumnDefinition Width="Auto" SharedSizeGroup="IconPresenter" />
-                            <ColumnDefinition Width="*" SharedSizeGroup="HeaderLayout" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="HeaderPresenter" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
@@ -43,17 +42,10 @@
                                             Icon="{TemplateBinding Icon}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
                                             IsVisible="{TemplateBinding IconEffectiveVisible}" />
-                        <Panel Grid.Column="2" Name="HeaderLayout">
-                            <ContentPresenter Name="HeaderPresenter"
-                                              VerticalContentAlignment="Center"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              IsVisible="False" />
-                            <TextBlock Name="FilterHighlighter"
-                                       VerticalAlignment="Center"
-                                       IsVisible="False"
-                                       Inlines="{TemplateBinding FilterHighlightRuns}" />
-                        </Panel>
+                        <ContentPresenter Grid.Column="2" Name="HeaderPresenter"
+                                          VerticalContentAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
                         <atom:IconPresenter Name="ExpandIconPresenter" Grid.Column="3"
                                             IconTemplate="{TemplateBinding ExpandIcon}">
                             <atom:IconPresenter.IsVisible>
@@ -67,7 +59,7 @@
                         </atom:IconPresenter>
                         <atom:IconPresenter Name="LoadingIconPresenter" Grid.Column="3"
                                             IsVisible="{TemplateBinding IsLoading}"
-                                            IconTemplate="{TemplateBinding LoadingIcon}"/>
+                                            IconTemplate="{TemplateBinding LoadingIcon}" />
                     </Grid>
                 </Border>
             </ControlTemplate>
@@ -109,9 +101,10 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ Grid#ItemsLayout">
-            <Setter Property="ColumnSpacing" Value="{DynamicResource {x:Static atom:CascaderTokenKey.ItemHeaderSpacing}}" />
+            <Setter Property="ColumnSpacing"
+                    Value="{DynamicResource {x:Static atom:CascaderTokenKey.ItemHeaderSpacing}}" />
         </Style>
 
         <Style Selector="^:disabled">
@@ -124,18 +117,6 @@
             </Style>
         </Style>
 
-        <Style Selector="^[IsFilterMatch=True]">
-            <Style Selector="^ /template/ TextBlock#FilterHighlighter">
-                <Setter Property="IsVisible" Value="True" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[IsFilterMatch=False]">
-            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
-                <Setter Property="IsVisible" Value="True" />
-            </Style>
-        </Style>
-        
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />

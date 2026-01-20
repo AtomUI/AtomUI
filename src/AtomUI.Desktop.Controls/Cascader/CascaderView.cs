@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -90,11 +89,8 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             o => o.ItemFilterValue,
             (o, v) => o.ItemFilterValue = v);
     
-    public static readonly DirectProperty<CascaderView, CascaderItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, CascaderItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    public static readonly StyledProperty<TextBlockHighlightStrategy> ItemFilterHighlightStrategyProperty =
+        AvaloniaProperty.Register<HighlightableTextBlock, TextBlockHighlightStrategy>(nameof(ItemFilterHighlightStrategy), TextBlockHighlightStrategy.All);
     
     public static readonly DirectProperty<CascaderView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, int>(nameof(FilterResultCount),
@@ -192,12 +188,10 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
     }
     
-    private CascaderItemFilterAction _itemFilterAction = CascaderItemFilterAction.All;
-    
-    public CascaderItemFilterAction ItemFilterAction
+    public TextBlockHighlightStrategy ItemFilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => GetValue(ItemFilterHighlightStrategyProperty);
+        set => SetValue(ItemFilterHighlightStrategyProperty, value);
     }
     
     private int _filterResultCount;
@@ -325,7 +319,6 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         CascaderViewItem.ExpandedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemExpanded(args));
         CascaderViewItem.CollapsedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemCollapsed(args));
         CascaderViewItem.ClickEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
-        ConfigureFilter();
     }
     
     public CascaderView()
@@ -346,6 +339,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         base.OnInitialized();
         ConfigureEmptyIndicator();
         ConfigureEffectiveToggleType();
+        ItemFilter ??= new DefaultCascaderItemFilter();
     }
     
     public IEnumerable<Control> GetRealizedTreeContainers()
@@ -461,6 +455,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 CheckedItems.Clear();
                 break;
         }
+        Filter();
     }
     
     protected CascaderViewItem? GetContainerFromEventSource(object eventSource)
@@ -654,11 +649,9 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             
             disposables.Add(BindUtils.RelayBind(this, ItemLoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, cascaderViewItem, CascaderViewItem.ItemFilterActionProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(this, EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, cascaderViewItem, CascaderViewItem.FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
             disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, cascaderViewItem,
@@ -699,6 +692,16 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     {
         base.OnApplyTemplate(e);
         _itemsPanel = e.NameScope.Find<StackPanel>(CascaderViewThemeConstants.ItemsPanelPart);
+        if (_filterList != null)
+        {
+            _filterList.SelectionChanged -= HandleFilterListSelectionChanged;
+        }
+        _filterList = e.NameScope.Find<CascaderViewFilterList>(CascaderViewThemeConstants.FilterListPart);
+        
+        if (_filterList != null)
+        {
+            _filterList.SelectionChanged += HandleFilterListSelectionChanged;
+        }
     }
 
     private CascaderViewItem? GetCascaderViewItemContainer(object childNode, ItemsControl current)
@@ -979,7 +982,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             HasItemAsyncDataLoader = ItemDataLoader != null;
         }
         else if (change.Property == ItemFilterProperty ||
-                 change.Property == ItemFilterActionProperty ||
+                 change.Property == ItemFilterHighlightStrategyProperty ||
                  change.Property == ItemsSourceProperty ||
                  change.Property == ItemFilterValueProperty)
         {
@@ -988,8 +991,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
 
         if (change.Property == IsShowEmptyIndicatorProperty ||
             change.Property == ItemsSourceProperty ||
-            change.Property == FilterResultCountProperty ||
-            change.Property == IsFilterModeProperty)
+            change.Property == FilterResultCountProperty)
         {
             ConfigureEmptyIndicator();
         }
@@ -1015,7 +1017,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     protected virtual void ConfigureEmptyIndicator()
     {
         var isEmpty = false;
-        if (IsFilterMode)
+        if (IsFiltering)
         {
             isEmpty = FilterResultCount == 0;
         }
@@ -1306,7 +1308,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     
     public override void Render(DrawingContext context)
     {
-        if (_itemsPanel == null)
+        if (_itemsPanel == null || IsFiltering)
         {
             return;
         }
@@ -1344,4 +1346,5 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             EffectiveToggleType = ItemToggleType.None;
         }
     }
+    
 }

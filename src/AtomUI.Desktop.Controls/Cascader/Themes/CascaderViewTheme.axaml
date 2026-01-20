@@ -15,28 +15,42 @@
                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalAlignment}">
                 <Panel>
-                    <atom:ScrollViewer
-                        IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
-                        AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
-                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                        IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
-                        IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                        IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}">
-                        <StackPanel Orientation="Horizontal"
-                                    Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
-                            <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" 
-                                            VerticalAlignment="Stretch"/>
-                        </StackPanel>
-                    </atom:ScrollViewer>
-                    <ContentPresenter
-                        Name="EmptyIndicator"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        Padding="{TemplateBinding EmptyIndicatorPadding}"
-                        IsVisible="{TemplateBinding IsEffectiveEmptyVisible}"
-                        Content="{TemplateBinding EmptyIndicator}"
-                        ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}" />
+                    <Panel IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}">
+                        <atom:ScrollViewer
+                            IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                            AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}">
+                            <StackPanel Orientation="Horizontal"
+                                        Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
+                                <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" VerticalAlignment="Stretch"/>
+                            </StackPanel>
+                        </atom:ScrollViewer>
+                        <ContentPresenter
+                            Name="EmptyIndicator"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Padding="{TemplateBinding EmptyIndicatorPadding}"
+                            IsVisible="{TemplateBinding IsEffectiveEmptyVisible}"
+                            Content="{TemplateBinding EmptyIndicator}"
+                            ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}" />
+                    </Panel>
+                    <atom:CascaderViewFilterList Name="{x:Static atom:CascaderViewThemeConstants.FilterListPart}"
+                                                 ItemsSource="{TemplateBinding FilteredPathInfos}"
+                                                 IsVisible="{TemplateBinding IsFiltering}"
+                                                 IsBorderless="True"
+                                                 SelectionMode="Single">
+                        <atom:CascaderViewFilterList.ItemTemplate>
+                            <DataTemplate x:DataType="atom:CascaderViewFilterListItemData">
+                                <atom:HighlightableTextBlock Text="{Binding Content}"
+                                                             HighlightForeground="{Binding FilterHighlightForeground, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}"
+                                                             HighlightWords="{Binding ItemFilterValue, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}" />
+                            </DataTemplate>
+                        </atom:CascaderViewFilterList.ItemTemplate>
+                    </atom:CascaderViewFilterList>
                 </Panel>
             </Border>
         </ControlTemplate>

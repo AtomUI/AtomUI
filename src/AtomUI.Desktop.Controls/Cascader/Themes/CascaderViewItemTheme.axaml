@@ -23,10 +23,6 @@
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
-                                         IsFilterMatch="{TemplateBinding IsFilterMatch}"
-                                         FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
-                                         ItemFilterAction="{TemplateBinding ItemFilterAction}"
-                                         FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                          Focusable="{TemplateBinding Focusable}" />
         </ControlTemplate>
     </Setter>

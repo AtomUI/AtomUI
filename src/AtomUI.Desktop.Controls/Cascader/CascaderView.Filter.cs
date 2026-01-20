@@ -1,75 +1,41 @@
+using System.Collections;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 public partial class CascaderView
 {
-    internal static readonly DirectProperty<CascaderViewItem, bool> IsFilterModeProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsFilterMode),
-            o => o.IsFilterMode,
-            (o, v) => o.IsFilterMode = v);
+    internal static readonly DirectProperty<CascaderView, bool> IsFilteringProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, bool>(nameof(IsFiltering),
+            o => o.IsFiltering,
+            (o, v) => o.IsFiltering = v);
     
-    private bool _isFilterMode;
+    internal static readonly DirectProperty<CascaderView, List<CascaderViewFilterListItemData>?> FilteredPathInfosProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, List<CascaderViewFilterListItemData>?>(nameof(FilteredPathInfos),
+            o => o.FilteredPathInfos,
+            (o, v) => o.FilteredPathInfos = v);
+    
+    private bool _isFiltering;
 
-    internal bool IsFilterMode
+    internal bool IsFiltering
     {
-        get => _isFilterMode;
-        set => SetAndRaise(IsFilterModeProperty, ref _isFilterMode, value);
+        get => _isFiltering;
+        set => SetAndRaise(IsFilteringProperty, ref _isFiltering, value);
     }
+    
+    private List<CascaderViewFilterListItemData>? _filteredPathInfos;
 
-    internal ISet<CascaderViewItem> SelectedItemsClosure = new HashSet<CascaderViewItem>();
-
-    private static void ConfigureFilter()
+    internal List<CascaderViewFilterListItemData>? FilteredPathInfos
     {
-        // SelectingItemsControl.SelectionChangedEvent.AddClassHandler<CascaderView>((cascaderView, args) => cascaderView.HandleSelectionChanged());
+        get => _filteredPathInfos;
+        set => SetAndRaise(FilteredPathInfosProperty, ref _filteredPathInfos, value);
     }
-
-    // private void HandleSelectionChanged()
-    // {
-    //     if (IsFilterMode)
-    //     {
-    //         SelectedItemsClosure.Clear();
-    //         var startupItems = new List<CascaderViewItem>();
-    //         if (SelectionMode.HasFlag(SelectionMode.Single))
-    //         {
-    //             if (SelectedItem != null && TreeContainerFromItem(SelectedItem) is CascaderViewItem item)
-    //             {
-    //                 startupItems.Add(item);
-    //             }
-    //         }
-    //         else if (SelectionMode.HasFlag(SelectionMode.Multiple))
-    //         {
-    //             foreach (var entry in SelectedItems)
-    //             {
-    //                 if (entry != null && TreeContainerFromItem(entry) is CascaderViewItem item)
-    //                 {
-    //                     startupItems.Add(item);
-    //                 }
-    //             }
-    //         }
-    //
-    //         foreach (var item in startupItems)
-    //         {
-    //             var closure = CalculateSelectItemClosure(item);
-    //             SelectedItemsClosure.UnionWith(closure);
-    //         }
-    //     }
-    // }
-
-    // private ISet<CascaderViewItem> CalculateSelectItemClosure(CascaderViewItem cascaderViewItem)
-    // {
-    //     var            closure = new HashSet<CascaderViewItem>(); 
-    //     StyledElement? current = cascaderViewItem;
-    //     while (current != null && current is CascaderViewItem currentCascaderViewItem)
-    //     {
-    //         closure.Add(currentCascaderViewItem);
-    //         current = current.Parent;
-    //     }
-    //
-    //     return closure;
-    // }
+    
+    private List<CascaderViewFilterListItemData>? _allPathInfos;
+    private CascaderViewFilterList? _filterList;
     
     public void Filter()
     {
@@ -77,54 +43,45 @@ public partial class CascaderView
         {
             if (ItemFilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
             {
-                using (BeginTurnOffMotion())
-                {
-                    ClearFilter();
-                    return;
-                }
+                ClearFilter();
+                return;
             }
 
-            var originIsFilterMode = IsFilterMode;
-            IsFilterMode      = true;
-            FilterResultCount = 0;
-            HashSet<CascaderViewItem>? originExpandedItems = null;
-            if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath))
+            if (_allPathInfos == null)
             {
-                originExpandedItems = new HashSet<CascaderViewItem>();
-                for (int i = 0; i < ItemCount; i++)
+                var result = new List<CascaderViewFilterListItemData>();
+                if (ItemsSource != null)
                 {
-                    if (ContainerFromIndex(i) is CascaderViewItem item)
+                    foreach (var item in Items)
                     {
-                        originExpandedItems.UnionWith(CollectExpandedItems(item));
+                        if (item is ICascaderViewItemData cascaderViewItemData)
+                        {
+                            CollectionPaths(cascaderViewItemData, result);
+                        }
                     }
                 }
-            }
- 
-            // ExpandAll(false); // TODO 这样合适吗？
-            using var state = BeginTurnOffMotion();
-            if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath) && originExpandedItems != null)
-            {
-                RestoreItemExpandedStates(originExpandedItems);
-            }
-
-            if (!originIsFilterMode)
-            {
-                for (int i = 0; i < ItemCount; i++)
+                else
                 {
-                    if (ContainerFromIndex(i) is CascaderViewItem item)
+                    foreach (var item in Items)
                     {
-                        BackupStateForFilterMode(item);
+                        if (item is CascaderViewItem cascaderViewItem)
+                        {
+                            CollectionPaths(cascaderViewItem, result);
+                        }
                     }
                 }
-            }
-         
-            for (var i = 0; i < ItemCount; i++)
-            {
-                if (ContainerFromIndex(i) is CascaderViewItem cascaderViewItem)
+                result.Sort((lhs, rhs) =>
                 {
-                    FilterItem(cascaderViewItem);
-                }
+                    var lhsStr = lhs.Content?.ToString() ?? string.Empty;
+                    var rhsStr = rhs.Content?.ToString() ?? string.Empty;
+                    return string.Compare(lhsStr, rhsStr, StringComparison.OrdinalIgnoreCase);
+                });
+                _allPathInfos = result;
             }
+            
+            FilteredPathInfos = _allPathInfos.Where(data => ItemFilter.Filter(this, data, ItemFilterValue)).ToList();
+            IsFiltering       = true;
+            FilterResultCount = FilteredPathInfos.Count;
         }
         else
         {
@@ -132,221 +89,117 @@ public partial class CascaderView
         }
     }
 
-    private void FilterItem(CascaderViewItem cascaderViewItem)
+    private CascaderViewFilterListItemData GetFullPath(object item)
     {
-        if (ItemFilter == null)
+        if (item is ICascaderViewItemData cascaderViewItemData)
         {
-            return;
-        }
-        for (var i = 0; i < cascaderViewItem.ItemCount; i++)
-        {
-            if (cascaderViewItem.ContainerFromIndex(i) is CascaderViewItem childViewItem)
+            var pathHeaders = new List<string>();
+            var current       = cascaderViewItemData;
+            var pathNodes = new  List<object>();
+            while (current != null)
             {
-                FilterItem(childViewItem);
+                pathNodes.Add(current);
+                pathHeaders.Add(current.Header?.ToString() ?? string.Empty);
+                current = current.ParentNode as ICascaderViewItemData;
             }
-        }
-        cascaderViewItem.IsFilterMode = true;
-        var filterResult = ItemFilter.Filter(this, cascaderViewItem, ItemFilterValue);
-        cascaderViewItem.IsFilterMatch = filterResult;
-        if (filterResult)
-        {
-            ++FilterResultCount;
-            if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch) ||
-                ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
-            {
-                cascaderViewItem.FilterHighlightWords = ItemFilterValue?.ToString();
-            }
-        }
-        ConfigureEmptyIndicator();
-        
-        if (ItemFilterAction.HasFlag(TreeItemFilterAction.HideUnMatched))
-        {
-            if (cascaderViewItem.IsFilterMatch)
-            {
-                var current = cascaderViewItem.Parent;
-                while (current != null)
-                {
-                    if (current is CascaderViewItem item)
-                    {
-                        item.SetCurrentValue(CascaderViewItem.IsVisibleProperty, true);
-                    }
-                    current = current.Parent;
-                }
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsVisibleProperty, true);
-            }
-            else if (!HasChildOrDescendantsMatchFilter(cascaderViewItem))
-            {
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsVisibleProperty, false);
-            }
-        }
 
-        if (ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath))
-        {
-            SetupExpandForFilter(cascaderViewItem);
+            pathNodes.Reverse();
+            pathHeaders.Reverse();
+            return new CascaderViewFilterListItemData()
+            {
+                Content     = string.Join('/', pathHeaders),
+                ExpandItems = pathNodes,
+                IsEnabled = cascaderViewItemData.IsEnabled
+            };
         }
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            var pathHeaders = new List<string>();
+            var current     = cascaderViewItem;
+            var pathNodes   = new  List<object>();
+            while (current != null)
+            {
+                pathNodes.Add(current);
+                pathHeaders.Add(current.Header?.ToString() ?? string.Empty);
+                current = current.Parent as CascaderViewItem;
+            }
+
+            pathNodes.Reverse();
+            pathHeaders.Reverse();
+            return new CascaderViewFilterListItemData()
+            {
+                Content     = string.Join('/', pathHeaders),
+                ExpandItems = pathNodes,
+                IsEnabled = cascaderViewItem.IsEnabled
+            };
+        }
+        throw new ArgumentException($"Item of type {item.GetType()} is not a CascaderViewItem or ICascaderViewItemData");
     }
 
-    private void SetupExpandForFilter(CascaderViewItem cascaderViewItem)
+    private void CollectionPaths(CascaderViewItem cascaderViewItem, List<CascaderViewFilterListItemData> result)
     {
-        var hasChildOrDescendantsMatchFilter = HasChildOrDescendantsMatchFilter(cascaderViewItem);
-        if (hasChildOrDescendantsMatchFilter || cascaderViewItem.IsFilterMatch)
+        Debug.Assert(ItemFilter != null);
+        foreach (var item in cascaderViewItem.Items)
         {
-            var current = cascaderViewItem.Parent;
-            while (current != null && current is CascaderViewItem)
+            if (item is CascaderViewItem childItem)
             {
-                if (current is CascaderViewItem item)
-                {
-                    item.SetCurrentValue(CascaderViewItem.IsExpandedProperty, true);
-                }
-                current =  current.Parent;
+                CollectionPaths(childItem, result);
             }
         }
 
-        if (!hasChildOrDescendantsMatchFilter)
+        if (cascaderViewItem.ItemCount == 0)
         {
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, false);
+            result.Add(GetFullPath(cascaderViewItem));
         }
-    }
-
-    private bool HasChildOrDescendantsMatchFilter(CascaderViewItem cascaderViewItem)
-    {
-        for (int i = 0; i < cascaderViewItem.ItemCount; i++)
-        {
-            if (cascaderViewItem.ContainerFromIndex(i) is CascaderViewItem childItem)
-            {
-                if (HasChildOrDescendantsMatchFilter(childItem))
-                {
-                    return true;
-                }
-            }
-        }
-        return cascaderViewItem.IsFilterMatch;
     }
     
-    private void BackupStateForFilterMode(CascaderViewItem cascaderViewItem)
+    private void CollectionPaths(ICascaderViewItemData cascaderViewItemData, List<CascaderViewFilterListItemData> result)
     {
-        for (int i = 0; i < cascaderViewItem.ItemCount; i++)
+        Debug.Assert(ItemFilter != null);
+        foreach (var childItem in cascaderViewItemData.Children)
         {
-            if (cascaderViewItem.ContainerFromIndex(i) is CascaderViewItem childItem)
-            {
-                BackupStateForFilterMode(childItem);
-            }
+            CollectionPaths(childItem, result);
         }
-        cascaderViewItem.CreateFilterContextBackup();
-    }
 
+        if (cascaderViewItemData.Children.Count == 0)
+        {
+            result.Add(GetFullPath(cascaderViewItemData));
+        }
+    }
+    
     private void ClearFilter()
     {
-        if (!IsFilterMode)
-        {
-            return;
-        }
-
-        for (var i = 0; i < ItemCount; i++)
-        {
-            if (ContainerFromIndex(i) is CascaderViewItem cascaderViewItem)
-            {
-                ClearItemFilterMode(cascaderViewItem);
-            }
-        }
-
-        IsFilterMode      = false;
+        IsFiltering       = false;
         FilterResultCount = 0;
-        SelectedItemsClosure.Clear();
-    }
-    
-    private void ClearItemFilterMode(CascaderViewItem cascaderViewItem)
-    {
-        for (var i = 0; i < cascaderViewItem.ItemCount; i++)
-        {
-            if (cascaderViewItem.ContainerFromIndex(i) is CascaderViewItem childCascaderItem)
-            {
-                ClearItemFilterMode(childCascaderItem);
-            }
-        }
-        cascaderViewItem.ClearFilterMode();
+        ItemFilterValue   = null;
+        FilteredPathInfos = null;
+        _allPathInfos     = null;
     }
 
-    private ISet<CascaderViewItem> CollectExpandedItems(CascaderViewItem cascaderViewItem)
+    private void HandleFilterListSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        var expandedItems = new HashSet<CascaderViewItem>();
-        for (var i = 0; i < cascaderViewItem.ItemCount; i++)
+        IList? paths = null;
+        if (_filterList?.SelectedItem is CascaderViewFilterListItemData itemData)
         {
-            if (cascaderViewItem.ContainerFromIndex(i) is CascaderViewItem childCascaderItem)
-            {
-                expandedItems.UnionWith(CollectExpandedItems(childCascaderItem));
-            }
+            paths = itemData.ExpandItems;
         }
-
-        if (cascaderViewItem.IsExpanded)
+        ClearFilter();
+        if (paths?.Count > 0)
         {
-            expandedItems.Add(cascaderViewItem);
-        }
-        return expandedItems;
-    }
-
-    private void RestoreItemExpandedStates(ISet<CascaderViewItem> originExpandedItems)
-    {
-        
-        var originMotionEnabled = IsMotionEnabled;
-        try
-        {
-            SetCurrentValue(IsMotionEnabledProperty, false);
-
-            for (int i = 0; i < ItemCount; i++)
+            Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                if (ContainerFromIndex(i) is CascaderViewItem item)
+                foreach (var path in paths)
                 {
-                    RestoreItemExpandedState(item, originExpandedItems);
+                    if (path is ICascaderViewItemData cascaderViewItemData)
+                    {
+                        cascaderViewItemData.IsExpanded = true;
+                    }
+                    else if (path is CascaderViewItem cascaderViewItem)
+                    {
+                       await ExpandItemAsync(cascaderViewItem);
+                    }
                 }
-            }
-        }
-        finally
-        {
-            SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
-        }
-    }
-
-    private void RestoreItemExpandedState(CascaderViewItem cascaderViewItem, in ISet<CascaderViewItem> expandedItems)
-    {
-        for (var i = 0; i < cascaderViewItem.ItemCount; i++)
-        {
-            if (cascaderViewItem.ContainerFromIndex(i) is CascaderViewItem childCascaderItem)
-            {
-                RestoreItemExpandedState(childCascaderItem, expandedItems);
-            }
-        }
-
-        if (expandedItems.Contains(cascaderViewItem))
-        {
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, true);
-        }
-        else
-        {
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, false);
-        }
-    }
-
-    private IDisposable BeginTurnOffMotion()
-    {
-        var originMotionEnabled = IsMotionEnabled;
-        var disposable          = new MotionScopeDisposable(this, originMotionEnabled);
-        SetCurrentValue(IsMotionEnabledProperty, false);
-        return disposable;
-    }
-
-    private class MotionScopeDisposable : IDisposable
-    {
-        private readonly CascaderView _cascaderView;
-        private bool _originMotionEnabled;
-        public MotionScopeDisposable(CascaderView cascaderView, bool originMotionEnabled)
-        {
-            _cascaderView            = cascaderView;
-            _originMotionEnabled = originMotionEnabled;
-        }
-        public void Dispose()
-        {
-            _cascaderView.SetCurrentValue(CascaderView.IsMotionEnabledProperty, _originMotionEnabled);
+            });
         }
     }
 }

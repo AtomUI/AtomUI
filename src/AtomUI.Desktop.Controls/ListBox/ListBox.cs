@@ -7,6 +7,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -14,16 +15,6 @@ using Avalonia.Metadata;
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaListBox = Avalonia.Controls.ListBox;
-
-[Flags]
-public enum ListBoxItemFilterAction
-{
-    HighlightedMatch = 0x01,
-    HighlightedWhole = 0x02,
-    BoldedMatch = 0x04,
-    HideUnMatched = 0x8,
-    All = HighlightedMatch | BoldedMatch | HideUnMatched
-}
 
 public class ListBox : AvaloniaListBox,
                        ISizeTypeAware,
@@ -79,11 +70,11 @@ public class ListBox : AvaloniaListBox,
             o => o.ItemFilterValue,
             (o, v) => o.ItemFilterValue = v);
     
-    public static readonly DirectProperty<ListBox, ListBoxItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<ListBox, ListBoxItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    public static readonly DirectProperty<ListBox, TextBlockHighlightStrategy> ItemFilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<ListBox, TextBlockHighlightStrategy>(
+            nameof(ItemFilterHighlightStrategy),
+            o => o.ItemFilterHighlightStrategy,
+            (o, v) => o.ItemFilterHighlightStrategy = v);
     
     public static readonly DirectProperty<ListBox, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<ListBox, int>(nameof(FilterResultCount),
@@ -186,12 +177,12 @@ public class ListBox : AvaloniaListBox,
         set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
     }
     
-    private ListBoxItemFilterAction _itemFilterAction = ListBoxItemFilterAction.All;
+    private TextBlockHighlightStrategy _itemFilterHighlightStrategy = TextBlockHighlightStrategy.All;
     
-    public ListBoxItemFilterAction ItemFilterAction
+    public TextBlockHighlightStrategy ItemFilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => _itemFilterHighlightStrategy;
+        set => SetAndRaise(ItemFilterHighlightStrategyProperty, ref _itemFilterHighlightStrategy, value);
     }
     
     private int _filterResultCount;
@@ -356,16 +347,10 @@ public class ListBox : AvaloniaListBox,
                 {
                     if (!listBoxItem.IsSet(ListBoxItem.ContentProperty))
                     {
-                        disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.ContentProperty, listBoxItem, ListBoxItem.ContentProperty));
+                        listBoxItem.SetCurrentValue(ListBoxItem.ContentProperty, item);
                     }
-                    if (!listBoxItem.IsSet(ListBoxItem.IsEnabledProperty))
-                    {
-                        disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.IsEnabledProperty, listBoxItem, ListBoxItem.IsEnabledProperty));
-                    }
-                    if (!listBoxItem.IsSet(ListBoxItem.IsSelectedProperty))
-                    {
-                        disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.IsSelectedProperty, listBoxItem, ListBoxItem.IsSelectedProperty));
-                    }
+                    disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.IsEnabledProperty, listBoxItem, ListBoxItem.IsEnabledProperty, BindingMode.TwoWay));
+                    disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.IsSelectedProperty, listBoxItem, ListBoxItem.IsSelectedProperty, BindingMode.TwoWay));
                 }
                 else if (item is IListBoxItemData iItemData)
                 {
@@ -395,7 +380,7 @@ public class ListBox : AvaloniaListBox,
             disposables.Add(BindUtils.RelayBind(this, ItemHoverBgProperty, listBoxItem, ListBoxItem.ItemHoverBgProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemSelectedBgProperty, listBoxItem, ListBoxItem.ItemSelectedBgProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowSelectedIndicatorProperty, listBoxItem, ListBoxItem.IsShowSelectedIndicatorProperty));
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, listBoxItem, ListBoxItem.FilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemFilterHighlightStrategyProperty, listBoxItem, ListBoxItem.FilterHighlightStrategyProperty));
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, listBoxItem, ListBoxItem.FilterHighlightForegroundProperty));
             
             PrepareListBoxItem(listBoxItem, item, index, disposables);
@@ -463,57 +448,56 @@ public class ListBox : AvaloniaListBox,
 
     private void FilterItems()
     {
-        if (ItemFilter != null)
+        if (ItemFilter != null && ItemFilterValue != null && IsLoaded)
         {
-            if (ItemFilterValue != null)
+            if (ItemFilterHighlightStrategy.HasFlag(TextBlockHighlightStrategy.HideUnMatched))
             {
-                if (ItemFilterAction.HasFlag(ListBoxItemFilterAction.HideUnMatched))
+                if (_filterContext.Count == 0)
                 {
-                    if (_filterContext.Count == 0)
+                    foreach (var item in Items)
                     {
-                        foreach (var item in Items)
+                        if (item != null)
                         {
-                            if (item != null)
+                            var container = ContainerFromItem(item);
+                            if (container is ListBoxItem listBoxItem)
                             {
-                                var container = ContainerFromItem(item);
-                                if (container is ListBoxItem listBoxItem)
-                                {
-                                    _filterContext[listBoxItem] = listBoxItem.IsVisible;
-                                }
+                                _filterContext[listBoxItem] = listBoxItem.IsVisible;
                             }
                         }
                     }
                 }
-                
-                var count = 0;
-                foreach (var item in Items)
-                {
-                    if (item != null)
-                    {
-                        var container    = ContainerFromItem(item);
-                        if (container is ListBoxItem listBoxItem)
-                        {
-                            var filterResult = FilterItem(listBoxItem);
-                            if (filterResult)
-                            {
-                                ++count;
-                            }
-
-                            if (ItemFilterAction.HasFlag(ListBoxItemFilterAction.HideUnMatched))
-                            {
-                                listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, filterResult);
-                            }
-                       
-                            listBoxItem.IsFiltering = true;
-                            listBoxItem.FilterValue = ItemFilterValue;
-                        }
-                    }
-                }
-                FilterResultCount = count;
-                return;
             }
+            IsFiltering = true;
+            var count = 0;
+            foreach (var item in Items)
+            {
+                if (item != null)
+                {
+                    var container    = ContainerFromItem(item);
+                    if (container is ListBoxItem listBoxItem)
+                    {
+                        var filterResult = FilterItem(listBoxItem);
+                        if (filterResult)
+                        {
+                            ++count;
+                        }
+
+                        if (ItemFilterHighlightStrategy.HasFlag(TextBlockHighlightStrategy.HideUnMatched))
+                        {
+                            listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, filterResult);
+                        }
+                       
+                        listBoxItem.IsFiltering = true;
+                        listBoxItem.FilterValue = ItemFilterValue;
+                    }
+                }
+            }
+            FilterResultCount = count;
         }
-        ClearFilter();
+        else
+        {
+            ClearFilter();
+        }
     }
 
     private void ClearFilter()
@@ -534,6 +518,7 @@ public class ListBox : AvaloniaListBox,
                 }
             }
         }
+        IsFiltering = false;
         _filterContext.Clear();
     }
 }

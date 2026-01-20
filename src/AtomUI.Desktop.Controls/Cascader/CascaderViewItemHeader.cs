@@ -1,12 +1,9 @@
-using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 
@@ -116,30 +113,6 @@ internal class CascaderViewItemHeader : ContentControl
             nameof(Level),
             o => o.Level,
             (o, v) => o.Level = v);
-    
-    internal static readonly DirectProperty<CascaderViewItemHeader, bool> IsFilterMatchProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, bool>(nameof(IsFilterMatch),
-            o => o.IsFilterMatch,
-            (o, v) => o.IsFilterMatch = v);
-    
-    internal static readonly DirectProperty<CascaderViewItemHeader, string?> FilterHighlightWordsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, string?>(nameof(FilterHighlightWords),
-            o => o.FilterHighlightWords,
-            (o, v) => o.FilterHighlightWords = v);
-    
-    internal static readonly DirectProperty<CascaderViewItemHeader, InlineCollection?> FilterHighlightRunsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, InlineCollection?>(
-            nameof(FilterHighlightRuns), t => t.FilterHighlightRuns, 
-            (t, v) => t.FilterHighlightRuns = v);
-    
-    internal static readonly DirectProperty<CascaderViewItemHeader, CascaderItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, CascaderItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
-    
-    internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
-        TreeView.FilterHighlightForegroundProperty.AddOwner<CascaderViewItemHeader>();
 
     internal IBrush? ContentFrameBackground
     {
@@ -183,43 +156,6 @@ internal class CascaderViewItemHeader : ContentControl
         set => SetAndRaise(LevelProperty, ref _level, value);
     }
     
-    private bool _isFilterMatch;
-
-    internal bool IsFilterMatch
-    {
-        get => _isFilterMatch;
-        set => SetAndRaise(IsFilterMatchProperty, ref _isFilterMatch, value);
-    }
-    
-    private string? _filterHighlightWords;
-
-    internal string? FilterHighlightWords
-    {
-        get => _filterHighlightWords;
-        set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
-    }
-    
-    private InlineCollection? _filterHighlightRuns;
-    internal InlineCollection? FilterHighlightRuns
-    {
-        get => _filterHighlightRuns;
-        set => SetAndRaise(FilterHighlightRunsProperty, ref _filterHighlightRuns, value);
-    }
-    
-    private CascaderItemFilterAction _itemFilterAction = CascaderItemFilterAction.All;
-    
-    public CascaderItemFilterAction ItemFilterAction
-    {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
-    }
-    
-    internal IBrush? FilterHighlightForeground
-    {
-        get => GetValue(FilterHighlightForegroundProperty);
-        set => SetValue(FilterHighlightForegroundProperty, value);
-    }
-    
     #endregion
 
     static CascaderViewItemHeader()
@@ -237,11 +173,6 @@ internal class CascaderViewItemHeader : ContentControl
         else if (change.Property == ToggleTypeProperty)
         {
             HandleToggleTypeChanged(change);
-        }
-        else if (change.Property == FilterHighlightWordsProperty ||
-                 change.Property == IsFilterMatchProperty)
-        {
-            BuildFilterHighlightRuns();
         }
         
         if (IsLoaded)
@@ -295,85 +226,5 @@ internal class CascaderViewItemHeader : ContentControl
     {
         base.OnUnloaded(e);
         Transitions = null;
-    }
-    
-    private void BuildFilterHighlightRuns()
-    {
-        if (!IsFilterMatch)
-        {
-            FilterHighlightRuns = null;
-        }
-        else if (FilterHighlightWords != null)
-        { 
-            string? headerText   = null;
-            if (Content is ICascaderViewItemData treeViewItemData)
-            {
-                headerText = treeViewItemData.Header as string;
-            }
-            else if (Content is string strContent)
-            {
-                headerText = strContent;
-            }
-
-            if (string.IsNullOrWhiteSpace(headerText))
-            {
-                return;
-            }
-            var ranges          = new List<(int, int)>();
-            int currentIndex    = 0;
-            var highlightLength = FilterHighlightWords.Length;
-        
-            while (true)
-            {
-                int foundIndex = headerText.IndexOf(FilterHighlightWords, currentIndex, StringComparison.Ordinal);
-                if (foundIndex == -1) // 如果没有找到，退出循环
-                {
-                    break;
-                }
-                
-                currentIndex = foundIndex + highlightLength;
-                ranges.Add((foundIndex, currentIndex));
-            }
-            Debug.Assert(headerText != null);
-            var runs = new InlineCollection();
-            for (var i = 0; i < headerText.Length; i++)
-            {
-                var c   =  headerText[i];
-                var run = new Run($"{c}");
-                
-                if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch))
-                {
-                    if (IsNeedHighlight(i, ranges))
-                    {
-                        run.Foreground = FilterHighlightForeground;
-                    }
-                }
-                else if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
-                {
-                    run.Foreground = FilterHighlightForeground;
-                }
-         
-                if (ItemFilterAction.HasFlag(TreeItemFilterAction.BoldedMatch))
-                {
-                    run.FontWeight = FontWeight.Bold;
-                }
-                runs.Add(run);
-            }
-
-            FilterHighlightRuns = runs;
-        }
-    }
-
-    private bool IsNeedHighlight(int pos, in List<(int, int)> ranges)
-    {
-        foreach (var range in ranges)
-        {
-            if (pos >= range.Item1 && pos < range.Item2)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

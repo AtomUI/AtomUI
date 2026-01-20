@@ -1,9 +1,7 @@
-using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -53,16 +51,21 @@ public class ListBoxItem : AvaloniaListBoxItem
             o => o.FilterValue,
             (o, v) => o.FilterValue = v);
     
-    internal static readonly DirectProperty<ListBoxItem, ListBoxItemFilterAction> FilterActionProperty =
-        AvaloniaProperty.RegisterDirect<ListBoxItem, ListBoxItemFilterAction>(
-            nameof(FilterAction),
-            o => o.FilterAction,
-            (o, v) => o.FilterAction = v);
+    internal static readonly DirectProperty<ListBoxItem, TextBlockHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<ListBoxItem, TextBlockHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
-    internal static readonly DirectProperty<ListBoxItem, InlineCollection?> FilterHighlightRunsProperty =
-        AvaloniaProperty.RegisterDirect<ListBoxItem, InlineCollection?>(
-            nameof(FilterHighlightRuns), t => t.FilterHighlightRuns, 
-            (t, v) => t.FilterHighlightRuns = v);
+    internal static readonly DirectProperty<ListBoxItem, string?> FilterHighlightWordsProperty =
+        AvaloniaProperty.RegisterDirect<ListBoxItem, string?>(
+            nameof(FilterHighlightWords), t => t.FilterHighlightWords, 
+            (t, v) => t.FilterHighlightWords = v);
+    
+    internal static readonly DirectProperty<ListBoxItem, string?> ContentTextProperty =
+        AvaloniaProperty.RegisterDirect<ListBoxItem, string?>(
+            nameof(ContentText), t => t.ContentText, 
+            (t, v) => t.ContentText = v);
     
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         ListBox.FilterHighlightForegroundProperty.AddOwner<ListBoxItem>();
@@ -131,19 +134,26 @@ public class ListBoxItem : AvaloniaListBoxItem
         set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
     }
     
-    private ListBoxItemFilterAction _filterAction = ListBoxItemFilterAction.All;
+    private TextBlockHighlightStrategy _filterHighlightStrategy = TextBlockHighlightStrategy.All;
     
-    public ListBoxItemFilterAction FilterAction
+    public TextBlockHighlightStrategy FilterHighlightStrategy
     {
-        get => _filterAction;
-        set => SetAndRaise(FilterActionProperty, ref _filterAction, value);
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
     }
     
-    private InlineCollection? _filterHighlightRuns;
-    internal InlineCollection? FilterHighlightRuns
+    private string? _filterHighlightWords;
+    internal string? FilterHighlightWords
     {
-        get => _filterHighlightRuns;
-        set => SetAndRaise(FilterHighlightRunsProperty, ref _filterHighlightRuns, value);
+        get => _filterHighlightWords;
+        set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
+    }
+    
+    private string? _contentText;
+    internal string? ContentText
+    {
+        get => _contentText;
+        set => SetAndRaise(ContentTextProperty, ref _contentText, value);
     }
     
     public IBrush? FilterHighlightForeground
@@ -190,11 +200,20 @@ public class ListBoxItem : AvaloniaListBoxItem
         {
             ConfigureSelectedIndicator();
         }
-        else if (change.Property == FilterValueProperty ||
-                 change.Property == FilterActionProperty ||
-                 change.Property == IsFilteringProperty)
+        else if (change.Property == ContentProperty)
         {
-            NotifyBuildFilterHighlightRuns();
+            if (Content is IListBoxItemData listBoxItemData)
+            {
+                ContentText = listBoxItemData.Content as string;
+            }
+            else if (Content is string strContent)
+            {
+                ContentText = strContent;
+            }
+        }
+        else if (change.Property == FilterValueProperty)
+        {
+            FilterHighlightWords = FilterValue?.ToString();
         }
     }
 
@@ -294,96 +313,5 @@ public class ListBoxItem : AvaloniaListBoxItem
         }
 
         _pointerDownPoint = s_invalidPoint;
-    }
-
-    protected virtual void NotifyBuildFilterHighlightRuns()
-    {
-        var filterValue = FilterValue?.ToString();
-        if (IsFiltering && !string.IsNullOrEmpty(filterValue))
-        {
-            string? headerText   = null;
-            if (Content is IListBoxItemData listBoxItemData)
-            {
-                headerText = listBoxItemData.Content as string;
-            }
-            else if (Content is string strContent)
-            {
-                headerText = strContent;
-            }
-            if (string.IsNullOrWhiteSpace(headerText))
-            {
-                return;
-            }
-            
-            Debug.Assert(headerText != null);
-            var highlightRanges = CalculateHighlightRanges(filterValue, headerText);
-            var runs            = new InlineCollection();
-            for (var i = 0; i < headerText.Length; i++)
-            {
-                var c   =  headerText[i];
-                var run = new Run($"{c}");
-                
-                if (FilterAction.HasFlag(ListBoxItemFilterAction.HighlightedMatch))
-                {
-                    if (IsNeedHighlight(i, highlightRanges))
-                    {
-                        run.Foreground = FilterHighlightForeground;
-                        if (FilterAction.HasFlag(ListBoxItemFilterAction.BoldedMatch))
-                        {
-                            run.FontWeight = FontWeight.Bold;
-                        }
-                    }
-                }
-                else if (FilterAction.HasFlag(ListBoxItemFilterAction.HighlightedWhole))
-                {
-                    run.Foreground = FilterHighlightForeground;
-                    if (FilterAction.HasFlag(ListBoxItemFilterAction.BoldedMatch))
-                    {
-                        run.FontWeight = FontWeight.Bold;
-                    }
-                }
-            
-                runs.Add(run);
-            }
-
-            FilterHighlightRuns = runs;
-        }
-        else
-        {
-            FilterHighlightRuns = null;
-        }
-    }
-
-    protected List<(int, int)> CalculateHighlightRanges(string highlightWords, string text)
-    {
-        var ranges          = new List<(int, int)>();
-        int currentIndex    = 0;
-        var highlightLength = highlightWords.Length;
-        
-        while (true)
-        {
-            int foundIndex = text.IndexOf(highlightWords, currentIndex, StringComparison.Ordinal);
-            if (foundIndex == -1) // 如果没有找到，退出循环
-            {
-                break;
-            }
-                
-            currentIndex = foundIndex + highlightLength;
-            ranges.Add((foundIndex, currentIndex));
-        }
-        return ranges;
-    }
-    
-    protected bool IsNeedHighlight(int pos, in List<(int, int)> ranges)
-    {
-        foreach (var range in ranges)
-        {
-            if (pos >= range.Item1 && pos < range.Item2)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

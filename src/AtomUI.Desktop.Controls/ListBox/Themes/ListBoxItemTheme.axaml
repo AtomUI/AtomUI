@@ -17,10 +17,11 @@
                                       HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                       VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                       IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}"/>
-                    <TextBlock Name="FilterHighlighter"
-                               VerticalAlignment="Center"
-                               IsVisible="{TemplateBinding IsFiltering}"
-                               Inlines="{TemplateBinding FilterHighlightRuns}"/>
+                    <atom:HighlightableTextBlock HighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                                 HighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
+                                                 IsVisible="{TemplateBinding IsFiltering}"
+                                                 HighlightWords="{TemplateBinding FilterHighlightWords}"
+                                                 Text="{TemplateBinding ContentText}"/>
                     <atom:IconPresenter
                         Name="SelectedIndicator"
                         IconTemplate="{TemplateBinding SelectedIndicator}"

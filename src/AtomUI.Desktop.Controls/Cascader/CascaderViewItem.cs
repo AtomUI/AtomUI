@@ -13,14 +13,13 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, 
     StdPseudoClass.Pressed, StdPseudoClass.Expanded)]
-public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
+public class CascaderViewItem : HeaderedItemsControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsExpandedProperty =
@@ -130,9 +129,6 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
     private CascaderView? _cascaderView;
     internal CascaderView? CascaderViewOwner => _cascaderView;
     
-    IList<ICascaderViewItemData> ITreeNode<ICascaderViewItemData>.Children => Items.OfType<ICascaderViewItemData>().ToList();
-    ITreeNode<ICascaderViewItemData>? ITreeNode<ICascaderViewItemData>.ParentNode => Parent as ITreeNode<ICascaderViewItemData>;
-    
     public TreeNodeKey? ItemKey { get; set; }
 
     #endregion
@@ -179,30 +175,6 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsAutoExpandParent),
             o => o.IsAutoExpandParent,
             (o, v) => o.IsAutoExpandParent = v);
-    
-    internal static readonly DirectProperty<CascaderViewItem, bool> IsFilterModeProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsFilterMode),
-            o => o.IsFilterMode,
-            (o, v) => o.IsFilterMode = v);
-    
-    internal static readonly DirectProperty<CascaderViewItem, bool> IsFilterMatchProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsFilterMatch),
-            o => o.IsFilterMatch,
-            (o, v) => o.IsFilterMatch = v);
-    
-    internal static readonly DirectProperty<CascaderViewItem, string?> FilterHighlightWordsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, string?>(nameof(FilterHighlightWords),
-            o => o.FilterHighlightWords,
-            (o, v) => o.FilterHighlightWords = v);
-
-    internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
-        TreeView.FilterHighlightForegroundProperty.AddOwner<CascaderViewItem>();
-    
-    internal static readonly DirectProperty<CascaderViewItem, CascaderItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, CascaderItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
     
     internal static readonly DirectProperty<CascaderViewItem, Rect> HeaderBoundsProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, Rect>(
@@ -258,44 +230,6 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
         set => SetAndRaise(IsAutoExpandParentProperty, ref _isAutoExpandParent, value);
     }
     
-    private bool _isFilterMode;
-
-    internal bool IsFilterMode
-    {
-        get => _isFilterMode;
-        set => SetAndRaise(IsFilterModeProperty, ref _isFilterMode, value);
-    }
-    
-    private bool _isFilterMatch;
-
-    internal bool IsFilterMatch
-    {
-        get => _isFilterMatch;
-        set => SetAndRaise(IsFilterMatchProperty, ref _isFilterMatch, value);
-    }
-    
-    private string? _filterHighlightWords;
-
-    internal string? FilterHighlightWords
-    {
-        get => _filterHighlightWords;
-        set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
-    }
-    
-    internal IBrush? FilterHighlightForeground
-    {
-        get => GetValue(FilterHighlightForegroundProperty);
-        set => SetValue(FilterHighlightForegroundProperty, value);
-    }
-    
-    private CascaderItemFilterAction _itemFilterAction = CascaderItemFilterAction.All;
-    
-    internal CascaderItemFilterAction ItemFilterAction
-    {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
-    }
-
     private Rect _headerBounds;
     
     internal Rect HeaderBounds
@@ -313,7 +247,6 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
     private CascaderViewItemHeader? _header;
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     internal bool AsyncLoaded;
-    private FilterContextBackup? _filterContextBackup;
     private bool _templateApplied;
     private bool _deferredBringIntoViewFlag;
 
@@ -640,12 +573,10 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, HeaderTemplateProperty));
             }
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, cascaderViewItem, ItemFilterActionProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemsPanelProperty, cascaderViewItem, ItemsPanelProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, cascaderViewItem, FilterHighlightForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 HasItemAsyncDataLoaderProperty));
             disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, cascaderViewItem,
@@ -726,33 +657,5 @@ public class CascaderViewItem : HeaderedItemsControl, ICascaderViewItemData
         }
 
         return logical != null ? result : @default;
-    }
-
-    internal void CreateFilterContextBackup()
-    {
-        _filterContextBackup = new FilterContextBackup()
-        {
-            IsVisible = IsVisible,
-        };
-    }
-
-    internal void ClearFilterMode()
-    {
-        if (_filterContextBackup != null)
-        {
-            SetCurrentValue(IsVisibleProperty, _filterContextBackup.IsVisible);
-        }
-        
-        SetCurrentValue(IsExpandedProperty, OwnerView?.SelectedItemsClosure.Contains(this));
-        IsFilterMatch        = false;
-        IsFilterMode         = false;
-        FilterHighlightWords = null;
-        _filterContextBackup = null;
-    }
-
-    // 用户保存在树处于过滤状态结束后的节点原始上下文属性的恢复
-    private record FilterContextBackup
-    {
-        public bool IsVisible { get; set; }
     }
 }

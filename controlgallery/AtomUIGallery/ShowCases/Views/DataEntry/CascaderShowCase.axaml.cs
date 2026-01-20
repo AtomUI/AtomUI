@@ -1,5 +1,6 @@
 using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
+using Avalonia.Interactivity;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 
@@ -135,5 +136,13 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 Value  = "jiangsu",
             }
         ];
+    }
+    
+    private void HandleFilterCascaderViewClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is SearchEdit searchEdit)
+        {
+            SearchCascaderView.ItemFilterValue = searchEdit.Text?.Trim();
+        }
     }
 }

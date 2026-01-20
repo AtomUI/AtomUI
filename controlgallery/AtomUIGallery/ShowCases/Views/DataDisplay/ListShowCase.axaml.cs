@@ -273,4 +273,12 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
             OrderedList.CollectionView.SortDescriptions.Add(ListSortDescription.FromPath("Content"));
         }
     }
+    
+    private void HandleFilterListBoxClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is SearchEdit searchEdit)
+        {
+            SearchListBox.ItemFilterValue = searchEdit.Text?.Trim();
+        }
+    }
 }

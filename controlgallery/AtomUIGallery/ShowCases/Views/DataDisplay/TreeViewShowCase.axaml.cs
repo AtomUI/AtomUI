@@ -25,8 +25,6 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
             }
         });
         InitializeComponent();
-        SearchTreeViewByItemsSource.ItemFilter = new DefaultTreeItemFilter();
-        SearchTreeView.ItemFilter = new DefaultTreeItemFilter();
     }
 
     private void InitBasicTreeViewData(TreeViewViewModel viewModel)

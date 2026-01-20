@@ -323,22 +323,26 @@ public class ListBoxItem : AvaloniaListBoxItem
                 var c   =  headerText[i];
                 var run = new Run($"{c}");
                 
-                if (FilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch))
+                if (FilterAction.HasFlag(ListBoxItemFilterAction.HighlightedMatch))
                 {
                     if (IsNeedHighlight(i, highlightRanges))
                     {
                         run.Foreground = FilterHighlightForeground;
+                        if (FilterAction.HasFlag(ListBoxItemFilterAction.BoldedMatch))
+                        {
+                            run.FontWeight = FontWeight.Bold;
+                        }
                     }
                 }
-                else if (FilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
+                else if (FilterAction.HasFlag(ListBoxItemFilterAction.HighlightedWhole))
                 {
                     run.Foreground = FilterHighlightForeground;
+                    if (FilterAction.HasFlag(ListBoxItemFilterAction.BoldedMatch))
+                    {
+                        run.FontWeight = FontWeight.Bold;
+                    }
                 }
-         
-                if (FilterAction.HasFlag(TreeItemFilterAction.BoldedMatch))
-                {
-                    run.FontWeight = FontWeight.Bold;
-                }
+            
                 runs.Add(run);
             }
 

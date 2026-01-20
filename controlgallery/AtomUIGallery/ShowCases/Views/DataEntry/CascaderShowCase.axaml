@@ -82,5 +82,28 @@
                 </atom:CascaderView.ItemTemplate>
             </atom:CascaderView>
         </gallery:ShowCaseItem>
+        
+         <gallery:ShowCaseItem
+            Title="Searchable"
+            Description="Searchable CascaderView.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:SearchEdit Watermark="Search"
+                                 SearchButtonClick="HandleFilterCascaderViewClicked"/>
+                <atom:CascaderView Name="SearchCascaderView">
+                    <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
+                        <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
+                            <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
+                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
+                        </atom:CascaderViewItem>
+                    </atom:CascaderViewItem>
+                    <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
+                        <atom:CascaderViewItem Header="Nanjing" Value="nanjing">
+                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/>
+                        </atom:CascaderViewItem>
+                    </atom:CascaderViewItem>
+                </atom:CascaderView>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
     </gallery:ShowCasePanel>
 </UserControl>

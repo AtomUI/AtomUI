@@ -19,7 +19,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Selection"
             Description="You can set single selection, multiple selection or no selection.">
@@ -44,7 +44,7 @@
                 </atom:List>
             </StackPanel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Hover effect"
             Description="Disabled item hover effect.">
@@ -58,7 +58,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Group"
             Description="You can group the data based on conditions.">
@@ -73,7 +73,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Item disabled"
             Description="Disabled item.">
@@ -86,7 +86,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Empty"
             Description="show empty indicator when no data.">
@@ -98,10 +98,10 @@
                                  Click="HandleRemoveEmptyItemClicked" />
                 </StackPanel>
                 <atom:List
-                           x:DataType="viewModels:ListViewModel"
-                           ItemsSource="{Binding EmptyDemoItems}"
-                           IsShowEmptyIndicator="True"
-                           IsGroupEnabled="False">
+                    x:DataType="viewModels:ListViewModel"
+                    ItemsSource="{Binding EmptyDemoItems}"
+                    IsShowEmptyIndicator="True"
+                    IsGroupEnabled="False">
                     <atom:List.ItemTemplate>
                         <DataTemplate x:DataType="atom:ListItemData">
                             <atom:TextBlock Text="{Binding Content}" />
@@ -110,12 +110,12 @@
                 </atom:List>
             </StackPanel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Filter"
             Description="You can filter the data based on criteria; here we've filtered for items containing 'a'.">
             <atom:List Name="FilteredList"
-                x:DataType="viewModels:ListViewModel"
+                       x:DataType="viewModels:ListViewModel"
                        ItemsSource="{Binding GroupListItems}"
                        IsGroupEnabled="False">
                 <atom:List.ItemTemplate>
@@ -125,11 +125,11 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Ordered"
             Description="We can sort according to specified attributes.">
-            <atom:List Name="OrderedList" 
+            <atom:List Name="OrderedList"
                        x:DataType="viewModels:ListViewModel"
                        ItemsSource="{Binding GroupListItems}"
                        IsGroupEnabled="True">
@@ -140,7 +140,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Simple listbox control"
             Description="Basic usage example.">
@@ -151,9 +151,9 @@
                 <atom:ListBoxItem>Man charged over missing wedding girl.</atom:ListBoxItem>
                 <atom:ListBoxItem>Los Angeles battles huge wildfires.</atom:ListBoxItem>
             </atom:ListBox>
-            
+
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Simple listbox control"
             Description="Basic ItemsSource and template usage example.">
@@ -166,7 +166,22 @@
                     </DataTemplate>
                 </atom:ListBox.ItemTemplate>
             </atom:ListBox>
-            
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Searchable"
+            Description="Searchable Tree.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:SearchEdit Watermark="Search"
+                                 SearchButtonClick="HandleFilterListBoxClicked"/>
+                <atom:ListBox Name="SearchListBox">
+                    <atom:ListBoxItem>Racing car sprays burning fuel into crowd.</atom:ListBoxItem>
+                    <atom:ListBoxItem>Japanese princess to wed commoner.</atom:ListBoxItem>
+                    <atom:ListBoxItem>Australian walks 100km after outback crash.</atom:ListBoxItem>
+                    <atom:ListBoxItem>Man charged over missing wedding girl.</atom:ListBoxItem>
+                    <atom:ListBoxItem>Los Angeles battles huge wildfires.</atom:ListBoxItem>
+                </atom:ListBox>
+            </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

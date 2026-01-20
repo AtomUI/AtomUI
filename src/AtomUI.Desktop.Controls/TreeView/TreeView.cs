@@ -489,6 +489,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        ItemFilter ??= new DefaultTreeItemFilter();
         ConfigureEmptyIndicator();
     }
 
@@ -706,26 +707,23 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         PseudoClasses.Set(StdPseudoClass.Draggable, IsDraggable);
     }
 
-    protected override Control CreateContainerForItemOverride(
-        object? item,
-        int index,
-        object? recycleKey)
+    protected override Control CreateContainerForItemOverride(object? item,
+                                                              int index,
+                                                              object? recycleKey)
     {
         return new TreeViewItem();
     }
 
-    protected override bool NeedsContainerOverride(
-        object? item,
-        int index,
-        out object? recycleKey)
+    protected override bool NeedsContainerOverride(object? item,
+                                                   int index,
+                                                   out object? recycleKey)
     {
         return NeedsContainer<TreeViewItem>(item, out recycleKey);
     }
 
-    protected override void ContainerForItemPreparedOverride(
-        Control container,
-        object? item,
-        int index)
+    protected override void ContainerForItemPreparedOverride(Control container,
+                                                             object? item,
+                                                             int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
         if (container is TreeViewItem treeViewItem)

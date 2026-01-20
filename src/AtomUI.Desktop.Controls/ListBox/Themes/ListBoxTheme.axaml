@@ -13,17 +13,28 @@
                     BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     Padding="{TemplateBinding Padding}">
-                <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
-                                   IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
-                                   AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
-                                   HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                   VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                                   IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
-                                   IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                                   IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
-                    <ItemsPresenter Name="ItemsPresenter"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
-                </atom:ScrollViewer>
+                <Panel>
+                    <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+                                       IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                       IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
+                                       AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                       HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                       VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                       IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                                       IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                       IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
+                        <ItemsPresenter Name="ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    </atom:ScrollViewer>
+                    <ContentPresenter
+                        Name="EmptyIndicator"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Padding="{TemplateBinding EmptyIndicatorPadding}"
+                        IsVisible="{TemplateBinding IsEffectiveEmptyVisible}"
+                        Content="{TemplateBinding EmptyIndicator}"
+                        ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}" />
+                </Panel>
             </Border>
         </ControlTemplate>
     </Setter>
@@ -62,6 +73,12 @@
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
             <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
         </Style>
+        
+        <Setter Property="EmptyIndicatorTemplate">
+            <DataTemplate>
+                <atom:Empty SizeType="Small" PresetImage="Simple"/>
+            </DataTemplate>
+        </Setter>
     </Style>
 
 </ControlTheme>

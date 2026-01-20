@@ -21,7 +21,7 @@ public enum ListBoxItemFilterAction
     HighlightedMatch = 0x01,
     HighlightedWhole = 0x02,
     BoldedMatch = 0x04,
-    HideUnMatched = 0x10,
+    HideUnMatched = 0x8,
     All = HighlightedMatch | BoldedMatch | HideUnMatched
 }
 
@@ -263,6 +263,7 @@ public class ListBox : AvaloniaListBox,
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        ItemFilter ??= new DefaultListBoxItemFilter();
         ConfigureEmptyIndicator();
         ConfigureIsFiltering();
     }
@@ -472,9 +473,13 @@ public class ListBox : AvaloniaListBox,
                     {
                         foreach (var item in Items)
                         {
-                            if (item is ListBoxItem listBoxItem)
+                            if (item != null)
                             {
-                                _filterContext[listBoxItem] = listBoxItem.IsVisible;
+                                var container = ContainerFromItem(item);
+                                if (container is ListBoxItem listBoxItem)
+                                {
+                                    _filterContext[listBoxItem] = listBoxItem.IsVisible;
+                                }
                             }
                         }
                     }
@@ -483,21 +488,25 @@ public class ListBox : AvaloniaListBox,
                 var count = 0;
                 foreach (var item in Items)
                 {
-                    if (item is ListBoxItem listBoxItem)
+                    if (item != null)
                     {
-                        var filterResult = FilterItem(listBoxItem);
-                        if (filterResult)
+                        var container    = ContainerFromItem(item);
+                        if (container is ListBoxItem listBoxItem)
                         {
-                            ++count;
-                        }
+                            var filterResult = FilterItem(listBoxItem);
+                            if (filterResult)
+                            {
+                                ++count;
+                            }
 
-                        if (ItemFilterAction.HasFlag(ListBoxItemFilterAction.HideUnMatched))
-                        {
-                            listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, filterResult);
-                        }
+                            if (ItemFilterAction.HasFlag(ListBoxItemFilterAction.HideUnMatched))
+                            {
+                                listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, filterResult);
+                            }
                        
-                        listBoxItem.IsFiltering = true;
-                        listBoxItem.FilterValue = ItemFilterValue;
+                            listBoxItem.IsFiltering = true;
+                            listBoxItem.FilterValue = ItemFilterValue;
+                        }
                     }
                 }
                 FilterResultCount = count;
@@ -511,14 +520,18 @@ public class ListBox : AvaloniaListBox,
     {
         foreach (var item in Items)
         {
-            if (item is ListBoxItem listBoxItem)
+            if (item != null)
             {
-                if (_filterContext.TryGetValue(listBoxItem, out bool value))
+                var container = ContainerFromItem(item);
+                if (container is ListBoxItem listBoxItem)
                 {
-                    listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, value);
+                    if (_filterContext.TryGetValue(listBoxItem, out bool value))
+                    {
+                        listBoxItem.SetCurrentValue(ListBoxItem.IsVisibleProperty, value);
+                    }
+                    listBoxItem.IsFiltering = false;
+                    listBoxItem.FilterValue = null;
                 }
-                listBoxItem.IsFiltering = false;
-                listBoxItem.FilterValue = null;
             }
         }
         _filterContext.Clear();

@@ -33,7 +33,7 @@ public enum TreeItemHoverMode
 }
 
 [Flags]
-public enum TreeItemFilterAction
+public enum TreeFilterHighlightStrategy
 {
     HighlightedMatch = 0x01,
     HighlightedWhole = 0x02,
@@ -123,29 +123,29 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.DefaultExpandedPaths,
             (o, v) => o.DefaultExpandedPaths = v);
     
-    public static readonly DirectProperty<TreeView, ITreeItemDataLoader?> ItemDataLoaderProperty =
+    public static readonly DirectProperty<TreeView, ITreeItemDataLoader?> DataLoaderProperty =
         AvaloniaProperty.RegisterDirect<TreeView, ITreeItemDataLoader?>(
-            nameof(ItemDataLoader),
-            o => o.ItemDataLoader,
-            (o, v) => o.ItemDataLoader = v);
+            nameof(DataLoader),
+            o => o.DataLoader,
+            (o, v) => o.DataLoader = v);
     
-    public static readonly DirectProperty<TreeView, ITreeItemFilter?> ItemFilterProperty =
+    public static readonly DirectProperty<TreeView, ITreeItemFilter?> FilterProperty =
         AvaloniaProperty.RegisterDirect<TreeView, ITreeItemFilter?>(
-            nameof(ItemFilter),
-            o => o.ItemFilter,
-            (o, v) => o.ItemFilter = v);
+            nameof(Filter),
+            o => o.Filter,
+            (o, v) => o.Filter = v);
     
-    public static readonly DirectProperty<TreeView, object?> ItemFilterValueProperty =
+    public static readonly DirectProperty<TreeView, object?> FilterValueProperty =
         AvaloniaProperty.RegisterDirect<TreeView, object?>(
-            nameof(ItemFilterValue),
-            o => o.ItemFilterValue,
-            (o, v) => o.ItemFilterValue = v);
+            nameof(FilterValue),
+            o => o.FilterValue,
+            (o, v) => o.FilterValue = v);
     
-    public static readonly DirectProperty<TreeView, TreeItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, TreeItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    public static readonly DirectProperty<TreeView, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, TreeFilterHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
     public static readonly DirectProperty<TreeView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<TreeView, int>(nameof(FilterResultCount),
@@ -306,34 +306,34 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     private ITreeItemDataLoader? _itemDataLoader;
     
-    public ITreeItemDataLoader? ItemDataLoader
+    public ITreeItemDataLoader? DataLoader
     {
         get => _itemDataLoader;
-        set => SetAndRaise(ItemDataLoaderProperty, ref _itemDataLoader, value);
+        set => SetAndRaise(DataLoaderProperty, ref _itemDataLoader, value);
     }
     
     private ITreeItemFilter? _itemFilter;
     
-    public ITreeItemFilter? ItemFilter
+    public ITreeItemFilter? Filter
     {
         get => _itemFilter;
-        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+        set => SetAndRaise(FilterProperty, ref _itemFilter, value);
     }
     
     private object? _itemFilterValue;
     
-    public object? ItemFilterValue
+    public object? FilterValue
     {
         get => _itemFilterValue;
-        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
+        set => SetAndRaise(FilterValueProperty, ref _itemFilterValue, value);
     }
 
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;
     
-    public TreeItemFilterAction ItemFilterAction
+    public TreeFilterHighlightStrategy FilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
     }
 
     private int _filterResultCount;
@@ -489,7 +489,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        ItemFilter ??= new DefaultTreeItemFilter();
+        Filter ??= new DefaultTreeItemFilter();
         ConfigureEmptyIndicator();
     }
 
@@ -747,7 +747,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLoadingIconProperty, SwitcherLoadingIcon);
             SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLeafIconProperty, SwitcherLeafIcon);
             
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, treeViewItem, TreeViewItem.ItemFilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, FilterHighlightStrategyProperty, treeViewItem, TreeViewItem.FilterHighlightStrategyProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, TreeViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, TreeViewItem.NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, TreeViewItem.IsShowLineProperty));
@@ -1238,7 +1238,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         ConfigureDefaultSelectedPaths();
         ConfigureDefaultCheckedPaths();
         
-        Filter();
+        FilterTreeNode();
         
         if (IsDefaultExpandAll)
         {
@@ -1279,16 +1279,16 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             HandleSwitcherLeafIconChanged();
         }
-        else if (change.Property == ItemDataLoaderProperty)
+        else if (change.Property == DataLoaderProperty)
         {
-            HasTreeItemDataLoader = ItemDataLoader != null;
+            HasTreeItemDataLoader = DataLoader != null;
         }
-        else if (change.Property == ItemFilterProperty ||
-                 change.Property == ItemFilterActionProperty ||
+        else if (change.Property == FilterProperty ||
+                 change.Property == FilterHighlightStrategyProperty ||
                  change.Property == ItemsSourceProperty ||
-                 change.Property == ItemFilterValueProperty)
+                 change.Property == FilterValueProperty)
         {
-            Filter();
+            FilterTreeNode();
         }
 
         if (change.Property == IsShowEmptyIndicatorProperty ||

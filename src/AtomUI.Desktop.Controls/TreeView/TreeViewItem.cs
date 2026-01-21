@@ -209,11 +209,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         TreeView.FilterHighlightForegroundProperty.AddOwner<TreeViewItem>();
     
-    internal static readonly DirectProperty<TreeViewItem, TreeItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    internal static readonly DirectProperty<TreeViewItem, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeFilterHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
     internal static readonly DirectProperty<TreeViewItem, bool> IsSelectableProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
@@ -363,12 +363,12 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         set => SetValue(FilterHighlightForegroundProperty, value);
     }
     
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;
     
-    internal TreeItemFilterAction ItemFilterAction
+    internal TreeFilterHighlightStrategy FilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
     }
 
     private bool _isSelectable = true;
@@ -817,7 +817,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, treeViewItem, HeaderTemplateProperty));
             }
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, treeViewItem, ItemFilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, FilterHighlightStrategyProperty, treeViewItem, FilterHighlightStrategyProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, IsShowLineProperty));

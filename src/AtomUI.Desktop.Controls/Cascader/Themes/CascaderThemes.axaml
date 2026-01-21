@@ -8,6 +8,7 @@
         <ResourceInclude Source="CascaderViewItemHeaderTheme.axaml" />
         <ResourceInclude Source="CascaderViewLevelListTheme.axaml" />
         <ResourceInclude Source="CascaderViewFilterListTheme.axaml" />
+        <ResourceInclude Source="CascaderAddOnDecoratedBoxTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
     <themes:CascaderViewTheme x:Key="{x:Type atom:CascaderView}" TargetType="atom:CascaderView"/>
     <themes:CascaderViewItemTheme x:Key="{x:Type atom:CascaderViewItem}" TargetType="atom:CascaderViewItem"/>

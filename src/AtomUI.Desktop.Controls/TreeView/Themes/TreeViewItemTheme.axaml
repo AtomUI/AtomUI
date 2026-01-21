@@ -37,7 +37,7 @@
                                          IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
                                          IsFilterMatch="{TemplateBinding IsFilterMatch}"
                                          FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
-                                         ItemFilterAction="{TemplateBinding ItemFilterAction}"
+                                         FilterHighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
                                          FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                          IsSelectable="{TemplateBinding IsSelectable}"
                                          Focusable="{TemplateBinding Focusable}"/>

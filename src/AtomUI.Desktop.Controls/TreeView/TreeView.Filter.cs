@@ -71,11 +71,11 @@ public partial class TreeView
         return closure;
     }
     
-    public void Filter()
+    public void FilterTreeNode()
     {
-        if (ItemFilter != null && ItemFilterValue != null && IsLoaded)
+        if (Filter != null && FilterValue != null && IsLoaded)
         {
-            if (ItemFilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
+            if (FilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
             {
                 using (BeginTurnOffMotion())
                 {
@@ -88,7 +88,7 @@ public partial class TreeView
             IsFilterMode      = true;
             FilterResultCount = 0;
             HashSet<TreeViewItem>? originExpandedItems = null;
-            if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath))
+            if (!FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.ExpandPath))
             {
                 originExpandedItems = new HashSet<TreeViewItem>();
                 for (int i = 0; i < ItemCount; i++)
@@ -102,7 +102,7 @@ public partial class TreeView
  
             ExpandAll(false); // TODO 这样合适吗？
             using var state = BeginTurnOffMotion();
-            if (!ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath) && originExpandedItems != null)
+            if (!FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.ExpandPath) && originExpandedItems != null)
             {
                 RestoreItemExpandedStates(originExpandedItems);
             }
@@ -134,7 +134,7 @@ public partial class TreeView
 
     private void FilterItem(TreeViewItem treeItem)
     {
-        if (ItemFilter == null)
+        if (Filter == null)
         {
             return;
         }
@@ -146,20 +146,20 @@ public partial class TreeView
             }
         }
         treeItem.IsFilterMode = true;
-        var filterResult = ItemFilter.Filter(this, treeItem, ItemFilterValue);
+        var filterResult = Filter.Filter(this, treeItem, FilterValue);
         treeItem.IsFilterMatch = filterResult;
         if (filterResult)
         {
             ++FilterResultCount;
-            if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch) ||
-                ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
+            if (FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.HighlightedMatch) ||
+                FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.HighlightedWhole))
             {
-                treeItem.FilterHighlightWords = ItemFilterValue?.ToString();
+                treeItem.FilterHighlightWords = FilterValue?.ToString();
             }
         }
         ConfigureEmptyIndicator();
         
-        if (ItemFilterAction.HasFlag(TreeItemFilterAction.HideUnMatched))
+        if (FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.HideUnMatched))
         {
             if (treeItem.IsFilterMatch)
             {
@@ -180,7 +180,7 @@ public partial class TreeView
             }
         }
 
-        if (ItemFilterAction.HasFlag(TreeItemFilterAction.ExpandPath))
+        if (FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.ExpandPath))
         {
             SetupExpandForFilter(treeItem);
         }

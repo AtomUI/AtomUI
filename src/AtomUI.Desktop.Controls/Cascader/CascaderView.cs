@@ -979,6 +979,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         if (DefaultExpandedPath != null && !_defaultExpandPathApplied)
         {
             ApplyDefaultExpandPath();
+            _defaultExpandPathApplied = true;
         }
     }
 

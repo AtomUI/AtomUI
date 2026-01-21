@@ -17,3 +17,9 @@ internal static class SelectResultOptionsBoxThemeConstants
     public const string DefaultPanelPart = "PART_DefaultPanel";
     public const string MaxCountAwarePanelPart = "PART_MaxCountAwarePanel";
 }
+
+internal static class SelectTagAwareTextBoxThemeConstants
+{
+    public const string DefaultPanelPart = "PART_DefaultPanel";
+    public const string MaxCountAwarePanelPart = "PART_MaxCountAwarePanel";
+}

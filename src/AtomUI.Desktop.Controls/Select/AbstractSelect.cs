@@ -98,8 +98,8 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     public static readonly StyledProperty<PathIcon?> SuffixIconProperty =
         AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(SuffixIcon));
     
-    public static readonly StyledProperty<PathIcon?> LoadingIconProperty =
-        AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(LoadingIcon));
+    public static readonly StyledProperty<PathIcon?> SuffixLoadingIconProperty =
+        AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(SuffixLoadingIcon));
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSelect>();
@@ -296,10 +296,10 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         set => SetValue(SuffixIconProperty, value);
     }
     
-    public PathIcon? LoadingIcon
+    public PathIcon? SuffixLoadingIcon
     {
-        get => GetValue(LoadingIconProperty);
-        set => SetValue(LoadingIconProperty, value);
+        get => GetValue(SuffixLoadingIconProperty);
+        set => SetValue(SuffixLoadingIconProperty, value);
     }
     
     public bool IsMotionEnabled
@@ -535,7 +535,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             popupRoots.Add(popupRoot);
             return !popupRoots.Contains(args.Root);
         }
-                
+        
         return false;
     }
 

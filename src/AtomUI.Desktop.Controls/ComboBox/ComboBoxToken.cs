@@ -64,16 +64,10 @@ internal class ComboBoxToken : ButtonSpinnerToken
     /// </summary>
     public Thickness ItemMargin { get; set; }
 
-    /// <summary>
-    /// 顶层弹出菜单，距离顶层菜单项的边距
-    /// </summary>
-    public double PopupMarginToAnchor { get; set; }
-
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PopupContentPadding  = new Thickness(SharedToken.UniformlyPaddingXXS, SharedToken.BorderRadiusLG.TopLeft / 2);
-        PopupMarginToAnchor  = SharedToken.UniformlyMarginXXS;
         
         var colorTextDisabled  = SharedToken.ColorTextDisabled;
         var colorTextSecondary = SharedToken.ColorTextSecondary;

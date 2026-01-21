@@ -101,7 +101,7 @@
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
-                    Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupMarginToAnchor}}" />
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}" />
             <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">

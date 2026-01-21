@@ -72,19 +72,18 @@
                                 IsVisible="False"
                                 SizeType="{TemplateBinding SizeType}"
                                 Watermark="{TemplateBinding SelectedItem, Converter={StaticResource TreeItemDataConverter}}" />
-                            <atom:TreeSelectTagAwareTextBox
-                                Name="SelectedItemsBox"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                ShowCheckedStrategy="{TemplateBinding ShowCheckedStrategy}"
-                                SizeType="{TemplateBinding SizeType}"
-                                SelectedItems="{TemplateBinding SelectedItems}"
-                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
-                                IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
-                                MaxTagCount="{TemplateBinding MaxTagCount}"
-                                IsResponsiveTagMode="{TemplateBinding IsResponsiveTagMode}"
-                                IsVisible="False"
-                                Focusable="True" />
+                            <atom:SelectTagAwareTextBox Name="SelectedItemsBox"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Center"
+                                                        ShowCheckedStrategy="{TemplateBinding ShowCheckedStrategy}"
+                                                        SizeType="{TemplateBinding SizeType}"
+                                                        SelectedItems="{TemplateBinding SelectedItems}"
+                                                        IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
+                                                        IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
+                                                        MaxTagCount="{TemplateBinding MaxTagCount}"
+                                                        IsResponsiveTagMode="{TemplateBinding IsResponsiveTagMode}"
+                                                        IsVisible="False"
+                                                        Focusable="True" />
                         </Panel>
                     </atom:TreeSelectAddOnDecoratedBox>
                     <atom:Popup Name="{x:Static atom:TreeSelectThemeConstants.PopupPart}"
@@ -120,7 +119,7 @@
                                                      IsShowLine="{TemplateBinding IsShowLine}"
                                                      IsShowEmptyIndicator="{TemplateBinding IsShowEmptyIndicator}"
                                                      IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
-                                                     IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}"/>
+                                                     IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}" />
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -150,7 +149,7 @@
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
-                    Value="{DynamicResource {x:Static atom:ComboBoxTokenKey.PopupMarginToAnchor}}" />
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}" />
             <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
@@ -193,7 +192,7 @@
         </Style>
 
         <Style Selector="^[IsMultiple=True]">
-            <Style Selector="^ /template/ atom|TreeSelectTagAwareTextBox#SelectedItemsBox">
+            <Style Selector="^ /template/ atom|SelectTagAwareTextBox#SelectedItemsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsFilterEnabled=False]">
@@ -209,7 +208,7 @@
                 <atom:TextBlock Text="{Binding Header}" />
             </TreeDataTemplate>
         </Setter>
-        
+
         <Style Selector="^ /template/ Border#PopupFrame">
             <Setter Property="MinWidth"
                     Value="{DynamicResource {x:Static atom:TreeSelectTokenKey.MinPopupWidth}}" />

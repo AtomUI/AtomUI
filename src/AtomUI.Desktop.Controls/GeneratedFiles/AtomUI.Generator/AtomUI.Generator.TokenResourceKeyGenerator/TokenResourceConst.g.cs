@@ -284,7 +284,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.ItemSelectedBgColor");
         public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.ItemSelectedColor");
         public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.PopupContentPadding");
-        public static readonly TokenResourceKey PopupMarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.ComboBox.PopupMarginToAnchor");
     }
 
     public static class DatePickerTokenKey

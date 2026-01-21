@@ -303,7 +303,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         get => _effectiveSelectedItems;
         set => SetAndRaise(EffectiveSelectedItemsProperty, ref _effectiveSelectedItems, value);
     }
-
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeSelectToken.ID;

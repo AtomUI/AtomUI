@@ -52,6 +52,7 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
             (o, v) => o.IsIndicatorEnabled = v);
     
     public ITreeNode<ICascaderViewItemData>? ParentNode { get; private set; }
+    
     public TreeNodeKey? ItemKey { get; init; }
     
     private object? _header;

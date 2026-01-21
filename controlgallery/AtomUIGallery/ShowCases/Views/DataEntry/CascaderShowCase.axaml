@@ -12,35 +12,35 @@
                 <atom:CascaderView>
                     <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
                         <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
-                            <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
-                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
+                            <atom:CascaderViewItem Header="West Lake" Value="xihu" />
+                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi" />
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                     <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
                         <atom:CascaderViewItem Header="Nanjing" Value="nanjing">
-                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/>
+                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen" />
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                 </atom:CascaderView>
-
+        
                 <atom:CascaderView IsCheckable="True">
                     <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
                         <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
-                            <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
-                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
+                            <atom:CascaderViewItem Header="West Lake" Value="xihu" />
+                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi" />
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                     <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
                         <atom:CascaderViewItem Header="Nanjing" Value="nanjing">
-                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/>
+                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen" />
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                 </atom:CascaderView>
-                
-                <atom:CascaderView/>
+        
+                <atom:CascaderView />
             </StackPanel>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Generate by template"
             Description="You can use the Template mechanism to generate tree nodes">
@@ -54,7 +54,7 @@
                         </TreeDataTemplate>
                     </atom:CascaderView.ItemTemplate>
                 </atom:CascaderView>
-                
+        
                 <atom:CascaderView
                     IsCheckable="True"
                     x:DataType="viewModels:CascaderViewModel"
@@ -83,25 +83,74 @@
             </atom:CascaderView>
         </gallery:ShowCaseItem>
         
-         <gallery:ShowCaseItem
+        <gallery:ShowCaseItem
             Title="Searchable"
             Description="Searchable CascaderView.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:SearchEdit Watermark="Search"
-                                 SearchButtonClick="HandleFilterCascaderViewClicked"/>
+                                 SearchButtonClick="HandleFilterCascaderViewClicked" />
                 <atom:CascaderView Name="SearchCascaderView">
                     <atom:CascaderViewItem Header="Zhejiang" Value="zhejiang">
                         <atom:CascaderViewItem Header="Hangzhou" Value="hangzhou">
-                            <atom:CascaderViewItem Header="West Lake" Value="xihu"/>
-                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi"/>
-                            <atom:CascaderViewItem Header="XiSha" Value="xisha" IsEnabled="False"/>
+                            <atom:CascaderViewItem Header="West Lake" Value="xihu" />
+                            <atom:CascaderViewItem Header="Lingyin shi" Value="lingyinshi" />
+                            <atom:CascaderViewItem Header="XiSha" Value="xisha" IsEnabled="False" />
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
                     <atom:CascaderViewItem Header="Jiangsu" Value="jiangsu">
                         <atom:CascaderViewItem Header="Nanjing" Value="nanjing">
-                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen"/>
+                            <atom:CascaderViewItem Header="Zhong Hua Men" Value="zhonghuamen" />
                         </atom:CascaderViewItem>
                     </atom:CascaderViewItem>
+                </atom:CascaderView>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Searchable"
+            Description="Searchable CascaderView with ItemsSource.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:SearchEdit Watermark="Search"
+                                 SearchButtonClick="HandleFilterCascaderViewItemsSourceClicked" />
+                <atom:CascaderView Name="SearchCascaderViewItemsSource"
+                                   x:DataType="viewModels:CascaderViewModel"
+                                   ItemsSource="{Binding SearchCascaderViewNodes}">
+                    <atom:CascaderView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" />
+                        </TreeDataTemplate>
+                    </atom:CascaderView.ItemTemplate>
+                </atom:CascaderView>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Default expanded"
+            Description="You can set the default expansion path..">
+            <StackPanel Spacing="10">
+                <atom:CascaderView DefaultExpandedPath="{Binding DefaultExpandPath}">
+                    <atom:CascaderViewItem Header="Zhejiang" ItemKey="zhejiang">
+                        <atom:CascaderViewItem Header="Hangzhou" ItemKey="hangzhou">
+                            <atom:CascaderViewItem Header="West Lake" ItemKey="xihu" />
+                            <atom:CascaderViewItem Header="Lingyin shi" ItemKey="lingyinshi" />
+                            <atom:CascaderViewItem Header="XiSha" ItemKey="xisha" IsEnabled="False" />
+                        </atom:CascaderViewItem>
+                    </atom:CascaderViewItem>
+                    <atom:CascaderViewItem Header="Jiangsu" ItemKey="jiangsu">
+                        <atom:CascaderViewItem Header="Nanjing" ItemKey="nanjing">
+                            <atom:CascaderViewItem Header="Zhong Hua Men" ItemKey="zhonghuamen" />
+                        </atom:CascaderViewItem>
+                    </atom:CascaderViewItem>
+                </atom:CascaderView>
+                <atom:Separator Title="By template"/>
+                <atom:CascaderView x:DataType="viewModels:CascaderViewModel"
+                                   ItemsSource="{Binding DefaultExpandCascaderViewNodes}"
+                                   DefaultExpandedPath="{Binding DefaultExpandPath}">
+                    <atom:CascaderView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" />
+                        </TreeDataTemplate>
+                    </atom:CascaderView.ItemTemplate>
                 </atom:CascaderView>
             </StackPanel>
         </gallery:ShowCaseItem>

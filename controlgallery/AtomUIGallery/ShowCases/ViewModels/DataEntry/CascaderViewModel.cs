@@ -1,6 +1,7 @@
 ﻿using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.DataLoad;
+using AtomUI.Desktop.Controls.Primitives;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.ViewModels;
@@ -38,12 +39,36 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _asyncLoadCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _searchCascaderViewNodes = [];
+    
+    public List<ICascaderViewItemData> SearchCascaderViewNodes
+    {
+        get => _searchCascaderViewNodes;
+        set => this.RaiseAndSetIfChanged(ref _searchCascaderViewNodes, value);
+    }
+    
     private CascaderItemDataLoader? _asyncCascaderNodeLoader;
     
     public CascaderItemDataLoader? AsyncCascaderNodeLoader
     {
         get => _asyncCascaderNodeLoader;
         set => this.RaiseAndSetIfChanged(ref _asyncCascaderNodeLoader, value);
+    }
+    
+    private List<ICascaderViewItemData> _defaultExpandCascaderViewNodes = [];
+    
+    public List<ICascaderViewItemData> DefaultExpandCascaderViewNodes
+    {
+        get => _defaultExpandCascaderViewNodes;
+        set => this.RaiseAndSetIfChanged(ref _defaultExpandCascaderViewNodes, value);
+    }
+    
+    private TreeNodePath? _defaultExpandPath;
+    
+    public TreeNodePath? DefaultExpandPath
+    {
+        get => _defaultExpandPath;
+        set => this.RaiseAndSetIfChanged(ref _defaultExpandPath, value);
     }
     
     public CascaderViewModel(IScreen screen)

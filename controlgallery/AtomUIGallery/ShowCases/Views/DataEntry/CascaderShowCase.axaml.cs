@@ -1,4 +1,5 @@
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia.Interactivity;
 using ReactiveUI;
@@ -17,7 +18,10 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
                 InitAsyncLoadCascaderViewData(vm);
+                InitSearchCascaderViewData(vm);
+                InitDefaultExpandCascaderViewData(vm);
                 vm.AsyncCascaderNodeLoader = new CascaderItemDataLoader();
+                vm.DefaultExpandPath       = new TreeNodePath("jiangsu/nanjing/zhonghuamen");
             }
         });
         InitializeComponent();
@@ -138,11 +142,131 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         ];
     }
     
+    private void InitSearchCascaderViewData(CascaderViewModel viewModel)
+    {
+        viewModel.SearchCascaderViewNodes =
+        [
+            new CascaderViewItemData()
+            {
+                Header = "Zhejiang",
+                Value  = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header = "Hangzhou",
+                        Value  = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header = "West Lake",
+                                Value  = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header = "Lingyin shi",
+                                Value  = "lingyinshi",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header = "XiSha",
+                                Value  = "xisha",
+                                IsEnabled = false
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header = "Jiangsu",
+                Value  = "jiangsu",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header = "Nanjing",
+                        Value  = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header = "Zhong Hua Men",
+                                Value  = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+    
+    private void InitDefaultExpandCascaderViewData(CascaderViewModel viewModel)
+    {
+        viewModel.DefaultExpandCascaderViewNodes =
+        [
+            new CascaderViewItemData()
+            {
+                Header = "Zhejiang",
+                ItemKey  = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Hangzhou",
+                        ItemKey = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "West Lake",
+                                ItemKey = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Lingyin shi",
+                                ItemKey = "lingyinshi",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header    = "XiSha",
+                                ItemKey   = "xisha",
+                                IsEnabled = false
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header  = "Jiangsu",
+                ItemKey = "jiangsu",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Nanjing",
+                        ItemKey = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Zhong Hua Men",
+                                ItemKey = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+    
     private void HandleFilterCascaderViewClicked(object? sender, RoutedEventArgs e)
     {
         if (sender is SearchEdit searchEdit)
         {
             SearchCascaderView.ItemFilterValue = searchEdit.Text?.Trim();
+        }
+    }
+    
+    private void HandleFilterCascaderViewItemsSourceClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is SearchEdit searchEdit)
+        {
+            SearchCascaderViewItemsSource.ItemFilterValue = searchEdit.Text?.Trim();
         }
     }
 }

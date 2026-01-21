@@ -47,7 +47,7 @@
                             <DataTemplate x:DataType="atom:CascaderViewFilterListItemData">
                                 <atom:HighlightableTextBlock Text="{Binding Content}"
                                                              HighlightForeground="{Binding FilterHighlightForeground, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}"
-                                                             HighlightWords="{Binding ItemFilterValue, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}" />
+                                                             HighlightWords="{Binding FilterValue, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}" />
                             </DataTemplate>
                         </atom:CascaderViewFilterList.ItemTemplate>
                     </atom:CascaderViewFilterList>
@@ -85,13 +85,13 @@
             </ItemsPanelTemplate>
         </Setter>
         
-        <Setter Property="ItemExpandIcon">
+        <Setter Property="ExpandIcon">
             <atom:IconTemplate>
                 <antdicons:RightOutlined/>
             </atom:IconTemplate>
         </Setter>
         
-        <Setter Property="ItemLoadingIcon">
+        <Setter Property="LoadingIcon">
             <atom:IconTemplate>
                 <antdicons:LoadingOutlined LoadingAnimation="Spin"/>
             </atom:IconTemplate>

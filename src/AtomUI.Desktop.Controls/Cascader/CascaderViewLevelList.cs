@@ -67,15 +67,12 @@ internal class CascaderViewLevelList : ItemsControl
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, CascaderViewItem.HeaderTemplateProperty));
             }
             
-            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ItemLoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
-            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ItemExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.LoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.ExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
-            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsAutoExpandParentProperty, cascaderViewItem,
-                CascaderViewItem.IsAutoExpandParentProperty));
             
             if (_itemsBindingDisposables.TryGetValue(cascaderViewItem, out var oldDisposables))
             {

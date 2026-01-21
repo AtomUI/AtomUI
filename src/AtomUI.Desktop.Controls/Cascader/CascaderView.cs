@@ -12,7 +12,6 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -45,20 +44,12 @@ public enum CascaderViewExpandTrigger
 public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-    public new TreeItemContainerGenerator ItemContainerGenerator =>
-        (TreeItemContainerGenerator)base.ItemContainerGenerator;
     
-    public static readonly StyledProperty<bool> IsAutoExpandParentProperty =
-        AvaloniaProperty.Register<CascaderView, bool>(nameof(IsAutoExpandParent), true);
+    public static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
+        AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ExpandIcon));
     
-    public static readonly StyledProperty<bool> IsShowIconProperty =
-        AvaloniaProperty.Register<CascaderView, bool>(nameof(IsShowIcon));
-    
-    public static readonly StyledProperty<IconTemplate?> ItemExpandIconProperty =
-        AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ItemExpandIcon));
-    
-    public static readonly StyledProperty<IconTemplate?> ItemLoadingIconProperty =
-        AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ItemLoadingIcon));
+    public static readonly StyledProperty<IconTemplate?> LoadingIconProperty =
+        AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(LoadingIcon));
     
     public static readonly StyledProperty<CascaderViewExpandTrigger> ExpandTriggerProperty =
         AvaloniaProperty.Register<CascaderView, CascaderViewExpandTrigger>(nameof(ExpandTrigger), CascaderViewExpandTrigger.Click);
@@ -69,37 +60,24 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public static readonly StyledProperty<bool> IsCheckableProperty =
         AvaloniaProperty.Register<CascaderView, bool>(nameof(IsCheckable));
     
-    public static readonly DirectProperty<CascaderView, TreeNodePath?> DefaultExpandedPathProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, TreeNodePath?>(
-            nameof(DefaultExpandedPath),
-            o => o.DefaultExpandedPath,
-            (o, v) => o.DefaultExpandedPath = v);
+    public static readonly StyledProperty<TreeNodePath?> DefaultExpandedPathProperty =
+        AvaloniaProperty.Register<CascaderView, TreeNodePath?>(nameof(DefaultExpandedPath));
     
-    public static readonly DirectProperty<CascaderView, ICascaderItemDataLoader?> ItemDataLoaderProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, ICascaderItemDataLoader?>(
-            nameof(ItemDataLoader),
-            o => o.ItemDataLoader,
-            (o, v) => o.ItemDataLoader = v);
+    public static readonly StyledProperty<ICascaderItemDataLoader?> ItemDataLoaderProperty =
+        AvaloniaProperty.Register<CascaderView, ICascaderItemDataLoader?>(nameof(ItemDataLoader));
     
-    public static readonly DirectProperty<CascaderView, ICascaderItemFilter?> ItemFilterProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, ICascaderItemFilter?>(
-            nameof(ItemFilter),
-            o => o.ItemFilter,
-            (o, v) => o.ItemFilter = v);
+    public static readonly StyledProperty<ICascaderItemFilter?> FilterProperty =
+        AvaloniaProperty.Register<CascaderView, ICascaderItemFilter?>(nameof(Filter));
     
-    public static readonly DirectProperty<CascaderView, object?> ItemFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, object?>(
-            nameof(ItemFilterValue),
-            o => o.ItemFilterValue,
-            (o, v) => o.ItemFilterValue = v);
+    public static readonly StyledProperty<object?> FilterValueProperty =
+        AvaloniaProperty.Register<CascaderView, object?>(nameof(FilterValue));
     
-    public static readonly StyledProperty<TextBlockHighlightStrategy> ItemFilterHighlightStrategyProperty =
-        AvaloniaProperty.Register<HighlightableTextBlock, TextBlockHighlightStrategy>(nameof(ItemFilterHighlightStrategy), TextBlockHighlightStrategy.All);
+    public static readonly StyledProperty<TextBlockHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.Register<HighlightableTextBlock, TextBlockHighlightStrategy>(nameof(FilterHighlightStrategy), TextBlockHighlightStrategy.All);
     
     public static readonly DirectProperty<CascaderView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, int>(nameof(FilterResultCount),
-            o => o.FilterResultCount,
-            (o, v) => o.FilterResultCount = v);
+            o => o.FilterResultCount);
     
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<CascaderView, IBrush?>(nameof(FilterHighlightForeground));
@@ -116,28 +94,22 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<CascaderView, Thickness>(nameof(EmptyIndicatorPadding));
     
-    public bool IsAutoExpandParent
-    {
-        get => GetValue(IsAutoExpandParentProperty);
-        set => SetValue(IsAutoExpandParentProperty, value);
-    }
-    
-    public bool IsShowIcon
-    {
-        get => GetValue(IsShowIconProperty);
-        set => SetValue(IsShowIconProperty, value);
-    }
+    public static readonly DirectProperty<CascaderView, object?> SelectedItemProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, object?>(
+            nameof(SelectedItem),
+            o => o.SelectedItem,
+            (o, v) => o.SelectedItem = v);
 
-    public IconTemplate? ItemExpandIcon
+    public IconTemplate? ExpandIcon
     {
-        get => GetValue(ItemExpandIconProperty);
-        set => SetValue(ItemExpandIconProperty, value);
+        get => GetValue(ExpandIconProperty);
+        set => SetValue(ExpandIconProperty, value);
     }
     
-    public IconTemplate? ItemLoadingIcon
+    public IconTemplate? LoadingIcon
     {
-        get => GetValue(ItemLoadingIconProperty);
-        set => SetValue(ItemLoadingIconProperty, value);
+        get => GetValue(LoadingIconProperty);
+        set => SetValue(LoadingIconProperty, value);
     }
     
     public CascaderViewExpandTrigger ExpandTrigger
@@ -158,42 +130,34 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         set => SetValue(IsCheckableProperty, value);
     }
     
-    private TreeNodePath? _defaultExpandedPath;
-    
     public TreeNodePath? DefaultExpandedPath
     {
-        get => _defaultExpandedPath;
-        set => SetAndRaise(DefaultExpandedPathProperty, ref _defaultExpandedPath, value);
+        get => GetValue(DefaultExpandedPathProperty);
+        set => SetValue(DefaultExpandedPathProperty, value);
     }
-    
-    private ICascaderItemDataLoader? _itemDataLoader;
     
     public ICascaderItemDataLoader? ItemDataLoader
     {
-        get => _itemDataLoader;
-        set => SetAndRaise(ItemDataLoaderProperty, ref _itemDataLoader, value);
+        get => GetValue(ItemDataLoaderProperty);
+        set => SetValue(ItemDataLoaderProperty, value);
     }
     
-    private ICascaderItemFilter? _itemFilter;
-    
-    public ICascaderItemFilter? ItemFilter
+    public ICascaderItemFilter? Filter
     {
-        get => _itemFilter;
-        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+        get => GetValue(FilterProperty);
+        set => SetValue(FilterProperty, value);
     }
 
-    private object? _itemFilterValue;
-    
-    public object? ItemFilterValue
+    public object? FilterValue
     {
-        get => _itemFilterValue;
-        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
+        get => GetValue(FilterValueProperty);
+        set => SetValue(FilterValueProperty, value);
     }
     
-    public TextBlockHighlightStrategy ItemFilterHighlightStrategy
+    public TextBlockHighlightStrategy FilterHighlightStrategy
     {
-        get => GetValue(ItemFilterHighlightStrategyProperty);
-        set => SetValue(ItemFilterHighlightStrategyProperty, value);
+        get => GetValue(FilterHighlightStrategyProperty);
+        set => SetValue(FilterHighlightStrategyProperty, value);
     }
     
     private int _filterResultCount;
@@ -264,6 +228,14 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             SubscribeToCheckedItems();
         }
     }
+    
+    private object? _selectedItem;
+    
+    public object? SelectedItem
+    {
+        get => _selectedItem;
+        set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+    }
     #endregion
     
     #region 公共事件定义
@@ -273,7 +245,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public event EventHandler<CascaderItemExpandedEventArgs>? ItemExpanded;
     public event EventHandler<CascaderItemCollapsedEventArgs>? ItemCollapsed;
     public event EventHandler<CascaderItemClickedEventArgs>? ItemClicked;
-    
+    public event EventHandler<CascaderItemSelectedEventArgs>? ItemSelected;
     #endregion
 
     #region 内部属性定义
@@ -317,6 +289,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     private int _ignoreExpandAndCollapseLevel;
     private CascaderViewItem? _lastHoveredItem; // 触发器是 hover 的时候使用
     private bool _defaultExpandPathApplied;
+    private bool _isDeferSelected;
 
     static CascaderView()
     {
@@ -343,7 +316,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         base.OnInitialized();
         ConfigureEmptyIndicator();
         ConfigureEffectiveToggleType();
-        ItemFilter ??= new DefaultCascaderItemFilter();
+        Filter ??= new DefaultCascaderItemFilter();
     }
     
     public IEnumerable<Control> GetRealizedTreeContainers()
@@ -459,7 +432,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 CheckedItems.Clear();
                 break;
         }
-        Filter();
+        FilterItems();
     }
     
     protected CascaderViewItem? GetContainerFromEventSource(object eventSource)
@@ -651,15 +624,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, CascaderViewItem.HeaderTemplateProperty));
             }
             
-            disposables.Add(BindUtils.RelayBind(this, ItemLoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
-            disposables.Add(BindUtils.RelayBind(this, ItemExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, LoadingIconProperty, cascaderViewItem, CascaderViewItem.LoadingIconProperty));
+            disposables.Add(BindUtils.RelayBind(this, ExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, CascaderViewItem.IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(this, EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, cascaderViewItem,
-                CascaderViewItem.IsAutoExpandParentProperty));
             
             PrepareCascaderViewItem(cascaderViewItem, item, index, disposables);
             
@@ -975,11 +945,21 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Filter();
+        FilterItems();
         if (DefaultExpandedPath != null && !_defaultExpandPathApplied)
         {
             ApplyDefaultExpandPath();
             _defaultExpandPathApplied = true;
+        }
+
+        if (_isDeferSelected)
+        {
+            if (SelectedItem != null)
+            {
+                SelectTargetItem(SelectedItem);
+            }
+
+            _isDeferSelected = false;
         }
     }
 
@@ -1077,12 +1057,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             HasItemAsyncDataLoader = ItemDataLoader != null;
         }
-        else if (change.Property == ItemFilterProperty ||
-                 change.Property == ItemFilterHighlightStrategyProperty ||
+        else if (change.Property == FilterProperty ||
+                 change.Property == FilterHighlightStrategyProperty ||
                  change.Property == ItemsSourceProperty ||
-                 change.Property == ItemFilterValueProperty)
+                 change.Property == FilterValueProperty)
         {
-            Filter();
+            FilterItems();
         }
 
         if (change.Property == IsShowEmptyIndicatorProperty ||
@@ -1095,6 +1075,115 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             ConfigureEffectiveToggleType();
         }
+        else if (change.Property == SelectedItemProperty)
+        {
+            if (!IsLoaded)
+            {
+                _isDeferSelected = true;
+            }
+            else
+            {
+                if (SelectedItem != null)
+                {
+                    SelectTargetItem(SelectedItem);
+                }
+            }
+        }
+    }
+
+    private void SelectTargetItem(object item)
+    {
+        var isLeaf = true;
+        if (item is ICascaderViewItemData viewItemData)
+        {
+            if (viewItemData.Children.Count != 0)
+            {
+                isLeaf = false;
+            }
+        }
+        else if (item is CascaderViewItem viewItem)
+        {
+            if (viewItem.ItemCount != 0)
+            {
+                isLeaf = false;
+            }
+        }
+
+        if (!isLeaf)
+        {
+            throw new ArgumentException($"Item {item} is not a Leaf node.");
+        }
+
+        var pathNodes = GetCascaderPathNodes(item);
+        if (pathNodes?.Count > 0)
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                foreach (var path in pathNodes)
+                {
+                    if (path is ICascaderViewItemData cascaderViewItemData)
+                    {
+                        cascaderViewItemData.IsExpanded = true;
+                    }
+                    else if (path is CascaderViewItem cascaderViewItem)
+                    {
+                        await ExpandItemAsync(cascaderViewItem);
+                    }
+                }
+            });
+        }
+    }
+
+    private List<object> GetCascaderPathNodes(object item)
+    {
+        var result  = new List<object>();
+        var isValid = false;
+        if (ItemsSource == null)
+        {
+            Debug.Assert(item is CascaderViewItem);
+            var current = item as CascaderViewItem;
+            
+            while (current != null)
+            {
+                result.Add(current);
+                current = current.Parent as CascaderViewItem;
+            }
+
+            result.Reverse();
+            var first = result.FirstOrDefault();
+            foreach (var root in Items)
+            {
+                if (first == root)
+                {
+                    isValid = true;
+                }
+            }
+        }
+        else
+        {
+            Debug.Assert(item is ICascaderViewItemData);
+            var current = item as ICascaderViewItemData;
+            while (current != null)
+            {
+                result.Add(current);
+                current = current.ParentNode as ICascaderViewItemData;
+            }
+            result.Reverse();
+            var first = result.FirstOrDefault();
+            foreach (var root in Items)
+            {
+                if (first == root)
+                {
+                    isValid = true;
+                }
+            }
+        }
+
+        if (!isValid)
+        {
+            throw new ArgumentException($"Item {item} is not valid, Item is a wild object and not part of the tree structure.");
+        }
+        return result;
     }
     
     private void HandleCascaderItemClicked(RoutedEventArgs args)
@@ -1217,7 +1306,19 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             if (_ignoreExpandAndCollapseLevel == 0)
             {
-                Dispatcher.UIThread.InvokeAsync(async () => { await ExpandItemAsync(item); });
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ExpandItemAsync(item);
+                    if (item.DataContext is ICascaderViewItemData data && data.Children.Count == 0)
+                    {
+                        SelectedItem = data;
+                    }
+                    else if (item.ItemCount == 0)
+                    {
+                        SelectedItem = item;
+                    }
+                    ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
+                });
             }
             ItemExpanded?.Invoke(this, new CascaderItemExpandedEventArgs(item));
         }

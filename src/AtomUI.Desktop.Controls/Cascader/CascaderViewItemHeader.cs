@@ -91,12 +91,7 @@ internal class CascaderViewItemHeader : ContentControl
     #region 内部属性定义
     public static readonly StyledProperty<IBrush?> ContentFrameBackgroundProperty =
         AvaloniaProperty.Register<CascaderViewItemHeader, IBrush?>(nameof (ContentFrameBackground));
-
-    internal static readonly DirectProperty<CascaderViewItemHeader, bool> IsShowIconProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, bool>(nameof(IsShowIcon),
-            o => o.IsShowIcon,
-            (o, v) => o.IsShowIcon = v);
-
+    
     internal static readonly DirectProperty<CascaderViewItemHeader, bool> IconEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItemHeader, bool>(nameof(IconEffectiveVisible),
             o => o.IconEffectiveVisible,
@@ -118,14 +113,6 @@ internal class CascaderViewItemHeader : ContentControl
     {
         get => GetValue(ContentFrameBackgroundProperty);
         set => SetValue(ContentFrameBackgroundProperty, value);
-    }
-    
-    private bool _isShowIcon = true;
-
-    internal bool IsShowIcon
-    {
-        get => _isShowIcon;
-        set => SetAndRaise(IsShowIconProperty, ref _isShowIcon, value);
     }
 
     private bool _iconEffectiveVisible = false;
@@ -166,9 +153,9 @@ internal class CascaderViewItemHeader : ContentControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IsShowIconProperty || change.Property == IconProperty)
+        if (change.Property == IconProperty)
         {
-            IconEffectiveVisible = IsShowIcon && Icon is not null;
+            IconEffectiveVisible = Icon is not null;
         }
         else if (change.Property == ToggleTypeProperty)
         {
@@ -213,7 +200,7 @@ internal class CascaderViewItemHeader : ContentControl
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        IconEffectiveVisible = IsShowIcon && Icon is not null;
+        IconEffectiveVisible = Icon is not null;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)

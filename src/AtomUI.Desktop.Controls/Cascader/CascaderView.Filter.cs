@@ -37,11 +37,11 @@ public partial class CascaderView
     private List<CascaderViewFilterListItemData>? _allPathInfos;
     private CascaderViewFilterList? _filterList;
     
-    public void Filter()
+    public void FilterItems()
     {
-        if (ItemFilter != null && ItemFilterValue != null && IsLoaded)
+        if (Filter != null && FilterValue != null && IsLoaded)
         {
-            if (ItemFilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
+            if (FilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
             {
                 ClearFilter();
                 return;
@@ -79,7 +79,7 @@ public partial class CascaderView
                 _allPathInfos = result;
             }
             
-            FilteredPathInfos = _allPathInfos.Where(data => ItemFilter.Filter(this, data, ItemFilterValue)).ToList();
+            FilteredPathInfos = _allPathInfos.Where(data => Filter.Filter(this, data, FilterValue)).ToList();
             IsFiltering       = true;
             FilterResultCount = FilteredPathInfos.Count;
         }
@@ -138,7 +138,7 @@ public partial class CascaderView
 
     private void CollectionPaths(CascaderViewItem cascaderViewItem, List<CascaderViewFilterListItemData> result)
     {
-        Debug.Assert(ItemFilter != null);
+        Debug.Assert(Filter != null);
         foreach (var item in cascaderViewItem.Items)
         {
             if (item is CascaderViewItem childItem)
@@ -155,7 +155,7 @@ public partial class CascaderView
     
     private void CollectionPaths(ICascaderViewItemData cascaderViewItemData, List<CascaderViewFilterListItemData> result)
     {
-        Debug.Assert(ItemFilter != null);
+        Debug.Assert(Filter != null);
         foreach (var childItem in cascaderViewItemData.Children)
         {
             CollectionPaths(childItem, result);
@@ -171,7 +171,7 @@ public partial class CascaderView
     {
         IsFiltering       = false;
         FilterResultCount = 0;
-        ItemFilterValue   = null;
+        FilterValue   = null;
         FilteredPathInfos = null;
         _allPathInfos     = null;
     }

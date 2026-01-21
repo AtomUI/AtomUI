@@ -154,11 +154,6 @@ public class CascaderViewItem : HeaderedItemsControl
 
     internal static readonly StyledProperty<IconTemplate?> LoadingIconProperty =
         AvaloniaProperty.Register<CascaderViewItem, IconTemplate?>(nameof(LoadingIcon));
-    
-    internal static readonly DirectProperty<CascaderViewItem, bool> IsShowIconProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsShowIcon),
-            o => o.IsShowIcon,
-            (o, v) => o.IsShowIcon = v);
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CascaderViewItem>();
@@ -170,11 +165,6 @@ public class CascaderViewItem : HeaderedItemsControl
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(HasItemAsyncDataLoader),
             o => o.HasItemAsyncDataLoader,
             (o, v) => o.HasItemAsyncDataLoader = v);
-    
-    internal static readonly DirectProperty<CascaderViewItem, bool> IsAutoExpandParentProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsAutoExpandParent),
-            o => o.IsAutoExpandParent,
-            (o, v) => o.IsAutoExpandParent = v);
     
     internal static readonly DirectProperty<CascaderViewItem, Rect> HeaderBoundsProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, Rect>(
@@ -194,14 +184,6 @@ public class CascaderViewItem : HeaderedItemsControl
         set => SetValue(LoadingIconProperty, value);
     }
     
-    private bool _isShowIcon = true;
-
-    internal bool IsShowIcon
-    {
-        get => _isShowIcon;
-        set => SetAndRaise(IsShowIconProperty, ref _isShowIcon, value);
-    }
-
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -220,14 +202,6 @@ public class CascaderViewItem : HeaderedItemsControl
     {
         get => _hasItemAsyncDataLoader;
         set => SetAndRaise(HasItemAsyncDataLoaderProperty, ref _hasItemAsyncDataLoader, value);
-    }
-    
-    private bool _isAutoExpandParent;
-
-    internal bool IsAutoExpandParent
-    {
-        get => _isAutoExpandParent;
-        set => SetAndRaise(IsAutoExpandParentProperty, ref _isAutoExpandParent, value);
     }
     
     private Rect _headerBounds;
@@ -254,7 +228,6 @@ public class CascaderViewItem : HeaderedItemsControl
     {
         PressedMixin.Attach<CascaderViewItem>();
         AffectsRender<CascaderViewItem>(
-            IsShowIconProperty,
             BorderBrushProperty,
             BorderThicknessProperty,
             BackgroundProperty);
@@ -575,12 +548,9 @@ public class CascaderViewItem : HeaderedItemsControl
             }
             disposables.Add(BindUtils.RelayBind(this, ItemsPanelProperty, cascaderViewItem, ItemsPanelProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowIconProperty, cascaderViewItem, IsShowIconProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 HasItemAsyncDataLoaderProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsAutoExpandParentProperty, cascaderViewItem,
-                IsAutoExpandParentProperty));
             
             PrepareCascaderViewItem(cascaderViewItem, item, index, disposables);
             

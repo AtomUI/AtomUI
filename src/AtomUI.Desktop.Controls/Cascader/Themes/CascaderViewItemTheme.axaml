@@ -8,7 +8,6 @@
         <ControlTemplate TargetType="atom:CascaderViewItem">
             <atom:CascaderViewItemHeader Name="{x:Static atom:CascaderViewItemThemeConstants.HeaderPart}"
                                          Icon="{TemplateBinding Icon}"
-                                         IsShowIcon="{TemplateBinding IsShowIcon}"
                                          ExpandIcon="{TemplateBinding ExpandIcon}"
                                          LoadingIcon="{TemplateBinding LoadingIcon}"
                                          Content="{TemplateBinding Header}"

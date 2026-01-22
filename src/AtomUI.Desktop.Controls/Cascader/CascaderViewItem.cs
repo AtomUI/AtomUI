@@ -172,6 +172,11 @@ public class CascaderViewItem : HeaderedItemsControl
             o => o.HeaderBounds,
             (o, v) => o.HeaderBounds = v);
     
+    internal static readonly DirectProperty<CascaderViewItem, bool> IsMaxSelectReachedProperty =
+        AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsMaxSelectReached),
+            o => o.IsMaxSelectReached,
+            (o, v) => o.IsMaxSelectReached = v);
+    
     internal IconTemplate? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
@@ -210,6 +215,14 @@ public class CascaderViewItem : HeaderedItemsControl
     {
         get => _headerBounds;
         set => SetAndRaise(HeaderBoundsProperty, ref _headerBounds, value);
+    }
+    
+    private bool _isMaxSelectReached;
+
+    internal bool IsMaxSelectReached
+    {
+        get => _isMaxSelectReached;
+        set => SetAndRaise(IsMaxSelectReachedProperty, ref _isMaxSelectReached, value);
     }
 
     internal CascaderView? OwnerView { get; set; }
@@ -549,6 +562,7 @@ public class CascaderViewItem : HeaderedItemsControl
             disposables.Add(BindUtils.RelayBind(this, ItemsPanelProperty, cascaderViewItem, ItemsPanelProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsMaxSelectReachedProperty, cascaderViewItem, IsMaxSelectReachedProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 HasItemAsyncDataLoaderProperty));
             

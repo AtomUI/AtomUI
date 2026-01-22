@@ -73,6 +73,7 @@ internal class CascaderViewLevelList : ItemsControl
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
             disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
+            disposables.Add(BindUtils.RelayBind(OwnerView, CascaderView.IsMaxSelectReachedProperty, cascaderViewItem, CascaderViewItem.IsMaxSelectReachedProperty));
             
             if (_itemsBindingDisposables.TryGetValue(cascaderViewItem, out var oldDisposables))
             {

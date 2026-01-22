@@ -15,6 +15,14 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
 
     public string UrlPathSegment { get; } = ID.ToString();
     
+    private List<ICascaderViewItemData> _basicCascaderViewNodes = [];
+    
+    public List<ICascaderViewItemData> BasicCascaderViewNodes
+    {
+        get => _basicCascaderViewNodes;
+        set => this.RaiseAndSetIfChanged(ref _basicCascaderViewNodes, value);
+    }
+    
     private List<ICascaderViewItemData> _basicCascaderNodes = [];
     
     public List<ICascaderViewItemData> BasicCascaderNodes
@@ -23,20 +31,20 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _basicCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _basicCheckableCascaderNodes = [];
+    private List<ICascaderViewItemData> _basicCheckableCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> BasicCheckableCascaderNodes
+    public List<ICascaderViewItemData> BasicCheckableCascaderViewNodes
     {
-        get => _basicCheckableCascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _basicCheckableCascaderNodes, value);
+        get => _basicCheckableCascaderViewNodes;
+        set => this.RaiseAndSetIfChanged(ref _basicCheckableCascaderViewNodes, value);
     }
     
-    private List<ICascaderViewItemData> _asyncLoadCascaderNodes = [];
+    private List<ICascaderViewItemData> _asyncLoadCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> AsyncLoadCascaderNodes
+    public List<ICascaderViewItemData> AsyncLoadCascaderViewNodes
     {
-        get => _asyncLoadCascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _asyncLoadCascaderNodes, value);
+        get => _asyncLoadCascaderViewNodes;
+        set => this.RaiseAndSetIfChanged(ref _asyncLoadCascaderViewNodes, value);
     }
     
     private List<ICascaderViewItemData> _searchCascaderViewNodes = [];

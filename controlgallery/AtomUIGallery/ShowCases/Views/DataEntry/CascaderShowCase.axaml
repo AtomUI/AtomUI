@@ -6,6 +6,21 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem
+            Title="Generate by template"
+            Description="You can use the Template mechanism to generate tree nodes">
+            <atom:Cascader
+                x:DataType="viewModels:CascaderViewModel"
+                PlaceholderText="Please select"
+                ItemsSource="{Binding BasicCascaderNodes}">
+                <atom:Cascader.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" /> 
+                    </TreeDataTemplate>
+                </atom:Cascader.ItemTemplate>
+            </atom:Cascader>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
             Title="Basic CascaderView"
             Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">
@@ -47,7 +62,7 @@
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:CascaderView
                     x:DataType="viewModels:CascaderViewModel"
-                    ItemsSource="{Binding BasicCascaderNodes}">
+                    ItemsSource="{Binding BasicCascaderViewNodes}">
                     <atom:CascaderView.ItemTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}">
                             <atom:TextBlock Text="{Binding Header}" />
@@ -58,7 +73,7 @@
                 <atom:CascaderView
                     IsCheckable="True"
                     x:DataType="viewModels:CascaderViewModel"
-                    ItemsSource="{Binding BasicCheckableCascaderNodes}">
+                    ItemsSource="{Binding BasicCheckableCascaderViewNodes}">
                     <atom:CascaderView.ItemTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}">
                             <atom:TextBlock Text="{Binding Header}" />
@@ -73,8 +88,8 @@
             Description="Load options lazily with loadData.">
             <atom:CascaderView
                 x:DataType="viewModels:CascaderViewModel"
-                ItemsSource="{Binding AsyncLoadCascaderNodes}"
-                ItemDataLoader="{Binding AsyncCascaderNodeLoader}">
+                ItemsSource="{Binding AsyncLoadCascaderViewNodes}"
+                DataLoader="{Binding AsyncCascaderNodeLoader}">
                 <atom:CascaderView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}">
                         <atom:TextBlock Text="{Binding Header}" />

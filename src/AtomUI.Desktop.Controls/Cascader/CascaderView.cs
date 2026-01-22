@@ -63,8 +63,8 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public static readonly StyledProperty<TreeNodePath?> DefaultExpandedPathProperty =
         AvaloniaProperty.Register<CascaderView, TreeNodePath?>(nameof(DefaultExpandedPath));
     
-    public static readonly StyledProperty<ICascaderItemDataLoader?> ItemDataLoaderProperty =
-        AvaloniaProperty.Register<CascaderView, ICascaderItemDataLoader?>(nameof(ItemDataLoader));
+    public static readonly StyledProperty<ICascaderItemDataLoader?> DataLoaderProperty =
+        AvaloniaProperty.Register<CascaderView, ICascaderItemDataLoader?>(nameof(DataLoader));
     
     public static readonly StyledProperty<ICascaderItemFilter?> FilterProperty =
         AvaloniaProperty.Register<CascaderView, ICascaderItemFilter?>(nameof(Filter));
@@ -136,10 +136,10 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         set => SetValue(DefaultExpandedPathProperty, value);
     }
     
-    public ICascaderItemDataLoader? ItemDataLoader
+    public ICascaderItemDataLoader? DataLoader
     {
-        get => GetValue(ItemDataLoaderProperty);
-        set => SetValue(ItemDataLoaderProperty, value);
+        get => GetValue(DataLoaderProperty);
+        set => SetValue(DataLoaderProperty, value);
     }
     
     public ICascaderItemFilter? Filter
@@ -261,6 +261,11 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             o => o.EffectiveToggleType,
             (o, v) => o.EffectiveToggleType = v);
     
+    internal static readonly DirectProperty<CascaderView, bool> IsMaxSelectReachedProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, bool>(nameof(IsMaxSelectReached),
+            o => o.IsMaxSelectReached,
+            (o, v) => o.IsMaxSelectReached = v);
+    
     private bool _isEffectiveEmptyVisible = false;
     internal bool IsEffectiveEmptyVisible
     {
@@ -275,6 +280,14 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         set => SetAndRaise(EffectiveToggleTypeProperty, ref _effectiveToggleType, value);
     }
 
+    private bool _isMaxSelectReached;
+
+    internal bool IsMaxSelectReached
+    {
+        get => _isMaxSelectReached;
+        set => SetAndRaise(IsMaxSelectReachedProperty, ref _isMaxSelectReached, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeViewToken.ID;
     
@@ -628,6 +641,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             disposables.Add(BindUtils.RelayBind(this, ExpandIconProperty, cascaderViewItem, CascaderViewItem.ExpandIconProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, CascaderViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, EffectiveToggleTypeProperty, cascaderViewItem, CascaderViewItem.ToggleTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsMaxSelectReachedProperty, cascaderViewItem, CascaderViewItem.IsMaxSelectReachedProperty));
             disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
                 CascaderViewItem.HasItemAsyncDataLoaderProperty));
             
@@ -1053,9 +1067,9 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ItemDataLoaderProperty)
+        if (change.Property == DataLoaderProperty)
         {
-            HasItemAsyncDataLoader = ItemDataLoader != null;
+            HasItemAsyncDataLoader = DataLoader != null;
         }
         else if (change.Property == FilterProperty ||
                  change.Property == FilterHighlightStrategyProperty ||
@@ -1312,12 +1326,13 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                     if (item.DataContext is ICascaderViewItemData data && data.Children.Count == 0)
                     {
                         SelectedItem = data;
+                        ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
                     }
                     else if (item.ItemCount == 0)
                     {
                         SelectedItem = item;
+                        ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
                     }
-                    ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
                 });
             }
             ItemExpanded?.Invoke(this, new CascaderItemExpandedEventArgs(item));
@@ -1437,7 +1452,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             if (cascaderViewItem.DataContext is ICascaderViewItemData cascaderViewItemData && 
                 cascaderViewItemData.Children.Count == 0)
             {
-                if (ItemDataLoader == null || cascaderViewItemData.IsLeaf)
+                if (DataLoader == null || cascaderViewItemData.IsLeaf)
                 {
                     return;
                 }
@@ -1568,7 +1583,6 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             return;
         }
-        var penWidth = BorderThickness.Top;
         using var state = context.PushRenderOptions(new RenderOptions
         {
             EdgeMode = EdgeMode.Aliased
@@ -1585,7 +1599,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 {
                     var pointStart = new Point(offset.Value.X, 0);
                     var pointEnd   = new Point(offset.Value.X, height);
-                    context.DrawLine(new Pen(BorderBrush, penWidth), pointStart, pointEnd);
+                    context.DrawLine(new Pen(BorderBrush), pointStart, pointEnd);
                 }
             }
         }

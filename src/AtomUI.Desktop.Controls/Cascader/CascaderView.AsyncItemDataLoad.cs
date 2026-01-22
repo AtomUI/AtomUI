@@ -24,11 +24,11 @@ public partial class CascaderView
 
     private async Task LoadItemDataAsync(CascaderViewItem item)
     {
-        if (ItemDataLoader == null)
+        if (DataLoader == null)
         {
             return;
         }
-        if (ItemDataLoader != null && ItemsSource == null)
+        if (DataLoader != null && ItemsSource == null)
         {
             throw new InvalidOperationException("ICascaderItemDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
@@ -38,8 +38,8 @@ public partial class CascaderView
             item.IsLoading = true;
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                Debug.Assert(ItemDataLoader != null);
-                var result = await ItemDataLoader.LoadAsync(cascaderViewItemData, cts.Token);
+                Debug.Assert(DataLoader != null);
+                var result = await DataLoader.LoadAsync(cascaderViewItemData, cts.Token);
                 item.IsLoading   = false;
                 item.AsyncLoaded = true;
                 ItemAsyncLoaded?.Invoke(this, new CascaderViewItemLoadedEventArgs(item, result));

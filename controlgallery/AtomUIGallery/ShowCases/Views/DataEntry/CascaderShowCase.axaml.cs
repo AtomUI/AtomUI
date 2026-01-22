@@ -15,6 +15,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         {
             if (DataContext is CascaderViewModel vm)
             {
+                InitBasicCascaderData(vm);
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
                 InitAsyncLoadCascaderViewData(vm);
@@ -29,7 +30,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     
     private void InitBasicCascaderViewData(CascaderViewModel viewModel)
     {
-        viewModel.BasicCascaderNodes = [
+        viewModel.BasicCascaderViewNodes = [
             new CascaderViewItemData()
             {
                 Header  = "Zhejiang",
@@ -75,10 +76,59 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
             }
         ];
     }
+    
+    private void InitBasicCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.BasicCascaderNodes = [
+            new CascaderViewItemData()
+            {
+                Header = "Zhejiang",
+                Value  = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header = "Hangzhou",
+                        Value  = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header = "West Lake",
+                                Value  = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header = "Lingyin shi",
+                                Value  = "lingyinshi",
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header = "Jiangsu",
+                Value  = "jiangsu",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header = "Nanjing",
+                        Value  = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header = "Zhong Hua Men",
+                                Value  = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
 
     private void InitBasicCheckableCascaderViewData(CascaderViewModel viewModel)
     {
-        viewModel.BasicCheckableCascaderNodes = [
+        viewModel.BasicCheckableCascaderViewNodes = [
             new CascaderViewItemData()
             {
                 Header = "Zhejiang",
@@ -127,7 +177,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
 
     private void InitAsyncLoadCascaderViewData(CascaderViewModel viewModel)
     {
-        viewModel.AsyncLoadCascaderNodes =
+        viewModel.AsyncLoadCascaderViewNodes =
         [
             new CascaderViewItemData()
             {
@@ -258,7 +308,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         if (sender is SearchEdit searchEdit)
         {
-            SearchCascaderView.ItemFilterValue = searchEdit.Text?.Trim();
+            SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
         }
     }
     
@@ -266,7 +316,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         if (sender is SearchEdit searchEdit)
         {
-            SearchCascaderViewItemsSource.ItemFilterValue = searchEdit.Text?.Trim();
+            SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
         }
     }
 }

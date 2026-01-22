@@ -20,7 +20,7 @@
                             IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
                             AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="Disabled"
                             IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                             IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}">

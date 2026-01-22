@@ -39,6 +39,56 @@
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
+            Title="Hover"
+            Description="Hover to expand sub menu, click to select option.">
+            <atom:Cascader
+                x:DataType="viewModels:CascaderViewModel"
+                PlaceholderText="Please select"
+                ItemsSource="{Binding HoverCascaderNodes}"
+                IsAllowClear="True"
+                ExpandTrigger="Hover">
+                <atom:Cascader.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" /> 
+                    </TreeDataTemplate>
+                </atom:Cascader.ItemTemplate>
+            </atom:Cascader>
+        </gallery:ShowCaseItem>
+               
+        <gallery:ShowCaseItem
+            Title="Disabled option"
+            Description="Disable option by specifying the disabled property in options.">
+            <atom:Cascader
+                x:DataType="viewModels:CascaderViewModel"
+                PlaceholderText="Please select"
+                ItemsSource="{Binding DisabledCascaderNodes}"
+                IsAllowClear="True">
+                <atom:Cascader.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" /> 
+                    </TreeDataTemplate>
+                </atom:Cascader.ItemTemplate>
+            </atom:Cascader>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Change on select"
+            Description="Allows the selection of only parent options.">
+            <atom:Cascader
+                x:DataType="viewModels:CascaderViewModel"
+                PlaceholderText="Please select"
+                ItemsSource="{Binding SelectParentCascaderNodes}"
+                IsAllowClear="True"
+                IsAllowSelectParent="True">
+                <atom:Cascader.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" /> 
+                    </TreeDataTemplate>
+                </atom:Cascader.ItemTemplate>
+            </atom:Cascader>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
             Title="Basic CascaderView"
             Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">

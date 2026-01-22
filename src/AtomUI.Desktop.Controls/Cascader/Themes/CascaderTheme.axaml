@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
     xmlns:converters="clr-namespace:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
     <converters:TreeItemDataConverter x:Key="TreeItemDataConverter" />
@@ -108,7 +109,8 @@
                                                ExpandIcon="{TemplateBinding ExpandIcon}"
                                                LoadingIcon="{TemplateBinding LoadingIcon}"
                                                ExpandTrigger="{TemplateBinding ExpandTrigger}"
-                                               DefaultExpandedPath="{TemplateBinding DefaultSelectItemPath}"/>
+                                               DefaultExpandedPath="{TemplateBinding DefaultSelectItemPath}"
+                                               IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -206,5 +208,16 @@
                     Value="{DynamicResource {x:Static atom:CascaderTokenKey.ControlItemWidth}}" />
         </Style>
 
+        <Setter Property="ExpandIcon">
+            <atom:IconTemplate>
+                <antdicons:RightOutlined/>
+            </atom:IconTemplate>
+        </Setter>
+        
+        <Setter Property="LoadingIcon">
+            <atom:IconTemplate>
+                <antdicons:LoadingOutlined LoadingAnimation="Spin"/>
+            </atom:IconTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

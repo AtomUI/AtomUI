@@ -9,3 +9,13 @@ public class CascaderItemClickedEventArgs : EventArgs
         Item = item;
     }
 }
+
+public class CascaderItemDoubleClickedEventArgs : EventArgs
+{
+    public CascaderViewItem Item { get; }
+
+    public CascaderItemDoubleClickedEventArgs(CascaderViewItem item)
+    {
+        Item = item;
+    }
+}

@@ -17,6 +17,9 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
             {
                 InitBasicCascaderData(vm);
                 InitDefaultValueCascaderData(vm);
+                InitHoverCascaderData(vm);
+                InitDisabledCascaderData(vm);
+                InitSelectParentCascaderData(vm);
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
                 InitAsyncLoadCascaderViewData(vm);
@@ -159,6 +162,154 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
             {
                 Header  = "Jiangsu",
                 ItemKey = "jiangsu",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Nanjing",
+                        ItemKey = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Zhong Hua Men",
+                                ItemKey = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+
+    private void InitHoverCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.HoverCascaderNodes = [
+            new CascaderViewItemData()
+            {
+                Header  = "Zhejiang",
+                ItemKey = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Hangzhou",
+                        ItemKey = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "West Lake",
+                                ItemKey = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Lingyin shi",
+                                ItemKey = "lingyinshi",
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header  = "Jiangsu",
+                ItemKey = "jiangsu",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Nanjing",
+                        ItemKey = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Zhong Hua Men",
+                                ItemKey = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+    
+    private void InitDisabledCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.DisabledCascaderNodes = [
+            new CascaderViewItemData()
+            {
+                Header  = "Zhejiang",
+                ItemKey = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Hangzhou",
+                        ItemKey = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "West Lake",
+                                ItemKey = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Lingyin shi",
+                                ItemKey = "lingyinshi",
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header  = "Jiangsu",
+                ItemKey = "jiangsu",
+                IsEnabled = false,
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Nanjing",
+                        ItemKey = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Zhong Hua Men",
+                                ItemKey = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+
+    private void InitSelectParentCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.SelectParentCascaderNodes = [
+            new CascaderViewItemData()
+            {
+                Header  = "Zhejiang",
+                ItemKey = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Hangzhou",
+                        ItemKey = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "West Lake",
+                                ItemKey = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Lingyin shi",
+                                ItemKey = "lingyinshi",
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header    = "Jiangsu",
+                ItemKey   = "jiangsu",
                 Children = [
                     new CascaderViewItemData()
                     {

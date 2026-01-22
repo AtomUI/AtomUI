@@ -91,6 +91,9 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
         AvaloniaProperty.Register<CascaderView, bool>(nameof(IsShowEmptyIndicator), true);
     
+    public static readonly StyledProperty<bool> IsAllowSelectParentProperty =
+        AvaloniaProperty.Register<CascaderView, bool>(nameof(IsAllowSelectParent), false);
+    
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<CascaderView, Thickness>(nameof(EmptyIndicatorPadding));
     
@@ -193,6 +196,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         set => SetValue(IsShowEmptyIndicatorProperty, value);
     }
     
+    public bool IsAllowSelectParent
+    {
+        get => GetValue(IsAllowSelectParentProperty);
+        set => SetValue(IsAllowSelectParentProperty, value);
+    }
+    
     public Thickness EmptyIndicatorPadding
     {
         get => GetValue(EmptyIndicatorPaddingProperty);
@@ -245,6 +254,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     public event EventHandler<CascaderItemExpandedEventArgs>? ItemExpanded;
     public event EventHandler<CascaderItemCollapsedEventArgs>? ItemCollapsed;
     public event EventHandler<CascaderItemClickedEventArgs>? ItemClicked;
+    public event EventHandler<CascaderItemDoubleClickedEventArgs>? ItemDoubleClicked;
     public event EventHandler<CascaderItemSelectedEventArgs>? ItemSelected;
     #endregion
 
@@ -303,10 +313,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     private CascaderViewItem? _lastHoveredItem; // 触发器是 hover 的时候使用
     private bool _defaultExpandPathApplied;
     private bool _isDeferSelected;
+    private DateTime? _lastClickTime;
 
     static CascaderView()
     {
         CascaderViewItem.ExpandedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemExpanded(args));
+        CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemDoubleClicked(args));
         CascaderViewItem.CollapsedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemCollapsed(args));
         CascaderViewItem.ClickEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
     }
@@ -1131,7 +1143,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 }
             }
 
-            if (!isLeaf)
+            if (!isLeaf && !IsAllowSelectParent)
             {
                 throw new ArgumentException($"Item {item} is not a Leaf node.");
             }
@@ -1188,8 +1200,15 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         }
         else
         {
-            Debug.Assert(item is ICascaderViewItemData);
-            var current = item as ICascaderViewItemData;
+            ICascaderViewItemData? current = null;
+            if (item is ICascaderViewItemData viewItemData)
+            {
+                current = viewItemData;
+            }
+            else if (item is CascaderViewItem viewItem)
+            {
+                current = viewItem.DataContext as ICascaderViewItemData;
+            }
             while (current != null)
             {
                 result.Add(current);
@@ -1251,20 +1270,56 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         }
         IsEffectiveEmptyVisible = IsShowEmptyIndicator && isEmpty;
     }
+
+    private IDisposable? _clickDisposable;
+    private const int DoubleClickInterval = 150;
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         if (e.Source is Visual source)
         {
-            var point = e.GetCurrentPoint(source);
-            if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+            if (IsAllowSelectParent)
             {
-                if (ExpandTrigger == CascaderViewExpandTrigger.Click)
+                if (_lastClickTime != null)
                 {
-                    var cascaderViewItem = GetContainerFromEventSource(e.Source);
-                    if (cascaderViewItem != null)
+                    if (DateTime.Now.Subtract(_lastClickTime.Value).TotalMilliseconds < DoubleClickInterval)
                     {
-                        cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                        e.Handled        = true;
+                        _lastClickTime   = DateTime.Now;
+                        _clickDisposable?.Dispose();
+                        _clickDisposable = _clickDisposable = null;
+                        return;
+                    }
+                }
+                _lastClickTime = DateTime.Now;
+                _clickDisposable = DispatcherTimer.RunOnce(() =>
+                {
+                    var point = e.GetCurrentPoint(source);
+                    if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                    {
+                        if (ExpandTrigger == CascaderViewExpandTrigger.Click)
+                        {
+                            var cascaderViewItem = GetContainerFromEventSource(e.Source);
+                            if (cascaderViewItem != null)
+                            {
+                                cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                            }
+                        }
+                    }
+                }, TimeSpan.FromMilliseconds(DoubleClickInterval));
+            }
+            else
+            {
+                var point = e.GetCurrentPoint(source);
+                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                {
+                    if (ExpandTrigger == CascaderViewExpandTrigger.Click)
+                    {
+                        var cascaderViewItem = GetContainerFromEventSource(e.Source);
+                        if (cascaderViewItem != null)
+                        {
+                            cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                        }
                     }
                 }
             }
@@ -1336,12 +1391,15 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     await ExpandItemAsync(item);
-                    if (item.DataContext is ICascaderViewItemData data && data.Children.Count == 0)
+                    if (item.DataContext is ICascaderViewItemData data)
                     {
-                        SelectedItem = data;
-                        ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
+                        if (!IsAllowSelectParent || data.Children.Count == 0)
+                        {
+                            SelectedItem = data;
+                            ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
+                        }
                     }
-                    else if (item.ItemCount == 0)
+                    else if (!IsAllowSelectParent || item.ItemCount == 0)
                     {
                         SelectedItem = item;
                         ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
@@ -1362,6 +1420,33 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             }
 
             ItemCollapsed?.Invoke(this, new CascaderItemCollapsedEventArgs(item));
+        }
+    }
+
+    private void HandleCascaderItemDoubleClicked(RoutedEventArgs args)
+    {
+        if (IsAllowSelectParent)
+        {
+            if (args.Source is Control source)
+            {
+                var cascaderItem = source.FindAncestorOfType<CascaderViewItem>();
+                if (cascaderItem != null)
+                {
+                    object? selectedItem;
+                    if (ItemsSource != null)
+                    {
+                        selectedItem = cascaderItem.DataContext;
+                    }
+                    else
+                    {
+                        selectedItem = cascaderItem;
+                    }
+                    SelectedItem = selectedItem;
+                    Debug.Assert(selectedItem != null);
+                    ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(selectedItem));
+                    ItemDoubleClicked?.Invoke(this, new CascaderItemDoubleClickedEventArgs(cascaderItem));
+                }
+            }
         }
     }
 

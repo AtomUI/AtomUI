@@ -55,6 +55,30 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _basicCheckableCascaderViewNodes, value);
     }
     
+    private List<ICascaderViewItemData> _hoverCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> HoverCascaderNodes
+    {
+        get => _hoverCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _hoverCascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _disabledCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> DisabledCascaderNodes
+    {
+        get => _disabledCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _disabledCascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _selectParentCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> SelectParentCascaderNodes
+    {
+        get => _selectParentCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _selectParentCascaderNodes, value);
+    }
+    
     private List<ICascaderViewItemData> _asyncLoadCascaderViewNodes = [];
     
     public List<ICascaderViewItemData> AsyncLoadCascaderViewNodes

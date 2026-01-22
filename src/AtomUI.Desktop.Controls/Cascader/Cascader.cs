@@ -70,6 +70,9 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<TreeNodePath?> DefaultSelectItemPathProperty =
         AvaloniaProperty.Register<Cascader, TreeNodePath?>(nameof(DefaultSelectItemPath));
     
+    public static readonly StyledProperty<bool> IsAllowSelectParentProperty =
+        CascaderView.IsAllowSelectParentProperty.AddOwner<Cascader>();
+    
     public TreeSelectCheckedStrategy ShowCheckedStrategy
     {
         get => GetValue(ShowCheckedStrategyProperty);
@@ -157,6 +160,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         get => GetValue(DefaultSelectItemPathProperty);
         set => SetValue(DefaultSelectItemPathProperty, value);
+    }
+    
+    public bool IsAllowSelectParent
+    {
+        get => GetValue(IsAllowSelectParentProperty);
+        set => SetValue(IsAllowSelectParentProperty, value);
     }
     #endregion
 
@@ -331,6 +340,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             _cascaderView.CheckedItemsChanged -= HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemClicked         -= HandleCascaderViewItemClicked;
+            _cascaderView.ItemDoubleClicked   -= HandleCascaderViewItemDoubleClicked;
         }
         
         _singleFilterInput = e.NameScope.Find<SelectFilterTextBox>(CascaderThemeConstants.SingleFilterInputPart);
@@ -341,6 +351,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             _cascaderView.CheckedItemsChanged += HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemClicked         += HandleCascaderViewItemClicked;
+            _cascaderView.ItemDoubleClicked   += HandleCascaderViewItemDoubleClicked;
         }
         
         if (Popup != null)
@@ -529,6 +540,14 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleCascaderViewItemClicked(object? sender, CascaderItemClickedEventArgs eventArgs)
     {
         if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewItemData itemData && itemData.Children.Count == 0)
+        {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+        }
+    }
+    
+    private void HandleCascaderViewItemDoubleClicked(object? sender, CascaderItemDoubleClickedEventArgs eventArgs)
+    {
+        if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewItemData && IsAllowSelectParent)
         {
             SetCurrentValue(IsDropDownOpenProperty, false);
         }

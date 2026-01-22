@@ -79,6 +79,14 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _selectParentCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _multipleSelectCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> MultipleSelectCascaderNodes
+    {
+        get => _multipleSelectCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _multipleSelectCascaderNodes, value);
+    }
+    
     private List<ICascaderViewItemData> _asyncLoadCascaderViewNodes = [];
     
     public List<ICascaderViewItemData> AsyncLoadCascaderViewNodes

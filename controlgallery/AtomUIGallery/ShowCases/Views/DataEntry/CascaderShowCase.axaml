@@ -89,6 +89,25 @@
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
+            Title="Multiple"
+            Description="Select multiple options. Disable the checkbox by adding the disableCheckbox property and selecting a specific item. The style of the disable can be modified by the className.">
+            <atom:Cascader
+                x:DataType="viewModels:CascaderViewModel"
+                PlaceholderText="Please select"
+                ItemsSource="{Binding MultipleSelectCascaderNodes}"
+                HorizontalAlignment="Stretch"
+                ShowCheckedStrategy="ShowParent"
+                IsAllowClear="True"
+                IsMultiple="True">
+                <atom:Cascader.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" /> 
+                    </TreeDataTemplate>
+                </atom:Cascader.ItemTemplate>
+            </atom:Cascader>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
             Title="Basic CascaderView"
             Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">

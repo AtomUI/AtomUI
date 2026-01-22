@@ -20,6 +20,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 InitHoverCascaderData(vm);
                 InitDisabledCascaderData(vm);
                 InitSelectParentCascaderData(vm);
+                InitMultiSelectCascaderData(vm);
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
                 InitAsyncLoadCascaderViewData(vm);
@@ -320,6 +321,56 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+
+    private void InitMultiSelectCascaderData(CascaderViewModel viewModel)
+    {
+        var lightNode = new CascaderViewItemData()
+        {
+            Header = "Light",
+            Value  = "light",
+        };
+        for (var i = 1; i <= 20; i++)
+        {
+            lightNode.Children.Add(new CascaderViewItemData()
+            {
+                Header = $"Number {i}",
+                Value = i.ToString()
+            });
+        }
+        viewModel.MultipleSelectCascaderNodes = [
+            lightNode,
+            new CascaderViewItemData()
+            {
+                Header  = "Bamboo",
+                Value = "bamboo",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header = "Little",
+                        Value  = "little",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header = "Toy Fish",
+                                Value  = "fish",
+                                IsCheckBoxEnabled = false
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header = "Toy Cards",
+                                Value  = "cards",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header = "Toy Bird",
+                                Value  = "bird",
                             }
                         ]
                     }

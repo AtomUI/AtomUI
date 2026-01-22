@@ -1,5 +1,7 @@
+using System.Collections.Specialized;
 using AtomUI.Controls;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
@@ -8,8 +10,8 @@ public interface ICascaderViewItemData : ITreeNode<ICascaderViewItemData>
 {
     new object? Header { get; set; }
     bool? IsChecked { get; set; }
+    bool IsCheckBoxEnabled { get; set; }
     bool IsExpanded { get; set; }
-    bool IsIndicatorEnabled { get; set; }
     bool IsLeaf { get; }
     object? Value { get; set; }
 
@@ -19,7 +21,7 @@ public interface ICascaderViewItemData : ITreeNode<ICascaderViewItemData>
     }
 }
 
-public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
+public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData, ISelectTagTextProvider
 {
     public static readonly DirectProperty<CascaderViewItemData, object?> HeaderProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItemData, object?>(nameof(Header),
@@ -36,6 +38,11 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
             o => o.IsEnabled,
             (o, v) => o.IsEnabled = v);
     
+    public static readonly DirectProperty<CascaderViewItemData, bool> IsCheckBoxEnabledProperty =
+        AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool>(nameof(IsCheckBoxEnabled),
+            o => o.IsCheckBoxEnabled,
+            (o, v) => o.IsCheckBoxEnabled = v);
+    
     public static readonly DirectProperty<CascaderViewItemData, bool?> IsCheckedProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool?>(nameof(IsChecked),
             o => o.IsChecked,
@@ -45,11 +52,6 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
         AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool>(nameof(IsExpanded),
             o => o.IsExpanded,
             (o, v) => o.IsExpanded = v);
-    
-    public static readonly DirectProperty<CascaderViewItemData, bool> IsIndicatorEnabledProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItemData, bool>(nameof(IsIndicatorEnabled),
-            o => o.IsIndicatorEnabled,
-            (o, v) => o.IsIndicatorEnabled = v);
     
     public ITreeNode<ICascaderViewItemData>? ParentNode { get; private set; }
     
@@ -95,37 +97,70 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData
         set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
     }
     
-    private bool _isIndicatorEnabled = true;
+    private bool _isCheckBoxEnabled = true;
 
-    public bool IsIndicatorEnabled
+    public bool IsCheckBoxEnabled
     {
-        get => _isIndicatorEnabled;
-        set => SetAndRaise(IsIndicatorEnabledProperty, ref _isIndicatorEnabled, value);
+        get => _isCheckBoxEnabled;
+        set => SetAndRaise(IsCheckBoxEnabledProperty, ref _isCheckBoxEnabled, value);
     }
     
     public bool IsLeaf { get; init; } = false;
     
     public object? Value { get; set; }
+    string? ISelectTagTextProvider.TagText => Header?.ToString();
 
-    private IList<ICascaderViewItemData> _children = [];
+    private AvaloniaList<ICascaderViewItemData> _children = [];
     public IList<ICascaderViewItemData> Children
     {
         get => _children;
-        init
-        {
-            _children = value;
-            foreach (var child in _children)
-            {
-                if (child is CascaderViewItemData item)
-                {
-                    item.ParentNode = this;
-                }
-            }
-        }
+        init => _children.AddRange(value);
     }
     
     public void UpdateParentNode(ICascaderViewItemData? parentNode)
     {
         ParentNode = parentNode;
+    }
+
+    public CascaderViewItemData()
+    {
+        _children.CollectionChanged += HandleCollectionChanged;
+    }
+
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var child in e.NewItems)
+                {
+                    if (child is ICascaderViewItemData cascaderViewItem)
+                    {
+                        cascaderViewItem.UpdateParentNode(this);
+                    }
+                }
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Remove)
+        {
+            if (e.OldItems != null)
+            {
+                foreach (var child in e.OldItems)
+                {
+                    if (child is ICascaderViewItemData cascaderViewItem)
+                    {
+                        cascaderViewItem.UpdateParentNode(null);
+                    }
+                }
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var child in Children)
+            {
+                child.UpdateParentNode(this);
+            }
+        }
     }
 }

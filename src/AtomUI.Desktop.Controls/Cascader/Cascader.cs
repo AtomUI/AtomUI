@@ -257,10 +257,19 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void ConfigurePlaceholderVisible()
     {
-        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && 
-                                                          (SelectedItems == null || SelectedItems?.Count == 0) && 
-                                                          string.IsNullOrWhiteSpace(ActivateFilterValue) &&
-                                                          string.IsNullOrWhiteSpace(SelectedItemPath));
+        if (IsMultiple)
+        {
+            SetCurrentValue(IsPlaceholderTextVisibleProperty, (SelectedItems == null || SelectedItems?.Count == 0) && 
+                                                              string.IsNullOrWhiteSpace(ActivateFilterValue) &&
+                                                              string.IsNullOrWhiteSpace(SelectedItemPath));
+        }
+        else
+        {
+            SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && 
+                                                              string.IsNullOrWhiteSpace(ActivateFilterValue) &&
+                                                              string.IsNullOrWhiteSpace(SelectedItemPath));
+        }
+       
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -282,7 +291,8 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else if (change.Property == SelectedItemsProperty ||
                  change.Property == SelectedItemProperty ||
-                 change.Property == SelectedItemPathProperty)
+                 change.Property == SelectedItemPathProperty ||
+                 change.Property == IsMultipleProperty)
         {
             ConfigurePlaceholderVisible();
             ConfigureSelectionIsEmpty();
@@ -295,7 +305,8 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                 SetCurrentValue(SelectedCountProperty, SelectedItem != null ? 1 : 0);
             }
         }
-        else if (change.Property == IsMultipleProperty)
+        
+        if (change.Property == IsMultipleProperty)
         {
             HandleIsCheckableChanged();
         }
@@ -445,7 +456,14 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void ConfigureSelectionIsEmpty()
     {
-        SetCurrentValue(IsSelectionEmptyProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0));
+        if (IsMultiple)
+        {
+            SetCurrentValue(IsSelectionEmptyProperty, SelectedItems == null || SelectedItems?.Count == 0);
+        }
+        else
+        {
+            SetCurrentValue(IsSelectionEmptyProperty, SelectedItem == null);
+        }
     }
     
     private void ConfigureSingleFilterTextBox()
@@ -732,22 +750,25 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void ConfigureSelectedItemPath()
     {
-        if (SelectedItem == null)
+        if (!IsMultiple)
         {
-            SelectedItemPath = null;
-        }
-        else
-        {
-            var current = SelectedItem as ICascaderViewItemData;
-            var parts   = new List<string>();
-            while (current != null)
+            if (SelectedItem == null)
             {
-                parts.Add(current.Header?.ToString() ?? string.Empty);
-                current = current.ParentNode as ICascaderViewItemData;
+                SelectedItemPath = null;
             }
+            else
+            {
+                var current = SelectedItem as ICascaderViewItemData;
+                var parts   = new List<string>();
+                while (current != null)
+                {
+                    parts.Add(current.Header?.ToString() ?? string.Empty);
+                    current = current.ParentNode as ICascaderViewItemData;
+                }
 
-            parts.Reverse();
-            SelectedItemPath = string.Join('/', parts);
+                parts.Reverse();
+                SelectedItemPath = string.Join('/', parts);
+            }
         }
     }
 

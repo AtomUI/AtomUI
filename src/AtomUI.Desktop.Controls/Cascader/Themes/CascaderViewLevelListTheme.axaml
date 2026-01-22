@@ -6,9 +6,19 @@
     <ControlTheme x:Key="{x:Type atom:CascaderViewLevelList}" TargetType="atom:CascaderViewLevelList">
         <Setter Property="Template">
             <ControlTemplate>
-                <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" 
-                                VerticalAlignment="Stretch"/>
+                <atom:ScrollViewer IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                   AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                   HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                   VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                   IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                                   IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                   IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
+                    <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                </atom:ScrollViewer>
+                
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True"/>
     </ControlTheme>
 </ResourceDictionary>

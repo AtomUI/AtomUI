@@ -31,7 +31,7 @@
                                         Converter="{x:Static atom:CascaderViewItemTheme.CascaderViewItemIndicatorEnabledConverter}">
                                         <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsEnabled" />
                                         <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                 Path="IsIndicatorEnabled" />
+                                                 Path="IsCheckBoxEnabled" />
                                     </MultiBinding>
                                 </atom:CheckBox.IsEnabled>
                             </atom:CheckBox>

@@ -90,18 +90,20 @@ internal class DefaultCascaderViewInteractionHandler : ICascaderViewInteractionH
     
     internal void OnCheckedChanged(CascaderViewItem item)
     {
-        Debug.Assert(CascaderView != null);
-        if (CascaderView.IsCheckable)
+        if (CascaderView != null)
         {
-            if (item.IsChecked.HasValue)
+            if (CascaderView.IsCheckable)
             {
-                if (item.IsChecked.Value)
+                if (item.IsChecked.HasValue)
                 {
-                    CascaderView.CheckedSubTree(item);
-                }
-                else
-                {
-                    CascaderView.UnCheckedSubTree(item);
+                    if (item.IsChecked.Value)
+                    {
+                        CascaderView.CheckedSubTree(item);
+                    }
+                    else
+                    {
+                        CascaderView.UnCheckedSubTree(item);
+                    }
                 }
             }
         }

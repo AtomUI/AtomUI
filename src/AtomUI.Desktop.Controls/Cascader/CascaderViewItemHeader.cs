@@ -35,8 +35,8 @@ internal class CascaderViewItemHeader : ContentControl
     public static readonly StyledProperty<bool> IsLoadingProperty =
         CascaderViewItem.IsLoadingProperty.AddOwner<CascaderViewItemHeader>();
     
-    public static readonly StyledProperty<bool> IsIndicatorEnabledProperty =
-        CascaderViewItem.IsIndicatorEnabledProperty.AddOwner<CascaderViewItemHeader>();
+    public static readonly StyledProperty<bool> IsCheckBoxEnabledProperty =
+        CascaderViewItem.IsCheckBoxEnabledProperty.AddOwner<CascaderViewItemHeader>();
     
     public bool IsExpanded
     {
@@ -82,10 +82,10 @@ internal class CascaderViewItemHeader : ContentControl
         set => SetValue(IsLoadingProperty, value);
     }
     
-    public bool IsIndicatorEnabled
+    public bool IsCheckBoxEnabled
     {
-        get => GetValue(IsIndicatorEnabledProperty);
-        set => SetValue(IsIndicatorEnabledProperty, value);
+        get => GetValue(IsCheckBoxEnabledProperty);
+        set => SetValue(IsCheckBoxEnabledProperty, value);
     }
     
     #region 内部属性定义

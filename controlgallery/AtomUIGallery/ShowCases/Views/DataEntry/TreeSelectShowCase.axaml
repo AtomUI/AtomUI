@@ -50,7 +50,7 @@
                              IsFilterEnabled="True"
                              IsTreeCheckable="True"
                              PlaceholderText="Please select"
-                             ShowCheckedStrategy="All" />
+                             ShowCheckedStrategy="ShowParent" />
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem

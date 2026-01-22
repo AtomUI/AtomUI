@@ -24,17 +24,6 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-[Flags]
-public enum CascaderItemFilterAction
-{
-    HighlightedMatch = 0x01,
-    HighlightedWhole = 0x02,
-    BoldedMatch = 0x04,
-    ExpandPath = 0x08,
-    HideUnMatched = 0x10,
-    All = HighlightedMatch | BoldedMatch | ExpandPath | HideUnMatched
-}
-
 public enum CascaderViewExpandTrigger
 {
     Click,
@@ -1238,7 +1227,35 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             NotifyCascaderItemClicked(item);
             ItemClicked?.Invoke(this, new CascaderItemClickedEventArgs(item));
+            if (IsCheckable)
+            {
+                if (IsLeafNode(item) && item.IsCheckBoxEnabled)
+                {
+                    if (item.IsChecked == true)
+                    {
+                        item.IsChecked = false;
+                    }
+                    else
+                    {
+                        item.IsChecked = true;
+                    }
+                }
+            }
         }
+    }
+
+    private bool IsLeafNode(CascaderViewItem item)
+    {
+        if (ItemsSource == null)
+        {
+            return item.ItemCount == 0;
+        }
+        if (item.DataContext is ICascaderViewItemData viewItemData)
+        {
+            return viewItemData.Children.Count == 0;
+        }
+
+        return false;
     }
 
     protected virtual void NotifyCascaderItemClicked(CascaderViewItem item)
@@ -1391,18 +1408,21 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     await ExpandItemAsync(item);
-                    if (item.DataContext is ICascaderViewItemData data)
+                    if (!IsAllowSelectParent)
                     {
-                        if (!IsAllowSelectParent || data.Children.Count == 0)
+                        if (item.DataContext is ICascaderViewItemData data)
                         {
-                            SelectedItem = data;
+                            if (data.Children.Count == 0)
+                            {
+                                SelectedItem = data;
+                                ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
+                            }
+                        }
+                        else if (item.ItemCount == 0)
+                        {
+                            SelectedItem = item;
                             ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
                         }
-                    }
-                    else if (!IsAllowSelectParent || item.ItemCount == 0)
-                    {
-                        SelectedItem = item;
-                        ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(item));
                     }
                 });
             }

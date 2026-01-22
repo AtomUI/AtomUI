@@ -4,7 +4,7 @@ using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TreeViewItemData : AvaloniaObject, ITreeViewItemData
+public class TreeViewItemData : AvaloniaObject, ITreeViewItemData, ISelectTagTextProvider
 {
     public static readonly DirectProperty<TreeViewItemData, object?> HeaderProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItemData, object?>(nameof(Header),
@@ -102,8 +102,8 @@ public class TreeViewItemData : AvaloniaObject, ITreeViewItemData
     
     public string? GroupName { get; init; }
     public bool IsLeaf { get; init; } = false;
-    
     public object? Value { get; set; }
+    string? ISelectTagTextProvider.TagText => Header?.ToString();
 
     private IList<ITreeViewItemData> _children = [];
     public IList<ITreeViewItemData> Children

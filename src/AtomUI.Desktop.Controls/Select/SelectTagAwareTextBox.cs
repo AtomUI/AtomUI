@@ -13,9 +13,6 @@ namespace AtomUI.Desktop.Controls;
 internal class SelectTagAwareTextBox : TemplatedControl
 {
     #region 公共属性定义
-    
-    public static readonly StyledProperty<TreeSelectCheckedStrategy> ShowCheckedStrategyProperty =
-        TreeSelect.ShowCheckedStrategyProperty.AddOwner<SelectTagAwareTextBox>();
 
     public static readonly DirectProperty<SelectTagAwareTextBox, IList?> SelectedItemsProperty =
         AvaloniaProperty.RegisterDirect<SelectTagAwareTextBox, IList?>(
@@ -37,12 +34,6 @@ internal class SelectTagAwareTextBox : TemplatedControl
     
     public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
         Select.IsResponsiveTagModeProperty.AddOwner<SelectResultOptionsBox>();
-    
-    public TreeSelectCheckedStrategy ShowCheckedStrategy
-    {
-        get => GetValue(ShowCheckedStrategyProperty);
-        set => SetValue(ShowCheckedStrategyProperty, value);
-    }
     
     private IList? _selectedItems;
 
@@ -181,11 +172,11 @@ internal class SelectTagAwareTextBox : TemplatedControl
                     for (var i = 0; i < _selectedItems.Count; i++)
                     {
                         var item = _selectedItems[i];
-                        if (item is ITreeViewItemData treeItemData)
+                        if (item is ISelectTagTextProvider tagTextProvider)
                         {
                             var tag = new SelectTag
                             {
-                                TagText = treeItemData.Header?.ToString(),
+                                TagText = tagTextProvider.TagText,
                                 Item    = item
                             };
                             TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
@@ -216,11 +207,11 @@ internal class SelectTagAwareTextBox : TemplatedControl
                 {
                     foreach (var item in _selectedItems)
                     {
-                        if (item is ITreeViewItemData treeItemData)
+                        if (item is ISelectTagTextProvider tagTextProvider)
                         {
                             var tag = new SelectTag
                             {
-                                TagText = treeItemData.Header?.ToString(),
+                                TagText = tagTextProvider.TagText,
                                 Item    = item
                             };
                             TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));

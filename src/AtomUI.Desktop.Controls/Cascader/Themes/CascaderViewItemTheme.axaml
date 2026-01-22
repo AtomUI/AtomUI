@@ -21,7 +21,7 @@
                                          ToggleType="{TemplateBinding ToggleType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
-                                         IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
+                                         IsCheckBoxEnabled="{TemplateBinding IsCheckBoxEnabled}"
                                          Focusable="{TemplateBinding Focusable}" />
         </ControlTemplate>
     </Setter>

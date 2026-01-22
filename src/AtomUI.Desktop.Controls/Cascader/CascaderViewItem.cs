@@ -55,8 +55,8 @@ public class CascaderViewItem : HeaderedItemsControl
             o => o.Value,
             (o, v) => o.Value = v);
     
-    public static readonly StyledProperty<bool> IsIndicatorEnabledProperty =
-        AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsIndicatorEnabled), true);
+    public static readonly StyledProperty<bool> IsCheckBoxEnabledProperty =
+        AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsCheckBoxEnabled), true);
     
     public bool IsExpanded
     {
@@ -117,10 +117,10 @@ public class CascaderViewItem : HeaderedItemsControl
         set => SetValue(IsLoadingProperty, value);
     }
     
-    public bool IsIndicatorEnabled
+    public bool IsCheckBoxEnabled
     {
-        get => GetValue(IsIndicatorEnabledProperty);
-        set => SetValue(IsIndicatorEnabledProperty, value);
+        get => GetValue(IsCheckBoxEnabledProperty);
+        set => SetValue(IsCheckBoxEnabledProperty, value);
     }
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
@@ -513,7 +513,7 @@ public class CascaderViewItem : HeaderedItemsControl
     
     internal bool IsEffectiveCheckable()
     {
-        if (!IsEnabled || !IsIndicatorEnabled || ToggleType == ItemToggleType.None)
+        if (!IsEnabled || !IsCheckBoxEnabled || ToggleType == ItemToggleType.None)
         {
             return false;
         }
@@ -593,7 +593,7 @@ public class CascaderViewItem : HeaderedItemsControl
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsChecked), cascaderViewItem, IsCheckedProperty, mode:BindingMode.TwoWay));
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsEnabled), cascaderViewItem, IsEnabledProperty, mode:BindingMode.TwoWay));
             disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsExpanded), cascaderViewItem, IsExpandedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsIndicatorEnabled), cascaderViewItem, IsIndicatorEnabledProperty, mode:BindingMode.TwoWay));
+            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsCheckBoxEnabled), cascaderViewItem, IsCheckBoxEnabledProperty, mode:BindingMode.TwoWay));
             
             if (cascaderViewItem.ItemKey == null)
             {

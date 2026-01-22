@@ -472,7 +472,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             Popup.Closed             += HandlePopupClosed;
         }
         
-        ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DataLoad;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -65,6 +66,9 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         CascaderView.FilterHighlightForegroundProperty.AddOwner<Cascader>();
+    
+    public static readonly StyledProperty<TreeNodePath?> DefaultSelectItemPathProperty =
+        AvaloniaProperty.Register<Cascader, TreeNodePath?>(nameof(DefaultSelectItemPath));
     
     public TreeSelectCheckedStrategy ShowCheckedStrategy
     {
@@ -147,6 +151,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         get => GetValue(FilterHighlightForegroundProperty);
         set => SetValue(FilterHighlightForegroundProperty, value);
+    }
+    
+    public TreeNodePath? DefaultSelectItemPath
+    {
+        get => GetValue(DefaultSelectItemPathProperty);
+        set => SetValue(DefaultSelectItemPathProperty, value);
     }
     #endregion
 
@@ -238,7 +248,10 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void ConfigurePlaceholderVisible()
     {
-        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
+        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && 
+                                                          (SelectedItems == null || SelectedItems?.Count == 0) && 
+                                                          string.IsNullOrWhiteSpace(ActivateFilterValue) &&
+                                                          string.IsNullOrWhiteSpace(SelectedItemPath));
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -259,7 +272,8 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             ConfigurePopupMinWith(DesiredSize.Width);
         }
         else if (change.Property == SelectedItemsProperty ||
-                 change.Property == SelectedItemProperty)
+                 change.Property == SelectedItemProperty ||
+                 change.Property == SelectedItemPathProperty)
         {
             ConfigurePlaceholderVisible();
             ConfigureSelectionIsEmpty();
@@ -316,7 +330,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         if (_cascaderView != null)
         {
             _cascaderView.CheckedItemsChanged -= HandleCascaderViewItemsCheckedChanged;
-            _cascaderView.ItemSelected        -= HandleCascaderViewItemSelected;
+            _cascaderView.ItemClicked         -= HandleCascaderViewItemClicked;
         }
         
         _singleFilterInput = e.NameScope.Find<SelectFilterTextBox>(CascaderThemeConstants.SingleFilterInputPart);
@@ -326,7 +340,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         if (_cascaderView != null)
         {
             _cascaderView.CheckedItemsChanged += HandleCascaderViewItemsCheckedChanged;
-            _cascaderView.ItemSelected        += HandleCascaderViewItemSelected;
+            _cascaderView.ItemClicked         += HandleCascaderViewItemClicked;
         }
         
         if (Popup != null)
@@ -340,7 +354,6 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();
-        ConfigurePlaceholderVisible();
         UpdatePseudoClasses();
     }
     
@@ -513,9 +526,9 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnPointerReleased(e);
     }
 
-    private void HandleCascaderViewItemSelected(object? sender, CascaderItemSelectedEventArgs eventArgs)
+    private void HandleCascaderViewItemClicked(object? sender, CascaderItemClickedEventArgs eventArgs)
     {
-        if (!IsMultiple)
+        if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewItemData itemData && itemData.Children.Count == 0)
         {
             SetCurrentValue(IsDropDownOpenProperty, false);
         }
@@ -716,6 +729,29 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
 
             parts.Reverse();
             SelectedItemPath = string.Join('/', parts);
+        }
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        if (DefaultSelectItemPath != null && SelectedItemPath == null)
+        {
+            if (_cascaderView != null)
+            {
+                if (_cascaderView.TryParseSelectPath(DefaultSelectItemPath, out var nodes))
+                {
+                    var parts = new List<string>();
+                    foreach (var node in nodes)
+                    {
+                        if (node is ICascaderViewItemData cascaderViewItemData)
+                        {
+                            parts.Add(cascaderViewItemData.Header?.ToString() ?? string.Empty);
+                        }
+                    }
+                    SetCurrentValue(SelectedItemPathProperty, string.Join("/", parts));
+                }
+            }
         }
     }
 }

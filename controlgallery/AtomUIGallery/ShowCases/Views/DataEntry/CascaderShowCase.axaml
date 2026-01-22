@@ -6,12 +6,30 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem
-            Title="Generate by template"
-            Description="You can use the Template mechanism to generate tree nodes">
+            Title="Basic"
+            Description="Cascade selection box for selecting province/city/district.">
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding BasicCascaderNodes}">
+                ItemsSource="{Binding BasicCascaderNodes}"
+                IsAllowClear="True">
+                <atom:Cascader.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <atom:TextBlock Text="{Binding Header}" /> 
+                    </TreeDataTemplate>
+                </atom:Cascader.ItemTemplate>
+            </atom:Cascader>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Default value"
+            Description="Specifies default value by an array.">
+            <atom:Cascader
+                x:DataType="viewModels:CascaderViewModel"
+                PlaceholderText="Please select"
+                ItemsSource="{Binding DefaultValueCascaderNodes}"
+                IsAllowClear="True"
+                DefaultSelectItemPath="{Binding DefaultSelectItemPath}">
                 <atom:Cascader.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}">
                         <atom:TextBlock Text="{Binding Header}" /> 

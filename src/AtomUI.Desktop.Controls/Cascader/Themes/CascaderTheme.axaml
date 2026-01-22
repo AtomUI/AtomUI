@@ -104,7 +104,11 @@
                                                DataLoader="{TemplateBinding DataLoader}"
                                                FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                                IsShowEmptyIndicator="{TemplateBinding IsShowEmptyIndicator}"
-                                               IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}" />
+                                               IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}" 
+                                               ExpandIcon="{TemplateBinding ExpandIcon}"
+                                               LoadingIcon="{TemplateBinding LoadingIcon}"
+                                               ExpandTrigger="{TemplateBinding ExpandTrigger}"
+                                               DefaultExpandedPath="{TemplateBinding DefaultSelectItemPath}"/>
                         </Border>
                     </atom:Popup>
                 </Panel>

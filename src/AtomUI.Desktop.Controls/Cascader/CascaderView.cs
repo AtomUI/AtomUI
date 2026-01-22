@@ -968,32 +968,28 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
 
         if (_isDeferSelected)
         {
-            if (SelectedItem != null)
-            {
-                SelectTargetItem(SelectedItem);
-            }
-
+            SelectTargetItem(SelectedItem);
             _isDeferSelected = false;
         }
     }
 
-    private void ApplyDefaultExpandPath()
+    internal bool TryParseSelectPath(TreeNodePath path, out IList pathNodes)
     {
-        Debug.Assert(DefaultExpandedPath != null);
-        var segments = DefaultExpandedPath.Segments;
-        var count    = DefaultExpandedPath.Segments.Count;
+        var segments    = path.Segments;
+        var count       = path.Segments.Count;
+        var isPathValid = true;
         if (ItemsSource != null)
         {
             IList<ICascaderViewItemData> currentItems = Items.Cast<ICascaderViewItemData>().ToList();
-            var     isPathValid  = true;
-            var     itemDatas    = new List<ICascaderViewItemData>();
+        
+            var                          itemDatas    = new List<ICascaderViewItemData>();
             for (var i = 0; i < count; i++)
             {
                 var segment = segments[i];
                 var found   = false;
                 foreach (var currentItem in currentItems)
                 {
-                    if (segment == currentItem.ItemKey)
+                    if (segment == currentItem.ItemKey || segment == currentItem.Value?.ToString())
                     {
                         itemDatas.Add(currentItem);
                         currentItems = currentItem.Children;
@@ -1007,23 +1003,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                     break;
                 }
             }
-
-            if (isPathValid)
-            {
-                if (itemDatas.Count > 0)
-                {
-                    foreach (var itemData in itemDatas)
-                    {
-                        itemData.IsExpanded = true;
-                    }
-                }
-            }
+            pathNodes = itemDatas;
         }
         else
         {
             var currentItems = Items;
-            var isPathValid  = true;
-            var pathNodes    = new List<CascaderViewItem>();
+            var nodes        = new List<CascaderViewItem>();
             for (var i = 0; i < count; i++)
             {
                 var segment = segments[i];
@@ -1034,7 +1019,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                     {
                         if (segment == cascaderViewItem.ItemKey)
                         {
-                            pathNodes.Add(cascaderViewItem);
+                            nodes.Add(cascaderViewItem);
                             currentItems = cascaderViewItem.Items;
                             found = true;
                         }
@@ -1048,15 +1033,39 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 }
             }
 
-            if (isPathValid)
+            pathNodes = nodes;
+        }
+
+        return isPathValid;
+    }
+    
+    private void ApplyDefaultExpandPath()
+    {
+        Debug.Assert(DefaultExpandedPath != null);
+        if (TryParseSelectPath(DefaultExpandedPath, out IList pathNodes))
+        {
+            if (pathNodes.Count > 0)
             {
-                if (pathNodes.Count > 0)
+                if (ItemsSource != null)
+                {
+                    foreach (var node in pathNodes)
+                    {
+                        if (node is ICascaderViewItemData cascaderViewItemData)
+                        {
+                            cascaderViewItemData.IsExpanded = true;
+                        }
+                    }
+                }
+                else
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        foreach (var cascaderViewItem in pathNodes)
+                        foreach (var node in pathNodes)
                         {
-                            await ExpandItemAsync(cascaderViewItem);
+                            if (node is CascaderViewItem cascaderViewItem)
+                            {
+                                await ExpandItemAsync(cascaderViewItem);
+                            }
                         }
                     });
                 }
@@ -1097,54 +1106,58 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             }
             else
             {
-                if (SelectedItem != null)
-                {
-                    SelectTargetItem(SelectedItem);
-                }
+                SelectTargetItem(SelectedItem);
             }
         }
     }
 
-    private void SelectTargetItem(object item)
+    private void SelectTargetItem(object? item)
     {
-        var isLeaf = true;
-        if (item is ICascaderViewItemData viewItemData)
+        if (item != null)
         {
-            if (viewItemData.Children.Count != 0)
+            var isLeaf = true;
+            if (item is ICascaderViewItemData viewItemData)
             {
-                isLeaf = false;
-            }
-        }
-        else if (item is CascaderViewItem viewItem)
-        {
-            if (viewItem.ItemCount != 0)
-            {
-                isLeaf = false;
-            }
-        }
-
-        if (!isLeaf)
-        {
-            throw new ArgumentException($"Item {item} is not a Leaf node.");
-        }
-
-        var pathNodes = GetCascaderPathNodes(item);
-        if (pathNodes?.Count > 0)
-        {
-            Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                foreach (var path in pathNodes)
+                if (viewItemData.Children.Count != 0)
                 {
-                    if (path is ICascaderViewItemData cascaderViewItemData)
-                    {
-                        cascaderViewItemData.IsExpanded = true;
-                    }
-                    else if (path is CascaderViewItem cascaderViewItem)
-                    {
-                        await ExpandItemAsync(cascaderViewItem);
-                    }
+                    isLeaf = false;
                 }
-            });
+            }
+            else if (item is CascaderViewItem viewItem)
+            {
+                if (viewItem.ItemCount != 0)
+                {
+                    isLeaf = false;
+                }
+            }
+
+            if (!isLeaf)
+            {
+                throw new ArgumentException($"Item {item} is not a Leaf node.");
+            }
+
+            var pathNodes = GetCascaderPathNodes(item);
+            if (pathNodes.Count > 0)
+            {
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    foreach (var path in pathNodes)
+                    {
+                        if (path is ICascaderViewItemData cascaderViewItemData)
+                        {
+                            cascaderViewItemData.IsExpanded = true;
+                        }
+                        else if (path is CascaderViewItem cascaderViewItem)
+                        {
+                            await ExpandItemAsync(cascaderViewItem);
+                        }
+                    }
+                });
+            }
+        }
+        else
+        {
+            CollapseAll();
         }
     }
 
@@ -1540,6 +1553,44 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         }
     }
 
+    public void CollapseAll()
+    {
+        if (_itemsPanel == null || _ignoreExpandAndCollapseLevel > 0)
+        {
+            return;
+        }
+  
+        try
+        {
+            ++_ignoreExpandAndCollapseLevel;
+            ClearExpandedState(1);
+            var count       = _itemsPanel.Children.Count;
+            while (count > 1)
+            {
+                --count;
+                if (_itemsPanel.Children[count] is CascaderViewLevelList levelList)
+                {
+                    levelList.ItemsSource = null;
+                    levelList.Items.Clear();
+                }
+
+                _itemsPanel.Children.RemoveAt(count);
+            }
+            for (var i = 0; i < ItemCount; i++)
+            {
+                if (ContainerFromIndex(i) is CascaderViewItem cascaderViewItem)
+                {
+                    cascaderViewItem.IsExpanded = false;
+                }
+            }
+            InvalidateMeasure();
+        }
+        finally
+        {
+            --_ignoreExpandAndCollapseLevel;
+        }
+    }
+
     private void ClearExpandedState(int level)
     {
         if (_itemsPanel == null)
@@ -1616,5 +1667,4 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             EffectiveToggleType = ItemToggleType.None;
         }
     }
-    
 }

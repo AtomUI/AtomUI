@@ -16,6 +16,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
             if (DataContext is CascaderViewModel vm)
             {
                 InitBasicCascaderData(vm);
+                InitDefaultValueCascaderData(vm);
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
                 InitAsyncLoadCascaderViewData(vm);
@@ -118,6 +119,56 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                             {
                                 Header = "Zhong Hua Men",
                                 Value  = "zhonghuamen",
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+    }
+
+    private void InitDefaultValueCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.DefaultSelectItemPath = new TreeNodePath("zhejiang/hangzhou/xihu");
+        viewModel.DefaultValueCascaderNodes = [
+            new CascaderViewItemData()
+            {
+                Header = "Zhejiang",
+                ItemKey  = "zhejiang",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Hangzhou",
+                        ItemKey = "hangzhou",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "West Lake",
+                                ItemKey = "xihu",
+                            },
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Lingyin shi",
+                                ItemKey = "lingyinshi",
+                            }
+                        ]
+                    }
+                ]
+            },
+            new CascaderViewItemData()
+            {
+                Header  = "Jiangsu",
+                ItemKey = "jiangsu",
+                Children = [
+                    new CascaderViewItemData()
+                    {
+                        Header  = "Nanjing",
+                        ItemKey = "nanjing",
+                        Children = [
+                            new CascaderViewItemData()
+                            {
+                                Header  = "Zhong Hua Men",
+                                ItemKey = "zhonghuamen",
                             }
                         ]
                     }

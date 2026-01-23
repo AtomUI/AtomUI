@@ -312,6 +312,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     private SelectFilterTextBox? _singleFilterInput;
     private TreeView? _treeView;
     private bool _needSkipSyncSelection;
+    private bool _needSkipCollectionChangedEvent;
     
     static TreeSelect()
     {
@@ -398,13 +399,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else if (change.Property == SelectedItemProperty)
         {
-            if (!_needSkipSyncSelection)
-            {
-                if (_treeView != null)
-                {
-                    _treeView.SelectedItem = SelectedItem;
-                }
-            }
+            SyncSelectedItemToTreeView();
         }
 
         if (change.Property == IsMultipleProperty ||
@@ -500,15 +495,17 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             parent.GetObservable(IsVisibleProperty).Subscribe(HandleIsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
         }
         NotifyPopupOpened();
+     
         if (!IsMultiple)
         {
+            SyncSelectedItemToTreeView();
             _singleFilterInput?.Focus();
         }
     }
 
     private void HandleTreeViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_treeView == null)
+        if (_treeView == null || _needSkipCollectionChangedEvent)
         {
             return;
         }
@@ -804,6 +801,17 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         items.Remove(item);
     }
 
+    private void SyncSelectedItemToTreeView()
+    {
+        if (!_needSkipSyncSelection)
+        {
+            if (_treeView != null)
+            {
+                _treeView.SelectedItem = SelectedItem;
+            }
+        }
+    }
+    
     private void SyncSelectedItemsToTreeView()
     {
         if (!_needSkipSyncSelection)
@@ -814,28 +822,44 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 {
                     if (!IsTreeCheckable)
                     {
-                        if (_treeView.SelectedItems.Count == 0)
+                        _needSkipCollectionChangedEvent = true;
+                        try
                         {
                             foreach (var item in SelectedItems)
                             {
-                                _treeView.SelectedItems.Add(item);
+                                if (item is ITreeViewItemData itemData)
+                                {
+                                    itemData.IsSelected = true;
+                                }
+                            }
+                            if (_treeView.SelectedItems.Count == 0)
+                            {
+                                foreach (var item in SelectedItems)
+                                {
+                                    _treeView.SelectedItems.Add(item);
+                                }
+                            }
+                            else
+                            {
+                                var treeViewSet  = _treeView.SelectedItems.Cast<object>().ToList();
+                                var currentSet   = SelectedItems.Cast<object>().ToList();
+                                var deletedItems = treeViewSet.Except(currentSet);
+                                var addedItems   = currentSet.Except(treeViewSet);
+                       
+                                foreach (var item in deletedItems)
+                                {
+                                    _treeView.SelectedItems.Remove(item);
+                                }
+
+                                foreach (var item in addedItems)
+                                {
+                                    _treeView.SelectedItems.Add(item);
+                                }
                             }
                         }
-                        else
+                        finally
                         {
-                            var treeViewSet  = _treeView.SelectedItems.Cast<object>().ToList();
-                            var currentSet   = SelectedItems.Cast<object>().ToList();
-                            var deletedItems = treeViewSet.Except(currentSet);
-                            var addedItems   = currentSet.Except(treeViewSet);
-                            foreach (var item in deletedItems)
-                            {
-                                _treeView.SelectedItems.Remove(item);
-                            }
-
-                            foreach (var item in addedItems)
-                            {
-                                _treeView.SelectedItems.Add(item);
-                            }
+                            _needSkipCollectionChangedEvent = false;
                         }
                     }
                     else

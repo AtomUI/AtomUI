@@ -516,12 +516,12 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         }
     }
 
-    protected void NotifyPopupClosed()
+    protected virtual void NotifyPopupClosed()
     {
         DropDownClosed?.Invoke(this, EventArgs.Empty);
     }
     
-    protected void NotifyPopupOpened()
+    protected virtual void NotifyPopupOpened()
     {
         DropDownOpened?.Invoke(this, EventArgs.Empty);
     }
@@ -588,7 +588,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        // SetCurrentValue(IsDropDownOpenProperty, false);
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

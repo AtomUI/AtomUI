@@ -1,7 +1,5 @@
-﻿using AtomUI;
-using AtomUI.Controls;
+﻿using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
-using Avalonia.Controls;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.ViewModels;
@@ -20,6 +18,14 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _basicTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _basicTreeNodes, value);
+    }
+    
+    private IList<ITreeViewItemData>? _selectedItems;
+    
+    public IList<ITreeViewItemData>? SelectedItems
+    {
+        get => _selectedItems;
+        set => this.RaiseAndSetIfChanged(ref _selectedItems, value);
     }
     
     private List<ITreeViewItemData> _multiSelectionTreeNodes = [];

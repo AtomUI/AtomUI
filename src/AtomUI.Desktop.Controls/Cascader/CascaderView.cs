@@ -62,7 +62,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         AvaloniaProperty.Register<CascaderView, object?>(nameof(FilterValue));
     
     public static readonly StyledProperty<TextBlockHighlightStrategy> FilterHighlightStrategyProperty =
-        AvaloniaProperty.Register<HighlightableTextBlock, TextBlockHighlightStrategy>(nameof(FilterHighlightStrategy), TextBlockHighlightStrategy.All);
+        AvaloniaProperty.Register<CascaderView, TextBlockHighlightStrategy>(nameof(FilterHighlightStrategy), TextBlockHighlightStrategy.All);
     
     public static readonly DirectProperty<CascaderView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, int>(nameof(FilterResultCount),

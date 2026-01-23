@@ -123,29 +123,18 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.DefaultExpandedPaths,
             (o, v) => o.DefaultExpandedPaths = v);
     
-    public static readonly DirectProperty<TreeView, ITreeItemDataLoader?> DataLoaderProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, ITreeItemDataLoader?>(
-            nameof(DataLoader),
-            o => o.DataLoader,
-            (o, v) => o.DataLoader = v);
+    public static readonly StyledProperty<ITreeItemDataLoader?> DataLoaderProperty =
+        AvaloniaProperty.Register<TreeView, ITreeItemDataLoader?>(nameof(DataLoader));
     
-    public static readonly DirectProperty<TreeView, ITreeItemFilter?> FilterProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, ITreeItemFilter?>(
-            nameof(Filter),
-            o => o.Filter,
-            (o, v) => o.Filter = v);
+    public static readonly StyledProperty<ITreeItemFilter?> FilterProperty =
+        AvaloniaProperty.Register<TreeView, ITreeItemFilter?>(nameof(Filter), new DefaultTreeItemFilter());
     
-    public static readonly DirectProperty<TreeView, object?> FilterValueProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, object?>(
-            nameof(FilterValue),
-            o => o.FilterValue,
-            (o, v) => o.FilterValue = v);
+    public static readonly StyledProperty<object?> FilterValueProperty =
+        AvaloniaProperty.Register<TreeView, object?>(nameof(FilterValue));
     
-    public static readonly DirectProperty<TreeView, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, TreeFilterHighlightStrategy>(
-            nameof(FilterHighlightStrategy),
-            o => o.FilterHighlightStrategy,
-            (o, v) => o.FilterHighlightStrategy = v);
+    
+    public static readonly StyledProperty<TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.Register<TreeView, TreeFilterHighlightStrategy>(nameof(FilterHighlightStrategy), TreeFilterHighlightStrategy.All);
     
     public static readonly DirectProperty<TreeView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<TreeView, int>(nameof(FilterResultCount),
@@ -304,36 +293,28 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
     }
     
-    private ITreeItemDataLoader? _itemDataLoader;
-    
     public ITreeItemDataLoader? DataLoader
     {
-        get => _itemDataLoader;
-        set => SetAndRaise(DataLoaderProperty, ref _itemDataLoader, value);
+        get => GetValue(DataLoaderProperty);
+        set => SetValue(DataLoaderProperty, value);
     }
-    
-    private ITreeItemFilter? _filter;
     
     public ITreeItemFilter? Filter
     {
-        get => _filter;
-        set => SetAndRaise(FilterProperty, ref _filter, value);
+        get => GetValue(FilterProperty);
+        set => SetValue(FilterProperty, value);
     }
-    
-    private object? _filterValue;
     
     public object? FilterValue
     {
-        get => _filterValue;
-        set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
+        get => GetValue(FilterValueProperty);
+        set => SetValue(FilterValueProperty, value);
     }
 
-    private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;
-    
     public TreeFilterHighlightStrategy FilterHighlightStrategy
     {
-        get => _filterHighlightStrategy;
-        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
+        get => GetValue(FilterHighlightStrategyProperty);
+        set => SetValue(FilterHighlightStrategyProperty, value);
     }
 
     private int _filterResultCount;
@@ -814,7 +795,11 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             var layoutManager = visualRoot.GetLayoutManager();
             layoutManager.ExecuteLayoutPass();
         }
-        return current.ContainerFromItem(childNode) as TreeViewItem;
+        if (current.Presenter?.Panel is { } panel)
+        {
+            return current.ContainerFromItem(childNode) as TreeViewItem;
+        }
+        return null;
     }
     
     private void SubscribeToCheckedItems()
@@ -1000,7 +985,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             return [];
         }
-        List<TreeViewItem> items = new List<TreeViewItem>();
+        var items = new List<TreeViewItem>();
         try
         {
             ItemsControl current = this;
@@ -1043,7 +1028,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             return [];
         }
-        List<TreeViewItem> items = new List<TreeViewItem>();
+        var items = new List<TreeViewItem>();
         try
         {
             ItemsControl current = this;
@@ -1213,20 +1198,30 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     {
         if (IsSelectable)
         {
-            if (SelectedItems.Count == 0 && DefaultSelectedPaths != null)
+            if (SelectedItems.Count == 0 && SelectedItem == null)
             {
-                foreach (var defaultSelectedPath in DefaultSelectedPaths)
+                if (DefaultSelectedPaths != null)
                 {
-                    var pathNodes = FindTreeItemByPath(defaultSelectedPath);
-              
-                    if (pathNodes.Count > 0)
+                    foreach (var defaultSelectedPath in DefaultSelectedPaths)
                     {
-                        var targetNode = pathNodes[^1];
-                        if (!SelectedItems.Contains(targetNode))
+                        var pathNodes = FindTreeItemByPath(defaultSelectedPath);
+                        if (pathNodes.Count > 0)
                         {
-                            SelectedItems.Add(targetNode);
+                            var targetNode = pathNodes[^1];
+                            if (!SelectedItems.Contains(targetNode))
+                            {
+                                SelectedItems.Add(targetNode);
+                            }
                         }
                     }
+                }
+            }
+            else
+            {
+                if (SelectedItem != null)
+                {
+                    var paths = GetTreePathFromItem(SelectedItem);
+                    SelectTreeItemByPath(paths);
                 }
             }
         }
@@ -1433,7 +1428,6 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
- 
         if (e.Source is Visual source)
         {
             var point = e.GetCurrentPoint(source);
@@ -1459,5 +1453,92 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             e.PreventGestureRecognition();
         }
     }
-    
+
+    private List<object> GetTreePathFromItem(object item)
+    {
+        var paths = new List<object>();
+        if (item is ITreeViewItemData itemData)
+        {
+            var current = itemData;
+            while (current != null)
+            {
+                paths.Add(current);
+                current = current.ParentNode as ITreeViewItemData;
+            }
+        }
+        else if (item is TreeViewItem treeViewItem)
+        {
+            var current = treeViewItem;
+            while (current != null)
+            {
+                paths.Add(current);
+                current = current.Parent as TreeViewItem;
+            }
+        }
+        else
+        {
+            throw new ArgumentException("Invalid item type, Must ITreeViewItemData or TreeViewItem.");
+        }
+
+        paths.Reverse();
+        return paths;
+    }
+
+    private void SelectTreeItemByPath(IList paths)
+    {
+        if (paths.Count == 0)
+        {
+            return;
+        }
+        ItemsControl current             = this;
+        bool         originMotionEnabled = IsMotionEnabled;
+        try
+        {
+            SetCurrentValue(IsMotionEnabledProperty, false);
+            for (var i = 0; i < paths.Count; i++)
+            {
+                var pathNode = paths[i];
+                if (pathNode != null)
+                {
+                    TreeViewItem? child          = null;
+                    bool?         originExpanded = null;
+                    try
+                    {
+
+                        if (current is TreeViewItem item)
+                        {
+                            originExpanded = item.IsExpanded;
+                            item.SetCurrentValue(TreeViewItem.IsExpandedProperty, true);
+                        }
+
+                        child = GetTreeViewItemContainer(pathNode, current);
+                    }
+                    finally
+                    {
+                        if (current is TreeViewItem item)
+                        {
+                            if (originExpanded != null)
+                            {
+                                item.SetCurrentValue(TreeViewItem.IsExpandedProperty, originExpanded.Value);
+                            }
+                        }
+                    }
+
+                    if (child != null)
+                    {
+                        current = child;
+                    }
+                }
+            }
+
+            if (current is TreeViewItem treeViewItem)
+            {
+                treeViewItem.SetCurrentValue(TreeViewItem.IsSelectedProperty, true);
+            }
+        }
+        finally
+        {
+            SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
+        }
+    }
 }

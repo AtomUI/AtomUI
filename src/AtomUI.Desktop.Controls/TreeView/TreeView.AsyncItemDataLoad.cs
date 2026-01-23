@@ -24,11 +24,11 @@ public partial class TreeView
 
     private void HandleNodeLoadRequest(TreeViewItem item)
     {
-        if (_itemDataLoader == null)
+        if (DataLoader == null)
         {
             return;
         }
-        if (_itemDataLoader != null && ItemsSource == null)
+        if (DataLoader != null && ItemsSource == null)
         {
             throw new InvalidOperationException("ITreeNodeDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
@@ -39,8 +39,8 @@ public partial class TreeView
             item.IsLoading = true;
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                Debug.Assert(_itemDataLoader != null);
-                var result = await _itemDataLoader.LoadAsync(treeItemData, cts.Token);
+                Debug.Assert(DataLoader != null);
+                var result = await DataLoader.LoadAsync(treeItemData, cts.Token);
                 item.IsLoading   = false;
                 item.AsyncLoaded = true; // TODO 是不是应该多给几次机会？
                 TreeItemLoaded?.Invoke(this, new TreeViewItemLoadedEventArgs(item, result));

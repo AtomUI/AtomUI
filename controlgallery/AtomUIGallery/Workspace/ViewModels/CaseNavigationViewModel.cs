@@ -1,15 +1,26 @@
 ﻿using AtomUI.Controls;
+using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia.Threading;
 using ReactiveUI;
 
 namespace AtomUIGallery.Workspace.ViewModels;
 
+
+
 public class CaseNavigationViewModel : ReactiveObject
 {
     private Dictionary<TreeNodeKey, Func<IRoutableViewModel>> _showCaseViewModelFactories;
     private TreeNodeKey? _currentShowCase;
     private DispatcherTimer _dispatcherTimer;
+    
+    private INavMenuItemData? _selectedItem;
+    
+    public INavMenuItemData? SelectedItem
+    {
+        get => _selectedItem;
+        set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
+    }
 
     public IScreen HostScreen { get; }
 

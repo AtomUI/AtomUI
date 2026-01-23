@@ -27,7 +27,7 @@
                             <atom:PickerClearUpButton
                                 IsInClearMode="{Binding IsClearButtonVisible, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                 Icon="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
-                                IsVisible="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                IsVisible="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             <ContentPresenter Content="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                               ContentTemplate="{Binding ContentRightAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                               IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}"/>

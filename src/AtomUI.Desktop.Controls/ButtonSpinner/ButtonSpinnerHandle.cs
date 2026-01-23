@@ -13,8 +13,8 @@ internal class ButtonSpinnerHandle : TemplatedControl
     public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ButtonSpinnerHandle>();
     
-    public static readonly StyledProperty<Location> ButtonSpinnerLocationProperty =
-        Avalonia.Controls.ButtonSpinner.ButtonSpinnerLocationProperty.AddOwner<ButtonSpinnerHandle>();
+    public static readonly StyledProperty<ButtonSpinnerLocation> ButtonSpinnerLocationProperty =
+        ButtonSpinner.ButtonSpinnerLocationProperty.AddOwner<ButtonSpinnerHandle>();
     
     public static readonly DirectProperty<ButtonSpinnerHandle, Thickness> SpinnerBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerHandle, Thickness>(nameof(SpinnerBorderThickness),
@@ -27,7 +27,7 @@ internal class ButtonSpinnerHandle : TemplatedControl
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public Location ButtonSpinnerLocation
+    public ButtonSpinnerLocation ButtonSpinnerLocation
     {
         get => GetValue(ButtonSpinnerLocationProperty);
         set => SetValue(ButtonSpinnerLocationProperty, value);
@@ -70,7 +70,7 @@ internal class ButtonSpinnerHandle : TemplatedControl
     {
         var          lineWidth = SpinnerBorderThickness.Left;
         CornerRadius cornerRadius;
-        if (ButtonSpinnerLocation == Location.Left)
+        if (ButtonSpinnerLocation == ButtonSpinnerLocation.Left)
         {
             cornerRadius = new CornerRadius(CornerRadius.TopLeft,
                 0,

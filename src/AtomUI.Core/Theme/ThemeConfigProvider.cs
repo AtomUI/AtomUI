@@ -108,9 +108,9 @@ public class ThemeConfigProvider : Control, IThemeConfigProvider
         }
     }
 
-    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnAttachedToLogicalTree(e);
+        base.OnAttachedToVisualTree(e);
         if (_needCalculateTokenResources)
         {
             CalculateTokenResources();

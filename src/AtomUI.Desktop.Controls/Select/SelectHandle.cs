@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -32,6 +33,12 @@ internal class SelectHandle : TemplatedControl
     
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
         AvaloniaProperty.Register<SelectHandle, bool>(nameof(IsDropDownOpen), false);
+    
+    public static readonly StyledProperty<PathIcon?> OpenIndicatorProperty = 
+        AvaloniaProperty.Register<SelectHandle, PathIcon?>(nameof (OpenIndicator));
+    
+    public static readonly StyledProperty<PathIcon?> LoadingIconProperty = 
+        AvaloniaProperty.Register<SelectHandle, PathIcon?>(nameof (LoadingIcon));
     
     public bool IsInputHover
     {
@@ -79,6 +86,18 @@ internal class SelectHandle : TemplatedControl
     {
         get => GetValue(IsDropDownOpenProperty);
         set => SetValue(IsDropDownOpenProperty, value);
+    }
+    
+    public PathIcon? OpenIndicator
+    {
+        get => GetValue(OpenIndicatorProperty);
+        set => SetValue(OpenIndicatorProperty, value);
+    }
+    
+    public PathIcon? LoadingIcon
+    {
+        get => GetValue(LoadingIconProperty);
+        set => SetValue(LoadingIconProperty, value);
     }
     
     public static readonly RoutedEvent<RoutedEventArgs> ClearRequestedEvent = 

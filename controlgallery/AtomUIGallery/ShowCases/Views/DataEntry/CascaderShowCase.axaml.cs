@@ -21,8 +21,13 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 InitDisabledCascaderData(vm);
                 InitSelectParentCascaderData(vm);
                 InitMultiSelectCascaderData(vm);
+                InitCheckStrategyCascaderData(vm);
                 InitSearchCascaderData(vm);
                 InitLazyLoadCascaderData(vm);
+                InitPrefixAndSuffix1CascaderData(vm);
+                InitSizeCascaderData(vm);
+                InitPlacementCascaderData(vm);
+                
                 InitBasicCascaderViewData(vm);
                 InitBasicCheckableCascaderViewData(vm);
                 InitAsyncLoadCascaderViewData(vm);
@@ -34,59 +39,10 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         });
         InitializeComponent();
     }
-    
-    private void InitBasicCascaderViewData(CascaderViewModel viewModel)
+
+    private List<ICascaderViewItemData> GenerateCascaderViewItems()
     {
-        viewModel.BasicCascaderViewNodes = [
-            new CascaderViewItemData()
-            {
-                Header  = "Zhejiang",
-                Value = "zhejiang",
-                Children = [
-                    new CascaderViewItemData()
-                    {
-                        Header = "Hangzhou",
-                        Value  = "hangzhou",
-                        Children = [
-                            new CascaderViewItemData()
-                            {
-                                Header = "West Lake",
-                                Value  = "xihu",
-                            },
-                            new CascaderViewItemData()
-                            {
-                                Header = "Lingyin shi",
-                                Value  = "lingyinshi",
-                            }
-                        ]
-                    }
-                ]
-            },
-            new CascaderViewItemData()
-            {
-                Header = "Jiangsu",
-                Value  = "jiangsu",
-                Children = [
-                    new CascaderViewItemData()
-                    {
-                        Header = "Nanjing",
-                        Value  = "nanjing",
-                        Children = [
-                            new CascaderViewItemData()
-                            {
-                                Header = "Zhong Hua Men",
-                                Value  = "zhonghuamen",
-                            }
-                        ]
-                    }
-                ]
-            }
-        ];
-    }
-    
-    private void InitBasicCascaderData(CascaderViewModel viewModel)
-    {
-        viewModel.BasicCascaderNodes = [
+        return [
             new CascaderViewItemData()
             {
                 Header = "Zhejiang",
@@ -131,6 +87,16 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 ]
             }
         ];
+    }
+    
+    private void InitBasicCascaderViewData(CascaderViewModel viewModel)
+    {
+        viewModel.BasicCascaderViewNodes = GenerateCascaderViewItems();
+    }
+    
+    private void InitBasicCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.BasicCascaderNodes = GenerateCascaderViewItems();
     }
 
     private void InitDefaultValueCascaderData(CascaderViewModel viewModel)
@@ -333,6 +299,11 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
 
     private void InitMultiSelectCascaderData(CascaderViewModel viewModel)
     {
+        viewModel.MultipleSelectCascaderNodes = GenerateMultiSelectCascaderNodes();
+    }
+
+    private List<ICascaderViewItemData> GenerateMultiSelectCascaderNodes()
+    {
         var lightNode = new CascaderViewItemData()
         {
             Header = "Light",
@@ -343,15 +314,15 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
             lightNode.Children.Add(new CascaderViewItemData()
             {
                 Header = $"Number {i}",
-                Value = i.ToString()
+                Value  = i.ToString()
             });
         }
-        viewModel.MultipleSelectCascaderNodes = [
+        return [
             lightNode,
             new CascaderViewItemData()
             {
-                Header  = "Bamboo",
-                Value = "bamboo",
+                Header = "Bamboo",
+                Value  = "bamboo",
                 Children = [
                     new CascaderViewItemData()
                     {
@@ -360,8 +331,8 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                         Children = [
                             new CascaderViewItemData()
                             {
-                                Header = "Toy Fish",
-                                Value  = "fish",
+                                Header            = "Toy Fish",
+                                Value             = "fish",
                                 IsCheckBoxEnabled = false
                             },
                             new CascaderViewItemData()
@@ -379,6 +350,12 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 ]
             }
         ];
+    }
+
+    private void InitCheckStrategyCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.CheckStrategy1CascaderNodes = GenerateMultiSelectCascaderNodes();
+        viewModel.CheckStrategy2CascaderNodes = GenerateMultiSelectCascaderNodes();
     }
 
     private void InitSearchCascaderData(CascaderViewModel viewModel)
@@ -451,6 +428,25 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 Value  = "jiangsu",
             }
         ];
+    }
+    
+    private void InitPrefixAndSuffix1CascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.PrefixAndSuffix1CascaderNodes = GenerateCascaderViewItems();
+        viewModel.PrefixAndSuffix2CascaderNodes = GenerateCascaderViewItems();
+        viewModel.PrefixAndSuffix3CascaderNodes = GenerateCascaderViewItems();
+    }
+    
+    private void InitSizeCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.SizeLargeCascaderNodes = GenerateCascaderViewItems();
+        viewModel.SizeMiddleCascaderNodes = GenerateCascaderViewItems();
+        viewModel.SizeSmallCascaderNodes = GenerateCascaderViewItems();
+    }
+
+    private void InitPlacementCascaderData(CascaderViewModel viewModel)
+    {
+        viewModel.PlacementCascaderNodes = GenerateCascaderViewItems();
     }
 
     private void InitBasicCheckableCascaderViewData(CascaderViewModel viewModel)
@@ -644,6 +640,29 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         if (sender is SearchEdit searchEdit)
         {
             SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
+        }
+    }
+    
+    public void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)
+    {
+        if (DataContext is CascaderViewModel vm)
+        {
+            if (args.Index == 0)
+            {
+                vm.Placement = SelectPopupPlacement.TopEdgeAlignedLeft;
+            }
+            else if (args.Index == 1)
+            {
+                vm.Placement = SelectPopupPlacement.TopEdgeAlignedRight;
+            }
+            else if (args.Index == 2)
+            {
+                vm.Placement = SelectPopupPlacement.BottomEdgeAlignedLeft;
+            }
+            else
+            {
+                vm.Placement = SelectPopupPlacement.BottomEdgeAlignedRight;
+            }
         }
     }
 }

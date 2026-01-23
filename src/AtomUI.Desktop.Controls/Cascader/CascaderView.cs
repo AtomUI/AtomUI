@@ -520,7 +520,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
 
         foreach (var childItem in item.Children)
         {
-            if (childItem.IsEnabled)
+            if (childItem.IsEnabled && childItem.IsCheckBoxEnabled)
             {
                 var childCheckedItems = DoCheckedSubTree(childItem);
                 checkedItems.UnionWith(childCheckedItems);
@@ -763,8 +763,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                 {
                     foreach (var container in GetRealizedTreeContainers())
                     {
-                        MarkContainerChecked(container, false);
+                        if (container is CascaderViewItem cascaderViewItem)
+                        {
+                            UnCheckedSubTree(cascaderViewItem);
+                        }
                     }
+                    
                     if (CheckedItems.Count > 0)
                     {
                         CheckedItemsAdded(CheckedItems);
@@ -825,16 +829,14 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
     
     private void MarkItemChecked(object item, bool isChecked)
     {
-        var container = CascaderContainerFromItem(item);
-        if (container != null)
+        if (item is ICascaderViewItemData viewItemData)
         {
-            MarkContainerChecked(container, isChecked);
+            viewItemData.IsChecked = isChecked;
         }
-    }
-    
-    private void MarkContainerChecked(Control container, bool isChecked)
-    {
-        container.SetCurrentValue(CascaderViewItem.IsCheckedProperty, isChecked);
+        else if (item is CascaderViewItem cascaderViewItem)
+        {
+            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckedProperty, isChecked);
+        }
     }
     
     private (ISet<object>, ISet<object>) SetupParentNodeCheckedStatus(CascaderViewItem item)
@@ -919,12 +921,12 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
             {
                 isAllChecked = parentCascaderItemData.Children.All(childItem =>
                 {
-                    return !childItem.IsEnabled || childItem.IsChecked.HasValue && childItem.IsChecked.Value;
+                    return !childItem.IsEnabled || !childItem.IsCheckBoxEnabled || childItem.IsChecked.HasValue && childItem.IsChecked.Value;
                 });
 
                 isAnyChecked = parentCascaderItemData.Children.Any(childItem =>
                 {
-                    return childItem.IsEnabled && (!childItem.IsChecked.HasValue || childItem.IsChecked.HasValue && childItem.IsChecked.Value);
+                    return childItem.IsEnabled && childItem.IsCheckBoxEnabled && (!childItem.IsChecked.HasValue || childItem.IsChecked.HasValue && childItem.IsChecked.Value);
                 });
             }
 

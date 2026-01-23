@@ -273,6 +273,10 @@ internal class SelectTagAwareTextBox : TemplatedControl
                     _collapsedInfoTag.IsVisible = false;
                 }
             }
+            else
+            {
+                _collapsedInfoTag.IsVisible = SelectedItems != null && SelectedItems.Count > 0;
+            }
         }
     }
 }

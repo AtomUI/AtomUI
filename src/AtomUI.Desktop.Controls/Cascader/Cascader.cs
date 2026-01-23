@@ -232,6 +232,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     public Cascader()
     {
         this.RegisterResources();
+        
     }
 
     private void HandleClearRequest()

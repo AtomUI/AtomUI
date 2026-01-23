@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -501,6 +502,18 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     {
         base.OnInitialized();
         ConfigurePopupPlacement();
+        if (SuffixIcon == null)
+        {
+            SetCurrentValue(SuffixIconProperty, new DownOutlined());
+        }
+
+        if (SuffixLoadingIcon == null)
+        {
+            SetCurrentValue(SuffixLoadingIconProperty, new LoadingOutlined()
+            {
+                LoadingAnimation = IconAnimation.Spin
+            });
+        }
     }
 
     protected void NotifyPopupClosed()

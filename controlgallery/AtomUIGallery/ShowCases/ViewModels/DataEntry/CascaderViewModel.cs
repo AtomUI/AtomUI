@@ -87,6 +87,22 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _multipleSelectCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _checkStrategy1CascaderNodes = [];
+    
+    public List<ICascaderViewItemData> CheckStrategy1CascaderNodes
+    {
+        get => _checkStrategy1CascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkStrategy1CascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _checkStrategy2CascaderNodes = [];
+    
+    public List<ICascaderViewItemData> CheckStrategy2CascaderNodes
+    {
+        get => _checkStrategy2CascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkStrategy2CascaderNodes, value);
+    }
+    
     private List<ICascaderViewItemData> _lazyLoadCascaderNodes = [];
     
     public List<ICascaderViewItemData> LazyLoadCascaderNodes
@@ -95,12 +111,76 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _lazyLoadCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _prefixAndSuffix1CascaderNodes = [];
+    
+    public List<ICascaderViewItemData> PrefixAndSuffix1CascaderNodes
+    {
+        get => _prefixAndSuffix1CascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _prefixAndSuffix1CascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _prefixAndSuffix2CascaderNodes = [];
+    
+    public List<ICascaderViewItemData> PrefixAndSuffix2CascaderNodes
+    {
+        get => _prefixAndSuffix2CascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _prefixAndSuffix2CascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _prefixAndSuffix3CascaderNodes = [];
+    
+    public List<ICascaderViewItemData> PrefixAndSuffix3CascaderNodes
+    {
+        get => _prefixAndSuffix3CascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _prefixAndSuffix3CascaderNodes, value);
+    }
+    
+    private SelectPopupPlacement _placement;
+
+    public SelectPopupPlacement Placement
+    {
+        get => _placement;
+        set => this.RaiseAndSetIfChanged(ref _placement, value);
+    }
+    
+    private List<ICascaderViewItemData> _placementCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> PlacementCascaderNodes
+    {
+        get => _placementCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _placementCascaderNodes, value);
+    }
+    
     private List<ICascaderViewItemData> _searchCascaderNodes = [];
     
     public List<ICascaderViewItemData> SearchCascaderNodes
     {
         get => _searchCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _searchCascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _sizeLargeCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> SizeLargeCascaderNodes
+    {
+        get => _sizeLargeCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _sizeLargeCascaderNodes, value);
+    }
+ 
+    private List<ICascaderViewItemData> _sizeMiddleCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> SizeMiddleCascaderNodes
+    {
+        get => _sizeMiddleCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _sizeMiddleCascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _sizeSmallCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> SizeSmallCascaderNodes
+    {
+        get => _sizeSmallCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _sizeSmallCascaderNodes, value);
     }
     
     private List<ICascaderViewItemData> _asyncLoadCascaderViewNodes = [];

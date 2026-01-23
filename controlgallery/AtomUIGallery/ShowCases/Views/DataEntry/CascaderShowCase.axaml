@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Views.CascaderShowCase"
              xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.ViewModels"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
@@ -108,6 +109,45 @@
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
+            Title="ShowCheckedStrategy"
+            Description="Shows a selected item in a box using showCheckedStrategy.">
+            <StackPanel Spacing="15">
+                <atom:Separator Title="ShowCheckedStrategy=All"/>
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding CheckStrategy1CascaderNodes}"
+                    HorizontalAlignment="Stretch"
+                    ShowCheckedStrategy="All"
+                    IsAllowClear="True"
+                    IsResponsiveTagMode="True"
+                    IsMultiple="True">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                <atom:Separator Title="ShowCheckedStrategy=ShowParent"/>
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding CheckStrategy2CascaderNodes}"
+                    HorizontalAlignment="Stretch"
+                    ShowCheckedStrategy="ShowParent"
+                    IsAllowClear="True"
+                    IsResponsiveTagMode="True"
+                    IsMultiple="True">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
             Title="Search"
             Description="Search and select options directly.">
             <atom:Cascader
@@ -139,6 +179,216 @@
                     </TreeDataTemplate>
                 </atom:Cascader.ItemTemplate>
             </atom:Cascader>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Prefix and Suffix"
+            Description="Use prefix to customize the prefix content, use suffixIcon to customize the selection box suffix icon, and use expandIcon to customize the current item expand icon.">
+            <StackPanel Spacing="10">
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding PrefixAndSuffix1CascaderNodes}"
+                    IsAllowClear="True"
+                    SuffixIcon="{antdicons:AntDesignIconProvider SmileOutlined}">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding PrefixAndSuffix2CascaderNodes}"
+                    IsAllowClear="True">
+                    <atom:Cascader.ExpandIcon>
+                        <atom:IconTemplate>
+                            <antdicons:SmileOutlined/>
+                        </atom:IconTemplate>
+                    </atom:Cascader.ExpandIcon>
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding PrefixAndSuffix3CascaderNodes}"
+                    IsAllowClear="True">
+                    <atom:Cascader.ContentLeftAddOn>
+                        <antdicons:SmileOutlined/>
+                    </atom:Cascader.ContentLeftAddOn>
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Variants"
+            Description="Variants of Cascader, there are four variants: outlined filled borderless and underlined.">
+            <StackPanel Spacing="15">
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    StyleVariant="Borderless">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    StyleVariant="Filled">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    StyleVariant="Outline">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    StyleVariant="Underlined">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Placement"
+            Description="You can manually specify the position of the popup via placement.">
+            
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <atom:TextBlock VerticalAlignment="Center">Placement:</atom:TextBlock>
+                <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandlePlacementOptionCheckedChanged">
+                    <atom:OptionButton IsChecked="True">TopLeft</atom:OptionButton>
+                    <atom:OptionButton>TopRight</atom:OptionButton>
+                    <atom:OptionButton>BottomLeft</atom:OptionButton>
+                    <atom:OptionButton>BottomRight</atom:OptionButton>
+                </atom:OptionButtonGroup>
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding PlacementCascaderNodes}"
+                    IsAllowClear="True"
+                    Placement="{Binding Placement}">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+            </StackPanel>
+            
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Status"
+            Description="Add status to Cascader with status, which could be error or warning.">
+            <StackPanel Spacing="15">
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    Status="Error">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    Status="Warning">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Size"
+            Description="Cascade selection box of different sizes.">
+            <StackPanel Spacing="15">
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    ItemsSource="{Binding SizeLargeCascaderNodes}"
+                    IsAllowClear="True"
+                    SizeType="Large">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    ItemsSource="{Binding SizeMiddleCascaderNodes}"
+                    SizeType="Middle">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+                
+                <atom:Cascader
+                    x:DataType="viewModels:CascaderViewModel"
+                    PlaceholderText="Please select"
+                    IsAllowClear="True"
+                    ItemsSource="{Binding SizeSmallCascaderNodes}"
+                    SizeType="Small">
+                    <atom:Cascader.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <atom:TextBlock Text="{Binding Header}" /> 
+                        </TreeDataTemplate>
+                    </atom:Cascader.ItemTemplate>
+                </atom:Cascader>
+
+            </StackPanel>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem

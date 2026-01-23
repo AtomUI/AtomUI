@@ -65,29 +65,29 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.TreeDefaultExpandedPaths,
             (o, v) => o.TreeDefaultExpandedPaths = v);
     
-    public static readonly StyledProperty<IEnumerable?> TreeItemsSourceProperty =
-        AvaloniaProperty.Register<TreeSelect, IEnumerable?>(nameof(TreeItemsSource));
+    public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
+        AvaloniaProperty.Register<TreeSelect, IEnumerable?>(nameof(ItemsSource));
     
-    public static readonly StyledProperty<IDataTemplate?> TreeItemTemplateProperty =
-        AvaloniaProperty.Register<TreeSelect, IDataTemplate?>(nameof(TreeItemTemplate));
+    public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
+        AvaloniaProperty.Register<TreeSelect, IDataTemplate?>(nameof(ItemTemplate));
     
-    public static readonly DirectProperty<TreeSelect, ITreeItemDataLoader?> TreeItemDataLoaderProperty =
+    public static readonly DirectProperty<TreeSelect, ITreeItemDataLoader?> DataLoaderProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemDataLoader?>(
-            nameof(TreeItemDataLoader),
-            o => o.TreeItemDataLoader,
-            (o, v) => o.TreeItemDataLoader = v);
+            nameof(DataLoader),
+            o => o.DataLoader,
+            (o, v) => o.DataLoader = v);
     
-    public static readonly DirectProperty<TreeSelect, ITreeItemFilter?> ItemFilterProperty =
+    public static readonly DirectProperty<TreeSelect, ITreeItemFilter?> FilterProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemFilter?>(
-            nameof(ItemFilter),
-            o => o.ItemFilter,
-            (o, v) => o.ItemFilter = v);
+            nameof(Filter),
+            o => o.Filter,
+            (o, v) => o.Filter = v);
     
-    public static readonly DirectProperty<TreeSelect, TreeItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelect, TreeItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    public static readonly DirectProperty<TreeSelect, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, TreeFilterHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<TreeSelect, IBrush?>(nameof(FilterHighlightForeground));
@@ -177,41 +177,41 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetAndRaise(TreeDefaultExpandedPathsProperty, ref _treeDefaultExpandedPaths, value);
     }
     
-    public IEnumerable? TreeItemsSource
+    public IEnumerable? ItemsSource
     {
-        get => GetValue(TreeItemsSourceProperty);
-        set => SetValue(TreeItemsSourceProperty, value);
+        get => GetValue(ItemsSourceProperty);
+        set => SetValue(ItemsSourceProperty, value);
     }
     
-    [InheritDataTypeFromItems(nameof(TreeItemsSource))]
-    public IDataTemplate? TreeItemTemplate
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
+    public IDataTemplate? ItemTemplate
     {
-        get => GetValue(TreeItemTemplateProperty);
-        set => SetValue(TreeItemTemplateProperty, value);
+        get => GetValue(ItemTemplateProperty);
+        set => SetValue(ItemTemplateProperty, value);
     }
     
-    private ITreeItemDataLoader? _treeItemDataLoader;
+    private ITreeItemDataLoader? _dataLoader;
     
-    public ITreeItemDataLoader? TreeItemDataLoader
+    public ITreeItemDataLoader? DataLoader
     {
-        get => _treeItemDataLoader;
-        set => SetAndRaise(TreeItemDataLoaderProperty, ref _treeItemDataLoader, value);
+        get => _dataLoader;
+        set => SetAndRaise(DataLoaderProperty, ref _dataLoader, value);
     }
     
-    private ITreeItemFilter? _itemFilter;
+    private ITreeItemFilter? _filter;
     
-    public ITreeItemFilter? ItemFilter
+    public ITreeItemFilter? Filter
     {
-        get => _itemFilter;
-        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+        get => _filter;
+        set => SetAndRaise(FilterProperty, ref _filter, value);
     }
 
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.HighlightedWhole | TreeItemFilterAction.BoldedMatch | TreeItemFilterAction.ExpandPath | TreeItemFilterAction.HideUnMatched;
+    private TreeFilterHighlightStrategy _itemFilterAction = TreeFilterHighlightStrategy.HighlightedWhole | TreeFilterHighlightStrategy.BoldedMatch | TreeFilterHighlightStrategy.ExpandPath | TreeFilterHighlightStrategy.HideUnMatched;
     
-    public TreeItemFilterAction ItemFilterAction
+    public TreeFilterHighlightStrategy FilterHighlightStrategy
     {
         get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _itemFilterAction, value);
     }
     
     public IBrush? FilterHighlightForeground
@@ -303,7 +303,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         get => _effectiveSelectedItems;
         set => SetAndRaise(EffectiveSelectedItemsProperty, ref _effectiveSelectedItems, value);
     }
-
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TreeSelectToken.ID;
@@ -340,7 +339,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        ItemFilter ??= new DefaultTreeItemFilter();
+        Filter ??= new DefaultTreeItemFilter();
         ConfigureMaxSelectReached();
     }
 
@@ -473,7 +472,6 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             Popup.Closed             += HandlePopupClosed;
         }
         
-        ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();
@@ -711,7 +709,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleSearchInputTextChanged(TextChangedEventArgs e)
     {
-        if (ItemFilter != null)
+        if (Filter != null)
         {
             if (e.Source is TextBox textBox)
             {

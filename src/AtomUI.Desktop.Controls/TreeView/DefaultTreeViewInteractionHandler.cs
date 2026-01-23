@@ -169,24 +169,26 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
 
     internal void OnCheckedChanged(TreeViewItem item)
     {
-        Debug.Assert(TreeView != null);
-        if (TreeView.ToggleType == ItemToggleType.Radio && item is IRadioButton radioButton)
+        if (TreeView != null)
         {
-            _groupManager?.OnCheckedChanged(radioButton);
-        }
-        else if (TreeView.ToggleType == ItemToggleType.CheckBox)
-        {
-            if (!TreeView.IsCheckStrictly)
+            if (TreeView.ToggleType == ItemToggleType.Radio && item is IRadioButton radioButton)
             {
-                if (item.IsChecked.HasValue)
+                _groupManager?.OnCheckedChanged(radioButton);
+            }
+            else if (TreeView.ToggleType == ItemToggleType.CheckBox)
+            {
+                if (!TreeView.IsCheckStrictly)
                 {
-                    if (item.IsChecked.Value)
+                    if (item.IsChecked.HasValue)
                     {
-                        TreeView.CheckedSubTree(item);
-                    }
-                    else
-                    {
-                        TreeView.UnCheckedSubTree(item);
+                        if (item.IsChecked.Value)
+                        {
+                            TreeView.CheckedSubTree(item);
+                        }
+                        else
+                        {
+                            TreeView.UnCheckedSubTree(item);
+                        }
                     }
                 }
             }

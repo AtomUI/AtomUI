@@ -1,6 +1,4 @@
-using AtomUI.Controls.Converters;
 using AtomUI.Desktop.Controls.Converters;
-using Avalonia.Layout;
 using Avalonia.Styling;
 using MarginMultiplierConverter = Avalonia.Controls.Converters.MarginMultiplierConverter;
 
@@ -16,8 +14,4 @@ internal class TreeViewItemTheme : ControlTheme
 
     public static readonly TreeViewItemIndicatorEnabledConverter TreeViewItemIndicatorEnabledConverter = new ();
     
-    public static readonly StringToTextBlockConverter StringToTextBlockConverter = new()
-    {
-        VerticalAlignment = VerticalAlignment.Center
-    };
 }

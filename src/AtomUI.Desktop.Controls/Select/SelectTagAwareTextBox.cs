@@ -10,39 +10,30 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class TreeSelectTagAwareTextBox : TemplatedControl
+internal class SelectTagAwareTextBox : TemplatedControl
 {
     #region 公共属性定义
-    
-    public static readonly StyledProperty<TreeSelectCheckedStrategy> ShowCheckedStrategyProperty =
-        TreeSelect.ShowCheckedStrategyProperty.AddOwner<TreeSelectTagAwareTextBox>();
 
-    public static readonly DirectProperty<TreeSelectTagAwareTextBox, IList?> SelectedItemsProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelectTagAwareTextBox, IList?>(
+    public static readonly DirectProperty<SelectTagAwareTextBox, IList?> SelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<SelectTagAwareTextBox, IList?>(
             nameof(SelectedItems),
             o => o.SelectedItems,
             (o, v) => o.SelectedItems = v);
     
     public static readonly StyledProperty<bool> IsFilterEnabledProperty =
-        Select.IsFilterEnabledProperty.AddOwner<TreeSelectTagAwareTextBox>();
+        Select.IsFilterEnabledProperty.AddOwner<SelectTagAwareTextBox>();
     
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
-        AvaloniaProperty.Register<TreeSelectTagAwareTextBox, bool>(nameof(IsDropDownOpen));
+        AvaloniaProperty.Register<SelectTagAwareTextBox, bool>(nameof(IsDropDownOpen));
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<TreeSelectTagAwareTextBox>();
+        SizeTypeControlProperty.SizeTypeProperty.AddOwner<SelectTagAwareTextBox>();
     
     public static readonly StyledProperty<int?> MaxTagCountProperty =
-        Select.MaxTagCountProperty.AddOwner<TreeSelectTagAwareTextBox>();
+        Select.MaxTagCountProperty.AddOwner<SelectTagAwareTextBox>();
     
     public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
         Select.IsResponsiveTagModeProperty.AddOwner<SelectResultOptionsBox>();
-    
-    public TreeSelectCheckedStrategy ShowCheckedStrategy
-    {
-        get => GetValue(ShowCheckedStrategyProperty);
-        set => SetValue(ShowCheckedStrategyProperty, value);
-    }
     
     private IList? _selectedItems;
 
@@ -139,8 +130,8 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _defaultPanel  = e.NameScope.Find<WrapPanel>(TreeSelectTagAwareTextBoxThemeConstants.DefaultPanelPart);
-        _maxCountAwarePanel = e.NameScope.Find<SelectMaxTagAwarePanel>(TreeSelectTagAwareTextBoxThemeConstants.MaxCountAwarePanelPart);
+        _defaultPanel  = e.NameScope.Find<WrapPanel>(SelectTagAwareTextBoxThemeConstants.DefaultPanelPart);
+        _maxCountAwarePanel = e.NameScope.Find<SelectMaxTagAwarePanel>(SelectTagAwareTextBoxThemeConstants.MaxCountAwarePanelPart);
         _searchTextBox = new SelectFilterTextBox
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
@@ -181,11 +172,11 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                     for (var i = 0; i < _selectedItems.Count; i++)
                     {
                         var item = _selectedItems[i];
-                        if (item is ITreeViewItemData treeItemData)
+                        if (item is ISelectTagTextProvider tagTextProvider)
                         {
                             var tag = new SelectTag
                             {
-                                TagText = treeItemData.Header?.ToString(),
+                                TagText = tagTextProvider.TagText,
                                 Item    = item
                             };
                             TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
@@ -216,11 +207,11 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                 {
                     foreach (var item in _selectedItems)
                     {
-                        if (item is ITreeViewItemData treeItemData)
+                        if (item is ISelectTagTextProvider tagTextProvider)
                         {
                             var tag = new SelectTag
                             {
-                                TagText = treeItemData.Header?.ToString(),
+                                TagText = tagTextProvider.TagText,
                                 Item    = item
                             };
                             TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));
@@ -281,6 +272,10 @@ internal class TreeSelectTagAwareTextBox : TemplatedControl
                 {
                     _collapsedInfoTag.IsVisible = false;
                 }
+            }
+            else
+            {
+                _collapsedInfoTag.IsVisible = SelectedItems != null && SelectedItems.Count > 0;
             }
         }
     }

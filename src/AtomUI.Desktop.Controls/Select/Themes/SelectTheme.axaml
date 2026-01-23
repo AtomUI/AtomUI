@@ -38,6 +38,8 @@
                                     ContentTemplate="{Binding ContentLeftAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:Select}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                 <atom:SelectHandle
+                                    LoadingIcon="{Binding SuffixLoadingIcon, RelativeSource={RelativeSource AncestorType=atom:Select}}"
+                                    OpenIndicator="{Binding SuffixIcon, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsFilterEnabled="{Binding IsEffectiveFilterEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}"
                                     IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:Select}}"

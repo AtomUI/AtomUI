@@ -11,6 +11,7 @@
         <ResourceInclude Source="Breadcrumb/Themes/BreadcrumbThemes.axaml" />
         <ResourceInclude Source="Buttons/Themes/ButtonThemes.axaml" />
         <ResourceInclude Source="ButtonSpinner/Themes/ButtonSpinnerThemes.axaml" />
+        <ResourceInclude Source="Cascader/Themes/CascaderThemes.axaml" />
         <ResourceInclude Source="Calendar/Themes/CalendarThemes.axaml" />
         <ResourceInclude Source="CheckBox/Themes/CheckBoxThemes.axaml" />
         <ResourceInclude Source="Chrome/Themes/ChromeThemes.axaml" />
@@ -32,6 +33,7 @@
         <ResourceInclude Source="Input/Themes/InputThemes.axaml" />
         <ResourceInclude Source="ItemsControl/Themes/ItemsControlTheme.axaml" />
         <ResourceInclude Source="List/Themes/ListThemes.axaml" />
+        <ResourceInclude Source="ListBox/Themes/ListBoxThemes.axaml" />
         <ResourceInclude Source="Mentions/Themes/MentionsThemes.axaml" />
         <ResourceInclude Source="Menu/Themes/MenuThemes.axaml" />
         <ResourceInclude Source="Message/Themes/MessageThemes.axaml" />

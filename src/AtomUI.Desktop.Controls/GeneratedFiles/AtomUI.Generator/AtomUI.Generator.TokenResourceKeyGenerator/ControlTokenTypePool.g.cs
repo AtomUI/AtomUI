@@ -20,6 +20,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.CalendarToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.CardToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.CarouselToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.CascaderToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.CheckBoxToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ChromeToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.CollapseToken));
@@ -34,6 +35,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.GroupBoxToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ImagePreviewerToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.LineEditToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ListBoxToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ListToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MarqueeLabelToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.MentionsToken));

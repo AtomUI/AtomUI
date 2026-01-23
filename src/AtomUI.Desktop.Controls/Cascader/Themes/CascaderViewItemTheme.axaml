@@ -1,0 +1,41 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:ClassModifier="internal"
+              TargetType="atom:CascaderViewItem"
+              x:Class="AtomUI.Desktop.Controls.Themes.CascaderViewItemTheme">
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:CascaderViewItem">
+            <atom:CascaderViewItemHeader Name="{x:Static atom:CascaderViewItemThemeConstants.HeaderPart}"
+                                         Icon="{TemplateBinding Icon}"
+                                         ExpandIcon="{TemplateBinding ExpandIcon}"
+                                         LoadingIcon="{TemplateBinding LoadingIcon}"
+                                         Content="{TemplateBinding Header}"
+                                         ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                         Level="{TemplateBinding Level}"
+                                         IsExpanded="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                         IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                         IsLeaf="{TemplateBinding IsLeaf}"
+                                         IsLoading="{TemplateBinding IsLoading}"
+                                         IsEnabled="{TemplateBinding IsEnabled}"
+                                         ToggleType="{TemplateBinding ToggleType}"
+                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                         BorderThickness="{TemplateBinding BorderThickness}"
+                                         IsCheckBoxEnabled="{TemplateBinding IsCheckBoxEnabled}"
+                                         Focusable="{TemplateBinding Focusable}" />
+        </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:is(atom|CascaderViewItem)">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+        
+        <Style Selector="^[IsMaxSelectReached=True][IsChecked=False]">
+            <Style Selector="^ /template/ atom|CascaderViewItemHeader#PART_Header">
+                <Setter Property="IsEnabled" Value="False"/>
+            </Style>
+        </Style>
+    </Style>
+</ControlTheme>

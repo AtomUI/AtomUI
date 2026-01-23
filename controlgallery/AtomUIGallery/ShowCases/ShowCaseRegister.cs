@@ -65,6 +65,7 @@ internal static class ShowCaseRegister
     
     private static void RegisterDataEntryCases()
     {
+        Locator.CurrentMutable.Register(() => new CascaderShowCase(), typeof(IViewFor<CascaderViewModel>));
         Locator.CurrentMutable.Register(() => new CheckBoxShowCase(), typeof(IViewFor<CheckBoxViewModel>));
         Locator.CurrentMutable.Register(() => new ColorPickerShowCase(), typeof(IViewFor<ColorPickerViewModel>));
         Locator.CurrentMutable.Register(() => new DatePickerShowCase(), typeof(IViewFor<DatePickerViewModel>));

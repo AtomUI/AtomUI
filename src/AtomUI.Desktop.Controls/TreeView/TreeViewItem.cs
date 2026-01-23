@@ -136,7 +136,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
-        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLoadingIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
         AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLeafIcon));
@@ -209,11 +209,11 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         TreeView.FilterHighlightForegroundProperty.AddOwner<TreeViewItem>();
     
-    internal static readonly DirectProperty<TreeViewItem, TreeItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    internal static readonly DirectProperty<TreeViewItem, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeFilterHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
     internal static readonly DirectProperty<TreeViewItem, bool> IsSelectableProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
@@ -363,12 +363,12 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         set => SetValue(FilterHighlightForegroundProperty, value);
     }
     
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;
     
-    internal TreeItemFilterAction ItemFilterAction
+    internal TreeFilterHighlightStrategy FilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
     }
 
     private bool _isSelectable = true;
@@ -411,6 +411,29 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
     {
         _borderRenderHelper               =  new BorderRenderHelper();
         LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
+        Items.CollectionChanged           += HandleCollectionChanged;
+    }
+    
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (OwnerTreeView is null)
+        {
+            return;
+        }
+
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+            case NotifyCollectionChangedAction.Replace:
+                foreach (var i in e.OldItems!)
+                {
+                    OwnerTreeView.CheckedItems.Remove(i);
+                }
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                OwnerTreeView.CheckedItems.Clear();
+                break;
+        }
     }
     
     private void HandleLogicalChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -794,7 +817,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, treeViewItem, HeaderTemplateProperty));
             }
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, treeViewItem, ItemFilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, FilterHighlightStrategyProperty, treeViewItem, FilterHighlightStrategyProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, IsShowLineProperty));
@@ -891,21 +914,6 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         IsFilterMode         = false;
         FilterHighlightWords = null;
         _filterContextBackup = null;
-    }
-
-    private bool HasChildSelected()
-    {
-        for (var i = 0; i < ItemCount; i++)
-        {
-            if (ContainerFromIndex(i) is TreeViewItem childTreeViewItem)
-            {
-                if (childTreeViewItem.IsSelected)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     // 用户保存在树处于过滤状态结束后的节点原始上下文属性的恢复

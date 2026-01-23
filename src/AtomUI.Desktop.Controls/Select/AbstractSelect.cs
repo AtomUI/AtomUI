@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -92,26 +93,20 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     public static readonly StyledProperty<object?> FilterValueProperty =
         AvaloniaProperty.Register<AbstractSelect, object?>(nameof(FilterValue));
     
+    public static readonly StyledProperty<PathIcon?> ClearIconProperty =
+        AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(ClearIcon));
+    
     public static readonly StyledProperty<PathIcon?> SuffixIconProperty =
         AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(SuffixIcon));
+    
+    public static readonly StyledProperty<PathIcon?> SuffixLoadingIconProperty =
+        AvaloniaProperty.Register<AbstractSelect, PathIcon?>(nameof(SuffixLoadingIcon));
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSelect>();
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractSelect>();
-    
-    public static readonly StyledProperty<bool> IsOperatingProperty =
-        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsOperating));
-    
-    public static readonly StyledProperty<string?> OperatingMsgProperty =
-        AvaloniaProperty.Register<AbstractSelect, string?>(nameof(OperatingMsg));
-    
-    public static readonly StyledProperty<object?> CustomOperatingIndicatorProperty =
-        AvaloniaProperty.Register<AbstractSelect, object?>(nameof(CustomOperatingIndicator));
-
-    public static readonly StyledProperty<IDataTemplate?> CustomOperatingIndicatorTemplateProperty =
-        AvaloniaProperty.Register<AbstractSelect, IDataTemplate?>(nameof(CustomOperatingIndicatorTemplate));
     
     public static readonly StyledProperty<object?> EmptyIndicatorProperty =
         AvaloniaProperty.Register<AbstractSelect, object?>(nameof(EmptyIndicator));
@@ -290,10 +285,22 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         set => SetValue(FilterValueProperty, value);
     }
     
+    public PathIcon? ClearIcon
+    {
+        get => GetValue(ClearIconProperty);
+        set => SetValue(ClearIconProperty, value);
+    }
+    
     public PathIcon? SuffixIcon
     {
         get => GetValue(SuffixIconProperty);
         set => SetValue(SuffixIconProperty, value);
+    }
+    
+    public PathIcon? SuffixLoadingIcon
+    {
+        get => GetValue(SuffixLoadingIconProperty);
+        set => SetValue(SuffixLoadingIconProperty, value);
     }
     
     public bool IsMotionEnabled
@@ -306,31 +313,6 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
-    }
-    
-    public bool IsOperating
-    {
-        get => GetValue(IsOperatingProperty);
-        set => SetValue(IsOperatingProperty, value);
-    }
-    
-    public string? OperatingMsg
-    {
-        get => GetValue(OperatingMsgProperty);
-        set => SetValue(OperatingMsgProperty, value);
-    }
-    
-    [DependsOn(nameof(CustomOperatingIndicatorTemplate))]
-    public object? CustomOperatingIndicator
-    {
-        get => GetValue(CustomOperatingIndicatorProperty);
-        set => SetValue(CustomOperatingIndicatorProperty, value);
-    }
-    
-    public IDataTemplate? CustomOperatingIndicatorTemplate
-    {
-        get => GetValue(CustomOperatingIndicatorTemplateProperty);
-        set => SetValue(CustomOperatingIndicatorTemplateProperty, value);
     }
     
     [DependsOn(nameof(EmptyIndicatorTemplate))]
@@ -520,6 +502,18 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     {
         base.OnInitialized();
         ConfigurePopupPlacement();
+        if (SuffixIcon == null)
+        {
+            SetCurrentValue(SuffixIconProperty, new DownOutlined());
+        }
+
+        if (SuffixLoadingIcon == null)
+        {
+            SetCurrentValue(SuffixLoadingIconProperty, new LoadingOutlined()
+            {
+                LoadingAnimation = IconAnimation.Spin
+            });
+        }
     }
 
     protected void NotifyPopupClosed()
@@ -554,7 +548,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             popupRoots.Add(popupRoot);
             return !popupRoots.Contains(args.Root);
         }
-                
+        
         return false;
     }
 
@@ -594,7 +588,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        SetCurrentValue(IsDropDownOpenProperty, false);
+        // SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

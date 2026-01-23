@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
+                    x:ClassModifier="internal"
+                    xmlns:atom="https://atomui.net">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="CascaderTheme.axaml" />
+        <ResourceInclude Source="CascaderViewItemHeaderTheme.axaml" />
+        <ResourceInclude Source="CascaderViewLevelListTheme.axaml" />
+        <ResourceInclude Source="CascaderViewFilterListTheme.axaml" />
+        <ResourceInclude Source="CascaderAddOnDecoratedBoxTheme.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <themes:CascaderViewTheme x:Key="{x:Type atom:CascaderView}" TargetType="atom:CascaderView"/>
+    <themes:CascaderViewItemTheme x:Key="{x:Type atom:CascaderViewItem}" TargetType="atom:CascaderViewItem"/>
+</ResourceDictionary>

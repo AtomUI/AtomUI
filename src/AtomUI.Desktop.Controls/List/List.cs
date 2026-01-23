@@ -21,6 +21,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 public class List : TemplatedControl,
+                    ISizeTypeAware,
                     IMotionAwareControl,
                     IControlSharedTokenResourcesHost
 {
@@ -426,6 +427,9 @@ public class List : TemplatedControl,
 
     #endregion
     
+    private static readonly FuncTemplate<Panel?> DefaultPanel =
+        new(() => new StackPanel());
+    
     private IListCollectionView? _listCollectionView;
     private bool _areHandlersSuspended;
     private bool _measured;
@@ -436,6 +440,7 @@ public class List : TemplatedControl,
     
     static List()
     {
+        ItemsPanelProperty.OverrideDefaultValue<List>(DefaultPanel);
         ItemsSourceProperty.Changed.AddClassHandler<List>((x, e) => x.HandleItemsSourcePropertyChanged(e));
         IsHideOnSinglePageProperty.OverrideDefaultValue<List>(true);
     }
@@ -482,11 +487,11 @@ public class List : TemplatedControl,
     {
         if (IsBorderless)
         {
-            SetCurrentValue(EffectiveBorderThicknessProperty, new Thickness(0));
+            EffectiveBorderThickness = new Thickness(0);
         }
         else
         {
-            SetCurrentValue(EffectiveBorderThicknessProperty, BorderThickness);
+            EffectiveBorderThickness = BorderThickness;
         }
     }
     

@@ -56,6 +56,7 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
                 ];
                 InitializeGroupItems(viewModel);
                 InitializeEmptyDemoItems(viewModel);
+                InitializeBasicListBoxItems(viewModel);
                 viewModel.SelectionMode = SelectionMode.Single;
             }
         });
@@ -190,6 +191,32 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         viewModel.EmptyDemoItems = [];
     }
 
+    private void InitializeBasicListBoxItems(ListViewModel viewModel)
+    {
+        viewModel.BasicListBoxItems = [
+            new ListItemData()
+            {
+                Content = "Racing car sprays burning fuel into crowd."
+            },
+            new ListItemData()
+            {
+                Content = "Japanese princess to wed commoner."
+            },
+            new ListItemData()
+            {
+                Content = "Australian walks 100km after outback crash."
+            },
+            new ListItemData()
+            {
+                Content = "Man charged over missing wedding girl."
+            },
+            new ListItemData()
+            {
+                Content = "Los Angeles battles huge wildfires."
+            },
+        ];
+    }
+
     private void HandleAddEmptyItemClicked(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not ListViewModel viewModel)
@@ -244,6 +271,14 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         if (OrderedList.CollectionView != null)
         {
             OrderedList.CollectionView.SortDescriptions.Add(ListSortDescription.FromPath("Content"));
+        }
+    }
+    
+    private void HandleFilterListBoxClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is SearchEdit searchEdit)
+        {
+            SearchListBox.ItemFilterValue = searchEdit.Text?.Trim();
         }
     }
 }

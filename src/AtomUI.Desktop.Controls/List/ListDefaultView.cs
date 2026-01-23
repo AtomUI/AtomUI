@@ -16,9 +16,6 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ListDefaultView : SelectingItemsControl
 {
-    private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new VirtualizingStackPanel());
-
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
@@ -127,7 +124,6 @@ internal class ListDefaultView : SelectingItemsControl
 
     static ListDefaultView()
     {
-        ItemsPanelProperty.OverrideDefaultValue<List>(DefaultPanel);
         KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
             typeof(List),
             KeyboardNavigationMode.Once);
@@ -159,6 +155,15 @@ internal class ListDefaultView : SelectingItemsControl
             disposable.Dispose();
             _itemsBindingDisposables.Remove(item);
         }
+    }
+    
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        if (item is ListGroupData)
+        {
+            return NeedsContainer<ListGroupItem>(item, out recycleKey);
+        }
+        return NeedsContainer<ListItem>(item, out recycleKey);
     }
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)

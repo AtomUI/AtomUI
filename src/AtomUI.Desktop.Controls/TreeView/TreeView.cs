@@ -33,7 +33,7 @@ public enum TreeItemHoverMode
 }
 
 [Flags]
-public enum TreeItemFilterAction
+public enum TreeFilterHighlightStrategy
 {
     HighlightedMatch = 0x01,
     HighlightedWhole = 0x02,
@@ -76,7 +76,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherRotationIcon));
 
     public static readonly StyledProperty<IconTemplate?> SwitcherLoadingIconProperty =
-        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherRotationIcon));
+        AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherLoadingIcon));
 
     public static readonly StyledProperty<IconTemplate?> SwitcherLeafIconProperty =
         AvaloniaProperty.Register<TreeView, IconTemplate?>(nameof(SwitcherLeafIcon));
@@ -123,34 +123,33 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.DefaultExpandedPaths,
             (o, v) => o.DefaultExpandedPaths = v);
     
-    public static readonly DirectProperty<TreeView, ITreeItemDataLoader?> ItemDataLoaderProperty =
+    public static readonly DirectProperty<TreeView, ITreeItemDataLoader?> DataLoaderProperty =
         AvaloniaProperty.RegisterDirect<TreeView, ITreeItemDataLoader?>(
-            nameof(ItemDataLoader),
-            o => o.ItemDataLoader,
-            (o, v) => o.ItemDataLoader = v);
+            nameof(DataLoader),
+            o => o.DataLoader,
+            (o, v) => o.DataLoader = v);
     
-    public static readonly DirectProperty<TreeView, ITreeItemFilter?> ItemFilterProperty =
+    public static readonly DirectProperty<TreeView, ITreeItemFilter?> FilterProperty =
         AvaloniaProperty.RegisterDirect<TreeView, ITreeItemFilter?>(
-            nameof(ItemFilter),
-            o => o.ItemFilter,
-            (o, v) => o.ItemFilter = v);
+            nameof(Filter),
+            o => o.Filter,
+            (o, v) => o.Filter = v);
     
-    public static readonly DirectProperty<TreeView, object?> ItemFilterValueProperty =
+    public static readonly DirectProperty<TreeView, object?> FilterValueProperty =
         AvaloniaProperty.RegisterDirect<TreeView, object?>(
-            nameof(ItemFilterValue),
-            o => o.ItemFilterValue,
-            (o, v) => o.ItemFilterValue = v);
+            nameof(FilterValue),
+            o => o.FilterValue,
+            (o, v) => o.FilterValue = v);
     
-    public static readonly DirectProperty<TreeView, TreeItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, TreeItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    public static readonly DirectProperty<TreeView, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, TreeFilterHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
     public static readonly DirectProperty<TreeView, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<TreeView, int>(nameof(FilterResultCount),
-            o => o.FilterResultCount,
-            (o, v) => o.FilterResultCount = v);
+            o => o.FilterResultCount);
     
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<TreeView, IBrush?>(nameof(FilterHighlightForeground));
@@ -304,37 +303,37 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         get => _defaultExpandedPaths;
         set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
     }
-        
+    
     private ITreeItemDataLoader? _itemDataLoader;
     
-    public ITreeItemDataLoader? ItemDataLoader
+    public ITreeItemDataLoader? DataLoader
     {
         get => _itemDataLoader;
-        set => SetAndRaise(ItemDataLoaderProperty, ref _itemDataLoader, value);
+        set => SetAndRaise(DataLoaderProperty, ref _itemDataLoader, value);
     }
     
-    private ITreeItemFilter? _itemFilter;
+    private ITreeItemFilter? _filter;
     
-    public ITreeItemFilter? ItemFilter
+    public ITreeItemFilter? Filter
     {
-        get => _itemFilter;
-        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+        get => _filter;
+        set => SetAndRaise(FilterProperty, ref _filter, value);
     }
     
-    private object? _itemFilterValue;
+    private object? _filterValue;
     
-    public object? ItemFilterValue
+    public object? FilterValue
     {
-        get => _itemFilterValue;
-        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
+        get => _filterValue;
+        set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
     }
 
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;
     
-    public TreeItemFilterAction ItemFilterAction
+    public TreeFilterHighlightStrategy FilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
     }
 
     private int _filterResultCount;
@@ -342,7 +341,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     public int FilterResultCount
     {
         get => _filterResultCount;
-        set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
+        private set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
     }
     
     [DependsOn(nameof(EmptyIndicatorTemplate))]
@@ -490,6 +489,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        Filter ??= new DefaultTreeItemFilter();
         ConfigureEmptyIndicator();
     }
 
@@ -517,6 +517,17 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ConfigureEmptyIndicator();
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+            case NotifyCollectionChangedAction.Replace:
+                foreach (var i in e.OldItems!)
+                    CheckedItems.Remove(i);
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                CheckedItems.Clear();
+                break;
+        }
     }
     
     public void ExpandAll(bool? motionEnabled = null)
@@ -696,26 +707,23 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         PseudoClasses.Set(StdPseudoClass.Draggable, IsDraggable);
     }
 
-    protected override Control CreateContainerForItemOverride(
-        object? item,
-        int index,
-        object? recycleKey)
+    protected override Control CreateContainerForItemOverride(object? item,
+                                                              int index,
+                                                              object? recycleKey)
     {
         return new TreeViewItem();
     }
 
-    protected override bool NeedsContainerOverride(
-        object? item,
-        int index,
-        out object? recycleKey)
+    protected override bool NeedsContainerOverride(object? item,
+                                                   int index,
+                                                   out object? recycleKey)
     {
         return NeedsContainer<TreeViewItem>(item, out recycleKey);
     }
 
-    protected override void ContainerForItemPreparedOverride(
-        Control container,
-        object? item,
-        int index)
+    protected override void ContainerForItemPreparedOverride(Control container,
+                                                             object? item,
+                                                             int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
         if (container is TreeViewItem treeViewItem)
@@ -739,7 +747,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLoadingIconProperty, SwitcherLoadingIcon);
             SetTreeViewItemIcon(treeViewItem, TreeViewItem.SwitcherLeafIconProperty, SwitcherLeafIcon);
             
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterActionProperty, treeViewItem, TreeViewItem.ItemFilterActionProperty));
+            disposables.Add(BindUtils.RelayBind(this, FilterHighlightStrategyProperty, treeViewItem, TreeViewItem.FilterHighlightStrategyProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, treeViewItem, TreeViewItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, NodeHoverModeProperty, treeViewItem, TreeViewItem.NodeHoverModeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowLineProperty, treeViewItem, TreeViewItem.IsShowLineProperty));
@@ -1230,7 +1238,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         ConfigureDefaultSelectedPaths();
         ConfigureDefaultCheckedPaths();
         
-        Filter();
+        FilterTreeNode();
         
         if (IsDefaultExpandAll)
         {
@@ -1271,16 +1279,16 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             HandleSwitcherLeafIconChanged();
         }
-        else if (change.Property == ItemDataLoaderProperty)
+        else if (change.Property == DataLoaderProperty)
         {
-            HasTreeItemDataLoader = ItemDataLoader != null;
+            HasTreeItemDataLoader = DataLoader != null;
         }
-        else if (change.Property == ItemFilterProperty ||
-                 change.Property == ItemFilterActionProperty ||
+        else if (change.Property == FilterProperty ||
+                 change.Property == FilterHighlightStrategyProperty ||
                  change.Property == ItemsSourceProperty ||
-                 change.Property == ItemFilterValueProperty)
+                 change.Property == FilterValueProperty)
         {
-            Filter();
+            FilterTreeNode();
         }
 
         if (change.Property == IsShowEmptyIndicatorProperty ||
@@ -1451,4 +1459,5 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             e.PreventGestureRecognition();
         }
     }
+    
 }

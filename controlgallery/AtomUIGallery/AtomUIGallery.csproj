@@ -44,4 +44,8 @@
       <ProjectReference Include="../AtomUIGallery.Icons.Desktop/AtomUIGallery.Icons.Desktop.csproj" />
     </ItemGroup>
     
+    <ItemGroup>
+      <AdditionalFiles Include="ShowCases\Views\DataEntry\CascaderShowCase.axaml" />
+    </ItemGroup>
+    
 </Project>

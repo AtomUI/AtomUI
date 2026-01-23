@@ -220,11 +220,11 @@ internal class TreeViewItemHeader : ContentControl
             nameof(FilterHighlightRuns), t => t.FilterHighlightRuns, 
             (t, v) => t.FilterHighlightRuns = v);
     
-    internal static readonly DirectProperty<TreeViewItemHeader, TreeItemFilterAction> ItemFilterActionProperty =
-        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, TreeItemFilterAction>(
-            nameof(ItemFilterAction),
-            o => o.ItemFilterAction,
-            (o, v) => o.ItemFilterAction = v);
+    internal static readonly DirectProperty<TreeViewItemHeader, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, TreeFilterHighlightStrategy>(
+            nameof(FilterHighlightStrategy),
+            o => o.FilterHighlightStrategy,
+            (o, v) => o.FilterHighlightStrategy = v);
     
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         TreeView.FilterHighlightForegroundProperty.AddOwner<TreeViewItemHeader>();
@@ -366,12 +366,12 @@ internal class TreeViewItemHeader : ContentControl
         set => SetAndRaise(FilterHighlightRunsProperty, ref _filterHighlightRuns, value);
     }
     
-    private TreeItemFilterAction _itemFilterAction = TreeItemFilterAction.All;
+    private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;
     
-    public TreeItemFilterAction ItemFilterAction
+    internal TreeFilterHighlightStrategy FilterHighlightStrategy
     {
-        get => _itemFilterAction;
-        set => SetAndRaise(ItemFilterActionProperty, ref _itemFilterAction, value);
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
     }
     
     internal IBrush? FilterHighlightForeground
@@ -650,19 +650,19 @@ internal class TreeViewItemHeader : ContentControl
                 var c   =  headerText[i];
                 var run = new Run($"{c}");
                 
-                if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedMatch))
+                if (FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.HighlightedMatch))
                 {
                     if (IsNeedHighlight(i, ranges))
                     {
                         run.Foreground = FilterHighlightForeground;
                     }
                 }
-                else if (ItemFilterAction.HasFlag(TreeItemFilterAction.HighlightedWhole))
+                else if (FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.HighlightedWhole))
                 {
                     run.Foreground = FilterHighlightForeground;
                 }
          
-                if (ItemFilterAction.HasFlag(TreeItemFilterAction.BoldedMatch))
+                if (FilterHighlightStrategy.HasFlag(TreeFilterHighlightStrategy.BoldedMatch))
                 {
                     run.FontWeight = FontWeight.Bold;
                 }

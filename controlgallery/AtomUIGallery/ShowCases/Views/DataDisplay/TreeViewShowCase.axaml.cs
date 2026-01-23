@@ -25,8 +25,6 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
             }
         });
         InitializeComponent();
-        SearchTreeViewByItemsSource.ItemFilter = new DefaultTreeItemFilter();
-        SearchTreeView.ItemFilter = new DefaultTreeItemFilter();
     }
 
     private void InitBasicTreeViewData(TreeViewViewModel viewModel)
@@ -284,7 +282,7 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
     {
         if (sender is SearchEdit searchEdit)
         {
-            SearchTreeViewByItemsSource.ItemFilterValue = searchEdit.Text?.Trim();
+            SearchTreeViewByItemsSource.FilterValue = searchEdit.Text?.Trim();
         }
     }
     
@@ -292,7 +290,7 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
     {
         if (sender is SearchEdit searchEdit)
         {
-            SearchTreeView.ItemFilterValue = searchEdit.Text?.Trim();
+            SearchTreeView.FilterValue = searchEdit.Text?.Trim();
         }
     }
 }

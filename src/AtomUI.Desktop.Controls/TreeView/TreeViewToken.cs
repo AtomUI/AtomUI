@@ -17,7 +17,7 @@ internal class TreeViewToken : AbstractControlDesignToken
     /// <summary>
     /// 节点标题高度
     /// </summary>
-    public double TitleHeight { get; set; }
+    public double HeaderHeight { get; set; }
 
     /// <summary>
     /// 节点悬浮态背景色
@@ -77,8 +77,8 @@ internal class TreeViewToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        TitleHeight = SharedToken.ControlHeightSM;
-        NodeHoverBg = SharedToken.ControlItemBgHover;
+        HeaderHeight   = SharedToken.ControlHeightSM;
+        NodeHoverBg    = SharedToken.ControlItemBgHover;
         NodeSelectedBg = SharedToken.ControlItemBgActive;
 
         DirectoryNodeSelectedColor = SharedToken.ColorTextLightSolid;

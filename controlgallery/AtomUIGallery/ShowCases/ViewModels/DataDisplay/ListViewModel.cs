@@ -53,6 +53,14 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _selectionMode, value);
     }
     
+    private List<IListItemData>? _basicListBoxItems;
+    
+    public List<IListItemData>? BasicListBoxItems
+    {
+        get => _basicListBoxItems;
+        set => this.RaiseAndSetIfChanged(ref _basicListBoxItems, value);
+    }
+    
     public ListViewModel(IScreen screen)
     {
         HostScreen = screen;

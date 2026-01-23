@@ -3,7 +3,6 @@ using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -14,6 +13,8 @@ using IconControl = Icon;
 public class IconPresenter : Control, IMotionAwareControl
 {
     #region 公共属性定义
+    public static readonly StyledProperty<IconTemplate?> IconTemplateProperty =
+        AvaloniaProperty.Register<IconPresenter, IconTemplate?>(nameof(IconTemplate));
 
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<IconPresenter, PathIcon?>(nameof(Icon));
@@ -23,6 +24,12 @@ public class IconPresenter : Control, IMotionAwareControl
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<IconPresenter>();
+    
+    public IconTemplate? IconTemplate
+    {
+        get => GetValue(IconTemplateProperty);
+        set => SetValue(IconTemplateProperty, value);
+    }
     
     [Content]
     public PathIcon? Icon
@@ -49,20 +56,10 @@ public class IconPresenter : Control, IMotionAwareControl
     
     static IconPresenter()
     {
-        AffectsMeasure<IconPresenter>(IconProperty);
+        AffectsMeasure<IconPresenter>(IconProperty, IconTemplateProperty);
         AffectsRender<IconPresenter>(IconBrushProperty);
         IconProperty.Changed.AddClassHandler<IconPresenter>((x, e) => x.HandleIconChanged(e));
-    }
-    
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        return LayoutHelper.MeasureChild(Icon, availableSize, new Thickness(0));
-    }
-
-    /// <inheritdoc/>
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        return LayoutHelper.ArrangeChild(Icon, finalSize, new Thickness(0));
+        IconTemplateProperty.Changed.AddClassHandler<IconPresenter>((x, e) => x.HandleIconTemplateChanged(e));
     }
     
     private void HandleIconChanged(AvaloniaPropertyChangedEventArgs change)
@@ -78,26 +75,57 @@ public class IconPresenter : Control, IMotionAwareControl
             VisualChildren.Remove(oldChild);
         }
 
-        if (newChild != null)
+        if (newChild is PathIcon pathIcon)
+        {
+            ConfigureIcon(pathIcon);
+        }
+    }
+
+    private void HandleIconTemplateChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        var oldIconTemplate = (IconTemplate?)change.OldValue;
+        var newIconTemplate = (IconTemplate?)change.NewValue;
+        if (oldIconTemplate != null)
         {
             _disposables?.Dispose();
-            _disposables = new CompositeDisposable(4);
-            _disposables.Add(BindUtils.RelayBind(this, WidthProperty, newChild, WidthProperty));
-            _disposables.Add(BindUtils.RelayBind(this, HeightProperty, newChild, HeightProperty));
-            if (newChild is Icon icon)
+            _disposables = null;
+            if (Icon != null)
             {
-                _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, icon, IconControl.IsMotionEnabledProperty));
-                _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.StrokeBrushProperty, BindingMode.Default, BindingPriority.Template));
-                _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.FillBrushProperty, BindingMode.Default, BindingPriority.Template));
+                ((ISetLogicalParent)Icon).SetParent(null);
             }
-            else if (newChild is PathIcon pathIcon)
-            {
-                _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, pathIcon, PathIcon.ForegroundProperty, BindingMode.Default, BindingPriority.Template));
-            }
-            ((ISetLogicalParent)newChild).SetParent(null);
-            newChild.SetVisualParent(null);
-            VisualChildren.Add(newChild);
-            LogicalChildren.Add(newChild);
+            LogicalChildren.Clear();
+            VisualChildren.Clear();
         }
+
+        if (newIconTemplate != null)
+        {
+            var pathIcon = newIconTemplate.Build();
+            if (pathIcon != null)
+            {
+                ConfigureIcon(pathIcon);
+            }
+        }
+    }
+
+    private void ConfigureIcon(PathIcon pathIcon)
+    {
+        _disposables?.Dispose();
+        _disposables = new CompositeDisposable(4);
+        _disposables.Add(BindUtils.RelayBind(this, WidthProperty, pathIcon, WidthProperty));
+        _disposables.Add(BindUtils.RelayBind(this, HeightProperty, pathIcon, HeightProperty));
+        if (pathIcon is Icon icon)
+        {
+            _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, icon, IconControl.IsMotionEnabledProperty));
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.StrokeBrushProperty, BindingMode.Default, BindingPriority.Template));
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.FillBrushProperty, BindingMode.Default, BindingPriority.Template));
+        }
+        else
+        {
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, pathIcon, PathIcon.ForegroundProperty, BindingMode.Default, BindingPriority.Template));
+        }
+        ((ISetLogicalParent)pathIcon).SetParent(null);
+        pathIcon.SetVisualParent(null);
+        VisualChildren.Add(pathIcon);
+        LogicalChildren.Add(pathIcon);
     }
 }

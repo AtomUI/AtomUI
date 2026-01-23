@@ -32,6 +32,11 @@
                 <atom:Select Mode="Single" PlaceholderText="Please select" IsAllowClear="True" Width="120">
                     <atom:SelectOption Header="Lucy" Value="lucy" />
                 </atom:Select>
+                
+                <atom:Select Mode="Single" PlaceholderText="Please select" IsAllowClear="True" Width="120"
+                             OptionsSource="{Binding BasicSelectedOptions}"
+                             SelectedOptions="{Binding DefaultSelectedOptions}"/>
+                
             </WrapPanel>
         </gallery:ShowCaseItem>
         

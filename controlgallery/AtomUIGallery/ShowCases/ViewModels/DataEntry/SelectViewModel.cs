@@ -21,6 +21,22 @@ public class SelectViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _randomOptions, value);
     }
     
+    private List<ISelectOption> _basicSelectedOptions = [];
+
+    public List<ISelectOption> BasicSelectedOptions
+    {
+        get => _basicSelectedOptions;
+        set => this.RaiseAndSetIfChanged(ref _basicSelectedOptions, value);
+    }
+    
+    private List<ISelectOption>? _defaultSelectedOptions;
+
+    public List<ISelectOption>? DefaultSelectedOptions
+    {
+        get => _defaultSelectedOptions;
+        set => this.RaiseAndSetIfChanged(ref _defaultSelectedOptions, value);
+    }
+    
     private List<SelectOption>? _maxTagCountOptions;
 
     public List<SelectOption>? MaxTagCountOptions

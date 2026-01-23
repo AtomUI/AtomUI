@@ -15,6 +15,7 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
         {
             if (DataContext is SelectViewModel viewModel)
             {
+                InitializeBasicOptions(viewModel);
                 InitializeRandomOptions(viewModel);
                 InitializeMaxTagCountOptions(viewModel);
             }
@@ -34,6 +35,34 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
             return false;
         }
         return valueStr.Contains(filterStr, StringComparison.Ordinal);
+    }
+
+    private void InitializeBasicOptions(SelectViewModel viewModel)
+    {
+        viewModel.BasicSelectedOptions = [
+            new SelectOption()
+            {
+                Header = "Jack",
+                Value  = "jack",
+            },
+            new SelectOption()
+            {
+                Header = "Lucy",
+                Value  = "lucy",
+            },
+            new SelectOption()
+            {
+                Header = "Yiminghe",
+                Value  = "yiminghe",
+            },
+            new SelectOption()
+            {
+                Header    = "Disabled",
+                Value     = "disabled",
+                IsEnabled = false
+            }
+        ];
+        viewModel.DefaultSelectedOptions = [viewModel.BasicSelectedOptions[2]];
     }
 
     private void InitializeRandomOptions(SelectViewModel viewModel)

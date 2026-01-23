@@ -1217,7 +1217,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
 
         if (!isValid)
         {
-            throw new ArgumentException($"Item {item} is not valid, Item is a wild object and not part of the tree structure.");
+            throw new ArgumentException($"Item {item} is not valid, Item is a wild object and not part of the cascader structure.");
         }
         return result;
     }

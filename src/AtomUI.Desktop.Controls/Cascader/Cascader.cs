@@ -633,7 +633,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             return;
         }
-        if (e.Source is SelectTag tag && tag.Item is ICascaderViewItemData treeItemData)
+        if (e.Source is SelectTag tag && tag.Item is ICascaderViewItemData CascaderItemData)
         {
             if (SelectedItems != null)
             {
@@ -642,11 +642,20 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                 {
                     selectedItems.Add(item);
                 }
-                selectedItems.Remove(treeItemData);
+                RemoveItemRecursive(selectedItems, CascaderItemData);
                 SelectedItems = selectedItems;
             }
         }
         e.Handled = true;
+    }
+    
+    private void RemoveItemRecursive(List<object> items, ICascaderViewItemData item)
+    {
+        foreach (var child in item.Children)
+        {
+            RemoveItemRecursive(items, child);
+        }
+        items.Remove(item);
     }
     
     private void SyncSelectedItemsToCascaderView()

@@ -316,10 +316,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     static TreeSelect()
     {
         FocusableProperty.OverrideDefaultValue<TreeSelect>(true);
-        SelectHandle.ClearRequestedEvent.AddClassHandler<TreeSelect>((target, args) =>
-        {
-            target.HandleClearRequest();
-        });
+        SelectHandle.ClearRequestedEvent.AddClassHandler<TreeSelect>((target, args) => target.HandleClearRequest());
         TreeViewItem.ClickEvent.AddClassHandler<TreeSelect>((treeSelect, args) =>
         {
             if (args.Source is TreeViewItem item)
@@ -791,11 +788,20 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 {
                     selectedItems.Add(item);
                 }
-                selectedItems.Remove(treeItemData);
+                RemoveItemRecursive(selectedItems, treeItemData);
                 SelectedItems = selectedItems;
             }
         }
         e.Handled = true;
+    }
+
+    private void RemoveItemRecursive(List<object> items, ITreeViewItemData item)
+    {
+        foreach (var child in item.Children)
+        {
+            RemoveItemRecursive(items, child);
+        }
+        items.Remove(item);
     }
 
     private void SyncSelectedItemsToTreeView()

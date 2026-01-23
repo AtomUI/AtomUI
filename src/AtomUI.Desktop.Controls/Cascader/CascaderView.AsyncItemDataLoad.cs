@@ -30,7 +30,7 @@ public partial class CascaderView
         }
         if (DataLoader != null && ItemsSource == null)
         {
-            throw new InvalidOperationException("ICascaderItemDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
+            throw new InvalidOperationException("ICascaderItemDataLoader is set, but the cascader nodes are not initially set via ItemsSource.");
         }
         if (item.DataContext is ICascaderViewItemData cascaderViewItemData)
         {

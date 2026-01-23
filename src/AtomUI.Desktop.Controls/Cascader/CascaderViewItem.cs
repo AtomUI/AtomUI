@@ -373,7 +373,7 @@ public class CascaderViewItem : HeaderedItemsControl
                 // lazily infinite). But also means a lazily loaded tree will not be expanded completely.
                 return t => SubTree(t)
                             .ToList()
-                            .Select(treeViewItem => f(treeViewItem))
+                            .Select(cascaderViewItem => f(cascaderViewItem))
                             .Aggregate(false, (p, c) => p || c);
             }
 
@@ -387,39 +387,39 @@ public class CascaderViewItem : HeaderedItemsControl
                 return f;
             }
 
-            static bool ExpandItem(CascaderViewItem treeViewItem)
+            static bool ExpandItem(CascaderViewItem cascaderViewItem)
             {
-                if (treeViewItem.ItemCount > 0 && !treeViewItem.IsExpanded)
+                if (cascaderViewItem.ItemCount > 0 && !cascaderViewItem.IsExpanded)
                 {
-                    treeViewItem.SetCurrentValue(IsExpandedProperty, true);
+                    cascaderViewItem.SetCurrentValue(IsExpandedProperty, true);
                     return true;
                 }
 
                 return false;
             }
 
-            static bool CollapseItem(CascaderViewItem treeViewItem)
+            static bool CollapseItem(CascaderViewItem cascaderViewItem)
             {
-                if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
+                if (cascaderViewItem.ItemCount > 0 && cascaderViewItem.IsExpanded)
                 {
-                    treeViewItem.SetCurrentValue(IsExpandedProperty, false);
+                    cascaderViewItem.SetCurrentValue(IsExpandedProperty, false);
                     return true;
                 }
 
                 return false;
             }
 
-            static bool FocusAwareCollapseItem(CascaderViewItem treeViewItem)
+            static bool FocusAwareCollapseItem(CascaderViewItem cascaderViewItem)
             {
-                if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
+                if (cascaderViewItem.ItemCount > 0 && cascaderViewItem.IsExpanded)
                 {
-                    if (treeViewItem.IsFocused)
+                    if (cascaderViewItem.IsFocused)
                     {
-                        treeViewItem.SetCurrentValue(IsExpandedProperty, false);
+                        cascaderViewItem.SetCurrentValue(IsExpandedProperty, false);
                     }
                     else
                     {
-                        treeViewItem.Focus(NavigationMethod.Directional);
+                        cascaderViewItem.Focus(NavigationMethod.Directional);
                     }
 
                     return true;
@@ -428,9 +428,9 @@ public class CascaderViewItem : HeaderedItemsControl
                 return false;
             }
 
-            static IEnumerable<CascaderViewItem> SubTree(CascaderViewItem treeViewItem)
+            static IEnumerable<CascaderViewItem> SubTree(CascaderViewItem cascaderViewItem)
             {
-                return new[] { treeViewItem }.Concat(treeViewItem.LogicalChildren.OfType<CascaderViewItem>().SelectMany(child => SubTree(child)));
+                return new[] { cascaderViewItem }.Concat(cascaderViewItem.LogicalChildren.OfType<CascaderViewItem>().SelectMany(child => SubTree(child)));
             }
         }
 

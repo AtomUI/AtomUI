@@ -116,7 +116,7 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="FilterHighlightForeground"
-                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
+                Value="{DynamicResource {x:Static atom:CascaderTokenKey.FilterHighlightColor}}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />

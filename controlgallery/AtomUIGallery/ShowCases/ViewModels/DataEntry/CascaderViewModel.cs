@@ -87,6 +87,22 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _multipleSelectCascaderNodes, value);
     }
     
+    private List<ICascaderViewItemData> _lazyLoadCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> LazyLoadCascaderNodes
+    {
+        get => _lazyLoadCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _lazyLoadCascaderNodes, value);
+    }
+    
+    private List<ICascaderViewItemData> _searchCascaderNodes = [];
+    
+    public List<ICascaderViewItemData> SearchCascaderNodes
+    {
+        get => _searchCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _searchCascaderNodes, value);
+    }
+    
     private List<ICascaderViewItemData> _asyncLoadCascaderViewNodes = [];
     
     public List<ICascaderViewItemData> AsyncLoadCascaderViewNodes

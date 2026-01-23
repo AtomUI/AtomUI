@@ -312,20 +312,20 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(DataLoaderProperty, ref _itemDataLoader, value);
     }
     
-    private ITreeItemFilter? _itemFilter;
+    private ITreeItemFilter? _filter;
     
     public ITreeItemFilter? Filter
     {
-        get => _itemFilter;
-        set => SetAndRaise(FilterProperty, ref _itemFilter, value);
+        get => _filter;
+        set => SetAndRaise(FilterProperty, ref _filter, value);
     }
     
-    private object? _itemFilterValue;
+    private object? _filterValue;
     
     public object? FilterValue
     {
-        get => _itemFilterValue;
-        set => SetAndRaise(FilterValueProperty, ref _itemFilterValue, value);
+        get => _filterValue;
+        set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
     }
 
     private TreeFilterHighlightStrategy _filterHighlightStrategy = TreeFilterHighlightStrategy.All;

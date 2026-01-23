@@ -56,7 +56,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         AvaloniaProperty.Register<CascaderView, ICascaderItemDataLoader?>(nameof(DataLoader));
     
     public static readonly StyledProperty<ICascaderItemFilter?> FilterProperty =
-        AvaloniaProperty.Register<CascaderView, ICascaderItemFilter?>(nameof(Filter));
+        AvaloniaProperty.Register<CascaderView, ICascaderItemFilter?>(nameof(Filter), new DefaultCascaderItemFilter());
     
     public static readonly StyledProperty<object?> FilterValueProperty =
         AvaloniaProperty.Register<CascaderView, object?>(nameof(FilterValue));
@@ -330,7 +330,6 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         base.OnInitialized();
         ConfigureEmptyIndicator();
         ConfigureEffectiveToggleType();
-        Filter ??= new DefaultCascaderItemFilter();
     }
     
     public IEnumerable<Control> GetRealizedTreeContainers()
@@ -1319,7 +1318,17 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                             var cascaderViewItem = GetContainerFromEventSource(e.Source);
                             if (cascaderViewItem != null)
                             {
-                                cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                                if (IsLeafNode(cascaderViewItem))
+                                {
+                                    if (!cascaderViewItem.IsExpanded)
+                                    {
+                                        cascaderViewItem.IsExpanded = true;
+                                    }
+                                }
+                                else
+                                {
+                                    cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                                }
                             }
                         }
                     }
@@ -1335,7 +1344,17 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
                         var cascaderViewItem = GetContainerFromEventSource(e.Source);
                         if (cascaderViewItem != null)
                         {
-                            cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                            if (IsLeafNode(cascaderViewItem))
+                            {
+                                if (!cascaderViewItem.IsExpanded)
+                                {
+                                    cascaderViewItem.IsExpanded = true;
+                                }
+                            }
+                            else
+                            {
+                                cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                            }
                         }
                     }
                 }
@@ -1749,8 +1768,8 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         {
             if (i > 0)
             {
-                var child      = _itemsPanel.Children[i];
-                var offset     = child.TranslatePoint(new Point(0, 0), this);
+                var child  = _itemsPanel.Children[i];
+                var offset = child.TranslatePoint(new Point(0, 0), this);
                 if (offset != null)
                 {
                     var pointStart = new Point(offset.Value.X, 0);

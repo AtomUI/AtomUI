@@ -171,7 +171,7 @@ public partial class CascaderView
     {
         IsFiltering       = false;
         FilterResultCount = 0;
-        FilterValue   = null;
+        SetCurrentValue(FilterValueProperty, null);
         FilteredPathInfos = null;
         _allPathInfos     = null;
     }
@@ -188,15 +188,25 @@ public partial class CascaderView
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                foreach (var path in paths)
+                for (var i = 0; i < paths.Count; i++)
                 {
+                    var path = paths[i];
                     if (path is ICascaderViewItemData cascaderViewItemData)
                     {
                         cascaderViewItemData.IsExpanded = true;
                     }
                     else if (path is CascaderViewItem cascaderViewItem)
                     {
-                       await ExpandItemAsync(cascaderViewItem);
+                        await ExpandItemAsync(cascaderViewItem);
+                    }
+
+                    if (!IsCheckable && path != null)
+                    {
+                        if (i == paths.Count - 1)
+                        {
+                            SelectedItem = path;
+                            ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(path));
+                        }
                     }
                 }
             });

@@ -233,7 +233,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         this.RegisterResources();
     }
-    
+
     private void HandleClearRequest()
     {
         Clear();
@@ -557,9 +557,21 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void HandleCascaderViewItemClicked(object? sender, CascaderItemClickedEventArgs eventArgs)
     {
-        if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewItemData itemData && itemData.Children.Count == 0)
+        if (!IsMultiple && 
+            eventArgs.Item.DataContext is ICascaderViewItemData itemData && 
+            itemData.Children.Count == 0)
         {
-            SetCurrentValue(IsDropDownOpenProperty, false);
+            if (DataLoader != null)
+            {
+                if (eventArgs.Item.AsyncLoaded || itemData.IsLeaf)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+            }
+            else
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false);
+            }
         }
     }
     

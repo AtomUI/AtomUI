@@ -2,7 +2,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:popupConfirmLang="using:AtomUI.Desktop.Controls.PopupConfirmLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:PopupConfirm}" TargetType="atom:PopupConfirm">
         
@@ -15,8 +14,8 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="OkText" Value="{DynamicResource {x:Static popupConfirmLang:PopupConfirmLangResourceKey.Ok}}"/>
-        <Setter Property="CancelText" Value="{DynamicResource {x:Static popupConfirmLang:PopupConfirmLangResourceKey.Cancel}}"/>
+        <Setter Property="OkText" Value="{DynamicResource {x:Static atom:CommonLangResourceKey.Ok}}"/>
+        <Setter Property="CancelText" Value="{DynamicResource {x:Static atom:CommonLangResourceKey.Cancel}}"/>
         <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}"/>
         <Setter Property="MotionDuration" Value="{DynamicResource {x:Static atom:SharedTokenKey.MotionDurationMid}}"/>
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>

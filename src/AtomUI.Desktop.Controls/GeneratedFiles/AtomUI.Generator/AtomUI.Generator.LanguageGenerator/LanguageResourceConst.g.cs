@@ -44,14 +44,6 @@ namespace AtomUI.Desktop.Controls.ImagePreviewerLang
     }
 }
 
-namespace AtomUI.Desktop.Controls.MentionsLang
-{
-    internal static class MentionsLangResourceKey
-    {
-        public static readonly LanguageResourceKey LoadingOptions = new LanguageResourceKey("Mentions.LoadingOptions", "AtomUI.Lang");
-    }
-}
-
 namespace AtomUI.Desktop.Controls.PaginationLang
 {
     internal static class PaginationLangResourceKey
@@ -59,15 +51,6 @@ namespace AtomUI.Desktop.Controls.PaginationLang
         public static readonly LanguageResourceKey JumpToText = new LanguageResourceKey("Pagination.JumpToText", "AtomUI.Lang");
         public static readonly LanguageResourceKey PageText = new LanguageResourceKey("Pagination.PageText", "AtomUI.Lang");
         public static readonly LanguageResourceKey TotalInfoFormat = new LanguageResourceKey("Pagination.TotalInfoFormat", "AtomUI.Lang");
-    }
-}
-
-namespace AtomUI.Desktop.Controls.PopupConfirmLang
-{
-    internal static class PopupConfirmLangResourceKey
-    {
-        public static readonly LanguageResourceKey Cancel = new LanguageResourceKey("PopupConfirm.Cancel", "AtomUI.Lang");
-        public static readonly LanguageResourceKey Ok = new LanguageResourceKey("PopupConfirm.Ok", "AtomUI.Lang");
     }
 }
 

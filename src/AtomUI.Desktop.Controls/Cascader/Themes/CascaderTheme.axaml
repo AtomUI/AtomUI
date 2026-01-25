@@ -3,9 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
-    xmlns:converters="clr-namespace:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
-    <converters:TreeItemDataConverter x:Key="TreeItemDataConverter" />
     <ControlTheme x:Key="{x:Type atom:Cascader}" TargetType="atom:Cascader">
         <Setter Property="Template">
             <ControlTemplate>

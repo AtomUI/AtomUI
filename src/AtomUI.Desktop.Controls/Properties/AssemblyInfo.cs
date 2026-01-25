@@ -2,6 +2,8 @@ using Avalonia.Metadata;
 
 [assembly: XmlnsPrefix("https://atomui.net", "atom")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls")]
+[assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Localization")]
+[assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Localization.Common")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.DesignTokens")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Primitives.DesignTokens")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Primitives")]

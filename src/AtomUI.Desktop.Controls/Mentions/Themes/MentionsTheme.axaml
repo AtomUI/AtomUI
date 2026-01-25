@@ -2,7 +2,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:mentionsLang="using:AtomUI.Desktop.Controls.MentionsLang"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Mentions}" TargetType="atom:Mentions">
         <Setter Property="Template">
@@ -41,7 +40,7 @@
                                 <atom:Spin Name="LoadingIndicator" SizeType="Middle" 
                                            IsShowTip="True" 
                                            IsSpinning="True"
-                                           Tip="{DynamicResource {x:Static mentionsLang:MentionsLangResourceKey.LoadingOptions}}"
+                                           Tip="{DynamicResource {x:Static atom:CommonLangResourceKey.Loading}}"
                                            HorizontalAlignment="Center"
                                            IsVisible="{TemplateBinding IsLoading}"/>
                                 <atom:MentionOptionList

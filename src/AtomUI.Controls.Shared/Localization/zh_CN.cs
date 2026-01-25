@@ -2,7 +2,7 @@
 
 namespace AtomUI.Controls.Localization;
 
-[LanguageProvider(LanguageCode.zh_CN, Constants.CommonLangID)]
+[LanguageProvider(LanguageCode.zh_CN, CommonLangId.Common)]
 internal class zh_CN : LanguageProvider
 {
     public const string Ok = "确定";
@@ -12,4 +12,5 @@ internal class zh_CN : LanguageProvider
     public const string Delete = "删除";
     public const string Save = "保存";
     public const string NoData = "暂无数据";
+    public const string Loading = "正在加载数据";
 }

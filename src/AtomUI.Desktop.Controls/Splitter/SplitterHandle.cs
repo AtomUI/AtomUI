@@ -64,10 +64,12 @@ internal class SplitterHandle : AtomUIThumb
     private IconButton? _collapsePrevButton;
     private IconButton? _collapseNextButton;
     private bool _isPointerOver;
+    private bool _isPointerPressed;
     private HoverSide _hoverSide = HoverSide.None;
     private Point _lastPointerPosition;
     private bool _hasPointerPosition;
     private bool _isDragging;
+    internal bool IsPointerInDragZone { get; private set; }
 
     private enum HoverSide
     {
@@ -136,8 +138,12 @@ internal class SplitterHandle : AtomUIThumb
     {
         base.OnPointerExited(e);
         _isPointerOver = false;
-        _hoverSide = HoverSide.None;
+        if (!_isPointerPressed && !_isDragging)
+        {
+            _hoverSide = HoverSide.None;
+        }
         _hasPointerPosition = false;
+        IsPointerInDragZone = false;
         if (!_isDragging)
         {
             Cursor = Cursor.Default;
@@ -152,11 +158,13 @@ internal class SplitterHandle : AtomUIThumb
             return;
         }
         CachePointerPosition(e);
-        UpdateCursor(_lastPointerPosition);
         if (!IsPointerInDragArea(e))
         {
+            UpdateCursor(_lastPointerPosition);
             return;
         }
+        _isPointerPressed = true;
+        UpdateCursor(_lastPointerPosition);
         base.OnPointerPressed(e);
     }
 
@@ -180,6 +188,12 @@ internal class SplitterHandle : AtomUIThumb
         CachePointerPosition(e);
         UpdateCursor(_lastPointerPosition);
         base.OnPointerReleased(e);
+        _isPointerPressed = false;
+        if (!_isPointerOver)
+        {
+            _hoverSide = HoverSide.None;
+        }
+        UpdateCollapseButtons();
     }
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
@@ -189,8 +203,15 @@ internal class SplitterHandle : AtomUIThumb
             return;
         }
         _hasPointerPosition = false;
+        IsPointerInDragZone = false;
+        _isPointerPressed = false;
         Cursor = Cursor.Default;
         base.OnPointerCaptureLost(e);
+        if (!_isPointerOver)
+        {
+            _hoverSide = HoverSide.None;
+        }
+        UpdateCollapseButtons();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -276,11 +297,12 @@ internal class SplitterHandle : AtomUIThumb
 
     private bool ShouldShowIcon(SplitterCollapsibleIconDisplayMode mode, bool isPrevious, bool isOnly)
     {
+        var isPointerOver = _isPointerOver || _isPointerPressed;
         return mode switch
         {
             SplitterCollapsibleIconDisplayMode.Always => true,
             SplitterCollapsibleIconDisplayMode.Hidden => false,
-            SplitterCollapsibleIconDisplayMode.Hover => _isPointerOver &&
+            SplitterCollapsibleIconDisplayMode.Hover => isPointerOver &&
                                                         (ShowBothButtonsOnHover ||
                                                          isOnly ||
                                                          _hoverSide == (isPrevious ? HoverSide.Previous : HoverSide.Next)),
@@ -315,13 +337,15 @@ internal class SplitterHandle : AtomUIThumb
 
     private void CachePointerPosition(PointerEventArgs e)
     {
-        _lastPointerPosition = e.GetPosition(this);
+        var currentPosition = e.GetPosition(this);
+        _lastPointerPosition = currentPosition;
         _hasPointerPosition = true;
+        IsPointerInDragZone = IsPointerInDragArea(_lastPointerPosition);
     }
 
     private void UpdateCursor(Point position)
     {
-        if (_isDragging)
+        if (_isDragging || _isPointerPressed)
         {
             Cursor = GetDragCursor();
             return;
@@ -333,7 +357,7 @@ internal class SplitterHandle : AtomUIThumb
             return;
         }
 
-        Cursor = IsPointerInDragArea(position) ? GetDragCursor() : Cursor.Default;
+        Cursor = Cursor.Default;
     }
 
     private Cursor GetDragCursor()

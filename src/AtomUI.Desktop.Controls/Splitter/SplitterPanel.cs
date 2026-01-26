@@ -13,6 +13,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SplitterPanel : Panel
 {
+    private const double DragEpsilon = 0.001;
+
     #region 公共属性定义
     public static readonly StyledProperty<Orientation> OrientationProperty =
         Splitter.OrientationProperty.AddOwner<SplitterPanel>();
@@ -989,15 +991,21 @@ internal class SplitterPanel : Panel
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        _lastLayoutSize = finalSize;
-
         if (_panels.Count == 0)
         {
             return finalSize;
         }
 
-        var isVertical      = Orientation == Orientation.Vertical;
         var availableLength = GetLayoutLength(finalSize);
+        if (availableLength <= 0 || double.IsNaN(availableLength) || double.IsInfinity(availableLength))
+        {
+            ArrangeWithZeroLength(finalSize);
+            return finalSize;
+        }
+
+        _lastLayoutSize = finalSize;
+
+        var isVertical    = Orientation == Orientation.Vertical;
         var sizes           = ComputePanelSizes(availableLength);
         var handleSpacing   = GetHandleSpacing();
         var handleOffset    = (HandleSize - handleSpacing) / 2d;
@@ -1033,6 +1041,30 @@ internal class SplitterPanel : Panel
 
         UpdateHandleLayouts();
         return finalSize;
+    }
+
+    private void ArrangeWithZeroLength(Size finalSize)
+    {
+        var isVertical = Orientation == Orientation.Vertical;
+
+        var panelRect = isVertical
+            ? new Rect(0, 0, 0, finalSize.Height)
+            : new Rect(0, 0, finalSize.Width, 0);
+        foreach (var panel in _panels)
+        {
+            panel.Arrange(panelRect);
+        }
+
+        var handleRect = isVertical
+            ? new Rect(0, 0, HandleSize, finalSize.Height)
+            : new Rect(0, 0, finalSize.Width, HandleSize);
+        foreach (var handle in _handles)
+        {
+            handle.Arrange(handleRect);
+            handle.IsVisible = false;
+        }
+
+        UpdateHandleLayouts();
     }
 
     private void HandleDragStarted(object? sender, VectorEventArgs e)
@@ -1184,21 +1216,45 @@ internal class SplitterPanel : Panel
             return;
         }
 
-        var delta = Orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
+        var rawDelta = Orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
+        if (_dragContext.IsFrozen)
+        {
+            var inRange = rawDelta >= _dragContext.MinDelta - DragEpsilon &&
+                          rawDelta <= _dragContext.MaxDelta + DragEpsilon;
+            if (!inRange)
+            {
+                ApplyFrozenDelta(_dragContext, handle);
+                return;
+            }
+
+            _dragContext.IsFrozen = false;
+        }
+
+        var delta = rawDelta;
         if (TrySwitchDragContext(handle, delta))
         {
             delta = 0;
         }
         var clampedDelta = Math.Clamp(delta, _dragContext.MinDelta, _dragContext.MaxDelta);
         var adjust       = delta - clampedDelta;
-        if (Math.Abs(adjust) > 0.001)
+        if (Math.Abs(adjust) > DragEpsilon && !handle.IsPointerInDragZone)
+        {
+            _dragContext.LastAcceptedDelta = clampedDelta;
+            _dragContext.IsFrozen = true;
+            ApplyFrozenDelta(_dragContext, handle);
+            return;
+        }
+
+        if (Math.Abs(adjust) > DragEpsilon)
         {
             handle.AdjustDrag(Orientation == Orientation.Vertical
                 ? new Vector(adjust, 0)
                 : new Vector(0, adjust));
         }
+        _dragContext.LastAcceptedDelta = clampedDelta;
 
         var previewSizes = BuildSizesWithDelta(_dragContext.StartPreviousSize, _dragContext.StartNextSize, clampedDelta);
+        _dragContext.LastReportedDelta = clampedDelta;
         OwnerSplitter?.RaiseResizeDelta(_dragContext.HandleIndex, previewSizes);
 
         if (IsLazy)
@@ -1209,6 +1265,29 @@ internal class SplitterPanel : Panel
         }
 
         ApplyResize(_dragContext, clampedDelta);
+    }
+
+    private void ApplyFrozenDelta(DragContext context, SplitterHandle handle)
+    {
+        var frozenDelta = context.LastAcceptedDelta;
+        if (!double.IsNaN(context.LastReportedDelta) &&
+            Math.Abs(context.LastReportedDelta - frozenDelta) <= DragEpsilon)
+        {
+            return;
+        }
+
+        context.LastReportedDelta = frozenDelta;
+        var frozenPreview = BuildSizesWithDelta(context.StartPreviousSize, context.StartNextSize, frozenDelta);
+        OwnerSplitter?.RaiseResizeDelta(context.HandleIndex, frozenPreview);
+
+        if (IsLazy)
+        {
+            context.CurrentDelta = frozenDelta;
+            ApplyHandlePreview(handle, frozenDelta);
+            return;
+        }
+
+        ApplyResize(context, frozenDelta);
     }
 
     private void HandleDragCompleted(object? sender, VectorEventArgs e)
@@ -1665,13 +1744,23 @@ internal class SplitterPanel : Panel
             MinDelta          = minDelta,
             MaxDelta          = maxDelta,
             AvailableLength   = availableLength,
-            AllowSwitch       = allowSwitch
+            AllowSwitch       = allowSwitch,
+            LastAcceptedDelta = 0,
+            IsFrozen = false
         };
     }
 
     private bool TrySwitchDragContext(SplitterHandle handle, double delta)
     {
-        if (_dragContext == null || !_dragContext.AllowSwitch || Math.Abs(delta) < 0.001)
+        if (_dragContext == null || Math.Abs(delta) < DragEpsilon)
+        {
+            return false;
+        }
+
+        var allowSwitch = _dragContext.AllowSwitch ||
+                          Splitter.GetIsCollapsed(_dragContext.PreviousPanel) ||
+                          Splitter.GetIsCollapsed(_dragContext.NextPanel);
+        if (!allowSwitch)
         {
             return false;
         }
@@ -1681,7 +1770,7 @@ internal class SplitterPanel : Panel
         var nextIndex = _dragContext.NextIndex;
 
         var newPrevIndex = -1;
-        var newNextIndex = -1;
+        var newNextIndex = -1; 
 
         if (delta > 0 &&
             Splitter.GetIsCollapsed(_dragContext.NextPanel) &&
@@ -1874,6 +1963,9 @@ internal class SplitterPanel : Panel
         public required double AvailableLength { get; init; }
         public bool AllowSwitch { get; set; }
         public double CurrentDelta { get; set; }
+        public double LastAcceptedDelta { get; set; }
+        public double LastReportedDelta { get; set; } = double.NaN;
+        public bool IsFrozen { get; set; }
     }
 
     private class SplitterPartContext

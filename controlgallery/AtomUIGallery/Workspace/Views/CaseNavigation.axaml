@@ -30,8 +30,24 @@
         
         <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout}}"
                           Icon="{antdicons:AntDesignIconProvider Kind=LayoutOutlined}">
-            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_BoxPanel}}"
-                              ItemKey="{x:Static viewmodels:BoxPanelViewModel.ID}" />
+            <atom:NavMenuItem ItemKey="{x:Static viewmodels:BoxPanelViewModel.ID}">
+                <atom:NavMenuItem.Header>
+                    <atom:FlexPanel Direction="Row"
+                                    AlignItems="Center"
+                                    JustifyContent="FlexStart"
+                                    HorizontalAlignment="Stretch">
+                        <TextBlock atom:Flex.Grow="1"
+                                   Text="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_BoxPanel}}"
+                                   VerticalAlignment="Center" />
+                        <atom:Tag TagColor="red"
+                                  Bordered="False"
+                                  Padding="4,0"
+                                  VerticalAlignment="Center"
+                                  Margin="8,0,0,0"
+                                  TagText="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_BoxPanel_DeprecatedTag}}" />
+                    </atom:FlexPanel>
+                </atom:NavMenuItem.Header>
+            </atom:NavMenuItem>
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_FlexPanel}}"
                               ItemKey="{x:Static viewmodels:FlexPanelViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.Layout_Grid}}"

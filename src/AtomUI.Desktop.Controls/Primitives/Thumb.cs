@@ -115,6 +115,7 @@ public class Thumb : TemplatedControl
         _dragRoot = this.GetVisualRoot() as Visual ?? topLevel ?? this;
         _dragStartPoint = e.GetPosition(_dragRoot);
         _currentPoint = _dragStartPoint;
+        e.Pointer.Capture(this);
 
         var ev = new VectorEventArgs
         {
@@ -140,6 +141,10 @@ public class Thumb : TemplatedControl
             _dragStartPoint = null;
             _currentPoint = null;
             _dragRoot = null;
+            if (e.Pointer.Captured == this)
+            {
+                e.Pointer.Capture(null);
+            }
 
             var ev = new VectorEventArgs
             {

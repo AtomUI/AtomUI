@@ -3,5 +3,9 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="AutoCompleteTheme.axaml" />
+        <ResourceInclude Source="AutoCompleteSearchEditTheme.axaml" />
+        <ResourceInclude Source="AutoCompleteTextAreaTheme.axaml" />
+        <ResourceInclude Source="CompleteCandidateListTheme.axaml" />
+        <ResourceInclude Source="CompleteCandidateListItemTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

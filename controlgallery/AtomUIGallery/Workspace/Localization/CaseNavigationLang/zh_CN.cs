@@ -35,6 +35,7 @@ internal class zh_CN : LanguageProvider
     public const string Navigation_TabControl = "TabControl 标签页";
     
     public const string DataEntry = "数据录入";
+    public const string DataEntry_AutoComplete = "AutoComplete 自动完成";
     public const string DataEntry_Cascader = "Cascader 级联选择";
     public const string DataEntry_CheckBox = "CheckBox 多选框";
     public const string DataEntry_ColorPicker = "ColorPicker 颜色选择器";

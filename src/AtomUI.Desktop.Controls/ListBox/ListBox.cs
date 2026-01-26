@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -208,6 +209,12 @@ public class ListBox : AvaloniaListBox,
     }
     #endregion
 
+    #region 公共事件定义
+
+    public event EventHandler<ListBoxItemClickedEventArgs>? ItemClicked;
+
+    #endregion
+
     #region 内部属性定义
 
     internal static readonly DirectProperty<ListBox, Thickness> EffectiveBorderThicknessProperty =
@@ -243,6 +250,11 @@ public class ListBox : AvaloniaListBox,
     
     private protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     private protected readonly Dictionary<object, bool> _filterContext = new();
+
+    static ListBox()
+    {
+        ListBoxItem.ClickedEvent.AddClassHandler<ListBox>((list, args) => list.HandleListBoxItemClicked(args));
+    }
     
     public ListBox()
     {
@@ -520,5 +532,18 @@ public class ListBox : AvaloniaListBox,
         }
         IsFiltering = false;
         _filterContext.Clear();
+    }
+    
+    private void HandleListBoxItemClicked(RoutedEventArgs args)
+    {
+        if (args.Source is ListBoxItem item)
+        {
+            NotifyListBoxItemClicked(item);
+            ItemClicked?.Invoke(this, new ListBoxItemClickedEventArgs(item));
+        }
+    }
+    
+    protected virtual void NotifyListBoxItemClicked(ListBoxItem item)
+    {
     }
 }

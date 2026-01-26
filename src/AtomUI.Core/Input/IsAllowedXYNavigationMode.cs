@@ -4,16 +4,14 @@ namespace AtomUI.Input;
 
 internal static class XYFocusHelpers
 {
-    internal static bool IsAllowedXYNavigationMode(
-        this InputElement visual,
-        KeyDeviceType? keyDeviceType)
+    internal static bool IsAllowedXYNavigationMode(this InputElement visual,
+                                                   KeyDeviceType? keyDeviceType)
     {
         return IsAllowedXYNavigationMode(XYFocus.GetNavigationModes(visual), keyDeviceType);
     }
 
-    private static bool IsAllowedXYNavigationMode(
-        XYFocusNavigationModes modes,
-        KeyDeviceType? keyDeviceType)
+    private static bool IsAllowedXYNavigationMode(XYFocusNavigationModes modes,
+                                                  KeyDeviceType? keyDeviceType)
     {
         if (!keyDeviceType.HasValue)
         {

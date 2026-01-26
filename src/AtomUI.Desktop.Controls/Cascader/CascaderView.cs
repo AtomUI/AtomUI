@@ -309,7 +309,7 @@ public partial class CascaderView : ItemsControl, IMotionAwareControl, IControlS
         CascaderViewItem.ExpandedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemExpanded(args));
         CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemDoubleClicked(args));
         CascaderViewItem.CollapsedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemCollapsed(args));
-        CascaderViewItem.ClickEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
+        CascaderViewItem.ClickedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
     }
     
     public CascaderView()

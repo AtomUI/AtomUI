@@ -12,6 +12,20 @@ using AvaloniaListBoxItem = Avalonia.Controls.ListBoxItem;
 
 public class ListBoxItem : AvaloniaListBoxItem
 {
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
+        RoutedEvent.Register<DropdownButton, RoutedEventArgs>(
+            nameof(Clicked),
+            RoutingStrategies.Bubble);
+    
+    public event EventHandler<RoutedEventArgs>? Clicked
+    {
+        add => AddHandler(ClickedEvent, value);
+        remove => RemoveHandler(ClickedEvent, value);
+    }
+
+    #endregion
     #region 内部属性定义
 
     internal static readonly StyledProperty<SizeType> SizeTypeProperty =
@@ -272,6 +286,11 @@ public class ListBoxItem : AvaloniaListBoxItem
                     // recognizer from working.
                     // e.Handled = true;
                 }
+            }
+
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                RaiseEvent(new RoutedEventArgs(ClickedEvent, this));
             }
         }
     }

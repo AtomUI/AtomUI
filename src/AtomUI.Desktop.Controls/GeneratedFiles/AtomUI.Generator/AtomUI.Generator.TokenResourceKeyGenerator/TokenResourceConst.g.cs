@@ -21,6 +21,13 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey WithDescriptionPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Alert.WithDescriptionPadding");
     }
 
+    public static class AutoCompleteTokenKey
+    {
+        public static readonly TokenResourceKey MinPopupWidth = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.MinPopupWidth");
+        public static readonly TokenResourceKey OptionHeight = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.OptionHeight");
+        public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.PopupContentPadding");
+    }
+
     public static class AvatarTokenKey
     {
         public static readonly TokenResourceKey AvatarBg = new TokenResourceKey("AtomUI.Desktop.Controls.Avatar.AvatarBg");

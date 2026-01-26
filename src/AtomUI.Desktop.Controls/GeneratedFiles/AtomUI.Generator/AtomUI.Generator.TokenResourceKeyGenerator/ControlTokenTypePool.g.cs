@@ -12,6 +12,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.AdornerLayerToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.AlertToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.ArrowDecoratedBoxToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.AutoCompleteToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.AvatarToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.BadgeToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.BreadcrumbToken));

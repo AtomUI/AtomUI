@@ -123,7 +123,6 @@ internal class MentionTextArea : TextArea
                     TriggerState = true;
                     CandidateOpenRequest?.Invoke(this, new ShowMentionCandidateRequestEventArgs(triggerBounds, predicate, triggerCh.ToString()));
                 }
-
             }
             else
             {

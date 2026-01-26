@@ -78,6 +78,8 @@
 
         <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry}}"
                           Icon="{antdicons:AntDesignIconProvider Kind=FormOutlined}">
+            <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_AutoComplete}}"
+                              ItemKey="{x:Static viewmodels:AutoCompleteViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_Cascader}}"
                               ItemKey="{x:Static viewmodels:CascaderViewModel.ID}" />
             <atom:NavMenuItem Header="{DynamicResource {x:Static lang:CaseNavigationLangResourceKey.DataEntry_CheckBox}}"

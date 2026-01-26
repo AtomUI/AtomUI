@@ -136,15 +136,15 @@ public class CascaderViewItem : HeaderedItemsControl
 
     #region 公共事件定义
 
-    public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
         RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(
-            nameof(Click),
+            nameof(Clicked),
             RoutingStrategies.Bubble);
     
-    public event EventHandler<RoutedEventArgs>? Click
+    public event EventHandler<RoutedEventArgs>? Clicked
     {
-        add => AddHandler(ClickEvent, value);
-        remove => RemoveHandler(ClickEvent, value);
+        add => AddHandler(ClickedEvent, value);
+        remove => RemoveHandler(ClickedEvent, value);
     }
     #endregion
 
@@ -529,7 +529,7 @@ public class CascaderViewItem : HeaderedItemsControl
         return bounds.Contains(point);
     }
     
-    internal void RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
+    internal void RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickedEvent));
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {

@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.AutoCompleteShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem Title="Basic Usage"
+                              Description="Basic Usage, set data source of autocomplete with options property.">
+            <atom:AutoComplete PlaceholderText="input here"/>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

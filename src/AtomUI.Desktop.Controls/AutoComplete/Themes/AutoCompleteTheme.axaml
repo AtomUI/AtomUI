@@ -3,10 +3,72 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:AutoComplete}" TargetType="atom:AutoComplete">
+    <ControlTheme x:Key="{x:Type atom:AutoComplete}" TargetType="atom:AutoComplete"> 
         <Setter Property="Template">
             <ControlTemplate>
+                 <Panel>
+                    <atom:LineEdit Name="{x:Static atom:MentionsThemeConstants.TextAreaPart}"
+                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                          IsEnableClearButton="{TemplateBinding IsAllowClear}"
+                                          StyleVariant="{TemplateBinding StyleVariant}"
+                                          Status="{TemplateBinding Status}"
+                                          CaretIndex="{TemplateBinding CaretIndex}"
+                                          InnerLeftContent="{TemplateBinding ContentLeftAddOn}"
+                                          InnerLeftContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
+                                          InnerRightContent="{TemplateBinding ContentRightAddOn}"
+                                          InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
+                                          Watermark="{TemplateBinding PlaceholderText}"
+                                          Text="{TemplateBinding Value, Mode=TwoWay}"
+                                          IsReadOnly="{TemplateBinding IsReadOnly}"
+                                          Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"/>
+                    <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"
+                                WindowManagerAddShadowHint="False"
+                                IsLightDismissEnabled="False"
+                                IsDetectMouseClickEnabled="True"
+                                IsMotionEnabled="False"
+                                Placement="{TemplateBinding PopupPlacement}"
+                                IsMotionAwareOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}">
+                        <Border Name="PopupFrame"
+                                MaxHeight="{TemplateBinding MaxPopupHeight}"
+                                MinWidth="{TemplateBinding MinPopupWidth}"
+                                Padding="{TemplateBinding PopupContentPadding}">
+                            <Panel>
+                                <atom:Spin Name="LoadingIndicator" SizeType="Middle" 
+                                           IsShowTip="True" 
+                                           IsSpinning="True"
+                                           Tip="{DynamicResource {x:Static atom:CommonLangResourceKey.Loading}}"
+                                           HorizontalAlignment="Center"
+                                           IsVisible="{TemplateBinding IsLoading}"/>
+                                <atom:CompleteCandidateList
+                                    Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
+                                    IsBorderless="True"
+                                    SelectionMode="Single"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    ItemTemplate="{TemplateBinding OptionTemplate}"
+                                    ItemsSource="{Binding OptionsSource, RelativeSource={RelativeSource TemplatedParent}}"
+                                    IsVisible="{TemplateBinding IsLoading, Converter={x:Static BoolConverters.Not}}"/>
+                            </Panel>
+                        </Border>
+                    </atom:Popup>
+                </Panel>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:MentionsTokenKey.OptionHeight}}" />
+        <Setter Property="PopupContentPadding" Value="{DynamicResource {x:Static atom:MentionsTokenKey.PopupContentPadding}}" />
+        <Setter Property="MinPopupWidth" Value="{DynamicResource {x:Static atom:MentionsTokenKey.MinPopupWidth}}" />
+        <Style Selector="^ /template/ atom|Popup#PART_Popup">
+            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:SharedTokenKey.BoxShadowsSecondary}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PopupFrame">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ atom|Spin#LoadingIndicator">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginLG}}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

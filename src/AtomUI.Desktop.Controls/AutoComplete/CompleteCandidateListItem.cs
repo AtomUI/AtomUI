@@ -2,7 +2,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AutoCompleteSearchEdit : TemplatedControl
+public class CompleteCandidateListItem : TemplatedControl
 {
     
 }

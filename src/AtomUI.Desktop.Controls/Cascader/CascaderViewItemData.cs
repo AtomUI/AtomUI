@@ -53,6 +53,11 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData, ISele
             o => o.IsExpanded,
             (o, v) => o.IsExpanded = v);
     
+    public static readonly DirectProperty<CascaderViewItemData, object?> ValueProperty =
+        AvaloniaProperty.RegisterDirect<CascaderViewItemData, object?>(nameof(Value),
+            o => o.Value,
+            (o, v) => o.Value = v);
+    
     public ITreeNode<ICascaderViewItemData>? ParentNode { get; private set; }
     
     public TreeNodeKey? ItemKey { get; init; }
@@ -107,7 +112,14 @@ public class CascaderViewItemData : AvaloniaObject, ICascaderViewItemData, ISele
     
     public bool IsLeaf { get; init; } = false;
     
-    public object? Value { get; set; }
+    private object? _value = true;
+
+    public object? Value
+    {
+        get => _value;
+        set => SetAndRaise(ValueProperty, ref _value, value);
+    }
+    
     string? ISelectTagTextProvider.TagText => Header?.ToString();
 
     private AvaloniaList<ICascaderViewItemData> _children = [];

@@ -41,11 +41,8 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     public static readonly StyledProperty<string?> DefaultValueProperty =
         AvaloniaProperty.Register<Mentions, string?>(nameof(DefaultValue));
     
-    public static readonly DirectProperty<Mentions, IMentionOptionFilter?> OptionFilterProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, IMentionOptionFilter?>(
-            nameof(OptionFilter),
-            o => o.OptionFilter,
-            (o, v) => o.OptionFilter = v);
+    public static readonly StyledProperty<IMentionOptionFilter?> OptionFilterProperty =
+        AvaloniaProperty.Register<Mentions, IMentionOptionFilter?>(nameof(OptionFilter));
     
     public static readonly StyledProperty<MentionsPlacementMode> PlacementProperty =
         AvaloniaProperty.Register<Mentions, MentionsPlacementMode>(nameof(Placement), MentionsPlacementMode.Bottom);
@@ -107,11 +104,8 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     public static readonly StyledProperty<int> MaxLinesProperty =
         TextArea.MaxLinesProperty.AddOwner<Mentions>();
     
-    public static readonly DirectProperty<Mentions, IMentionOptionAsyncLoader?> OptionAsyncLoaderProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, IMentionOptionAsyncLoader?>(
-            nameof(OptionAsyncLoader),
-            o => o.OptionAsyncLoader,
-            (o, v) => o.OptionAsyncLoader = v);
+    public static readonly StyledProperty<IMentionOptionAsyncLoader?> OptionAsyncLoaderProperty =
+        AvaloniaProperty.Register<Mentions, IMentionOptionAsyncLoader?>(nameof(OptionAsyncLoader));
     
     public static readonly DirectProperty<Mentions, bool> IsLoadingProperty =
         AvaloniaProperty.RegisterDirect<Mentions, bool>(
@@ -179,12 +173,10 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
     
-    private IMentionOptionFilter? _optionFilter;
-    
     public IMentionOptionFilter? OptionFilter
     {
-        get => _optionFilter;
-        set => SetAndRaise(OptionFilterProperty, ref _optionFilter, value);
+        get => GetValue(OptionFilterProperty);
+        set => SetValue(OptionFilterProperty, value);
     }
     
     public string? DefaultValue
@@ -284,12 +276,10 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         set => SetValue(MaxLinesProperty, value);
     }
     
-    private IMentionOptionAsyncLoader? _optionAsyncLoader;
-    
     public IMentionOptionAsyncLoader? OptionAsyncLoader
     {
-        get => _optionAsyncLoader;
-        set => SetAndRaise(OptionAsyncLoaderProperty, ref _optionAsyncLoader, value);
+        get => GetValue(OptionAsyncLoaderProperty);
+        set => SetValue(OptionAsyncLoaderProperty, value);
     }
     
     private bool _isLoading;
@@ -566,7 +556,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
             }
         }
 
-        if (_optionAsyncLoader != null)
+        if (OptionAsyncLoader != null)
         {
             HandleNodeLoadRequest(eventArgs.Predicate);
         }
@@ -632,7 +622,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         IsPopupOpen        = false;
         _candidateList?.FilterDescriptions?.Clear();
         _filterDescriptions = null;
-        if (_optionAsyncLoader != null)
+        if (OptionAsyncLoader != null)
         {
             OptionsSource       = null;
         }
@@ -670,14 +660,14 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     
     private void HandleNodeLoadRequest(string? predicate)
     {
-        if (_optionAsyncLoader == null)
+        if (OptionAsyncLoader == null)
         {
             return;
         }
         
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            Debug.Assert(_optionAsyncLoader != null);
+            Debug.Assert(OptionAsyncLoader != null);
             try
             {
                 if (_asyncLoadCTS != null)
@@ -688,7 +678,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
                 _asyncLoadCTS = new CancellationTokenSource();
                 IsLoading     = true;
                 _loadTaskCount++;
-                var result = await _optionAsyncLoader.LoadAsync(predicate, _asyncLoadCTS.Token);
+                var result = await OptionAsyncLoader.LoadAsync(predicate, _asyncLoadCTS.Token);
                 _loadTaskCount--;
                 IsLoading = false;
                 OptionsLoaded?.Invoke(this, new MentionOptionLoadedEventArgs(predicate, result));
@@ -825,7 +815,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     {
         if (!isVisible && IsPopupOpen)
         {
-            IsPopupOpen = false;
+            SetCurrentValue(IsPopupOpenProperty, false);
         }
     }
     

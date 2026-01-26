@@ -71,17 +71,13 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         AvaloniaProperty.Register<TreeSelect, IDataTemplate?>(nameof(ItemTemplate));
     
-    public static readonly DirectProperty<TreeSelect, ITreeItemDataLoader?> DataLoaderProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemDataLoader?>(
-            nameof(DataLoader),
-            o => o.DataLoader,
-            (o, v) => o.DataLoader = v);
+    public static readonly StyledProperty<ITreeItemDataLoader?> DataLoaderProperty =
+        AvaloniaProperty.Register<TreeSelect, ITreeItemDataLoader?>(
+            nameof(DataLoader));
     
-    public static readonly DirectProperty<TreeSelect, ITreeItemFilter?> FilterProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemFilter?>(
-            nameof(Filter),
-            o => o.Filter,
-            (o, v) => o.Filter = v);
+    public static readonly StyledProperty<ITreeItemFilter?> FilterProperty =
+        AvaloniaProperty.Register<TreeSelect, ITreeItemFilter?>(
+            nameof(Filter));
     
     public static readonly DirectProperty<TreeSelect, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, TreeFilterHighlightStrategy>(
@@ -190,20 +186,16 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(ItemTemplateProperty, value);
     }
     
-    private ITreeItemDataLoader? _dataLoader;
-    
     public ITreeItemDataLoader? DataLoader
     {
-        get => _dataLoader;
-        set => SetAndRaise(DataLoaderProperty, ref _dataLoader, value);
+        get => GetValue(DataLoaderProperty);
+        set => SetValue(DataLoaderProperty, value);
     }
-    
-    private ITreeItemFilter? _filter;
     
     public ITreeItemFilter? Filter
     {
-        get => _filter;
-        set => SetAndRaise(FilterProperty, ref _filter, value);
+        get => GetValue(FilterProperty);
+        set => SetValue(FilterProperty, value);
     }
 
     private TreeFilterHighlightStrategy _itemFilterAction = TreeFilterHighlightStrategy.HighlightedWhole | TreeFilterHighlightStrategy.BoldedMatch | TreeFilterHighlightStrategy.ExpandPath | TreeFilterHighlightStrategy.HideUnMatched;

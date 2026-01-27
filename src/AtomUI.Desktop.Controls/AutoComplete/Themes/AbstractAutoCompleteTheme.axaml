@@ -7,6 +7,7 @@
 
     <Style Selector="^:is(atom|AbstractAutoComplete)">
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.OptionHeight}}" />

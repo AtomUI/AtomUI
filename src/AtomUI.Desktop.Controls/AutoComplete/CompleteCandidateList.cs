@@ -30,8 +30,6 @@ internal class CompleteCandidateList : ListBox, ISelectCandidateList
         remove => RemoveHandler(CancelEvent, value);
     }
     #endregion
-    
-    private bool _ignoringSelectionChanged { get; set; }
 
     static CompleteCandidateList()
     {
@@ -62,11 +60,8 @@ internal class CompleteCandidateList : ListBox, ISelectCandidateList
                 break;
 
             case Key.Down:
-                if ((e.KeyModifiers & KeyModifiers.Alt) == KeyModifiers.None)
-                {
-                    SelectedIndexIncrement();
-                    e.Handled = true;
-                }
+                SelectedIndexIncrement();
+                e.Handled = true;
                 break;
 
             case Key.Escape:
@@ -118,34 +113,24 @@ internal class CompleteCandidateList : ListBox, ISelectCandidateList
 
     private void ClearState()
     {
-        try
-        {
-            _ignoringSelectionChanged = true;
-            SelectedItem              = null;
-            SelectedIndex             = -1;
-        }
-        finally
-        {
-            _ignoringSelectionChanged = false;
-        }
+        SelectedItem  = null;
+        SelectedIndex = -1;
     }
     
     protected void SelectedIndexDecrement()
     {
         int index = SelectedIndex;
-        if (index >= 0)
+        --index;
+        if (index == -1)
         {
-            SelectedIndex--;
+            index = ItemCount - 1;
         }
-        else if (index == -1)
-        {
-            SelectedIndex = ItemCount - 1;
-        }
+        SelectedIndex = index;
     }
     
     protected void SelectedIndexIncrement()
     {
-        SelectedIndex = SelectedIndex + 1 >= ItemCount ? -1 : SelectedIndex + 1;
+        SelectedIndex = SelectedIndex + 1 >= ItemCount ? 0 : SelectedIndex + 1;
     }
     
     protected override void NotifyListBoxItemClicked(ListBoxItem item)

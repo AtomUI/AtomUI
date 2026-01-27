@@ -522,7 +522,7 @@ public class AbstractAutoComplete : TemplatedControl,
     }
     
     
-    private AvaloniaTextBox? TextBox
+    protected AvaloniaTextBox? TextBox
     {
         get => _textBox;
         set
@@ -577,10 +577,8 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             if (_candidateList != null)
             {
-                _candidateList.SelectionChanged -= HandleCandidateListChanged;
                 _candidateList.Commit           -= HandleCandidateListComplete;
                 _candidateList.Cancel           -= HandleCandidateListCanceled;
-                _candidateList.Cancel           -= HandleCandidateListComplete;
                 _candidateList.ItemsSource      =  null;
             }
 
@@ -588,10 +586,8 @@ public class AbstractAutoComplete : TemplatedControl,
 
             if (_candidateList != null)
             {
-                _candidateList.SelectionChanged += HandleCandidateListChanged;
                 _candidateList.Commit           += HandleCandidateListComplete;
                 _candidateList.Cancel           += HandleCandidateListCanceled;
-                _candidateList.Cancel           += HandleCandidateListComplete;
                 _candidateList.ItemsSource      =  _view;
             }
         }
@@ -761,9 +757,7 @@ public class AbstractAutoComplete : TemplatedControl,
     protected override void OnKeyDown(KeyEventArgs e)
     {
         _ = e ?? throw new ArgumentNullException(nameof(e));
-
         base.OnKeyDown(e);
-
         if (e.Handled || !IsEnabled)
         {
             return;
@@ -1113,7 +1107,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private void ClearView()
+    protected void ClearView()
     {
         if (_view == null)
         {
@@ -1565,13 +1559,17 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private void HandleTextBoxTextChanged()
+    protected virtual void HandleTextBoxTextChanged()
     {
         //Uses Dispatcher.Post to allow the TextBox selection to update before processing
         Dispatcher.UIThread.Post(() =>
         {
             // Call the central updated text method as a user-initiated action
             HandleValueUpdated(_textBox!.Text, true);
+            if (TextBox != null && string.IsNullOrWhiteSpace(TextBox.Text))
+            {
+                ClearView();
+            }
         });
     }
     
@@ -1797,13 +1795,9 @@ public class AbstractAutoComplete : TemplatedControl,
         ClearTextBoxSelection();
     }
     
-    private void HandleCandidateListChanged(object? sender, SelectionChangedEventArgs e)
+    private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
     {
         SetCurrentValue(SelectedItemProperty, _candidateList!.SelectedItem);
-    }
-    
-    private void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
-    {
         SetCurrentValue(IsDropDownOpenProperty, false);
         // Text should not be selected
         ClearTextBoxSelection();

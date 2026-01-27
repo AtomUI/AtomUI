@@ -28,7 +28,7 @@
                                          IsEnabled="{TemplateBinding IsEnabled}"
                                          SizeType="{TemplateBinding SizeType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         IsVisible="{TemplateBinding PaginationVisibility, Converter={x:Static atom:ListTheme.TopPaginationVisibilityConvertor}}" />
+                                         IsVisible="{TemplateBinding PaginationVisibility, Converter={x:Static atom:ListTheme.TopPaginationVisibilityConverter}}" />
                         <atom:Pagination DockPanel.Dock="Bottom"
                                          Name="{x:Static atom:ListThemeConstants.BottomPaginationPart}"
                                          Margin="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"
@@ -37,7 +37,7 @@
                                          IsEnabled="{TemplateBinding IsEnabled}"
                                          SizeType="{TemplateBinding SizeType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         IsVisible="{TemplateBinding PaginationVisibility, Converter={x:Static atom:ListTheme.BottomPaginationVisibilityConvertor}}" />
+                                         IsVisible="{TemplateBinding PaginationVisibility, Converter={x:Static atom:ListTheme.BottomPaginationVisibilityConverter}}" />
                         <Panel>
                             <atom:ListDefaultView Name="{x:Static atom:ListThemeConstants.ListViewPart}"
                                                   SizeType="{TemplateBinding SizeType}"

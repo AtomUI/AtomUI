@@ -41,5 +41,14 @@
             </atom:AutoCompleteSearchEdit>
             
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="TextArea type auto-completion"
+                              Description="You can use the TextArea type for autocomplete.">
+            <atom:AutoCompleteTextArea PlaceholderText="input here"
+                               OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                               Width="300"
+                               Lines="5"
+                               IsAllowClear="True"/>
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

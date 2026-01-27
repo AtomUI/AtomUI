@@ -16,7 +16,7 @@
                                                     IsEnableClearButton="{TemplateBinding IsAllowClear}"
                                                     StyleVariant="{TemplateBinding StyleVariant}"
                                                     Status="{TemplateBinding Status}"
-                                                    CaretIndex="{TemplateBinding CaretIndex}"
+                                                    CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                                                     InnerLeftContent="{TemplateBinding ContentLeftAddOn}"
                                                     InnerLeftContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                                                     InnerRightContent="{TemplateBinding ContentRightAddOn}"

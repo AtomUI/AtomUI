@@ -55,7 +55,8 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 var value = context;
                 data.Add(new AutoCompleteOption()
                 {
-                    Header = value,
+                    Header = value.Replace("\r\n", " ")
+                                  .Replace("\n", " "),
                     Value  = value,
                 });
             }
@@ -63,7 +64,8 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 var value = string.Concat(Enumerable.Repeat(context, 2));
                 data.Add(new AutoCompleteOption()
                 {
-                    Header = value,
+                    Header = value.Replace("\r\n", " ")
+                                  .Replace("\n", " "),
                     Value =  value,
                 });
             }
@@ -71,7 +73,8 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 var value = string.Concat(Enumerable.Repeat(context, 3));
                 data.Add(new AutoCompleteOption()
                 {
-                    Header = value,
+                    Header = value.Replace("\r\n", " ")
+                                  .Replace("\n", " "),
                     Value  = value,
                 });
             }

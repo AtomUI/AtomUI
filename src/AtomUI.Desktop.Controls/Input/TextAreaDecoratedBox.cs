@@ -68,6 +68,14 @@ internal class TextAreaDecoratedBox : AddOnDecoratedBox
             o => o.IsResizable,
             (o, v) => o.IsResizable = v);
     
+    internal static readonly StyledProperty<Thickness> TextAreaFramePaddingProperty =
+        AvaloniaProperty.Register<TextAreaDecoratedBox, Thickness>(
+            nameof(TextAreaFramePadding));
+    
+    internal static readonly StyledProperty<Thickness> ScrollerPaddingProperty =
+        AvaloniaProperty.Register<TextAreaDecoratedBox, Thickness>(
+            nameof(ScrollerPadding));
+    
     private bool _isResizable;
 
     internal bool IsResizable
@@ -75,7 +83,18 @@ internal class TextAreaDecoratedBox : AddOnDecoratedBox
         get => _isResizable;
         set => SetAndRaise(IsResizableProperty, ref _isResizable, value);
     }
-
+    
+    internal Thickness TextAreaFramePadding
+    {
+        get => GetValue(TextAreaFramePaddingProperty);
+        set => SetValue(TextAreaFramePaddingProperty, value);
+    }
+    
+    internal Thickness ScrollerPadding
+    {
+        get => GetValue(ScrollerPaddingProperty);
+        set => SetValue(ScrollerPaddingProperty, value);
+    }
     #endregion
 
     static TextAreaDecoratedBox()
@@ -85,15 +104,33 @@ internal class TextAreaDecoratedBox : AddOnDecoratedBox
     
     internal ScrollViewer? ScrollViewer { get; set; }
     internal TextArea? Owner { get; set; }
+    private Control? _rightContentAddOn;
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         ScrollViewer = e.NameScope.Find<ScrollViewer>(TextAreaThemeConstants.ScrollViewerPart);
+        
+        if (_rightContentAddOn != null)
+        {
+            _rightContentAddOn.SizeChanged -= HandleRightContentAddOnSizeChanged;
+        }
+        
+        _rightContentAddOn = e.NameScope.Find<Control>(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart);
         if (ScrollViewer != null)
         {
             Owner?.NotifyScrollViewerCreated(ScrollViewer);
         }
+
+        if (_rightContentAddOn != null)
+        {
+            _rightContentAddOn.SizeChanged += HandleRightContentAddOnSizeChanged;
+        }
+    }
+
+    private void HandleRightContentAddOnSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        ScrollerPadding = new Thickness(0, 0, e.NewSize.Width, 0);
     }
 
     public override void Render(DrawingContext context)

@@ -3,7 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
+    xmlns:converters="clr-namespace:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
+    <converters:TextAreaFramePaddingConverter x:Key="TextAreaFramePaddingConverter"/>
     <ControlTheme x:Key="{x:Type atom:TextAreaDecoratedBox}" TargetType="atom:TextAreaDecoratedBox">
         <ControlTheme.BasedOn>
             <themes:AddOnDecoratedBoxTheme TargetType="atom:TextAreaDecoratedBox" />
@@ -16,7 +18,8 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
                         BackgroundSizing="OuterBorderEdge">
-                    <Border Name="ScrollViewerContent">
+                    <Border Name="TextAreaContentFrame"
+                            Padding="{TemplateBinding TextAreaFramePadding, Converter={StaticResource TextAreaFramePaddingConverter}}">
                         <DockPanel Name="ContentLayout" LastChildFill="True">
                             <ContentPresenter
                                 Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart}"
@@ -28,28 +31,29 @@
                                 Content="{TemplateBinding ContentLeftAddOn}"
                                 ContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                                 IsVisible="{TemplateBinding ContentLeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                            <ContentPresenter
-                                DockPanel.Dock="Right"
-                                Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart}"
-                                VerticalAlignment="Top"
-                                VerticalContentAlignment="Center"
-                                HorizontalAlignment="Right"
-                                Focusable="False"
-                                Content="{TemplateBinding ContentRightAddOn}"
-                                ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
-                                IsVisible="{TemplateBinding ContentRightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                            <atom:ScrollViewer
-                                Name="{x:Static atom:TextAreaThemeConstants.ScrollViewerPart}"
-                                IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
-                                AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
-                                HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
-                                VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
-                                IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
+                            <Panel>
+                                <atom:ScrollViewer Name="{x:Static atom:TextAreaThemeConstants.ScrollViewerPart}"
+                                                   IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                                   AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                                   HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                                                   VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
+                                                   IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}"
+                                                   Padding="{TemplateBinding ScrollerPadding}">
+                                    <ContentPresenter
+                                        Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentPresenterPart}"
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                </atom:ScrollViewer>
                                 <ContentPresenter
-                                    Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentPresenterPart}"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
-                            </atom:ScrollViewer>
+                                    Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart}"
+                                    VerticalAlignment="Top"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    Focusable="False"
+                                    Content="{TemplateBinding ContentRightAddOn}"
+                                    ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
+                                    IsVisible="{TemplateBinding ContentRightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </Panel>
                         </DockPanel>
                     </Border>
                 </Border>
@@ -67,10 +71,8 @@
                 <Style Selector="^ /template/ Border#PART_ContentFrame">
                     <Setter Property="Padding" Value="0" />
                 </Style>
-                <Style Selector="^ /template/ Border#ScrollViewerContent">
-                    <Setter Property="Padding"
-                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.PaddingLG}}" />
-                </Style>
+                <Setter Property="TextAreaFramePadding"
+                        Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.PaddingLG}}" />
 
                 <Style Selector="^ /template/ ContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightLG}}" />
@@ -80,10 +82,8 @@
                 <Style Selector="^ /template/ Border#PART_ContentFrame">
                     <Setter Property="Padding" Value="0" />
                 </Style>
-                <Style Selector="^ /template/ Border#ScrollViewerContent">
-                    <Setter Property="Padding"
-                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.Padding}}" />
-                </Style>
+                <Setter Property="TextAreaFramePadding"
+                        Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.Padding}}" />
 
                 <Style Selector="^ /template/ ContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeight}}" />
@@ -93,10 +93,8 @@
                 <Style Selector="^ /template/ Border#PART_ContentFrame">
                     <Setter Property="Padding" Value="0" />
                 </Style>
-                <Style Selector="^ /template/ Border#ScrollViewerContent">
-                    <Setter Property="Padding"
-                            Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.PaddingSM}}" />
-                </Style>
+                <Setter Property="TextAreaFramePadding"
+                        Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.PaddingSM}}" />
 
                 <Style Selector="^ /template/ ContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />

@@ -27,7 +27,8 @@
                                                     Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}" 
                                                     SearchButtonStyle="{TemplateBinding SearchButtonStyle}"
                                                     SearchButtonText="{TemplateBinding SearchButtonText}"
-                                                    IsOperating="{TemplateBinding IsOperating}"/>
+                                                    IsOperating="{TemplateBinding IsOperating}"
+                                                    ClearIcon="{TemplateBinding ClearIcon}"/>
                     
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"

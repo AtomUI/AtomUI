@@ -22,7 +22,9 @@ public class TextArea : AvaloniaTextBox,
                         ISizeTypeAware
 {
     #region 公共属性定义
-
+    public static readonly StyledProperty<PathIcon?> ClearIconProperty =
+        AvaloniaProperty.Register<TextArea, PathIcon?>(nameof(ClearIcon));
+    
     public static readonly StyledProperty<int> LinesProperty =
         AvaloniaProperty.Register<TextArea, int>(nameof(Lines), 2);
     
@@ -58,6 +60,12 @@ public class TextArea : AvaloniaTextBox,
 
     public static readonly StyledProperty<IDataTemplate?> InnerRightContentTemplateProperty =
         AvaloniaProperty.Register<TextArea, IDataTemplate?>(nameof(InnerRightContentTemplate));
+    
+    public PathIcon? ClearIcon
+    {
+        get => GetValue(ClearIconProperty);
+        set => SetValue(ClearIconProperty, value);
+    }
 
     public int Lines
     {

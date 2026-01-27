@@ -1,5 +1,6 @@
 ﻿using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -15,6 +16,8 @@ using AvaloniaNumericUpDown = Avalonia.Controls.NumericUpDown;
 public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
+    public static readonly StyledProperty<PathIcon?> ClearIconProperty =
+        AvaloniaProperty.Register<NumericUpDown, PathIcon?>(nameof(ClearIcon));
 
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<NumericUpDown>();
@@ -48,6 +51,12 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NumericUpDown>();
+    
+    public PathIcon? ClearIcon
+    {
+        get => GetValue(ClearIconProperty);
+        set => SetValue(ClearIconProperty, value);
+    }
 
     [DependsOn(nameof(LeftAddOnTemplate))]
     public object? LeftAddOn
@@ -162,6 +171,15 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
     public NumericUpDown()
     {
         this.RegisterResources();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (ClearIcon == null)
+        {
+            SetCurrentValue(ClearIconProperty, new CloseCircleFilled());
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

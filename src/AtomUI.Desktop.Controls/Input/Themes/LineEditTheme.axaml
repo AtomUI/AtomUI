@@ -28,6 +28,7 @@
                                 Spacing="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyPaddingXXS}}">
                         <atom:InputClearIconButton
                             Name="{x:Static atom:TextBoxThemeConstants.ClearButtonPart}"
+                            Icon="{Binding ClearIcon, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"
                             IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"
                             IsVisible="{Binding IsEffectiveShowClearButton, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}" />
                         <!-- 新增显示密码按钮 -->

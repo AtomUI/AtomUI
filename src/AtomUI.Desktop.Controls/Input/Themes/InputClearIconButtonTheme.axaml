@@ -2,15 +2,15 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:InputClearIconButton}" TargetType="atom:InputClearIconButton">
         <ControlTheme.BasedOn>
-            <themes:IconButtonTheme TargetType="{x:Type atom:InputClearIconButton}" />
+            <atom:IconButtonTheme TargetType="{x:Type atom:InputClearIconButton}" />
         </ControlTheme.BasedOn>
         
         <Setter Property="IconWidth"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+        
         <Setter Property="IconHeight"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
 

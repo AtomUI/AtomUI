@@ -8,7 +8,7 @@ public abstract class CompleteAbstractContainsFilter : ICompleteOptionFilter
     {
         if (value is not null && filterValue is not null)
         {
-            return value.IndexOf(value, comparison) >= 0;
+            return value.IndexOf(filterValue, comparison) >= 0;
         }
         return false;
     }

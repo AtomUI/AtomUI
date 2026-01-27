@@ -38,7 +38,8 @@
                                     Name="{x:Static atom:TextAreaThemeConstants.ClearButtonPart}"
                                     IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
                                     IsVisible="{Binding IsEffectiveShowClearButton, RelativeSource={RelativeSource AncestorType=atom:TextArea}}" 
-                                    VerticalAlignment="Center"/>
+                                    VerticalAlignment="Center"
+                                    Icon="{Binding ClearIcon, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"/>
                                 <ContentPresenter
                                     VerticalAlignment="Stretch"
                                     VerticalContentAlignment="Center"

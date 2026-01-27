@@ -2,7 +2,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:NumericUpDown}" TargetType="atom:NumericUpDown">
         <Setter Property="Template">
@@ -29,7 +28,7 @@
                                     Spacing="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyPaddingXXS}}">
                             <atom:InputClearIconButton
                                 Name="{x:Static atom:TextBoxThemeConstants.ClearButtonPart}"
-                                Icon="{antdicons:AntDesignIconProvider CloseCircleFilled}"
+                                Icon="{Binding ClearIcon, RelativeSource={RelativeSource AncestorType=atom:NumericUpDown}}"
                                 IsPassthroughMouseEvent="False"
                                 IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:NumericUpDown}}" 
                                 IsVisible="{Binding IsEffectiveShowClearButton, RelativeSource={RelativeSource AncestorType=atom:NumericUpDown}}"/>

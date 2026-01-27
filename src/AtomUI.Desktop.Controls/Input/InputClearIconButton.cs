@@ -1,13 +1,12 @@
 using AtomUI.Icons.AntDesign;
-using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class InputClearIconButton : IconButton
 {
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    protected override void OnInitialized()
     {
-        base.OnApplyTemplate(e);
+        base.OnInitialized();
         if (Icon == null)
         {
             SetCurrentValue(IconProperty, new CloseCircleFilled());

@@ -23,7 +23,8 @@
                                                   InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                                   Watermark="{TemplateBinding PlaceholderText}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
-                                                  Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}" />
+                                                  Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}" 
+                                                  ClearIcon="{TemplateBinding ClearIcon}"/>
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"

@@ -44,6 +44,9 @@ public class AbstractAutoComplete : TemplatedControl,
                                     IMotionAwareControl
 {
     #region 公共属性定义
+    public static readonly StyledProperty<PathIcon?> ClearIconProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, PathIcon?>(nameof(ClearIcon));
+    
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractAutoComplete>();
     
@@ -169,6 +172,12 @@ public class AbstractAutoComplete : TemplatedControl,
     
     public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(IsPopupMatchSelectWidth), true);
+    
+    public PathIcon? ClearIcon
+    {
+        get => GetValue(ClearIconProperty);
+        set => SetValue(ClearIconProperty, value);
+    }
     
     public SizeType SizeType
     {
@@ -1170,7 +1179,7 @@ public class AbstractAutoComplete : TemplatedControl,
                 {
                     if (!inResults)
                     {
-                        inResults = EffectiveFilter.Filter(item, text);
+                        inResults = EffectiveFilter.Filter(GetValueByOption(item), text);
                     }
                 }
               
@@ -1756,15 +1765,7 @@ public class AbstractAutoComplete : TemplatedControl,
             {
                 if (option != null)
                 {
-                    object? value = null;
-                    if (FilterValueSelector != null)
-                    {
-                        value = FilterValueSelector(option);
-                    }
-                    else
-                    {
-                        value = option.Header ?? option.Value ?? option.Key;
-                    }
+                    object? value = GetValueByOption(option);
                     if (predicate.Filter(value, filterValue))
                     {
                         return option;
@@ -1774,6 +1775,20 @@ public class AbstractAutoComplete : TemplatedControl,
         }
 
         return null;
+    }
+
+    private object? GetValueByOption(IAutoCompleteOption option)
+    {
+        object? value = null;
+        if (FilterValueSelector != null)
+        {
+            value = FilterValueSelector(option);
+        }
+        else
+        {
+            value = option.Header ?? option.Value ?? option.Key;
+        }
+        return value;
     }
     
     private void HandleSelectedItemChanged(object? newItem)

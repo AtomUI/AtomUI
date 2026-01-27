@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -15,8 +16,30 @@ public partial class AutoCompleteShowCase : ReactiveUserControl<AutoCompleteView
                 vm.BasicOptionsAsyncLoader       = new BasicOptionsAsyncLoader();
                 vm.CustomLabelOptionsAsyncLoader = new CustomLabelOptionsAsyncLoader();
                 vm.SearchEditOptionsAsyncLoader  = new SearchEditOptionsAsyncLoader();
+                InitFilterCaseOptions(vm);
             }
         });
         InitializeComponent();
+    }
+
+    private void InitFilterCaseOptions(AutoCompleteViewModel vm)
+    {
+        vm.FilterCaseOptions = [
+            new AutoCompleteOption()
+            {
+                Header = "Burns Bay Road",
+                Value = "Burns Bay Road",
+            },
+            new AutoCompleteOption()
+            {
+                Header = "Downing Street",
+                Value  = "Downing Street",
+            },
+            new AutoCompleteOption()
+            {
+                Header = "Wall Street",
+                Value  = "Wall Street",
+            },
+        ];
     }
 }

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Views.AutoCompleteShowCase"
              xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.ViewModels">
     <gallery:ShowCasePanel>
@@ -30,25 +31,82 @@
                         <DockPanel LastChildFill="True">
                             <TextBlock Text="results"
                                        DockPanel.Dock="Right"
-                                       Margin="5 0 0 0"/>
+                                       Margin="5 0 0 0" />
                             <TextBlock Text="{Binding ResultCount}"
-                                       DockPanel.Dock="Right"/>
+                                       DockPanel.Dock="Right" />
                             <TextBlock Text="{Binding Header}"
-                                       TextTrimming="CharacterEllipsis"/>
+                                       TextTrimming="CharacterEllipsis" />
                         </DockPanel>
                     </DataTemplate>
                 </atom:AutoCompleteSearchEdit.OptionTemplate>
             </atom:AutoCompleteSearchEdit>
-            
+
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="TextArea type auto-completion"
                               Description="You can use the TextArea type for autocomplete.">
             <atom:AutoCompleteTextArea PlaceholderText="input here"
-                               OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                       OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                       Width="300"
+                                       Lines="5"
+                                       IsAllowClear="True" />
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Non-case-sensitive AutoComplete"
+                              Description="A non-case-sensitive AutoComplete.">
+            <atom:AutoComplete PlaceholderText="try to type `b`"
+                               OptionsSource="{Binding FilterCaseOptions}"
                                Width="300"
-                               Lines="5"
-                               IsAllowClear="True"/>
+                               IsAllowClear="True"
+                               FilterMode="Contains" />
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Status"
+                              Description="Add status to AutoComplete with status, which could be error or warning.">
+            <StackPanel Spacing="10">
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   Status="Error" />
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   Status="Warning" />
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="Variants"
+                              Description="There are outlined, filled, borderless, and underlined variants to choose from.">
+            <StackPanel Spacing="10">
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   StyleVariant="Outline"
+                                   PlaceholderText="Outline"/>
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   StyleVariant="Filled"
+                                   PlaceholderText="Filled"/>
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   StyleVariant="Borderless"
+                                   PlaceholderText="Borderless"/>
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   StyleVariant="Underlined"
+                                   PlaceholderText="Underlined"/>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem Title="Customize clear button"
+                              Description="Customize clear button.">
+            <StackPanel Spacing="10">
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   PlaceholderText="UnClearable"/>
+                <atom:AutoComplete Width="200"
+                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                                   IsAllowClear="True"
+                                   PlaceholderText="Customized clear icon"
+                                   ClearIcon="{antdicons:AntDesignIconProvider CloseSquareFilled}"/>
+            </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

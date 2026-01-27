@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using AtomUI.Icons.AntDesign;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -56,6 +57,15 @@ public class SearchEdit : LineEdit
     }
 
     #endregion
+    
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (ClearIcon == null)
+        {
+            SetCurrentValue(ClearIconProperty, new CloseCircleFilled());
+        }
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {

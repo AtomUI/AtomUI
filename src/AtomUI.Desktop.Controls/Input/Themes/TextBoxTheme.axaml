@@ -35,6 +35,7 @@
                             Name="{x:Static atom:TextBoxThemeConstants.ClearButtonPart}"
                             IsVisible="{TemplateBinding IsEffectiveShowClearButton}" 
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                            Icon="{TemplateBinding ClearIcon}"
                             VerticalAlignment="Center"/>
                         <!-- 新增显示密码按钮 -->
                         <atom:RevealButton

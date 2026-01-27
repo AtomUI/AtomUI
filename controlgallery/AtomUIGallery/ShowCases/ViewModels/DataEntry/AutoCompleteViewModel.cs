@@ -36,6 +36,14 @@ public class AutoCompleteViewModel : ReactiveObject, IRoutableViewModel, IActiva
         set => this.RaiseAndSetIfChanged(ref _searchEditOptionsAsyncLoader, value);
     }
     
+    private List<IAutoCompleteOption> _filterCaseOptions = [];
+    
+    public List<IAutoCompleteOption> FilterCaseOptions
+    {
+        get => _filterCaseOptions;
+        set => this.RaiseAndSetIfChanged(ref _filterCaseOptions, value);
+    }
+    
     public AutoCompleteViewModel(IScreen screen)
     {
         HostScreen = screen;

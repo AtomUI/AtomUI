@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -35,6 +36,9 @@ public class TextBox : AvaloniaTextBox,
     public static readonly StyledProperty<bool> IsShowCountProperty =
         AvaloniaProperty.Register<TextBox, bool>(nameof(IsShowCount));
     
+    public static readonly StyledProperty<PathIcon?> ClearIconProperty =
+        AvaloniaProperty.Register<TextBox, PathIcon?>(nameof(ClearIcon));
+    
     public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty =
         AvaloniaProperty.Register<TextBox, IBrush?>(nameof(WatermarkForeground));
     
@@ -69,6 +73,12 @@ public class TextBox : AvaloniaTextBox,
     {
         get => GetValue(IsShowCountProperty);
         set => SetValue(IsShowCountProperty, value);
+    }
+    
+    public PathIcon? ClearIcon
+    {
+        get => GetValue(ClearIconProperty);
+        set => SetValue(ClearIconProperty, value);
     }
 
     public IBrush? WatermarkForeground
@@ -121,6 +131,15 @@ public class TextBox : AvaloniaTextBox,
     public TextBox()
     {
         this.RegisterResources();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (ClearIcon == null)
+        {
+            SetCurrentValue(ClearIconProperty, new CloseCircleFilled());
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

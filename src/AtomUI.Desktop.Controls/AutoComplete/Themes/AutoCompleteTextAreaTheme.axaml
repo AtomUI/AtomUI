@@ -29,7 +29,8 @@
                                                   IsAutoSize="{TemplateBinding IsAutoSize}"
                                                   IsShowCount="{TemplateBinding IsShowCount}"
                                                   IsResizable="{TemplateBinding IsResizable}"
-                                                  IsDropDownOpen="{TemplateBinding IsDropDownOpen}"/>
+                                                  IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
+                                                  ClearIcon="{TemplateBinding ClearIcon}"/>
 
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"

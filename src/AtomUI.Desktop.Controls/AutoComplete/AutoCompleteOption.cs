@@ -19,6 +19,11 @@ public class AutoCompleteOption : AvaloniaObject, IAutoCompleteOption
             o => o.Value,
             (o, v) => o.Value = v);
     
+    public static readonly DirectProperty<AutoCompleteOption, bool> IsSelectedProperty =
+        AvaloniaProperty.RegisterDirect<AutoCompleteOption, bool>(nameof(IsSelected),
+            o => o.IsSelected,
+            (o, v) => o.IsSelected = v);
+    
     private object? _header;
 
     public object? Header
@@ -41,6 +46,14 @@ public class AutoCompleteOption : AvaloniaObject, IAutoCompleteOption
     {
         get => _value;
         set => SetAndRaise(ValueProperty, ref _value, value);
+    }
+    
+    private bool _isSelected;
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
     }
     
     public string? Key { get; init; }

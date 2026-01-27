@@ -4,8 +4,50 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:AutoCompleteSearchEdit}" TargetType="atom:AutoCompleteSearchEdit">
+        <ControlTheme.BasedOn>
+            <atom:AbstractAutoCompleteTheme TargetType="atom:AutoCompleteSearchEdit"/>
+        </ControlTheme.BasedOn>
+        
         <Setter Property="Template">
             <ControlTemplate>
+                <Panel>
+                    <atom:AutoCompleteSearchEditBox Name="{x:Static atom:AutoCompleteThemeConstants.TextBoxPart}"
+                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                    IsEnableClearButton="{TemplateBinding IsAllowClear}"
+                                                    StyleVariant="{TemplateBinding StyleVariant}"
+                                                    Status="{TemplateBinding Status}"
+                                                    CaretIndex="{TemplateBinding CaretIndex}"
+                                                    InnerLeftContent="{TemplateBinding ContentLeftAddOn}"
+                                                    InnerLeftContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
+                                                    InnerRightContent="{TemplateBinding ContentRightAddOn}"
+                                                    InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
+                                                    SizeType="{TemplateBinding SizeType}"
+                                                    Watermark="{TemplateBinding PlaceholderText}"
+                                                    IsReadOnly="{TemplateBinding IsReadOnly}"
+                                                    Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}" 
+                                                    SearchButtonStyle="{TemplateBinding SearchButtonStyle}"
+                                                    SearchButtonText="{TemplateBinding SearchButtonText}"
+                                                    IsOperating="{TemplateBinding IsOperating}"/>
+                    
+                    <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
+                                WindowManagerAddShadowHint="False"
+                                IsLightDismissEnabled="False"
+                                IsDetectMouseClickEnabled="True"
+                                ShouldUseOverlayLayer="True"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                Placement="{TemplateBinding PopupPlacement}"
+                                MaxHeight="{TemplateBinding MaxPopupHeight}"
+                                MinWidth="{TemplateBinding MinPopupWidth}">
+                        <Border Name="PopupFrame"
+                                Padding="{TemplateBinding PopupContentPadding}">
+                            <atom:CompleteCandidateList
+                                Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                SelectionMode="Single"
+                                ItemTemplate="{TemplateBinding OptionTemplate}" />
+                        </Border>
+                    </atom:Popup>
+                </Panel>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

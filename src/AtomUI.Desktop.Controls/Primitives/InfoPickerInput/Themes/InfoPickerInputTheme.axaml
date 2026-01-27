@@ -59,7 +59,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
-        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}" />
+        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}" />
         
         <Style Selector="^ /template/ atom|TextBox#PART_InfoInputBox">
             <Setter Property="Foreground"

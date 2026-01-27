@@ -2,12 +2,44 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Views.AutoCompleteShowCase"
              xmlns:atom="https://atomui.net"
-             xmlns:antdicons="https://atomui.net/icons/antdesign"
-             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+             xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.ViewModels">
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem Title="Basic Usage"
                               Description="Basic Usage, set data source of autocomplete with options property.">
-            <atom:AutoComplete PlaceholderText="input here"/>
+            <atom:AutoComplete PlaceholderText="input here"
+                               OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                               Width="200" />
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Customized"
+                              Description="You could set custom Option label">
+            <atom:AutoComplete PlaceholderText="input here"
+                               OptionsAsyncLoader="{Binding CustomLabelOptionsAsyncLoader}"
+                               Width="200" />
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem Title="Lookup-Patterns - Uncertain Category"
+                              Description="Demonstration of Lookup Patterns: Uncertain Category.">
+            <atom:AutoCompleteSearchEdit PlaceholderText="input here" Width="300"
+                                         SizeType="Large"
+                                         OptionsAsyncLoader="{Binding SearchEditOptionsAsyncLoader}"
+                                         SearchButtonStyle="Primary">
+                <atom:AutoCompleteSearchEdit.OptionTemplate>
+                    <DataTemplate x:DataType="viewModels:CustomAutoCompleteOption">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock Text="results"
+                                       DockPanel.Dock="Right"
+                                       Margin="5 0 0 0"/>
+                            <TextBlock Text="{Binding ResultCount}"
+                                       DockPanel.Dock="Right"/>
+                            <TextBlock Text="{Binding Header}"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </atom:AutoCompleteSearchEdit.OptionTemplate>
+            </atom:AutoCompleteSearchEdit>
+            
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

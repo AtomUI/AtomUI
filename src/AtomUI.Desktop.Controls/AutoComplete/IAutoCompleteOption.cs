@@ -1,9 +1,7 @@
 namespace AtomUI.Desktop.Controls;
 
-public interface IAutoCompleteOption
+public interface IAutoCompleteOption : IListBoxItemData
 {
     string? Key { get; }
     object? Header { get; }
-    bool IsEnabled { get; }
-    object? Value { get; }
 }

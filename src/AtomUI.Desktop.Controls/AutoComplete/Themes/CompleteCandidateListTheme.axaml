@@ -4,9 +4,13 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CompleteCandidateList}" TargetType="atom:CompleteCandidateList">
-        <Setter Property="Template">
-            <ControlTemplate>
-            </ControlTemplate>
-        </Setter>
+        <ControlTheme.BasedOn>
+            <atom:ListBoxTheme TargetType="atom:CompleteCandidateList" />
+        </ControlTheme.BasedOn>
+        
+        <Setter Property="IsBorderless" Value="True"/>
+        <Setter Property="IsShowSelectedIndicator" Value="False"/>
+        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverBgColor}}" />
+        
     </ControlTheme>
 </ResourceDictionary>

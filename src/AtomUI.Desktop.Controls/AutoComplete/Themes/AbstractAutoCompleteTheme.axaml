@@ -1,0 +1,46 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:Class="AtomUI.Desktop.Controls.Themes.AbstractAutoCompleteTheme"
+              TargetType="atom:AbstractAutoComplete"
+              x:ClassModifier="internal">
+
+    <Style Selector="^:is(atom|AbstractAutoComplete)">
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.OptionHeight}}" />
+        <Setter Property="PopupContentPadding"
+                Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.PopupContentPadding}}" />
+        <Setter Property="MinPopupWidth" Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.MinPopupWidth}}" />
+        <Style Selector="^ /template/ atom|Popup#PART_Popup">
+            <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}" />
+            <Setter Property="MaskShadows" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BoxShadows}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PopupFrame">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
+        </Style>
+        
+        <Style Selector="^[IsPopupMatchSelectWidth=True]">
+            <Style Selector="^ /template/ atom|Popup#PART_Popup">
+                <Setter Property="Width" Value="{Binding EffectivePopupWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^[IsPopupMatchSelectWidth=False]">
+            <Style Selector="^ /template/ atom|Popup#PART_Popup">
+                <Setter Property="MaxWidth" Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.MaxPopupWidth}}" />
+            </Style>
+        </Style>
+        
+        <Setter Property="OptionTemplate">
+            <DataTemplate x:DataType="atom:IAutoCompleteOption">
+                <TextBlock Text="{Binding Header}"
+                           TextTrimming="CharacterEllipsis"/>
+            </DataTemplate>
+        </Setter>
+
+    </Style>
+</ControlTheme>

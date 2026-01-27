@@ -10,8 +10,11 @@ public partial class AutoCompleteShowCase : ReactiveUserControl<AutoCompleteView
     {
         this.WhenActivated(disposables =>
         {
-            if (DataContext is CascaderViewModel vm)
+            if (DataContext is AutoCompleteViewModel vm)
             {
+                vm.BasicOptionsAsyncLoader       = new BasicOptionsAsyncLoader();
+                vm.CustomLabelOptionsAsyncLoader = new CustomLabelOptionsAsyncLoader();
+                vm.SearchEditOptionsAsyncLoader  = new SearchEditOptionsAsyncLoader();
             }
         });
         InitializeComponent();

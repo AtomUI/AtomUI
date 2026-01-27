@@ -23,6 +23,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class AutoCompleteTokenKey
     {
+        public static readonly TokenResourceKey MaxPopupWidth = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.MaxPopupWidth");
         public static readonly TokenResourceKey MinPopupWidth = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.MinPopupWidth");
         public static readonly TokenResourceKey OptionHeight = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.OptionHeight");
         public static readonly TokenResourceKey PopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.AutoComplete.PopupContentPadding");

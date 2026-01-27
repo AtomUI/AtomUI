@@ -6,7 +6,7 @@ public interface IListBoxItemData
 {
     bool IsEnabled { get; set; }
     bool IsSelected { get; set; }
-    object? Content { get; set; }
+    object? Value { get; set; }
 }
 
 public class ListBoxItemData : AvaloniaObject, IListBoxItemData
@@ -21,10 +21,10 @@ public class ListBoxItemData : AvaloniaObject, IListBoxItemData
             o => o.IsSelected,
             (o, v) => o.IsSelected = v);
     
-    public static readonly DirectProperty<ListBoxItemData, object?> ContentProperty =
-        AvaloniaProperty.RegisterDirect<ListBoxItemData, object?>(nameof(Content),
-            o => o.Content,
-            (o, v) => o.Content = v);
+    public static readonly DirectProperty<ListBoxItemData, object?> ValueProperty =
+        AvaloniaProperty.RegisterDirect<ListBoxItemData, object?>(nameof(Value),
+            o => o.Value,
+            (o, v) => o.Value = v);
     
     private bool _isEnabled = true;
 
@@ -42,12 +42,12 @@ public class ListBoxItemData : AvaloniaObject, IListBoxItemData
         set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
     }
     
-    private object? _content;
+    private object? _value;
 
-    public object? Content
+    public object? Value
     {
-        get => _content;
-        set => SetAndRaise(ContentProperty, ref _content, value);
+        get => _value;
+        set => SetAndRaise(ValueProperty, ref _value, value);
     }
 
 }

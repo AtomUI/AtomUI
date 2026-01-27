@@ -4,9 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CompleteCandidateListItem}" TargetType="atom:CompleteCandidateListItem">
-        <Setter Property="Template">
-            <ControlTemplate>
-            </ControlTemplate>
-        </Setter>
+        <ControlTheme.BasedOn>
+            <atom:ListBoxItemTheme TargetType="atom:CompleteCandidateListItem" />
+        </ControlTheme.BasedOn>
     </ControlTheme>
 </ResourceDictionary>

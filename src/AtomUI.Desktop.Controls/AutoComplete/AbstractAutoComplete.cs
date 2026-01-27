@@ -38,10 +38,15 @@ public enum AutoCompletePlacementMode
 public delegate object? AutoCompleteFilterValueSelector(IAutoCompleteOption option);
 
 [PseudoClasses(AutoCompletePseudoClass.CandidatePopupOpen)]
-public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourcesHost, IMotionAwareControl
+public class AbstractAutoComplete : TemplatedControl, 
+                                    IControlSharedTokenResourcesHost, 
+                                    ISizeTypeAware,
+                                    IMotionAwareControl
 {
     #region 公共属性定义
-
+    public static readonly StyledProperty<SizeType> SizeTypeProperty =
+        SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractAutoComplete>();
+    
     public static readonly StyledProperty<int> CaretIndexProperty =
         AvaloniaTextBox.CaretIndexProperty.AddOwner<AbstractAutoComplete>(new(
             defaultValue: 0,
@@ -73,17 +78,8 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     public static readonly StyledProperty<string?> DefaultValueProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, string?>(nameof(DefaultValue));
     
-    public static readonly StyledProperty<object?> EmptyIndicatorProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, object?>(nameof(EmptyIndicator));
-    
-    public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
-    
-    public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(IsShowEmptyIndicator), true);
-    
-    public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, Thickness>(nameof(EmptyIndicatorPadding));
+    public static readonly StyledProperty<int> DisplayCandidateCountProperty = 
+        AvaloniaProperty.Register<AbstractAutoComplete, int>(nameof (DisplayCandidateCount), 10);
     
     public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
         AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<AbstractAutoComplete>();
@@ -171,6 +167,15 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty =
         AvaloniaTextBox.ClearSelectionOnLostFocusProperty.AddOwner<AbstractAutoComplete>();
     
+    public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(IsPopupMatchSelectWidth), true);
+    
+    public SizeType SizeType
+    {
+        get => GetValue(SizeTypeProperty);
+        set => SetValue(SizeTypeProperty, value);
+    }
+    
     public int CaretIndex
     {
         get => GetValue(CaretIndexProperty);
@@ -212,36 +217,17 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         get => GetValue(DefaultValueProperty);
         set => SetValue(DefaultValueProperty, value);
     }
+        
+    public int DisplayCandidateCount
+    {
+        get => GetValue(DisplayCandidateCountProperty);
+        set => SetValue(DisplayCandidateCountProperty, value);
+    }
     
     public bool IsAutoFocus
     {
         get => GetValue(IsAutoFocusProperty);
         set => SetValue(IsAutoFocusProperty, value);
-    }
-    
-    [DependsOn(nameof(EmptyIndicatorTemplate))]
-    public object? EmptyIndicator
-    {
-        get => GetValue(EmptyIndicatorProperty);
-        set => SetValue(EmptyIndicatorProperty, value);
-    }
-
-    public IDataTemplate? EmptyIndicatorTemplate
-    {
-        get => GetValue(EmptyIndicatorTemplateProperty);
-        set => SetValue(EmptyIndicatorTemplateProperty, value);
-    }
-    
-    public bool IsShowEmptyIndicator
-    {
-        get => GetValue(IsShowEmptyIndicatorProperty);
-        set => SetValue(IsShowEmptyIndicatorProperty, value);
-    }
-    
-    public Thickness EmptyIndicatorPadding
-    {
-        get => GetValue(EmptyIndicatorPaddingProperty);
-        set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
     
     public object? ContentLeftAddOn
@@ -396,6 +382,12 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         get => GetValue(ClearSelectionOnLostFocusProperty);
         set => SetValue(ClearSelectionOnLostFocusProperty, value);
     }
+    
+    public bool IsPopupMatchSelectWidth
+    {
+        get => GetValue(IsPopupMatchSelectWidthProperty);
+        set => SetValue(IsPopupMatchSelectWidthProperty, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -452,6 +444,12 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
             o => o.MinPopupWidth,
             (o, v) => o.MinPopupWidth = v);
     
+    internal static readonly DirectProperty<AbstractAutoComplete, double> EffectivePopupWidthProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
+            nameof(EffectivePopupWidth),
+            o => o.EffectivePopupWidth,
+            (o, v) => o.EffectivePopupWidth = v);
+    
     internal static readonly DirectProperty<AbstractAutoComplete, Thickness> PopupContentPaddingProperty =
         AvaloniaProperty.RegisterDirect<AbstractAutoComplete, Thickness>(nameof(PopupContentPadding),
             o => o.PopupContentPadding,
@@ -489,6 +487,14 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     {
         get => _minPopupWidth;
         set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
+    }
+    
+    private double _effectivePopupWidth;
+
+    internal double EffectivePopupWidth
+    {
+        get => _effectivePopupWidth;
+        set => SetAndRaise(EffectivePopupWidthProperty, ref _effectivePopupWidth, value);
     }
     
     private Thickness _popupContentPadding;
@@ -602,13 +608,13 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     private protected AvaloniaList<IAutoCompleteOption>? _view;
     private protected ISelectCandidateList? _candidateList;
     private protected Popup? _popup;
+    private protected bool _ignorePopupClose;
     private bool _allowWrite;
     private bool _cancelRequested;
     private bool _filterInAction;
     private int _ignoreValuePropertyChange;
     private bool _ignorePropertyChange;
     private bool _popupHasOpened;
-    private bool _ignorePopupClose;
     private int _textSelectionStart;
     private IDisposable? _collectionChangeSubscription;
     private CompositeDisposable? _subscriptionsOnOpen;
@@ -658,7 +664,32 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         base.OnLostFocus(e);
         FocusChanged(HasFocus());
     }
-    
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == DisplayCandidateCountProperty ||
+            change.Property == ItemHeightProperty)
+        {
+            ConfigureMaxPopupHeight();
+        }
+        else if (change.Property == IsPopupMatchSelectWidthProperty)
+        {
+            ConfigurePopupMinWith(DesiredSize.Width);
+        }
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        ConfigurePopupMinWith(e.NewSize.Width);
+    }
+
+    protected virtual void ConfigureMaxPopupHeight()
+    {
+        MaxPopupHeight = ItemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+
     protected bool HasFocus() => IsKeyboardFocusWithin;
     
     private void FocusChanged(bool hasFocus)
@@ -858,11 +889,13 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     
     protected virtual void NotifyPopulating(CompletePopulatingEventArgs e)
     {
+        IsLoading = true;
         Populating?.Invoke(this, e);
     }
 
     protected virtual void NotifyPopulated(CompletePopulatedEventArgs e)
     {
+        IsLoading = false;
         Populated?.Invoke(this, e);
     }
 
@@ -1155,6 +1188,11 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         
             _view?.Clear();
             _view?.AddRange(newViewItems);
+            Dispatcher.UIThread.Post(() =>
+            {
+                var selectedItem = TryGetMatch(Value, _view, GetFilterForMode(AutoCompleteFilterMode.EqualsCaseSensitive));
+                SelectCandidateList!.SelectedItem = selectedItem;
+            });
         }
         finally
         {
@@ -1382,10 +1420,6 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     {
         if (_popupHasOpened)
         {
-            if (SelectCandidateList != null)
-            {
-                SelectCandidateList.SelectedItem = null;
-            }
             if (_popup != null)
             {
                 _popup.IsMotionAwareOpen = false;
@@ -1428,8 +1462,8 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
             _popup.Opened -= HandlePopupOpened;
             _popup.Closed -= HandlePopupClosed;
         }
-        
-        _textBox            = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
+
+        TextBox             = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
         _popup              = e.NameScope.Find<Popup>(AutoCompleteThemeConstants.PopupPart);
         SelectCandidateList = e.NameScope.Find<ISelectCandidateList>(AutoCompleteThemeConstants.CandidateListPart);
 
@@ -1439,7 +1473,23 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
             _popup.IgnoreFirstDetected =  false;
             _popup.Opened              -= HandlePopupOpened;
             _popup.Closed              -= HandlePopupClosed;
+            _popup.CloseAction         =  PopupCloseAction;
         }
+        
+        // If the drop down property indicates that the popup is open,
+        // flip its value to invoke the changed handler.
+        if (IsDropDownOpen && _popup != null && !_popup.IsOpen)
+        {
+            OpeningDropDown(false);
+        }
+    }
+
+    private void PopupCloseAction(Popup popup)
+    {
+        popup.MotionAwareClose();
+        _ignorePropertyChange = true;
+        SetCurrentValue(IsDropDownOpenProperty, false);
+        ClosingDropDown(true);
     }
     
     protected bool PopupClosePredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)
@@ -1531,47 +1581,54 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         _populationCancellationTokenSource?.Dispose();
         _populationCancellationTokenSource = null;
 
-        // if (AsyncPopulator == null)
-        // {
-        //     return false;
-        // }
+        if (OptionsAsyncLoader == null)
+        {
+            return false;
+        }
 
         _populationCancellationTokenSource = new CancellationTokenSource();
         var task = PopulateAsync(searchText, _populationCancellationTokenSource.Token);
         if (task.Status == TaskStatus.Created)
+        {
             task.Start();
+        }
 
         return true;
     }
-    private async Task PopulateAsync(string? searchText, CancellationToken cancellationToken)
+    
+    private async Task PopulateAsync(string? filterValue, CancellationToken cancellationToken)
     {
+        try
+        {
+            if (OptionsAsyncLoader == null)
+            {
+                return;
+            }
 
-        // try
-        // {
-        //     IEnumerable<object> result     = await AsyncPopulator!.Invoke(searchText, cancellationToken);
-        //     var                 resultList = result.ToList();
-        //
-        //     if (cancellationToken.IsCancellationRequested)
-        //     {
-        //         return;
-        //     }
-        //
-        //     await Dispatcher.UIThread.InvokeAsync(() =>
-        //     {
-        //         if (!cancellationToken.IsCancellationRequested)
-        //         {
-        //             SetCurrentValue(ItemsSourceProperty, resultList);
-        //             PopulateComplete();
-        //         }
-        //     });
-        // }
-        // catch (TaskCanceledException)
-        // { }
-        // finally
-        // {
-        //     _populationCancellationTokenSource?.Dispose();
-        //     _populationCancellationTokenSource = null;
-        // }
+            var result     = await OptionsAsyncLoader.LoadAsync(filterValue, cancellationToken);
+            var resultList = result.Data;
+        
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+        
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    SetCurrentValue(OptionsSourceProperty, resultList);
+                    PopulateComplete();
+                }
+            });
+        }
+        catch (TaskCanceledException)
+        { }
+        finally
+        {
+            _populationCancellationTokenSource?.Dispose();
+            _populationCancellationTokenSource = null;
+        }
     }
     
     public void PopulateComplete()
@@ -1580,12 +1637,15 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         RefreshView();
         
         // Fire the Populated event containing the read-only view data.
-        // var populated = new CompletePopulatedEventArgs(new ReadOnlyCollection<object>(_view!));
-        // NotifyPopulated(populated);
+        var populated = new CompletePopulatedEventArgs(_view);
+        NotifyPopulated(populated);
         
-        if (SelectCandidateList != null && SelectCandidateList.ItemsSource != _view)
+        if (SelectCandidateList != null)
         {
-            SelectCandidateList.ItemsSource = _view;
+            if (SelectCandidateList.ItemsSource != _view)
+            {
+                SelectCandidateList.ItemsSource = _view;
+            }
         }
         
         bool isDropDownOpen = _userCalledPopulate && (_view!.Count > 0);
@@ -1620,39 +1680,38 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         {
             if (IsCompletionEnabled && TextBox != null && userInitiated)
             {
-                // int currentLength = TextBox.Text?.Length ?? 0;
-                // int selectionStart = TextBoxSelectionStart;
-                // if (selectionStart == value?.Length && selectionStart > _textSelectionStart)
-                // {
-                //     // When the FilterMode dependency property is set to
-                //     // either StartsWith or StartsWithCaseSensitive, the
-                //     // first item in the view is used. This will improve
-                //     // performance on the lookup. It assumes that the
-                //     // FilterMode the user has selected is an acceptable
-                //     // case sensitive matching function for their scenario.
-                //     object? top = FilterMode == AutoCompleteFilterMode.StartsWith || FilterMode == AutoCompleteFilterMode.StartsWithCaseSensitive
-                //         ? _view[0]
-                //         : TryGetMatch(text, _view, AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith));
-                //
-                //     // If the search was successful, update SelectedItem
-                //     if (top != null)
-                //     {
-                //         newSelectedItem = top;
-                //         string? topString = FormatValue(top, true);
-                //
-                //         // Only replace partially when the two words being the same
-                //         int minLength = Math.Min(topString?.Length ?? 0, Text?.Length ?? 0);
-                //         if (AutoCompleteSearch.Equals(Text?.Substring(0, minLength), topString?.Substring(0, minLength)))
-                //         {
-                //             // Update the text
-                //             UpdateTextValue(topString);
-                //
-                //             // Select the text past the user's caret
-                //             TextBox.SelectionStart = currentLength;
-                //             TextBox.SelectionEnd = topString?.Length ?? 0;
-                //         }
-                //     }
-                // }
+                int currentLength = TextBox.Text?.Length ?? 0;
+                int selectionStart = TextBoxSelectionStart;
+                if (selectionStart == value?.Length && selectionStart > _textSelectionStart)
+                {
+                    // When the FilterMode dependency property is set to
+                    // either StartsWith or StartsWithCaseSensitive, the
+                    // first item in the view is used. This will improve
+                    // performance on the lookup. It assumes that the
+                    // FilterMode the user has selected is an acceptable
+                    // case sensitive matching function for their scenario.
+                    var top = FilterMode == AutoCompleteFilterMode.StartsWith || FilterMode == AutoCompleteFilterMode.StartsWithCaseSensitive
+                        ? _view[0]
+                        : TryGetMatch(value, _view, GetFilterForMode(AutoCompleteFilterMode.StartsWith));
+                
+                    // If the search was successful, update SelectedItem
+                    if (top != null)
+                    {
+                        newSelectedItem = top;
+                        var topString = (top.Value ?? top.Header ?? top.Key)?.ToString();
+                
+                        // Only replace partially when the two words being the same
+                        int minLength = Math.Min(topString?.Length ?? 0, Value?.Length ?? 0);
+                        if (string.Equals(Value?.Substring(0, minLength), topString?.Substring(0, minLength),  StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            // Update the text
+                            UpdateValue(topString);
+                            // Select the text past the user's caret
+                            TextBox.SelectionStart = currentLength;
+                            TextBox.SelectionEnd = topString?.Length ?? 0;
+                        }
+                    }
+                }
             }
             else
             {
@@ -1663,7 +1722,7 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
                 //
                 // This change provides the behavior that most people expect
                 // to find: a lookup for the value is always performed.
-                // newSelectedItem = TryGetMatch(text, _view, AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.EqualsCaseSensitive));
+                newSelectedItem = TryGetMatch(value, _view, GetFilterForMode(AutoCompleteFilterMode.EqualsCaseSensitive));
             }
         }
         
@@ -1681,12 +1740,12 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
             _ignoreTextSelectionChange = false;
             if (TextBox != null)
             {
-                // _textSelectionStart = TextBoxSelectionStart;
+                _textSelectionStart = TextBoxSelectionStart;
             }
         }
     }
     
-    private object? TryGetMatch(string? filterValue, AvaloniaList<object>? view, ICompleteOptionFilter? predicate)
+    private IAutoCompleteOption? TryGetMatch(string? filterValue, AvaloniaList<IAutoCompleteOption>? view, ICompleteOptionFilter? predicate)
     {
         if (predicate is null)
         {
@@ -1695,9 +1754,9 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
 
         if (view != null && view.Count > 0)
         {
-            foreach (var o in view)
+            foreach (var option in view)
             {
-                if (o is IAutoCompleteOption option)
+                if (option != null)
                 {
                     object? value = null;
                     if (FilterValueSelector != null)
@@ -1710,7 +1769,7 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
                     }
                     if (predicate.Filter(value, filterValue))
                     {
-                        return value;
+                        return option;
                     }
                 }
             }
@@ -1729,7 +1788,7 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         }
         else if (newItem is IAutoCompleteOption option)
         {
-            text = option.Header?.ToString();
+            text = option.Value?.ToString() ?? option.Header?.ToString() ?? option.Key;
         }
         // Update the Text property and the TextBox values
         UpdateValue(text);
@@ -1746,8 +1805,6 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
     private void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
     {
         SetCurrentValue(IsDropDownOpenProperty, false);
-        // Completion will update the selected value
-        UpdateTextCompletion(false);
         // Text should not be selected
         ClearTextBoxSelection();
         TextBox!.Focus();
@@ -1758,5 +1815,79 @@ public class AbstractAutoComplete : TemplatedControl, IControlSharedTokenResourc
         UpdateValue(FilterValue);
         // Completion will update the selected value
         UpdateTextCompletion(false);
+    }
+    
+    protected virtual void ConfigurePopupMinWith(double selectWidth)
+    {
+        if (IsPopupMatchSelectWidth)
+        {
+            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
+        }
+    }
+    
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        
+        if(!e.Handled && e.Source is Visual source)
+        {
+            if (_popup?.IsInsidePopup(source) == true)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+        if (IsDropDownOpen)
+        {
+            // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
+            // is pressed, close the drop-down
+            if (e.Source is Control sourceControl)
+            {
+                var textBox = sourceControl.FindAncestorOfType<AvaloniaTextBox>();
+                if (textBox != null)
+                {
+                    _ignorePopupClose = true;
+                    return;
+                }
+            }
+            else
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false); 
+                e.Handled = true;
+            }
+        }
+        else
+        {
+            PseudoClasses.Set(StdPseudoClass.Pressed, true);
+        }
+    }
+    
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        if (!e.Handled && e.Source is Visual source)
+        {
+            if (_popup?.IsInsidePopup(source) == true)
+            {
+                e.Handled = true;
+            }
+            else if (PseudoClasses.Contains(StdPseudoClass.Pressed))
+            {
+                if (IsDropDownOpen)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+                else if (_view?.Count > 0)
+                {
+                    _ignorePropertyChange = true;
+                    SetCurrentValue(IsDropDownOpenProperty, true);
+                    OpeningDropDown(false);
+                }
+       
+                e.Handled = true;
+            }
+        }
+    
+        PseudoClasses.Set(StdPseudoClass.Pressed, false);
+        base.OnPointerReleased(e);
     }
 }

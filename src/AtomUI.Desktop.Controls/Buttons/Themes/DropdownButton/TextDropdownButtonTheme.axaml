@@ -48,7 +48,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|DropdownButton):text">
-        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}"></Setter>
+        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}"/>
         <Style Selector="^ /template/ atom|Icon#PART_DropdownIndicator">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />

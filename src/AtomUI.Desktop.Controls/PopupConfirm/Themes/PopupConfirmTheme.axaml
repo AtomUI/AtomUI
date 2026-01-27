@@ -16,7 +16,7 @@
         
         <Setter Property="OkText" Value="{DynamicResource {x:Static atom:CommonLangResourceKey.Ok}}"/>
         <Setter Property="CancelText" Value="{DynamicResource {x:Static atom:CommonLangResourceKey.Cancel}}"/>
-        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyMarginXXS}}"/>
+        <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}"/>
         <Setter Property="MotionDuration" Value="{DynamicResource {x:Static atom:SharedTokenKey.MotionDurationMid}}"/>
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
         <Setter Property="ClipToBounds" Value="False"/>

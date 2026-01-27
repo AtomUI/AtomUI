@@ -218,7 +218,7 @@ public class ListBoxItem : AvaloniaListBoxItem
         {
             if (Content is IListBoxItemData listBoxItemData)
             {
-                ContentText = listBoxItemData.Content as string;
+                ContentText = listBoxItemData.Value as string;
             }
             else if (Content is string strContent)
             {

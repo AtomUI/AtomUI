@@ -999,4 +999,10 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
             }
         }
     }
+    
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        ConfigurePopupMinWith(e.NewSize.Width);
+    }
 }

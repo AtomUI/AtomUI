@@ -24,6 +24,11 @@ internal class AutoCompleteToken : AbstractControlDesignToken
     /// </summary>
     public double MinPopupWidth { get; set; }
     
+    /// <summary>
+    /// 在不跟随 Anchor 宽度时候的 Popup 最大宽度
+    /// </summary>
+    public double MaxPopupWidth { get; set; }
+    
     public AutoCompleteToken()
         : base(ID)
     {
@@ -35,5 +40,6 @@ internal class AutoCompleteToken : AbstractControlDesignToken
         OptionHeight        = SharedToken.ControlHeight;
         PopupContentPadding = new Thickness(SharedToken.UniformlyPaddingXXS / 2);
         MinPopupWidth       = 120;
+        MaxPopupWidth       = 200;
     }
 }

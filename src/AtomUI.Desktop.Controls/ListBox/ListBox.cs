@@ -355,29 +355,14 @@ public class ListBox : AvaloniaListBox,
             
             if (item != null && item is not Visual)
             {
-                if (item is ListBoxItemData itemData)
+                if (item is IListBoxItemData itemData)
                 {
                     if (!listBoxItem.IsSet(ListBoxItem.ContentProperty))
                     {
                         listBoxItem.SetCurrentValue(ListBoxItem.ContentProperty, item);
                     }
-                    disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.IsEnabledProperty, listBoxItem, ListBoxItem.IsEnabledProperty, BindingMode.TwoWay));
-                    disposables.Add(BindUtils.RelayBind(itemData, ListBoxItemData.IsSelectedProperty, listBoxItem, ListBoxItem.IsSelectedProperty, BindingMode.TwoWay));
-                }
-                else if (item is IListBoxItemData iItemData)
-                {
-                    if (!listBoxItem.IsSet(ListBoxItem.ContentProperty))
-                    {
-                        listBoxItem.SetCurrentValue(ListBoxItem.ContentProperty, item);
-                    }
-                    if (!listBoxItem.IsSet(ListBoxItem.IsEnabledProperty))
-                    {
-                        listBoxItem.SetCurrentValue(ListBoxItem.IsEnabledProperty, iItemData.IsEnabled);
-                    }
-                    if (!listBoxItem.IsSet(ListBoxItem.IsSelectedProperty))
-                    {
-                        listBoxItem.SetCurrentValue(ListBoxItem.IsSelectedProperty, iItemData.IsSelected);
-                    }
+                    disposables.Add(BindUtils.RelayBind(itemData, nameof(IListBoxItemData.IsEnabled), listBoxItem, ListBoxItem.IsEnabledProperty, BindingMode.TwoWay));
+                    disposables.Add(BindUtils.RelayBind(itemData, nameof(IListBoxItemData.IsSelected), listBoxItem, ListBoxItem.IsSelectedProperty, BindingMode.TwoWay));
                 }
             }
             

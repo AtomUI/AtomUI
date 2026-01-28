@@ -1,12 +1,11 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:RangeDatePicker}" TargetType="atom:RangeDatePicker">
         <ControlTheme.BasedOn>
-            <themes:RangeInfoPickerInputTheme TargetType="atom:RangeDatePicker" />
+            <atom:RangeInfoPickerInputTheme TargetType="atom:RangeDatePicker" />
         </ControlTheme.BasedOn>
     </ControlTheme>
 </ResourceDictionary>

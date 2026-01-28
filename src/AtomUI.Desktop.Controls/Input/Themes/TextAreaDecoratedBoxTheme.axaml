@@ -2,13 +2,12 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     xmlns:converters="clr-namespace:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
     <converters:TextAreaFramePaddingConverter x:Key="TextAreaFramePaddingConverter"/>
     <ControlTheme x:Key="{x:Type atom:TextAreaDecoratedBox}" TargetType="atom:TextAreaDecoratedBox">
         <ControlTheme.BasedOn>
-            <themes:AddOnDecoratedBoxTheme TargetType="atom:TextAreaDecoratedBox" />
+            <atom:AddOnDecoratedBoxTheme TargetType="atom:TextAreaDecoratedBox" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>

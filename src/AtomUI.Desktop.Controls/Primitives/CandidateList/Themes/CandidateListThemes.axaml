@@ -1,0 +1,7 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    x:ClassModifier="internal">
+    <atom:CandidateListTheme x:Key="{x:Type atom:CandidateList}" TargetType="atom:CandidateList"/>
+    <atom:CandidateListItemTheme x:Key="{x:Type atom:CandidateListItem}" TargetType="atom:CandidateListItem"/>
+</ResourceDictionary>

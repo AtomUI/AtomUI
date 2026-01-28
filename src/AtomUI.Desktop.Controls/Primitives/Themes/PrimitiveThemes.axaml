@@ -8,5 +8,6 @@
         <ResourceInclude Source="../AddOnDecoratedBox/Themes/AddOnDecoratedBoxThemes.axaml" />
         <ResourceInclude Source="../ArrowDecoratedBox/Themes/ArrowDecoratedBoxThemes.axaml" />
         <ResourceInclude Source="../IndicatorScrollViewer/Themes/IndicatorScrollViewerThemes.axaml" />
+        <ResourceInclude Source="../CandidateList/Themes/CandidateListThemes.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

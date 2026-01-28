@@ -1,6 +1,6 @@
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-              x:Class="AtomUI.Desktop.Controls.Themes.ArrowDecoratedBoxTheme"
+              x:Class="AtomUI.Desktop.Controls.Primitives.Themes.ArrowDecoratedBoxTheme"
               xmlns:atom="https://atomui.net"
               TargetType="atom:ArrowDecoratedBox">
     <Setter Property="Template">

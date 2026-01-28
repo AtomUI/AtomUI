@@ -1,4 +1,4 @@
-namespace AtomUI.Desktop.Controls.Themes;
+namespace AtomUI.Desktop.Controls.Primitives.Themes;
 
 internal static class ArrowDecoratedBoxThemeConstants
 {

@@ -1,0 +1,9 @@
+<ControlTheme TargetType="atom:CandidateListItem"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:ClassModifier="internal">
+    <ControlTheme.BasedOn>
+        <atom:ListBoxItemTheme TargetType="atom:CandidateListItem" />
+    </ControlTheme.BasedOn>
+</ControlTheme>

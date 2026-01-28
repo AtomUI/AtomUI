@@ -7,6 +7,7 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.DesignTokens")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Primitives.DesignTokens")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Primitives")]
+[assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Primitives.Themes")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Themes")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Utils")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme.Styling")]

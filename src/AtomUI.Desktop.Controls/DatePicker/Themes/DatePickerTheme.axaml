@@ -1,12 +1,11 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:DatePicker}" TargetType="atom:DatePicker">
         <ControlTheme.BasedOn>
-            <themes:InfoPickerInputTheme TargetType="atom:DatePicker" />
+            <atom:InfoPickerInputTheme TargetType="atom:DatePicker" />
         </ControlTheme.BasedOn>
     </ControlTheme>
 </ResourceDictionary>

@@ -1,0 +1,16 @@
+<ControlTheme TargetType="atom:CandidateList"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              x:ClassModifier="internal">
+    <ControlTheme.BasedOn>
+        <atom:ListBoxTheme TargetType="atom:CandidateList" />
+    </ControlTheme.BasedOn>
+        
+    <Style Selector="^:is(atom|CandidateList)">
+        <Setter Property="IsBorderless" Value="True"/>
+        <Setter Property="IsShowSelectedIndicator" Value="False"/>
+        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverBgColor}}" />
+    </Style>
+    
+</ControlTheme>

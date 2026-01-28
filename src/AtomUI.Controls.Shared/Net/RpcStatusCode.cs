@@ -1,6 +1,6 @@
 namespace AtomUI.Controls;
 
-public enum RpcErrorCode
+public enum RpcStatusCode
 {
     Success = 0,
     Unknown,

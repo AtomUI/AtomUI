@@ -4,7 +4,5 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="MentionsTheme.axaml" />
         <ResourceInclude Source="MentionTextAreaTheme.axaml" />
-        <ResourceInclude Source="MentionOptionListTheme.axaml" />
-        <ResourceInclude Source="MentionOptionListItemTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

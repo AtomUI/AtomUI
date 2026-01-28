@@ -15,7 +15,7 @@ public partial class MentionsShowCase : ReactiveUserControl<MentionsViewModel>
             {
                 InitBasicMentionOptions(vm);
                 vm.MentionTriggers          = ["@", "#"];
-                vm.MentionOptionAsyncLoader = new MentionOptionAsyncLoader();
+                vm.MentionOptionAsyncLoader = new MentionOptionsAsyncLoader();
             }
         });
         InitializeComponent();

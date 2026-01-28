@@ -531,7 +531,6 @@ public class AbstractAutoComplete : TemplatedControl,
         set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
     }
     
-    
     protected AvaloniaTextBox? TextBox
     {
         get => _textBox;
@@ -641,7 +640,7 @@ public class AbstractAutoComplete : TemplatedControl,
         MinimumPopulateDelayProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleMinimumPopulateDelayChanged(e));
         PlacementProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandlePlacementChanged());
         ValueProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleValuePropertyChanged(e));
-        OptionsSourceProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleItemsSourcePropertyChanged(e));
+        OptionsSourceProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleItemsSourceChanged((IEnumerable?)e.NewValue));
         FilterModeProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleFilterModePropertyChanged(e));
         FilterProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleFilterPropertyChanged(e));
         FilterValueProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleFilterValuePropertyChanged(e));
@@ -919,11 +918,6 @@ public class AbstractAutoComplete : TemplatedControl,
     {
         HandleValueUpdated((string?)e.NewValue, false);
     }
-
-    private void HandleItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
-    {
-        HandleItemsSourceChanged((IEnumerable?)e.NewValue);
-    }
     
     private void HandleFilterValuePropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -938,8 +932,7 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             // Reset the old value before it was incorrectly written
             _ignorePropertyChange = true;
-            SetCurrentValue(e.Property, e.OldValue);
-
+            SetCurrentValue(FilterValueProperty, e.OldValue);
             throw new InvalidOperationException("Cannot set read-only property FilterValue.");
         }
     }
@@ -1119,14 +1112,8 @@ public class AbstractAutoComplete : TemplatedControl,
     
     protected void ClearView()
     {
-        if (_view == null)
-        {
-            _view = new AvaloniaList<IAutoCompleteOption>();
-        }
-        else
-        {
-            _view.Clear();
-        }
+        _view?.Clear();
+        _view ??= new AvaloniaList<IAutoCompleteOption>();
     }
     
     private void RefreshView()
@@ -1428,8 +1415,8 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             _popup.ClickHidePredicate  =  PopupClosePredicate;
             _popup.IgnoreFirstDetected =  false;
-            _popup.Opened              -= HandlePopupOpened;
-            _popup.Closed              -= HandlePopupClosed;
+            _popup.Opened              += HandlePopupOpened;
+            _popup.Closed              += HandlePopupClosed;
             _popup.CloseAction         =  PopupCloseAction;
         }
         
@@ -1439,6 +1426,31 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             OpeningDropDown(false);
         }
+    }
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated += HandleWindowDeactivated;
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window window)
+        {
+            window.Deactivated -= HandleWindowDeactivated;
+        }
+    }
+    
+    private void HandleWindowDeactivated(object? sender, EventArgs e)
+    {
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     private void PopupCloseAction(Popup popup)

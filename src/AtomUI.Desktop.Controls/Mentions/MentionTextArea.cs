@@ -1,12 +1,10 @@
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Desktop.Controls.Utils;
-using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -15,10 +13,28 @@ internal class MentionTextArea : TextArea
     public static readonly StyledProperty<IList<string>?> TriggerPrefixProperty =
         AvaloniaProperty.Register<MentionTextArea, IList<string>?>(nameof(TriggerPrefix));
     
+    public static readonly StyledProperty<string?> FilterValueProperty =
+        AvaloniaProperty.Register<MentionTextArea, string?>(nameof(FilterValue));
+           
+    public static readonly StyledProperty<bool> IsDropDownOpenProperty =
+        AbstractAutoComplete.IsDropDownOpenProperty.AddOwner<MentionTextArea>();
+
     public IList<string>? TriggerPrefix
     {
         get => GetValue(TriggerPrefixProperty);
         set => SetValue(TriggerPrefixProperty, value);
+    }
+    
+    public string? FilterValue
+    {
+        get => GetValue(FilterValueProperty);
+        set => SetValue(FilterValueProperty, value);
+    }
+
+    public bool IsDropDownOpen
+    {
+        get => GetValue(IsDropDownOpenProperty);
+        set => SetValue(IsDropDownOpenProperty, value);
     }
     
     #region 公共事件定义
@@ -48,11 +64,14 @@ internal class MentionTextArea : TextArea
 
     private TextPresenter? _textPresenter;
     internal Mentions? Owner;
-    private int _lastTriggerCached = -1;
+    private Rect? _currentTriggerBounds;
+    private string? _currentTriggerText;
+    private string? _currentPredicate;
     
     static MentionTextArea()
     {
         LinesProperty.OverrideDefaultValue<MentionTextArea>(1);
+        CaretIndexProperty.Changed.AddClassHandler<MentionTextArea>((textArea, args) => textArea.HandleCaretIndexChanged());
     }
 
     protected override void OnTextInput(TextInputEventArgs e)
@@ -70,21 +89,10 @@ internal class MentionTextArea : TextArea
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == TextProperty)
+        if (change.Property == TextProperty ||
+            change.Property == CaretIndexProperty)
         {
-            if (change.Property == TextProperty)
-            {
-                _lastTriggerCached = HashCode.Combine(Text);
-            }
             CheckTriggerState();
-        }
-        else if (change.Property == CaretIndexProperty)
-        {
-            var cached = HashCode.Combine(Text);
-            if (cached == _lastTriggerCached)
-            {
-                CheckTriggerState();
-            }
         }
     }
 
@@ -92,54 +100,104 @@ internal class MentionTextArea : TextArea
     {
         if (!string.IsNullOrEmpty(Text) && CaretIndex >= 1)
         {
-            var triggerFound = false;
-            var index        = CaretIndex;
-            char triggerCh    = default;
+            var  triggerFound = false;
+            var  index        = CaretIndex;
             while (index > 0)
             {
                 var ch = Text[index - 1];
-                if (TriggerPrefix != null && TriggerPrefix.Contains(ch.ToString()))
-                {
-                    triggerCh    = ch;
-                    triggerFound = true;
-                    break;
-                }
                 if (char.IsControl(ch) || char.IsWhiteSpace(ch))
                 {
                     break;
                 }
+                if (TriggerPrefix != null && TriggerPrefix.Contains(ch.ToString()))
+                {
+                    _currentTriggerText = ch.ToString();
+                    triggerFound        = true;
+                    break;
+                }
+              
                 index--;
             }
             var length = CaretIndex - index;
             if (triggerFound)
             {
-                var triggerIndex  = index - 1;
-                var presenter     = this.GetTextPresenter();
-                var textLayout    = presenter.TextLayout;
-                var triggerBounds = textLayout.HitTestTextPosition(triggerIndex);
-                var predicate     = Text.Substring(index, length);
-                if (!TriggerState)
-                {
-                    TriggerState = true;
-                    CandidateOpenRequest?.Invoke(this, new ShowMentionCandidateRequestEventArgs(triggerBounds, predicate, triggerCh.ToString()));
-                }
+                var triggerIndex = index - 1;
+                var presenter    = this.GetTextPresenter();
+                var textLayout   = presenter.TextLayout;
+                _currentTriggerBounds = textLayout.HitTestTextPosition(triggerIndex);
+                _currentPredicate     = Text.Substring(index, length);
+                TriggerState          = true;
             }
             else
             {
-                if (TriggerState)
-                {
-                    TriggerState = false;
-                    CandidateCloseRequest?.Invoke(this, EventArgs.Empty);
-                }
+                TriggerState = false;
             }
         }
         else if (CaretIndex == 0 || string.IsNullOrWhiteSpace(Text))
         {
-            if (TriggerState)
+            TriggerState = false;
+        }
+        
+        if (TriggerState)
+        {
+            if (!IsDropDownOpen)
             {
-                TriggerState = false;
+                if (_currentTriggerBounds != null && _currentPredicate != null && _currentTriggerText != null)
+                {
+                    CandidateOpenRequest?.Invoke(this, new ShowMentionCandidateRequestEventArgs(_currentTriggerBounds.Value, _currentPredicate, _currentTriggerText));
+                }
+            }
+        }
+        else
+        {
+            if (IsDropDownOpen)
+            {
                 CandidateCloseRequest?.Invoke(this, EventArgs.Empty);
             }
+            _currentPredicate     = null;
+            _currentTriggerBounds = null;
+            _currentTriggerText   = null;
+        }
+    }
+
+    private void HandleCaretIndexChanged()
+    {
+        if (string.IsNullOrWhiteSpace(Text))
+        {
+            SetCurrentValue(FilterValueProperty, null);
+            return;
+        }
+        var triggerFound = false;
+        var index        = CaretIndex;
+        var triggerIndex = -1;
+        while (index > 0)
+        {
+            var ch = Text[index - 1];
+            if (char.IsControl(ch) || char.IsWhiteSpace(ch))
+            {
+                break;
+            }
+            if (TriggerPrefix != null && TriggerPrefix.Contains(ch.ToString()))
+            {
+                triggerFound = true;
+                triggerIndex = index - 1;
+                break;
+            }
+            index--;
+        }
+
+        if (triggerFound)
+        {
+            
+            var valueIndex = triggerIndex + 1;
+            if (valueIndex <= Text.Length)
+            {
+                SetCurrentValue(FilterValueProperty, Text.Substring(valueIndex, CaretIndex - valueIndex));
+            }
+        }
+        else
+        {
+            SetCurrentValue(FilterValueProperty, null);
         }
     }
     
@@ -170,14 +228,19 @@ internal class MentionTextArea : TextArea
         this.SnapshotUndoRedo();
         var  triggerIndex = -1;
         var  foundSplit   = false;
+        var  foundSpace   = false;
         var  text         = Text ?? string.Empty;
-        char triggerCh    = default; 
+        char triggerCh    = default;
         if (!string.IsNullOrEmpty(Text))
         {
             var currentIndex = CaretIndex;
             while (currentIndex > 0)
             {
                 var ch = Text[currentIndex - 1];
+                if (char.IsWhiteSpace(ch))
+                {
+                    break;
+                }
                 if (TriggerPrefix != null && TriggerPrefix.Contains(ch.ToString()))
                 {
                     triggerCh    = ch;
@@ -186,18 +249,23 @@ internal class MentionTextArea : TextArea
                 }
                 currentIndex--;
             }
-            if (triggerIndex != 0 && $"{Text[triggerIndex - 1]}" == split)
+            if (triggerIndex != 0)
             {
-                foundSplit = true;
+                if ($"{Text[triggerIndex - 1]}" == split)
+                {
+                    foundSplit = true;
+                }
+                else if ($"{Text[triggerIndex - 1]}" == " ")
+                {
+                    foundSpace = true;
+                }
             }
         }
 
         if (triggerIndex != -1)
         {
-            var sb = StringBuilderCache.Acquire(text.Length);
-            sb.Append(text);
-            sb.Remove(triggerIndex, CaretIndex - triggerIndex);
-            SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+            SetCurrentValue(SelectionStartProperty, triggerIndex);
+            SetCurrentValue(SelectionEndProperty, CaretIndex);
         }
         
         if (!string.IsNullOrWhiteSpace(split))
@@ -213,8 +281,34 @@ internal class MentionTextArea : TextArea
         }
         else
         {
-            value = triggerCh + value;
+            if (foundSpace)
+            {
+                value = triggerCh + value + " ";
+            }
+            else
+            {
+                if (triggerIndex > 0)
+                {
+                    value = " " + triggerCh + value + " ";
+                }
+                else
+                {
+                    value = triggerCh + value + " ";
+                }
+            }
         }
         this.HandleTextInput(value);
+    }
+    
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Return)
+        {
+            if (IsDropDownOpen)
+            {
+                return;
+            }
+        }
+        base.OnKeyDown(e);
     }
 }

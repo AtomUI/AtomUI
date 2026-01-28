@@ -22,9 +22,9 @@ public class MentionsViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _basicMentionOptions, value);
     }
     
-    private MentionOptionAsyncLoader? _mentionOptionAsyncLoader;
+    private MentionOptionsAsyncLoader? _mentionOptionAsyncLoader;
     
-    public MentionOptionAsyncLoader? MentionOptionAsyncLoader
+    public MentionOptionsAsyncLoader? MentionOptionAsyncLoader
     {
         get => _mentionOptionAsyncLoader;
         set => this.RaiseAndSetIfChanged(ref _mentionOptionAsyncLoader, value);
@@ -44,32 +44,30 @@ public class MentionsViewModel : ReactiveObject, IRoutableViewModel
     }
 }
 
-public class MentionOptionAsyncLoader : IMentionOptionAsyncLoader
+public class MentionOptionsAsyncLoader : IMentionOptionsAsyncLoader
 {
-    public async Task<MentionOptionLoadResult> LoadAsync(string? context, CancellationToken token)
+    public async Task<MentionOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
         await Task.Delay(TimeSpan.FromMilliseconds(600), token);
         List<IMentionOption>? options = null;
         if (!token.IsCancellationRequested)
         {
-            var                   names   = RandomUsernameGenerator.GenerateBatch(8);
-            if (context?.Length < 5)
+            var count = Random.Shared.Next(3, 8);
+            var names = RandomUsernameGenerator.GenerateBatch(count);
+            options = new List<IMentionOption>();
+            foreach (var name in names)
             {
-                options = new List<IMentionOption>();
-                foreach (var name in names)
+                options.Add(new MentionOption()
                 {
-                    options.Add(new MentionOption()
-                    {
-                        Header = name,
-                        Value  = name,
-                    });
-                }
+                    Header = name,
+                    Value  = name,
+                });
             }
         }
        
-        return new MentionOptionLoadResult()
+        return new MentionOptionsLoadResult()
         {
-            IsSuccess = true,
+            StatusCode = RpcStatusCode.Success,
             Data = options
         };
     }

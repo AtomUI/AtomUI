@@ -18,6 +18,7 @@
                                           InnerRightContent="{TemplateBinding ContentRightAddOn}"
                                           InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                           Lines="{TemplateBinding Lines}"
+                                          IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                                           MaxLines="{TemplateBinding MaxLines}"
                                           MinLines="{TemplateBinding MinLines}"
                                           Watermark="{TemplateBinding PlaceholderText}"
@@ -25,14 +26,15 @@
                                           TriggerPrefix="{TemplateBinding TriggerPrefix}"
                                           IsReadOnly="{TemplateBinding IsReadOnly}"
                                           ClearIcon="{TemplateBinding ClearIcon}"
-                                          Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"/>
+                                          Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
+                                          FilterValue="{TemplateBinding OptionFilterValue, Mode=TwoWay}"/>
                     <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"
                                 IsDetectMouseClickEnabled="True"
                                 IsMotionEnabled="False"
-                                Placement="{TemplateBinding PopupPlacement}"
-                                IsMotionAwareOpen="{TemplateBinding IsPopupOpen, Mode=TwoWay}">
+                                ShouldUseOverlayLayer="True"
+                                Placement="{TemplateBinding PopupPlacement}">
                         <Border Name="PopupFrame"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding MinPopupWidth}"
@@ -44,14 +46,12 @@
                                            Tip="{DynamicResource {x:Static atom:CommonLangResourceKey.Loading}}"
                                            HorizontalAlignment="Center"
                                            IsVisible="{TemplateBinding IsLoading}"/>
-                                <atom:MentionOptionList
+                                <atom:CandidateList
                                     Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
-                                    IsBorderless="True"
                                     SelectionMode="Single"
                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                     AutoScrollToSelectedItem="True"
                                     ItemTemplate="{TemplateBinding OptionTemplate}"
-                                    ItemsSource="{Binding OptionsSource, RelativeSource={RelativeSource TemplatedParent}}"
                                     IsVisible="{TemplateBinding IsLoading, Converter={x:Static BoolConverters.Not}}"/>
                             </Panel>
                         </Border>
@@ -76,5 +76,12 @@
         <Style Selector="^ /template/ atom|Spin#LoadingIndicator">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginLG}}" />
         </Style>
+        
+        <Setter Property="OptionTemplate">
+            <DataTemplate x:DataType="atom:IMentionOption">
+                <TextBlock Text="{Binding Header}"
+                           TextTrimming="CharacterEllipsis"/>
+            </DataTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

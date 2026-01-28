@@ -19,14 +19,14 @@
                 <atom:Mentions HorizontalAlignment="Stretch" StyleVariant="Outline" PlaceholderText="Outlined"/>
                 <atom:Mentions HorizontalAlignment="Stretch" StyleVariant="Filled" PlaceholderText="Filled"/>
                 <atom:Mentions HorizontalAlignment="Stretch" StyleVariant="Borderless" PlaceholderText="Borderless"/>
-                <atom:Mentions HorizontalAlignment="Stretch" StyleVariant="Underlined" PlaceholderText="Underlined"/> 
+                <atom:Mentions HorizontalAlignment="Stretch" StyleVariant="Underlined" PlaceholderText="Underlined"/>
             </StackPanel>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
             Title="Asynchronous loading"
             Description="async.">
-            <atom:Mentions HorizontalAlignment="Stretch" OptionAsyncLoader="{Binding MentionOptionAsyncLoader}"/>
+            <atom:Mentions HorizontalAlignment="Stretch" OptionsAsyncLoader="{Binding MentionOptionAsyncLoader}"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem

@@ -64,7 +64,7 @@ internal class AutoCompleteTextAreaBox : TextArea
     
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (e.Key == Key.Up || e.Key == Key.Down)
+        if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Return)
         {
             if (IsDropDownOpen)
             {

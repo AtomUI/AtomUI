@@ -36,15 +36,26 @@
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
-            Title="Select with search field"
-            Description="Search the options while expanded.">
-            <atom:Select Mode="Single" PlaceholderText="Please select" IsFilterEnabled="True">
-                <atom:SelectOption Header="Jack" Value="jack" />
-                <atom:SelectOption Header="Lucy" Value="lucy" />
-                <atom:SelectOption Header="Tom" Value="tom" />
-            </atom:Select>
+            Title="Generate options on click"
+            Description="Add, remove, and update options dynamically.">
+            <atom:FlexPanel Direction="Column" RowSpacing="8" x:DataType="viewModels:SelectViewModel">
+                <atom:FlexPanel Direction="Row" ColumnSpacing="8" Wrap="Wrap">
+                    <atom:Button Content="Add" Command="{Binding AddOptionCommand}" Width="110" />
+                    <atom:Button Content="Remove" Command="{Binding RemoveOptionCommand}" Width="120" />
+                    <atom:Button Content="Update" Command="{Binding UpdateOptionCommand}" Width="120" />
+                    <atom:Button Margin="0,4,0,0" Content="Set selected" Command="{Binding SetSelectedOptionCommand}" Width="140" />
+                </atom:FlexPanel>
+                <atom:Select Mode="Single"
+                             PlaceholderText="Pick an option"
+                             OptionsSource="{Binding GeneratedOptions}"
+                             SelectedOptions="{Binding GeneratedSelectedOptions, Mode=TwoWay}"
+                             IsFilterEnabled="True"
+                             Width="240" />
+                <TextBlock FontSize="12"
+                           Text="Add inserts a new option. Remove/Update only change OptionsSource. Set selects the next option from OptionsSource." />
+            </atom:FlexPanel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem
             Title="Custom Search"
             Description="Customize search using filterOption, Case-sensitive search for Header.">

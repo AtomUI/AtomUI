@@ -1,8 +1,8 @@
 namespace AtomUI.Controls.Utils;
 
-public abstract class StringAbstractContainsFilter : IStringValueFilter
+public abstract class StringAbstractContainsFilter : IValueFilter
 {
-    public abstract bool Filter(string? value, string? filterValue);
+    public abstract bool Filter(object? value, object? filterValue);
 
     protected static bool Contains(string? value, string? filterValue, StringComparison comparison)
     {
@@ -16,111 +16,111 @@ public abstract class StringAbstractContainsFilter : IStringValueFilter
 
 public class StringContainsFilter : StringAbstractContainsFilter
 {
-    public override bool Filter(string? value, string? filterValue)
+    public override bool Filter(object? value, object? filterValue)
     {
-        return Contains(value, filterValue, StringComparison.CurrentCultureIgnoreCase);
+        return Contains(value?.ToString(), filterValue?.ToString(), StringComparison.CurrentCultureIgnoreCase);
     }
 }
 
 public class StringContainsCaseSensitiveFilter : StringAbstractContainsFilter
 {
-    public override bool Filter(string? value, string? filterValue)
+    public override bool Filter(object? value, object? filterValue)
     {
-        return Contains(value, filterValue, StringComparison.CurrentCulture);
+        return Contains(value?.ToString(), filterValue?.ToString(), StringComparison.CurrentCulture);
     }
 }
 
 public class StringContainsOrdinalFilter : StringAbstractContainsFilter
 {
-    public override bool Filter(string? value, string? filterValue)
+    public override bool Filter(object? value, object? filterValue)
     {
-        return Contains(value, filterValue, StringComparison.OrdinalIgnoreCase);
+        return Contains(value?.ToString(), filterValue?.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 }
 
 public class StringContainsOrdinalCaseSensitiveFilter : StringAbstractContainsFilter
 {
-    public override bool Filter(string? value, string? filterValue)
+    public override bool Filter(object? value, object? filterValue)
     {
-        return Contains(value, filterValue, StringComparison.Ordinal);
+        return Contains(value?.ToString(), filterValue?.ToString(), StringComparison.Ordinal);
     }
 }
 
-public class StringEqualsFilter : IStringValueFilter
+public class StringEqualsFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        return string.Equals(value, filterValue, StringComparison.CurrentCultureIgnoreCase);
+        return string.Equals(value?.ToString(), filterValue?.ToString(), StringComparison.CurrentCultureIgnoreCase);
     }
 }
 
-public class StringEqualsCaseSensitiveFilter : IStringValueFilter
+public class StringEqualsCaseSensitiveFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        return string.Equals(value, filterValue, StringComparison.CurrentCulture);
+        return string.Equals(value?.ToString(), filterValue?.ToString(), StringComparison.CurrentCulture);
     }
 }
 
-public class StringEqualsOrdinalFilter : IStringValueFilter
+public class StringEqualsOrdinalFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        return string.Equals(value, filterValue, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(value?.ToString(), filterValue?.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 }
 
-public class StringEqualsOrdinalCaseSensitiveFilter : IStringValueFilter
+public class StringEqualsOrdinalCaseSensitiveFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        return string.Equals(value, filterValue, StringComparison.Ordinal);
+        return string.Equals(value?.ToString(), filterValue?.ToString(), StringComparison.Ordinal);
     }
 }
 
-public class StringStartsWithFilter : IStringValueFilter
+public class StringStartsWithFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        if (value is not null && filterValue is not null)
+        if (value is string valueStr && filterValue is string filterValueStr)
         {
-            return value.StartsWith(filterValue, StringComparison.CurrentCultureIgnoreCase);
+            return valueStr.StartsWith(filterValueStr, StringComparison.CurrentCultureIgnoreCase);
         }
         return false;
     }
 }
 
-public class StringStartsWithCaseSensitiveFilter : IStringValueFilter
+public class StringStartsWithCaseSensitiveFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        if (value is not null && filterValue is not null)
+        if (value is string valueStr && filterValue is string filterValueStr)
         {
-            return value.StartsWith(filterValue, StringComparison.CurrentCulture);
+            return valueStr.StartsWith(filterValueStr, StringComparison.CurrentCulture);
         }
         return false;
     }
 }
 
-public class StringStartsWithOrdinalFilter : IStringValueFilter
+public class StringStartsWithOrdinalFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        if (value is not null && filterValue is not null)
+        if (value is string valueStr && filterValue is string filterValueStr)
         {
-            return value.StartsWith(filterValue, StringComparison.OrdinalIgnoreCase);
+            return valueStr.StartsWith(filterValueStr, StringComparison.OrdinalIgnoreCase);
         }
         return false;
     }
 }
 
-public class StringStartsWithOrdinalCaseSensitiveFilter : IStringValueFilter
+public class StringStartsWithOrdinalCaseSensitiveFilter : IValueFilter
 {
-    public bool Filter(string? value, string? filterValue)
+    public bool Filter(object? value, object? filterValue)
     {
-        if (value is not null && filterValue is not null)
+        if (value is string valueStr && filterValue is string filterValueStr)
         {
-            return value.StartsWith(filterValue, StringComparison.Ordinal);
+            return valueStr.StartsWith(filterValueStr, StringComparison.Ordinal);
         }
         return false;
     }

@@ -1,6 +1,6 @@
 namespace AtomUI.Controls.Utils;
 
-public abstract class StringAbstractContainsFilter : IValueFilter<string>
+public abstract class StringAbstractContainsFilter : IStringValueFilter
 {
     public abstract bool Filter(string? value, string? filterValue);
 
@@ -46,7 +46,7 @@ public class StringContainsOrdinalCaseSensitiveFilter : StringAbstractContainsFi
     }
 }
 
-public class StringEqualsFilter : IValueFilter<string>
+public class StringEqualsFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -54,7 +54,7 @@ public class StringEqualsFilter : IValueFilter<string>
     }
 }
 
-public class StringEqualsCaseSensitiveFilter : IValueFilter<string>
+public class StringEqualsCaseSensitiveFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -62,7 +62,7 @@ public class StringEqualsCaseSensitiveFilter : IValueFilter<string>
     }
 }
 
-public class StringEqualsOrdinalFilter : IValueFilter<string>
+public class StringEqualsOrdinalFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -70,7 +70,7 @@ public class StringEqualsOrdinalFilter : IValueFilter<string>
     }
 }
 
-public class StringEqualsOrdinalCaseSensitiveFilter : IValueFilter<string>
+public class StringEqualsOrdinalCaseSensitiveFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -78,7 +78,7 @@ public class StringEqualsOrdinalCaseSensitiveFilter : IValueFilter<string>
     }
 }
 
-public class StringStartsWithFilter : IValueFilter<string>
+public class StringStartsWithFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -90,7 +90,7 @@ public class StringStartsWithFilter : IValueFilter<string>
     }
 }
 
-public class StringStartsWithCaseSensitiveFilter : IValueFilter<string>
+public class StringStartsWithCaseSensitiveFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -102,7 +102,7 @@ public class StringStartsWithCaseSensitiveFilter : IValueFilter<string>
     }
 }
 
-public class StringStartsWithOrdinalFilter : IValueFilter<string>
+public class StringStartsWithOrdinalFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {
@@ -114,7 +114,7 @@ public class StringStartsWithOrdinalFilter : IValueFilter<string>
     }
 }
 
-public class StringStartsWithOrdinalCaseSensitiveFilter : IValueFilter<string>
+public class StringStartsWithOrdinalCaseSensitiveFilter : IStringValueFilter
 {
     public bool Filter(string? value, string? filterValue)
     {

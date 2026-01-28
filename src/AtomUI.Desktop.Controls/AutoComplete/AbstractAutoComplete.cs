@@ -129,8 +129,8 @@ public class AbstractAutoComplete : TemplatedControl,
             double.PositiveInfinity,
             validate: IsValidMaxDropDownHeight);
     
-    public static readonly StyledProperty<ICompleteOptionFilter?> FilterProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, ICompleteOptionFilter?>(nameof(Filter));
+    public static readonly StyledProperty<IStringValueFilter?> FilterProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, IStringValueFilter?>(nameof(Filter));
     
     public static readonly DirectProperty<AbstractAutoComplete, string?> FilterValueProperty =
         AvaloniaProperty.RegisterDirect<AbstractAutoComplete, string?>(
@@ -321,7 +321,7 @@ public class AbstractAutoComplete : TemplatedControl,
         set => SetValue(IsReadOnlyProperty, value);
     }
     
-    public ICompleteOptionFilter? Filter
+    public IStringValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
@@ -470,8 +470,8 @@ public class AbstractAutoComplete : TemplatedControl,
             o => o.PopupPlacement,
             (o, v) => o.PopupPlacement = v);
     
-    internal static readonly DirectProperty<AbstractAutoComplete, ICompleteOptionFilter?> EffectiveFilterProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, ICompleteOptionFilter?>(nameof(EffectiveFilter),
+    internal static readonly DirectProperty<AbstractAutoComplete, IStringValueFilter?> EffectiveFilterProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, IStringValueFilter?>(nameof(EffectiveFilter),
             o => o.EffectiveFilter,
             (o, v) => o.EffectiveFilter = v);
     
@@ -523,9 +523,9 @@ public class AbstractAutoComplete : TemplatedControl,
         set => SetAndRaise(PopupPlacementProperty, ref _placementMode, value);
     }
     
-    private ICompleteOptionFilter? _effectiveFilter;
+    private IStringValueFilter? _effectiveFilter;
 
-    internal ICompleteOptionFilter? EffectiveFilter
+    internal IStringValueFilter? EffectiveFilter
     {
         get => _effectiveFilter;
         set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
@@ -1256,45 +1256,45 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
 
-    private ICompleteOptionFilter? GetFilterForMode(AutoCompleteFilterMode mode)
+    private IStringValueFilter? GetFilterForMode(AutoCompleteFilterMode mode)
     {
         switch (mode)
         {
             case AutoCompleteFilterMode.Contains:
-                return new CompleteContainsFilter();
+                return new StringContainsFilter();
 
             case AutoCompleteFilterMode.ContainsCaseSensitive:
-                return new CompleteContainsCaseSensitiveFilter();
+                return new StringContainsCaseSensitiveFilter();
 
             case AutoCompleteFilterMode.ContainsOrdinal:
-                return new CompleteContainsOrdinalFilter();
+                return new StringContainsOrdinalFilter();
 
             case AutoCompleteFilterMode.ContainsOrdinalCaseSensitive:
-                return new CompleteContainsOrdinalCaseSensitiveFilter();
+                return new StringContainsOrdinalCaseSensitiveFilter();
 
             case AutoCompleteFilterMode.Equals:
-                return new CompleteEqualsFilter();
+                return new StringEqualsFilter();
 
             case AutoCompleteFilterMode.EqualsCaseSensitive:
-                return new CompleteEqualsCaseSensitiveFilter();
+                return new StringEqualsCaseSensitiveFilter();
 
             case AutoCompleteFilterMode.EqualsOrdinal:
-                return new CompleteEqualsOrdinalFilter();
+                return new StringEqualsOrdinalFilter();
 
             case AutoCompleteFilterMode.EqualsOrdinalCaseSensitive:
-                return new CompleteEqualsOrdinalCaseSensitiveFilter();
+                return new StringEqualsOrdinalCaseSensitiveFilter();
 
             case AutoCompleteFilterMode.StartsWith:
-                return new CompleteStartsWithFilter();
+                return new StringStartsWithFilter();
 
             case AutoCompleteFilterMode.StartsWithCaseSensitive:
-                return new CompleteStartsWithCaseSensitiveFilter();
+                return new StringStartsWithCaseSensitiveFilter();
 
             case AutoCompleteFilterMode.StartsWithOrdinal:
-                return new CompleteStartsWithOrdinalFilter();
+                return new StringStartsWithOrdinalFilter();
 
             case AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive:
-                return new CompleteStartsWithOrdinalCaseSensitiveFilter();
+                return new StringStartsWithOrdinalCaseSensitiveFilter();
 
             case AutoCompleteFilterMode.None:
             case AutoCompleteFilterMode.Custom:
@@ -1753,7 +1753,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private IAutoCompleteOption? TryGetMatch(string? filterValue, AvaloniaList<IAutoCompleteOption>? view, ICompleteOptionFilter? predicate)
+    private IAutoCompleteOption? TryGetMatch(string? filterValue, AvaloniaList<IAutoCompleteOption>? view, IStringValueFilter? predicate)
     {
         if (predicate is null)
         {
@@ -1766,7 +1766,7 @@ public class AbstractAutoComplete : TemplatedControl,
             {
                 if (option != null)
                 {
-                    object? value = GetValueByOption(option);
+                    var value = GetValueByOption(option);
                     if (predicate.Filter(value, filterValue))
                     {
                         return option;
@@ -1778,16 +1778,16 @@ public class AbstractAutoComplete : TemplatedControl,
         return null;
     }
 
-    private object? GetValueByOption(IAutoCompleteOption option)
+    private string? GetValueByOption(IAutoCompleteOption option)
     {
-        object? value = null;
+        string? value = null;
         if (FilterValueSelector != null)
         {
-            value = FilterValueSelector(option);
+            value = FilterValueSelector(option)?.ToString();
         }
         else
         {
-            value = option.Header ?? option.Value ?? option.Key;
+            value = option.Header?.ToString() ?? option.Value?.ToString() ?? option.Key;
         }
         return value;
     }

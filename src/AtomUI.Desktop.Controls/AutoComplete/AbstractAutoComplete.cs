@@ -7,6 +7,7 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Input;
 using AtomUI.Theme;
 using AtomUI.Utils;
@@ -579,7 +580,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    protected ISelectCandidateList? SelectCandidateList
+    protected ICandidateList? CandidateList
     {
         get => _candidateList;
         set
@@ -611,7 +612,7 @@ public class AbstractAutoComplete : TemplatedControl,
     private protected List<IAutoCompleteOption>? _items;
     private protected AvaloniaTextBox? _textBox;
     private protected AvaloniaList<IAutoCompleteOption>? _view;
-    private protected ISelectCandidateList? _candidateList;
+    private protected ICandidateList? _candidateList;
     private protected Popup? _popup;
     private protected bool _ignorePopupClose;
     private bool _allowWrite;
@@ -778,9 +779,9 @@ public class AbstractAutoComplete : TemplatedControl,
         // the drop down.
         if (IsDropDownOpen)
         {
-            if (SelectCandidateList != null)
+            if (CandidateList != null)
             {
-                SelectCandidateList.HandleKeyDown(e);
+                CandidateList.HandleKeyDown(e);
                 if (e.Handled)
                 {
                     return;
@@ -960,9 +961,9 @@ public class AbstractAutoComplete : TemplatedControl,
         
         // Clear and set the view on the selection adapter
         ClearView();
-        if (SelectCandidateList != null && SelectCandidateList.ItemsSource != _view)
+        if (CandidateList != null && CandidateList.ItemsSource != _view)
         {
-            SelectCandidateList.ItemsSource = _view;
+            CandidateList.ItemsSource = _view;
         }
         if (IsDropDownOpen)
         {
@@ -1194,7 +1195,7 @@ public class AbstractAutoComplete : TemplatedControl,
             Dispatcher.UIThread.Post(() =>
             {
                 var selectedItem = TryGetMatch(Value, _view, GetFilterForMode(AutoCompleteFilterMode.EqualsCaseSensitive));
-                SelectCandidateList!.SelectedItem = selectedItem;
+                CandidateList!.SelectedItem = selectedItem;
             });
         }
         finally
@@ -1466,9 +1467,9 @@ public class AbstractAutoComplete : TemplatedControl,
             _popup.Closed -= HandlePopupClosed;
         }
 
-        TextBox             = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
-        _popup              = e.NameScope.Find<Popup>(AutoCompleteThemeConstants.PopupPart);
-        SelectCandidateList = e.NameScope.Find<ISelectCandidateList>(AutoCompleteThemeConstants.CandidateListPart);
+        TextBox       = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
+        _popup        = e.NameScope.Find<Popup>(AutoCompleteThemeConstants.PopupPart);
+        CandidateList = e.NameScope.Find<ICandidateList>(AutoCompleteThemeConstants.CandidateListPart);
 
         if (_popup != null)
         {
@@ -1647,11 +1648,11 @@ public class AbstractAutoComplete : TemplatedControl,
         var populated = new CompletePopulatedEventArgs(_view);
         NotifyPopulated(populated);
         
-        if (SelectCandidateList != null)
+        if (CandidateList != null)
         {
-            if (SelectCandidateList.ItemsSource != _view)
+            if (CandidateList.ItemsSource != _view)
             {
-                SelectCandidateList.ItemsSource = _view;
+                CandidateList.ItemsSource = _view;
             }
         }
         

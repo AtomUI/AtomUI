@@ -5,16 +5,16 @@ using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
-public class CandidateList : ListBox, ISelectCandidateList
+public class CandidateList : ListBox, ICandidateList
 {
     #region 公共事件定义
     public static readonly RoutedEvent<RoutedEventArgs> CommitEvent =
-        RoutedEvent.Register<CompleteCandidateList, RoutedEventArgs>(
+        RoutedEvent.Register<CandidateList, RoutedEventArgs>(
             nameof(Commit),
             RoutingStrategies.Bubble);
     
     public static readonly RoutedEvent<RoutedEventArgs> CancelEvent =
-        RoutedEvent.Register<CompleteCandidateList, RoutedEventArgs>(
+        RoutedEvent.Register<CandidateList, RoutedEventArgs>(
             nameof(Cancel),
             RoutingStrategies.Bubble);
     

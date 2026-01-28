@@ -30,7 +30,7 @@
                                                   IsShowCount="{TemplateBinding IsShowCount}"
                                                   IsResizable="{TemplateBinding IsResizable}"
                                                   IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
-                                                  ClearIcon="{TemplateBinding ClearIcon}"/>
+                                                  ClearIcon="{TemplateBinding ClearIcon}" />
 
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
@@ -41,14 +41,13 @@
                                 Placement="{TemplateBinding PopupPlacement}"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding MinPopupWidth}">
-                        
+
                         <Border Name="PopupFrame"
                                 Padding="{TemplateBinding PopupContentPadding}">
-                            <atom:CompleteCandidateList
-                                Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                SelectionMode="Single"
-                                ItemTemplate="{TemplateBinding OptionTemplate}" />
+                            <atom:CandidateList Name="{x:Static atom:MentionsThemeConstants.CandidateListPart}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                SelectionMode="Single"
+                                                ItemTemplate="{TemplateBinding OptionTemplate}" />
                         </Border>
                     </atom:Popup>
                 </Panel>

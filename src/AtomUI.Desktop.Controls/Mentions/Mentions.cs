@@ -5,6 +5,7 @@ using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.DataLoad;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -26,6 +27,9 @@ namespace AtomUI.Desktop.Controls;
 public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMotionAwareControl
 {
     #region 公共属性定义
+    public static readonly StyledProperty<PathIcon?> ClearIconProperty =
+        AvaloniaProperty.Register<Mentions, PathIcon?>(nameof(ClearIcon));
+    
     public static readonly StyledProperty<string?> ValueProperty =
         AvaloniaProperty.Register<Mentions, string?>(nameof(Value));
     
@@ -117,6 +121,12 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     
     public static readonly StyledProperty<bool> IsReadOnlyProperty =
         TextArea.IsReadOnlyProperty.AddOwner<Mentions>();
+    
+    public PathIcon? ClearIcon
+    {
+        get => GetValue(ClearIconProperty);
+        set => SetValue(ClearIconProperty, value);
+    }
     
     public string? Value
     {
@@ -631,8 +641,20 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Value         ??= DefaultValue;
-        TriggerPrefix ??= ["@"];
+        if (Value == null)
+        {
+            SetCurrentValue(ValueProperty, DefaultValue);
+        }
+
+        if (TriggerPrefix == null)
+        {
+            SetCurrentValue(TriggerPrefixProperty, ["@"]);
+        }
+
+        if (ClearIcon == null)
+        {
+            SetCurrentValue(ClearIconProperty, new CloseCircleFilled());
+        }
     }
 
     protected override void OnLoaded(RoutedEventArgs e)

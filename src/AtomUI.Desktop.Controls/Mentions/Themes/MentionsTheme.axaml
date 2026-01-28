@@ -24,6 +24,7 @@
                                           Text="{TemplateBinding Value, Mode=TwoWay}"
                                           TriggerPrefix="{TemplateBinding TriggerPrefix}"
                                           IsReadOnly="{TemplateBinding IsReadOnly}"
+                                          ClearIcon="{TemplateBinding ClearIcon}"
                                           Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"/>
                     <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"

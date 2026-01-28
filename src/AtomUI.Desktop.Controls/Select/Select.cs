@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Desktop.Controls.Data;
@@ -14,6 +17,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -186,6 +190,12 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private Popup? _popup;
     private SelectOptionList? _optionsBox;
     private SelectFilterTextBox? _singleFilterInput;
+    private INotifyCollectionChanged? _selectedOptionsNotifier;
+    private INotifyCollectionChanged? _optionsSourceNotifier;
+    private bool _selectedOptionsRefreshScheduled;
+    private bool _isReconcilingSelectedOptions;
+    private const string NullValueKey = "\0";
+    private readonly Dictionary<string, List<ISelectOption>> _optionsByValue = new();
     private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
@@ -268,12 +278,13 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         var lastIndex   = newSelection.Count - 1;
         var removedItem = newSelection[lastIndex];
         newSelection.RemoveAt(lastIndex);
-        SetCurrentValue(SelectedOptionsProperty, newSelection);
+        SetSelectedOptionsInternal(newSelection);
         SyncSelection();
 
         if (Mode == SelectMode.Tags && removedItem.IsDynamicAdded)
         {
             Options.Remove(removedItem);
+            RemoveOptionFromIndex(removedItem);
             if (ReferenceEquals(_addNewOption, removedItem))
             {
                 _addNewOption = null;
@@ -501,6 +512,28 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         ConfigureEffectiveSearchEnabled();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SubscribeSelectedOptions(SelectedOptions);
+        SubscribeOptionsSource(OptionsSource as IEnumerable<ISelectOption>);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (_selectedOptionsNotifier != null)
+        {
+            _selectedOptionsNotifier.CollectionChanged -= HandleSelectedOptionsCollectionChanged;
+            _selectedOptionsNotifier = null;
+        }
+        if (_optionsSourceNotifier != null)
+        {
+            _optionsSourceNotifier.CollectionChanged -= HandleOptionsSourceCollectionChanged;
+            _optionsSourceNotifier = null;
+        }
+    }
+
     internal void NotifyLogicalSelectOption(ISelectOption selectOption)
     {
         Debug.Assert(_optionsBox != null);
@@ -537,7 +570,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 selectedOptions.Remove(selectOption);
             }
         }
-        SetCurrentValue(SelectedOptionsProperty, selectedOptions);
+        SetSelectedOptionsInternal(selectedOptions);
         SyncSelection();
     }
 
@@ -560,6 +593,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         if (change.Property == SelectedOptionsProperty)
         {
+            SubscribeSelectedOptions(SelectedOptions);
             ConfigureSingleSelectedOption();
             ConfigureSelectionIsEmpty();
             ConfigurePlaceholderVisible();
@@ -675,7 +709,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     public void Clear()
     {
-        SelectedOptions = null;
+        ClearSelectedOptions();
     }
     
     private void UpdatePseudoClasses()
@@ -725,6 +759,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 if (!isSelected && !isCurrentInput)
                 {
                     Options.Remove(_addNewOption);
+                    RemoveOptionFromIndex(_addNewOption);
                     _addNewOption = null;
                 }
             }
@@ -779,6 +814,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     IsDynamicAdded = true
                 };
                 Options.Add(_addNewOption);
+                AddOptionToIndex(_addNewOption);
             }
             SyncSelection();
         }
@@ -801,7 +837,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     selectedOptions.Add(selectedItem);
                 }
                 selectedOptions.Remove(tagOption);
-                SelectedOptions = selectedOptions;
+                SetSelectedOptionsInternal(selectedOptions);
                 SyncSelection();
             }
 
@@ -810,6 +846,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 if (tag.Item is ISelectOption selectOption && selectOption.IsDynamicAdded)
                 {
                     Options.Remove(selectOption);
+                    RemoveOptionFromIndex(selectOption);
                 }
           
             }
@@ -836,56 +873,485 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleOptionsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         var newItemsSource = (IEnumerable<ISelectOption>?)change.NewValue;
-        if (newItemsSource != null)
+        SubscribeOptionsSource(newItemsSource);
+        ReloadOptionsFromSource(newItemsSource);
+        var selectionChanged = ReconcileSelectedOptionsWithOptionsSource();
+        selectionChanged |= ConfigureDefaultValues();
+        if (selectionChanged)
         {
-            Options.Clear();
-            Options.AddRange(newItemsSource);
-            ConfigureDefaultValues();
+            RefreshSelectedOptions();
+        }
+        else
+        {
             SyncSelection();
         }
     }
 
-    private void ConfigureDefaultValues()
+    private void SubscribeOptionsSource(IEnumerable<ISelectOption>? optionsSource)
     {
-        if (SelectedOptions == null || SelectedOptions.Count == 0)
+        if (_optionsSourceNotifier != null)
         {
-            if (Mode == SelectMode.Single)
+            _optionsSourceNotifier.CollectionChanged -= HandleOptionsSourceCollectionChanged;
+            _optionsSourceNotifier = null;
+        }
+
+        _optionsSourceNotifier = optionsSource as INotifyCollectionChanged;
+        if (_optionsSourceNotifier != null)
+        {
+            _optionsSourceNotifier.CollectionChanged += HandleOptionsSourceCollectionChanged;
+        }
+    }
+
+    private void HandleOptionsSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        ApplyOptionsSourceChange(e);
+        var selectionChanged = false;
+        if (e.Action == NotifyCollectionChangedAction.Replace)
+        {
+            selectionChanged |= ReplaceSelectedOptionsFromItems(e.OldItems, e.NewItems);
+        }
+
+        if (e.Action == NotifyCollectionChangedAction.Remove ||
+            e.Action == NotifyCollectionChangedAction.Replace ||
+            e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            selectionChanged |= ReconcileSelectedOptionsWithOptionsSource();
+        }
+        selectionChanged |= ConfigureDefaultValues();
+
+        if (selectionChanged)
+        {
+            RefreshSelectedOptions();
+        }
+        else
+        {
+            SyncSelection();
+        }
+    }
+
+    private void ReloadOptionsFromSource(IEnumerable<ISelectOption>? optionsSource)
+    {
+        Options.Clear();
+        if (optionsSource != null)
+        {
+            Options.AddRange(optionsSource);
+        }
+        RebuildOptionsIndex();
+    }
+
+    private void ApplyOptionsSourceChange(NotifyCollectionChangedEventArgs e)
+    {
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add:
+                InsertOptions(e.NewItems, e.NewStartingIndex);
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                RemoveOptions(e.OldItems, e.OldStartingIndex);
+                break;
+            case NotifyCollectionChangedAction.Replace:
+                ReplaceOptions(e.NewItems, e.OldItems, e.NewStartingIndex);
+                break;
+            case NotifyCollectionChangedAction.Move:
+                MoveOptions(e.NewItems, e.OldStartingIndex, e.NewStartingIndex);
+                break;
+            default:
+                ReloadOptionsFromSource(OptionsSource as IEnumerable<ISelectOption>);
+                break;
+        }
+    }
+
+    private void InsertOptions(IList? newItems, int startIndex)
+    {
+        var items = ExtractOptions(newItems);
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var insertIndex = startIndex;
+        if (insertIndex < 0 || insertIndex > Options.Count)
+        {
+            insertIndex = Options.Count;
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            Options.Insert(insertIndex + i, items[i]);
+            AddOptionToIndex(items[i]);
+        }
+    }
+
+    private void RemoveOptions(IList? oldItems, int startIndex)
+    {
+        var items = ExtractOptions(oldItems);
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        if (startIndex >= 0 && startIndex + items.Count <= Options.Count)
+        {
+            for (var i = 0; i < items.Count; i++)
             {
-                if (DefaultValues?.Count > 0)
+                Options.RemoveAt(startIndex);
+                RemoveOptionFromIndex(items[i]);
+            }
+            return;
+        }
+
+        foreach (var item in items)
+        {
+            Options.Remove(item);
+            RemoveOptionFromIndex(item);
+        }
+    }
+
+    private void ReplaceOptions(IList? newItems, IList? oldItems, int startIndex)
+    {
+        var items = ExtractOptions(newItems);
+        var old = ExtractOptions(oldItems);
+        foreach (var removed in old)
+        {
+            RemoveOptionFromIndex(removed);
+        }
+        if (items.Count == 0)
+        {
+            RemoveOptions(oldItems, startIndex);
+            return;
+        }
+
+        if (startIndex >= 0 && startIndex + items.Count <= Options.Count)
+        {
+            for (var i = 0; i < items.Count; i++)
+            {
+                Options[startIndex + i] = items[i];
+                AddOptionToIndex(items[i]);
+            }
+            return;
+        }
+
+        RemoveOptions(oldItems, -1);
+        Options.AddRange(items);
+        foreach (var item in items)
+        {
+            AddOptionToIndex(item);
+        }
+    }
+
+    private void MoveOptions(IList? movedItems, int oldIndex, int newIndex)
+    {
+        var items = ExtractOptions(movedItems);
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        if (oldIndex < 0 || newIndex < 0)
+        {
+            ReloadOptionsFromSource(OptionsSource as IEnumerable<ISelectOption>);
+            return;
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            Options.RemoveAt(oldIndex);
+        }
+
+        if (oldIndex < newIndex)
+        {
+            newIndex -= items.Count;
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            Options.Insert(newIndex + i, items[i]);
+        }
+    }
+
+    private List<ISelectOption> ExtractOptions(IList? items)
+    {
+        var result = new List<ISelectOption>();
+        if (items == null)
+        {
+            return result;
+        }
+
+        foreach (var item in items)
+        {
+            if (item is ISelectOption option)
+            {
+                result.Add(option);
+            }
+        }
+
+        return result;
+    }
+
+    private bool ReplaceSelectedOptionsFromItems(IList? oldItems, IList? newItems)
+    {
+        if (SelectedOptions is not IList<ISelectOption> selection || selection.IsReadOnly)
+        {
+            return false;
+        }
+
+        if (SelectedOptions is not INotifyCollectionChanged)
+        {
+            return false;
+        }
+
+        if (oldItems == null || newItems == null || oldItems.Count == 0)
+        {
+            return false;
+        }
+
+        var changed = false;
+        var count   = Math.Min(oldItems.Count, newItems.Count);
+        for (var i = 0; i < count; i++)
+        {
+            if (oldItems[i] is not ISelectOption oldOption ||
+                newItems[i] is not ISelectOption newOption)
+            {
+                continue;
+            }
+
+            for (var j = 0; j < selection.Count; j++)
+            {
+                if (ReferenceEquals(selection[j], oldOption))
                 {
-                    var defaultValue = DefaultValues.First();
+                    selection[j] = newOption;
+                    changed = true;
+                }
+            }
+        }
+
+        return changed;
+    }
+
+    private bool ReconcileSelectedOptionsWithOptionsSource()
+    {
+        if (_isReconcilingSelectedOptions || SelectedOptions == null)
+        {
+            return false;
+        }
+
+        var updatedSelection = new List<ISelectOption>();
+        foreach (var selected in SelectedOptions)
+        {
+            var match = FindMatchingOption(selected);
+            if (match != null)
+            {
+                updatedSelection.Add(match);
+            }
+        }
+
+        if (Mode == SelectMode.Single && updatedSelection.Count > 1)
+        {
+            updatedSelection = [updatedSelection[0]];
+        }
+
+        if (SelectionsEquivalent(SelectedOptions, updatedSelection))
+        {
+            return false;
+        }
+
+        _isReconcilingSelectedOptions = true;
+        try
+        {
+            if (SelectedOptions is IList<ISelectOption> list && !list.IsReadOnly)
+            {
+                list.Clear();
+                foreach (var option in updatedSelection)
+                {
+                    list.Add(option);
+                }
+            }
+            else
+            {
+                SetCurrentValue(SelectedOptionsProperty, updatedSelection);
+            }
+        }
+        finally
+        {
+            _isReconcilingSelectedOptions = false;
+        }
+        return true;
+    }
+
+    private ISelectOption? FindMatchingOption(ISelectOption selectedOption)
+    {
+        if (selectedOption.Value == null)
+        {
+            foreach (var option in Options)
+            {
+                if (ReferenceEquals(option, selectedOption))
+                {
+                    return option;
+                }
+            }
+            return null;
+        }
+
+        var compareValue = selectedOption.Value;
+        if (DefaultValueCompareFn == null)
+        {
+            var key = GetOptionKey(compareValue);
+            if (_optionsByValue.TryGetValue(key, out var list) && list.Count > 0)
+            {
+                foreach (var option in list)
+                {
+                    if (ReferenceEquals(option, selectedOption))
+                    {
+                        return option;
+                    }
+                }
+                return list[0];
+            }
+            return null;
+        }
+
+        foreach (var option in Options)
+        {
+            if (OptionEqualByValue(compareValue, option))
+            {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    private static bool SelectionsEquivalent(IList<ISelectOption> current, List<ISelectOption> updated)
+    {
+        if (current.Count != updated.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < current.Count; i++)
+        {
+            if (!ReferenceEquals(current[i], updated[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void RebuildOptionsIndex()
+    {
+        _optionsByValue.Clear();
+        if (DefaultValueCompareFn != null)
+        {
+            return;
+        }
+
+        foreach (var option in Options)
+        {
+            AddOptionToIndex(option);
+        }
+    }
+
+    private void AddOptionToIndex(ISelectOption option)
+    {
+        if (DefaultValueCompareFn != null)
+        {
+            return;
+        }
+
+        var key = GetOptionKey(option.Value);
+        if (!_optionsByValue.TryGetValue(key, out var list))
+        {
+            list = new List<ISelectOption>();
+            _optionsByValue[key] = list;
+        }
+        list.Add(option);
+    }
+
+    private void RemoveOptionFromIndex(ISelectOption option)
+    {
+        if (DefaultValueCompareFn != null)
+        {
+            return;
+        }
+
+        var key = GetOptionKey(option.Value);
+        if (!_optionsByValue.TryGetValue(key, out var list))
+        {
+            return;
+        }
+        list.Remove(option);
+        if (list.Count == 0)
+        {
+            _optionsByValue.Remove(key);
+        }
+    }
+
+    private static string GetOptionKey(object? value)
+    {
+        return value?.ToString() ?? NullValueKey;
+    }
+
+    private bool ConfigureDefaultValues()
+    {
+        if (SelectedOptions != null && SelectedOptions.Count > 0)
+        {
+            return false;
+        }
+
+        List<ISelectOption>? selectedOptions = null;
+
+        if (Mode == SelectMode.Single)
+        {
+            if (DefaultValues?.Count > 0)
+            {
+                var defaultValue = DefaultValues.First();
+                foreach (var option in Options)
+                {
+                    if (OptionEqualByValue(defaultValue, option))
+                    {
+                        selectedOptions = [option];
+                        break;
+                    }
+                }
+            }
+        }
+        else if (Mode == SelectMode.Multiple)
+        {
+            if (DefaultValues?.Count > 0)
+            {
+                selectedOptions = new List<ISelectOption>();
+                foreach (var defaultValue in DefaultValues)
+                {
                     foreach (var option in Options)
                     {
                         if (OptionEqualByValue(defaultValue, option))
                         {
-                            SetCurrentValue(SelectedOptionsProperty, new List<ISelectOption>()
-                            {
-                                option
-                            });
-                            break;
+                            selectedOptions.Add(option);
                         }
                     }
-                }
-            }
-            else if (Mode == SelectMode.Multiple)
-            {
-                if (DefaultValues?.Count > 0)
-                {
-                    var selectedOptions = new List<ISelectOption>();
-                    foreach (var defaultValue in DefaultValues)
-                    {
-                        foreach (var option in Options)
-                        {
-                            if (OptionEqualByValue(defaultValue, option))
-                            {
-                                selectedOptions.Add(option);
-                            }
-                        }
-                    }
-                    SetCurrentValue(SelectedOptionsProperty, selectedOptions);
                 }
             }
         }
+
+        if (selectedOptions == null || selectedOptions.Count == 0)
+        {
+            return false;
+        }
+
+        if (SelectedOptions is IList<ISelectOption> currentSelection && !currentSelection.IsReadOnly)
+        {
+            currentSelection.Clear();
+            foreach (var option in selectedOptions)
+            {
+                currentSelection.Add(option);
+            }
+        }
+        else
+        {
+            SetCurrentValue(SelectedOptionsProperty, selectedOptions);
+        }
+        return true;
     }
 
     private void ConfigureSingleSelectedOption()
@@ -905,6 +1371,86 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         {
             SetCurrentValue(SelectedOptionProperty, null);
         }
+    }
+
+    private void ClearSelectedOptions()
+    {
+        if (SelectedOptions is IList<ISelectOption> list &&
+            !list.IsReadOnly &&
+            SelectedOptions is INotifyCollectionChanged)
+        {
+            list.Clear();
+        }
+        else
+        {
+            SetCurrentValue(SelectedOptionsProperty, null);
+        }
+    }
+
+    private void SetSelectedOptionsInternal(IList<ISelectOption>? selection)
+    {
+        if (SelectedOptions is IList<ISelectOption> list &&
+            !list.IsReadOnly &&
+            SelectedOptions is INotifyCollectionChanged)
+        {
+            list.Clear();
+            if (selection != null)
+            {
+                foreach (var option in selection)
+                {
+                    list.Add(option);
+                }
+            }
+            return;
+        }
+
+        SetCurrentValue(SelectedOptionsProperty, selection);
+    }
+
+    private void SubscribeSelectedOptions(IList<ISelectOption>? selectedOptions)
+    {
+        if (_selectedOptionsNotifier != null)
+        {
+            _selectedOptionsNotifier.CollectionChanged -= HandleSelectedOptionsCollectionChanged;
+            _selectedOptionsNotifier = null;
+        }
+
+        _selectedOptionsNotifier = selectedOptions as INotifyCollectionChanged;
+        if (_selectedOptionsNotifier != null)
+        {
+            _selectedOptionsNotifier.CollectionChanged += HandleSelectedOptionsCollectionChanged;
+        }
+    }
+
+    private void HandleSelectedOptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        ScheduleSelectedOptionsRefresh();
+    }
+
+    private void ScheduleSelectedOptionsRefresh()
+    {
+        if (_selectedOptionsRefreshScheduled)
+        {
+            return;
+        }
+
+        _selectedOptionsRefreshScheduled = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            _selectedOptionsRefreshScheduled = false;
+            RefreshSelectedOptions();
+        }, DispatcherPriority.Background);
+    }
+
+    private void RefreshSelectedOptions()
+    {
+        ConfigureSingleSelectedOption();
+        ConfigureSelectionIsEmpty();
+        ConfigurePlaceholderVisible();
+        ConfigureSelectedFilterDescription();
+        SetCurrentValue(SelectedCountProperty, SelectedOptions?.Count ?? 0);
+        CleanDynamicAddedOptions();
+        SyncSelection();
     }
 
     private void ConfigureSelectedFilterDescription()
@@ -993,6 +1539,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         foreach (var option in toRemove)
         {
             Options.Remove(option);
+            RemoveOptionFromIndex(option);
             if (ReferenceEquals(_addNewOption, option))
             {
                 _addNewOption = null;

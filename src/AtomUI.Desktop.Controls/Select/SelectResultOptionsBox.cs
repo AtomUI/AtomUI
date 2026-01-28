@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -88,12 +89,14 @@ internal class SelectResultOptionsBox : TemplatedControl
     private SelectFilterTextBox? _searchTextBox;
     private SelectRemainInfoTag? _collapsedInfoTag;
     private protected readonly Dictionary<object, IDisposable> TagsBindingDisposables = new();
+    private INotifyCollectionChanged? _selectedOptionsNotifier;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == SelectedOptionsProperty)
         {
+            SubscribeSelectedOptions(SelectedOptions);
             HandleSelectedOptionsChanged();
         }
         else if (change.Property == IsFilterEnabledProperty ||
@@ -165,6 +168,36 @@ internal class SelectResultOptionsBox : TemplatedControl
         ConfigureSearchTextControl();
         HandleSelectedOptionsChanged();
         ConfigureMaxTagCountInfoVisible();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (_selectedOptionsNotifier != null)
+        {
+            _selectedOptionsNotifier.CollectionChanged -= HandleSelectedOptionsCollectionChanged;
+            _selectedOptionsNotifier = null;
+        }
+    }
+
+    private void SubscribeSelectedOptions(IList<ISelectOption>? selectedOptions)
+    {
+        if (_selectedOptionsNotifier != null)
+        {
+            _selectedOptionsNotifier.CollectionChanged -= HandleSelectedOptionsCollectionChanged;
+            _selectedOptionsNotifier = null;
+        }
+
+        _selectedOptionsNotifier = selectedOptions as INotifyCollectionChanged;
+        if (_selectedOptionsNotifier != null)
+        {
+            _selectedOptionsNotifier.CollectionChanged += HandleSelectedOptionsCollectionChanged;
+        }
+    }
+
+    private void HandleSelectedOptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        HandleSelectedOptionsChanged();
     }
 
     private void HandleSelectedOptionsChanged()

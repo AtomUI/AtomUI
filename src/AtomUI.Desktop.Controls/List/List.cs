@@ -15,6 +15,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -98,9 +99,6 @@ public class List : TemplatedControl,
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<List>();
-
-    public static readonly StyledProperty<bool> DisabledItemHoverEffectProperty =
-        AvaloniaProperty.Register<List, bool>(nameof(DisabledItemHoverEffect));
     
     public static readonly StyledProperty<bool> IsBorderlessProperty =
         AvaloniaProperty.Register<List, bool>(nameof(IsBorderless), false);
@@ -110,6 +108,12 @@ public class List : TemplatedControl,
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<List>();
+    
+    public static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
+        ListBox.ItemHoverBgProperty.AddOwner<List>();
+    
+    public static readonly StyledProperty<IBrush?> ItemSelectedBgProperty =
+        ListBox.ItemSelectedBgProperty.AddOwner<List>();
     
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<List, int>(nameof(PageSize), 0);
@@ -226,12 +230,6 @@ public class List : TemplatedControl,
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-
-    public bool DisabledItemHoverEffect
-    {
-        get => GetValue(DisabledItemHoverEffectProperty);
-        set => SetValue(DisabledItemHoverEffectProperty, value);
-    }
     
     public bool IsShowSelectedIndicator
     {
@@ -249,6 +247,18 @@ public class List : TemplatedControl,
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+    
+    public IBrush? ItemHoverBg
+    {
+        get => GetValue(ItemHoverBgProperty);
+        set => SetValue(ItemHoverBgProperty, value);
+    }
+    
+    public IBrush? ItemSelectedBg
+    {
+        get => GetValue(ItemSelectedBgProperty);
+        set => SetValue(ItemSelectedBgProperty, value);
     }
 
     public int ItemCount => CollectionView?.Count ?? 0;
@@ -422,20 +432,22 @@ public class List : TemplatedControl,
         private set;
     }
     
+    protected static object DefaultRecycleKey { get; } = new ();
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ListToken.ID;
 
     #endregion
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new StackPanel());
+        new(() => new VirtualizingStackPanel());
     
     private IListCollectionView? _listCollectionView;
     private bool _areHandlersSuspended;
     private bool _measured;
     private Pagination? _topPagination;
     private Pagination? _bottomPagination;
-    internal ListDefaultView? ListDefaultView;
+    internal GroupableListView? ListView;
     private CompositeDisposable? _relayBindingDisposables;
     
     static List()
@@ -509,16 +521,16 @@ public class List : TemplatedControl,
         _topPagination    = e.NameScope.Find<Pagination>(ListThemeConstants.TopPaginationPart);
         _bottomPagination = e.NameScope.Find<Pagination>(ListThemeConstants.BottomPaginationPart);
 
-        if (ListDefaultView != null)
+        if (ListView != null)
         {
-            ListDefaultView.SelectionChanged -= HandleListViewSelectionChanged;
+            ListView.SelectionChanged -= HandleListViewSelectionChanged;
         }
 
-        ListDefaultView   = e.NameScope.Find<ListDefaultView>(ListThemeConstants.ListViewPart);
-        if (ListDefaultView != null)
+        ListView   = e.NameScope.Find<GroupableListView>(ListThemeConstants.ListViewPart);
+        if (ListView != null)
         {
-            ListDefaultView.OwnerList        =  this;
-            ListDefaultView.SelectionChanged += HandleListViewSelectionChanged;
+            ListView.OwningList       =  this;
+            ListView.SelectionChanged += HandleListViewSelectionChanged;
             SyncSelectionState();
         }
         UpdatePseudoClasses();
@@ -735,77 +747,36 @@ public class List : TemplatedControl,
 
     internal virtual Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        if (item is ListGroupData)
-        {
-            return new ListGroupItem();
-        }
         return new ListItem();
     }
 
-    internal virtual void PrepareContainerForItemOverride(CompositeDisposable disposables, Control container, object? item, int index)
+    internal virtual bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
-        if (container is ListItem listItem)
-        {
-            if (item != null && item is not Visual)
-            {
-                if (!listItem.IsSet(ListItem.ContentProperty))
-                {
-                    if (ItemTemplate != null)
-                    {
-                        listItem.SetCurrentValue(ListItem.ContentProperty, item);
-                    }
-                    else if (item is IListItemData listItemData)
-                    {
-                        listItem.SetCurrentValue(ListItem.ContentProperty, listItemData.Content);
-                    }
-                }
+        return NeedsContainer<ListItem>(item, out recycleKey);
+    }
     
-                if (item is IListItemData listBoxItemData)
-                {
-                    if (!listItem.IsSet(ListItem.IsSelectedProperty))
-                    {
-                        listItem.SetCurrentValue(ListItem.IsSelectedProperty, listBoxItemData.IsSelected);
-                    }
-                    if (!listItem.IsSet(ListItem.IsEnabledProperty))
-                    {
-                        listItem.SetCurrentValue(IsEnabledProperty, listBoxItemData.IsEnabled);
-                    }
-                }
-            }
-            
-            if (ItemTemplate != null)
-            {
-                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listItem, ListItem.ContentTemplateProperty));
-            }
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, listItem, ListItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, listItem, ListItem.SizeTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowSelectedIndicatorProperty, listItem, ListItem.IsShowSelectedIndicatorProperty));
-            disposables.Add(BindUtils.RelayBind(this, DisabledItemHoverEffectProperty, listItem,
-                ListItem.DisabledItemHoverEffectProperty));
-        }
-        else if (container is ListGroupItem groupItem)
+    internal bool NeedsContainer<T>(object? item, out object? recycleKey) where T : Control
+    {
+        if (item is T)
         {
-            if (item != null && item is not Visual)
-            {
-                if (!groupItem.IsSet(ListGroupItem.ContentProperty))
-                {
-                    if (GroupItemTemplate != null)
-                    {
-                        groupItem.SetCurrentValue(ListGroupItem.ContentProperty, item);
-                    }
-                    else if (item is ListGroupData groupData)
-                    {
-                        groupItem.SetCurrentValue(ListGroupItem.ContentProperty, groupData.Header);
-                    }
-                }
-            }
-            
-            if (GroupItemTemplate != null)
-            {
-                disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, groupItem, ListGroupItem.ContentTemplateProperty));
-            }
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, groupItem, ListGroupItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, groupItem, ListGroupItem.SizeTypeProperty));
+            recycleKey = null;
+            return false;
+        }
+        recycleKey = DefaultRecycleKey;
+        return true;
+    }
+
+    internal virtual void PrepareListBoxItem(ListItem listItem, object? item, int index,
+                                             CompositeDisposable disposables)
+    {
+        if (GroupItemTemplate != null)
+        {
+            disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, listItem, ListItem.ContentTemplateProperty));
+        }
+
+        if (item is IGroupListItemData groupListItemData)
+        {
+            listItem.IsGroupItem = groupListItemData.IsGroupItem;
         }
     }
 
@@ -816,12 +787,12 @@ public class List : TemplatedControl,
     
     protected Control? GetContainerFromEventSource(object? eventSource)
     {
-        if (ListDefaultView != null)
+        if (ListView != null)
         {
             for (var current = eventSource as Visual; current != null; current = current.GetVisualParent())
             {
-                if (current is Control control && control.Parent == ListDefaultView &&
-                    ListDefaultView.IndexFromContainer(control) != -1)
+                if (current is Control control && control.Parent == ListView &&
+                    ListView.IndexFromContainer(control) != -1)
                 {
                     return control;
                 }
@@ -832,11 +803,11 @@ public class List : TemplatedControl,
     
     private void SyncSelectionState()
     {
-        if (ListDefaultView != null)
+        if (ListView != null)
         {
             _relayBindingDisposables?.Dispose();
             _relayBindingDisposables = new CompositeDisposable(2); 
-            _relayBindingDisposables.Add(BindUtils.RelayBind(this, SelectionModeProperty, ListDefaultView, ListDefaultView.SelectionModeProperty));
+            _relayBindingDisposables.Add(BindUtils.RelayBind(this, SelectionModeProperty, ListView, GroupableListView.SelectionModeProperty));
         }
     }
 

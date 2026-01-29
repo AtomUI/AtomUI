@@ -4,7 +4,6 @@
                     xmlns:atom="https://atomui.net"
                     xmlns:themes="using:AtomUI.Desktop.Controls.Themes">
     <themes:ListTheme x:Key="{x:Type atom:List}" TargetType="atom:List" />
+    <themes:GroupableListViewTheme x:Key="{x:Type atom:GroupableListView}" TargetType="atom:GroupableListView" />
     <themes:ListItemTheme x:Key="{x:Type atom:ListItem}" TargetType="atom:ListItem" />
-    <themes:ListDefaultViewTheme x:Key="{x:Type atom:ListDefaultView}" TargetType="atom:ListDefaultView" />
-    <themes:ListGroupItemTheme x:Key="{x:Type atom:ListGroupItem}" TargetType="atom:ListGroupItem" />
 </ResourceDictionary>

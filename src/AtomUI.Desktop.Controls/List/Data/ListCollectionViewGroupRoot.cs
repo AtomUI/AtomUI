@@ -251,10 +251,16 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
                 group.Insert(subGroup, item, ActiveComparer);
             }
         }
-        AddToSubgroups(new ListGroupData()
+
+        var itemData = new ListItemData()
         {
-            Header = key.ToString()!,
-        }, subGroup, level + 1, loading);
+            Content = key.ToString()!,
+        };
+        if (itemData is IGroupListItemData groupListItemData)
+        {
+            groupListItemData.IsGroupItem = true;
+        }
+        AddToSubgroups(itemData, subGroup, level + 1, loading);
         AddToSubgroups(item, subGroup, level + 1, loading);
     }
 

@@ -26,6 +26,7 @@ public class ListBoxItem : AvaloniaListBoxItem
     }
 
     #endregion
+    
     #region 内部属性定义
 
     internal static readonly StyledProperty<SizeType> SizeTypeProperty =

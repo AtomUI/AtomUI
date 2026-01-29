@@ -29,6 +29,7 @@
                                          SizeType="{TemplateBinding SizeType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                          IsVisible="{TemplateBinding PaginationVisibility, Converter={x:Static atom:ListTheme.TopPaginationVisibilityConverter}}" />
+                        
                         <atom:Pagination DockPanel.Dock="Bottom"
                                          Name="{x:Static atom:ListThemeConstants.BottomPaginationPart}"
                                          Margin="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"
@@ -39,21 +40,28 @@
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                          IsVisible="{TemplateBinding PaginationVisibility, Converter={x:Static atom:ListTheme.BottomPaginationVisibilityConverter}}" />
                         <Panel>
-                            <atom:ListDefaultView Name="{x:Static atom:ListThemeConstants.ListViewPart}"
-                                                  SizeType="{TemplateBinding SizeType}"
-                                                  DisabledItemHoverEffect="{TemplateBinding DisabledItemHoverEffect}"
-                                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                                  ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                  IsShowSelectedIndicator="{TemplateBinding IsShowSelectedIndicator}"
-                                                  IsItemSelectable="{TemplateBinding IsItemSelectable}"
-                                                  ItemsSource="{TemplateBinding CollectionView}" 
-                                                  SelectionMode="{TemplateBinding SelectionMode}"
-                                                  SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}"
-                                                  SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
-                                                  SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"
-                                                  AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}" 
-                                                  IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"/>
+                            <atom:GroupableListView Name="{x:Static atom:ListThemeConstants.ListViewPart}"
+                                                    atom:ScrollViewer.IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                                    ScrollViewer.AllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
+                                                    ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                    ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                    ScrollViewer.IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                                                    SizeType="{TemplateBinding SizeType}"
+                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                    ItemTemplate="{TemplateBinding ItemTemplate}"
+                                                    GroupItemTemplate="{TemplateBinding GroupItemTemplate}"
+                                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                    ItemSelectedBg="{TemplateBinding ItemSelectedBg}"
+                                                    ItemHoverBg="{TemplateBinding ItemHoverBg}"
+                                                    IsShowSelectedIndicator="{TemplateBinding IsShowSelectedIndicator}"
+                                                    IsItemSelectable="{TemplateBinding IsItemSelectable}"
+                                                    ItemsSource="{TemplateBinding CollectionView}"
+                                                    SelectionMode="{TemplateBinding SelectionMode}"
+                                                    SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}"
+                                                    SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
+                                                    SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"
+                                                    AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}"
+                                                    IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}" />
                             <ContentPresenter
                                 Name="EmptyIndicator"
                                 HorizontalContentAlignment="Center"
@@ -75,7 +83,14 @@
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListTokenKey.ContentPadding}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
-
+        <Setter Property="ItemHoverBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverBgColor}}" />
+        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemSelectedBgColor}}" />
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="ScrollViewer.AllowAutoHide" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
+        
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
             <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXL}}" />

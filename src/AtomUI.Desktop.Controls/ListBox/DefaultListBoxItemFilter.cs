@@ -13,7 +13,7 @@ public class DefaultListBoxItemFilter : IListBoxItemFilter
         {
             if (listBoxItem.Content is IListItemData listItemData)
             {
-                var contentStr = listItemData.Content?.ToString();
+                var contentStr = listItemData.Value?.ToString();
                 if (!string.IsNullOrWhiteSpace(contentStr) && contentStr.IndexOf(strFilterValue, StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     return true;

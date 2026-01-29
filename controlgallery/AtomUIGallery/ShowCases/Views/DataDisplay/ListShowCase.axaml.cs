@@ -17,24 +17,7 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         {
             if (DataContext is ListViewModel viewModel)
             {
-                viewModel.ListItems = [
-                    new ListItemData()
-                    {
-                        Content = "Blue"
-                    },
-                    new ListItemData()
-                    {
-                        Content = "Green"
-                    },
-                    new ListItemData()
-                    {
-                        Content = "Red"
-                    },
-                    new ListItemData()
-                    {
-                        Content = "Yellow"
-                    }
-                ];
+         
                 viewModel.ListItemsWidthDisabled = [
                     new ListItemData()
                     {
@@ -50,11 +33,15 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
                     },
                     new ListItemData()
                     {
-                        Content = "Yellow",
+                        Content   = "Yellow",
                         IsEnabled = false
                     }
                 ];
+                InitBasicListItems(viewModel);
+                InitSelectionListItems(viewModel);
                 InitializeGroupItems(viewModel);
+                InitializeFilteredGroupItems(viewModel);
+                InitializeOrderedGroupItems(viewModel);
                 InitializeEmptyDemoItems(viewModel);
                 InitializeBasicListBoxItems(viewModel);
                 viewModel.SelectionMode = SelectionMode.Single;
@@ -62,8 +49,8 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         });
         InitializeComponent();
         SelectionModeOptionGroup.OptionCheckedChanged += HandleSelectionModeOptionCheckedChanged;
-        FilteredList.CollectionViewChanged += HandleFilterCollectionViewChanged;
-        OrderedList.CollectionViewChanged += HandleOrderedCollectionViewChanged;
+        FilteredList.CollectionViewChanged            += HandleFilterCollectionViewChanged;
+        OrderedList.CollectionViewChanged             += HandleOrderedCollectionViewChanged;
     }
 
     private void HandleSelectionModeOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs e)
@@ -77,18 +64,50 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         }
     }
 
-    private void InitializeGroupItems(ListViewModel viewModel)
+    private List<IListItemData> BuildBasicListItems()
     {
-        viewModel.GroupListItems = [
+        return [
+            new ListItemData()
+            {
+                Content = "Blue"
+            },
+            new ListItemData()
+            {
+                Content = "Green"
+            },
+            new ListItemData()
+            {
+                Content = "Red"
+            },
+            new ListItemData()
+            {
+                Content = "Yellow"
+            }
+        ];
+    }
+
+    private void InitBasicListItems(ListViewModel viewModel)
+    {
+        viewModel.ListItems = BuildBasicListItems();
+    }
+
+    private void InitSelectionListItems(ListViewModel viewModel)
+    {
+        viewModel.SelectionListItems = BuildBasicListItems();
+    }
+    
+    private List<IListItemData> BuildGroupItems()
+    {
+        return [
             new ListItemData()
             {
                 Content = "Red",
-                Group = "Basic Colors"
+                Group   = "Basic Colors"
             },
             new ListItemData()
             {
                 Content = "Orange",
-                Group = "Basic Colors"
+                Group   = "Basic Colors"
             },
             
             new ListItemData()
@@ -182,15 +201,29 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
                 Content = "Olive",
                 Group   = "Specific Shades"
             },
-         
         ];
+    }
+
+    private void InitializeGroupItems(ListViewModel viewModel)
+    {
+        viewModel.GroupListItems = BuildGroupItems();
+    }
+    
+    private void InitializeFilteredGroupItems(ListViewModel viewModel)
+    {
+        viewModel.FilteredGroupListItems = BuildGroupItems();
+    }
+    
+    private void InitializeOrderedGroupItems(ListViewModel viewModel)
+    {
+        viewModel.OrderedGroupListItems = BuildGroupItems();
     }
     
     private void InitializeEmptyDemoItems(ListViewModel viewModel)
     {
         viewModel.EmptyDemoItems = [];
     }
-
+    
     private void InitializeBasicListBoxItems(ListViewModel viewModel)
     {
         viewModel.BasicListBoxItems = [
@@ -216,51 +249,51 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
             },
         ];
     }
-
+    
     private void HandleAddEmptyItemClicked(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not ListViewModel viewModel)
         {
             return;
         }
-
+    
         var items = viewModel.EmptyDemoItems != null
             ? new List<IListItemData>(viewModel.EmptyDemoItems)
             : new List<IListItemData>();
-
+    
         items.Add(new ListItemData()
         {
             Content = $"Dynamic item "
         });
-
+    
         viewModel.EmptyDemoItems = items;
     }
-
+    
     private void HandleRemoveEmptyItemClicked(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not ListViewModel viewModel)
         {
             return;
         }
-
+    
         if (viewModel.EmptyDemoItems is null || viewModel.EmptyDemoItems.Count <= 1)
         {
             viewModel.EmptyDemoItems = [];
             return;
         }
-
+    
         var items = new List<IListItemData>(viewModel.EmptyDemoItems);
         items.RemoveAt(items.Count - 1);
         viewModel.EmptyDemoItems = items;
     }
-
+    
     private void HandleFilterCollectionViewChanged(object? sender, ListCollectionViewChangedEventArgs e)
     {
         if (FilteredList.CollectionView != null)
         {
             FilteredList.CollectionView.FilterDescriptions.Add(new ListFilterDescription()
             {
-                PropertyPath = "Content",
+                PropertyPath     = "Content",
                 FilterConditions = ["a"]
             });
         }

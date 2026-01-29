@@ -21,12 +21,36 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _listItems, value);
     }
     
+    private List<IListItemData>? _selectionListItems;
+    
+    public List<IListItemData>? SelectionListItems
+    {
+        get => _selectionListItems;
+        set => this.RaiseAndSetIfChanged(ref _selectionListItems, value);
+    }
+    
     private List<IListItemData>? _listItemsWidthDisabled = [];
     
     public List<IListItemData>? ListItemsWidthDisabled
     {
         get => _listItemsWidthDisabled;
         set => this.RaiseAndSetIfChanged(ref _listItemsWidthDisabled, value);
+    }
+    
+    private List<IListItemData>? _filteredGroupListItems;
+    
+    public List<IListItemData>? FilteredGroupListItems
+    {
+        get => _filteredGroupListItems;
+        set => this.RaiseAndSetIfChanged(ref _filteredGroupListItems, value);
+    }
+    
+    private List<IListItemData>? _orderedGroupListItems;
+    
+    public List<IListItemData>? OrderedGroupListItems
+    {
+        get => _orderedGroupListItems;
+        set => this.RaiseAndSetIfChanged(ref _orderedGroupListItems, value);
     }
     
     private List<IListItemData>? _groupListItems;

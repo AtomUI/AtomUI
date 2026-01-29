@@ -254,6 +254,7 @@ public class ListBox : AvaloniaListBox,
     static ListBox()
     {
         ListBoxItem.ClickedEvent.AddClassHandler<ListBox>((list, args) => list.HandleListBoxItemClicked(args));
+        IsItemSelectableProperty.Changed.AddClassHandler<ListBox>((list, args) => list.HandleIsItemSelectableChanged(args));
     }
     
     public ListBox()
@@ -266,7 +267,11 @@ public class ListBox : AvaloniaListBox,
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        ItemFilter ??= new DefaultListBoxItemFilter();
+        if (ItemFilter == null)
+        {
+            SetCurrentValue(ItemFilterProperty, new DefaultListBoxItemFilter());
+        }
+
         ConfigureEmptyIndicator();
         ConfigureIsFiltering();
     }
@@ -305,20 +310,21 @@ public class ListBox : AvaloniaListBox,
         {
             ConfigureEffectiveBorderThickness();
         }
-        else if (change.Property == IsItemSelectableProperty)
-        {
-            if (IsItemSelectable)
-            {
-                SetCurrentValue(SelectedIndexProperty, -1);
-                SetCurrentValue(SelectedItemProperty, null);
-                SetCurrentValue(SelectedItemsProperty, null);
-            }
-        }
         else if (change.Property == ItemFilterValueProperty ||
                  change.Property == ItemFilterProperty)
         {
             ConfigureIsFiltering();
             FilterItems();
+        }
+    }
+
+    private void HandleIsItemSelectableChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is bool && (bool)e.NewValue == false)
+        {
+            SetCurrentValue(SelectedIndexProperty, -1);
+            SetCurrentValue(SelectedItemProperty, null);
+            SetCurrentValue(SelectedItemsProperty, null);
         }
     }
     
@@ -395,7 +401,7 @@ public class ListBox : AvaloniaListBox,
         }
     }
     
-    protected virtual void PrepareListBoxItem(ListBoxItem listBoxItem, object? item, int index, CompositeDisposable compositeDisposable)
+    protected virtual void PrepareListBoxItem(ListBoxItem listBoxItem, object? item, int index, CompositeDisposable disposables)
     {
     }
     
@@ -416,7 +422,7 @@ public class ListBox : AvaloniaListBox,
         }
     }
     
-    internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+    protected internal virtual bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
     {
         if (IsItemSelectable)
         {
@@ -530,5 +536,41 @@ public class ListBox : AvaloniaListBox,
     
     protected virtual void NotifyListBoxItemClicked(ListBoxItem item)
     {
+    }
+    
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (IsItemSelectable)
+        {
+            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var ctrl    = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+
+            if (!ctrl &&
+                e.Key.ToNavigationDirection() is { } direction && 
+                direction.IsDirectional())
+            {
+                e.Handled |= MoveSelection(
+                    direction,
+                    WrapSelection,
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
+            }
+            else if (SelectionMode.HasAllFlags(SelectionMode.Multiple) &&
+                     hotkeys is not null && hotkeys.SelectAll.Any(x => x.Matches(e)))
+            {
+                Selection.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Space || e.Key == Key.Enter)
+            {
+                UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                    ctrl);
+            }
+
+        }
+        
+        base.OnKeyDown(e);
     }
 }

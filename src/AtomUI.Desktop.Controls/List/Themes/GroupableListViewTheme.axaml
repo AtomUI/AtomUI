@@ -1,0 +1,17 @@
+<ControlTheme
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    TargetType="atom:GroupableListView"
+    x:Class="AtomUI.Desktop.Controls.Themes.GroupableListViewTheme"
+    x:ClassModifier="internal">
+    <ControlTheme.BasedOn>
+        <atom:ListBoxTheme TargetType="atom:GroupableListView"/>
+    </ControlTheme.BasedOn>
+
+    <Style Selector="^:is(atom|GroupableListView)">
+        <Setter Property="IsBorderless" Value="True"/>
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+</ControlTheme>

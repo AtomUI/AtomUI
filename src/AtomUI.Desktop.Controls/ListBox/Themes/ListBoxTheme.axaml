@@ -12,7 +12,8 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
-                    Padding="{TemplateBinding Padding}">
+                    Padding="{TemplateBinding Padding}"
+                    Margin="{TemplateBinding Margin}">
                 <Panel>
                     <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
                                        IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
@@ -41,7 +42,7 @@
 
     <Style Selector="^:is(atom|ListBox)">
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
-        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        <Setter Property="ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />

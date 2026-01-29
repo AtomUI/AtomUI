@@ -10,8 +10,7 @@
             Title="Basic usage"
             Description="Basic usage example.">
             <atom:List ItemsSource="{Binding ListItems}"
-                       x:DataType="viewModels:ListViewModel"
-                       IsItemSelectable="False">
+                       x:DataType="viewModels:ListViewModel">
                 <atom:List.ItemTemplate>
                     <DataTemplate x:DataType="atom:ListItemData">
                         <atom:TextBlock Text="{Binding Content}" />
@@ -19,7 +18,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Selection"
             Description="You can set single selection, multiple selection or no selection.">
@@ -33,7 +32,7 @@
                     </atom:OptionButtonGroup>
                 </StackPanel>
                 <atom:List SelectionMode="{Binding SelectionMode}"
-                           ItemsSource="{Binding ListItems}"
+                           ItemsSource="{Binding SelectionListItems}"
                            x:DataType="viewModels:ListViewModel"
                            IsShowSelectedIndicator="True">
                     <atom:List.ItemTemplate>
@@ -44,21 +43,7 @@
                 </atom:List>
             </StackPanel>
         </gallery:ShowCaseItem>
-
-        <gallery:ShowCaseItem
-            Title="Hover effect"
-            Description="Disabled item hover effect.">
-            <atom:List DisabledItemHoverEffect="True"
-                       x:DataType="viewModels:ListViewModel"
-                       ItemsSource="{Binding ListItems}">
-                <atom:List.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:List.ItemTemplate>
-            </atom:List>
-        </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Group"
             Description="You can group the data based on conditions.">
@@ -73,7 +58,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Item disabled"
             Description="Disabled item.">
@@ -86,7 +71,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Empty"
             Description="show empty indicator when no data.">
@@ -110,13 +95,13 @@
                 </atom:List>
             </StackPanel>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Filter"
             Description="You can filter the data based on criteria; here we've filtered for items containing 'a'.">
             <atom:List Name="FilteredList"
                        x:DataType="viewModels:ListViewModel"
-                       ItemsSource="{Binding GroupListItems}"
+                       ItemsSource="{Binding FilteredGroupListItems}"
                        IsGroupEnabled="False">
                 <atom:List.ItemTemplate>
                     <DataTemplate x:DataType="atom:ListItemData">
@@ -125,13 +110,13 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Ordered"
             Description="We can sort according to specified attributes.">
             <atom:List Name="OrderedList"
                        x:DataType="viewModels:ListViewModel"
-                       ItemsSource="{Binding GroupListItems}"
+                       ItemsSource="{Binding OrderedGroupListItems}"
                        IsGroupEnabled="True">
                 <atom:List.ItemTemplate>
                     <DataTemplate x:DataType="atom:ListItemData">
@@ -140,7 +125,7 @@
                 </atom:List.ItemTemplate>
             </atom:List>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Simple listbox control"
             Description="Basic usage example.">
@@ -151,9 +136,9 @@
                 <atom:ListBoxItem>Man charged over missing wedding girl.</atom:ListBoxItem>
                 <atom:ListBoxItem>Los Angeles battles huge wildfires.</atom:ListBoxItem>
             </atom:ListBox>
-
+        
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Simple listbox control"
             Description="Basic ItemsSource and template usage example.">

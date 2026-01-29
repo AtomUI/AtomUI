@@ -121,7 +121,7 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
     }
 }
 
-public record CustomOption : SelectOption
+public class CustomOption : SelectOption
 {
     public string? Description { get; set; }
     public string? Emoji { get; set; }

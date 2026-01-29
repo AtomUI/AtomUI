@@ -53,7 +53,7 @@ public class AutoCompleteViewModel : ReactiveObject, IRoutableViewModel, IActiva
 
 public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
-    public async Task<CompleteOptionLoadResult> LoadAsync(string? context, CancellationToken token)
+    public async Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
         await Task.Delay(TimeSpan.FromMilliseconds(200));
         List<IAutoCompleteOption> data = [];
@@ -87,7 +87,7 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 });
             }
         }
-        return new CompleteOptionLoadResult()
+        return new CompleteOptionsLoadResult()
         {
             Data = data
         };
@@ -105,7 +105,7 @@ public class CustomLabelOptionsAsyncLoader : ICompleteOptionsAsyncLoader
         Suffixes.Add("qq.com");
     }
     
-    public async Task<CompleteOptionLoadResult> LoadAsync(string? context, CancellationToken token)
+    public async Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
         await Task.Delay(TimeSpan.FromMilliseconds(200));
         List<IAutoCompleteOption> data = [];
@@ -123,7 +123,7 @@ public class CustomLabelOptionsAsyncLoader : ICompleteOptionsAsyncLoader
             }
         }
         
-        return new CompleteOptionLoadResult()
+        return new CompleteOptionsLoadResult()
         {
             Data = data
         };
@@ -132,7 +132,7 @@ public class CustomLabelOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 
 public class SearchEditOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
-    public async Task<CompleteOptionLoadResult> LoadAsync(string? context, CancellationToken token)
+    public async Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
         await Task.Delay(TimeSpan.FromMilliseconds(200));
         List<IAutoCompleteOption> data   = [];
@@ -155,7 +155,7 @@ public class SearchEditOptionsAsyncLoader : ICompleteOptionsAsyncLoader
             }
         }
         
-        return new CompleteOptionLoadResult()
+        return new CompleteOptionsLoadResult()
         {
             Data = data
         };

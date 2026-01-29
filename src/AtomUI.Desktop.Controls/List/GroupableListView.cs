@@ -57,4 +57,12 @@ internal class GroupableListView : ListBox
         }
         return  base.UpdateSelectionFromPointerEvent(source, e);
     }
+    
+    protected override void NotifyListBoxItemClicked(ListBoxItem item)
+    {
+        if (item is ListItem listItem && !listItem.IsGroupItem)
+        {
+            OwningList?.NotifyListItemClicked(listItem);
+        }
+    }
 }

@@ -2,14 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="SelectGroupHeaderTheme.axaml"/>
         <ResourceInclude Source="SelectHandleTheme.axaml"/>
         <ResourceInclude Source="SelectResultOptionsBoxTheme.axaml"/>
         <ResourceInclude Source="SelectFilterTextBoxTheme.axaml"/>
         <ResourceInclude Source="SelectTheme.axaml"/>
         <ResourceInclude Source="SelectTagTheme.axaml"/>
-        <ResourceInclude Source="SelectOptionListTheme.axaml"/>
-        <ResourceInclude Source="SelectOptionItemTheme.axaml"/>
         <ResourceInclude Source="SelectAddOnDecoratedBoxTheme.axaml"/>
         <ResourceInclude Source="SelectMaxCountIndicatorTheme.axaml"/>
         <ResourceInclude Source="SelectTagAwareTextBoxTheme.axaml"/>

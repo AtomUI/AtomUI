@@ -187,7 +187,7 @@ internal class SelectResultOptionsBox : TemplatedControl
                         var option = _selectedOptions[i];
                         var tag = new SelectTag
                         {
-                            TagText = option.Header,
+                            TagText = option.Header?.ToString(),
                             Item    = option
                         };
                        
@@ -220,7 +220,7 @@ internal class SelectResultOptionsBox : TemplatedControl
                     {
                         var tag = new SelectTag
                         {
-                            TagText = option.Header,
+                            TagText = option.Header?.ToString(),
                             Item    = option
                         };
                         TagsBindingDisposables.Add(tag, BindUtils.RelayBind(this, SizeTypeProperty, tag, SizeTypeProperty));

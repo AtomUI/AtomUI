@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
@@ -349,8 +350,10 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     
     #region 公共事件定义
     
-    public event EventHandler? DropDownClosed;
+    public event EventHandler<CancelEventArgs>? DropDownOpening;
     public event EventHandler? DropDownOpened;
+    public event EventHandler<CancelEventArgs>? DropDownClosing;
+    public event EventHandler? DropDownClosed;
 
     #endregion
 

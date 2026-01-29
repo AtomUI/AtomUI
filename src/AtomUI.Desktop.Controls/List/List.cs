@@ -815,4 +815,8 @@ public class List : TemplatedControl,
     {
         SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && IsEmptyDataSource);
     }
+    
+    protected internal virtual void NotifyListItemClicked(ListItem item)
+    {
+    }
 }

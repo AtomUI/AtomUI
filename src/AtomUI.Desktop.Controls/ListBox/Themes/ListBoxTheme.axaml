@@ -80,6 +80,12 @@
                 <atom:Empty SizeType="Small" PresetImage="Simple"/>
             </DataTemplate>
         </Setter>
+        
+        <Setter Property="ItemTemplate">
+            <DataTemplate x:DataType="atom:IListBoxItemData">
+                <atom:TextBlock Text="{Binding Value}" />
+            </DataTemplate>
+        </Setter>
     </Style>
 
 </ControlTheme>

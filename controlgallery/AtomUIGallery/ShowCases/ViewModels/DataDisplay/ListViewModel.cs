@@ -77,9 +77,9 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _selectionMode, value);
     }
     
-    private List<IListItemData>? _basicListBoxItems;
+    private List<IListBoxItemData>? _basicListBoxItems;
     
-    public List<IListItemData>? BasicListBoxItems
+    public List<IListBoxItemData>? BasicListBoxItems
     {
         get => _basicListBoxItems;
         set => this.RaiseAndSetIfChanged(ref _basicListBoxItems, value);

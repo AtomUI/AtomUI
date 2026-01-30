@@ -105,6 +105,12 @@
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
             <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
         </Style>
+        
+        <Setter Property="ItemTemplate">
+            <DataTemplate x:DataType="atom:IListItemData">
+                <atom:TextBlock Text="{Binding Content}" />
+            </DataTemplate>
+        </Setter>
     </Style>
 
 </ControlTheme>

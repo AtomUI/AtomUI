@@ -227,25 +227,25 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
     private void InitializeBasicListBoxItems(ListViewModel viewModel)
     {
         viewModel.BasicListBoxItems = [
-            new ListItemData()
+            new ListBoxItemData()
             {
-                Content = "Racing car sprays burning fuel into crowd."
+                Value = "Racing car sprays burning fuel into crowd."
             },
-            new ListItemData()
+            new ListBoxItemData()
             {
-                Content = "Japanese princess to wed commoner."
+                Value = "Japanese princess to wed commoner."
             },
-            new ListItemData()
+            new ListBoxItemData()
             {
-                Content = "Australian walks 100km after outback crash."
+                Value = "Australian walks 100km after outback crash."
             },
-            new ListItemData()
+            new ListBoxItemData()
             {
-                Content = "Man charged over missing wedding girl."
+                Value = "Man charged over missing wedding girl."
             },
-            new ListItemData()
+            new ListBoxItemData()
             {
-                Content = "Los Angeles battles huge wildfires."
+                Value = "Los Angeles battles huge wildfires."
             },
         ];
     }

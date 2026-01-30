@@ -10,13 +10,7 @@
             Title="Basic usage"
             Description="Basic usage example.">
             <atom:List ItemsSource="{Binding ListItems}"
-                       x:DataType="viewModels:ListViewModel">
-                <atom:List.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:List.ItemTemplate>
-            </atom:List>
+                       x:DataType="viewModels:ListViewModel"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
@@ -34,13 +28,7 @@
                 <atom:List SelectionMode="{Binding SelectionMode}"
                            ItemsSource="{Binding SelectionListItems}"
                            x:DataType="viewModels:ListViewModel"
-                           IsShowSelectedIndicator="True">
-                    <atom:List.ItemTemplate>
-                        <DataTemplate x:DataType="atom:ListItemData">
-                            <atom:TextBlock Text="{Binding Content}" />
-                        </DataTemplate>
-                    </atom:List.ItemTemplate>
-                </atom:List>
+                           IsShowSelectedIndicator="True"/>
             </StackPanel>
         </gallery:ShowCaseItem>
         
@@ -50,26 +38,14 @@
             <atom:List x:DataType="viewModels:ListViewModel"
                        ItemsSource="{Binding GroupListItems}"
                        IsGroupEnabled="True"
-                       Height="300">
-                <atom:List.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:List.ItemTemplate>
-            </atom:List>
+                       Height="300"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
             Title="Item disabled"
             Description="Disabled item.">
             <atom:List x:DataType="viewModels:ListViewModel"
-                       ItemsSource="{Binding ListItemsWidthDisabled}">
-                <atom:List.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:List.ItemTemplate>
-            </atom:List>
+                       ItemsSource="{Binding ListItemsWidthDisabled}"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
@@ -86,13 +62,7 @@
                     x:DataType="viewModels:ListViewModel"
                     ItemsSource="{Binding EmptyDemoItems}"
                     IsShowEmptyIndicator="True"
-                    IsGroupEnabled="False">
-                    <atom:List.ItemTemplate>
-                        <DataTemplate x:DataType="atom:ListItemData">
-                            <atom:TextBlock Text="{Binding Content}" />
-                        </DataTemplate>
-                    </atom:List.ItemTemplate>
-                </atom:List>
+                    IsGroupEnabled="False"/>
             </StackPanel>
         </gallery:ShowCaseItem>
         
@@ -102,13 +72,7 @@
             <atom:List Name="FilteredList"
                        x:DataType="viewModels:ListViewModel"
                        ItemsSource="{Binding FilteredGroupListItems}"
-                       IsGroupEnabled="False">
-                <atom:List.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:List.ItemTemplate>
-            </atom:List>
+                       IsGroupEnabled="False"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
@@ -117,13 +81,7 @@
             <atom:List Name="OrderedList"
                        x:DataType="viewModels:ListViewModel"
                        ItemsSource="{Binding OrderedGroupListItems}"
-                       IsGroupEnabled="True">
-                <atom:List.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:List.ItemTemplate>
-            </atom:List>
+                       IsGroupEnabled="True"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
@@ -144,13 +102,7 @@
             Description="Basic ItemsSource and template usage example.">
             <atom:ListBox ItemsSource="{Binding BasicListBoxItems}"
                           x:DataType="viewModels:ListViewModel"
-                          IsShowSelectedIndicator="True">
-                <atom:ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="atom:ListItemData">
-                        <atom:TextBlock Text="{Binding Content}" />
-                    </DataTemplate>
-                </atom:ListBox.ItemTemplate>
-            </atom:ListBox>
+                          IsShowSelectedIndicator="True"/>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem

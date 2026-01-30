@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
@@ -10,6 +12,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -500,7 +503,34 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
     private protected Popup? Popup;
     private protected bool IgnorePopupClose;
+    private protected bool PopupHasOpened;
+    private protected bool IgnorePropertyChange;
 
+    static AbstractSelect()
+    {
+        IsDropDownOpenProperty.Changed.AddClassHandler<AbstractSelect>((select, args) => select.HandleIsDropDownOpenChanged(args));
+    }
+
+    private void HandleIsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        // Ignore the change if requested
+        if (IgnorePropertyChange)
+        {
+            IgnorePropertyChange = false;
+            return;
+        }
+
+        bool oldValue = (bool)e.OldValue!;
+        bool newValue = (bool)e.NewValue!;
+
+        if (!newValue)
+        {
+            ClosingDropDown(oldValue);
+        }
+
+        UpdatePseudoClasses();
+    }
+    
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -598,6 +628,52 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     {
         base.OnApplyTemplate(e);
         ConfigureMaxDropdownHeight();
+        if (Popup != null)
+        {
+            Popup.Opened -= PopupOpened;
+            Popup.Closed -= PopupClosed;
+        }
+        
+        Popup                    =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
+        
+        Popup.ClickHidePredicate =  PopupClosePredicate;
+        Popup.Opened             += PopupOpened;
+        Popup.Closed             += PopupClosed;
+        Popup.CloseAction        =  PopupCloseAction;
+    }
+    
+    protected virtual void PopupClosed(object? sender, EventArgs e)
+    {
+        SubscriptionsOnOpen.Clear();
+        NotifyPopupClosed();
+    }
+
+    protected virtual void PopupOpened(object? sender, EventArgs e)
+    {
+        SubscriptionsOnOpen.Clear();
+        this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
+        foreach (var parent in this.GetVisualAncestors().OfType<Control>())
+        {
+            parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
+        }
+
+        NotifyPopupOpened();
+    }
+    
+    private void IsVisibleChanged(bool isVisible)
+    {
+        if (!isVisible && IsDropDownOpen)
+        {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+        }
+    }
+    
+    protected void PopupCloseAction(Popup popup)
+    {
+        popup.MotionAwareClose();
+        IgnorePropertyChange = true;
+        SetCurrentValue(IsDropDownOpenProperty, false);
+        ClosingDropDown(true);
     }
 
     private void ConfigurePopupPlacement()
@@ -630,7 +706,10 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     {
         if (IsPopupMatchSelectWidth)
         {
-            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
+            if (!IsDropDownOpen)
+            {
+                SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
+            }
         }
         else
         {
@@ -641,5 +720,95 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     protected virtual void ConfigureMaxDropdownHeight()
     {
         MaxPopupHeight = ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+    
+    protected void ClosingDropDown(bool oldValue)
+    {
+        var args = new CancelEventArgs();
+        NotifyDropDownClosing(args);
+
+        if (args.Cancel)
+        {
+            IgnorePropertyChange = true;
+            SetCurrentValue(IsDropDownOpenProperty, oldValue);
+        }
+        else
+        {
+            CloseDropDown();
+        }
+
+        UpdatePseudoClasses();
+    }
+    
+    protected void CloseDropDown()
+    {
+        if (PopupHasOpened)
+        {
+            if (Popup != null)
+            {
+                Popup.IsMotionAwareOpen = false;
+            }
+            NotifyDropDownClosed(EventArgs.Empty);
+        }
+    }
+    
+    protected void OpenDropDown()
+    {
+        if (Popup != null)
+        {
+            Popup.IsMotionAwareOpen = true;
+        }
+        PopupHasOpened = true;
+        NotifyDropDownOpened(EventArgs.Empty);
+    }
+    
+    protected void OpeningDropDown(bool oldValue)
+    {
+        var args = new CancelEventArgs();
+
+        // Opening
+        NotifyDropDownOpening(args);
+
+        if (args.Cancel)
+        {
+            IgnorePropertyChange = true;
+            SetCurrentValue(IsDropDownOpenProperty, oldValue);
+        }
+        else
+        {
+            OpenDropDown();
+        }
+
+        UpdatePseudoClasses();
+    }
+    
+    protected virtual void NotifyDropDownOpening(CancelEventArgs eventArgs)
+    {
+        DropDownOpening?.Invoke(this, eventArgs);
+    }
+    
+    protected virtual void NotifyDropDownOpened(EventArgs eventArgs)
+    {
+        DropDownOpened?.Invoke(this, eventArgs);
+    }
+    
+    protected virtual void NotifyDropDownClosing(CancelEventArgs eventArgs)
+    {
+        DropDownClosing?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownClosed(EventArgs eventArgs)
+    {
+        DropDownClosed?.Invoke(this, eventArgs);
+    }
+    
+    protected void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(SelectPseudoClass.DropdownOpen, IsDropDownOpen);
+        PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
+        PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
     }
 }

@@ -425,6 +425,7 @@ public class AbstractAutoComplete : TemplatedControl,
         remove => RemoveHandler(SelectionChangedEvent, value);
     }
     
+    public event EventHandler<CompleteOptionsLoadedEventArgs>? OptionsLoaded;
     public event EventHandler<CompletePopulatingEventArgs>? Populating;
     public event EventHandler<CompletePopulatedEventArgs>? Populated;
     public event EventHandler<CancelEventArgs>? DropDownOpening;
@@ -1548,7 +1549,7 @@ public class AbstractAutoComplete : TemplatedControl,
         });
     }
     
-    private bool TryPopulateAsync(string? searchText)
+    private bool TryPopulateAsync(string? filterValue)
     {
         _populationCancellationTokenSource?.Cancel(false);
         _populationCancellationTokenSource?.Dispose();
@@ -1560,7 +1561,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
 
         _populationCancellationTokenSource = new CancellationTokenSource();
-        var task = PopulateAsync(searchText, _populationCancellationTokenSource.Token);
+        var task = PopulateAsync(filterValue, _populationCancellationTokenSource.Token);
         if (task.Status == TaskStatus.Created)
         {
             task.Start();
@@ -1580,12 +1581,12 @@ public class AbstractAutoComplete : TemplatedControl,
 
             var result     = await OptionsAsyncLoader.LoadAsync(filterValue, cancellationToken);
             var resultList = result.Data;
-        
+            OptionsLoaded?.Invoke(this, new CompleteOptionsLoadedEventArgs(filterValue, result));
             if (cancellationToken.IsCancellationRequested)
             {
                 return;
             }
-        
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 if (!cancellationToken.IsCancellationRequested)
@@ -1595,8 +1596,14 @@ public class AbstractAutoComplete : TemplatedControl,
                 }
             });
         }
-        catch (TaskCanceledException)
-        { }
+        catch (TaskCanceledException e)
+        {
+            OptionsLoaded?.Invoke(this, new CompleteOptionsLoadedEventArgs(filterValue, new CompleteOptionsLoadResult()
+            {
+                UserFriendlyMessage = e.Message,
+                StatusCode          = RpcStatusCode.Cancelled
+            }));
+        }
         finally
         {
             _populationCancellationTokenSource?.Dispose();
@@ -1604,7 +1611,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    public void PopulateComplete()
+    private void PopulateComplete()
     {
         // Apply the search filter
         RefreshView();

@@ -26,7 +26,7 @@ public enum SelectMode
 }
 
 [PseudoClasses(SelectPseudoClass.DropdownOpen)]
-public class Select : AbstractSelect, IControlSharedTokenResourcesHost
+public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     public static readonly StyledProperty<IEnumerable<ISelectOption>?> OptionsSourceProperty =
@@ -67,6 +67,15 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<string> OptionFilterPropProperty =
         AvaloniaProperty.Register<Select, string>(
             nameof(OptionFilterProp), "Value");
+    
+    public static readonly DirectProperty<Select, object?> OptionsAsyncLoadContextProperty =
+        AvaloniaProperty.RegisterDirect<Select, object?>(
+            nameof(OptionsAsyncLoadContext),
+            o => o.OptionsAsyncLoadContext,
+            (o, v) => o.OptionsAsyncLoadContext = v);
+    
+    public static readonly StyledProperty<ISelectOptionsAsyncLoader?> OptionsLoaderProperty =
+        AvaloniaProperty.Register<Select, ISelectOptionsAsyncLoader?>(nameof(OptionsLoader));
     
     public IEnumerable<ISelectOption>? OptionsSource
     {
@@ -139,6 +148,27 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         get => GetValue(AutoScrollToSelectedOptionsProperty);
         set => SetValue(AutoScrollToSelectedOptionsProperty, value);
     }
+    
+    private object? _optionsAsyncLoadContext;
+
+    public object? OptionsAsyncLoadContext
+    {
+        get => _optionsAsyncLoadContext;
+        set => SetAndRaise(OptionsAsyncLoadContextProperty, ref _optionsAsyncLoadContext, value);
+    }
+    
+    public ISelectOptionsAsyncLoader? OptionsLoader
+    {
+        get => GetValue(OptionsLoaderProperty);
+        set => SetValue(OptionsLoaderProperty, value);
+    }
+    #endregion
+
+    #region 公共属性定义
+
+    public event EventHandler<SelectOptionsLoadingEventArgs>? OptionsLoading;
+    public event EventHandler<SelectOptionsLoadedEventArgs>? OptionsLoaded;
+
     #endregion
     
     public Func<object, object, bool>? FilterFn { get; set; }
@@ -183,10 +213,8 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new VirtualizingStackPanel());
     
-    private Popup? _popup;
     private SelectCandidateList? _candidateList;
     private SelectFilterTextBox? _singleFilterInput;
-    private readonly CompositeDisposable _subscriptionsOnOpen = new ();
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
 
@@ -400,7 +428,7 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnPointerPressed(e);
         if(!e.Handled && e.Source is Visual source)
         {
-            if (_popup?.IsInsidePopup(source) == true)
+            if (Popup?.IsInsidePopup(source) == true)
             {
                 e.Handled = true;
                 return;
@@ -422,7 +450,8 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
             }
             else if (!IsHideSelectedOptions)
             {
-                SetCurrentValue(IsDropDownOpenProperty, false); 
+                ClosingDropDown(IsDropDownOpen);
+                // SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
         }
@@ -436,14 +465,15 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
     {
         if (!e.Handled && e.Source is Visual source)
         {
-            if (_popup?.IsInsidePopup(source) == true)
+            if (Popup?.IsInsidePopup(source) == true)
             {
                 if (Mode == SelectMode.Single)
                 {
                     var optionItem = source.FindAncestorOfType<ListItem>();
                     if (optionItem != null && optionItem.IsEnabled)
                     {
-                        SetCurrentValue(IsDropDownOpenProperty, false);
+                        ClosingDropDown(IsDropDownOpen);
+                        // SetCurrentValue(IsDropDownOpenProperty, false);
                     }
                 }
                 e.Handled = true;
@@ -463,7 +493,15 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
                 if (!clickInTagCloseButton)
                 {
-                    SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
+                    if (!IsDropDownOpen)
+                    {
+                        HandleOpenDropRequest();
+                    }
+                    else
+                    {
+                        ClosingDropDown(true);
+                    }
+                    // SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                 }
     
                 e.Handled = true;
@@ -473,15 +511,24 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         PseudoClasses.Set(StdPseudoClass.Pressed, false);
         base.OnPointerReleased(e);
     }
+
+    private void HandleOpenDropRequest()
+    {
+        // 暂时设计只加载一次，如果加载出错不改变状态
+        if (OptionsLoader != null && !_asyncOptionsLoaded)
+        {
+            LoadOptionsAsync();
+        }
+        else
+        {
+            OpeningDropDown(false);
+        }
+    }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        if (_popup != null)
-        {
-            _popup.Opened -= PopupOpened;
-            _popup.Closed -= PopupClosed;
-        }
+       
         _candidateList        = e.NameScope.Get<SelectCandidateList>(SelectThemeConstants.OptionsBoxPart);
         _singleFilterInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleFilterInputPart);
         if (_candidateList != null)
@@ -489,10 +536,6 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
             ConfigureOptionsBoxSelectionMode();
         }
         
-        _popup                    =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
-        _popup.ClickHidePredicate =  PopupClosePredicate;
-        _popup.Opened             += PopupOpened;
-        _popup.Closed             += PopupClosed;
         ConfigurePlaceholderVisible();
         ConfigureSelectionIsEmpty();
         UpdatePseudoClasses();
@@ -545,7 +588,6 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnPropertyChanged(change);
         if (change.Property == IsDropDownOpenProperty)
         {
-            UpdatePseudoClasses();
             ConfigureSingleFilterTextBox();
         }
         else if (change.Property == IsPopupMatchSelectWidthProperty)
@@ -590,10 +632,8 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
     
-    private void PopupClosed(object? sender, EventArgs e)
+    protected override void PopupClosed(object? sender, EventArgs e)
     {
-        _subscriptionsOnOpen.Clear();
-        NotifyPopupClosed();
         if (Mode == SelectMode.Single)
         {
             if (_singleFilterInput != null)
@@ -604,16 +644,8 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
 
-    private void PopupOpened(object? sender, EventArgs e)
+    protected override void PopupOpened(object? sender, EventArgs e)
     {
-        _subscriptionsOnOpen.Clear();
-        this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
-        foreach (var parent in this.GetVisualAncestors().OfType<Control>())
-        {
-            parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
-        }
-
-        NotifyPopupOpened();
         if (Mode == SelectMode.Single)
         {
             _singleFilterInput?.Focus();
@@ -664,27 +696,9 @@ public class Select : AbstractSelect, IControlSharedTokenResourcesHost
             Mode == SelectMode.Single ? SelectionMode.Single : SelectionMode.Multiple);
     }
     
-    private void IsVisibleChanged(bool isVisible)
-    {
-        if (!isVisible && IsDropDownOpen)
-        {
-            SetCurrentValue(IsDropDownOpenProperty, false);
-        }
-    }
-    
     public void Clear()
     {
         SelectedOptions = null;
-    }
-    
-    private void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(SelectPseudoClass.DropdownOpen, IsDropDownOpen);
-        PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
-        PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
     }
 
     private void ConfigurePlaceholderVisible()

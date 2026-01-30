@@ -93,6 +93,7 @@
                                 IsLightDismissEnabled="False"
                                 IsDetectMouseClickEnabled="True"
                                 Placement="BottomEdgeAlignedLeft"
+                                ShouldUseOverlayLayer="True"
                                 IsMotionAwareOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}">
                         <Border Name="PopupFrame"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"

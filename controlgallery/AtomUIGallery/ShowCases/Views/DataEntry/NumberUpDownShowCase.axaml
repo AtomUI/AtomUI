@@ -10,10 +10,68 @@
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
             </Style>
         </gallery:ShowCasePanel.Styles>
-            <gallery:ShowCaseItem
-                Title="Basic usage"
-                Description="Numeric-only NumberUpDown.">
+        <gallery:ShowCaseItem
+            Title="Basic usage"
+            Description="Numeric-only NumberUpDown.">
             <atom:NumericUpDown Value="3" HorizontalAlignment="Stretch"/>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="String mode (high precision)"
+            Description="Keep a high-precision value as a string.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:NumericUpDown StringMode="True"
+                                    StringValue="{Binding StringModeValue, Mode=TwoWay}"
+                                    Increment="0.0001"
+                                    Minimum="0"
+                                    Maximum="100"
+                                    Watermark="Input weight" />
+                <TextBlock Text="{Binding StringModeValue, StringFormat=Raw: {0}}"/>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Keyboard behavior"
+            Description="Disable keyboard spin with the Keyboard property.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:CheckBox Content="Keyboard enabled"
+                          IsChecked="{Binding KeyboardEnabled}"/>
+                <atom:NumericUpDown Value="1.2"
+                                    Increment="0.1"
+                                    Keyboard="{Binding KeyboardEnabled}"
+                                    Watermark="Keyboard disabled" />
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Mouse wheel behavior"
+            Description="Disable mouse wheel spin with the MouseWheel property.">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <atom:CheckBox Content="Mouse wheel enabled"
+                          IsChecked="{Binding MouseWheelEnabled}"/>
+                <atom:NumericUpDown Value="2.5"
+                                    Increment="0.5"
+                                    MouseWheel="{Binding MouseWheelEnabled}"
+                                    Watermark="Mouse wheel disabled" />
+            </StackPanel>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Min / Max"
+            Description="Restrict the input value range.">
+            <atom:NumericUpDown Minimum="0"
+                                Maximum="10"
+                                Value="3"
+                                Increment="1" />
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Step (decimal)"
+            Description="Use decimal steps with Increment.">
+            <atom:NumericUpDown Value="1.2"
+                                Increment="0.25"
+                                Minimum="0"
+                                Maximum="2" />
         </gallery:ShowCaseItem>
 
         <gallery:ShowCaseItem

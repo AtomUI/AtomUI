@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -66,6 +67,9 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     public static readonly StyledProperty<double> HandleOpacityProperty =
         AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOpacity));
 
+    public static readonly StyledProperty<double> HandleOffsetProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOffset));
+
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, double> SpinnerHandleWidthProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, double>(nameof(SpinnerHandleWidth),
             o => o.SpinnerHandleWidth,
@@ -104,6 +108,12 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     {
         get => GetValue(HandleOpacityProperty);
         set => SetValue(HandleOpacityProperty, value);
+    }
+    
+    internal double HandleOffset
+    {
+        get => GetValue(HandleOffsetProperty);
+        set => SetValue(HandleOffsetProperty, value);
     }
 
     private double _spinnerHandleWidth;
@@ -199,16 +209,16 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             {
                 if (IsShowHandle && IsHandleFloatable)
                 {
-                    HandleOpacity         = 1.0;
                     IsSpinnerContentHover = true;
+                    UpdateHandleVisualState();
                 }
             }
             else
             {
                 if (IsShowHandle && IsHandleFloatable)
                 {
-                    HandleOpacity         = 0.0;
                     IsSpinnerContentHover = false;
+                    UpdateHandleVisualState();
                 }
             }
         }
@@ -220,14 +230,7 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         if (change.Property == IsShowHandleProperty ||
             change.Property == IsHandleFloatableProperty)
         {
-            if (IsShowHandle && !IsHandleFloatable)
-            {
-                HandleOpacity = 1.0;
-            }
-            else if (!IsShowHandle)
-            {
-                HandleOpacity = 0.0;
-            }
+            UpdateHandleVisualState();
         }
 
         if (this.IsAttachedToVisualTree())
@@ -252,9 +255,16 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         if (change.Property == IsHandleFloatableProperty ||
             change.Property == IsShowHandleProperty ||
             change.Property == SpinnerHandleWidthProperty ||
+            change.Property == ButtonSpinnerLocationProperty ||
             change.Property == ContentPaddingProperty)
         {
             ConfigureEffectiveContentPadding();
+        }
+
+        if (change.Property == SpinnerHandleWidthProperty ||
+            change.Property == ButtonSpinnerLocationProperty)
+        {
+            UpdateHandleVisualState();
         }
     }
     
@@ -262,11 +272,34 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     {
         base.NotifyCreateTransitions(transitions);
         transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(HandleOpacityProperty));
+        transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(HandleOffsetProperty, SharedTokenKey.MotionDurationFast));
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         ConfigureEffectiveContentPadding();
+        UpdateHandleVisualState();
+    }
+
+    private double GetHiddenOffset()
+    {
+        if (SpinnerHandleWidth <= 0)
+        {
+            return 0.0;
+        }
+
+        return ButtonSpinnerLocation == ButtonSpinnerLocation.Right ? SpinnerHandleWidth : -SpinnerHandleWidth;
+    }
+
+    private void UpdateHandleVisualState()
+    {
+        var visible = IsShowHandle && (!IsHandleFloatable || IsSpinnerContentHover);
+        HandleOpacity = visible ? 1.0 : 0.0;
+        HandleOffset = visible ? 0.0 : GetHiddenOffset();
+        if (!IsHandleFloatable)
+        {
+            IsSpinnerContentHover = false;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using AtomUI.Controls;
+﻿using System;
+using System.Globalization;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
@@ -7,6 +9,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data.Converters;
+using Avalonia.Input;
 using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
@@ -51,6 +55,18 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NumericUpDown>();
+
+    public static readonly StyledProperty<bool> StringModeProperty =
+        AvaloniaProperty.Register<NumericUpDown, bool>(nameof(StringMode));
+    
+    public static readonly StyledProperty<bool> KeyboardProperty =
+        AvaloniaProperty.Register<NumericUpDown, bool>(nameof(Keyboard), true);
+
+    public static readonly StyledProperty<bool> MouseWheelProperty =
+        AvaloniaProperty.Register<NumericUpDown, bool>(nameof(MouseWheel), true);
+    
+    public static readonly StyledProperty<string?> StringValueProperty =
+        AvaloniaProperty.Register<NumericUpDown, string?>(nameof(StringValue));
     
     public PathIcon? ClearIcon
     {
@@ -125,6 +141,31 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
+
+    public bool StringMode
+    {
+        get => GetValue(StringModeProperty);
+        set => SetValue(StringModeProperty, value);
+    }
+
+
+    public bool Keyboard
+    {
+        get => GetValue(KeyboardProperty);
+        set => SetValue(KeyboardProperty, value);
+    }
+
+    public bool MouseWheel
+    {
+        get => GetValue(MouseWheelProperty);
+        set => SetValue(MouseWheelProperty, value);
+    }
+
+    public string? StringValue
+    {
+        get => GetValue(StringValueProperty);
+        set => SetValue(StringValueProperty, value);
+    }
     
     #endregion
     
@@ -167,10 +208,19 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
     #endregion
     
     private IconButton? _clearButton;
+    private TextBox? _textBoxPart;
+    private readonly NumericUpDownTextConverter _textConverter;
+    private IValueConverter? _userTextConverter;
+    private bool _suppressTextConverterTracking;
+    private bool _isUpdatingFromText;
+    private bool _isUpdatingFromValue;
+    private bool _isUpdatingText;
+    private bool _isParsingText;
     
     public NumericUpDown()
     {
         this.RegisterResources();
+        _textConverter = new NumericUpDownTextConverter(this);
     }
 
     protected override void OnInitialized()
@@ -190,6 +240,7 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         {
             _clearButton.Click += (sender, args) => { NotifyClearButtonClicked(); };
         }
+        SetTextBoxPart(e.NameScope.Find<TextBox>("PART_TextBox"));
         ConfigureEffectiveShowClearButton();
     }
     
@@ -207,6 +258,123 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         {
             ConfigureEffectiveShowClearButton();
         }
+
+        if (change.Property == TextConverterProperty && !_suppressTextConverterTracking)
+        {
+            if (change.NewValue is IValueConverter converter && converter != _textConverter)
+            {
+                _userTextConverter = converter;
+            }
+            else if (change.NewValue is null)
+            {
+                _userTextConverter = null;
+            }
+        }
+
+        if (change.Property == StringModeProperty)
+        {
+            if (change.Property == StringModeProperty && StringMode)
+            {
+                UpdateStringValueFromValue(Value, CultureInfo.CurrentCulture);
+            }
+            UpdateTextConverter();
+            RefreshDisplayedText();
+        }
+
+        if (change.Property == StringValueProperty && StringMode && !_isUpdatingFromText && !_isUpdatingFromValue)
+        {
+            ApplyStringValue(change.NewValue as string);
+        }
+    }
+
+    protected override void OnTextChanged(string? oldValue, string? newValue)
+    {
+        _isParsingText = true;
+        base.OnTextChanged(oldValue, newValue);
+        _isParsingText = false;
+
+        if (StringMode)
+        {
+            UpdateStringValueFromText(newValue);
+        }
+    }
+
+    protected override void OnValueChanged(decimal? oldValue, decimal? newValue)
+    {
+        base.OnValueChanged(oldValue, newValue);
+        if (!StringMode || _isUpdatingFromText || _isParsingText)
+        {
+            return;
+        }
+        UpdateStringValueFromValue(newValue, CultureInfo.CurrentCulture);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (!Keyboard)
+        {
+            switch (e.Key)
+            {
+                case Key.Up:
+                case Key.Down:
+                case Key.PageUp:
+                case Key.PageDown:
+                    e.Handled = true;
+                    return;
+            }
+        }
+
+        base.OnKeyDown(e);
+    }
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        if (!MouseWheel)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        base.OnPointerWheelChanged(e);
+    }
+
+    private void SetTextBoxPart(TextBox? textBox)
+    {
+        if (_textBoxPart != null)
+        {
+            _textBoxPart.KeyDown -= HandleTextBoxKeyDown;
+            _textBoxPart.PointerWheelChanged -= HandleTextBoxPointerWheelChanged;
+        }
+        _textBoxPart = textBox;
+        if (_textBoxPart != null)
+        {
+            _textBoxPart.KeyDown += HandleTextBoxKeyDown;
+            _textBoxPart.PointerWheelChanged += HandleTextBoxPointerWheelChanged;
+        }
+    }
+
+    private void HandleTextBoxKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (!Keyboard)
+        {
+            switch (e.Key)
+            {
+                case Key.Up:
+                case Key.Down:
+                case Key.PageUp:
+                case Key.PageDown:
+                    e.Handled = true;
+                    break;
+            }
+        }
+    }
+
+    private void HandleTextBoxPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (!MouseWheel)
+        {
+            e.Handled = true;
+        }
     }
 
     private void ConfigureEffectiveShowClearButton()
@@ -218,5 +386,208 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         }
         
         SetCurrentValue(IsEffectiveShowClearButtonProperty, !IsReadOnly && !string.IsNullOrEmpty(Text));
+    }
+
+    private void UpdateTextConverter()
+    {
+        var needsConverter = StringMode;
+        if (needsConverter)
+        {
+            if (TextConverter != _textConverter)
+            {
+                _suppressTextConverterTracking = true;
+                SetCurrentValue(TextConverterProperty, _textConverter);
+                _suppressTextConverterTracking = false;
+            }
+        }
+        else if (TextConverter == _textConverter)
+        {
+            _suppressTextConverterTracking = true;
+            SetCurrentValue(TextConverterProperty, _userTextConverter);
+            _suppressTextConverterTracking = false;
+        }
+    }
+
+    private void RefreshDisplayedText()
+    {
+        if (TextConverter != _textConverter)
+        {
+            return;
+        }
+
+        var displayText = _textConverter.ConvertBack(Value, typeof(string), null, CultureInfo.CurrentCulture)?.ToString();
+        if (displayText is null || displayText == Text)
+        {
+            return;
+        }
+
+        _isUpdatingText = true;
+        SetCurrentValue(TextProperty, displayText);
+        _isUpdatingText = false;
+    }
+
+    private void ApplyStringValue(string? raw)
+    {
+        if (!StringMode)
+        {
+            return;
+        }
+
+        var displayText = FormatDisplayText(raw, CultureInfo.CurrentCulture);
+        if (!_isUpdatingText && displayText != Text)
+        {
+            _isUpdatingText = true;
+            SetCurrentValue(TextProperty, displayText);
+            _isUpdatingText = false;
+        }
+
+        if (TextConverter == _textConverter)
+        {
+            return;
+        }
+
+        if (TryParseDecimal(raw, CultureInfo.CurrentCulture, out var value))
+        {
+            _isUpdatingFromValue = true;
+            SetCurrentValue(ValueProperty, value);
+            _isUpdatingFromValue = false;
+        }
+        else
+        {
+            _isUpdatingFromValue = true;
+            SetCurrentValue(ValueProperty, null);
+            _isUpdatingFromValue = false;
+        }
+    }
+
+    private string FormatDisplayText(string? raw, CultureInfo culture)
+    {
+        if (string.IsNullOrEmpty(raw))
+        {
+            return string.Empty;
+        }
+
+        if (StringMode)
+        {
+            return raw;
+        }
+
+        if (TryParseDecimal(raw, culture, out var value))
+        {
+            return FormatDisplayValue(value, culture);
+        }
+
+        return raw;
+    }
+
+    private string FormatDisplayValue(decimal value, CultureInfo culture)
+    {
+        var format = FormatString;
+        var numberFormat = NumberFormat ?? culture.NumberFormat;
+        if (!string.IsNullOrEmpty(format))
+        {
+            if (format.Contains("{0", StringComparison.Ordinal))
+            {
+                return string.Format(culture, format, value);
+            }
+            return value.ToString(format, numberFormat);
+        }
+
+        return value.ToString(numberFormat);
+    }
+
+    private string FormatRawValue(decimal value, CultureInfo culture)
+    {
+        var numberFormat = NumberFormat ?? culture.NumberFormat;
+        return value.ToString("G", numberFormat);
+    }
+
+    private bool TryParseDecimal(string? text, CultureInfo culture, out decimal value)
+    {
+        value = 0m;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+        var numberFormat = NumberFormat ?? culture.NumberFormat;
+        return decimal.TryParse(text, ParsingNumberStyle, numberFormat, out value);
+    }
+
+
+    private void UpdateStringValueFromText(string? raw)
+    {
+        if (!StringMode)
+        {
+            return;
+        }
+
+        _isUpdatingFromText = true;
+        SetCurrentValue(StringValueProperty, string.IsNullOrEmpty(raw) ? null : raw);
+        _isUpdatingFromText = false;
+    }
+
+    private void UpdateStringValueFromValue(decimal? value, CultureInfo culture)
+    {
+        if (!StringMode)
+        {
+            return;
+        }
+
+        _isUpdatingFromValue = true;
+        SetCurrentValue(StringValueProperty, value.HasValue ? FormatRawValue(value.Value, culture) : null);
+        _isUpdatingFromValue = false;
+    }
+
+    private bool IsTextInputFocused()
+    {
+        return _textBoxPart?.IsFocused == true;
+    }
+
+    private sealed class NumericUpDownTextConverter : IValueConverter
+    {
+        private readonly NumericUpDown _owner;
+
+        public NumericUpDownTextConverter(NumericUpDown owner)
+        {
+            _owner = owner;
+        }
+
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            var text = value as string ?? value?.ToString();
+            if (_owner.TryParseDecimal(text, culture, out var result))
+            {
+                return result;
+            }
+            return null;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            string? raw = null;
+
+            if (_owner.StringMode)
+            {
+                raw = _owner.StringValue;
+            }
+
+            if (raw is null)
+            {
+                if (value is decimal decimalValue)
+                {
+                    raw = _owner.FormatRawValue(decimalValue, culture);
+                }
+                else
+                {
+                    raw = value?.ToString();
+                }
+            }
+            if (_owner.IsTextInputFocused())
+            {
+                return raw ?? string.Empty;
+            }
+
+            return _owner.FormatDisplayText(raw, culture);
+        }
     }
 }

@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
+using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -15,7 +16,7 @@ internal class ButtonSpinnerHandle : TemplatedControl
     
     public static readonly StyledProperty<ButtonSpinnerLocation> ButtonSpinnerLocationProperty =
         ButtonSpinner.ButtonSpinnerLocationProperty.AddOwner<ButtonSpinnerHandle>();
-    
+
     public static readonly DirectProperty<ButtonSpinnerHandle, Thickness> SpinnerBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerHandle, Thickness>(nameof(SpinnerBorderThickness),
             o => o.SpinnerBorderThickness,
@@ -32,7 +33,7 @@ internal class ButtonSpinnerHandle : TemplatedControl
         get => GetValue(ButtonSpinnerLocationProperty);
         set => SetValue(ButtonSpinnerLocationProperty, value);
     }
-    
+
     private Thickness _spinnerBorderThickness;
 
     internal Thickness SpinnerBorderThickness

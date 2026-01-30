@@ -84,7 +84,11 @@
                             Name="{x:Static atom:ButtonSpinnerThemeConstants.SpinnerHandlePart}"
                             ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}"
                             Content="{TemplateBinding SpinnerContent}"
-                            Opacity="{TemplateBinding HandleOpacity}" />
+                            Opacity="{TemplateBinding HandleOpacity}">
+                            <ContentPresenter.RenderTransform>
+                                <TranslateTransform X="{Binding HandleOffset, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            </ContentPresenter.RenderTransform>
+                        </ContentPresenter>
                     </Panel>
                 </DockPanel>
             </ControlTemplate>

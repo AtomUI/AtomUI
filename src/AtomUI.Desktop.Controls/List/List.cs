@@ -82,7 +82,8 @@ public class List : TemplatedControl,
     public static readonly DirectProperty<List, IList?> SelectedItemsProperty =
         AvaloniaProperty.RegisterDirect<List, IList?>(nameof(SelectedItems), 
             o => o.SelectedItems, 
-            (o, v) => o.SelectedItems = v);
+            (o, v) => o.SelectedItems = v,
+            defaultBindingMode: BindingMode.TwoWay);
     
     public static readonly DirectProperty<List, object?> SelectedItemProperty =
         AvaloniaProperty.RegisterDirect<List, object?>(
@@ -604,9 +605,9 @@ public class List : TemplatedControl,
             }
             ConfigureGroupInfo();
             _measured     = false;
-            SelectedItems = null;
-            SelectedItem  = null;
-            SelectedIndex = -1;
+            SetCurrentValue(SelectedItemsProperty, null);
+            SetCurrentValue(SelectedItemProperty, null);
+            SetCurrentValue(SelectedIndexProperty, -1);
             ReConfigurePagination();
             InvalidateMeasure();
             UpdatePseudoClasses();

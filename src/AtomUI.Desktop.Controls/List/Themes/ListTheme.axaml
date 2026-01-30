@@ -110,7 +110,7 @@
             <DataTemplate x:DataType="atom:IListItemData">
                 <atom:TextBlock Text="{Binding Content}" />
             </DataTemplate>
-        </Setter>
+        </Setter> 
     </Style>
 
 </ControlTheme>

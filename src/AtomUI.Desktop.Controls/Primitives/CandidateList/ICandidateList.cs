@@ -7,6 +7,7 @@ namespace AtomUI.Desktop.Controls.Primitives;
 
 public interface ICandidateList
 {
+    bool IsCandidateItemNavigationEnabled { get; set; }
     event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
     object? SelectedItem { get; set; }
     IList? SelectedItems { get; set; }

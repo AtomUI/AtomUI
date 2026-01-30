@@ -7,6 +7,19 @@ namespace AtomUI.Desktop.Controls.Primitives;
 
 public class CandidateList : ListBox, ICandidateList
 {
+    #region 公共属性定义
+
+    public static readonly StyledProperty<bool> IsCandidateItemNavigationEnabledProperty =
+        AvaloniaProperty.Register<CandidateList, bool>(nameof(IsCandidateItemNavigationEnabled), true);
+    
+    public bool IsCandidateItemNavigationEnabled
+    {
+        get => GetValue(IsCandidateItemNavigationEnabledProperty);
+        set => SetValue(IsCandidateItemNavigationEnabledProperty, value);
+    }
+
+    #endregion
+    
     #region 公共事件定义
     public static readonly RoutedEvent<RoutedEventArgs> CommitEvent =
         RoutedEvent.Register<CandidateList, RoutedEventArgs>(
@@ -55,12 +68,12 @@ public class CandidateList : ListBox, ICandidateList
                 break;
 
             case Key.Up:
-                SelectedIndexDecrement();
+                SelectPreviousItem();
                 e.Handled = true;
                 break;
 
             case Key.Down:
-                SelectedIndexIncrement();
+                SelectNextItem();
                 e.Handled = true;
                 break;
 
@@ -117,24 +130,71 @@ public class CandidateList : ListBox, ICandidateList
         SelectedIndex = -1;
     }
     
-    protected void SelectedIndexDecrement()
+    protected virtual void SelectPreviousItem()
     {
-        int index = SelectedIndex;
-        --index;
-        if (index == -1)
+        if (SelectedIndex == -1)
         {
-            index = ItemCount - 1;
+            SelectedIndex = ItemCount - 1;
         }
-        SelectedIndex = index;
+        else
+        {
+            SelectedIndex = FindNextEnabledIndex(SelectedIndex, -1);
+        }
     }
     
-    protected void SelectedIndexIncrement()
+    protected virtual void SelectNextItem()
     {
-        SelectedIndex = SelectedIndex + 1 >= ItemCount ? 0 : SelectedIndex + 1;
+        if (SelectedIndex == -1)
+        {
+            SelectedIndex = 0;
+        }
+        else
+        {
+            SelectedIndex = FindNextEnabledIndex(SelectedIndex, 1);
+        }
     }
     
     protected override void NotifyListBoxItemClicked(ListBoxItem item)
     {
         NotifyCommit();
+    }
+    
+    private int FindNextEnabledIndex(int startIndex, int delta)
+    {
+        var index     = startIndex;
+        var findCycle = false;
+        while (true)
+        {
+            index += delta;
+            if (index >= ItemCount)
+            {
+                index = 0;
+                if (!findCycle)
+                {
+                    findCycle = true;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else if (index < 0)
+            {
+                index = ItemCount - 1;
+                if (!findCycle)
+                {
+                    findCycle = true;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+
+            if (ContainerFromIndex(index) is ListBoxItem listBoxItem && listBoxItem.IsEnabled)
+            {
+                return index;
+            }
+        }
     }
 }

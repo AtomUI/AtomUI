@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -53,6 +54,12 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             nameof(SelectedOptions),
             o => o.SelectedOptions,
             (o, v) => o.SelectedOptions = v);
+    
+    public static readonly DirectProperty<Select, ISelectOption?> SelectedOptionProperty =
+        AvaloniaProperty.RegisterDirect<Select, ISelectOption?>(
+            nameof(SelectedOption),
+            o => o.SelectedOption,
+            (o, v) => o.SelectedOption = v);
     
     public static readonly StyledProperty<double> OptionFontSizeProperty =
         AvaloniaProperty.Register<Select, double>(nameof(OptionFontSize));
@@ -134,6 +141,14 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         get => _selectedOptions;
         set => SetAndRaise(SelectedOptionsProperty, ref _selectedOptions, value);
     }
+    
+    private ISelectOption? _selectedOption;
+
+    public ISelectOption? SelectedOption
+    {
+        get => _selectedOption;
+        set => SetAndRaise(SelectedOptionProperty, ref _selectedOption, value);
+    }
 
     public double OptionFontSize
     {
@@ -176,24 +191,10 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     #region 内部属性定义
     
-    internal static readonly DirectProperty<Select, ISelectOption?> SelectedOptionProperty =
-        AvaloniaProperty.RegisterDirect<Select, ISelectOption?>(
-            nameof(SelectedOption),
-            o => o.SelectedOption,
-            (o, v) => o.SelectedOption = v);
-    
     internal static readonly DirectProperty<Select, bool> IsEffectiveFilterEnabledProperty =
         AvaloniaProperty.RegisterDirect<Select, bool>(nameof(IsEffectiveFilterEnabled),
             o => o.IsEffectiveFilterEnabled,
             (o, v) => o.IsEffectiveFilterEnabled = v);
-    
-    private ISelectOption? _selectedOption;
-
-    internal ISelectOption? SelectedOption
-    {
-        get => _selectedOption;
-        set => SetAndRaise(SelectedOptionProperty, ref _selectedOption, value);
-    }
     
     private bool _isEffectiveFilterEnabled;
 
@@ -215,8 +216,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private SelectFilterTextBox? _singleFilterInput;
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
-    private bool _ignoreCandidateSelectionChanged;
-
+    private bool _ignoreSyncSelection;
     private ISelectOption? _addNewOption;
 
     static Select()
@@ -228,13 +228,9 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         });
         OptionsSourceProperty.Changed.AddClassHandler<Select>((x, e) => x.HandleOptionsSourcePropertyChanged(e));
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<Select>((x, e) => x.HandleSearchInputTextChanged(e));
-        SelectFilterTextBox.KeyDownEvent.AddClassHandler<Select>(
-            (x, e) => x.HandleSearchInputKeyDown(e),
-            RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        SelectResultOptionsBox.KeyDownEvent.AddClassHandler<Select>(
-            (x, e) => x.HandleSearchInputKeyDown(e),
-            RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        SelectTag.ClosedEvent.AddClassHandler<Select>((x, e) => x.HandleTagCloseRequest(e));
+        SelectTag.ClosedEvent.AddClassHandler<Select>((x, args) => x.HandleTagCloseRequest(args));
+        SelectedOptionsProperty.Changed.AddClassHandler<Select>((select, args) => select.HandleSelectedOptionsChanged(args));
+        SelectedOptionProperty.Changed.AddClassHandler<Select>((select, args) => select.HandleSelectedOptionChanged(args));
     }
     
     public Select()
@@ -245,6 +241,33 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleClearRequest()
     {
         Clear();
+    }
+
+    private void HandleSelectedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        if (_ignoreSyncSelection)
+        {
+            _ignoreSyncSelection = false;
+            return;
+        }
+        if (_candidateList != null)
+        {
+            _candidateList.SelectedItems = (IList?)SelectedOptions;
+        }
+    }
+    
+    private void HandleSelectedOptionChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        if (_ignoreSyncSelection)
+        {
+            _ignoreSyncSelection = false;
+            return;
+        }
+        
+        if (_candidateList != null)
+        {
+            _candidateList.SelectedItem = SelectedOption;
+        }
     }
 
     protected override void OnInitialized()
@@ -296,7 +319,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         var removedItem = newSelection[lastIndex];
         newSelection.RemoveAt(lastIndex);
         SetCurrentValue(SelectedOptionsProperty, newSelection);
-        SyncSelection();
 
         if (Mode == SelectMode.Tags && removedItem.IsDynamicAdded)
         {
@@ -314,15 +336,26 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-
         if (e.Handled)
         {
             return;
         }
 
-        if (TryHandleDeleteKey(e))
+        if (TryHandleDeleteKey(e)) 
         {
             return;
+        }
+        
+        if (IsDropDownOpen)
+        {
+            if (_candidateList != null)
+            {
+                _candidateList.HandleKeyDown(e);
+                if (e.Handled)
+                {
+                    return;
+                }
+            }
         }
 
         if ((e.Key == Key.F4 && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == false) ||
@@ -346,80 +379,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             SetCurrentValue(IsDropDownOpenProperty, true);
             e.Handled = true;
         }
-        else if (IsDropDownOpen)
-        {
-            // if (e.Key == Key.Down)
-            // {
-            //     _candidateList?.MoveActiveBy(1);
-            //     e.Handled = true;
-            // }
-            // else if (e.Key == Key.Up)
-            // {
-            //     _candidateList?.MoveActiveBy(-1);
-            //     e.Handled = true;
-            // }
-            // else if (e.Key == Key.Enter || e.Key == Key.Space)
-            // {
-            //     _candidateList?.CommitActiveSelection();
-            //     if (Mode == SelectMode.Single)
-            //     {
-            //         SetCurrentValue(IsDropDownOpenProperty, false);
-            //     }
-            //     e.Handled = true;
-            // }
-        }
-    }
-
-    private void HandleSearchInputKeyDown(KeyEventArgs e)
-    {
-        if (TryHandleDeleteKey(e))
-        {
-            return;
-        }
-
-        if (e.Handled)
-        {
-            return;
-        }
-
-        if (!IsDropDownOpen)
-        {
-            if (e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Enter)
-            {
-                SetCurrentValue(IsDropDownOpenProperty, true);
-                e.Handled = true;
-            }
-            return;
-        }
-
-        // if (e.Key == Key.Down)
-        // {
-        //     _candidateList?.MoveActiveBy(1);
-        //     e.Handled = true;
-        // }
-        // else if (e.Key == Key.Up)
-        // {
-        //     _candidateList?.MoveActiveBy(-1);
-        //     e.Handled = true;
-        // }
-        // else if (e.Key == Key.Enter)
-        // {
-        //     _candidateList?.CommitActiveSelection();
-        //     if (Mode == SelectMode.Single)
-        //     {
-        //         SetCurrentValue(IsDropDownOpenProperty, false);
-        //     }
-        //     e.Handled = true;
-        // }
-        // else if (e.Key == Key.Escape)
-        // {
-        //     SetCurrentValue(IsDropDownOpenProperty, false);
-        //     e.Handled = true;
-        // }
-        // else if (e.Key == Key.Tab)
-        // {
-        //     SetCurrentValue(IsDropDownOpenProperty, false);
-        // }
     }
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -449,7 +408,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             }
             else if (!IsHideSelectedOptions)
             {
-                ClosingDropDown(IsDropDownOpen);
+                SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
         }
@@ -488,7 +447,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     }
                     else
                     {
-                        ClosingDropDown(true);
+                        SetCurrentValue(IsDropDownOpenProperty, false);
                     }
                 }
     
@@ -509,7 +468,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else
         {
-            OpeningDropDown(false);
+            SetCurrentValue(IsDropDownOpenProperty, true);
         }
     }
     
@@ -519,16 +478,14 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
        
         if (_candidateList != null)
         {
-            _candidateList.SelectionChanged -= HandleCandidateListSelectionChanged;
             _candidateList.Commit           -= HandleCandidateListComplete;
             _candidateList.Cancel           -= HandleCandidateListCanceled;
         }
-        
-        _candidateList        = e.NameScope.Get<SelectCandidateList>(SelectThemeConstants.OptionsBoxPart);
+
+        _candidateList = e.NameScope.Get<SelectCandidateList>(SelectThemeConstants.CandidateListPart);
         
         if (_candidateList != null)
         {
-            _candidateList.SelectionChanged += HandleCandidateListSelectionChanged;
             _candidateList.Commit           += HandleCandidateListComplete;
             _candidateList.Cancel           += HandleCandidateListCanceled;
         }
@@ -548,59 +505,25 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
     {
+        if (_candidateList != null)
+        {
+            if (Mode == SelectMode.Single)
+            {
+                SelectedOption = (ISelectOption?)_candidateList.SelectedItem;
+            }
+            else
+            {
+                SelectedOptions = (IList<ISelectOption>?)_candidateList.SelectedItem;
+            }
+        }
         if (IsDropDownOpen)
         {
-            ClosingDropDown(true);
+            SetCurrentValue(IsDropDownOpenProperty, false);
         }
     }
     
     private void HandleCandidateListCanceled(object? sender, RoutedEventArgs e)
     {
-    }
-
-    private void HandleCandidateListSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        Console.WriteLine("xxxx");
-    }
-
-    internal void NotifyLogicalSelectOption(ISelectOption selectOption)
-    {
-        Debug.Assert(_candidateList != null);
-        var selectedOptions = new List<ISelectOption>();
-        if (Mode == SelectMode.Single)
-        {
-            if (_singleFilterInput != null)
-            {
-                _singleFilterInput.Width = double.NaN;
-            }
-        
-            selectedOptions.Add(selectOption);
-        }
-        else
-        {
-            if (Mode == SelectMode.Tags)
-            {
-                _addNewOption = null;
-            }
-            if (SelectedOptions != null)
-            {
-                foreach (var item in SelectedOptions)
-                {
-                    selectedOptions.Add(item);
-                }
-            }
-            
-            if (!selectedOptions.Contains(selectOption))
-            {
-                selectedOptions.Add(selectOption);
-            }
-            else if (selectedOptions.Contains(selectOption))
-            {
-                selectedOptions.Remove(selectOption);
-            }
-        }
-        SetCurrentValue(SelectedOptionsProperty, selectedOptions);
-        SyncSelection();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -666,41 +589,21 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     protected override void PopupOpened(object? sender, EventArgs e)
     {
-        if (Mode == SelectMode.Single)
-        {
-            _singleFilterInput?.Focus();
-        }
-
-        SyncSelection();
-    }
-
-    private void SyncSelection()
-    {
         if (_candidateList != null)
         {
-            var selectedItems = new List<object>();
             if (Mode == SelectMode.Single)
             {
-                if (SelectedOptions != null)
-                {
-                    foreach (var option in SelectedOptions)
-                    {
-                        selectedItems.Add(option);
-                        break;
-                    }
-                }
+                _candidateList.SelectedItem      = SelectedOption;
             }
             else
             {
-                if (SelectedOptions != null)
-                {
-                    foreach (var option in SelectedOptions)
-                    {
-                        selectedItems.Add(option);
-                    }
-                }
+                _candidateList.SelectedItems     = (IList?)SelectedOptions;
             }
-            _candidateList.SetCurrentValue(SelectCandidateList.SelectedItemsProperty, selectedItems);
+        }
+       
+        if (Mode == SelectMode.Single)
+        {
+            _singleFilterInput?.Focus();
         }
     }
 
@@ -718,16 +621,17 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     public void Clear()
     {
         SelectedOptions = null;
+        SelectedOption  = null;
     }
 
     private void ConfigurePlaceholderVisible()
     {
-        SetCurrentValue(IsPlaceholderTextVisibleProperty, (SelectedOptions == null || SelectedOptions?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
+        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedOption == null && (SelectedOptions == null || SelectedOptions?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
     }
 
     private void ConfigureSelectionIsEmpty()
     {
-        SetCurrentValue(IsSelectionEmptyProperty, SelectedOptions == null || SelectedOptions?.Count == 0);
+        SetCurrentValue(IsSelectionEmptyProperty, SelectedOption == null && (SelectedOptions == null || SelectedOptions?.Count == 0));
     }
 
     private void ConfigureSingleFilterTextBox()
@@ -812,7 +716,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 };
                 Options.Add(_addNewOption);
             }
-            SyncSelection();
         }
         e.Handled = true;
     }
@@ -834,7 +737,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 }
                 selectedOptions.Remove(tagOption);
                 SelectedOptions = selectedOptions;
-                SyncSelection();
             }
 
             if (Mode == SelectMode.Tags)
@@ -873,7 +775,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             Options.Clear();
             Options.AddRange(newItemsSource);
             ConfigureDefaultValues();
-            SyncSelection();
         }
     }
 
@@ -890,16 +791,13 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     {
                         if (OptionEqualByValue(defaultValue, option))
                         {
-                            SetCurrentValue(SelectedOptionsProperty, new List<ISelectOption>()
-                            {
-                                option
-                            });
+                            SetCurrentValue(SelectedOptionProperty, option);
                             break;
                         }
                     }
                 }
             }
-            else if (Mode == SelectMode.Multiple)
+            else
             {
                 if (DefaultValues?.Count > 0)
                 {

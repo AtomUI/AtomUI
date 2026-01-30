@@ -527,6 +527,10 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         {
             ClosingDropDown(oldValue);
         }
+        else
+        {
+            OpeningDropDown(oldValue);
+        }
 
         UpdatePseudoClasses();
     }
@@ -621,7 +625,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        SetCurrentValue(IsDropDownOpenProperty, false);
+        // SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -634,12 +638,11 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             Popup.Closed -= PopupClosed;
         }
         
-        Popup                    =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
-        
-        Popup.ClickHidePredicate =  PopupClosePredicate;
-        Popup.Opened             += PopupOpened;
-        Popup.Closed             += PopupClosed;
-        Popup.CloseAction        =  PopupCloseAction;
+        Popup                     =  e.NameScope.Get<Popup>(SelectThemeConstants.PopupPart);
+        Popup.IgnoreFirstDetected =  false;
+        Popup.ClickHidePredicate  =  PopupClosePredicate;
+        Popup.Opened              += PopupOpened;
+        Popup.Closed              += PopupClosed;
     }
     
     protected virtual void PopupClosed(object? sender, EventArgs e)
@@ -666,14 +669,6 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         {
             SetCurrentValue(IsDropDownOpenProperty, false);
         }
-    }
-    
-    protected void PopupCloseAction(Popup popup)
-    {
-        popup.MotionAwareClose();
-        IgnorePropertyChange = true;
-        SetCurrentValue(IsDropDownOpenProperty, false);
-        ClosingDropDown(true);
     }
 
     private void ConfigurePopupPlacement()

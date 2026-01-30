@@ -1,5 +1,7 @@
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -8,6 +10,48 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SelectCandidateList : List, ICandidateList
 {
+    #region 公共属性定义
+
+    public static readonly StyledProperty<bool> IsCandidateItemNavigationEnabledProperty =
+        AvaloniaProperty.Register<SelectCandidateList, bool>(nameof(IsCandidateItemNavigationEnabled), true);
+    
+    public static readonly DirectProperty<SelectCandidateList, object?> CandidateSelectedItemProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, object?>(
+            nameof(CandidateSelectedItem),
+            o => o.CandidateSelectedItem,
+            (o, v) => o.CandidateSelectedItem = v,
+            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+    
+    public static readonly DirectProperty<SelectCandidateList, int> CandidateSelectedIndexProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, int>(
+            nameof(CandidateSelectedIndex),
+            o => o.CandidateSelectedIndex,
+            (o, v) => o.CandidateSelectedIndex = v,
+            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+    
+    public bool IsCandidateItemNavigationEnabled
+    {
+        get => GetValue(IsCandidateItemNavigationEnabledProperty);
+        set => SetValue(IsCandidateItemNavigationEnabledProperty, value);
+    }
+    
+    private object? _candidateSelectedItem;
+
+    public object? CandidateSelectedItem
+    {
+        get => _candidateSelectedItem;
+        set => SetAndRaise(CandidateSelectedItemProperty, ref _candidateSelectedItem, value);
+    }
+
+    private int _candidateSelectedIndex = -1;
+
+    public int CandidateSelectedIndex
+    {
+        get => _candidateSelectedIndex;
+        set => SetAndRaise(CandidateSelectedIndexProperty, ref _candidateSelectedIndex, value);
+    }
+    #endregion
+    
     #region 公共属性定义
 
     public static readonly StyledProperty<int> MaxCountProperty =
@@ -46,6 +90,19 @@ internal class SelectCandidateList : List, ICandidateList
     static SelectCandidateList()
     {
         SelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectItemChanged(args));
+        IsCandidateItemNavigationEnabledProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleIsCandidateItemNavigationEnabled(args));
+        CandidateSelectedIndexProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedIndexChanged(args));
+        CandidateSelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedItemChanged(args));
+    }
+    
+    internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        return new SelectCandidateListItem();
+    }
+
+    internal override bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        return NeedsContainer<SelectCandidateListItem>(item, out recycleKey);
     }
     
     private void ResetScrollViewer()
@@ -54,6 +111,38 @@ internal class SelectCandidateList : List, ICandidateList
         if (sv != null)
         {
             sv.Offset = new Vector(0, 0);
+        }
+    }
+
+    private void HandleCandidateSelectedIndexChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        var oldIndex = e.GetOldValue<int>();
+        var newIndex = e.GetNewValue<int>();
+        if (newIndex == -1)
+        {
+            if (ListView?.ContainerFromIndex(oldIndex) is SelectCandidateListItem listItem)
+            {
+                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+            }
+        }
+        else
+        {
+            TrySetCandidateItemSelected(newIndex);
+        }
+    }
+    
+    private void HandleCandidateSelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue == null)
+        {
+            if (e.OldValue != null && ListView?.ContainerFromItem(e.OldValue) is SelectCandidateListItem listItem)
+            {
+                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+            }
+        }
+        else
+        {
+            TrySetCandidateItemSelected(e.NewValue);
         }
     }
     
@@ -67,12 +156,27 @@ internal class SelectCandidateList : List, ICandidateList
                 break;
 
             case Key.Up:
-                SelectedIndexDecrement();
+                if (IsCandidateItemNavigationEnabled)
+                {
+                    SelectPreviousCandidateItem();
+                }
+                else
+                {
+                    SelectPreviousItem();
+                }
                 e.Handled = true;
                 break;
 
             case Key.Down:
-                SelectedIndexIncrement();
+                if (IsCandidateItemNavigationEnabled)
+                {
+                    SelectNextCandidateItem();
+                }
+                else
+                {
+                    SelectNextItem();
+                }
+             
                 e.Handled = true;
                 break;
 
@@ -94,11 +198,17 @@ internal class SelectCandidateList : List, ICandidateList
 
     protected virtual void NotifyCommit()
     {
+        if (IsCandidateItemNavigationEnabled)
+        {
+            if (CandidateSelectedItem != null)
+            {
+                SetCurrentValue(SelectedItemProperty, CandidateSelectedItem);
+            }
+        }
         RaiseEvent(new RoutedEventArgs(CommitEvent)
         {
             Source = this,
         });
-       
     }
 
     private void HandleCancel()
@@ -122,27 +232,122 @@ internal class SelectCandidateList : List, ICandidateList
             ResetScrollViewer();
         }
     }
+    
+    private void HandleIsCandidateItemNavigationEnabled(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (ListView != null)
+        {
+            if (!IsCandidateItemNavigationEnabled)
+            {
+                for (var i = 0; i < ItemCount; i++)
+                {
+                    if (ListView.ContainerFromIndex(i) is SelectCandidateListItem childItem)
+                    {
+                        childItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                    }
+                }
+            }
+        }
+    }
 
     private void ClearState()
     {
-        SelectedItem  = null;
-        SelectedIndex = -1;
+        SelectedItem           = null;
+        SelectedIndex          = -1;
+        CandidateSelectedItem  = null;
+        CandidateSelectedIndex = -1;
     }
     
-    protected void SelectedIndexDecrement()
+    protected virtual void SelectPreviousItem()
     {
-        int index = SelectedIndex;
-        --index;
-        if (index == -1)
+        if (SelectedIndex == -1)
         {
-            index = ItemCount - 1;
+            SelectedIndex = ItemCount - 1;
         }
-        SelectedIndex = index;
+        else
+        {
+            SelectedIndex = FindNextEnabledIndex(SelectedIndex, -1);
+        }
     }
     
-    protected void SelectedIndexIncrement()
+    protected virtual void SelectNextItem()
     {
-        SelectedIndex = SelectedIndex + 1 >= ItemCount ? 0 : SelectedIndex + 1;
+        if (SelectedIndex == -1)
+        {
+            SelectedIndex = 0;
+        }
+        else
+        {
+            SelectedIndex = FindNextEnabledIndex(SelectedIndex, 1);
+        }
+    }
+    
+    protected virtual void SelectPreviousCandidateItem()
+    {
+        if (_candidateSelectedIndex == -1)
+        {
+            CandidateSelectedIndex = SelectedIndex != -1 ? FindNextEnabledIndex(SelectedIndex, -1) : ItemCount - 1;
+        }
+        else
+        {
+            CandidateSelectedIndex = FindNextEnabledIndex(CandidateSelectedIndex, -1);
+        }
+    }
+    
+    protected virtual void SelectNextCandidateItem()
+    {
+        if (_candidateSelectedIndex == -1)
+        {
+            CandidateSelectedIndex = SelectedIndex != -1 ? FindNextEnabledIndex(SelectedIndex, 1) : 0;
+        }
+        else
+        {
+            CandidateSelectedIndex = FindNextEnabledIndex(CandidateSelectedIndex, 1);
+        }
+    }
+    
+    private int FindNextEnabledIndex(int startIndex, int delta)
+    {
+        if (ListView == null)
+        {
+            return -1;
+        }
+        
+        var index     = startIndex;
+        var findCycle = false;
+        while (true)
+        {
+            index += delta;
+            if (index >= ItemCount)
+            {
+                index = 0;
+                if (!findCycle)
+                {
+                    findCycle = true;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else if (index < 0)
+            {
+                index = ItemCount - 1;
+                if (!findCycle)
+                {
+                    findCycle = true;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            
+            if (ListView.Items[index] is ISelectOption option && option.IsEnabled)
+            {
+                return index;
+            }
+        }
     }
     
     protected internal override void NotifyListItemClicked(ListItem item)
@@ -192,5 +397,59 @@ internal class SelectCandidateList : List, ICandidateList
                 }
             }
         }
+    }
+
+    public bool TrySetCandidateItemSelected(object item)
+    {
+        if (ListView == null)
+        {
+            return false;
+        }
+
+        if (item is IGroupListItemData groupListItemData && groupListItemData.IsGroupItem)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var childItem = ListView.Items[i];
+            if (childItem != null)
+            {
+                if (ListView.ContainerFromItem(childItem) is SelectCandidateListItem childContainer)
+                {
+                    if (childItem == item)
+                    {
+                        childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, true);
+                        SetCurrentValue(CandidateSelectedItemProperty, childItem);
+                        SetCurrentValue(CandidateSelectedIndexProperty, i);
+                    }
+                    else
+                    {
+                        childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    public bool TrySetCandidateItemSelected(int index)
+    {
+        if (ListView == null)
+        {
+            return false;
+        }
+        if (index < 0 || index > ItemCount - 1)
+        {
+            return false;
+        }
+
+        var item = ListView.Items[index];
+        if (item == null)
+        {
+            return false;
+        }
+        return TrySetCandidateItemSelected(item);
     }
 }

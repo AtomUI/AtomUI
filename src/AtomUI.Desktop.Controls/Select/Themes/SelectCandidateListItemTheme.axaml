@@ -1,0 +1,17 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:SelectCandidateListItem}" TargetType="atom:SelectCandidateListItem">
+        <ControlTheme.BasedOn>
+            <atom:ListItemTheme TargetType="atom:SelectCandidateListItem" />
+        </ControlTheme.BasedOn>
+
+        <Style Selector="^:is(atom|SelectCandidateListItem)">
+            <Style Selector="^[IsSelected=False][IsCandidateSelected=True]">
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemHoverBgColor}}" />
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

@@ -100,7 +100,7 @@
                                 MinWidth="{TemplateBinding EffectivePopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:SelectCandidateList
-                                Name="{x:Static atom:SelectThemeConstants.OptionsBoxPart}"
+                                Name="{x:Static atom:SelectThemeConstants.CandidateListPart}"
                                 IsBorderless="True"
                                 IsGroupEnabled="{TemplateBinding IsGroupEnabled}"
                                 GroupPropertyPath="{TemplateBinding GroupPropertyPath}"

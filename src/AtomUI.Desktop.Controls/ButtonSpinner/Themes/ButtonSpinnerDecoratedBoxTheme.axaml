@@ -59,7 +59,11 @@
                                     Content="{TemplateBinding ContentLeftAddOn}"
                                     ContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                                     IsVisible="{TemplateBinding ContentLeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" 
-                                    ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}"/>
+                                    ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}">
+                                    <ContentPresenter.RenderTransform>
+                                        <TranslateTransform X="{Binding ContentLeftShift, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    </ContentPresenter.RenderTransform>
+                                </ContentPresenter>
 
                                 <ContentPresenter
                                     DockPanel.Dock="Right"
@@ -71,7 +75,11 @@
                                     Content="{TemplateBinding ContentRightAddOn}"
                                     ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                     IsVisible="{TemplateBinding ContentRightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" 
-                                    ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}"/>
+                                    ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}">
+                                    <ContentPresenter.RenderTransform>
+                                        <TranslateTransform X="{Binding ContentRightShift, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    </ContentPresenter.RenderTransform>
+                                </ContentPresenter>
 
                                 <ContentPresenter
                                     Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentPresenterPart}"

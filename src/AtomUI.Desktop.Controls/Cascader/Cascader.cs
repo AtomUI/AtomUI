@@ -247,15 +247,6 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         SelectedItemPath = null;
     }
     
-    private void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
-        PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
-    }
-    
     private void ConfigurePlaceholderVisible()
     {
         if (IsMultiple)

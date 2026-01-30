@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -217,6 +215,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private SelectFilterTextBox? _singleFilterInput;
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
+    private bool _ignoreCandidateSelectionChanged;
 
     private ISelectOption? _addNewOption;
 
@@ -451,7 +450,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             else if (!IsHideSelectedOptions)
             {
                 ClosingDropDown(IsDropDownOpen);
-                // SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
         }
@@ -467,15 +465,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         {
             if (Popup?.IsInsidePopup(source) == true)
             {
-                if (Mode == SelectMode.Single)
-                {
-                    var optionItem = source.FindAncestorOfType<ListItem>();
-                    if (optionItem != null && optionItem.IsEnabled)
-                    {
-                        ClosingDropDown(IsDropDownOpen);
-                        // SetCurrentValue(IsDropDownOpenProperty, false);
-                    }
-                }
                 e.Handled = true;
             }
             else if (PseudoClasses.Contains(StdPseudoClass.Pressed))
@@ -501,7 +490,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     {
                         ClosingDropDown(true);
                     }
-                    // SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                 }
     
                 e.Handled = true;
@@ -529,7 +517,22 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     {
         base.OnApplyTemplate(e);
        
+        if (_candidateList != null)
+        {
+            _candidateList.SelectionChanged -= HandleCandidateListSelectionChanged;
+            _candidateList.Commit           -= HandleCandidateListComplete;
+            _candidateList.Cancel           -= HandleCandidateListCanceled;
+        }
+        
         _candidateList        = e.NameScope.Get<SelectCandidateList>(SelectThemeConstants.OptionsBoxPart);
+        
+        if (_candidateList != null)
+        {
+            _candidateList.SelectionChanged += HandleCandidateListSelectionChanged;
+            _candidateList.Commit           += HandleCandidateListComplete;
+            _candidateList.Cancel           += HandleCandidateListCanceled;
+        }
+        
         _singleFilterInput = e.NameScope.Get<SelectFilterTextBox>(SelectThemeConstants.SingleFilterInputPart);
         if (_candidateList != null)
         {
@@ -541,6 +544,23 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         UpdatePseudoClasses();
         ConfigureSingleFilterTextBox();
         ConfigureEffectiveSearchEnabled();
+    }
+    
+    private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
+    {
+        if (IsDropDownOpen)
+        {
+            ClosingDropDown(true);
+        }
+    }
+    
+    private void HandleCandidateListCanceled(object? sender, RoutedEventArgs e)
+    {
+    }
+
+    private void HandleCandidateListSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        Console.WriteLine("xxxx");
     }
 
     internal void NotifyLogicalSelectOption(ISelectOption selectOption)
@@ -681,7 +701,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 }
             }
             _candidateList.SetCurrentValue(SelectCandidateList.SelectedItemsProperty, selectedItems);
-            // _candidateList.EnsureActiveOption();
         }
     }
 

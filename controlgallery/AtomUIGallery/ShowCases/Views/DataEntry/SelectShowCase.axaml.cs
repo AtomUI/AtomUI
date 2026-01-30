@@ -21,7 +21,7 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
             }
         });
         InitializeComponent();
-        CustomSearchSelect.FilterFn = CustomFilter;
+        // CustomSearchSelect.FilterFn = CustomFilter;
     }
 
     public static bool CustomFilter(object value, object filterValue)

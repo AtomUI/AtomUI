@@ -10,5 +10,6 @@
         <ResourceInclude Source="SelectAddOnDecoratedBoxTheme.axaml"/>
         <ResourceInclude Source="SelectMaxCountIndicatorTheme.axaml"/>
         <ResourceInclude Source="SelectTagAwareTextBoxTheme.axaml"/>
+        <ResourceInclude Source="SelectCandidateListTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

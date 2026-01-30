@@ -205,6 +205,12 @@
                 <Setter Property="SelectionMode" Value="Multiple" />
             </Style>
         </Style>
+        
+        <Setter Property="OptionTemplate">
+            <DataTemplate x:DataType="atom:ISelectOption">
+                <atom:TextBlock Text="{Binding Header}" />
+            </DataTemplate>
+        </Setter>
 
     </ControlTheme>
 </ResourceDictionary>

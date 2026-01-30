@@ -86,47 +86,6 @@ internal class ButtonSpinnerContentPanel : DockPanel
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        var size = base.ArrangeOverride(finalSize);
-        if (IsHandleFloatable && IsHover)
-        {
-            Control? leftAlignmentControl  = null;
-            Control? rightAlignmentControl = null;
-            foreach (var item in Children)
-            {
-                if (item != null)
-                {
-                    if (GetDock(item) == Dock.Left)
-                    {
-                        leftAlignmentControl = item;
-                    }
-
-                    if (GetDock(item) == Dock.Right)
-                    {
-                        rightAlignmentControl = item;
-                    }
-                }
-            }
-
-            if (HandleLocation == ButtonSpinnerLocation.Right)
-            {
-                if (rightAlignmentControl != null)
-                {
-                    var bounds = rightAlignmentControl.Bounds;
-                    rightAlignmentControl.Arrange(new Rect(bounds.X - ContentPadding.Right * 1.5, bounds.Y, bounds.Width,
-                        bounds.Height));
-                }
-            }
-            else if (HandleLocation == ButtonSpinnerLocation.Left)
-            {
-                if (leftAlignmentControl != null)
-                {
-                    var bounds = leftAlignmentControl.Bounds;
-                    leftAlignmentControl.Arrange(new Rect(bounds.X + ContentPadding.Left * 1.5, bounds.Y, bounds.Width,
-                        bounds.Height));
-                }
-            }
-        }
-
-        return size;
+        return base.ArrangeOverride(finalSize);
     }
 }

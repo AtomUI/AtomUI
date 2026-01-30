@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Theme.Styling;
 using Avalonia;
@@ -70,6 +71,12 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     public static readonly StyledProperty<double> HandleOffsetProperty =
         AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOffset));
 
+    public static readonly StyledProperty<double> ContentLeftShiftProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentLeftShift));
+
+    public static readonly StyledProperty<double> ContentRightShiftProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentRightShift));
+
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, double> SpinnerHandleWidthProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, double>(nameof(SpinnerHandleWidth),
             o => o.SpinnerHandleWidth,
@@ -114,6 +121,18 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     {
         get => GetValue(HandleOffsetProperty);
         set => SetValue(HandleOffsetProperty, value);
+    }
+
+    internal double ContentLeftShift
+    {
+        get => GetValue(ContentLeftShiftProperty);
+        set => SetValue(ContentLeftShiftProperty, value);
+    }
+
+    internal double ContentRightShift
+    {
+        get => GetValue(ContentRightShiftProperty);
+        set => SetValue(ContentRightShiftProperty, value);
     }
 
     private double _spinnerHandleWidth;
@@ -170,6 +189,7 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         {
             SetCurrentValue(EffectiveContentPaddingProperty, ContentPadding);
         }
+        UpdateHandleVisualState();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -186,7 +206,7 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
 
     private void ConfigureMoveProcessor()
     {
-        if (IsShowHandle && IsHandleFloatable)
+        if (IsEffectivelyEnabled && IsShowHandle && IsHandleFloatable)
         {
             _mouseMoveDisposable?.Dispose();
             var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
@@ -196,6 +216,11 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
 
     private void HandleMouseMove(RawInputEventArgs args)
     {
+        if (!IsEffectivelyEnabled)
+        {
+            return;
+        }
+
         if (args is RawPointerEventArgs pointerEventArgs)
         {
             var pos = this.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!);
@@ -252,6 +277,21 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             }
         }
 
+        if (change.Property == IsEffectivelyEnabledProperty)
+        {
+            if (!IsEffectivelyEnabled)
+            {
+                _mouseMoveDisposable?.Dispose();
+                Transitions = null;
+            }
+            else
+            {
+                ConfigureMoveProcessor();
+                ConfigureTransitionsForEnabledState();
+            }
+            UpdateHandleVisualState();
+        }
+
         if (change.Property == IsHandleFloatableProperty ||
             change.Property == IsShowHandleProperty ||
             change.Property == SpinnerHandleWidthProperty ||
@@ -272,7 +312,9 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     {
         base.NotifyCreateTransitions(transitions);
         transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(HandleOpacityProperty));
-        transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(HandleOffsetProperty, SharedTokenKey.MotionDurationFast));
+        transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(HandleOffsetProperty, SharedTokenKey.MotionDurationMid));
+        transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(ContentLeftShiftProperty, SharedTokenKey.MotionDurationMid));
+        transitions.Add(TransitionUtils.CreateTransition<DoubleTransition>(ContentRightShiftProperty, SharedTokenKey.MotionDurationMid));
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -294,12 +336,57 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
 
     private void UpdateHandleVisualState()
     {
+        if (!IsEffectivelyEnabled)
+        {
+            IsSpinnerContentHover = false;
+            HandleOpacity = IsShowHandle ? 1.0 : 0.0;
+            HandleOffset = 0.0;
+            ContentLeftShift = 0.0;
+            ContentRightShift = 0.0;
+            return;
+        }
+
         var visible = IsShowHandle && (!IsHandleFloatable || IsSpinnerContentHover);
         HandleOpacity = visible ? 1.0 : 0.0;
         HandleOffset = visible ? 0.0 : GetHiddenOffset();
         if (!IsHandleFloatable)
         {
             IsSpinnerContentHover = false;
+        }
+
+        if (IsHandleFloatable && IsSpinnerContentHover)
+        {
+            if (ButtonSpinnerLocation == ButtonSpinnerLocation.Right)
+            {
+                ContentRightShift = -EffectiveContentPadding.Right * 1.5;
+                ContentLeftShift = 0.0;
+            }
+            else
+            {
+                ContentLeftShift = EffectiveContentPadding.Left * 1.5;
+                ContentRightShift = 0.0;
+            }
+        }
+        else
+        {
+            ContentLeftShift = 0.0;
+            ContentRightShift = 0.0;
+        }
+    }
+
+    private void ConfigureTransitionsForEnabledState()
+    {
+        if (IsMotionEnabled)
+        {
+            if (Transitions == null)
+            {
+                Transitions =
+                [
+                    TransitionUtils.CreateTransition<SolidColorBrushTransition>(Border.BorderBrushProperty),
+                    TransitionUtils.CreateTransition<SolidColorBrushTransition>(Border.BackgroundProperty)
+                ];
+                NotifyCreateTransitions(Transitions);
+            }
         }
     }
 }

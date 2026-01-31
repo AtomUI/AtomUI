@@ -21,6 +21,8 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+public delegate object? GroupPropertySelector(object data);
+
 public class List : TemplatedControl,
                     ISizeTypeAware,
                     IMotionAwareControl,
@@ -68,8 +70,9 @@ public class List : TemplatedControl,
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         AvaloniaProperty.Register<List, bool>(nameof(IsGroupEnabled), false);
     
-    public static readonly StyledProperty<string> GroupPropertyPathProperty =
-        AvaloniaProperty.Register<List, string>(nameof(GroupPropertyPath), "Group");
+    public static readonly StyledProperty<GroupPropertySelector?> GroupPropertySelectorProperty =
+        AvaloniaProperty.Register<List, GroupPropertySelector?>(
+            nameof(GroupPropertySelector));
     
     public static readonly DirectProperty<List, int> SelectedIndexProperty =
         AvaloniaProperty.RegisterDirect<List, int>(
@@ -185,10 +188,10 @@ public class List : TemplatedControl,
         set => SetValue(IsGroupEnabledProperty, value);
     }
     
-    public string GroupPropertyPath
+    public GroupPropertySelector? GroupPropertySelector
     {
-        get => GetValue(GroupPropertyPathProperty);
-        set => SetValue(GroupPropertyPathProperty, value);
+        get => GetValue(GroupPropertySelectorProperty);
+        set => SetValue(GroupPropertySelectorProperty, value);
     }
     
     private int _selectedIndex;
@@ -464,6 +467,25 @@ public class List : TemplatedControl,
         this.RegisterResources();
     }
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (GroupPropertySelector == null)
+        {
+            SetCurrentValue(GroupPropertySelectorProperty, GroupSelector);
+        }
+    }
+
+    private object? GroupSelector(object item)
+    {
+        if (item is IGroupHeader groupHeader)
+        {
+            return groupHeader.Group;
+        }
+
+        return null;
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -491,7 +513,7 @@ public class List : TemplatedControl,
         {
             ConfigureEmptyIndicator();
         }
-        else if (change.Property == GroupPropertyPathProperty)
+        else if (change.Property == GroupPropertySelectorProperty)
         {
             ReConfigureGroupInfo();
         }
@@ -726,7 +748,10 @@ public class List : TemplatedControl,
         {
             if (IsGroupEnabled)
             {
-                collectionView.GroupDescriptions.Add(new ListPathGroupDescription(GroupPropertyPath));
+                if (GroupPropertySelector != null)
+                {
+                    collectionView.GroupDescriptions.Add(new SelectorGroupDescription(GroupPropertySelector));
+                }
             }
             else
             {
@@ -742,7 +767,10 @@ public class List : TemplatedControl,
             collectionView.GroupDescriptions.Clear();
             if (IsGroupEnabled)
             {
-                collectionView.GroupDescriptions.Add(new ListPathGroupDescription(GroupPropertyPath));
+                if (GroupPropertySelector != null)
+                {
+                    collectionView.GroupDescriptions.Add(new SelectorGroupDescription(GroupPropertySelector));
+                }
             }
         }
     }

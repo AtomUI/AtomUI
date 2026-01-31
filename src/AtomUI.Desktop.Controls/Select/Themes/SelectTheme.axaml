@@ -103,7 +103,7 @@
                                 Name="{x:Static atom:SelectThemeConstants.CandidateListPart}"
                                 IsBorderless="True"
                                 IsGroupEnabled="{TemplateBinding IsGroupEnabled}"
-                                GroupPropertyPath="{TemplateBinding GroupPropertyPath}"
+                                GroupPropertySelector="{TemplateBinding GroupPropertySelector}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 IsShowEmptyIndicator="True"
                                 IsHideSelectedOptions="{TemplateBinding IsHideSelectedOptions}"

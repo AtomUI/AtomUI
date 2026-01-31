@@ -40,8 +40,8 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         List.IsGroupEnabledProperty.AddOwner<Select>();
     
-    public static readonly StyledProperty<string> GroupPropertyPathProperty =
-        List.GroupPropertyPathProperty.AddOwner<Select>();
+    public static readonly StyledProperty<GroupPropertySelector?> GroupPropertySelectorProperty =
+        List.GroupPropertySelectorProperty.AddOwner<Select>();
     
     public static readonly StyledProperty<bool> IsHideSelectedOptionsProperty =
         AvaloniaProperty.Register<Select, bool>(nameof(IsHideSelectedOptions));
@@ -107,10 +107,10 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsGroupEnabledProperty, value);
     }
     
-    public string GroupPropertyPath
+    public GroupPropertySelector? GroupPropertySelector
     {
-        get => GetValue(GroupPropertyPathProperty);
-        set => SetValue(GroupPropertyPathProperty, value);
+        get => GetValue(GroupPropertySelectorProperty);
+        set => SetValue(GroupPropertySelectorProperty, value);
     }
     
     public bool IsHideSelectedOptions

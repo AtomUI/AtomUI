@@ -2,10 +2,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-public interface ISelectOption : IListBoxItemData
+public interface ISelectOption : IListBoxItemData, IGroupHeader
 {
     object? Header { get; }
-    string? Group { get; }
     bool IsDynamicAdded { get; }
 }
 

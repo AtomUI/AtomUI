@@ -52,9 +52,52 @@ public class SelectViewModel : ReactiveObject, IRoutableViewModel
         get => _selectSizeType;
         set => this.RaiseAndSetIfChanged(ref _selectSizeType, value);
     }
+    
+    private ISelectOptionsAsyncLoader? _selectOptionsAsyncLoader;
+
+    public ISelectOptionsAsyncLoader? SelectOptionsAsyncLoader
+    {
+        get => _selectOptionsAsyncLoader;
+        set => this.RaiseAndSetIfChanged(ref _selectOptionsAsyncLoader, value);
+    }
         
     public SelectViewModel(IScreen screen)
     {
         HostScreen  = screen;
+    }
+}
+
+public class SelectOptionsAsyncLoader : ISelectOptionsAsyncLoader
+{
+    public async Task<SelectOptionsLoadResult> LoadAsync(object? context, CancellationToken token)
+    {
+        await Task.Delay(TimeSpan.FromMilliseconds(600), token);
+        var options = new List<ISelectOption>();
+        options.Add(new SelectOption()
+        {
+            Header = "Jack",
+            Value = "jack"
+        });
+        options.Add(new SelectOption()
+        {
+            Header = "Lucy",
+            Value  = "lucy"
+        });
+        options.Add(new SelectOption()
+        {
+            Header = "Yiminghe",
+            Value  = "yiminghe"
+        });
+        options.Add(new SelectOption()
+        {
+            Header = "Disabled",
+            Value  = "disabled",
+            IsEnabled = false
+        });
+        return new SelectOptionsLoadResult()
+        {
+            Data = options,
+            StatusCode = RpcStatusCode.Success
+        };
     }
 }

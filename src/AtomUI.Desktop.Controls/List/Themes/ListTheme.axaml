@@ -110,6 +110,12 @@
             <DataTemplate x:DataType="atom:IListItemData">
                 <atom:TextBlock Text="{Binding Content}" />
             </DataTemplate>
+        </Setter>
+        
+        <Setter Property="GroupItemTemplate">
+            <DataTemplate x:DataType="atom:IListItemData">
+                <atom:TextBlock Text="{Binding Content}" />
+            </DataTemplate>
         </Setter> 
     </Style>
 

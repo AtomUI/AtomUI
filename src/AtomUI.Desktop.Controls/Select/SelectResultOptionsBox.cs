@@ -117,6 +117,10 @@ internal class SelectResultOptionsBox : TemplatedControl
             change.Property == SelectedOptionsProperty)
         {
             ConfigureMaxTagCountInfoVisible();
+            if (Mode != SelectMode.Single)
+            {
+                _searchTextBox?.Focus();
+            }
         }
 
         if (change.Property == MaxTagCountProperty)
@@ -146,7 +150,7 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
-        _collapsedInfoTag = new SelectRemainInfoTag()
+        _collapsedInfoTag = new SelectRemainInfoTag
         {
             IsClosable = false
         };

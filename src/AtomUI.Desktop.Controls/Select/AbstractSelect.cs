@@ -124,8 +124,10 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<AbstractSelect, Thickness>(nameof(EmptyIndicatorPadding));
     
-    public static readonly StyledProperty<bool> IsLoadingProperty =
-        AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsLoading));
+    public static readonly DirectProperty<AbstractSelect, bool> IsLoadingProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(
+            nameof(IsLoading),
+            o => o.IsLoading);
     
     public bool IsAllowClear
     {
@@ -344,10 +346,12 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
     
+    private bool _isLoading;
+
     public bool IsLoading
     {
-        get => GetValue(IsLoadingProperty);
-        set => SetValue(IsLoadingProperty, value);
+        get => _isLoading;
+        protected set => SetAndRaise(IsLoadingProperty, ref _isLoading, value);
     }
     #endregion
     

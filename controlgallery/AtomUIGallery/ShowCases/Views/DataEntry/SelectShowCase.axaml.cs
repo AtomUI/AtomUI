@@ -18,10 +18,11 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
                 InitializeBasicOptions(viewModel);
                 InitializeRandomOptions(viewModel);
                 InitializeMaxTagCountOptions(viewModel);
+                viewModel.SelectOptionsAsyncLoader = new SelectOptionsAsyncLoader();
             }
         });
         InitializeComponent();
-        // CustomSearchSelect.FilterFn = CustomFilter;
+        CustomSearchSelect.FilterFn = CustomFilter;
     }
 
     public static bool CustomFilter(object value, object filterValue)

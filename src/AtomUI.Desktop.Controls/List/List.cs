@@ -153,6 +153,7 @@ public class List : TemplatedControl,
         set => SetValue(ItemTemplateProperty, value);
     }
     
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
     public IDataTemplate? GroupItemTemplate
     {
         get => GetValue(GroupItemTemplateProperty);
@@ -770,19 +771,34 @@ public class List : TemplatedControl,
     internal virtual void PrepareListBoxItem(ListItem listItem, object? item, int index,
                                              CompositeDisposable disposables)
     {
-        if (GroupItemTemplate != null)
-        {
-            disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, listItem, ListItem.ContentTemplateProperty));
-        }
-
+        var isGroupEnabled = false;
         if (item is IGroupListItemData groupListItemData)
         {
             listItem.IsGroupItem = groupListItemData.IsGroupItem;
+            isGroupEnabled       = listItem.IsGroupItem;
+        }
+        if (GroupItemTemplate != null && isGroupEnabled)
+        {
+            disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, listItem, ListItem.ContentTemplateProperty));
         }
     }
 
-    internal virtual bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+    internal virtual bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
     {
+        return false;
+    }
+
+    internal virtual bool UpdateSelection(ListItem listItem,
+                                          bool select = true,
+                                          bool rangeModifier = false,
+                                          bool toggleModifier = false,
+                                          bool rightButton = false,
+                                          bool fromFocus = false)
+    {
+        if (ListView != null)
+        {
+            return ListView.UpdateSelection(listItem, select, rangeModifier, toggleModifier, rightButton, fromFocus);
+        }
         return false;
     }
     
@@ -818,6 +834,10 @@ public class List : TemplatedControl,
     }
     
     protected internal virtual void NotifyListItemClicked(ListItem item)
+    {
+    }
+
+    protected internal virtual void ClearContainerForItem(ListItem item)
     {
     }
 }

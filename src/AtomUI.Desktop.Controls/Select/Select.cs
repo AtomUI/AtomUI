@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Diagnostics;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -13,6 +12,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -217,32 +217,28 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private ListFilterDescription? _filterDescription;
     private ListFilterDescription? _filterSelectedDescription;
     private bool _ignoreSyncSelection;
+    private bool _candidateListActivated;
     private ISelectOption? _addNewOption;
 
     static Select()
     {
         FocusableProperty.OverrideDefaultValue<Select>(true);
-        SelectHandle.ClearRequestedEvent.AddClassHandler<Select>((target, args) =>
-        {
-            target.HandleClearRequest();
-        });
-        OptionsSourceProperty.Changed.AddClassHandler<Select>((x, e) => x.HandleOptionsSourcePropertyChanged(e));
-        SelectFilterTextBox.TextChangedEvent.AddClassHandler<Select>((x, e) => x.HandleSearchInputTextChanged(e));
-        SelectTag.ClosedEvent.AddClassHandler<Select>((x, args) => x.HandleTagCloseRequest(args));
+        SelectHandle.ClearRequestedEvent.AddClassHandler<Select>((select, args) => select.ClearValue());
+        OptionsSourceProperty.Changed.AddClassHandler<Select>((select, e) => select.HandleOptionsSourcePropertyChanged(e));
+        SelectFilterTextBox.TextChangedEvent.AddClassHandler<Select>((select, e) => select.HandleSearchInputTextChanged(e));
+        SelectTag.ClosedEvent.AddClassHandler<Select>((select, args) => select.HandleTagCloseRequest(args));
         SelectedOptionsProperty.Changed.AddClassHandler<Select>((select, args) => select.HandleSelectedOptionsChanged(args));
         SelectedOptionProperty.Changed.AddClassHandler<Select>((select, args) => select.HandleSelectedOptionChanged(args));
+        SelectResultOptionsBox.KeyDownEvent.AddClassHandler<Select>(
+            (x, e) => x.HandleFilterInputKeyDown(e),
+            RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
     }
-    
+
     public Select()
     {
         this.RegisterResources();
     }
-
-    private void HandleClearRequest()
-    {
-        Clear();
-    }
-
+    
     private void HandleSelectedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
     {
         if (_ignoreSyncSelection)
@@ -252,7 +248,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         if (_candidateList != null)
         {
-            _candidateList.SelectedItems = (IList?)SelectedOptions;
+            _candidateList.SelectedItems = SelectedOptions?.ToList();
         }
     }
     
@@ -268,12 +264,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         {
             _candidateList.SelectedItem = SelectedOption;
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        ConfigureDefaultValues();
     }
 
     private bool OptionEqualByValue(object value, ISelectOption selectOption)
@@ -318,8 +308,8 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         var lastIndex   = newSelection.Count - 1;
         var removedItem = newSelection[lastIndex];
         newSelection.RemoveAt(lastIndex);
-        SetCurrentValue(SelectedOptionsProperty, newSelection);
-
+        SelectedOptions = newSelection;
+        
         if (Mode == SelectMode.Tags && removedItem.IsDynamicAdded)
         {
             Options.Remove(removedItem);
@@ -337,11 +327,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     {
         base.OnKeyDown(e);
         if (e.Handled)
-        {
-            return;
-        }
-
-        if (TryHandleDeleteKey(e)) 
         {
             return;
         }
@@ -378,6 +363,14 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         {
             SetCurrentValue(IsDropDownOpenProperty, true);
             e.Handled = true;
+        }
+    }
+    
+    private void HandleFilterInputKeyDown(KeyEventArgs e)
+    {
+        if (TryHandleDeleteKey(e))
+        {
+            return;
         }
     }
     
@@ -478,6 +471,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
        
         if (_candidateList != null)
         {
+            _candidateList.SelectionChanged -= HandleCandidateListSelectionChanged;
             _candidateList.Commit           -= HandleCandidateListComplete;
             _candidateList.Cancel           -= HandleCandidateListCanceled;
         }
@@ -486,6 +480,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         
         if (_candidateList != null)
         {
+            _candidateList.SelectionChanged += HandleCandidateListSelectionChanged;
             _candidateList.Commit           += HandleCandidateListComplete;
             _candidateList.Cancel           += HandleCandidateListCanceled;
         }
@@ -503,17 +498,18 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         ConfigureEffectiveSearchEnabled();
     }
     
-    private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
+    private void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
     {
         if (_candidateList != null)
         {
+            _ignoreSyncSelection = true;
             if (Mode == SelectMode.Single)
             {
                 SelectedOption = (ISelectOption?)_candidateList.SelectedItem;
             }
             else
             {
-                SelectedOptions = (IList<ISelectOption>?)_candidateList.SelectedItem;
+                SelectedOptions = _candidateList.SelectedItems?.Cast<ISelectOption>().ToList();
             }
         }
         if (IsDropDownOpen)
@@ -524,8 +520,46 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleCandidateListCanceled(object? sender, RoutedEventArgs e)
     {
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
+    private void HandleCandidateListSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (!_candidateListActivated)
+        {
+            return;
+        }
+        if (Mode != SelectMode.Single)
+        {
+            var currentSelectedSet = SelectedOptions?.ToHashSet() ?? new HashSet<ISelectOption>();
+            var newSelectedSet     = new HashSet<ISelectOption>();
+            foreach (var item in currentSelectedSet)
+            {
+                newSelectedSet.Add(item);
+            }
+
+            foreach (var item in e.AddedItems)
+            {
+                if (item is ISelectOption selectOption)
+                {
+                    newSelectedSet.Add(selectOption);
+                }
+            }
+            foreach (var item in e.RemovedItems)
+            {
+                if (item is ISelectOption selectOption)
+                {
+                    newSelectedSet.Remove(selectOption);
+                }
+            }
+
+            if (!newSelectedSet.SetEquals(currentSelectedSet))
+            {
+                SelectedOptions = newSelectedSet.ToList();
+            }
+        }
+    }
+    
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -542,12 +576,11 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         {
             UpdatePseudoClasses();
         }
-        if (change.Property == SelectedOptionsProperty)
+        if (change.Property == SelectedOptionsProperty ||
+            change.Property == SelectedOptionProperty)
         {
-            ConfigureSingleSelectedOption();
             ConfigureSelectionIsEmpty();
             ConfigurePlaceholderVisible();
-            ConfigureSelectedFilterDescription();
             SetCurrentValue(SelectedCountProperty, SelectedOptions?.Count ?? 0);
             CleanDynamicAddedOptions();
         }
@@ -557,7 +590,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else if (change.Property == ModeProperty)
         {
-            ConfigureSingleSelectedOption();
             ConfigureOptionsBoxSelectionMode();
         }
         else if (change.Property == IsHideSelectedOptionsProperty)
@@ -585,25 +617,47 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 _singleFilterInput.Width = double.NaN;
             }
         }
+
+        _candidateListActivated = false;
     }
 
     protected override void PopupOpened(object? sender, EventArgs e)
     {
+
+        _candidateListActivated = true;
         if (_candidateList != null)
         {
             if (Mode == SelectMode.Single)
             {
-                _candidateList.SelectedItem      = SelectedOption;
+                _candidateList.SelectedItem = SelectedOption;
             }
             else
             {
-                _candidateList.SelectedItems     = (IList?)SelectedOptions;
+                if (SelectedOptions != null && SelectedOptions.Count > 0)
+                {
+                    _candidateList.SelectedItems = SelectedOptions?.ToList();
+                }
             }
         }
        
         if (Mode == SelectMode.Single)
         {
             _singleFilterInput?.Focus();
+        }
+    }
+
+    private void SyncSelectionToCandidateList()
+    {
+        if (_candidateList != null)
+        {
+            if (Mode == SelectMode.Single)
+            {
+                _candidateList.SelectedItem = SelectedOption;
+            }
+            else
+            {
+                _candidateList.SelectedItems = SelectedOptions?.ToList();
+            }
         }
     }
 
@@ -618,7 +672,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             Mode == SelectMode.Single ? SelectionMode.Single : SelectionMode.Multiple);
     }
     
-    public void Clear()
+    public void ClearValue()
     {
         SelectedOptions = null;
         SelectedOption  = null;
@@ -626,12 +680,26 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void ConfigurePlaceholderVisible()
     {
-        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedOption == null && (SelectedOptions == null || SelectedOptions?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
+        if (Mode == SelectMode.Single)
+        {
+            SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedOption == null && string.IsNullOrEmpty(ActivateFilterValue));
+        }
+        else
+        {
+            SetCurrentValue(IsPlaceholderTextVisibleProperty, (SelectedOptions == null || SelectedOptions?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
+        }
     }
 
     private void ConfigureSelectionIsEmpty()
     {
-        SetCurrentValue(IsSelectionEmptyProperty, SelectedOption == null && (SelectedOptions == null || SelectedOptions?.Count == 0));
+        if (Mode == SelectMode.Single)
+        {
+            SetCurrentValue(IsSelectionEmptyProperty, SelectedOption == null);
+        }
+        else
+        {
+            SetCurrentValue(IsSelectionEmptyProperty, SelectedOptions == null || SelectedOptions?.Count == 0);
+        }
     }
 
     private void ConfigureSingleFilterTextBox()
@@ -665,10 +733,11 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 }
             }
             ConfigurePlaceholderVisible();
+            
             if (string.IsNullOrEmpty(ActivateFilterValue))
             {
                 _candidateList.FilterDescriptions.Clear();
-                _filterDescription = null;
+                _filterDescription               = null;
             }
             else
             {
@@ -700,7 +769,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     _candidateList.FilterDescriptions.Add(_filterDescription);
                 }
             }
-
             // Only allow "create from search text" in Tags mode.
             // For Single/Multiple, when data is empty (or filter results are empty),
             // the dropdown should show the empty indicator instead of adding a temporary option.
@@ -716,6 +784,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 };
                 Options.Add(_addNewOption);
             }
+            Dispatcher.UIThread.Post(SyncSelectionToCandidateList);
         }
         e.Handled = true;
     }
@@ -745,7 +814,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 {
                     Options.Remove(selectOption);
                 }
-          
             }
         }
         e.Handled = true;
@@ -770,9 +838,10 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleOptionsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         var newItemsSource = (IEnumerable<ISelectOption>?)change.NewValue;
+        ClearValue();
+        Options.Clear();
         if (newItemsSource != null)
         {
-            Options.Clear();
             Options.AddRange(newItemsSource);
             ConfigureDefaultValues();
         }
@@ -780,9 +849,9 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void ConfigureDefaultValues()
     {
-        if (SelectedOptions == null || SelectedOptions.Count == 0)
+        if (Mode == SelectMode.Single)
         {
-            if (Mode == SelectMode.Single)
+            if (SelectedOption == null)
             {
                 if (DefaultValues?.Count > 0)
                 {
@@ -791,13 +860,16 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     {
                         if (OptionEqualByValue(defaultValue, option))
                         {
-                            SetCurrentValue(SelectedOptionProperty, option);
+                            SelectedOption = option;
                             break;
                         }
                     }
                 }
             }
-            else
+        }
+        else
+        {
+            if (SelectedOptions == null || SelectedOptions.Count == 0)
             {
                 if (DefaultValues?.Count > 0)
                 {
@@ -812,65 +884,53 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                             }
                         }
                     }
-                    SetCurrentValue(SelectedOptionsProperty, selectedOptions);
+
+                    SelectedOptions = selectedOptions;
                 }
             }
         }
     }
-
-    private void ConfigureSingleSelectedOption()
+    
+    protected override void OnLoaded(RoutedEventArgs e)
     {
-        if (Mode == SelectMode.Single)
-        {
-            if (SelectedOptions?.Count > 0)
-            {
-                SetCurrentValue(SelectedOptionProperty, SelectedOptions[0]);
-            }
-            else
-            {
-                SetCurrentValue(SelectedOptionProperty, null);
-            }
-        }
-        else
-        {
-            SetCurrentValue(SelectedOptionProperty, null);
-        }
+        base.OnLoaded(e);
+        ConfigureDefaultValues();
     }
 
     private void ConfigureSelectedFilterDescription()
     {
         if (_candidateList?.FilterDescriptions != null)
         {
-            if (IsHideSelectedOptions)
-            {
-                var selectedOptions = new HashSet<ISelectOption>();
-                if (SelectedOptions?.Count > 0)
-                {
-                    foreach (var selectedOption in SelectedOptions)
-                    {
-                        selectedOptions.Add(selectedOption);
-                    }
-                }
-                var oldFilter = _filterSelectedDescription;
-                _filterSelectedDescription = new ListFilterDescription()
-                {
-                    Filter           = SelectFilterFn,
-                    FilterConditions = [selectedOptions],
-                };
-                if (oldFilter != null)
-                {
-                    _candidateList.FilterDescriptions.Remove(oldFilter);
-                }
-                _candidateList.FilterDescriptions.Add(_filterSelectedDescription);
-            }
-            else
-            {
+            // if (IsHideSelectedOptions)
+            // {
+            //     var selectedOptions = new HashSet<ISelectOption>();
+            //     if (SelectedOptions?.Count > 0)
+            //     {
+            //         foreach (var selectedOption in SelectedOptions)
+            //         {
+            //             selectedOptions.Add(selectedOption);
+            //         }
+            //     }
+            //     var oldFilter = _filterSelectedDescription;
+            //     _filterSelectedDescription = new ListFilterDescription()
+            //     {
+            //         Filter           = SelectFilterFn,
+            //         FilterConditions = [selectedOptions],
+            //     };
+            //     if (oldFilter != null)
+            //     {
+            //         _candidateList.FilterDescriptions.Remove(oldFilter);
+            //     }
+            //     _candidateList.FilterDescriptions.Add(_filterSelectedDescription);
+            // }
+            // else
+            // {
                 if (_filterSelectedDescription != null)
                 {
                     _candidateList.FilterDescriptions.Remove(_filterSelectedDescription);
                 }
                 _filterSelectedDescription = null;
-            }
+            // }
         }
     }
 

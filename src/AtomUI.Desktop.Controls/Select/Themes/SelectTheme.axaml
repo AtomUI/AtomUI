@@ -106,6 +106,7 @@
                                 GroupPropertyPath="{TemplateBinding GroupPropertyPath}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 IsShowEmptyIndicator="True"
+                                IsHideSelectedOptions="{TemplateBinding IsHideSelectedOptions}"
                                 MaxCount="{TemplateBinding MaxCount}"
                                 AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedOptions}"
                                 ItemTemplate="{TemplateBinding OptionTemplate}"
@@ -149,7 +150,7 @@
         </Style>
 
         <Style Selector="^[Mode=Single]">
-            <Style Selector="^ /template/ atom|SelectCandidateList#PART_OptionsBox">
+            <Style Selector="^ /template/ atom|SelectCandidateList#PART_CandidateList">
                 <Setter Property="IsShowSelectedIndicator" Value="False" />
             </Style>
             <Style Selector="^[IsFilterEnabled=False]">
@@ -185,7 +186,7 @@
                     <Setter Property="Cursor" Value="Hand" />
                 </Style>
             </Style>
-            <Style Selector="^ /template/ atom|SelectCandidateList#PART_OptionsBox">
+            <Style Selector="^ /template/ atom|SelectCandidateList#PART_CandidateList">
                 <Setter Property="IsShowSelectedIndicator" Value="True" />
                 <Setter Property="SelectionMode" Value="Multiple" />
             </Style>
@@ -200,7 +201,7 @@
                     <Setter Property="Cursor" Value="Hand" />
                 </Style>
             </Style>
-            <Style Selector="^ /template/ atom|SelectCandidateList#PART_OptionsBox">
+            <Style Selector="^ /template/ atom|SelectCandidateList#PART_CandidateList">
                 <Setter Property="IsShowSelectedIndicator" Value="True" />
                 <Setter Property="SelectionMode" Value="Multiple" />
             </Style>

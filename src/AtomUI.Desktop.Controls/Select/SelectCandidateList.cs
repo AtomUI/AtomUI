@@ -1,3 +1,6 @@
+using System.Collections;
+using System.Reactive.Disposables;
+using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,9 +14,6 @@ namespace AtomUI.Desktop.Controls;
 internal class SelectCandidateList : List, ICandidateList
 {
     #region 公共属性定义
-
-    public static readonly StyledProperty<bool> IsCandidateItemNavigationEnabledProperty =
-        AvaloniaProperty.Register<SelectCandidateList, bool>(nameof(IsCandidateItemNavigationEnabled), true);
     
     public static readonly DirectProperty<SelectCandidateList, object?> CandidateSelectedItemProperty =
         AvaloniaProperty.RegisterDirect<SelectCandidateList, object?>(
@@ -29,11 +29,11 @@ internal class SelectCandidateList : List, ICandidateList
             (o, v) => o.CandidateSelectedIndex = v,
             defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
     
-    public bool IsCandidateItemNavigationEnabled
-    {
-        get => GetValue(IsCandidateItemNavigationEnabledProperty);
-        set => SetValue(IsCandidateItemNavigationEnabledProperty, value);
-    }
+    public static readonly DirectProperty<SelectCandidateList, bool> IsHideSelectedOptionsProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, bool>(
+            nameof(IsHideSelectedOptions),
+            o => o.IsHideSelectedOptions,
+            (o, v) => o.IsHideSelectedOptions = v);
     
     private object? _candidateSelectedItem;
 
@@ -50,9 +50,14 @@ internal class SelectCandidateList : List, ICandidateList
         get => _candidateSelectedIndex;
         set => SetAndRaise(CandidateSelectedIndexProperty, ref _candidateSelectedIndex, value);
     }
-    #endregion
-    
-    #region 公共属性定义
+
+    private bool _isHideSelectedOptions;
+
+    public bool IsHideSelectedOptions
+    {
+        get => _isHideSelectedOptions;
+        set => SetAndRaise(IsHideSelectedOptionsProperty, ref _isHideSelectedOptions, value);
+    }
 
     public static readonly StyledProperty<int> MaxCountProperty =
         Select.MaxCountProperty.AddOwner<SelectCandidateList>();
@@ -87,12 +92,48 @@ internal class SelectCandidateList : List, ICandidateList
     }
     #endregion
 
+    #region 内部属性定义
+
+    public static readonly DirectProperty<SelectCandidateList, bool> HasAnyVisibleItemProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, bool>(
+            nameof(HasAnyVisibleItem),
+            o => o.HasAnyVisibleItem,
+            (o, v) => o.HasAnyVisibleItem = v);
+
+    private bool _hasAnyVisibleItem = true;
+
+    public bool HasAnyVisibleItem
+    {
+        get => _hasAnyVisibleItem;
+        set => SetAndRaise(HasAnyVisibleItemProperty, ref _hasAnyVisibleItem, value);
+    }
+    #endregion
+
     static SelectCandidateList()
     {
         SelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectItemChanged(args));
-        IsCandidateItemNavigationEnabledProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleIsCandidateItemNavigationEnabled(args));
         CandidateSelectedIndexProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedIndexChanged(args));
         CandidateSelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedItemChanged(args));
+        AffectsArrange<SelectCandidateList>(IsHideSelectedOptionsProperty);
+        SelectionChangedEvent.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectionChanged());
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FilterDescriptions?.CollectionChanged += (sender, args) =>
+        {
+            CandidateSelectedIndex = -1;
+            CandidateSelectedItem  = null;
+        };
+    }
+
+    private void HandleSelectionChanged()
+    {
+        if (!IsSingleMode())
+        {
+            ConfigureOptionsForMaxCount();
+        }
     }
     
     internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -103,6 +144,19 @@ internal class SelectCandidateList : List, ICandidateList
     internal override bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<SelectCandidateListItem>(item, out recycleKey);
+    }
+    
+    internal override void PrepareListBoxItem(ListItem listItem, object? item, int index, CompositeDisposable disposables)
+    {
+        base.PrepareListBoxItem(listItem, item, index, disposables);
+        if (listItem is SelectCandidateListItem candidateListItem)
+        {
+            if (CandidateSelectedIndex != -1)
+            {
+                candidateListItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, index == CandidateSelectedIndex);
+            }
+        }
+        disposables.Add(BindUtils.RelayBind(this, IsHideSelectedOptionsProperty, listItem, SelectCandidateListItem.IsHideSelectedOptionsProperty));
     }
     
     private void ResetScrollViewer()
@@ -151,31 +205,25 @@ internal class SelectCandidateList : List, ICandidateList
         switch (e.Key)
         {
             case Key.Enter:
-                HandleCommit();
+                if (IsSingleMode())
+                {
+                    HandleSingleModeCommit();
+                }
+                else
+                {
+                    HandleMultiModeCommit();
+                }
+                
                 e.Handled = true;
                 break;
 
             case Key.Up:
-                if (IsCandidateItemNavigationEnabled)
-                {
-                    SelectPreviousCandidateItem();
-                }
-                else
-                {
-                    SelectPreviousItem();
-                }
+                SelectPreviousCandidateItem();
                 e.Handled = true;
                 break;
 
             case Key.Down:
-                if (IsCandidateItemNavigationEnabled)
-                {
-                    SelectNextCandidateItem();
-                }
-                else
-                {
-                    SelectNextItem();
-                }
+                SelectNextCandidateItem();
              
                 e.Handled = true;
                 break;
@@ -190,21 +238,32 @@ internal class SelectCandidateList : List, ICandidateList
         }
     }
 
-    private void HandleCommit()
+    private void HandleSingleModeCommit()
     {
         NotifyCommit();
         ClearState();
     }
+    
+    private void HandleMultiModeCommit()
+    {
+        if (CandidateSelectedItem != null)
+        {
+            var container = ListView?.ContainerFromItem(CandidateSelectedItem);
+            if (container is ListItem listItem)
+            {
+                UpdateSelection(listItem, !listItem.IsSelected, false,
+                    true);
+            }
+        }
+    }
 
     protected virtual void NotifyCommit()
     {
-        if (IsCandidateItemNavigationEnabled)
+        if (CandidateSelectedItem != null)
         {
-            if (CandidateSelectedItem != null)
-            {
-                SetCurrentValue(SelectedItemProperty, CandidateSelectedItem);
-            }
+            SetCurrentValue(SelectedItemProperty, CandidateSelectedItem);
         }
+     
         RaiseEvent(new RoutedEventArgs(CommitEvent)
         {
             Source = this,
@@ -214,7 +273,10 @@ internal class SelectCandidateList : List, ICandidateList
     private void HandleCancel()
     {
         NotifyCancel();
-        ClearState();
+        if (IsSingleMode())
+        {
+            ClearState();
+        }
     }
     
     protected virtual void NotifyCancel()
@@ -232,54 +294,12 @@ internal class SelectCandidateList : List, ICandidateList
             ResetScrollViewer();
         }
     }
-    
-    private void HandleIsCandidateItemNavigationEnabled(AvaloniaPropertyChangedEventArgs e)
-    {
-        if (ListView != null)
-        {
-            if (!IsCandidateItemNavigationEnabled)
-            {
-                for (var i = 0; i < ItemCount; i++)
-                {
-                    if (ListView.ContainerFromIndex(i) is SelectCandidateListItem childItem)
-                    {
-                        childItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
-                    }
-                }
-            }
-        }
-    }
 
     private void ClearState()
     {
+        SelectedItems          = null;
         SelectedItem           = null;
         SelectedIndex          = -1;
-        CandidateSelectedItem  = null;
-        CandidateSelectedIndex = -1;
-    }
-    
-    protected virtual void SelectPreviousItem()
-    {
-        if (SelectedIndex == -1)
-        {
-            SelectedIndex = ItemCount - 1;
-        }
-        else
-        {
-            SelectedIndex = FindNextEnabledIndex(SelectedIndex, -1);
-        }
-    }
-    
-    protected virtual void SelectNextItem()
-    {
-        if (SelectedIndex == -1)
-        {
-            SelectedIndex = 0;
-        }
-        else
-        {
-            SelectedIndex = FindNextEnabledIndex(SelectedIndex, 1);
-        }
     }
     
     protected virtual void SelectPreviousCandidateItem()
@@ -342,8 +362,8 @@ internal class SelectCandidateList : List, ICandidateList
                     return -1;
                 }
             }
-            
-            if (ListView.Items[index] is ISelectOption option && option.IsEnabled)
+
+            if (ListView.ContainerFromIndex(index) is SelectCandidateListItem listItem && listItem.IsEnabled)
             {
                 return index;
             }
@@ -352,15 +372,54 @@ internal class SelectCandidateList : List, ICandidateList
     
     protected internal override void NotifyListItemClicked(ListItem item)
     {
-        NotifyCommit();
+        if (IsSingleMode())
+        {
+            NotifyCommit();
+        }
+    }
+
+    private bool IsSingleMode()
+    {
+        return SelectionMode.HasFlag(SelectionMode.Single) && !SelectionMode.HasFlag(SelectionMode.Multiple);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == MaxCountProperty || change.Property == SelectedItemsProperty)
+        if (change.Property == MaxCountProperty || 
+            change.Property == SelectedItemsProperty)
         {
             ConfigureOptionsForMaxCount();
+        }
+
+        if (change.Property == SelectedItemsProperty)
+        {
+            if (IsHideSelectedOptions)
+            {
+                var oldSelectedCount = 0;
+                var newSelectedCount = 0;
+                if (change.OldValue is IList oldList)
+                {
+                    oldSelectedCount = oldList.Count;
+                }
+
+                if (change.NewValue is IList newList)
+                {
+                    newSelectedCount = newList.Count;
+                }
+
+                if (newSelectedCount < oldSelectedCount)
+                {
+                    HasAnyVisibleItem = true;
+                }
+            }
+        }
+
+        if (change.Property == HasAnyVisibleItemProperty ||
+            change.Property == IsHideSelectedOptionsProperty ||
+            change.Property == SelectedItemsProperty)
+        {
+            ConfigureEmptyIndicator();
         }
     }
     
@@ -451,5 +510,87 @@ internal class SelectCandidateList : List, ICandidateList
             return false;
         }
         return TrySetCandidateItemSelected(item);
+    }
+    
+    internal override bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
+    {
+        if (e.Handled)
+        {
+            return true;
+        }
+
+        var select = true;
+        if (IsSingleMode())
+        {
+            if (listItem.IsSelected)
+            {
+                e.Handled = true;
+                return false;
+            }
+        }
+        else
+        {
+            select = !listItem.IsSelected;
+        }
+        
+        var result = UpdateSelection(listItem, select, false,
+            true);
+        if (result)
+        {
+            e.Handled = true;
+        }
+        return result;
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (!IsSingleMode())
+        {
+            CandidateSelectedIndex = -1;
+            CandidateSelectedItem  = null;
+        }
+    }
+    
+    protected internal override void ClearContainerForItem(ListItem item)
+    {
+        if (item is SelectCandidateListItem candidateListItem)
+        {
+            candidateListItem.ClearValue(SelectCandidateListItem.IsCandidateSelectedProperty);
+        }
+    }
+    
+    protected override void ConfigureEmptyIndicator()
+    {
+        if (!IsHideSelectedOptions)
+        {
+            SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && IsEmptyDataSource);
+        }
+        else
+        {
+            SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (IsEmptyDataSource || !HasAnyVisibleItem));
+        }
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (IsHideSelectedOptions)
+        {
+            var hasAnyVisibleItem = false;
+            var logicalChildren   = ListView?.GetLogicalChildren();
+            if (logicalChildren != null)
+            {
+                foreach (var child in logicalChildren)
+                {
+                    if (child is Control control && control.IsVisible)
+                    {
+                        hasAnyVisibleItem = true;
+                    }
+                }
+            }
+            HasAnyVisibleItem = hasAnyVisibleItem;
+        }
+        
+        return base.ArrangeOverride(finalSize);
     }
 }

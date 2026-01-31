@@ -9,8 +9,19 @@
         </ControlTheme.BasedOn>
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
+            <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionFontSize}}"/>
             <Style Selector="^[IsSelected=False][IsCandidateSelected=True]">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemHoverBgColor}}" />
+            </Style>
+            
+            <Style Selector="^[IsHideSelectedOptions=True][IsSelected=True]">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+            
+            <Style Selector="^[IsSelected=True]">
+                <Setter Property="FontWeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedFontWeight}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedColor}}"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionSelectedBg}}"/>
             </Style>
         </Style>
     </ControlTheme>

@@ -64,6 +64,7 @@ public partial class Select
                 return;
             }
 
+            IsLoading = true;
             var result     = await OptionsLoader.LoadAsync(context, cancellationToken);
             var resultList = result.Data;
 
@@ -79,6 +80,7 @@ public partial class Select
                     SetCurrentValue(OptionsSourceProperty, resultList);
                     OptionsLoadComplete(context, result);
                     _asyncOptionsLoaded = true;
+                    IsLoading = false;
                 }
             });
         }

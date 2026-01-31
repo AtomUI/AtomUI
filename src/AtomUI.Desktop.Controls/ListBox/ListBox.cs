@@ -344,7 +344,20 @@ public class ListBox : AvaloniaListBox,
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new ListBoxItem();
+        var listBoxItem = new ListBoxItem();
+        if (item != null && item is not Visual)
+        {
+            if (item is IListBoxItemData itemData)
+            {
+                if (!listBoxItem.IsSet(ListBoxItem.ContentProperty))
+                {
+                    listBoxItem.SetCurrentValue(ListBoxItem.ContentProperty, item);
+                }
+                listBoxItem.SetCurrentValue(ListBoxItem.IsSelectedProperty, itemData.IsSelected);
+                listBoxItem.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
+            }
+        }
+        return listBoxItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -358,19 +371,6 @@ public class ListBox : AvaloniaListBox,
         if (container is ListBoxItem listBoxItem)
         {
             var disposables = new CompositeDisposable(8);
-            
-            if (item != null && item is not Visual)
-            {
-                if (item is IListBoxItemData itemData)
-                {
-                    if (!listBoxItem.IsSet(ListBoxItem.ContentProperty))
-                    {
-                        listBoxItem.SetCurrentValue(ListBoxItem.ContentProperty, item);
-                    }
-                    disposables.Add(BindUtils.RelayBind(itemData, nameof(IListBoxItemData.IsEnabled), listBoxItem, ListBoxItem.IsEnabledProperty, BindingMode.TwoWay));
-                    disposables.Add(BindUtils.RelayBind(itemData, nameof(IListBoxItemData.IsSelected), listBoxItem, ListBoxItem.IsSelectedProperty, BindingMode.TwoWay));
-                }
-            }
             
             if (ItemTemplate != null)
             {
@@ -387,7 +387,7 @@ public class ListBox : AvaloniaListBox,
             disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, listBoxItem, ListBoxItem.FilterHighlightForegroundProperty));
             
             PrepareListBoxItem(listBoxItem, item, index, disposables);
-            
+
             if (_itemsBindingDisposables.TryGetValue(listBoxItem, out var oldDisposables))
             {
                 oldDisposables.Dispose();
@@ -573,4 +573,5 @@ public class ListBox : AvaloniaListBox,
         
         base.OnKeyDown(e);
     }
+    
 }

@@ -6,4 +6,11 @@
     <ControlTheme.BasedOn>
         <atom:ListBoxItemTheme TargetType="atom:CandidateListItem" />
     </ControlTheme.BasedOn>
+    
+    <Style Selector="^:is(atom|CandidateListItem)">
+        <Style Selector="^[IsSelected=False][IsCandidateSelected=True]">
+            <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
+        </Style>
+    </Style>
+    
 </ControlTheme>

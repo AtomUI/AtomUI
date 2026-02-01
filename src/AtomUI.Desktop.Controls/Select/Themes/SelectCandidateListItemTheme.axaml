@@ -10,6 +10,7 @@
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
             <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionFontSize}}"/>
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionHeight}}"/>
             <Style Selector="^[IsSelected=False][IsCandidateSelected=True]">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemHoverBgColor}}" />
             </Style>

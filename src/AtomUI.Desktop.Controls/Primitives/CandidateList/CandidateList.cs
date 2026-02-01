@@ -1,4 +1,8 @@
+using System.Reactive.Disposables;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -12,12 +16,50 @@ public class CandidateList : ListBox, ICandidateList
     public static readonly StyledProperty<bool> IsCandidateItemNavigationEnabledProperty =
         AvaloniaProperty.Register<CandidateList, bool>(nameof(IsCandidateItemNavigationEnabled), true);
     
+    public static readonly DirectProperty<CandidateList, object?> CandidateSelectedItemProperty =
+        AvaloniaProperty.RegisterDirect<CandidateList, object?>(
+            nameof(CandidateSelectedItem),
+            o => o.CandidateSelectedItem,
+            (o, v) => o.CandidateSelectedItem = v,
+            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+    
+    public static readonly DirectProperty<CandidateList, int> CandidateSelectedIndexProperty =
+        AvaloniaProperty.RegisterDirect<CandidateList, int>(
+            nameof(CandidateSelectedIndex),
+            o => o.CandidateSelectedIndex,
+            (o, v) => o.CandidateSelectedIndex = v,
+            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+    
+    public static readonly StyledProperty<int> MaxCountProperty =
+        AvaloniaProperty.Register<CandidateList, int>(nameof(MaxCount), int.MaxValue);
+    
     public bool IsCandidateItemNavigationEnabled
     {
         get => GetValue(IsCandidateItemNavigationEnabledProperty);
         set => SetValue(IsCandidateItemNavigationEnabledProperty, value);
     }
 
+    private object? _candidateSelectedItem;
+
+    public object? CandidateSelectedItem
+    {
+        get => _candidateSelectedItem;
+        set => SetAndRaise(CandidateSelectedItemProperty, ref _candidateSelectedItem, value);
+    }
+
+    private int _candidateSelectedIndex = -1;
+
+    public int CandidateSelectedIndex
+    {
+        get => _candidateSelectedIndex;
+        set => SetAndRaise(CandidateSelectedIndexProperty, ref _candidateSelectedIndex, value);
+    }
+    
+    public int MaxCount
+    {
+        get => GetValue(MaxCountProperty);
+        set => SetValue(MaxCountProperty, value);
+    }
     #endregion
     
     #region 公共事件定义
@@ -43,10 +85,136 @@ public class CandidateList : ListBox, ICandidateList
         remove => RemoveHandler(CancelEvent, value);
     }
     #endregion
+    
+    private static readonly FuncTemplate<Panel?> DefaultPanel = new(() => new CandidateVirtualizingStackPanel());
 
     static CandidateList()
     {
         SelectedItemProperty.Changed.AddClassHandler<CandidateList>((list, args) => list.HandleSelectItemChanged(args));
+        CandidateSelectedIndexProperty.Changed.AddClassHandler<CandidateList>((list, args) => list.HandleCandidateSelectedIndexChanged(args));
+        CandidateSelectedItemProperty.Changed.AddClassHandler<CandidateList>((list, args) => list.HandleCandidateSelectedItemChanged(args));
+        SelectionChangedEvent.AddClassHandler<CandidateList>((list, args) => list.HandleSelectionChanged());
+        
+        ItemsPanelProperty.OverrideDefaultValue<CandidateList>(DefaultPanel);
+    }
+    
+    private void HandleSelectionChanged()
+    {
+        if (!IsSingleMode())
+        {
+            ConfigureOptionsForMaxCount();
+        }
+    }
+    
+    private void ConfigureOptionsForMaxCount()
+    {
+        if (SelectedItems?.Count >= MaxCount)
+        {
+            for (var i = 0; i < ItemCount; i++)
+            {
+                var item      = Items[i];
+                var container = ContainerFromIndex(i);
+                if (!SelectedItems.Contains(item))
+                {
+                    container?.SetCurrentValue(IsEnabledProperty, false);
+                }
+                else
+                {
+                    container?.SetCurrentValue(IsEnabledProperty, true);
+                }
+            }
+        }
+        else
+        {
+            for (var i = 0; i < ItemCount; i++)
+            {
+                var item      = Items[i];
+                var container = ContainerFromIndex(i);
+                if (item is ISelectOption selectOption)
+                {
+                    container?.SetCurrentValue(IsEnabledProperty, selectOption.IsEnabled);
+                }
+            }
+        }
+    }
+    
+    private void HandleCandidateSelectedIndexChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        var oldIndex = e.GetOldValue<int>();
+        var newIndex = e.GetNewValue<int>();
+        if (newIndex == -1)
+        {
+            if (ContainerFromIndex(oldIndex) is SelectCandidateListItem listItem)
+            {
+                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+            }
+        }
+        else
+        {
+            TrySetCandidateItemSelected(newIndex);
+        }
+    }
+    
+    private void HandleCandidateSelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue == null)
+        {
+            if (e.OldValue != null && ContainerFromItem(e.OldValue) is SelectCandidateListItem listItem)
+            {
+                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+            }
+        }
+        else
+        {
+            TrySetCandidateItemSelected(e.NewValue);
+        }
+    }
+    
+    public bool TrySetCandidateItemSelected(object item)
+    {
+        if (item is IGroupListItemData groupListItemData && groupListItemData.IsGroupItem)
+        {
+            return false;
+        }
+        
+        var index = Items.IndexOf(item);
+        if (index == -1)
+        {
+            return false;
+        }
+
+        return TrySetCandidateItemSelected(index);
+    }
+    
+    public bool TrySetCandidateItemSelected(int index)
+    {
+        if (index < 0 || index > ItemCount - 1)
+        {
+            return false;
+        }
+        
+        if (ItemsPanelRoot is CandidateVirtualizingStackPanel virtualizingStackPanel)
+        {
+            virtualizingStackPanel.ScrollCandidateItemIntoView(index);
+        }
+
+        for (var i = 0; i < ItemCount; i++)
+        {
+            if (ContainerFromIndex(i) is SelectCandidateListItem childContainer)
+            {
+                if (i == index)
+                {
+                    childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, true);
+                    SetCurrentValue(CandidateSelectedItemProperty, Items[i]);
+                    SetCurrentValue(CandidateSelectedIndexProperty, i);
+                }
+                else
+                {
+                    childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                }
+            }
+        }
+        return true;
     }
     
     private void ResetScrollViewer()
@@ -63,17 +231,26 @@ public class CandidateList : ListBox, ICandidateList
         switch (e.Key)
         {
             case Key.Enter:
-                HandleCommit();
+                if (IsSingleMode())
+                {
+                    HandleSingleModeCommit();
+                }
+                else
+                {
+                    HandleMultiModeCommit();
+                }
+                
                 e.Handled = true;
                 break;
 
             case Key.Up:
-                SelectPreviousItem();
+                SelectPreviousCandidateItem();
                 e.Handled = true;
                 break;
 
             case Key.Down:
-                SelectNextItem();
+                SelectNextCandidateItem();
+             
                 e.Handled = true;
                 break;
 
@@ -87,10 +264,46 @@ public class CandidateList : ListBox, ICandidateList
         }
     }
 
-    private void HandleCommit()
+    private void HandleSingleModeCommit()
     {
         NotifyCommit();
         ClearState();
+    }
+    
+    private void HandleMultiModeCommit()
+    {
+        if (CandidateSelectedItem != null)
+        {
+            if (ContainerFromItem(CandidateSelectedItem) is CandidateListItem listItem)
+            {
+                UpdateSelection(listItem, !listItem.IsSelected, false,
+                    true);
+            }
+        }
+    }
+    
+    protected virtual void SelectPreviousCandidateItem()
+    {
+        if (_candidateSelectedIndex == -1)
+        {
+            CandidateSelectedIndex = SelectedIndex != -1 ? FindNextEnabledIndex(SelectedIndex, -1) : ItemCount - 1;
+        }
+        else
+        {
+            CandidateSelectedIndex = FindNextEnabledIndex(CandidateSelectedIndex, -1);
+        }
+    }
+    
+    protected virtual void SelectNextCandidateItem()
+    {
+        if (_candidateSelectedIndex == -1)
+        {
+            CandidateSelectedIndex = SelectedIndex != -1 ? FindNextEnabledIndex(SelectedIndex, 1) : 0;
+        }
+        else
+        {
+            CandidateSelectedIndex = FindNextEnabledIndex(CandidateSelectedIndex, 1);
+        }
     }
 
     protected virtual void NotifyCommit()
@@ -126,37 +339,17 @@ public class CandidateList : ListBox, ICandidateList
 
     private void ClearState()
     {
+        SelectedItems = null;
         SelectedItem  = null;
         SelectedIndex = -1;
     }
     
-    protected virtual void SelectPreviousItem()
-    {
-        if (SelectedIndex == -1)
-        {
-            SelectedIndex = ItemCount - 1;
-        }
-        else
-        {
-            SelectedIndex = FindNextEnabledIndex(SelectedIndex, -1);
-        }
-    }
-    
-    protected virtual void SelectNextItem()
-    {
-        if (SelectedIndex == -1)
-        {
-            SelectedIndex = 0;
-        }
-        else
-        {
-            SelectedIndex = FindNextEnabledIndex(SelectedIndex, 1);
-        }
-    }
-    
     protected override void NotifyListBoxItemClicked(ListBoxItem item)
     {
-        NotifyCommit();
+        if (IsSingleMode())
+        {
+            NotifyCommit();
+        }
     }
     
     private int FindNextEnabledIndex(int startIndex, int delta)
@@ -197,4 +390,68 @@ public class CandidateList : ListBox, ICandidateList
             }
         }
     }
+    
+    private bool IsSingleMode()
+    {
+        return SelectionMode.HasFlag(SelectionMode.Single) && !SelectionMode.HasFlag(SelectionMode.Multiple);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == MaxCountProperty || 
+            change.Property == SelectedItemsProperty)
+        {
+            ConfigureOptionsForMaxCount();
+        }
+
+        if (change.Property == SelectedItemsProperty)
+        {
+            ConfigureEmptyIndicator();
+        }
+        if (change.Property == ItemFilterValueProperty ||
+            change.Property == ItemFilterProperty)
+        {
+            CandidateSelectedIndex = -1;
+            CandidateSelectedItem  = null;
+        }
+    }
+    
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        var listItem = new CandidateListItem();
+        NotifyContainerForItemCreated(listItem, item);
+        return listItem;
+    }
+    
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        return NeedsContainer<CandidateListItem>(item, out recycleKey);
+    }
+
+    protected override void PrepareListBoxItem(ListBoxItem listBoxItem, object? item, int index, CompositeDisposable disposables)
+    {
+        base.PrepareListBoxItem(listBoxItem, item, index, disposables);
+        if (listBoxItem is CandidateListItem candidateListItem)
+        {
+            if (CandidateSelectedIndex != -1)
+            {
+                candidateListItem.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, index == CandidateSelectedIndex);
+            }
+        }
+    }
+
+    protected override void ClearContainerForItemOverride(Control element)
+    {
+        if (element is CandidateListItem listItem)
+        {
+            listItem.ClearValue(CandidateListItem.IsCandidateSelectedProperty);
+        }
+    }
+    
+    protected override void ConfigureEmptyIndicator()
+    {
+        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (ItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
+    }
+    
 }

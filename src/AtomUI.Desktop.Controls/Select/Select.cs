@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Diagnostics;
 using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Data;

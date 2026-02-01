@@ -7,7 +7,6 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -345,7 +344,13 @@ public class ListBox : AvaloniaListBox,
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var listBoxItem = new ListBoxItem();
-        if (item != null && item is not Visual)
+        NotifyContainerForItemCreated(listBoxItem, item);
+        return listBoxItem;
+    }
+    
+    protected virtual void NotifyContainerForItemCreated(Control container, object? item)
+    {
+        if (container is ListBoxItem listBoxItem && item != null && item is not Visual)
         {
             if (item is IListBoxItemData itemData)
             {
@@ -357,7 +362,6 @@ public class ListBox : AvaloniaListBox,
                 listBoxItem.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
             }
         }
-        return listBoxItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)

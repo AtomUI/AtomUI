@@ -110,6 +110,4 @@ internal class GroupableListView : ListBox
         }
         base.ClearContainerForItemOverride(element);
     }
-    
-    
 }

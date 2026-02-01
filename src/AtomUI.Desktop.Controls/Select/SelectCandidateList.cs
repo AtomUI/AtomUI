@@ -4,6 +4,7 @@ using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -13,6 +14,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SelectCandidateList : List, ICandidateList
 {
+    private static readonly FuncTemplate<Panel?> DefaultPanel = new(() => new CandidateVirtualizingStackPanel());
+    
     #region 公共属性定义
     
     public static readonly DirectProperty<SelectCandidateList, object?> CandidateSelectedItemProperty =
@@ -116,6 +119,8 @@ internal class SelectCandidateList : List, ICandidateList
         CandidateSelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedItemChanged(args));
         AffectsArrange<SelectCandidateList>(IsHideSelectedOptionsProperty);
         SelectionChangedEvent.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectionChanged());
+        
+        ItemsPanelProperty.OverrideDefaultValue<SelectCandidateList>(DefaultPanel);
     }
 
     protected override void OnInitialized()
@@ -362,8 +367,9 @@ internal class SelectCandidateList : List, ICandidateList
                     return -1;
                 }
             }
-
-            if (ListView.ContainerFromIndex(index) is SelectCandidateListItem listItem && listItem.IsEnabled)
+            
+            var container = ListView.ContainerFromIndex(index);
+            if (container == null || container is SelectCandidateListItem listItem && listItem.IsEnabled)
             {
                 return index;
             }
@@ -469,28 +475,14 @@ internal class SelectCandidateList : List, ICandidateList
         {
             return false;
         }
-
-        for (var i = 0; i < ItemCount; i++)
+        
+        var index = ListView.Items.IndexOf(item);
+        if (index == -1)
         {
-            var childItem = ListView.Items[i];
-            if (childItem != null)
-            {
-                if (ListView.ContainerFromItem(childItem) is SelectCandidateListItem childContainer)
-                {
-                    if (childItem == item)
-                    {
-                        childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, true);
-                        SetCurrentValue(CandidateSelectedItemProperty, childItem);
-                        SetCurrentValue(CandidateSelectedIndexProperty, i);
-                    }
-                    else
-                    {
-                        childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
-                    }
-                }
-            }
+            return false;
         }
-        return true;
+
+        return TrySetCandidateItemSelected(index);
     }
     
     public bool TrySetCandidateItemSelected(int index)
@@ -503,13 +495,29 @@ internal class SelectCandidateList : List, ICandidateList
         {
             return false;
         }
-
-        var item = ListView.Items[index];
-        if (item == null)
+        
+        if (ListView.ItemsPanelRoot is CandidateVirtualizingStackPanel virtualizingStackPanel)
         {
-            return false;
+            virtualizingStackPanel.ScrollCandidateItemIntoView(index);
         }
-        return TrySetCandidateItemSelected(item);
+
+        for (var i = 0; i < ListView.ItemCount; i++)
+        {
+            if (ListView.ContainerFromIndex(i) is SelectCandidateListItem childContainer)
+            {
+                if (i == index)
+                {
+                    childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, true);
+                    SetCurrentValue(CandidateSelectedItemProperty, ListView.Items[i]);
+                    SetCurrentValue(CandidateSelectedIndexProperty, i);
+                }
+                else
+                {
+                    childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                }
+            }
+        }
+        return true;
     }
     
     internal override bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
@@ -593,4 +601,5 @@ internal class SelectCandidateList : List, ICandidateList
         
         return base.ArrangeOverride(finalSize);
     }
+    
 }

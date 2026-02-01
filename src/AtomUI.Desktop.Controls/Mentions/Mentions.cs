@@ -495,7 +495,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     private ICandidateList? _candidateList;
     private DispatcherTimer? _delayTimer;
     private List<IMentionOption>? _items;
-    private AvaloniaList<IMentionOption>? _view;
+    private IList<IMentionOption>? _view;
     private bool _cancelRequested;
     private bool _filterInAction;
     private bool _popupHasOpened;
@@ -587,14 +587,6 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         
         // Clear and set the view on the selection adapter
         ClearView();
-        if (CandidateList != null && CandidateList.ItemsSource != _view)
-        {
-            CandidateList.ItemsSource = _view;
-        }
-        if (IsDropDownOpen)
-        {
-            RefreshView();
-        }
     }
 
     private void HandleOptionFilterValueChanged()
@@ -884,14 +876,6 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         // Fire the Populated event containing the read-only view data.
         var populated = new MentionsPopulatedEventArgs(_view);
         NotifyPopulated(populated);
-        
-        if (CandidateList != null)
-        {
-            if (CandidateList.ItemsSource != _view)
-            {
-                CandidateList.ItemsSource = _view;
-            }
-        }
     }
     
     protected virtual void NotifyPopulating(MentionsPopulatingEventArgs e)
@@ -1154,8 +1138,7 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     
     private void ClearView()
     {
-        _view?.Clear();
-        _view ??= new AvaloniaList<IMentionOption>();
+        _view = null;
     }
     
     private void RefreshView()
@@ -1201,12 +1184,18 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
                 }
             }
         
-            _view?.Clear();
-            _view?.AddRange(newViewItems);
-
-            if (newViewItems.Count > 0)
+            _view = newViewItems;
+            
+            if (_candidateList != null)
             {
-                CandidateList!.SelectedItem = newViewItems.First();
+                if (_candidateList.ItemsSource != _view)
+                {
+                    _candidateList.ItemsSource = _view;
+                }
+            }
+            if (_candidateList != null && _view?.Count > 0)
+            {
+                _candidateList.SelectedItem = _view.First();
             }
         }
         finally

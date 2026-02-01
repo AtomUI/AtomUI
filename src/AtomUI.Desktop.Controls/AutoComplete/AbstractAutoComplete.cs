@@ -1171,11 +1171,11 @@ public class AbstractAutoComplete : TemplatedControl,
             
             _view = newViewItems;
             
-            if (CandidateList != null)
+            if (_candidateList != null)
             {
-                if (CandidateList.ItemsSource != _view)
+                if (_candidateList.ItemsSource != _view)
                 {
-                    CandidateList.ItemsSource = _view;
+                    _candidateList.ItemsSource = _view;
                 }
             }
         }
@@ -1444,7 +1444,7 @@ public class AbstractAutoComplete : TemplatedControl,
     
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        // SetCurrentValue(IsDropDownOpenProperty, false);
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     private void PopupCloseAction(Popup popup)

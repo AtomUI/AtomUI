@@ -2,9 +2,9 @@ namespace AtomUI.Desktop.Controls;
 
 public class MentionsPopulatedEventArgs
 {
-    public IReadOnlyList<IMentionOption>? Data { get; init; }
+    public IList<IMentionOption>? Data { get; init; }
     
-    public MentionsPopulatedEventArgs(IReadOnlyList<IMentionOption>? data)
+    public MentionsPopulatedEventArgs(IList<IMentionOption>? data)
     {
         Data = data;
     }

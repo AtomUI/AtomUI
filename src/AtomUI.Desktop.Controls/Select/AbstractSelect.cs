@@ -643,7 +643,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        //SetCurrentValue(IsDropDownOpenProperty, false);
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

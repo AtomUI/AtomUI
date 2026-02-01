@@ -130,7 +130,7 @@ public class CandidateList : ListBox, ICandidateList
             {
                 var item      = Items[i];
                 var container = ContainerFromIndex(i);
-                if (item is ISelectOption selectOption)
+                if (item is IListBoxItemData selectOption)
                 {
                     container?.SetCurrentValue(IsEnabledProperty, selectOption.IsEnabled);
                 }
@@ -144,9 +144,9 @@ public class CandidateList : ListBox, ICandidateList
         var newIndex = e.GetNewValue<int>();
         if (newIndex == -1)
         {
-            if (ContainerFromIndex(oldIndex) is SelectCandidateListItem listItem)
+            if (ContainerFromIndex(oldIndex) is CandidateListItem listItem)
             {
-                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                listItem.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, false);
             }
         }
         else
@@ -159,9 +159,9 @@ public class CandidateList : ListBox, ICandidateList
     {
         if (e.NewValue == null)
         {
-            if (e.OldValue != null && ContainerFromItem(e.OldValue) is SelectCandidateListItem listItem)
+            if (e.OldValue != null && ContainerFromItem(e.OldValue) is CandidateListItem listItem)
             {
-                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                listItem.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, false);
             }
         }
         else
@@ -172,11 +172,6 @@ public class CandidateList : ListBox, ICandidateList
     
     public bool TrySetCandidateItemSelected(object item)
     {
-        if (item is IGroupListItemData groupListItemData && groupListItemData.IsGroupItem)
-        {
-            return false;
-        }
-        
         var index = Items.IndexOf(item);
         if (index == -1)
         {
@@ -200,17 +195,17 @@ public class CandidateList : ListBox, ICandidateList
 
         for (var i = 0; i < ItemCount; i++)
         {
-            if (ContainerFromIndex(i) is SelectCandidateListItem childContainer)
+            if (ContainerFromIndex(i) is CandidateListItem childContainer)
             {
                 if (i == index)
                 {
-                    childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, true);
+                    childContainer.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, true);
                     SetCurrentValue(CandidateSelectedItemProperty, Items[i]);
                     SetCurrentValue(CandidateSelectedIndexProperty, i);
                 }
                 else
                 {
-                    childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, false);
+                    childContainer.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, false);
                 }
             }
         }
@@ -308,6 +303,10 @@ public class CandidateList : ListBox, ICandidateList
 
     protected virtual void NotifyCommit()
     {
+        if (CandidateSelectedItem != null)
+        {
+            SetCurrentValue(SelectedItemProperty, CandidateSelectedItem);
+        }
         RaiseEvent(new RoutedEventArgs(CommitEvent)
         {
             Source = this,
@@ -415,6 +414,7 @@ public class CandidateList : ListBox, ICandidateList
             CandidateSelectedIndex = -1;
             CandidateSelectedItem  = null;
         }
+        
     }
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -428,7 +428,7 @@ public class CandidateList : ListBox, ICandidateList
     {
         return NeedsContainer<CandidateListItem>(item, out recycleKey);
     }
-
+    
     protected override void PrepareListBoxItem(ListBoxItem listBoxItem, object? item, int index, CompositeDisposable disposables)
     {
         base.PrepareListBoxItem(listBoxItem, item, index, disposables);
@@ -440,9 +440,10 @@ public class CandidateList : ListBox, ICandidateList
             }
         }
     }
-
+    
     protected override void ClearContainerForItemOverride(Control element)
     {
+        base.ClearContainerForItemOverride(element);
         if (element is CandidateListItem listItem)
         {
             listItem.ClearValue(CandidateListItem.IsCandidateSelectedProperty);
@@ -454,4 +455,10 @@ public class CandidateList : ListBox, ICandidateList
         SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (ItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
     }
     
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        CandidateSelectedIndex = -1;
+        CandidateSelectedItem  = null;
+    }
 }

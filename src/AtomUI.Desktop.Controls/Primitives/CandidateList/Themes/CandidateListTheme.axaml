@@ -10,7 +10,6 @@
     <Style Selector="^:is(atom|CandidateList)">
         <Setter Property="IsBorderless" Value="True"/>
         <Setter Property="IsShowSelectedIndicator" Value="False"/>
-        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverBgColor}}" />
     </Style>
     
 </ControlTheme>

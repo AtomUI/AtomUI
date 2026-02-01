@@ -611,7 +611,7 @@ public class AbstractAutoComplete : TemplatedControl,
     private protected DispatcherTimer? _delayTimer;
     private protected List<IAutoCompleteOption>? _items;
     private protected AvaloniaTextBox? _textBox;
-    private protected AvaloniaList<IAutoCompleteOption>? _view;
+    private protected IList<IAutoCompleteOption>? _view;
     private protected ICandidateList? _candidateList;
     private protected Popup? _popup;
     private protected bool _ignorePopupClose;
@@ -650,7 +650,6 @@ public class AbstractAutoComplete : TemplatedControl,
     public AbstractAutoComplete()
     {
         this.RegisterResources();
-        ClearView();
     }
 
     protected override void OnInitialized()
@@ -940,6 +939,7 @@ public class AbstractAutoComplete : TemplatedControl,
     
     private void HandleItemsSourceChanged(IEnumerable? newValue)
     {
+        
         // Remove handler for oldValue.CollectionChanged (if present)
         _collectionChangeSubscription?.Dispose();
         _collectionChangeSubscription = null;
@@ -955,14 +955,6 @@ public class AbstractAutoComplete : TemplatedControl,
         
         // Clear and set the view on the selection adapter
         ClearView();
-        if (CandidateList != null && CandidateList.ItemsSource != _view)
-        {
-            CandidateList.ItemsSource = _view;
-        }
-        if (IsDropDownOpen)
-        {
-            RefreshView();
-        }
     }
     
     private void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -998,7 +990,7 @@ public class AbstractAutoComplete : TemplatedControl,
             for (int index = 0; index < e.OldItems.Count; index++)
             {
                 var oldItem = e.OldItems[index] as IAutoCompleteOption;
-                _view!.Remove(oldItem!);
+                _view?.Remove(oldItem!);
             }
         }
 
@@ -1113,8 +1105,7 @@ public class AbstractAutoComplete : TemplatedControl,
     
     protected void ClearView()
     {
-        _view?.Clear();
-        _view ??= new AvaloniaList<IAutoCompleteOption>();
+        _view = null;
     }
     
     private void RefreshView()
@@ -1177,14 +1168,16 @@ public class AbstractAutoComplete : TemplatedControl,
                     newViewItems.Add(item);
                 }
             }
-        
-            _view?.Clear();
-            _view?.AddRange(newViewItems);
-            Dispatcher.UIThread.Post(() =>
+            
+            _view = newViewItems;
+            
+            if (CandidateList != null)
             {
-                var selectedItem = TryGetMatch(Value, _view, ValueFilterFactory.BuildFilter(ValueFilterMode.EqualsCaseSensitive));
-                CandidateList!.SelectedItem = selectedItem;
-            });
+                if (CandidateList.ItemsSource != _view)
+                {
+                    CandidateList.ItemsSource = _view;
+                }
+            }
         }
         finally
         {
@@ -1451,7 +1444,7 @@ public class AbstractAutoComplete : TemplatedControl,
     
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        SetCurrentValue(IsDropDownOpenProperty, false);
+        // SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     private void PopupCloseAction(Popup popup)
@@ -1499,6 +1492,8 @@ public class AbstractAutoComplete : TemplatedControl,
             parent.GetObservable(IsVisibleProperty).Subscribe(HandleIsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
         }
         NotifyDropDownOpened(EventArgs.Empty);
+        var selectedItem = TryGetMatch(Value, _view, ValueFilterFactory.BuildFilter(ValueFilterMode.EqualsCaseSensitive));
+        CandidateList!.SelectedItem = selectedItem;
     }
     
     private void HandlePopupClosed(object? sender, EventArgs e)
@@ -1620,14 +1615,6 @@ public class AbstractAutoComplete : TemplatedControl,
         var populated = new CompletePopulatedEventArgs(_view);
         NotifyPopulated(populated);
         
-        if (CandidateList != null)
-        {
-            if (CandidateList.ItemsSource != _view)
-            {
-                CandidateList.ItemsSource = _view;
-            }
-        }
-        
         bool isDropDownOpen = _userCalledPopulate && (_view!.Count > 0);
         if (isDropDownOpen != IsDropDownOpen)
         {
@@ -1656,7 +1643,7 @@ public class AbstractAutoComplete : TemplatedControl,
         // line with WPF's ComboBox lookup. When in use it will associate
         // a Value with the Text if it is found in ItemsSource. This is
         // only valid when there is data and the user initiated the action.
-        if (_view!.Count > 0)
+        if (_view?.Count > 0)
         {
             if (IsCompletionEnabled && TextBox != null && userInitiated)
             {
@@ -1725,7 +1712,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private IAutoCompleteOption? TryGetMatch(string? filterValue, AvaloniaList<IAutoCompleteOption>? view, IValueFilter? predicate)
+    private IAutoCompleteOption? TryGetMatch(string? filterValue, IList<IAutoCompleteOption>? view, IValueFilter? predicate)
     {
         if (predicate is null)
         {
@@ -1736,13 +1723,10 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             foreach (var option in view)
             {
-                if (option != null)
+                var value = GetValueByOption(option);
+                if (predicate.Filter(value, filterValue))
                 {
-                    var value = GetValueByOption(option);
-                    if (predicate.Filter(value, filterValue))
-                    {
-                        return option;
-                    }
+                    return option;
                 }
             }
         }
@@ -1797,6 +1781,7 @@ public class AbstractAutoComplete : TemplatedControl,
         UpdateValue(FilterValue);
         // Completion will update the selected value
         UpdateTextCompletion(false);
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
     
     protected virtual void ConfigurePopupMinWith(double selectWidth)
@@ -1872,4 +1857,5 @@ public class AbstractAutoComplete : TemplatedControl,
         PseudoClasses.Set(StdPseudoClass.Pressed, false);
         base.OnPointerReleased(e);
     }
+    
 }

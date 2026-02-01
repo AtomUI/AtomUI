@@ -10,6 +10,7 @@ public interface ICandidateList
     event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
     object? SelectedItem { get; set; }
     IList? SelectedItems { get; set; }
+    public object? CandidateSelectedItem { get; set; }
     IEnumerable? ItemsSource { get; set; }
     event EventHandler<RoutedEventArgs>? Commit;
     event EventHandler<RoutedEventArgs>? Cancel;

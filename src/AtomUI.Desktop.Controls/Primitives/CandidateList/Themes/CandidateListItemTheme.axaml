@@ -11,6 +11,10 @@
         <Style Selector="^[IsSelected=False][IsCandidateSelected=True]">
             <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
         </Style>
+        
+        <Style Selector="^[IsSelected=True]">
+            <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
+        </Style>
     </Style>
     
 </ControlTheme>

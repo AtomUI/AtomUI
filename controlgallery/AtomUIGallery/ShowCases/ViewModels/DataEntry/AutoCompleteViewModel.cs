@@ -89,6 +89,7 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
         }
         return new CompleteOptionsLoadResult()
         {
+            StatusCode = RpcStatusCode.Success,
             Data = data
         };
     }

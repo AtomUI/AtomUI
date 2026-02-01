@@ -2,9 +2,9 @@ namespace AtomUI.Desktop.Controls;
 
 public class CompletePopulatedEventArgs : EventArgs
 {
-    public IReadOnlyList<IAutoCompleteOption>? Data { get; init; }
+    public IList<IAutoCompleteOption>? Data { get; init; }
     
-    public CompletePopulatedEventArgs(IReadOnlyList<IAutoCompleteOption>? data)
+    public CompletePopulatedEventArgs(IList<IAutoCompleteOption>? data)
     {
         Data = data;
     }

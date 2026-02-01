@@ -1,5 +1,3 @@
-using Avalonia;
-
 namespace AtomUI.Desktop.Controls;
 
 public interface ISelectOption : IListBoxItemData, IGroupHeader
@@ -8,20 +6,9 @@ public interface ISelectOption : IListBoxItemData, IGroupHeader
     bool IsDynamicAdded { get; }
 }
 
-public class SelectOption : ListBoxItemData, ISelectOption, IGroupListItemData
+public record SelectOption : ListBoxItemData, ISelectOption, IGroupListItemData
 {
-    public static readonly DirectProperty<SelectOption, object?> HeaderProperty =
-        AvaloniaProperty.RegisterDirect<SelectOption, object?>(nameof(Header),
-            o => o.Header,
-            (o, v) => o.Header = v);
-    
-    private object? _header;
-
-    public object? Header
-    {
-        get => _header;
-        set => SetAndRaise(HeaderProperty, ref _header, value);
-    }
+    public object? Header { get; init; }
     
     public bool IsDynamicAdded { get; init; } = false;
     

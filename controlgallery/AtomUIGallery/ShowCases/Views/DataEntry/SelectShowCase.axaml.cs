@@ -109,10 +109,10 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
     }
 }
 
-public class CustomOption : SelectOption
+public record CustomOption : SelectOption
 {
-    public string? Description { get; set; }
-    public string? Emoji { get; set; }
+    public string? Description { get; init; }
+    public string? Emoji { get; init; }
 }
 
 public class CustomFilter : IValueFilter

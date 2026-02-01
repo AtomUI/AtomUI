@@ -10,7 +10,7 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// <summary>
     /// GroupDescription used to define how to group the items
     /// </summary>
-    private ListGroupDescription? _groupBy;
+    private IListGroupDescription? _groupBy;
 
     /// <summary>
     /// Parent group of this ListCollectionViewGroupInternal
@@ -32,7 +32,7 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
 
     internal int FullCount { get; set; }
 
-    internal override ListGroupDescription? GroupBy
+    internal override IListGroupDescription? GroupBy
     {
         get => _groupBy;
         set
@@ -363,8 +363,8 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
 
         if (parent != null)
         {
-            ListGroupDescription? groupBy = parent.GroupBy;
-            int                   index   = parent.ProtectedItems.IndexOf(group);
+            IListGroupDescription? groupBy = parent.GroupBy;
+            int                    index   = parent.ProtectedItems.IndexOf(group);
 
             // remove the subgroup unless it is one of the explicit groups
             if (index >= groupBy?.GroupKeys.Count)

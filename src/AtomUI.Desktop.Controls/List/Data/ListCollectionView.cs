@@ -158,19 +158,9 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// <summary>
     /// Gets the description of grouping, indexed by level.
     /// </summary>
-    public AvaloniaList<ListGroupDescription> GroupDescriptions => _group.GroupDescriptions;
+    public AvaloniaList<IListGroupDescription> GroupDescriptions => _group.GroupDescriptions;
 
     int IListCollectionView.GroupingDepth => GroupDescriptions.Count;
-
-    string IListCollectionView.GetGroupingPropertyNameAtDepth(int level)
-    {
-        var groups = GroupDescriptions;
-        if (level >= 0 && level < groups.Count)
-        {
-            return groups[level].PropertyName;
-        }
-        return string.Empty;
-    }
 
     /// <summary>
     /// Gets the top-level groups, constructed according to the descriptions

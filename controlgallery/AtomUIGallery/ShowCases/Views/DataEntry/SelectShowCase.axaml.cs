@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using AtomUI;
+using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
 using ReactiveUI;
@@ -22,22 +22,9 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
             }
         });
         InitializeComponent();
-        CustomSearchSelect.FilterFn = CustomFilter;
+        CustomSearchSelect.Filter = new CustomFilter();
     }
-
-    public static bool CustomFilter(object value, object filterValue)
-    {
-        // 使用大小写敏感的搜索
-        var valueStr = value.ToString();
-        Debug.Assert(valueStr != null);
-        var filterStr = filterValue.ToString();
-        if (filterStr == null)
-        {
-            return false;
-        }
-        return valueStr.Contains(filterStr, StringComparison.Ordinal);
-    }
-
+    
     private void InitializeBasicOptions(SelectViewModel viewModel)
     {
         viewModel.BasicSelectedOptions = [
@@ -126,4 +113,16 @@ public class CustomOption : SelectOption
 {
     public string? Description { get; set; }
     public string? Emoji { get; set; }
+}
+
+public class CustomFilter : IValueFilter
+{
+    public bool Filter(object? value, object? filterValue)
+    {
+        if (value is string valueStr && filterValue is string filterValueStr)
+        {
+            return valueStr.Contains(filterValueStr, StringComparison.Ordinal);
+        }
+        return false;
+    }
 }

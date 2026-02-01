@@ -21,7 +21,8 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public delegate object? GroupPropertySelector(object data);
+public delegate object? ListGroupPropertySelector(object data);
+public delegate object? ListFilterPropertySelector(object data);
 
 public class List : TemplatedControl,
                     ISizeTypeAware,
@@ -70,8 +71,8 @@ public class List : TemplatedControl,
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         AvaloniaProperty.Register<List, bool>(nameof(IsGroupEnabled), false);
     
-    public static readonly StyledProperty<GroupPropertySelector?> GroupPropertySelectorProperty =
-        AvaloniaProperty.Register<List, GroupPropertySelector?>(
+    public static readonly StyledProperty<ListGroupPropertySelector?> GroupPropertySelectorProperty =
+        AvaloniaProperty.Register<List, ListGroupPropertySelector?>(
             nameof(GroupPropertySelector));
     
     public static readonly DirectProperty<List, int> SelectedIndexProperty =
@@ -188,7 +189,7 @@ public class List : TemplatedControl,
         set => SetValue(IsGroupEnabledProperty, value);
     }
     
-    public GroupPropertySelector? GroupPropertySelector
+    public ListGroupPropertySelector? GroupPropertySelector
     {
         get => GetValue(GroupPropertySelectorProperty);
         set => SetValue(GroupPropertySelectorProperty, value);
@@ -750,7 +751,7 @@ public class List : TemplatedControl,
             {
                 if (GroupPropertySelector != null)
                 {
-                    collectionView.GroupDescriptions.Add(new SelectorGroupDescription(GroupPropertySelector));
+                    collectionView.GroupDescriptions.Add(new ListGroupDescription(GroupPropertySelector));
                 }
             }
             else
@@ -769,7 +770,7 @@ public class List : TemplatedControl,
             {
                 if (GroupPropertySelector != null)
                 {
-                    collectionView.GroupDescriptions.Add(new SelectorGroupDescription(GroupPropertySelector));
+                    collectionView.GroupDescriptions.Add(new ListGroupDescription(GroupPropertySelector));
                 }
             }
         }

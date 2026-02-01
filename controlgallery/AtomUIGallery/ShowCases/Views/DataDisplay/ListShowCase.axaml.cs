@@ -293,8 +293,16 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         {
             FilteredList.CollectionView.FilterDescriptions.Add(new ListFilterDescription()
             {
-                PropertyPath     = "Content",
-                FilterConditions = ["a"]
+                FilterPropertySelector = data =>
+                {
+                    if (data is IListItemData listItemData)
+                    {
+                        return listItemData.Content;
+                    }
+
+                    return null;
+                },
+                FilterConditions       = ["a"]
             });
         }
     }

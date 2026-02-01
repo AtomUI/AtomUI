@@ -1,35 +1,28 @@
-using System.ComponentModel;
 using System.Globalization;
-using Avalonia.Collections;
 
 namespace AtomUI.Desktop.Controls.Data;
 
-public abstract class ListGroupDescription : INotifyPropertyChanged
+public class ListGroupDescription : AbstractListGroupDescription
 {
-    public AvaloniaList<object> GroupKeys { get; }
+    private ListGroupPropertySelector _propertySelector;
 
-    public ListGroupDescription()
+    public ListGroupDescription(ListGroupPropertySelector selector)
     {
-        GroupKeys = new AvaloniaList<object>();
-        GroupKeys.CollectionChanged += (sender, e) => OnPropertyChanged(new PropertyChangedEventArgs(nameof(GroupKeys)));
+        _propertySelector = selector;
     }
 
-    protected virtual event PropertyChangedEventHandler? PropertyChanged;
-    event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
+    public override object? GroupKeyFromItem(object item, int level, CultureInfo culture)
     {
-        add => PropertyChanged += value;
-        remove => PropertyChanged -= value;
+        return _propertySelector(item);
+    }
+
+    public override bool KeysMatch(object groupKey, object itemKey)
+    {
+        if (groupKey is string k1 && itemKey is string k2)
+        {
+            return string.Equals(k1, k2, StringComparison.Ordinal);
+        }
+        return base.KeysMatch(groupKey, itemKey);
     }
     
-    protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
-    {
-        PropertyChanged?.Invoke(this, e);
-    }
-
-    public virtual string PropertyName => string.Empty;
-    public abstract object? GroupKeyFromItem(object item, int level, CultureInfo culture);
-    public virtual bool KeysMatch(object groupKey, object itemKey)
-    {
-        return Equals(groupKey, itemKey);
-    }
 }

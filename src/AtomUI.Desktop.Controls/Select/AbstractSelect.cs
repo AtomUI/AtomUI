@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
+using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -422,6 +423,11 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             o => o.PopupPlacement,
             (o, v) => o.PopupPlacement = v);
     
+    internal static readonly DirectProperty<AbstractSelect, IValueFilter?> EffectiveFilterProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSelect, IValueFilter?>(nameof(EffectiveFilter),
+            o => o.EffectiveFilter,
+            (o, v) => o.EffectiveFilter = v);
+    
     private double _itemHeight;
 
     internal double ItemHeight
@@ -500,6 +506,14 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     {
         get => _popupPlacement;
         set => SetAndRaise(PopupPlacementProperty, ref _popupPlacement, value);
+    }
+    
+    private IValueFilter? _effectiveFilter;
+
+    internal IValueFilter? EffectiveFilter
+    {
+        get => _effectiveFilter;
+        set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
     }
     
     #endregion
@@ -629,7 +643,7 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
 
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
-        // SetCurrentValue(IsDropDownOpenProperty, false);
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

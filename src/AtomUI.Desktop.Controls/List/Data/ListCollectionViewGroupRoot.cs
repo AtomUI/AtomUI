@@ -21,12 +21,12 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <summary>
     /// Private accessor for the top level GroupDescription
     /// </summary>
-    private static ListGroupDescription? _topLevelGroupDescription;
+    private static IListGroupDescription? _topLevelGroupDescription;
 
     /// <summary>
     /// Private accessor for an ObservableCollection containing group descriptions
     /// </summary>
-    private readonly AvaloniaList<ListGroupDescription> _groupBy = new ();
+    private readonly AvaloniaList<IListGroupDescription> _groupBy = new ();
 
     /// <summary>
     /// Indicates whether the list of items (after applying the sort and filters, if any) 
@@ -64,7 +64,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <summary>
     /// Gets the description of grouping, indexed by level.
     /// </summary>
-    public virtual AvaloniaList<ListGroupDescription> GroupDescriptions => _groupBy;
+    public virtual AvaloniaList<IListGroupDescription> GroupDescriptions => _groupBy;
 
     /// <summary>
     /// Gets or sets the current IComparer being used
@@ -311,7 +311,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
         }
     }
 
-    public virtual Func<ListCollectionViewGroup, int, ListGroupDescription>? GroupBySelector { get; set; }
+    public virtual Func<ListCollectionViewGroup, int, IListGroupDescription>? GroupBySelector { get; set; }
 
     /// <summary>
     /// Returns the description of how to divide the given group into subgroups
@@ -319,9 +319,9 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <param name="group">CollectionViewGroup to get group description from</param>
     /// <param name="level">The level of grouping</param>
     /// <returns>GroupDescription of how to divide the given group</returns>
-    private ListGroupDescription? GetGroupDescription(ListCollectionViewGroup group, int level)
+    private IListGroupDescription? GetGroupDescription(ListCollectionViewGroup group, int level)
     {
-        ListGroupDescription?   result      = null;
+        IListGroupDescription?   result      = null;
         ListCollectionViewGroup? targetGroup = group;
         if (targetGroup == this)
         {
@@ -348,7 +348,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <param name="groupDescription">GroupDescription for the group</param>
     /// <param name="level">The level of grouping</param>
     /// <returns>Group names for the specified item</returns>
-    private object? GetGroupKey(object item, ListGroupDescription? groupDescription, int level)
+    private object? GetGroupKey(object item, IListGroupDescription? groupDescription, int level)
     {
         if (groupDescription != null)
         {
@@ -366,7 +366,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     private void InitializeGroup(ListCollectionViewGroupInternal group, int level, object? seedItem)
     {
         // set the group description for dividing the group into subgroups
-        ListGroupDescription? groupDescription = GetGroupDescription(group, level);
+        IListGroupDescription? groupDescription = GetGroupDescription(group, level);
         group.GroupBy = groupDescription;
 
         // create subgroups for each of the explicit names
@@ -513,7 +513,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <summary>
     /// TopLevelGroupDescription class
     /// </summary>
-    private class TopLevelGroupDescription : ListGroupDescription
+    private class TopLevelGroupDescription : AbstractListGroupDescription
     {
         /// <summary>
         /// Initializes a new instance of the TopLevelGroupDescription class.

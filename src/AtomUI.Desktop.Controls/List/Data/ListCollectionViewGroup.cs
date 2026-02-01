@@ -22,7 +22,7 @@ public abstract class ListCollectionViewGroup : INotifyPropertyChanged
     }
     
     internal abstract ListCollectionViewGroupInternal? Parent { get; }
-    internal abstract ListGroupDescription? GroupBy { get; set; }
+    internal abstract IListGroupDescription? GroupBy { get; set; }
 
     protected ListCollectionViewGroup(object key)
     {

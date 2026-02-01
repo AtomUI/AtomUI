@@ -11,18 +11,18 @@
             Title="Basic"
             Description="Basic Usage." IsOccupyEntireRow="False">
             <WrapPanel ItemSpacing="10" LineSpacing="10">
-                <!-- <atom:Select Mode="Single" PlaceholderText="Please select" Width="120" -->
-                <!--              DefaultValues="lucy"> -->
-                <!--     <atom:SelectOption Header="Jack" Value="jack" /> -->
-                <!--     <atom:SelectOption Header="Lucy" Value="lucy" /> -->
-                <!--     <atom:SelectOption Header="Yiminghe" Value="yiminghe" /> -->
-                <!--     <atom:SelectOption Header="Disabled" IsEnabled="False" Value="disabled" /> -->
-                <!-- </atom:Select> -->
-                <!-- -->
-                <!-- <atom:Select Mode="Single" PlaceholderText="Please select" IsEnabled="False" Width="120" -->
-                <!--              DefaultValues="lucy"> -->
-                <!--     <atom:SelectOption Header="Lucy" Value="lucy" /> -->
-                <!-- </atom:Select> -->
+                <atom:Select Mode="Single" PlaceholderText="Please select" Width="120"
+                             DefaultValues="lucy">
+                    <atom:SelectOption Header="Jack" Value="jack" />
+                    <atom:SelectOption Header="Lucy" Value="lucy" />
+                    <atom:SelectOption Header="Yiminghe" Value="yiminghe" />
+                    <atom:SelectOption Header="Disabled" IsEnabled="False" Value="disabled" />
+                </atom:Select>
+                
+                <atom:Select Mode="Single" PlaceholderText="Please select" IsEnabled="False" Width="120"
+                             DefaultValues="lucy">
+                    <atom:SelectOption Header="Lucy" Value="lucy" />
+                </atom:Select>
         
                 <atom:Select Mode="Single" 
                              PlaceholderText="Please select" 
@@ -59,8 +59,7 @@
             <atom:Select Name="CustomSearchSelect"
                          Mode="Single"
                          PlaceholderText="Select a person"
-                         IsFilterEnabled="True"
-                         OptionFilterProp="Header">
+                         IsFilterEnabled="True">
                 <atom:SelectOption Header="Jack" Value="jack" />
                 <atom:SelectOption Header="Lucy" Value="lucy" />
                 <atom:SelectOption Header="Tom" Value="tom" />

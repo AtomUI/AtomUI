@@ -16,7 +16,6 @@ public interface IListCollectionView: IEnumerable, INotifyCollectionChanged
     bool CanGroup { get; }
     bool IsGrouping { get; }
     int GroupingDepth { get; }
-    string GetGroupingPropertyNameAtDepth(int level);
     IAvaloniaReadOnlyList<object>? Groups { get; }
     ListSortDescriptionList SortDescriptions { get; }
     ListFilterDescriptionList FilterDescriptions { get; }

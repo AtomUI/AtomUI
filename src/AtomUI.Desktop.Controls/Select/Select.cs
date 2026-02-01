@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -40,7 +41,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         List.IsGroupEnabledProperty.AddOwner<Select>();
     
-    public static readonly StyledProperty<GroupPropertySelector?> GroupPropertySelectorProperty =
+    public static readonly StyledProperty<ListGroupPropertySelector?> GroupPropertySelectorProperty =
         List.GroupPropertySelectorProperty.AddOwner<Select>();
     
     public static readonly StyledProperty<bool> IsHideSelectedOptionsProperty =
@@ -69,10 +70,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             nameof(AutoScrollToSelectedOptions),
             defaultValue: false);
     
-    public static readonly StyledProperty<string> OptionFilterPropProperty =
-        AvaloniaProperty.Register<Select, string>(
-            nameof(OptionFilterProp), "Value");
-    
     public static readonly DirectProperty<Select, object?> OptionsAsyncLoadContextProperty =
         AvaloniaProperty.RegisterDirect<Select, object?>(
             nameof(OptionsAsyncLoadContext),
@@ -81,6 +78,18 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     public static readonly StyledProperty<ISelectOptionsAsyncLoader?> OptionsLoaderProperty =
         AvaloniaProperty.Register<Select, ISelectOptionsAsyncLoader?>(nameof(OptionsLoader));
+    
+    public static readonly StyledProperty<IValueFilter?> FilterProperty =
+        AvaloniaProperty.Register<AbstractSelect, IValueFilter?>(nameof(Filter));
+    
+    public static readonly StyledProperty<ValueFilterMode> FilterModeProperty =
+        AvaloniaProperty.Register<AbstractSelect, ValueFilterMode>(
+            nameof(FilterMode),
+            defaultValue: ValueFilterMode.Contains);
+    
+    public static readonly StyledProperty<ListFilterPropertySelector?> FilterValueSelectorProperty =
+        AvaloniaProperty.Register<AbstractSelect, ListFilterPropertySelector?>(
+            nameof(FilterValueSelector));
     
     public IEnumerable<ISelectOption>? OptionsSource
     {
@@ -107,7 +116,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsGroupEnabledProperty, value);
     }
     
-    public GroupPropertySelector? GroupPropertySelector
+    public ListGroupPropertySelector? GroupPropertySelector
     {
         get => GetValue(GroupPropertySelectorProperty);
         set => SetValue(GroupPropertySelectorProperty, value);
@@ -123,12 +132,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     {
         get => GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
-    }
-    
-    public string OptionFilterProp
-    {
-        get => GetValue(OptionFilterPropProperty);
-        set => SetValue(OptionFilterPropProperty, value);
     }
     
     [Content]
@@ -170,6 +173,24 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetAndRaise(OptionsAsyncLoadContextProperty, ref _optionsAsyncLoadContext, value);
     }
     
+    public IValueFilter? Filter
+    {
+        get => GetValue(FilterProperty);
+        set => SetValue(FilterProperty, value);
+    }
+    
+    public ValueFilterMode FilterMode
+    {
+        get => GetValue(FilterModeProperty);
+        set => SetValue(FilterModeProperty, value);
+    }
+
+    public ListFilterPropertySelector? FilterValueSelector
+    {
+        get => GetValue(FilterValueSelectorProperty);
+        set => SetValue(FilterValueSelectorProperty, value);
+    }
+    
     public ISelectOptionsAsyncLoader? OptionsLoader
     {
         get => GetValue(OptionsLoaderProperty);
@@ -183,10 +204,27 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     public event EventHandler<SelectOptionsLoadedEventArgs>? OptionsLoaded;
 
     #endregion
+
+    public static readonly ListFilterPropertySelector HeaderFilterPropertySelector = data =>
+    {
+        if (data is ISelectOption option)
+        {
+            return option.Header;
+        }
+        return null;
+    };
     
-    public Func<object, object, bool>? FilterFn { get; set; }
+    public static readonly ListFilterPropertySelector ValueFilterPropertySelector = data =>
+    {
+        if (data is ISelectOption option)
+        {
+            return option.Value;
+        }
+        return null;
+    };
     
     public Func<object, ISelectOption, bool>? DefaultValueCompareFn { get; set; }
+    
     public IList<object>? DefaultValues { get; set; }
 
     #region 内部属性定义
@@ -214,8 +252,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     private SelectCandidateList? _candidateList;
     private SelectFilterTextBox? _singleFilterInput;
-    private ListFilterDescription? _filterDescription;
-    private ListFilterDescription? _filterSelectedDescription;
+    private IListFilterDescription? _filterDescription;
     private bool _ignoreSyncSelection;
     private bool _candidateListActivated;
     private ISelectOption? _addNewOption;
@@ -232,13 +269,46 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         SelectResultOptionsBox.KeyDownEvent.AddClassHandler<Select>(
             (x, e) => x.HandleFilterInputKeyDown(e),
             RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        FilterModeProperty.Changed.AddClassHandler<Select>((x,e) => x.HandleFilterModePropertyChanged(e));
+        FilterProperty.Changed.AddClassHandler<Select>((x,e) => x.HandleFilterPropertyChanged(e));
     }
 
     public Select()
     {
         this.RegisterResources();
     }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (FilterValueSelector == null)
+        {
+            SetCurrentValue(FilterValueSelectorProperty, HeaderFilterPropertySelector);
+        }
+    }
     
+    private void HandleFilterModePropertyChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        var mode = (ValueFilterMode)e.NewValue!;
+        // Sets the filter predicate for the new value
+        EffectiveFilter = ValueFilterFactory.BuildFilter(mode) ?? Filter;
+    }
+    
+    private void HandleFilterPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        var value = e.NewValue as AutoCompleteFilterPredicate<object>;
+
+        // If null, revert to the "None" predicate
+        if (value == null)
+        {
+            SetCurrentValue(FilterModeProperty, ValueFilterMode.None);
+        }
+        else
+        {
+            SetCurrentValue(FilterModeProperty, ValueFilterMode.Custom);
+        }
+    }
+
     private void HandleSelectedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
     {
         if (_ignoreSyncSelection)
@@ -584,20 +654,13 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             SetCurrentValue(SelectedCountProperty, SelectedOptions?.Count ?? 0);
             CleanDynamicAddedOptions();
         }
-        else if (change.Property == OptionFilterPropProperty)
+        else if (change.Property == FilterValueSelectorProperty)
         {
-            HandleOptionFilterPropChanged();
+            HandleFilterValueSelectorChanged();
         }
         else if (change.Property == ModeProperty)
         {
             ConfigureOptionsBoxSelectionMode();
-        }
-        else if (change.Property == IsHideSelectedOptionsProperty)
-        {
-            if (!IsHideSelectedOptions)
-            {
-                _filterSelectedDescription = null;
-            }
         }
         
         if (change.Property == IsFilterEnabledProperty ||
@@ -750,9 +813,9 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     {
                         _filterDescription = new ListFilterDescription()
                         {
-                            PropertyPath     = _filterDescription.PropertyPath,
-                            Filter           =  _filterDescription.Filter,
-                            FilterConditions = [ActivateFilterValue]
+                            FilterPropertySelector = _filterDescription.FilterPropertySelector,
+                            Filter                 =  _filterDescription.Filter,
+                            FilterConditions       = [ActivateFilterValue]
                         };
                         _candidateList.FilterDescriptions.Remove(oldFilter);
                         _candidateList.FilterDescriptions.Add(_filterDescription);
@@ -760,11 +823,13 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 }
                 else
                 {
+                    var filter = ValueFilterFactory.BuildFilter(FilterMode) ?? Filter;
+                    Debug.Assert(filter != null);
                     _filterDescription = new ListFilterDescription()
                     {
-                        PropertyPath     = OptionFilterProp,
-                        Filter           = FilterFn,
-                        FilterConditions = [ActivateFilterValue],
+                        FilterPropertySelector = FilterValueSelector,
+                        Filter                 = (value, filterValue) => filter.Filter(value, filterValue),
+                        FilterConditions       = [ActivateFilterValue],
                     };
                     _candidateList.FilterDescriptions.Add(_filterDescription);
                 }
@@ -819,14 +884,14 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         e.Handled = true;
     }
 
-    private void HandleOptionFilterPropChanged()
+    private void HandleFilterValueSelectorChanged()
     {
         if (_filterDescription != null && _candidateList!= null && _candidateList.FilterDescriptions != null)
         {
             var oldFilter = _filterDescription;
             _filterDescription = new ListFilterDescription()
             {
-                PropertyPath     = OptionFilterProp,
+                FilterPropertySelector     = FilterValueSelector,
                 Filter           =  oldFilter.Filter,
                 FilterConditions = oldFilter.FilterConditions
             };
@@ -896,53 +961,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnLoaded(e);
         ConfigureDefaultValues();
     }
-
-    private void ConfigureSelectedFilterDescription()
-    {
-        if (_candidateList?.FilterDescriptions != null)
-        {
-            // if (IsHideSelectedOptions)
-            // {
-            //     var selectedOptions = new HashSet<ISelectOption>();
-            //     if (SelectedOptions?.Count > 0)
-            //     {
-            //         foreach (var selectedOption in SelectedOptions)
-            //         {
-            //             selectedOptions.Add(selectedOption);
-            //         }
-            //     }
-            //     var oldFilter = _filterSelectedDescription;
-            //     _filterSelectedDescription = new ListFilterDescription()
-            //     {
-            //         Filter           = SelectFilterFn,
-            //         FilterConditions = [selectedOptions],
-            //     };
-            //     if (oldFilter != null)
-            //     {
-            //         _candidateList.FilterDescriptions.Remove(oldFilter);
-            //     }
-            //     _candidateList.FilterDescriptions.Add(_filterSelectedDescription);
-            // }
-            // else
-            // {
-                if (_filterSelectedDescription != null)
-                {
-                    _candidateList.FilterDescriptions.Remove(_filterSelectedDescription);
-                }
-                _filterSelectedDescription = null;
-            // }
-        }
-    }
-
-    private static bool SelectFilterFn(object value, object filterValue)
-    {
-        if (filterValue is HashSet<ISelectOption> set)
-        {
-            return !set.Contains(value);
-        }
-        return true;
-    }
-
+    
     private void ConfigureEffectiveSearchEnabled()
     {
         if (Mode == SelectMode.Tags)

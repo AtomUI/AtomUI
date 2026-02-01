@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics;
 using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Data;
@@ -5,7 +6,6 @@ using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -17,6 +17,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
+
+using ItemCollection = AtomUI.Collections.ItemCollection;
 
 public enum SelectMode
 {
@@ -135,7 +137,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     }
     
     [Content]
-    public AvaloniaList<ISelectOption> Options { get; set; } = new();
+    public ItemCollection Options { get; set; } = new();
     
     private IList<ISelectOption>? _selectedOptions;
 
@@ -902,14 +904,8 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleOptionsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        var newItemsSource = (IEnumerable<ISelectOption>?)change.NewValue;
         ClearValue();
-        Options.Clear();
-        if (newItemsSource != null)
-        {
-            Options.AddRange(newItemsSource);
-            ConfigureDefaultValues();
-        }
+        Options.SetItemsSource(change.GetNewValue<IEnumerable<ISelectOption>?>());
     }
 
     private void ConfigureDefaultValues()
@@ -921,12 +917,15 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 if (DefaultValues?.Count > 0)
                 {
                     var defaultValue = DefaultValues.First();
-                    foreach (var option in Options)
+                    foreach (var item in Options)
                     {
-                        if (OptionEqualByValue(defaultValue, option))
+                        if (item is ISelectOption option)
                         {
-                            SelectedOption = option;
-                            break;
+                            if (OptionEqualByValue(defaultValue, option))
+                            {
+                                SelectedOption = option;
+                                break;
+                            }
                         }
                     }
                 }
@@ -941,11 +940,14 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                     var selectedOptions = new List<ISelectOption>();
                     foreach (var defaultValue in DefaultValues)
                     {
-                        foreach (var option in Options)
+                        foreach (var item in Options)
                         {
-                            if (OptionEqualByValue(defaultValue, option))
+                            if (item is ISelectOption option)
                             {
-                                selectedOptions.Add(option);
+                                if (OptionEqualByValue(defaultValue, option))
+                                {
+                                    selectedOptions.Add(option);
+                                }
                             }
                         }
                     }
@@ -991,11 +993,14 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
 
         var toRemove = new List<ISelectOption>();
-        foreach (var option in Options)
+        foreach (var item in Options)
         {
-            if (option.IsDynamicAdded && !selected.Contains(option))
+            if (item is ISelectOption option)
             {
-                toRemove.Add(option);
+                if (option.IsDynamicAdded && !selected.Contains(option))
+                {
+                    toRemove.Add(option);
+                }
             }
         }
 

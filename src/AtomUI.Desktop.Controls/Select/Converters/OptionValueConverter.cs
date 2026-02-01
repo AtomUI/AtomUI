@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Globalization;
 using Avalonia.Data.Converters;
 

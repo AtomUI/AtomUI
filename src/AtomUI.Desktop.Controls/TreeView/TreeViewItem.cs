@@ -797,10 +797,9 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
         return NeedsContainer<TreeViewItem>(item, out recycleKey);
     }
 
-    protected override void ContainerForItemPreparedOverride(
-        Control container,
-        object? item,
-        int index)
+    protected override void ContainerForItemPreparedOverride(Control container,
+                                                             object? item,
+                                                             int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
         if (container is TreeViewItem treeViewItem)
@@ -854,25 +853,15 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeViewItemData
 
     internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeViewItemData treeViewItemData, CompositeDisposable disposables)
     {
-        if (treeViewItemData is not Visual)
-        {
-            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.Icon), treeViewItem, IconProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsChecked), treeViewItem, IsCheckedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsSelected), treeViewItem, IsSelectedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsEnabled), treeViewItem, IsEnabledProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsExpanded), treeViewItem, IsExpandedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(treeViewItemData, nameof(ITreeViewItemData.IsIndicatorEnabled), treeViewItem, IsIndicatorEnabledProperty, mode:BindingMode.TwoWay));
-            
-            if (treeViewItem.ItemKey == null)
-            {
-                treeViewItem.ItemKey = treeViewItemData.ItemKey;
-            }
-            
-            if (!treeViewItem.IsSet(IsLeafProperty))
-            {
-                treeViewItem.IsLeaf = treeViewItemData.IsLeaf;
-            }
-        }
+        treeViewItem.SetCurrentValue(IconProperty, treeViewItemData.Icon);
+        treeViewItem.SetCurrentValue(IsCheckedProperty, treeViewItemData.IsChecked);
+        treeViewItem.SetCurrentValue(IsSelectedProperty, treeViewItemData.IsSelected);
+        treeViewItem.SetCurrentValue(IsEnabledProperty, treeViewItemData.IsEnabled);
+        treeViewItem.SetCurrentValue(IsExpandedProperty, treeViewItemData.IsExpanded);
+        treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeViewItemData.IsIndicatorEnabled);
+        
+        treeViewItem.ItemKey = treeViewItemData.ItemKey;
+        treeViewItem.IsLeaf  = treeViewItemData.IsLeaf;
     }
 
     private void ConfigureIsLeaf()

@@ -46,6 +46,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.SelectedItems,
             (o, v) => o.SelectedItems = v);
     
+    public static readonly DirectProperty<CascaderView, IList<ICascaderViewOption>?> CheckedItemsProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, IList<ICascaderViewOption>?>(
+            nameof(CheckedItems),
+            o => o.CheckedItems,
+            (o, v) => o.CheckedItems = v);
+    
     public static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
         CascaderView.ExpandIconProperty.AddOwner<Cascader>();
     
@@ -112,6 +118,14 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         get => _selectedItems;
         set => SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
+    }
+        
+    private IList<ICascaderViewOption>? _checkedItems;
+    
+    public IList<ICascaderViewOption>? CheckedItems
+    {
+        get => _checkedItems;
+        set => SetAndRaise(CheckedItemsProperty, ref _checkedItems, value);
     }
     
     public IconTemplate? ExpandIcon
@@ -403,39 +417,39 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void HandleCascaderViewItemsCheckedChanged(object? sender, CascaderViewCheckedItemsChangedEventArgs e)
     {
-        if (_cascaderView == null)
-        {
-            return;
-        }
-        
-        var needSync = false;
-
-        if (_selectedItems == null || _selectedItems?.Count != _cascaderView.CheckedItems.Count)
-        {
-            needSync = true;
-        }
-        else
-        {
-            var currentSet  = _selectedItems.Cast<object>().ToHashSet();
-            var cascaderViewSet = _cascaderView.CheckedItems.Cast<object>().ToHashSet();
-            if (!currentSet.SetEquals(cascaderViewSet))
-            {
-                needSync = true;
-            }
-        }
-        
-        if (needSync)
-        {
-            try
-            {
-                _needSkipSyncCheckedItems = true;
-                SelectedItems             = _cascaderView.CheckedItems.Cast<object>().ToList();
-            }
-            finally
-            {
-                _needSkipSyncCheckedItems = false;
-            }
-        }
+        // if (_cascaderView == null)
+        // {
+        //     return;
+        // }
+        //
+        // var needSync = false;
+        //
+        // if (_selectedItems == null || _selectedItems?.Count != _cascaderView.CheckedItems.Count)
+        // {
+        //     needSync = true;
+        // }
+        // else
+        // {
+        //     var currentSet  = _selectedItems.Cast<object>().ToHashSet();
+        //     var cascaderViewSet = _cascaderView.CheckedItems.Cast<object>().ToHashSet();
+        //     if (!currentSet.SetEquals(cascaderViewSet))
+        //     {
+        //         needSync = true;
+        //     }
+        // }
+        //
+        // if (needSync)
+        // {
+        //     try
+        //     {
+        //         _needSkipSyncCheckedItems = true;
+        //         SelectedItems             = _cascaderView.CheckedItems.Cast<object>().ToList();
+        //     }
+        //     finally
+        //     {
+        //         _needSkipSyncCheckedItems = false;
+        //     }
+        // }
     }
 
     private void HandleIsVisibleChanged(bool isVisible)
@@ -550,12 +564,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleCascaderViewItemClicked(object? sender, CascaderItemClickedEventArgs eventArgs)
     {
         if (!IsMultiple && 
-            eventArgs.Item.DataContext is ICascaderViewItemData itemData && 
-            itemData.Children.Count == 0)
+            eventArgs.Item.DataContext is ICascaderViewOption option && 
+            option.Children.Count == 0)
         {
             if (DataLoader != null)
             {
-                if (eventArgs.Item.AsyncLoaded || itemData.IsLeaf)
+                if (eventArgs.Item.AsyncLoaded || option.IsLeaf)
                 {
                     SetCurrentValue(IsDropDownOpenProperty, false);
                 }
@@ -569,7 +583,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleCascaderViewItemDoubleClicked(object? sender, CascaderItemDoubleClickedEventArgs eventArgs)
     {
-        if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewItemData && IsAllowSelectParent)
+        if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewOption && IsAllowSelectParent)
         {
             SetCurrentValue(IsDropDownOpenProperty, false);
         }
@@ -609,7 +623,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             {
                 _needSkipSyncCheckedItems = true;
                 _cascaderView.SelectedItem = null;
-                _cascaderView.CheckedItems.Clear();
+                // _cascaderView.CheckedItems.Clear();
             }
             finally
             {
@@ -624,7 +638,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             return;
         }
-        if (e.Source is SelectTag tag && tag.Item is ICascaderViewItemData CascaderItemData)
+        if (e.Source is SelectTag tag && tag.Item is ICascaderViewOption CascaderItemData)
         {
             if (SelectedItems != null)
             {
@@ -640,7 +654,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         e.Handled = true;
     }
     
-    private void RemoveItemRecursive(List<object> items, ICascaderViewItemData item)
+    private void RemoveItemRecursive(List<object> items, ICascaderViewOption item)
     {
         foreach (var child in item.Children)
         {
@@ -651,43 +665,43 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void SyncSelectedItemsToCascaderView()
     {
-        if (!_needSkipSyncCheckedItems)
-        {
-            if (_cascaderView != null)
-            {
-                if (SelectedItems != null && IsMultiple)
-                {
-                    if (_cascaderView.CheckedItems.Count == 0)
-                    {
-                        foreach (var item in SelectedItems)
-                        {
-                            _cascaderView.CheckedItems.Add(item);
-                        }
-                    }
-                    else
-                    {
-                        var cascaderViewSet  = _cascaderView.CheckedItems.Cast<object>().ToList();
-                        var currentSet   = SelectedItems.Cast<object>().ToList();
-                        var deletedItems = cascaderViewSet.Except(currentSet);
-                        var addedItems   = currentSet.Except(cascaderViewSet);
-                        foreach (var item in deletedItems)
-                        {
-                            _cascaderView.CheckedItems.Remove(item);
-                        }
-    
-                        foreach (var item in addedItems)
-                        {
-                            _cascaderView.CheckedItems.Add(item);
-                        }
-                    }
-                }
-                else
-                {
-                    _cascaderView.SelectedItem = null;
-                    _cascaderView.CheckedItems.Clear();
-                }
-            }
-        }
+        // if (!_needSkipSyncCheckedItems)
+        // {
+        //     if (_cascaderView != null)
+        //     {
+        //         if (SelectedItems != null && IsMultiple)
+        //         {
+        //             if (_cascaderView.CheckedItems.Count == 0)
+        //             {
+        //                 foreach (var item in SelectedItems)
+        //                 {
+        //                     //_cascaderView.CheckedItems.Add(item);
+        //                 }
+        //             }
+        //             else
+        //             {
+        //                 var cascaderViewSet  = _cascaderView.CheckedItems.Cast<object>().ToList();
+        //                 var currentSet   = SelectedItems.Cast<object>().ToList();
+        //                 var deletedItems = cascaderViewSet.Except(currentSet);
+        //                 var addedItems   = currentSet.Except(cascaderViewSet);
+        //                 foreach (var item in deletedItems)
+        //                 {
+        //                     //_cascaderView.CheckedItems.Remove(item);
+        //                 }
+        //
+        //                 foreach (var item in addedItems)
+        //                 {
+        //                     //_cascaderView.CheckedItems.Add(item);
+        //                 }
+        //             }
+        //         }
+        //         else
+        //         {
+        //             _cascaderView.SelectedItem = null;
+        //             _cascaderView.CheckedItems.Clear();
+        //         }
+        //     }
+        // }
     }
     
     private void BuildEffectiveSelectedItems()
@@ -704,12 +718,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                 if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowParent))
                 {
                     var selectedSet = SelectedItems.Cast<object>().ToHashSet();
-                    var fullySelectedParents = SelectedItems.Cast<ICascaderViewItemData>()
+                    var fullySelectedParents = SelectedItems.Cast<ICascaderViewOption>()
                                                             .Where(node => node.Children.All(child => selectedSet.Contains(child)))
                                                             .ToHashSet();
                     foreach (var node in SelectedItems)
                     {
-                        if (node is ICascaderViewItemData cascaderViewItemData)
+                        if (node is ICascaderViewOption cascaderViewItemData)
                         {
                             bool isDescendantOfFullySelectedParent = fullySelectedParents
                                 .Any(parent => IsDescendantOf(cascaderViewItemData, parent));
@@ -725,7 +739,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                 {
                     foreach (var item in SelectedItems)
                     {
-                        if (item is ICascaderViewItemData cascaderViewItemData)
+                        if (item is ICascaderViewOption cascaderViewItemData)
                         {
                             if (cascaderViewItemData.Children.Count == 0)
                             {
@@ -743,20 +757,20 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
         
-    private bool IsDescendantOf(ICascaderViewItemData node, ICascaderViewItemData parent)
+    private bool IsDescendantOf(ICascaderViewOption node, ICascaderViewOption parent)
     {
         if (node == parent)
         {
             return false;
         }
-        ICascaderViewItemData? current = node;
+        ICascaderViewOption? current = node;
         while (current != null)
         {
             if (current == parent)
             {
                 return true;
             }
-            current = current.ParentNode as ICascaderViewItemData;
+            current = current.ParentNode as ICascaderViewOption;
         }
         return false;
     }
@@ -771,12 +785,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             }
             else
             {
-                var current = SelectedItem as ICascaderViewItemData;
+                var current = SelectedItem as ICascaderViewOption;
                 var parts   = new List<string>();
                 while (current != null)
                 {
                     parts.Add(current.Header?.ToString() ?? string.Empty);
-                    current = current.ParentNode as ICascaderViewItemData;
+                    current = current.ParentNode as ICascaderViewOption;
                 }
 
                 parts.Reverse();
@@ -788,23 +802,23 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        if (DefaultSelectItemPath != null && SelectedItemPath == null)
-        {
-            if (_cascaderView != null)
-            {
-                if (_cascaderView.TryParseSelectPath(DefaultSelectItemPath, out var nodes))
-                {
-                    var parts = new List<string>();
-                    foreach (var node in nodes)
-                    {
-                        if (node is ICascaderViewItemData cascaderViewItemData)
-                        {
-                            parts.Add(cascaderViewItemData.Header?.ToString() ?? string.Empty);
-                        }
-                    }
-                    SetCurrentValue(SelectedItemPathProperty, string.Join("/", parts));
-                }
-            }
-        }
+        // if (DefaultSelectItemPath != null && SelectedItemPath == null)
+        // {
+        //     if (_cascaderView != null)
+        //     {
+        //         if (_cascaderView.TryParseSelectPath(DefaultSelectItemPath, out var nodes))
+        //         {
+        //             var parts = new List<string>();
+        //             foreach (var node in nodes)
+        //             {
+        //                 if (node is ICascaderViewOption cascaderViewItemData)
+        //                 {
+        //                     parts.Add(cascaderViewItemData.Header?.ToString() ?? string.Empty);
+        //                 }
+        //             }
+        //             SetCurrentValue(SelectedItemPathProperty, string.Join("/", parts));
+        //         }
+        //     }
+        // }
     }
 }

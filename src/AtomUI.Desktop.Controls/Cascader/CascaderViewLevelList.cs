@@ -27,9 +27,17 @@ internal class CascaderViewLevelList : SelectingItemsControl
     #endregion
     
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
+    private readonly Dictionary<object, IDictionary<object, object?>> _virtualRestoreContext = new();
     
     internal CascaderView? OwnerView { get; set; }
     internal CascaderViewItem? ParentCascaderViewItem { get; set; }
+    
+
+    static CascaderViewLevelList()
+    {
+        AutoScrollToSelectedItemProperty.OverrideDefaultValue<CascaderViewLevelList>(false);
+        RequestBringIntoViewEvent.AddClassHandler<CascaderViewLevelList>((view, e) => e.Handled = true);
+    }
     
     public CascaderViewLevelList()
     {
@@ -59,7 +67,21 @@ internal class CascaderViewLevelList : SelectingItemsControl
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new CascaderViewItem();
+        var cascaderViewItem = new CascaderViewItem();
+        if (item != null && item is ICascaderViewOption option)
+        {
+            cascaderViewItem.SetCurrentValue(CascaderViewItem.IconProperty, option.Icon);
+            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckedProperty, option.IsChecked);
+            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsEnabledProperty, option.IsEnabled);
+            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, option.IsExpanded);
+            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, option.IsCheckBoxEnabled);
+            
+            if (!cascaderViewItem.IsSet(CascaderViewItem.IsLeafProperty))
+            {
+                cascaderViewItem.IsLeaf = option.IsLeaf;
+            }
+        }
+        return cascaderViewItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -74,23 +96,21 @@ internal class CascaderViewLevelList : SelectingItemsControl
         if (container is CascaderViewItem cascaderViewItem)
         {
             var disposables = new CompositeDisposable(8);
-            
-            if (item != null && item is not Visual && item is ICascaderViewOption option)
+
+            if (item != null && item is ICascaderViewOption option)
             {
                 cascaderViewItem.SetCurrentValue(CascaderViewItem.HeaderProperty, option);
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IconProperty, option.Icon);
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckedProperty, option.IsChecked);
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsEnabledProperty, option.IsEnabled);
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, option.IsExpanded);
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, option.IsCheckBoxEnabled);
                 cascaderViewItem.ItemKey   = option.ItemKey;
-            
-                if (!cascaderViewItem.IsSet(CascaderViewItem.IsLeafProperty))
-                {
-                    cascaderViewItem.IsLeaf = option.IsLeaf;
-                }
             }
             
+            if (_virtualRestoreContext.TryGetValue(index, out var context))
+            {
+                NotifyRestoreVirtualizingContext(cascaderViewItem, context);
+                _virtualRestoreContext.Remove(index);
+            }
+            
+            cascaderViewItem.VirtualIndex = index;
+
             if (ItemTemplate != null)
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, CascaderViewItem.HeaderTemplateProperty));
@@ -126,5 +146,66 @@ internal class CascaderViewLevelList : SelectingItemsControl
                 e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
         }
         return false;
+    }
+    
+    protected override void ClearContainerForItemOverride(Control element)
+    {
+        if (element is CascaderViewItem cascaderViewItem)
+        {
+            var context = new Dictionary<object, object?>();
+            NotifySaveVirtualizingContext(cascaderViewItem, context);
+            _virtualRestoreContext.Add(cascaderViewItem.VirtualIndex, context);
+        }
+        element.ClearValue(CascaderViewItem.IsEnabledProperty);
+        element.ClearValue(CascaderViewItem.IsCheckedProperty);
+        element.ClearValue(CascaderViewItem.IsExpandedProperty);
+        element.ClearValue(CascaderViewItem.IsCheckBoxEnabledProperty);
+        base.ClearContainerForItemOverride(element);
+    }
+    
+    protected void NotifySaveVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
+    {
+        context.Add(CascaderViewItem.IsEnabledProperty, item.IsEnabled);
+        context.Add(CascaderViewItem.IsCheckedProperty, item.IsChecked);
+        context.Add(CascaderViewItem.IsExpandedProperty, item.IsExpanded);
+        context.Add(CascaderViewItem.IsCheckBoxEnabledProperty, item.IsCheckBoxEnabled);
+    }
+    
+    protected virtual void NotifyRestoreVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
+    {
+        {
+            if (context.TryGetValue(CascaderViewItem.IsEnabledProperty, out var value))
+            {
+                if (value is bool isEnabled)
+                {
+                    item.SetCurrentValue(CascaderViewItem.IsEnabledProperty, isEnabled);
+                }
+            }
+        }
+        {
+            if (context.TryGetValue(CascaderViewItem.IsCheckedProperty, out var value))
+            {
+                var isChecked = (bool?)value;
+                item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, isChecked);
+            }
+        }
+        {
+            if (context.TryGetValue(CascaderViewItem.IsExpandedProperty, out var value))
+            {
+                if (value is bool isExpanded)
+                {
+                    item.SetCurrentValue(CascaderViewItem.IsExpandedProperty, isExpanded);
+                }
+            }
+        }
+        {
+            if (context.TryGetValue(CascaderViewItem.IsCheckBoxEnabledProperty, out var value))
+            {
+                if (value is bool isCheckBoxEnabled)
+                {
+                    item.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, isCheckBoxEnabled);
+                }
+            }
+        }
     }
 }

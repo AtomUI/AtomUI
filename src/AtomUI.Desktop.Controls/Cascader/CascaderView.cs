@@ -308,6 +308,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     private int _ignoreExpandAndCollapseLevel;
     private CascaderViewItem? _lastHoveredItem; // 触发器是 hover 的时候使用
     private bool _defaultExpandPathApplied;
+    private bool _applyDefaultExpandPath;
     private bool _isDeferSelected;
     private DateTime? _lastClickTime;
     
@@ -320,7 +321,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         SetupChecked();
         CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemDoubleClicked(args));
         CascaderViewItem.ClickedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
-        
+        ItemsSourceProperty.Changed.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderSourceChanged(args));
     }
     
     public CascaderView()
@@ -425,20 +426,28 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await ExpandItemAsync(pathNodes[^1]);
+                    try
+                    {
+                        _applyDefaultExpandPath = true;
+                        await ExpandItemAsync(pathNodes[^1]);
+                    }
+                    finally
+                    {
+                        _applyDefaultExpandPath = false;
+                    }
                 });
             }
         }
+    }
+
+    private void HandleCascaderSourceChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        _items.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderViewOption>?>());
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-
-        if (change.Property == ItemsSourceProperty)
-        {
-            _items.SetItemsSource(change.GetNewValue<IEnumerable<ICascaderViewOption>?>());
-        }
                 
         if (change.Property == DataLoaderProperty)
         {

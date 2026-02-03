@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -101,8 +102,18 @@ public partial class CascaderView
                     var layoutManager = visualRoot.GetLayoutManager();
                     layoutManager.ExecuteLayoutPass();
                 }
-                var currentNode         = pathNodes[i];
+                
+                var currentNode = pathNodes[i];
                 currentCascaderItem = currentLevelList.ContainerFromItem(currentNode) as CascaderViewItem;
+                if (currentCascaderItem == null)
+                {
+                    var indexOf = currentLevelList.Items.IndexOf(currentNode);
+                    if (currentLevelList.Presenter?.Panel is VirtualizingStackPanel virtualizingStackPanel)
+                    {
+                        virtualizingStackPanel.ScrollItemIntoView(indexOf);
+                        currentCascaderItem = currentLevelList.ContainerFromItem(currentNode) as CascaderViewItem;
+                    }
+                }
                 Debug.Assert(currentCascaderItem != null);
                 for (var j = 0; j < currentLevelList.ItemCount; j++)
                 {

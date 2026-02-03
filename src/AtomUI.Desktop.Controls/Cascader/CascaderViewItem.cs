@@ -238,6 +238,7 @@ public class CascaderViewItem : TemplatedControl, ISelectable
 
     public int Level => GetLevel();
     internal ICascaderViewOption? AttachedOption => DataContext as ICascaderViewOption;
+    internal int VirtualIndex { get; set; } = -1;
     
     #endregion
     

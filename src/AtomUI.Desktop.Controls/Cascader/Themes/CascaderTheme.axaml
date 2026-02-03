@@ -196,7 +196,7 @@
         </Style>
 
         <Setter Property="ItemTemplate">
-            <TreeDataTemplate x:DataType="atom:ICascaderViewItemData"
+            <TreeDataTemplate x:DataType="atom:ICascaderViewOption"
                               ItemsSource="{Binding Children}">
                 <atom:TextBlock Text="{Binding Header}" />
             </TreeDataTemplate>

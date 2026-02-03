@@ -24,7 +24,7 @@
 
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <VirtualizingStackPanel
+                <atom:VirtualizingStackPanel
                     Orientation="Vertical"
                     Margin="{DynamicResource {x:Static atom:CascaderTokenKey.MenuPadding}}"
                     HorizontalAlignment="Left"

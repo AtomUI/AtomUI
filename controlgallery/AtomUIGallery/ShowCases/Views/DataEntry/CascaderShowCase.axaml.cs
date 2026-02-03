@@ -15,7 +15,6 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         {
             if (DataContext is CascaderViewModel vm)
             {
-                InitBasicCascaderData(vm);
                 InitDefaultValueCascaderData(vm);
                 InitHoverCascaderData(vm);
                 InitDisabledCascaderData(vm);
@@ -40,25 +39,25 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         InitializeComponent();
     }
 
-    private List<ICascaderViewItemData> GenerateCascaderViewItems()
+    private List<ICascaderViewOption> GenerateCascaderViewItems()
     {
         return [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 Value  = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Hangzhou",
                         Value  = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "West Lake",
                                 Value  = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Lingyin shi",
                                 Value  = "lingyinshi",
@@ -67,17 +66,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Jiangsu",
                 Value  = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Nanjing",
                         Value  = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Zhong Hua Men",
                                 Value  = "zhonghuamen",
@@ -93,32 +92,27 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         viewModel.BasicCascaderViewNodes = GenerateCascaderViewItems();
     }
-    
-    private void InitBasicCascaderData(CascaderViewModel viewModel)
-    {
-        viewModel.BasicCascaderNodes = GenerateCascaderViewItems();
-    }
 
     private void InitDefaultValueCascaderData(CascaderViewModel viewModel)
     {
         viewModel.DefaultSelectItemPath = new TreeNodePath("zhejiang/hangzhou/xihu");
         viewModel.DefaultValueCascaderNodes = [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 ItemKey  = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Hangzhou",
                         ItemKey = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "West Lake",
                                 ItemKey = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
@@ -127,17 +121,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Jiangsu",
                 ItemKey = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Nanjing",
                         ItemKey = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
@@ -152,22 +146,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     private void InitHoverCascaderData(CascaderViewModel viewModel)
     {
         viewModel.HoverCascaderNodes = [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Zhejiang",
                 ItemKey = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Hangzhou",
                         ItemKey = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "West Lake",
                                 ItemKey = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
@@ -176,17 +170,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Jiangsu",
                 ItemKey = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Nanjing",
                         ItemKey = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
@@ -201,22 +195,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     private void InitDisabledCascaderData(CascaderViewModel viewModel)
     {
         viewModel.DisabledCascaderNodes = [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Zhejiang",
                 ItemKey = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Hangzhou",
                         ItemKey = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "West Lake",
                                 ItemKey = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
@@ -225,18 +219,18 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Jiangsu",
                 ItemKey = "jiangsu",
                 IsEnabled = false,
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Nanjing",
                         ItemKey = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
@@ -251,22 +245,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     private void InitSelectParentCascaderData(CascaderViewModel viewModel)
     {
         viewModel.SelectParentCascaderNodes = [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Zhejiang",
                 ItemKey = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Hangzhou",
                         ItemKey = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "West Lake",
                                 ItemKey = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
@@ -275,17 +269,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header    = "Jiangsu",
                 ItemKey   = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Nanjing",
                         ItemKey = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
@@ -302,16 +296,16 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         viewModel.MultipleSelectCascaderNodes = GenerateMultiSelectCascaderNodes();
     }
 
-    private List<ICascaderViewItemData> GenerateMultiSelectCascaderNodes()
+    private List<ICascaderViewOption> GenerateMultiSelectCascaderNodes()
     {
-        var lightNode = new CascaderViewItemData()
+        var lightNode = new CascaderViewOption()
         {
             Header = "Light",
             Value  = "light",
         };
         for (var i = 1; i <= 20; i++)
         {
-            lightNode.Children.Add(new CascaderViewItemData()
+            lightNode.Children.Add(new CascaderViewOption()
             {
                 Header = $"Number {i}",
                 Value  = i.ToString()
@@ -319,28 +313,28 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         }
         return [
             lightNode,
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Bamboo",
                 Value  = "bamboo",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Little",
                         Value  = "little",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header            = "Toy Fish",
                                 Value             = "fish",
                                 IsCheckBoxEnabled = false
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Toy Cards",
                                 Value  = "cards",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Toy Bird",
                                 Value  = "bird",
@@ -361,27 +355,27 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     private void InitSearchCascaderData(CascaderViewModel viewModel)
     {
         viewModel.SearchCascaderNodes = [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Zhejiang",
                 ItemKey = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Hangzhou",
                         ItemKey = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "West Lake",
                                 ItemKey = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Xia Sha",
                                 ItemKey = "xiasha",
@@ -391,17 +385,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Jiangsu",
                 ItemKey = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Nanjing",
                         ItemKey = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
@@ -417,12 +411,12 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         viewModel.LazyLoadCascaderNodes =
         [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 Value  = "zhejiang"
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Jiangsu",
                 Value  = "jiangsu",
@@ -452,22 +446,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     private void InitBasicCheckableCascaderViewData(CascaderViewModel viewModel)
     {
         viewModel.BasicCheckableCascaderViewNodes = [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 Value  = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Hangzhou",
                         Value  = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "West Lake",
                                 Value  = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Lingyin shi",
                                 Value  = "lingyinshi",
@@ -476,17 +470,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Jiangsu",
                 Value  = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Nanjing",
                         Value  = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Zhong Hua Men",
                                 Value  = "zhonghuamen",
@@ -502,12 +496,12 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         viewModel.AsyncLoadCascaderViewNodes =
         [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 Value  = "zhejiang"
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Jiangsu",
                 Value  = "jiangsu",
@@ -519,27 +513,27 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         viewModel.SearchCascaderViewNodes =
         [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 Value  = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Hangzhou",
                         Value  = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "West Lake",
                                 Value  = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Lingyin shi",
                                 Value  = "lingyinshi",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "XiSha",
                                 Value  = "xisha",
@@ -549,17 +543,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Jiangsu",
                 Value  = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header = "Nanjing",
                         Value  = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header = "Zhong Hua Men",
                                 Value  = "zhonghuamen",
@@ -575,27 +569,27 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         viewModel.DefaultExpandCascaderViewNodes =
         [
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = "Zhejiang",
                 ItemKey  = "zhejiang",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Hangzhou",
                         ItemKey = "hangzhou",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "West Lake",
                                 ItemKey = "xihu",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
                             },
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header    = "XiSha",
                                 ItemKey   = "xisha",
@@ -605,17 +599,17 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                     }
                 ]
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header  = "Jiangsu",
                 ItemKey = "jiangsu",
                 Children = [
-                    new CascaderViewItemData()
+                    new CascaderViewOption()
                     {
                         Header  = "Nanjing",
                         ItemKey = "nanjing",
                         Children = [
-                            new CascaderViewItemData()
+                            new CascaderViewOption()
                             {
                                 Header  = "Zhong Hua Men",
                                 ItemKey = "zhonghuamen",
@@ -631,7 +625,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         if (sender is SearchEdit searchEdit)
         {
-            SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
+           SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
         }
     }
     
@@ -639,7 +633,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         if (sender is SearchEdit searchEdit)
         {
-            SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
+           SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
         }
     }
     

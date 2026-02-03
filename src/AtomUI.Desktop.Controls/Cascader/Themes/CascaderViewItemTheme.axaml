@@ -6,23 +6,62 @@
               x:Class="AtomUI.Desktop.Controls.Themes.CascaderViewItemTheme">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:CascaderViewItem">
-            <atom:CascaderViewItemHeader Name="{x:Static atom:CascaderViewItemThemeConstants.HeaderPart}"
-                                         Icon="{TemplateBinding Icon}"
-                                         ExpandIcon="{TemplateBinding ExpandIcon}"
-                                         LoadingIcon="{TemplateBinding LoadingIcon}"
-                                         Content="{TemplateBinding Header}"
-                                         ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                         Level="{TemplateBinding Level}"
-                                         IsExpanded="{TemplateBinding IsExpanded, Mode=TwoWay}"
-                                         IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
-                                         IsLeaf="{TemplateBinding IsLeaf}"
-                                         IsLoading="{TemplateBinding IsLoading}"
-                                         IsEnabled="{TemplateBinding IsEnabled}"
-                                         ToggleType="{TemplateBinding ToggleType}"
-                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         BorderThickness="{TemplateBinding BorderThickness}"
-                                         IsCheckBoxEnabled="{TemplateBinding IsCheckBoxEnabled}"
-                                         Focusable="{TemplateBinding Focusable}" />
+            <Border Name="Frame"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Background="{TemplateBinding Background}"
+                    Padding="{TemplateBinding Padding}">
+                <Grid Name="ItemsLayout">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Indicator" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="IconPresenter" />
+                        <ColumnDefinition Width="*" SharedSizeGroup="HeaderPresenter" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Panel Grid.Column="0"
+                           Name="Indicator"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center">
+                        <atom:CheckBox Name="ToggleCheckbox"
+                                       IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                       IsVisible="False">
+                            <atom:CheckBox.IsEnabled>
+                                <MultiBinding
+                                    Converter="{x:Static atom:CascaderViewItemTheme.CascaderViewItemIndicatorEnabledConverter}">
+                                    <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsEnabled" />
+                                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                             Path="IsCheckBoxEnabled" />
+                                </MultiBinding>
+                            </atom:CheckBox.IsEnabled>
+                        </atom:CheckBox>
+                    </Panel>
+
+                    <atom:IconPresenter Name="IconPresenter"
+                                        Grid.Column="1"
+                                        Icon="{TemplateBinding Icon}"
+                                        IsEnabled="{TemplateBinding IsEnabled}"
+                                        IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <ContentPresenter Grid.Column="2" Name="HeaderPresenter"
+                                      VerticalContentAlignment="Center"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                    <atom:IconPresenter Name="ExpandIconPresenter" Grid.Column="3"
+                                        IconTemplate="{TemplateBinding ExpandIcon}">
+                        <atom:IconPresenter.IsVisible>
+                            <MultiBinding
+                                Converter="{x:Static atom:CascaderViewItemTheme.CascaderViewItemExpanderIsVisibleConverter}">
+                                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLeaf" />
+                                <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                         Path="IsLoading" />
+                            </MultiBinding>
+                        </atom:IconPresenter.IsVisible>
+                    </atom:IconPresenter>
+                    <atom:IconPresenter Name="LoadingIconPresenter" Grid.Column="3"
+                                        IsVisible="{TemplateBinding IsLoading}"
+                                        IconTemplate="{TemplateBinding LoadingIcon}" />
+                </Grid>
+            </Border>
         </ControlTemplate>
     </Setter>
 
@@ -31,11 +70,61 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
-        
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Cursor" Value="Hand" />
+
         <Style Selector="^[IsMaxSelectReached=True][IsChecked=False]">
-            <Style Selector="^ /template/ atom|CascaderViewItemHeader#PART_Header">
-                <Setter Property="IsEnabled" Value="False"/>
+            <Setter Property="IsEnabled" Value="False" />
+        </Style>
+
+        <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:CascaderTokenKey.HeaderHeight}}" />
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:CascaderTokenKey.OptionPadding}}" />
+        <Setter Property="CornerRadius"
+                Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
+
+        <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:CascaderTokenKey.OptionHoverBg}}" />
+        </Style>
+
+        <Style Selector="^[IsExpanded=True]">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:CascaderTokenKey.OptionSelectedBg}}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static atom:CascaderTokenKey.OptionSelectedColor}}" />
+            <Setter Property="FontWeight"
+                    Value="{DynamicResource {x:Static atom:CascaderTokenKey.OptionSelectedFontWeight}}" />
+        </Style>
+
+        <Style Selector="^[ToggleType=CheckBox]">
+            <Style Selector="^ /template/ atom|CheckBox#ToggleCheckbox">
+                <Setter Property="IsVisible" Value="True" />
             </Style>
+        </Style>
+
+        <Style Selector="^ /template/ Grid#ItemsLayout">
+            <Setter Property="ColumnSpacing"
+                    Value="{DynamicResource {x:Static atom:CascaderTokenKey.ItemHeaderSpacing}}" />
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                <Setter Property="Opacity" Value="0.3" />
+            </Style>
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconPresenter">
+            <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}" />
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
         </Style>
     </Style>
 </ControlTheme>

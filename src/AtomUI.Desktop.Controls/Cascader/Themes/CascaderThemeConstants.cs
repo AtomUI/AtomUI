@@ -9,6 +9,7 @@ internal static class CascaderViewThemeConstants
 {
     public const string ItemsPanelPart = "PART_ItemsPanel";
     public const string FilterListPart = "PART_FilterList";
+    public const string RootLevelListPart = "PART_RootLevelList";
 }
 
 internal static class CascaderThemeConstants

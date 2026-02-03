@@ -28,18 +28,16 @@ public partial class CascaderView
         {
             return;
         }
-        if (DataLoader != null && ItemsSource == null)
-        {
-            throw new InvalidOperationException("ICascaderItemDataLoader is set, but the cascader nodes are not initially set via ItemsSource.");
-        }
-        if (item.DataContext is ICascaderViewItemData cascaderViewItemData)
+
+        var option = item.AttachedOption;
+        if (option != null)
         {
             var cts = new CancellationTokenSource(); // TODO 做一个超时结束
             item.IsLoading = true;
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 Debug.Assert(DataLoader != null);
-                var result = await DataLoader.LoadAsync(cascaderViewItemData, cts.Token);
+                var result = await DataLoader.LoadAsync(option, cts.Token);
                 item.IsLoading   = false;
                 item.AsyncLoaded = true;
                 ItemAsyncLoaded?.Invoke(this, new CascaderViewItemLoadedEventArgs(item, result));
@@ -49,9 +47,9 @@ public partial class CascaderView
                     {
                         foreach (var child in result.Data)
                         {
-                            child.UpdateParentNode(cascaderViewItemData);
+                            child.UpdateParentNode(option);
                         }
-                        cascaderViewItemData.Children.AddRange(result.Data);
+                        option.Children.AddRange(result.Data);
                     }
                 }
             });

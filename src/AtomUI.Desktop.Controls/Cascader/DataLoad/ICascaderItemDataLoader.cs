@@ -2,5 +2,5 @@ namespace AtomUI.Desktop.Controls.DataLoad;
 
 public interface ICascaderItemDataLoader
 {
-    Task<CascaderItemLoadResult> LoadAsync(ICascaderViewItemData targetCascaderItem, CancellationToken token);
+    Task<CascaderItemLoadResult> LoadAsync(ICascaderViewOption targetNode, CancellationToken token);
 }

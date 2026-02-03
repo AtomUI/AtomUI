@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
@@ -41,33 +40,14 @@ public partial class CascaderView
     {
         if (Filter != null && FilterValue != null && IsLoaded)
         {
-            if (FilterValue is string strFilterValue && string.IsNullOrWhiteSpace(strFilterValue))
-            {
-                ClearFilter();
-                return;
-            }
-
             if (_allPathInfos == null)
             {
                 var result = new List<CascaderViewFilterListItemData>();
-                if (ItemsSource != null)
+                foreach (var item in Items)
                 {
-                    foreach (var item in Items)
+                    if (item is ICascaderViewOption viewOption)
                     {
-                        if (item is ICascaderViewItemData cascaderViewItemData)
-                        {
-                            CollectionPaths(cascaderViewItemData, result);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var item in Items)
-                    {
-                        if (item is CascaderViewItem cascaderViewItem)
-                        {
-                            CollectionPaths(cascaderViewItem, result);
-                        }
+                        CollectionPaths(viewOption, result);
                     }
                 }
                 result.Sort((lhs, rhs) =>
@@ -89,81 +69,39 @@ public partial class CascaderView
         }
     }
 
-    private CascaderViewFilterListItemData GetFullPath(object item)
+    private CascaderViewFilterListItemData GetFullPath(ICascaderViewOption option)
     {
-        if (item is ICascaderViewItemData cascaderViewItemData)
+        var pathHeaders = new List<string>();
+        var current     = option;
+        var pathNodes   = new  List<ICascaderViewOption>();
+        while (current != null)
         {
-            var pathHeaders = new List<string>();
-            var current       = cascaderViewItemData;
-            var pathNodes = new  List<object>();
-            while (current != null)
-            {
-                pathNodes.Add(current);
-                pathHeaders.Add(current.Header?.ToString() ?? string.Empty);
-                current = current.ParentNode as ICascaderViewItemData;
-            }
-
-            pathNodes.Reverse();
-            pathHeaders.Reverse();
-            return new CascaderViewFilterListItemData()
-            {
-                Value     = string.Join('/', pathHeaders),
-                ExpandItems = pathNodes,
-                IsEnabled = cascaderViewItemData.IsEnabled
-            };
-        }
-        if (item is CascaderViewItem cascaderViewItem)
-        {
-            var pathHeaders = new List<string>();
-            var current     = cascaderViewItem;
-            var pathNodes   = new  List<object>();
-            while (current != null)
-            {
-                pathNodes.Add(current);
-                pathHeaders.Add(current.Header?.ToString() ?? string.Empty);
-                current = current.Parent as CascaderViewItem;
-            }
-
-            pathNodes.Reverse();
-            pathHeaders.Reverse();
-            return new CascaderViewFilterListItemData()
-            {
-                Value     = string.Join('/', pathHeaders),
-                ExpandItems = pathNodes,
-                IsEnabled = cascaderViewItem.IsEnabled
-            };
-        }
-        throw new ArgumentException($"Item of type {item.GetType()} is not a CascaderViewItem or ICascaderViewItemData");
-    }
-
-    private void CollectionPaths(CascaderViewItem cascaderViewItem, List<CascaderViewFilterListItemData> result)
-    {
-        Debug.Assert(Filter != null);
-        foreach (var item in cascaderViewItem.Items)
-        {
-            if (item is CascaderViewItem childItem)
-            {
-                CollectionPaths(childItem, result);
-            }
+            pathNodes.Add(current);
+            pathHeaders.Add(current.Header?.ToString() ?? string.Empty);
+            current = current.ParentNode as ICascaderViewOption;
         }
 
-        if (cascaderViewItem.ItemCount == 0)
+        pathNodes.Reverse();
+        pathHeaders.Reverse();
+        return new CascaderViewFilterListItemData()
         {
-            result.Add(GetFullPath(cascaderViewItem));
-        }
+            Value       = string.Join('/', pathHeaders),
+            ExpandItems = pathNodes,
+            IsEnabled   = option.IsEnabled
+        };
     }
     
-    private void CollectionPaths(ICascaderViewItemData cascaderViewItemData, List<CascaderViewFilterListItemData> result)
+    private void CollectionPaths(ICascaderViewOption option, List<CascaderViewFilterListItemData> result)
     {
         Debug.Assert(Filter != null);
-        foreach (var childItem in cascaderViewItemData.Children)
+        foreach (var childItem in option.Children)
         {
             CollectionPaths(childItem, result);
         }
 
-        if (cascaderViewItemData.Children.Count == 0)
+        if (option.Children.Count == 0)
         {
-            result.Add(GetFullPath(cascaderViewItemData));
+            result.Add(GetFullPath(option));
         }
     }
     
@@ -178,7 +116,7 @@ public partial class CascaderView
 
     private void HandleFilterListSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        IList? paths = null;
+        IList<ICascaderViewOption>? paths = null;
         if (_filterList?.SelectedItem is CascaderViewFilterListItemData itemData)
         {
             paths = itemData.ExpandItems;
@@ -188,27 +126,14 @@ public partial class CascaderView
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                for (var i = 0; i < paths.Count; i++)
-                {
-                    var path = paths[i];
-                    if (path is ICascaderViewItemData cascaderViewItemData)
-                    {
-                        cascaderViewItemData.IsExpanded = true;
-                    }
-                    else if (path is CascaderViewItem cascaderViewItem)
-                    {
-                        await ExpandItemAsync(cascaderViewItem);
-                    }
-
-                    if (!IsCheckable && path != null)
-                    {
-                        if (i == paths.Count - 1)
-                        {
-                            SelectedItem = path;
-                            ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(path));
-                        }
-                    }
-                }
+                var targetNode = paths[^1];
+                await ExpandItemAsync(targetNode);
+        
+                // if (!IsCheckable)
+                // {
+                //     SelectedItem = targetNode;
+                //     ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(targetNode));
+                // }
             });
         }
     }

@@ -15,25 +15,17 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
 
     public string UrlPathSegment { get; } = ID.ToString();
     
-    private List<ICascaderViewItemData> _basicCascaderViewNodes = [];
+    private List<ICascaderViewOption> _basicCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> BasicCascaderViewNodes
+    public List<ICascaderViewOption> BasicCascaderViewNodes
     {
         get => _basicCascaderViewNodes;
         set => this.RaiseAndSetIfChanged(ref _basicCascaderViewNodes, value);
     }
     
-    private List<ICascaderViewItemData> _basicCascaderNodes = [];
+    private List<ICascaderViewOption> _defaultValueCascaderNodes = [];
     
-    public List<ICascaderViewItemData> BasicCascaderNodes
-    {
-        get => _basicCascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _basicCascaderNodes, value);
-    }
-    
-    private List<ICascaderViewItemData> _defaultValueCascaderNodes = [];
-    
-    public List<ICascaderViewItemData> DefaultValueCascaderNodes
+    public List<ICascaderViewOption> DefaultValueCascaderNodes
     {
         get => _defaultValueCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _defaultValueCascaderNodes, value);
@@ -47,89 +39,89 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _defaultSelectItemPath, value);
     }
     
-    private List<ICascaderViewItemData> _basicCheckableCascaderViewNodes = [];
+    private List<ICascaderViewOption> _basicCheckableCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> BasicCheckableCascaderViewNodes
+    public List<ICascaderViewOption> BasicCheckableCascaderViewNodes
     {
         get => _basicCheckableCascaderViewNodes;
         set => this.RaiseAndSetIfChanged(ref _basicCheckableCascaderViewNodes, value);
     }
     
-    private List<ICascaderViewItemData> _hoverCascaderNodes = [];
+    private List<ICascaderViewOption> _hoverCascaderNodes = [];
     
-    public List<ICascaderViewItemData> HoverCascaderNodes
+    public List<ICascaderViewOption> HoverCascaderNodes
     {
         get => _hoverCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _hoverCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _disabledCascaderNodes = [];
+    private List<ICascaderViewOption> _disabledCascaderNodes = [];
     
-    public List<ICascaderViewItemData> DisabledCascaderNodes
+    public List<ICascaderViewOption> DisabledCascaderNodes
     {
         get => _disabledCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _disabledCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _selectParentCascaderNodes = [];
+    private List<ICascaderViewOption> _selectParentCascaderNodes = [];
     
-    public List<ICascaderViewItemData> SelectParentCascaderNodes
+    public List<ICascaderViewOption> SelectParentCascaderNodes
     {
         get => _selectParentCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _selectParentCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _multipleSelectCascaderNodes = [];
+    private List<ICascaderViewOption> _multipleSelectCascaderNodes = [];
     
-    public List<ICascaderViewItemData> MultipleSelectCascaderNodes
+    public List<ICascaderViewOption> MultipleSelectCascaderNodes
     {
         get => _multipleSelectCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _multipleSelectCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _checkStrategy1CascaderNodes = [];
+    private List<ICascaderViewOption> _checkStrategy1CascaderNodes = [];
     
-    public List<ICascaderViewItemData> CheckStrategy1CascaderNodes
+    public List<ICascaderViewOption> CheckStrategy1CascaderNodes
     {
         get => _checkStrategy1CascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _checkStrategy1CascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _checkStrategy2CascaderNodes = [];
+    private List<ICascaderViewOption> _checkStrategy2CascaderNodes = [];
     
-    public List<ICascaderViewItemData> CheckStrategy2CascaderNodes
+    public List<ICascaderViewOption> CheckStrategy2CascaderNodes
     {
         get => _checkStrategy2CascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _checkStrategy2CascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _lazyLoadCascaderNodes = [];
+    private List<ICascaderViewOption> _lazyLoadCascaderNodes = [];
     
-    public List<ICascaderViewItemData> LazyLoadCascaderNodes
+    public List<ICascaderViewOption> LazyLoadCascaderNodes
     {
         get => _lazyLoadCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _lazyLoadCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _prefixAndSuffix1CascaderNodes = [];
+    private List<ICascaderViewOption> _prefixAndSuffix1CascaderNodes = [];
     
-    public List<ICascaderViewItemData> PrefixAndSuffix1CascaderNodes
+    public List<ICascaderViewOption> PrefixAndSuffix1CascaderNodes
     {
         get => _prefixAndSuffix1CascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _prefixAndSuffix1CascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _prefixAndSuffix2CascaderNodes = [];
+    private List<ICascaderViewOption> _prefixAndSuffix2CascaderNodes = [];
     
-    public List<ICascaderViewItemData> PrefixAndSuffix2CascaderNodes
+    public List<ICascaderViewOption> PrefixAndSuffix2CascaderNodes
     {
         get => _prefixAndSuffix2CascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _prefixAndSuffix2CascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _prefixAndSuffix3CascaderNodes = [];
+    private List<ICascaderViewOption> _prefixAndSuffix3CascaderNodes = [];
     
-    public List<ICascaderViewItemData> PrefixAndSuffix3CascaderNodes
+    public List<ICascaderViewOption> PrefixAndSuffix3CascaderNodes
     {
         get => _prefixAndSuffix3CascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _prefixAndSuffix3CascaderNodes, value);
@@ -143,57 +135,57 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _placement, value);
     }
     
-    private List<ICascaderViewItemData> _placementCascaderNodes = [];
+    private List<ICascaderViewOption> _placementCascaderNodes = [];
     
-    public List<ICascaderViewItemData> PlacementCascaderNodes
+    public List<ICascaderViewOption> PlacementCascaderNodes
     {
         get => _placementCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _placementCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _searchCascaderNodes = [];
+    private List<ICascaderViewOption> _searchCascaderNodes = [];
     
-    public List<ICascaderViewItemData> SearchCascaderNodes
+    public List<ICascaderViewOption> SearchCascaderNodes
     {
         get => _searchCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _searchCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _sizeLargeCascaderNodes = [];
+    private List<ICascaderViewOption> _sizeLargeCascaderNodes = [];
     
-    public List<ICascaderViewItemData> SizeLargeCascaderNodes
+    public List<ICascaderViewOption> SizeLargeCascaderNodes
     {
         get => _sizeLargeCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _sizeLargeCascaderNodes, value);
     }
  
-    private List<ICascaderViewItemData> _sizeMiddleCascaderNodes = [];
+    private List<ICascaderViewOption> _sizeMiddleCascaderNodes = [];
     
-    public List<ICascaderViewItemData> SizeMiddleCascaderNodes
+    public List<ICascaderViewOption> SizeMiddleCascaderNodes
     {
         get => _sizeMiddleCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _sizeMiddleCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _sizeSmallCascaderNodes = [];
+    private List<ICascaderViewOption> _sizeSmallCascaderNodes = [];
     
-    public List<ICascaderViewItemData> SizeSmallCascaderNodes
+    public List<ICascaderViewOption> SizeSmallCascaderNodes
     {
         get => _sizeSmallCascaderNodes;
         set => this.RaiseAndSetIfChanged(ref _sizeSmallCascaderNodes, value);
     }
     
-    private List<ICascaderViewItemData> _asyncLoadCascaderViewNodes = [];
+    private List<ICascaderViewOption> _asyncLoadCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> AsyncLoadCascaderViewNodes
+    public List<ICascaderViewOption> AsyncLoadCascaderViewNodes
     {
         get => _asyncLoadCascaderViewNodes;
         set => this.RaiseAndSetIfChanged(ref _asyncLoadCascaderViewNodes, value);
     }
     
-    private List<ICascaderViewItemData> _searchCascaderViewNodes = [];
+    private List<ICascaderViewOption> _searchCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> SearchCascaderViewNodes
+    public List<ICascaderViewOption> SearchCascaderViewNodes
     {
         get => _searchCascaderViewNodes;
         set => this.RaiseAndSetIfChanged(ref _searchCascaderViewNodes, value);
@@ -207,9 +199,9 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _asyncCascaderNodeLoader, value);
     }
     
-    private List<ICascaderViewItemData> _defaultExpandCascaderViewNodes = [];
+    private List<ICascaderViewOption> _defaultExpandCascaderViewNodes = [];
     
-    public List<ICascaderViewItemData> DefaultExpandCascaderViewNodes
+    public List<ICascaderViewOption> DefaultExpandCascaderViewNodes
     {
         get => _defaultExpandCascaderViewNodes;
         set => this.RaiseAndSetIfChanged(ref _defaultExpandCascaderViewNodes, value);
@@ -232,17 +224,17 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
 
 public class CascaderItemDataLoader : ICascaderItemDataLoader
 {
-    public async Task<CascaderItemLoadResult> LoadAsync(ICascaderViewItemData targetCascaderItem, CancellationToken token)
+    public async Task<CascaderItemLoadResult> LoadAsync(ICascaderViewOption targetCascaderItem, CancellationToken token)
     {
         await Task.Delay(TimeSpan.FromMilliseconds(600), token);
-        var children = new List<CascaderViewItemData>();
+        var children = new List<CascaderViewOption>();
         children.AddRange([
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = $"{targetCascaderItem.Value} Dynamic 1",
                 IsLeaf = true
             },
-            new CascaderViewItemData()
+            new CascaderViewOption()
             {
                 Header = $"{targetCascaderItem.Value} Dynamic 2",
                 IsLeaf = true

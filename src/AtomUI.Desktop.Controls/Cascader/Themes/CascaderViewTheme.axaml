@@ -26,7 +26,9 @@
                             IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}">
                             <StackPanel Orientation="Horizontal"
                                         Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
-                                <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" VerticalAlignment="Stretch"/>
+                                <atom:CascaderViewLevelList Name="{x:Static atom:CascaderViewThemeConstants.RootLevelListPart}"
+                                                            ItemsSource="{Binding Items, RelativeSource={RelativeSource TemplatedParent}}"
+                                                            ItemTemplate="{TemplateBinding ItemTemplate}"/>
                             </StackPanel>
                         </atom:ScrollViewer>
                         <ContentPresenter
@@ -45,7 +47,7 @@
                                                  SelectionMode="Single">
                         <atom:CascaderViewFilterList.ItemTemplate>
                             <DataTemplate x:DataType="atom:CascaderViewFilterListItemData">
-                                <atom:HighlightableTextBlock Text="{Binding Content}"
+                                <atom:HighlightableTextBlock Text="{Binding Path}"
                                                              HighlightForeground="{Binding FilterHighlightForeground, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}"
                                                              HighlightWords="{Binding FilterValue, RelativeSource={RelativeSource AncestorType=atom:CascaderView}}" />
                             </DataTemplate>
@@ -55,9 +57,10 @@
             </Border>
         </ControlTemplate>
     </Setter>
-    
+
     <Style Selector="^:is(atom|CascaderView)">
-        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:CascaderTokenKey.FilterHighlightColor}}" />
+        <Setter Property="FilterHighlightForeground"
+                Value="{DynamicResource {x:Static atom:CascaderTokenKey.FilterHighlightColor}}" />
         <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
@@ -68,33 +71,30 @@
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="EmptyIndicatorTemplate">
             <DataTemplate>
-                <atom:Empty SizeType="Small" PresetImage="Simple"/>
+                <atom:Empty SizeType="Small" PresetImage="Simple" />
             </DataTemplate>
         </Setter>
-            
+
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSplit}}" />
         <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
-        
-        <Setter Property="ItemsPanel">
-            <ItemsPanelTemplate>
-                <StackPanel Orientation="Vertical" 
-                            Margin="{DynamicResource {x:Static atom:CascaderTokenKey.MenuPadding}}"
-                            HorizontalAlignment="Left"
-                            MinWidth="{DynamicResource {x:Static atom:CascaderTokenKey.ControlItemWidth}}"/>
-            </ItemsPanelTemplate>
-        </Setter>
-        
+
         <Setter Property="ExpandIcon">
             <atom:IconTemplate>
-                <antdicons:RightOutlined/>
+                <antdicons:RightOutlined />
+            </atom:IconTemplate>
+        </Setter>
+
+        <Setter Property="LoadingIcon">
+            <atom:IconTemplate>
+                <antdicons:LoadingOutlined LoadingAnimation="Spin" />
             </atom:IconTemplate>
         </Setter>
         
-        <Setter Property="LoadingIcon">
-            <atom:IconTemplate>
-                <antdicons:LoadingOutlined LoadingAnimation="Spin"/>
-            </atom:IconTemplate>
+        <Setter Property="ItemTemplate">
+            <DataTemplate x:DataType="atom:ICascaderViewOption">
+                <atom:TextBlock Text="{Binding Header}" />
+            </DataTemplate>
         </Setter>
     </Style>
 </ControlTheme>

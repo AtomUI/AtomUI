@@ -13,12 +13,23 @@
                                    IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
                                    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                                    IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
-                    <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                    <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </atom:ScrollViewer>
-                
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True"/>
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel
+                    Orientation="Vertical"
+                    Margin="{DynamicResource {x:Static atom:CascaderTokenKey.MenuPadding}}"
+                    HorizontalAlignment="Left"
+                    MinWidth="{DynamicResource {x:Static atom:CascaderTokenKey.ControlItemWidth}}" />
+            </ItemsPanelTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

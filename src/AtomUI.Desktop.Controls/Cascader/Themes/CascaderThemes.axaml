@@ -5,7 +5,6 @@
                     xmlns:atom="https://atomui.net">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="CascaderTheme.axaml" />
-        <ResourceInclude Source="CascaderViewItemHeaderTheme.axaml" />
         <ResourceInclude Source="CascaderViewLevelListTheme.axaml" />
         <ResourceInclude Source="CascaderViewFilterListTheme.axaml" />
         <ResourceInclude Source="CascaderAddOnDecoratedBoxTheme.axaml" />

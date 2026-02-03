@@ -4,14 +4,32 @@ using System.Reactive.Disposables;
 using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class CascaderViewLevelList : ItemsControl
+internal class CascaderViewLevelList : SelectingItemsControl
 {
+    #region 公共属性定义
+
+    public static readonly DirectProperty<CascaderViewLevelList, int> LevelProperty =
+        AvaloniaProperty.RegisterDirect<CascaderViewLevelList, int>(nameof(Level), 
+            o => o.Level);
+    
+    private int _level;
+    public int Level
+    {
+        get => _level;
+        internal set => SetAndRaise(LevelProperty, ref _level, value);
+    }
+
+    #endregion
+    
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     
     internal CascaderView? OwnerView { get; set; }
+    internal CascaderViewItem? ParentCascaderViewItem { get; set; }
     
     public CascaderViewLevelList()
     {
@@ -55,11 +73,22 @@ internal class CascaderViewLevelList : ItemsControl
         Debug.Assert(OwnerView != null);
         if (container is CascaderViewItem cascaderViewItem)
         {
-            var disposables = new CompositeDisposable(2);
+            var disposables = new CompositeDisposable(8);
             
-            if (item != null && item is not Visual && item is ICascaderViewItemData cascaderViewItemData)
+            if (item != null && item is not Visual && item is ICascaderViewOption option)
             {
-                CascaderViewItem.ApplyNodeData(cascaderViewItem, cascaderViewItemData, disposables);
+                cascaderViewItem.SetCurrentValue(CascaderViewItem.HeaderProperty, option);
+                cascaderViewItem.SetCurrentValue(CascaderViewItem.IconProperty, option.Icon);
+                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckedProperty, option.IsChecked);
+                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsEnabledProperty, option.IsEnabled);
+                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, option.IsExpanded);
+                cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, option.IsCheckBoxEnabled);
+                cascaderViewItem.ItemKey   = option.ItemKey;
+            
+                if (!cascaderViewItem.IsSet(CascaderViewItem.IsLeafProperty))
+                {
+                    cascaderViewItem.IsLeaf = option.IsLeaf;
+                }
             }
             
             if (ItemTemplate != null)
@@ -82,5 +111,20 @@ internal class CascaderViewLevelList : ItemsControl
             }
             _itemsBindingDisposables.Add(cascaderViewItem, disposables);
         }
+    }
+    
+    internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+    {
+        var container = GetContainerFromEventSource(e.Source);
+        if (container is CascaderViewItem cascaderViewItem && cascaderViewItem.IsLeaf)
+        {
+            return UpdateSelectionFromEventSource(
+                source,
+                true,
+                false,
+                true,
+                e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
+        }
+        return false;
     }
 }

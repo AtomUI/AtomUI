@@ -1,9 +1,5 @@
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Reactive.Disposables;
+using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Data;
-using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -13,31 +9,40 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-[PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, 
-    StdPseudoClass.Pressed, StdPseudoClass.Expanded)]
-public class CascaderViewItem : HeaderedItemsControl
+[PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, StdPseudoClass.Pressed, StdPseudoClass.Expanded,
+    StdPseudoClass.Selected)]
+public class CascaderViewItem : TemplatedControl, ISelectable
 {
     #region 公共属性定义
+    public static readonly StyledProperty<object?> HeaderProperty =
+        AvaloniaProperty.Register<CascaderViewItem, object?>(nameof(Header));
+
+    public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
+        AvaloniaProperty.Register<CascaderViewItem, IDataTemplate?>(nameof(HeaderTemplate));
+
+    public static readonly StyledProperty<bool> IsSelectedProperty =
+        SelectingItemsControl.IsSelectedProperty.AddOwner<CascaderViewItem>();
+
     public static readonly StyledProperty<bool> IsExpandedProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(
             nameof(IsExpanded),
             defaultBindingMode: BindingMode.TwoWay);
-    
-    public static readonly DirectProperty<CascaderViewItem, int> LevelProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, int>(
-            nameof(Level), o => o.Level);
-    
-    public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
-        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Expanded), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
-    
-    public static readonly RoutedEvent<RoutedEventArgs> CollapsedEvent =
-        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Collapsed), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
-    
+
+    public object? Header
+    {
+        get => GetValue(HeaderProperty);
+        set => SetValue(HeaderProperty, value);
+    }
+
+    public IDataTemplate? HeaderTemplate
+    {
+        get => GetValue(HeaderTemplateProperty);
+        set => SetValue(HeaderTemplateProperty, value);
+    }
+
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<CascaderViewItem, PathIcon?>(nameof(Icon));
 
@@ -50,38 +55,25 @@ public class CascaderViewItem : HeaderedItemsControl
 
     public static readonly StyledProperty<bool> IsLoadingProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsLoading), false);
-    
+
     public static readonly DirectProperty<CascaderViewItem, object?> ValueProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, object?>(nameof(Value),
             o => o.Value,
             (o, v) => o.Value = v);
-    
+
     public static readonly StyledProperty<bool> IsCheckBoxEnabledProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsCheckBoxEnabled), true);
-    
+
+    public bool IsSelected
+    {
+        get => GetValue(IsSelectedProperty);
+        set => SetValue(IsSelectedProperty, value);
+    }
+
     public bool IsExpanded
     {
         get => GetValue(IsExpandedProperty);
         set => SetValue(IsExpandedProperty, value);
-    }
-
-    private int _level;
-    public int Level
-    {
-        get => _level;
-        private set => SetAndRaise(LevelProperty, ref _level, value);
-    }
-    
-    public event EventHandler<RoutedEventArgs>? Expanded
-    {
-        add => AddHandler(ExpandedEvent, value);
-        remove => RemoveHandler(ExpandedEvent, value);
-    }
-    
-    public event EventHandler<RoutedEventArgs>? Collapsed
-    {
-        add => AddHandler(CollapsedEvent, value);
-        remove => RemoveHandler(CollapsedEvent, value);
     }
 
     public PathIcon? Icon
@@ -103,7 +95,7 @@ public class CascaderViewItem : HeaderedItemsControl
         get => _isLeaf;
         internal set => SetAndRaise(IsLeafProperty, ref _isLeaf, value);
     }
-    
+
     private object? _value;
 
     public object? Value
@@ -117,39 +109,71 @@ public class CascaderViewItem : HeaderedItemsControl
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
     }
-    
+
     public bool IsCheckBoxEnabled
     {
         get => GetValue(IsCheckBoxEnabledProperty);
         set => SetValue(IsCheckBoxEnabledProperty, value);
     }
-    
-    private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new StackPanel());
-    
-    private CascaderView? _cascaderView;
-    internal CascaderView? CascaderViewOwner => _cascaderView;
-    
+
     public TreeNodeKey? ItemKey { get; set; }
 
     #endregion
 
-    #region 公共事件定义
+    #region 内部事件定义
+    internal static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Expanded), 
+            RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
+    internal static readonly RoutedEvent<RoutedEventArgs> CollapsedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Collapsed), 
+            RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
+    internal static readonly RoutedEvent<RoutedEventArgs> CheckedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Checked), 
+            RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
+    internal static readonly RoutedEvent<RoutedEventArgs> SelectedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(Selected), 
+            RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
-    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
+    internal static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
         RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(
             nameof(Clicked),
             RoutingStrategies.Bubble);
     
-    public event EventHandler<RoutedEventArgs>? Clicked
+    internal event EventHandler<RoutedEventArgs>? Clicked
     {
         add => AddHandler(ClickedEvent, value);
         remove => RemoveHandler(ClickedEvent, value);
     }
+    
+    internal event EventHandler<RoutedEventArgs>? Expanded
+    {
+        add => AddHandler(ExpandedEvent, value);
+        remove => RemoveHandler(ExpandedEvent, value);
+    }
+    
+    internal event EventHandler<RoutedEventArgs>? Collapsed
+    {
+        add => AddHandler(CollapsedEvent, value);
+        remove => RemoveHandler(CollapsedEvent, value);
+    }
+    
+    internal event EventHandler<RoutedEventArgs>? Checked
+    {
+        add => AddHandler(CheckedEvent, value);
+        remove => RemoveHandler(CheckedEvent, value);
+    }
+    
+    internal event EventHandler<RoutedEventArgs>? Selected
+    {
+        add => AddHandler(SelectedEvent, value);
+        remove => RemoveHandler(SelectedEvent, value);
+    }
     #endregion
 
     #region 内部属性定义
-    
     internal static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
         AvaloniaProperty.Register<CascaderViewItem, IconTemplate?>(nameof(ExpandIcon));
 
@@ -166,12 +190,6 @@ public class CascaderViewItem : HeaderedItemsControl
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(HasItemAsyncDataLoader),
             o => o.HasItemAsyncDataLoader,
             (o, v) => o.HasItemAsyncDataLoader = v);
-    
-    internal static readonly DirectProperty<CascaderViewItem, Rect> HeaderBoundsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderViewItem, Rect>(
-            nameof(HeaderBounds),
-            o => o.HeaderBounds,
-            (o, v) => o.HeaderBounds = v);
     
     internal static readonly DirectProperty<CascaderViewItem, bool> IsMaxSelectReachedProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsMaxSelectReached),
@@ -210,14 +228,6 @@ public class CascaderViewItem : HeaderedItemsControl
         set => SetAndRaise(HasItemAsyncDataLoaderProperty, ref _hasItemAsyncDataLoader, value);
     }
     
-    private Rect _headerBounds;
-    
-    internal Rect HeaderBounds
-    {
-        get => _headerBounds;
-        set => SetAndRaise(HeaderBoundsProperty, ref _headerBounds, value);
-    }
-    
     private bool _isMaxSelectReached;
 
     internal bool IsMaxSelectReached
@@ -226,290 +236,69 @@ public class CascaderViewItem : HeaderedItemsControl
         set => SetAndRaise(IsMaxSelectReachedProperty, ref _isMaxSelectReached, value);
     }
 
-    internal CascaderView? OwnerView { get; set; }
-
-    private ICascaderViewInteractionHandler? CascaderViewInteractionHandler => this.FindLogicalAncestorOfType<CascaderView>()?.InteractionHandler;
+    public int Level => GetLevel();
+    internal ICascaderViewOption? AttachedOption => DataContext as ICascaderViewOption;
     
     #endregion
     
-    private CascaderViewItemHeader? _header;
-    private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     internal bool AsyncLoaded;
-    private bool _templateApplied;
-    private bool _deferredBringIntoViewFlag;
+    private static readonly Point s_invalidPoint = new (double.NaN, double.NaN);
+    private Point _pointerDownPoint = s_invalidPoint;
 
     static CascaderViewItem()
     {
+        SelectableMixin.Attach<CascaderViewItem>(IsSelectedProperty);
         PressedMixin.Attach<CascaderViewItem>();
-        AffectsRender<CascaderViewItem>(
-            BorderBrushProperty,
+        FocusableProperty.OverrideDefaultValue<CascaderViewItem>(true);
+        IsExpandedProperty.Changed.AddClassHandler<CascaderViewItem, bool>((item, e) => item.HandleIsExpandedChanged(e));
+        IsSelectedProperty.Changed.AddClassHandler<CascaderViewItem, bool>((item, e) => item.HandleIsSelectedChanged(e));
+        IsCheckedProperty.Changed.AddClassHandler<CascaderViewItem, bool?>((item, e) => item.HandleIsCheckedChanged(e));
+        AffectsRender<CascaderViewItem>(BorderBrushProperty,
             BorderThicknessProperty,
             BackgroundProperty);
-        FocusableProperty.OverrideDefaultValue<CascaderViewItem>(true);
-        ItemsPanelProperty.OverrideDefaultValue<CascaderViewItem>(DefaultPanel);
-        RequestBringIntoViewEvent.AddClassHandler<CascaderViewItem>((x, e) => x.HandleRequestBringIntoView(e));
-        IsExpandedProperty.Changed.AddClassHandler<CascaderViewItem, bool>((x, e) => x.HandleIsExpandedChanged(e));
-    }
-
-    public CascaderViewItem()
-    {
-        LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
-        Items.CollectionChanged           += HandleCollectionChanged;
-    }
-    
-    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (_cascaderView is null)
-        {
-            return;
-        }
-
-        switch (e.Action)
-        {
-            case NotifyCollectionChangedAction.Remove:
-            case NotifyCollectionChangedAction.Replace:
-                foreach (var i in e.OldItems!)
-                {
-                    _cascaderView.CheckedItems.Remove(i);
-                }
-                break;
-            case NotifyCollectionChangedAction.Reset:
-                _cascaderView.CheckedItems.Clear();
-                break;
-        }
     }
     
     private void HandleIsExpandedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
     {
         var routedEvent = args.NewValue.Value ? ExpandedEvent : CollapsedEvent;
-        var eventArgs   = new RoutedEventArgs() { RoutedEvent = routedEvent, Source = this };
+        var eventArgs   = new RoutedEventArgs { RoutedEvent = routedEvent, Source = this };
         RaiseEvent(eventArgs);
     }
     
-    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    private void HandleIsSelectedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
     {
-        base.OnAttachedToLogicalTree(e);
-        _cascaderView = this.GetLogicalAncestors().OfType<CascaderView>().FirstOrDefault();
-        if (DataContext is ICascaderViewItemData cascaderViewItemData)
-        {
-            var                              level   = 0;
-            ITreeNode<ICascaderViewItemData>? current = cascaderViewItemData;
-            while (current != null)
-            {
-                level++;
-                current = current.ParentNode;
-            }
-            Level = level - 1;
-        }
-        else
-        {
-            Level = CalculateDistanceFromLogicalParent<CascaderView>(this) - 1;
-        }
-        if (ItemTemplate == null && _cascaderView?.ItemTemplate != null)
-        {
-            SetCurrentValue(ItemTemplateProperty, _cascaderView.ItemTemplate);
-        }
-        if (ItemContainerTheme == null && _cascaderView?.ItemContainerTheme != null)
-        {
-            SetCurrentValue(ItemContainerThemeProperty, _cascaderView.ItemContainerTheme);
-        }
-    }
-    
-    protected virtual void HandleRequestBringIntoView(RequestBringIntoViewEventArgs e)
-    {
-        if (e.TargetObject == this)
-        {
-            if (!_templateApplied)
-            {
-                _deferredBringIntoViewFlag = true;
-                return;
-            }
-
-            if (_header != null)
-            {
-                var m = _header.TransformToVisual(this);
-
-                if (m.HasValue)
-                {
-                    var bounds = new Rect(_header.Bounds.Size);
-                    var rect   = bounds.TransformToAABB(m.Value);
-                    e.TargetRect = rect;
-                }
-            }
-        }
-    }
-    
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        if (!e.Handled)
-        {
-            Func<CascaderViewItem, bool>? handler =
-                e.Key switch
-                {
-                    Key.Left => ApplyToItemOrRecursivelyIfCtrl(FocusAwareCollapseItem, e.KeyModifiers),
-                    Key.Right => ApplyToItemOrRecursivelyIfCtrl(ExpandItem, e.KeyModifiers),
-                    Key.Enter => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
-
-                    // do not handle CTRL with numpad keys
-                    Key.Subtract => FocusAwareCollapseItem,
-                    Key.Add => ExpandItem,
-                    Key.Divide => ApplyToSubtree(CollapseItem),
-                    Key.Multiply => ApplyToSubtree(ExpandItem),
-                    _ => null,
-                };
-
-            if (handler is not null)
-            {
-                e.Handled = handler(this);
-            }
-
-            // NOTE: these local functions do not use the TreeView.Expand/CollapseSubtree
-            // function because we want to know if any items were in fact expanded to set the
-            // event handled status. Also the handling here avoids a potential infinite recursion/stack overflow.
-            static Func<CascaderViewItem, bool> ApplyToSubtree(Func<CascaderViewItem, bool> f)
-            {
-                // Calling toList enumerates all items before applying functions. This avoids a
-                // potential infinite loop if there is an infinite tree (the control catalog is
-                // lazily infinite). But also means a lazily loaded tree will not be expanded completely.
-                return t => SubTree(t)
-                            .ToList()
-                            .Select(cascaderViewItem => f(cascaderViewItem))
-                            .Aggregate(false, (p, c) => p || c);
-            }
-
-            static Func<CascaderViewItem, bool> ApplyToItemOrRecursivelyIfCtrl(Func<CascaderViewItem,bool> f, KeyModifiers keyModifiers)
-            {
-                if (keyModifiers.HasAllFlags(KeyModifiers.Control))
-                {
-                    return ApplyToSubtree(f);
-                }
-
-                return f;
-            }
-
-            static bool ExpandItem(CascaderViewItem cascaderViewItem)
-            {
-                if (cascaderViewItem.ItemCount > 0 && !cascaderViewItem.IsExpanded)
-                {
-                    cascaderViewItem.SetCurrentValue(IsExpandedProperty, true);
-                    return true;
-                }
-
-                return false;
-            }
-
-            static bool CollapseItem(CascaderViewItem cascaderViewItem)
-            {
-                if (cascaderViewItem.ItemCount > 0 && cascaderViewItem.IsExpanded)
-                {
-                    cascaderViewItem.SetCurrentValue(IsExpandedProperty, false);
-                    return true;
-                }
-
-                return false;
-            }
-
-            static bool FocusAwareCollapseItem(CascaderViewItem cascaderViewItem)
-            {
-                if (cascaderViewItem.ItemCount > 0 && cascaderViewItem.IsExpanded)
-                {
-                    if (cascaderViewItem.IsFocused)
-                    {
-                        cascaderViewItem.SetCurrentValue(IsExpandedProperty, false);
-                    }
-                    else
-                    {
-                        cascaderViewItem.Focus(NavigationMethod.Directional);
-                    }
-
-                    return true;
-                }
-
-                return false;
-            }
-
-            static IEnumerable<CascaderViewItem> SubTree(CascaderViewItem cascaderViewItem)
-            {
-                return new[] { cascaderViewItem }.Concat(cascaderViewItem.LogicalChildren.OfType<CascaderViewItem>().SelectMany(child => SubTree(child)));
-            }
-        }
-
-        // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
-    }
-    
-    private void HandleLogicalChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == NotifyCollectionChangedAction.Remove)
-        {
-            if (e.OldItems != null)
-            {
-                foreach (var item in e.OldItems)
-                {
-                    if (item is CascaderViewItem cascaderViewItem)
-                    {
-                        if (_itemsBindingDisposables.TryGetValue(cascaderViewItem, out var disposable))
-                        {
-                            disposable.Dispose();
-                        }
-                        _itemsBindingDisposables.Remove(cascaderViewItem);
-                    }
-                }
-            }
-        }
-    }
-    
-    private CascaderView EnsureCascaderView() => _cascaderView ??
-                                                 throw new InvalidOperationException("The CascaderViewItem is not part of a CascaderView.");
-    
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        OwnerView = this.GetLogicalAncestors().OfType<CascaderView>().FirstOrDefault();
+        RaiseEvent(new RoutedEventArgs(SelectedEvent, this));
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         
-        if (change.Property == ItemCountProperty ||
-            change.Property == HasItemAsyncDataLoaderProperty)
+        if (change.Property == HasItemAsyncDataLoaderProperty)
         {
             ConfigureIsLeaf();
-        }
-        else if (change.Property == IsCheckedProperty)
-        {
-            HandleIsCheckedChanged(change);
         }
         else if (change.Property == ToggleTypeProperty)
         {
             HandleToggleTypeChanged(change);
         }
+
+        if (change.Property == IsCheckedProperty ||
+            change.Property == ToggleTypeProperty ||
+            change.Property == IsSelectedProperty ||
+            change.Property == IsExpandedProperty)
+        {
+            UpdatePseudoClasses();
+        }
     }
     
     private void HandleToggleTypeChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        var newValue = change.GetNewValue<ItemToggleType>();
-        PseudoClasses.Set(CascaderViewPseudoClass.NodeToggleTypeCheckBox, newValue == ItemToggleType.CheckBox);
     }
     
-    private void HandleIsCheckedChanged(AvaloniaPropertyChangedEventArgs change)
+    private void HandleIsCheckedChanged(AvaloniaPropertyChangedEventArgs<bool?> change)
     {
-        var newValue = change.GetNewValue<bool?>();
-        PseudoClasses.Set(StdPseudoClass.Checked, newValue == true);
-        (CascaderViewInteractionHandler as DefaultCascaderViewInteractionHandler)?.OnCheckedChanged(this);
-    }
-    
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _header             = e.NameScope.Find<CascaderViewItemHeader>(CascaderViewItemThemeConstants.HeaderPart);
-        _templateApplied = true;
-        ConfigureIsLeaf();
-        if (_deferredBringIntoViewFlag)
-        {
-            _deferredBringIntoViewFlag = false;
-            Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
-        }
+        RaiseEvent(new RoutedEventArgs(CheckedEvent, this));
     }
     
     internal bool IsEffectiveCheckable()
@@ -521,98 +310,17 @@ public class CascaderViewItem : HeaderedItemsControl
 
         return true;
     }
-    
-    internal bool PointInHeaderBounds(PointerReleasedEventArgs e)
-    {
-        var bounds = new Rect(new Point(0, 0), _header?.Bounds.Size ?? default);
-        var point  = e.GetPosition(_header);
-        return bounds.Contains(point);
-    }
-    
-    internal void RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickedEvent));
-    
-    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
-    {
-        EnsureCascaderView();
-        return new CascaderViewItem();
-    }
-    
-    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
-    {
-        EnsureCascaderView();
-        return NeedsContainer<CascaderViewItem>(item, out recycleKey);
-    }
 
-    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+    internal void RaiseClick()
     {
-        base.ContainerForItemPreparedOverride(container, item, index);
-        if (container is CascaderViewItem cascaderViewItem)
-        {
-            cascaderViewItem.OwnerView = OwnerView;
-            var disposables = new CompositeDisposable(8);
-            
-            if (item != null && item is not Visual && item is ICascaderViewItemData cascaderViewItemData)
-            {
-                ApplyNodeData(cascaderViewItem, cascaderViewItemData, disposables);
-            }
-            
-            if (ItemTemplate != null)
-            {
-                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, HeaderTemplateProperty));
-            }
-            disposables.Add(BindUtils.RelayBind(this, ItemsPanelProperty, cascaderViewItem, ItemsPanelProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, cascaderViewItem, IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, ToggleTypeProperty, cascaderViewItem, ToggleTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsMaxSelectReachedProperty, cascaderViewItem, IsMaxSelectReachedProperty));
-            disposables.Add(BindUtils.RelayBind(this, HasItemAsyncDataLoaderProperty, cascaderViewItem,
-                HasItemAsyncDataLoaderProperty));
-            
-            PrepareCascaderViewItem(cascaderViewItem, item, index, disposables);
-            
-            if (_itemsBindingDisposables.TryGetValue(cascaderViewItem, out var oldDisposables))
-            {
-                oldDisposables.Dispose();
-                _itemsBindingDisposables.Remove(cascaderViewItem);
-            }
-            _itemsBindingDisposables.Add(cascaderViewItem, disposables);
-        }
-        else
-        {
-            throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type CascaderViewItem.");
-        }
+        RaiseEvent(new RoutedEventArgs(ClickedEvent));
     }
-    
-    protected virtual void PrepareCascaderViewItem(CascaderViewItem cascaderViewItem, object? item, int index, CompositeDisposable disposables)
-    {
-    }
-
-    internal static void ApplyNodeData(CascaderViewItem cascaderViewItem, ICascaderViewItemData cascaderViewItemData, CompositeDisposable disposables)
-    {
-        if (cascaderViewItemData is not Visual)
-        {
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.Icon), cascaderViewItem, IconProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsChecked), cascaderViewItem, IsCheckedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsEnabled), cascaderViewItem, IsEnabledProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsExpanded), cascaderViewItem, IsExpandedProperty, mode:BindingMode.TwoWay));
-            disposables.Add(BindUtils.RelayBind(cascaderViewItemData, nameof(ICascaderViewItemData.IsCheckBoxEnabled), cascaderViewItem, IsCheckBoxEnabledProperty, mode:BindingMode.TwoWay));
-            
-            if (cascaderViewItem.ItemKey == null)
-            {
-                cascaderViewItem.ItemKey = cascaderViewItemData.ItemKey;
-            }
-            
-            if (!cascaderViewItem.IsSet(IsLeafProperty))
-            {
-                cascaderViewItem.IsLeaf = cascaderViewItemData.IsLeaf;
-            }
-        }
-    }
-
+ 
     private void ConfigureIsLeaf()
     {
         if (HasItemAsyncDataLoader)
         {
-            if (ItemCount > 0)
+            if (AttachedOption?.Children.Count > 0)
             {
                 IsLeaf = false;
             }
@@ -620,27 +328,141 @@ public class CascaderViewItem : HeaderedItemsControl
             {
                 IsLeaf = true;
             }
-            else if (DataContext is ICascaderViewItemData itemData)
+        }
+        else
+        {
+            IsLeaf = AttachedOption?.Children.Count == 0;
+        }
+    }
+    
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+
+        _pointerDownPoint = s_invalidPoint;
+
+        if (e.Handled)
+        {
+            return;
+        }
+
+        if (!e.Handled && ItemsControl.ItemsControlFromItemContainer(this) is CascaderViewLevelList owner)
+        {
+            var p = e.GetCurrentPoint(this);
+
+            if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or 
+                PointerUpdateKind.RightButtonPressed)
             {
-                IsLeaf = itemData.IsLeaf;
+                if (p.Pointer.Type == PointerType.Mouse
+                    || (p.Pointer.Type == PointerType.Pen && p.Properties.IsRightButtonPressed))
+                {
+                    RaiseClick();
+                    // If the pressed point comes from a mouse or right-click pen, perform the selection immediately.
+                    // In case of pen, only right-click is accepted, as left click (a tip touch) is used for scrolling. 
+                    owner.UpdateSelectionFromPointerEvent(this, e);
+                }
+                else
+                {
+                    // Otherwise perform the selection when the pointer is released as to not
+                    // interfere with gestures.
+                    _pointerDownPoint = p.Position;
+
+                    // Ideally we'd set handled here, but that would prevent the scroll gesture
+                    // recognizer from working.
+                    ////e.Handled = true;
+                }
+            }
+        }
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+
+        if (!e.Handled && 
+            !double.IsNaN(_pointerDownPoint.X) &&
+            e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right)
+        {
+            var point    = e.GetCurrentPoint(this);
+            var settings = TopLevel.GetTopLevel(e.Source as Visual)?.PlatformSettings;
+            var tapSize  = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
+            var tapRect = new Rect(_pointerDownPoint, new Size())
+                .Inflate(new Thickness(tapSize.Width, tapSize.Height));
+
+            if (new Rect(Bounds.Size).ContainsExclusive(point.Position) &&
+                tapRect.ContainsExclusive(point.Position) &&
+                ItemsControl.ItemsControlFromItemContainer(this) is CascaderViewLevelList owner)
+            {
+                if (owner.UpdateSelectionFromPointerEvent(this, e))
+                {
+                    // As we only update selection from touch/pen on pointer release, we need to raise
+                    // the pointer event on the owner to trigger a commit.
+                    if (e.Pointer.Type != PointerType.Mouse)
+                    {
+                        var sourceBackup = e.Source;
+                        owner.RaiseEvent(e);
+                        e.Source = sourceBackup;
+                    }
+                
+                    e.Handled = true;
+                }
+            }
+        }
+
+        _pointerDownPoint = s_invalidPoint;
+    }
+    
+    private void ConfigureTransitions(bool force)
+    {
+        if (IsMotionEnabled)
+        {
+            if (force || Transitions == null)
+            {
+                Transitions =
+                [
+                    TransitionUtils.CreateTransition<SolidColorBrushTransition>(BackgroundProperty),
+                ];
             }
         }
         else
         {
-            IsLeaf = ItemCount == 0;
+            Transitions = null;
         }
     }
     
-    private static int CalculateDistanceFromLogicalParent<T>(ILogical? logical, int @default = -1) where T : class
+    protected override void OnLoaded(RoutedEventArgs e)
     {
-        var result = 0;
+        base.OnLoaded(e);
+        ConfigureIsLeaf();
+        ConfigureTransitions(false);
+    }
 
-        while (logical != null && !(logical is T))
+    protected override void OnUnloaded(RoutedEventArgs e)
+    {
+        base.OnUnloaded(e);
+        Transitions = null;
+    }
+    
+    private int GetLevel()
+    {
+        var level = 0;
+        // 通过数据
+        if (DataContext is ICascaderViewOption option)
         {
-            ++result;
-            logical = logical.LogicalParent;
+            var current = option;
+            while (current != null)
+            {
+                ++level;
+                current = current.ParentNode as ICascaderViewOption;
+            }
         }
-
-        return logical != null ? result : @default;
+        return level;
+    }
+    
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(CascaderViewPseudoClass.NodeToggleTypeCheckBox, ToggleType == ItemToggleType.CheckBox);
+        PseudoClasses.Set(StdPseudoClass.Expanded, IsExpanded);
+        PseudoClasses.Set(StdPseudoClass.Checked, IsChecked == true);
     }
 }

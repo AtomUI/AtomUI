@@ -2,14 +2,14 @@ namespace AtomUI.Desktop.Controls;
 
 public interface IListBoxItemData
 {
-    bool IsEnabled { get; }
-    bool IsSelected { get; }
-    object? Value { get; }
+    bool IsEnabled { get; set; }
+    bool IsSelected { get; set; }
+    object? Value { get; set; }
 }
 
 public record ListBoxItemData : IListBoxItemData
 {
-    public bool IsEnabled { get; init; } = true;
-    public bool IsSelected { get; init; }
-    public object? Value { get; init; }
+    public bool IsEnabled { get; set; } = true;
+    public bool IsSelected { get; set; }
+    public object? Value { get; set; }
 }

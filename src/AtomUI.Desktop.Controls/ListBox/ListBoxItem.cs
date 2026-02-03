@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using DynamicData;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -180,6 +181,7 @@ public class ListBoxItem : AvaloniaListBoxItem
     
     private static readonly Point s_invalidPoint = new(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
+    internal int VirtualIndex { get; set; } = -1;
     
     private void ConfigureTransitions(bool force)
     {

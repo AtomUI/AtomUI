@@ -249,6 +249,7 @@ public class ListBox : AvaloniaListBox,
     
     private protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     private protected readonly Dictionary<object, bool> _filterContext = new();
+    private protected readonly Dictionary<object, IDictionary<object, object>> _virtualRestoreContext = new();
 
     static ListBox()
     {
@@ -374,7 +375,16 @@ public class ListBox : AvaloniaListBox,
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is ListBoxItem listBoxItem)
         {
+            
             var disposables = new CompositeDisposable(8);
+
+            if (_virtualRestoreContext.TryGetValue(index, out var context))
+            {
+                NotifyRestoreVirtualizingContext(listBoxItem, context);
+                _virtualRestoreContext.Remove(index);
+            }
+            
+            listBoxItem.VirtualIndex = index;
             
             if (ItemTemplate != null)
             {
@@ -578,4 +588,31 @@ public class ListBox : AvaloniaListBox,
         base.OnKeyDown(e);
     }
     
+    protected override void ClearContainerForItemOverride(Control element)
+    {
+        base.ClearContainerForItemOverride(element);
+        if (element is ListBoxItem listBoxItem)
+        {
+            var context = new Dictionary<object, object>();
+            NotifySaveVirtualizingContext(listBoxItem, context);
+            _virtualRestoreContext.Add(listBoxItem.VirtualIndex, context);
+        }
+        element.ClearValue(ListBoxItem.IsEnabledProperty);
+    }
+
+    protected virtual void NotifySaveVirtualizingContext(ListBoxItem item, IDictionary<object, object> context)
+    {
+        context.Add(ListBoxItem.IsEnabledProperty, item.IsEnabled);
+    }
+
+    protected virtual void NotifyRestoreVirtualizingContext(ListBoxItem item, IDictionary<object, object> context)
+    {
+        if (context.TryGetValue(ListBoxItem.IsEnabledProperty, out var value))
+        {
+            if (value is bool isEnabled)
+            {
+                item.SetCurrentValue(ListBoxItem.IsEnabledProperty, isEnabled);
+            }
+        }
+    }
 }

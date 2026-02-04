@@ -376,6 +376,7 @@ public class ListBox : AvaloniaListBox,
             if (this is IListVirtualizingContextAware listVirtualizingContextAwareControl && 
                 listBoxItem is IListItemVirtualizingContextAware virtualListItem)
             {
+                virtualListItem.VirtualIndex = index;
                 if (_virtualRestoreContext.TryGetValue(index, out var context))
                 {
                     listVirtualizingContextAwareControl.RestoreVirtualizingContext(listBoxItem, context);
@@ -388,7 +389,6 @@ public class ListBox : AvaloniaListBox,
                         NotifyRestoreDefaultContext(listBoxItem, itemData);
                     }
                 }
-                virtualListItem.VirtualIndex = index;
             }
             else
             {
@@ -601,18 +601,7 @@ public class ListBox : AvaloniaListBox,
     }
 
     #region 虚拟化上下文管理
-    
-    protected virtual void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
-    {
-        if (!item.IsSet(ListBoxItem.ContentProperty))
-        {
-            item.SetCurrentValue(ListBoxItem.ContentProperty, itemData);
-        }
-        item.SetCurrentValue(ListBoxItem.IsSelectedProperty, itemData.IsSelected);
-        item.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
-    }
-    
-    protected override void ClearContainerForItemOverride(Control element)
+    protected sealed override void ClearContainerForItemOverride(Control element)
     {
         if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
         {
@@ -623,6 +612,16 @@ public class ListBox : AvaloniaListBox,
         }
      
         base.ClearContainerForItemOverride(element);
+    }
+    
+    protected virtual void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
+    {
+        if (!item.IsSet(ListBoxItem.ContentProperty))
+        {
+            item.SetCurrentValue(ListBoxItem.ContentProperty, itemData);
+        }
+        item.SetCurrentValue(ListBoxItem.IsSelectedProperty, itemData.IsSelected);
+        item.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
     }
 
     protected virtual void NotifyClearContainerForVirtualizingContext(ListBoxItem item)

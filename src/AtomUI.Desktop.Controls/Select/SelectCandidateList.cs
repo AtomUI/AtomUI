@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Reactive.Disposables;
+using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
@@ -154,13 +155,6 @@ internal class SelectCandidateList : List, ICandidateList
     internal override void PrepareListBoxItem(ListItem listItem, object? item, int index, CompositeDisposable disposables)
     {
         base.PrepareListBoxItem(listItem, item, index, disposables);
-        if (listItem is SelectCandidateListItem candidateListItem)
-        {
-            if (CandidateSelectedIndex != -1)
-            {
-                candidateListItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, index == CandidateSelectedIndex);
-            }
-        }
         disposables.Add(BindUtils.RelayBind(this, IsHideSelectedOptionsProperty, listItem, SelectCandidateListItem.IsHideSelectedOptionsProperty));
     }
     
@@ -560,14 +554,6 @@ internal class SelectCandidateList : List, ICandidateList
         }
     }
     
-    protected internal override void ClearContainerForItem(ListItem item)
-    {
-        if (item is SelectCandidateListItem candidateListItem)
-        {
-            candidateListItem.ClearValue(SelectCandidateListItem.IsCandidateSelectedProperty);
-        }
-    }
-    
     protected override void ConfigureEmptyIndicator()
     {
         if (!IsHideSelectedOptions)
@@ -602,4 +588,23 @@ internal class SelectCandidateList : List, ICandidateList
         return base.ArrangeOverride(finalSize);
     }
     
+    #region 虚拟化上下文管理
+    protected internal override void NotifyClearContainerForVirtualizingContext(ListItem item)
+    {
+        base.NotifyClearContainerForVirtualizingContext(item);
+        item.ClearValue(SelectCandidateListItem.IsCandidateSelectedProperty);
+    }
+    
+    protected internal override void NotifyRestoreDefaultContext(ListItem item, IListItemData itemData)
+    {
+        base.NotifyRestoreDefaultContext(item, itemData);
+        if (item is SelectCandidateListItem listItem && item is IListItemVirtualizingContextAware virtualListItem)
+        {
+            if (CandidateSelectedIndex != -1)
+            {
+                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, virtualListItem.VirtualIndex == CandidateSelectedIndex);
+            }
+        }
+    }
+    #endregion
 }

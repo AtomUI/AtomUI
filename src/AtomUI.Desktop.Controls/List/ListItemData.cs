@@ -1,5 +1,3 @@
-using Avalonia;
-
 namespace AtomUI.Desktop.Controls;
 
 public interface IListItemData : IListBoxItemData, IGroupHeader

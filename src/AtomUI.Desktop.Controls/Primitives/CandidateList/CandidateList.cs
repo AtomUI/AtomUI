@@ -1,4 +1,4 @@
-using System.Reactive.Disposables;
+using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -429,27 +429,6 @@ public class CandidateList : ListBox, ICandidateList
         return NeedsContainer<CandidateListItem>(item, out recycleKey);
     }
     
-    protected override void PrepareListBoxItem(ListBoxItem listBoxItem, object? item, int index, CompositeDisposable disposables)
-    {
-        base.PrepareListBoxItem(listBoxItem, item, index, disposables);
-        if (listBoxItem is CandidateListItem candidateListItem)
-        {
-            if (CandidateSelectedIndex != -1)
-            {
-                candidateListItem.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, index == CandidateSelectedIndex);
-            }
-        }
-    }
-    
-    protected override void ClearContainerForItemOverride(Control element)
-    {
-        base.ClearContainerForItemOverride(element);
-        if (element is CandidateListItem listItem)
-        {
-            listItem.ClearValue(CandidateListItem.IsCandidateSelectedProperty);
-        }
-    }
-    
     protected override void ConfigureEmptyIndicator()
     {
         SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (ItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
@@ -461,4 +440,28 @@ public class CandidateList : ListBox, ICandidateList
         CandidateSelectedIndex = -1;
         CandidateSelectedItem  = null;
     }
+
+    #region 虚拟化上下文管理
+
+    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
+    {
+        base.NotifyRestoreDefaultContext(item, itemData);
+        if (item is CandidateListItem candidateListItem && item is IListItemVirtualizingContextAware virtualListItem)
+        {
+            if (CandidateSelectedIndex != -1)
+            {
+                candidateListItem.SetCurrentValue(CandidateListItem.IsCandidateSelectedProperty, virtualListItem.VirtualIndex == CandidateSelectedIndex);
+            }
+        }
+    }
+    
+    protected override void NotifyClearContainerForVirtualizingContext(ListBoxItem item)
+    {
+        base.NotifyClearContainerForVirtualizingContext(item);
+        if (item is CandidateListItem listItem)
+        {
+            listItem.ClearValue(CandidateListItem.IsCandidateSelectedProperty);
+        }
+    }
+    #endregion
 }

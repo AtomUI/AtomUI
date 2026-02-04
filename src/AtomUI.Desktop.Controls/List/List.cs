@@ -865,8 +865,22 @@ public class List : TemplatedControl,
     protected internal virtual void NotifyListItemClicked(ListItem item)
     {
     }
-
-    protected internal virtual void ClearContainerForItem(ListItem item)
+    
+    #region 虚拟化上下文管理
+    protected internal virtual void NotifyRestoreDefaultContext(ListItem item, IListItemData itemData)
     {
     }
+
+    protected internal virtual void NotifyClearContainerForVirtualizingContext(ListItem item)
+    {
+    }
+    
+    protected internal virtual void NotifySaveVirtualizingContext(ListItem item, IDictionary<object, object?> context)
+    {
+    }
+
+    protected internal virtual void NotifyRestoreVirtualizingContext(ListItem item, IDictionary<object, object?> context)
+    {
+    }
+    #endregion
 }

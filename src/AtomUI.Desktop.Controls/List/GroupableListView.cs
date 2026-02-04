@@ -27,22 +27,10 @@ internal class GroupableListView : ListBox
     {
         var container = OwningList?.CreateContainerForItemOverride(item, index, recycleKey);
         Debug.Assert(container != null);
-        if (container is ListItem listItem)
+        if (container is ListItem listItem && item is ListItemData listItemData)
         {
-            if (item != null && item is not Visual)
-            {
-                if (item is IListBoxItemData itemData)
-                {
-                    if (!listItem.IsSet(ListItem.ContentProperty))
-                    {
-                        listItem.SetCurrentValue(ListItem.ContentProperty, item);
-                    }
-                    listItem.SetCurrentValue(ListItem.IsSelectedProperty, itemData.IsSelected);
-                    listItem.SetCurrentValue(ListItem.IsEnabledProperty, itemData.IsEnabled);
-                }
-            }
+            NotifyRestoreDefaultContext(listItem, listItemData);
         }
-        
         return container;
     }
     
@@ -102,12 +90,41 @@ internal class GroupableListView : ListBox
         return UpdateSelectionFromEventSource(listItem, select, rangeModifier, toggleModifier, rightButton, fromFocus);
     }
     
-    protected override void ClearContainerForItemOverride(Control element)
+    #region 虚拟化上下文管理
+    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
     {
-        if (element is ListItem listItem)
+        base.NotifyRestoreDefaultContext(item, itemData);
+        if (item is ListItem listItem && itemData is ListItemData listItemData)
         {
-            OwningList?.ClearContainerForItem(listItem);
+            OwningList?.NotifyRestoreDefaultContext(listItem, listItemData);
         }
-        base.ClearContainerForItemOverride(element);
     }
+
+    protected override void NotifyClearContainerForVirtualizingContext(ListBoxItem item)
+    {
+        base.NotifyClearContainerForVirtualizingContext(item);
+        if (item is ListItem listItem)
+        {
+            OwningList?.NotifyClearContainerForVirtualizingContext(listItem);
+        }
+    }
+    
+    protected override void NotifySaveVirtualizingContext(ListBoxItem item, IDictionary<object, object?> context)
+    {
+        base.NotifySaveVirtualizingContext(item, context);
+        if (item is ListItem listItem)
+        {
+            OwningList?.NotifySaveVirtualizingContext(listItem, context);
+        }
+    }
+
+    protected override void NotifyRestoreVirtualizingContext(ListBoxItem item, IDictionary<object, object?> context)
+    {
+        base.NotifyRestoreVirtualizingContext(item, context);
+        if (item is ListItem listItem)
+        {
+            OwningList?.NotifyRestoreVirtualizingContext(listItem, context);
+        }
+    }
+    #endregion
 }

@@ -644,4 +644,26 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     
         return false;
     }
+    
+    public void HandleKeyDown(KeyEventArgs e)
+    {
+        // TODO
+        switch (e.Key)
+        {
+            case Key.Enter:
+                e.Handled = false;
+                break;
+
+            case Key.Up:
+                e.Handled = false;
+                break;
+
+            case Key.Down:
+                e.Handled = false;
+                break;
+
+            default:
+                break;
+        }
+    }
 }

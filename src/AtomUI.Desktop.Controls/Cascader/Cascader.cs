@@ -3,6 +3,7 @@ using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DataLoad;
 using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Input;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -271,6 +272,57 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                                                               string.IsNullOrWhiteSpace(SelectedItemPath));
         }
        
+    }
+    
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        _ = e ?? throw new ArgumentNullException(nameof(e));
+        base.OnKeyDown(e);
+        if (e.Handled || !IsEnabled)
+        {
+            return;
+        }
+        
+        if (IsDropDownOpen)
+        {
+            if (_cascaderView != null)
+            {
+                _cascaderView.HandleKeyDown(e);
+                if (e.Handled)
+                {
+                    return;
+                }
+            }
+
+            if (e.Key == Key.Escape)
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false);
+                e.Handled = true;
+            }
+        }
+        else
+        {
+            // The drop down is not open, the Down key will toggle it open.
+            // Ignore key buttons, if they are used for XY focus.
+            if (e.Key == Key.Down
+                && !this.IsAllowedXYNavigationMode(e.KeyDeviceType))
+            {
+                SetCurrentValue(IsDropDownOpenProperty, true);
+                e.Handled = true;
+            }
+        }
+
+        // Standard drop down navigation
+        switch (e.Key)
+        {
+            case Key.F4:
+                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
+                e.Handled = true;
+                break;
+
+            default:
+                break;
+        }
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

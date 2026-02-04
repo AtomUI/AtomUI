@@ -307,7 +307,6 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     private StackPanel? _itemsPanel;
     private int _ignoreExpandAndCollapseLevel;
     private bool _defaultExpandPathApplied;
-    private bool _isDeferSelected;
     private bool _ignoreSelectedPropertyChanged;
     private CascaderViewLevelList? _rootLevelList;
     private readonly Dictionary<CascaderViewLevelList, CompositeDisposable> _levelListDisposables = new();
@@ -373,13 +372,9 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
             _defaultExpandPathApplied = true;
         }
         
-        if (_isDeferSelected)
+        if (SelectedItem != null)
         {
-            _isDeferSelected = false;
-            if (SelectedItem != null)
-            {
-                SelectTargetItem(SelectedItem);
-            }
+            SelectTargetItem(SelectedItem);
         }
     }
 
@@ -471,11 +466,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
             }
             if (SelectedItem != null)
             {
-                if (!IsLoaded)
-                {
-                    _isDeferSelected = true;
-                }
-                else
+                if (IsLoaded)
                 {
                     SelectTargetItem(SelectedItem);
                 }
@@ -489,7 +480,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     
     private void SelectTargetItem(ICascaderViewOption option)
     {
-        var isLeaf = option.IsLeaf;
+        var isLeaf = option.IsLeaf || option.Children.Count == 0;
     
         if (!isLeaf && !IsAllowSelectParent)
         {
@@ -585,34 +576,6 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
                 if (cascaderItem != null)
                 {
                     ItemDoubleClicked?.Invoke(this, new CascaderItemDoubleClickedEventArgs(cascaderItem));
-                }
-            }
-        }
-    }
-   
-    public override void Render(DrawingContext context)
-    {
-        if (_itemsPanel == null || IsFiltering)
-        {
-            return;
-        }
-        using var state = context.PushRenderOptions(new RenderOptions
-        {
-            EdgeMode = EdgeMode.Aliased
-        });
-        var count = _itemsPanel.Children.Count;
-        var height = DesiredSize.Height;
-        for (var i = 0; i < count; i++)
-        {
-            if (i > 0)
-            {
-                var child  = _itemsPanel.Children[i];
-                var offset = child.TranslatePoint(new Point(0, 0), this);
-                if (offset != null)
-                {
-                    var pointStart = new Point(offset.Value.X, 0);
-                    var pointEnd   = new Point(offset.Value.X, height);
-                    context.DrawLine(new Pen(BorderBrush), pointStart, pointEnd);
                 }
             }
         }

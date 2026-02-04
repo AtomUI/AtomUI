@@ -12,7 +12,7 @@ public interface ICascaderViewOption : ITreeNode<ICascaderViewOption>
     bool? IsChecked { get; set; }
     bool IsCheckBoxEnabled { get; set; }
     bool IsExpanded { get; set; }
-    bool IsLeaf => Children.Count == 0;
+    bool IsLeaf { get; set; }
     object? Value { get; set; }
     
     void UpdateParentNode(ICascaderViewOption? parentNode)
@@ -30,6 +30,7 @@ public record CascaderViewOption : ICascaderViewOption, ISelectTagTextProvider
     public PathIcon? Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool? IsChecked { get; set; } = false;
+    public bool IsLeaf { get; set; } = false;
     public bool IsExpanded { get; set; }
     public bool IsCheckBoxEnabled { get; set; } = true;
     public object? Value { get; set; }

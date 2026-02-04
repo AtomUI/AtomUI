@@ -346,7 +346,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         if (_cascaderView != null)
         {
             _cascaderView.CheckedItemsChanged -= HandleCascaderViewItemsCheckedChanged;
-            // _cascaderView.ItemDoubleClicked   -= HandleCascaderViewItemDoubleClicked;
+            _cascaderView.ItemDoubleClicked   -= HandleCascaderViewItemDoubleClicked;
             _cascaderView.ItemSelected        -= HandleCascaderViewItemSelected;
         }
         
@@ -357,7 +357,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         if (_cascaderView != null)
         {
             _cascaderView.CheckedItemsChanged += HandleCascaderViewItemsCheckedChanged;
-            // _cascaderView.ItemDoubleClicked   += HandleCascaderViewItemDoubleClicked;
+            _cascaderView.ItemDoubleClicked   += HandleCascaderViewItemDoubleClicked;
             _cascaderView.ItemSelected        += HandleCascaderViewItemSelected;
         }
         
@@ -554,13 +554,13 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnPointerReleased(e);
     }
     
-    // private void HandleCascaderViewItemDoubleClicked(object? sender, CascaderItemDoubleClickedEventArgs eventArgs)
-    // {
-    //     if (!IsMultiple && eventArgs.Item.DataContext is ICascaderViewOption && IsAllowSelectParent)
-    //     {
-    //         SetCurrentValue(IsDropDownOpenProperty, false);
-    //     }
-    // }
+    private void HandleCascaderViewItemDoubleClicked(object? sender, CascaderItemDoubleClickedEventArgs eventArgs)
+    {
+        if (!IsMultiple && IsAllowSelectParent)
+        {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+        }
+    }
 
     private void HandleCascaderViewItemSelected(object? sender, CascaderItemSelectedEventArgs eventArgs)
     {

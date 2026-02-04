@@ -168,7 +168,7 @@ public partial class CascaderView
         Debug.Assert(_itemsPanel != null);
         var attachedOption = cascaderViewItem.AttachedOption;
         Debug.Assert(attachedOption != null);
-        if (attachedOption.Children.Count == 0 && !cascaderViewItem.AsyncLoaded)
+        if (attachedOption.Children.Count == 0 && !cascaderViewItem.AsyncLoaded && !attachedOption.IsLeaf)
         {
             if (DataLoader != null)
             {

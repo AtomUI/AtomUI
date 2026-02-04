@@ -21,7 +21,6 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 InitMultiSelectCascaderData(vm);
                 InitCheckStrategyCascaderData(vm);
                 InitSearchCascaderData(vm);
-                InitLazyLoadCascaderData(vm);
                 InitPrefixAndSuffix1CascaderData(vm);
                 InitSizeCascaderData(vm);
                 InitPlacementCascaderData(vm);
@@ -356,35 +355,14 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         ];
     }
     
-    private void InitLazyLoadCascaderData(CascaderViewModel viewModel)
-    {
-        viewModel.LazyLoadCascaderNodes =
-        [
-            new CascaderViewOption()
-            {
-                Header = "Zhejiang",
-                Value  = "zhejiang"
-            },
-            new CascaderViewOption()
-            {
-                Header = "Jiangsu",
-                Value  = "jiangsu",
-            }
-        ];
-    }
-    
     private void InitPrefixAndSuffix1CascaderData(CascaderViewModel viewModel)
     {
-        viewModel.PrefixAndSuffix1CascaderNodes = GenerateCascaderViewItems();
-        viewModel.PrefixAndSuffix2CascaderNodes = GenerateCascaderViewItems();
-        viewModel.PrefixAndSuffix3CascaderNodes = GenerateCascaderViewItems();
+        viewModel.PrefixAndSuffixCascaderNodes  = GenerateCascaderViewItems();
     }
     
     private void InitSizeCascaderData(CascaderViewModel viewModel)
     {
-        viewModel.SizeLargeCascaderNodes = GenerateCascaderViewItems();
-        viewModel.SizeMiddleCascaderNodes = GenerateCascaderViewItems();
-        viewModel.SizeSmallCascaderNodes = GenerateCascaderViewItems();
+        viewModel.SizeCascaderNodes = GenerateCascaderViewItems();
     }
 
     private void InitPlacementCascaderData(CascaderViewModel viewModel)
@@ -570,22 +548,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         ];
     }
     
-    // private void HandleFilterCascaderViewClicked(object? sender, RoutedEventArgs e)
-    // {
-    //     if (sender is SearchEdit searchEdit)
-    //     {
-    //        SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
-    //     }
-    // }
-    //
-    // private void HandleFilterCascaderViewItemsSourceClicked(object? sender, RoutedEventArgs e)
-    // {
-    //     if (sender is SearchEdit searchEdit)
-    //     {
-    //        SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
-    //     }
-    // }
-    //
+    private void HandleFilterCascaderViewClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is SearchEdit searchEdit)
+        {
+           SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
+        }
+    }
+    
+    private void HandleFilterCascaderViewItemsSourceClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is SearchEdit searchEdit)
+        {
+           SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
+        }
+    }
+    
     public void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)
     {
         if (DataContext is CascaderViewModel vm)

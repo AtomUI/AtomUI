@@ -196,18 +196,20 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
                                     {
                                         cascaderViewItem.IsExpanded = true;
                                     }
-                                    UpdateSelection(
-                                        cascaderViewItem,
-                                        cascaderViewItem.IsExpanded,
-                                        false,
-                                        true,
-                                        false);
                                 }
                                 else
                                 {
                                     cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
                                 }
-                               
+                            }
+                            if (cascaderViewItem.IsLeaf && !cascaderViewItem.IsLoading)
+                            {
+                                UpdateSelection(
+                                    cascaderViewItem,
+                                    cascaderViewItem.IsExpanded,
+                                    false,
+                                    true,
+                                    false);
                             }
                         }
                     
@@ -225,25 +227,26 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
                         cascaderViewItem.RaiseClick();
                         if (ExpandTrigger == CascaderViewExpandTrigger.Click)
                         {
-                        
                             if (cascaderViewItem.IsLeaf)
                             {
                                 if (!cascaderViewItem.IsExpanded)
                                 {
                                     cascaderViewItem.IsExpanded = true;
                                 }
-                                UpdateSelection(
-                                    cascaderViewItem,
-                                    cascaderViewItem.IsExpanded,
-                                    false,
-                                    true,
-                                    false);
                             }
                             else
                             {
                                 cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
                             }
-                           
+                        }
+                        if (cascaderViewItem.IsLeaf && !cascaderViewItem.IsLoading)
+                        {
+                            UpdateSelection(
+                                cascaderViewItem,
+                                cascaderViewItem.IsExpanded,
+                                false,
+                                true,
+                                false);
                         }
                     }
                 }
@@ -268,7 +271,6 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
                         false,
                         true,
                         false);
-                    
                 }
             }
         }
@@ -277,15 +279,6 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
     #region 虚拟化上下文管理
     protected override void ClearContainerForItemOverride(Control element)
     {
-        if (element is CascaderViewItem cascaderViewItem && 
-            element is IListItemVirtualizingContextAware virtualListItem)
-        {
-            var context = new Dictionary<object, object?>();
-            
-            NotifySaveVirtualizingContext(cascaderViewItem, context);
-            _virtualRestoreContext.Add(virtualListItem.VirtualIndex, context);
-        }
-
         if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
         {
             var context = new Dictionary<object, object?>();
@@ -306,11 +299,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
         item.SetCurrentValue(CascaderViewItem.IsEnabledProperty, option.IsEnabled);
         item.SetCurrentValue(CascaderViewItem.IsExpandedProperty, option.IsExpanded);
         item.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, option.IsCheckBoxEnabled);
-            
-        if (!item.IsSet(CascaderViewItem.IsLeafProperty))
-        {
-            item.IsLeaf = option.IsLeaf;
-        }
+        item.AsyncLoaded = false;
     }
     
     protected void NotifySaveVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
@@ -319,6 +308,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
         context.Add(CascaderViewItem.IsCheckedProperty, item.IsChecked);
         context.Add(CascaderViewItem.IsExpandedProperty, item.IsExpanded);
         context.Add(CascaderViewItem.IsCheckBoxEnabledProperty, item.IsCheckBoxEnabled);
+        context.Add(nameof(CascaderViewItem.AsyncLoaded), item.AsyncLoaded);
     }
     
     protected virtual void NotifyRestoreVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
@@ -357,6 +347,15 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
                 }
             }
         }
+        {
+            if (context.TryGetValue(nameof(CascaderViewItem.AsyncLoaded), out var value))
+            {
+                if (value is bool asyncLoaded)
+                {
+                    item.AsyncLoaded = asyncLoaded;
+                }
+            }
+        }
     }
     
     protected virtual void NotifyClearContainerForVirtualizingContext(CascaderViewItem item)
@@ -365,6 +364,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
         item.ClearValue(CascaderViewItem.IsCheckedProperty);
         item.ClearValue(CascaderViewItem.IsExpandedProperty);
         item.ClearValue(CascaderViewItem.IsCheckBoxEnabledProperty);
+        item.AsyncLoaded = false;
     }
 
     void IListVirtualizingContextAware.SaveVirtualizingContext(Control item, IDictionary<object, object?> context)

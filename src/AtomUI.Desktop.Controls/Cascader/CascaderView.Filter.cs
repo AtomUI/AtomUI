@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Threading;
+using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -105,7 +105,7 @@ public partial class CascaderView
         }
     }
     
-    private void ClearFilter()
+    public void ClearFilter()
     {
         IsFiltering       = false;
         FilterResultCount = 0;
@@ -121,20 +121,20 @@ public partial class CascaderView
         {
             paths = itemData.ExpandItems;
         }
-        ClearFilter();
+        var popup = this.FindLogicalAncestorOfType<Popup>();
+        if (popup == null)
+        {
+            ClearFilter(); 
+        }
         if (paths?.Count > 0)
         {
-            Dispatcher.UIThread.InvokeAsync(async () =>
+            var targetNode = paths[^1];
+            if (!IsCheckable)
             {
-                var targetNode = paths[^1];
-                await ExpandItemAsync(targetNode);
-                // 这里一定都是叶子节点
-                if (!IsCheckable)
-                {
-                    SelectedItem = targetNode;
-                    ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(targetNode));
-                }
-            });
+                _ignoreSelectedPropertyChanged = true;
+                SelectedItem                   = targetNode;
+                ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(targetNode));
+            }
         }
     }
 }

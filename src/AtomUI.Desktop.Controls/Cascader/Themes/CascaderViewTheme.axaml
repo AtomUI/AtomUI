@@ -13,7 +13,8 @@
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                    VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                    ClipToBounds="{TemplateBinding ClipToBounds}">
                 <Panel>
                     <Panel IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}">
                         <atom:ScrollViewer
@@ -24,14 +25,16 @@
                             IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                             IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}">
-                            <StackPanel Orientation="Horizontal"
-                                        Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
-                                <atom:CascaderViewLevelList Name="{x:Static atom:CascaderViewThemeConstants.RootLevelListPart}"
-                                                            ItemsSource="{Binding Items, RelativeSource={RelativeSource TemplatedParent}}"
-                                                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                                                            ExpandTrigger="{TemplateBinding ExpandTrigger}"
-                                                            IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
-                            </StackPanel>
+                            <atom:CascaderViewFrame BorderBrush="{TemplateBinding BorderBrush}">
+                                <StackPanel Orientation="Horizontal"
+                                            Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
+                                    <atom:CascaderViewLevelList Name="{x:Static atom:CascaderViewThemeConstants.RootLevelListPart}"
+                                                                ItemsSource="{Binding Items, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                                                ExpandTrigger="{TemplateBinding ExpandTrigger}"
+                                                                IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
+                                </StackPanel>
+                            </atom:CascaderViewFrame>
                         </atom:ScrollViewer>
                         <ContentPresenter
                             Name="EmptyIndicator"
@@ -64,6 +67,7 @@
         <Setter Property="FilterHighlightForeground"
                 Value="{DynamicResource {x:Static atom:CascaderTokenKey.FilterHighlightColor}}" />
         <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
+        <Setter Property="atom:ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />

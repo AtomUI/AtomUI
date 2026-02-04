@@ -25,6 +25,7 @@
                            VerticalAlignment="Center">
                         <atom:CheckBox Name="ToggleCheckbox"
                                        IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                       IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                        IsVisible="False">
                             <atom:CheckBox.IsEnabled>
                                 <MultiBinding
@@ -47,7 +48,8 @@
                                       Content="{TemplateBinding Header}"
                                       ContentTemplate="{TemplateBinding HeaderTemplate}" />
                     <atom:IconPresenter Name="ExpandIconPresenter" Grid.Column="3"
-                                        IconTemplate="{TemplateBinding ExpandIcon}">
+                                        IconTemplate="{TemplateBinding ExpandIcon}"
+                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
                         <atom:IconPresenter.IsVisible>
                             <MultiBinding
                                 Converter="{x:Static atom:CascaderViewItemTheme.CascaderViewItemExpanderIsVisibleConverter}">

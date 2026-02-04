@@ -306,21 +306,20 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     private bool _ignoreSyncCheckedItems;
     private StackPanel? _itemsPanel;
     private int _ignoreExpandAndCollapseLevel;
-    private CascaderViewItem? _lastHoveredItem; // 触发器是 hover 的时候使用
     private bool _defaultExpandPathApplied;
-    private bool _applyDefaultExpandPath;
     private bool _isDeferSelected;
-    private DateTime? _lastClickTime;
-    
+    private bool _ignoreSelectedPropertyChanged;
     private CascaderViewLevelList? _rootLevelList;
     private readonly Dictionary<CascaderViewLevelList, CompositeDisposable> _levelListDisposables = new();
-
+    private CascaderViewItem? _lastHoveredItem; // 触发器是 hover 的时候使用
+    
     static CascaderView()
     {
         SetupExpandAndCollapse();
         SetupChecked();
         CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemDoubleClicked(args));
         CascaderViewItem.ClickedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
+        CascaderViewItem.SelectedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemSelected(args));
         ItemsSourceProperty.Changed.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderSourceChanged(args));
     }
     
@@ -426,15 +425,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    try
-                    {
-                        _applyDefaultExpandPath = true;
-                        await ExpandItemAsync(pathNodes[^1]);
-                    }
-                    finally
-                    {
-                        _applyDefaultExpandPath = false;
-                    }
+                    await ExpandItemAsync(pathNodes[^1]);
                 });
             }
         }
@@ -473,16 +464,25 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         }
         else if (change.Property == SelectedItemProperty)
         {
-            if (!IsLoaded)
+            if (_ignoreSelectedPropertyChanged)
             {
-                _isDeferSelected = true;
+                _ignoreSelectedPropertyChanged = false;
+                return;
             }
-            else
+            if (SelectedItem != null)
             {
-                if (SelectedItem != null)
+                if (!IsLoaded)
+                {
+                    _isDeferSelected = true;
+                }
+                else
                 {
                     SelectTargetItem(SelectedItem);
                 }
+            }
+            else
+            {
+                CollapseAll();
             }
         }
     }
@@ -531,6 +531,20 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         }
     }
 
+    private void HandleCascaderItemSelected(RoutedEventArgs args)
+    {
+        if (args.Source is CascaderViewItem item)
+        {
+            if (item.IsSelected)
+            {
+                var option = item.AttachedOption!;
+                _ignoreSelectedPropertyChanged = true;
+                SetCurrentValue(SelectedItemProperty, option);
+                ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(option));
+            }
+        }
+    }
+
     protected virtual void NotifyCascaderItemClicked(CascaderViewItem item)
     {
     }
@@ -561,135 +575,6 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         IsEffectiveEmptyVisible = IsShowEmptyIndicator && isEmpty;
     }
     
-    private IDisposable? _clickDisposable;
-    private const int DoubleClickInterval = 150;
-    
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        if (e.Source is Visual source)
-        {
-            if (IsAllowSelectParent)
-            {
-                if (_lastClickTime != null)
-                {
-                    if (DateTime.Now.Subtract(_lastClickTime.Value).TotalMilliseconds < DoubleClickInterval)
-                    {
-                        e.Handled        = true;
-                        _lastClickTime   = DateTime.Now;
-                        _clickDisposable?.Dispose();
-                        _clickDisposable = _clickDisposable = null;
-                        return;
-                    }
-                }
-                _lastClickTime = DateTime.Now;
-                _clickDisposable = DispatcherTimer.RunOnce(() =>
-                {
-                    var point = e.GetCurrentPoint(source);
-                    if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                    {
-                        if (ExpandTrigger == CascaderViewExpandTrigger.Click)
-                        {
-                            var cascaderViewItem = GetContainerFromEventSource(e.Source);
-                            if (cascaderViewItem != null)
-                            {
-                                if (cascaderViewItem.IsLeaf)
-                                {
-                                    if (!cascaderViewItem.IsExpanded)
-                                    {
-                                        cascaderViewItem.IsExpanded = true;
-                                    }
-                                }
-                                else
-                                {
-                                    cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
-                                }
-                            }
-                        }
-                    }
-                }, TimeSpan.FromMilliseconds(DoubleClickInterval));
-            }
-            else
-            {
-                var point = e.GetCurrentPoint(source);
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                {
-                    if (ExpandTrigger == CascaderViewExpandTrigger.Click)
-                    {
-                        var cascaderViewItem = GetContainerFromEventSource(e.Source);
-                        if (cascaderViewItem != null)
-                        {
-                            if (cascaderViewItem.IsLeaf)
-                            {
-                                if (!cascaderViewItem.IsExpanded)
-                                {
-                                    cascaderViewItem.IsExpanded = true;
-                                }
-                            }
-                            else
-                            {
-                                cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private CascaderViewItem? GetContainerFromEventSource(object? eventSource)
-    {
-        for (var current = eventSource as Visual; current != null; current = current.GetVisualParent())
-        {
-            if (current is CascaderViewItem cascaderViewItem)
-            {
-                return cascaderViewItem;
-            }
-        }
-        return null;
-    }
-    
-    protected override void OnPointerMoved(PointerEventArgs e)
-    {
-        base.OnPointerMoved(e);
-        if (e.Source is Visual source)
-        {
-            if (ExpandTrigger == CascaderViewExpandTrigger.Hover)
-            {
-                var cascaderViewItem = GetContainerFromEventSource(e.Source);
-                if (_lastHoveredItem != null &&
-                    cascaderViewItem != null && 
-                    _lastHoveredItem != cascaderViewItem &&
-                    !IsDescendantOf(cascaderViewItem, _lastHoveredItem))
-                {
-                    _lastHoveredItem.IsExpanded = false;
-                }
-                if (cascaderViewItem != null)
-                {
-                    cascaderViewItem.IsExpanded = true;
-                    _lastHoveredItem            = cascaderViewItem;
-                }
-            }
-        }
-    }
-    
-    private bool IsDescendantOf(CascaderViewItem lhs, CascaderViewItem rhs)
-    {
-        var lhsData = lhs.AttachedOption;
-        var rhsData = rhs.AttachedOption;
-        Debug.Assert(lhsData != null && rhsData != null);
-        var currentData = lhsData;
-        while (currentData != null)
-        {
-            if (currentData == rhsData)
-            {
-                return true;
-            }
-            currentData = currentData.ParentNode as ICascaderViewOption;
-        }
-    
-        return false;
-    }
-    
     private void HandleCascaderItemDoubleClicked(RoutedEventArgs args)
     {
         if (IsAllowSelectParent)
@@ -699,9 +584,6 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
                 var cascaderItem = source.FindAncestorOfType<CascaderViewItem>();
                 if (cascaderItem != null)
                 {
-                    SelectedItem = cascaderItem.AttachedOption;
-                    Debug.Assert(SelectedItem != null);
-                    ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(SelectedItem));
                     ItemDoubleClicked?.Invoke(this, new CascaderItemDoubleClickedEventArgs(cascaderItem));
                 }
             }
@@ -746,5 +628,57 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         {
             EffectiveToggleType = ItemToggleType.None;
         }
+    }
+    
+    private CascaderViewItem? GetContainerFromEventSource(object? eventSource)
+    {
+        for (var current = eventSource as Visual; current != null; current = current.GetVisualParent())
+        {
+            if (current is CascaderViewItem cascaderViewItem)
+            {
+                return cascaderViewItem;
+            }
+        }
+        return null;
+    }
+    
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (e.Source is Visual source)
+        {
+            if (ExpandTrigger == CascaderViewExpandTrigger.Hover)
+            {
+                if (GetContainerFromEventSource(e.Source) is CascaderViewItem cascaderViewItem)
+                {
+                    if (_lastHoveredItem != null &&
+                        _lastHoveredItem != cascaderViewItem &&
+                        !IsDescendantOf(cascaderViewItem, _lastHoveredItem))
+                    {
+                        _lastHoveredItem.IsExpanded = false;
+                    }
+                    cascaderViewItem.IsExpanded = true;
+                    _lastHoveredItem            = cascaderViewItem;
+                }
+            }
+        }
+    }
+    
+    private bool IsDescendantOf(CascaderViewItem lhs, CascaderViewItem rhs)
+    {
+        var lhsData = lhs.AttachedOption;
+        var rhsData = rhs.AttachedOption;
+        Debug.Assert(lhsData != null && rhsData != null);
+        var currentData = lhsData;
+        while (currentData != null)
+        {
+            if (currentData == rhsData)
+            {
+                return true;
+            }
+            currentData = currentData.ParentNode as ICascaderViewOption;
+        }
+    
+        return false;
     }
 }

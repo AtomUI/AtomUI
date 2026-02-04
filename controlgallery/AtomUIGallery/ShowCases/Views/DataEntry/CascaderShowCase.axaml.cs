@@ -15,7 +15,6 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         {
             if (DataContext is CascaderViewModel vm)
             {
-                InitDefaultValueCascaderData(vm);
                 InitHoverCascaderData(vm);
                 InitDisabledCascaderData(vm);
                 InitSelectParentCascaderData(vm);
@@ -34,6 +33,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 InitDefaultExpandCascaderViewData(vm);
                 vm.AsyncCascaderNodeLoader = new CascaderItemDataLoader();
                 vm.DefaultExpandPath       = new TreeNodePath("jiangsu/nanjing/zhonghuamen");
+                vm.DefaultSelectItemPath   = new TreeNodePath("zhejiang/hangzhou/xihu");
             }
         });
         InitializeComponent();
@@ -92,57 +92,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     {
         viewModel.BasicCascaderViewNodes = GenerateCascaderViewItems();
     }
-
-    private void InitDefaultValueCascaderData(CascaderViewModel viewModel)
-    {
-        viewModel.DefaultSelectItemPath = new TreeNodePath("zhejiang/hangzhou/xihu");
-        viewModel.DefaultValueCascaderNodes = [
-            new CascaderViewOption()
-            {
-                Header = "Zhejiang",
-                ItemKey  = "zhejiang",
-                Children = [
-                    new CascaderViewOption()
-                    {
-                        Header  = "Hangzhou",
-                        ItemKey = "hangzhou",
-                        Children = [
-                            new CascaderViewOption()
-                            {
-                                Header  = "West Lake",
-                                ItemKey = "xihu",
-                            },
-                            new CascaderViewOption()
-                            {
-                                Header  = "Lingyin shi",
-                                ItemKey = "lingyinshi",
-                            }
-                        ]
-                    }
-                ]
-            },
-            new CascaderViewOption()
-            {
-                Header  = "Jiangsu",
-                ItemKey = "jiangsu",
-                Children = [
-                    new CascaderViewOption()
-                    {
-                        Header  = "Nanjing",
-                        ItemKey = "nanjing",
-                        Children = [
-                            new CascaderViewOption()
-                            {
-                                Header  = "Zhong Hua Men",
-                                ItemKey = "zhonghuamen",
-                            }
-                        ]
-                    }
-                ]
-            }
-        ];
-    }
-
+    
     private void InitHoverCascaderData(CascaderViewModel viewModel)
     {
         viewModel.HoverCascaderNodes = [
@@ -348,8 +298,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
 
     private void InitCheckStrategyCascaderData(CascaderViewModel viewModel)
     {
-        viewModel.CheckStrategy1CascaderNodes = GenerateMultiSelectCascaderNodes();
-        viewModel.CheckStrategy2CascaderNodes = GenerateMultiSelectCascaderNodes();
+        viewModel.CheckStrategyCascaderNodes = GenerateMultiSelectCascaderNodes();
     }
 
     private void InitSearchCascaderData(CascaderViewModel viewModel)
@@ -621,22 +570,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
         ];
     }
     
-    private void HandleFilterCascaderViewClicked(object? sender, RoutedEventArgs e)
-    {
-        if (sender is SearchEdit searchEdit)
-        {
-           SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
-        }
-    }
-    
-    private void HandleFilterCascaderViewItemsSourceClicked(object? sender, RoutedEventArgs e)
-    {
-        if (sender is SearchEdit searchEdit)
-        {
-           SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
-        }
-    }
-    
+    // private void HandleFilterCascaderViewClicked(object? sender, RoutedEventArgs e)
+    // {
+    //     if (sender is SearchEdit searchEdit)
+    //     {
+    //        SearchCascaderView.FilterValue = searchEdit.Text?.Trim();
+    //     }
+    // }
+    //
+    // private void HandleFilterCascaderViewItemsSourceClicked(object? sender, RoutedEventArgs e)
+    // {
+    //     if (sender is SearchEdit searchEdit)
+    //     {
+    //        SearchCascaderViewItemsSource.FilterValue = searchEdit.Text?.Trim();
+    //     }
+    // }
+    //
     public void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)
     {
         if (DataContext is CascaderViewModel vm)

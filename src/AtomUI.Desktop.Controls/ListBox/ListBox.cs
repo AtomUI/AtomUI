@@ -19,7 +19,8 @@ using AvaloniaListBox = Avalonia.Controls.ListBox;
 public class ListBox : AvaloniaListBox,
                        ISizeTypeAware,
                        IMotionAwareControl,
-                       IControlSharedTokenResourcesHost
+                       IControlSharedTokenResourcesHost,
+                       IListVirtualizingContextAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsItemSelectableProperty =
@@ -140,7 +141,6 @@ public class ListBox : AvaloniaListBox,
         get => GetValue(EmptyIndicatorPaddingProperty);
         set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
-    
         
     [DependsOn(nameof(EmptyIndicatorTemplate))]
     public object? EmptyIndicator
@@ -249,7 +249,7 @@ public class ListBox : AvaloniaListBox,
     
     private protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     private protected readonly Dictionary<object, bool> _filterContext = new();
-    private protected readonly Dictionary<object, IDictionary<object, object>> _virtualRestoreContext = new();
+    private protected readonly Dictionary<object, IDictionary<object, object?>> _virtualRestoreContext = new();
 
     static ListBox()
     {
@@ -292,6 +292,7 @@ public class ListBox : AvaloniaListBox,
     
     private void HandleItemCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        _virtualRestoreContext.Clear();
         ConfigureEmptyIndicator();
         FilterItems();
     }
@@ -355,12 +356,7 @@ public class ListBox : AvaloniaListBox,
         {
             if (item is IListBoxItemData itemData)
             {
-                if (!listBoxItem.IsSet(ListBoxItem.ContentProperty))
-                {
-                    listBoxItem.SetCurrentValue(ListBoxItem.ContentProperty, item);
-                }
-                listBoxItem.SetCurrentValue(ListBoxItem.IsSelectedProperty, itemData.IsSelected);
-                listBoxItem.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
+                NotifyRestoreDefaultContext(listBoxItem, itemData);
             }
         }
     }
@@ -375,16 +371,32 @@ public class ListBox : AvaloniaListBox,
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is ListBoxItem listBoxItem)
         {
-            
             var disposables = new CompositeDisposable(8);
 
-            if (_virtualRestoreContext.TryGetValue(index, out var context))
+            if (this is IListVirtualizingContextAware listVirtualizingContextAwareControl && 
+                listBoxItem is IListItemVirtualizingContextAware virtualListItem)
             {
-                NotifyRestoreVirtualizingContext(listBoxItem, context);
-                _virtualRestoreContext.Remove(index);
+                if (_virtualRestoreContext.TryGetValue(index, out var context))
+                {
+                    listVirtualizingContextAwareControl.RestoreVirtualizingContext(listBoxItem, context);
+                    _virtualRestoreContext.Remove(index);
+                }
+                else
+                {
+                    if (item is IListBoxItemData itemData)
+                    {
+                        NotifyRestoreDefaultContext(listBoxItem, itemData);
+                    }
+                }
+                virtualListItem.VirtualIndex = index;
             }
-            
-            listBoxItem.VirtualIndex = index;
+            else
+            {
+                if (item is IListBoxItemData itemData)
+                {
+                    NotifyRestoreDefaultContext(listBoxItem, itemData);
+                }
+            }
             
             if (ItemTemplate != null)
             {
@@ -587,25 +599,43 @@ public class ListBox : AvaloniaListBox,
         
         base.OnKeyDown(e);
     }
+
+    #region 虚拟化上下文管理
+    
+    protected virtual void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
+    {
+        if (!item.IsSet(ListBoxItem.ContentProperty))
+        {
+            item.SetCurrentValue(ListBoxItem.ContentProperty, itemData);
+        }
+        item.SetCurrentValue(ListBoxItem.IsSelectedProperty, itemData.IsSelected);
+        item.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
+    }
     
     protected override void ClearContainerForItemOverride(Control element)
     {
-        base.ClearContainerForItemOverride(element);
-        if (element is ListBoxItem listBoxItem)
+        if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
         {
-            var context = new Dictionary<object, object>();
-            NotifySaveVirtualizingContext(listBoxItem, context);
-            _virtualRestoreContext.Add(listBoxItem.VirtualIndex, context);
+            var context = new Dictionary<object, object?>();
+            list.SaveVirtualizingContext(element, context);
+            _virtualRestoreContext.Add(listItem.VirtualIndex, context);
+            list.ClearContainerValues(element);
         }
-        element.ClearValue(ListBoxItem.IsEnabledProperty);
+     
+        base.ClearContainerForItemOverride(element);
     }
 
-    protected virtual void NotifySaveVirtualizingContext(ListBoxItem item, IDictionary<object, object> context)
+    protected virtual void NotifyClearContainerForVirtualizingContext(ListBoxItem item)
+    {
+        item.ClearValue(ListBoxItem.IsEnabledProperty);
+    }
+    
+    protected virtual void NotifySaveVirtualizingContext(ListBoxItem item, IDictionary<object, object?> context)
     {
         context.Add(ListBoxItem.IsEnabledProperty, item.IsEnabled);
     }
 
-    protected virtual void NotifyRestoreVirtualizingContext(ListBoxItem item, IDictionary<object, object> context)
+    protected virtual void NotifyRestoreVirtualizingContext(ListBoxItem item, IDictionary<object, object?> context)
     {
         if (context.TryGetValue(ListBoxItem.IsEnabledProperty, out var value))
         {
@@ -615,4 +645,37 @@ public class ListBox : AvaloniaListBox,
             }
         }
     }
+
+    void IListVirtualizingContextAware.SaveVirtualizingContext(Control item, IDictionary<object, object?> context)
+    {
+        if (item is ListBoxItem listBoxItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifySaveVirtualizingContext(listItem, context));
+        }
+    }
+
+    void IListVirtualizingContextAware.RestoreVirtualizingContext(Control item, IDictionary<object, object?> context)
+    {
+        if (item is ListBoxItem listBoxItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifyRestoreVirtualizingContext(listItem, context));
+        }
+    }
+
+    void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
+    {
+        if (item is ListBoxItem listBoxItem && defaultContext is IListBoxItemData listBoxItemData)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifyRestoreDefaultContext(listItem, listBoxItemData));
+        }
+    }
+
+    void IListVirtualizingContextAware.ClearContainerValues(Control item)
+    {
+        if (item is ListBoxItem listBoxItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, NotifyClearContainerForVirtualizingContext);
+        }
+    }
+    #endregion
 }

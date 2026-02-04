@@ -72,7 +72,7 @@
                                                         HorizontalAlignment="Stretch"
                                                         VerticalAlignment="Center"
                                                         SizeType="{TemplateBinding SizeType}"
-                                                        SelectedItems="{TemplateBinding EffectiveSelectedItems}"
+                                                        SelectedItems="{TemplateBinding EffectiveCheckedItems}"
                                                         IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
                                                         IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                                                         MaxTagCount="{TemplateBinding MaxTagCount}"

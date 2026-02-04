@@ -29,14 +29,17 @@ public partial class CascaderView
 
     private void HandleCheckedItemsChanged(AvaloniaPropertyChangedEventArgs args)
     {
+        var oldCheckedItems = args.OldValue as IList<ICascaderViewOption>;
+        var newCheckedItems = args.NewValue as IList<ICascaderViewOption>;
+        CheckedItemsChanged?.Invoke(this, new CascaderViewCheckedItemsChangedEventArgs(
+            oldCheckedItems,
+            newCheckedItems));
+        
         if (_ignoreSyncCheckedItems)
         {
             _ignoreSyncCheckedItems = false;
             return;
         }
-
-        var oldCheckedItems = args.OldValue as IList<ICascaderViewOption>;
-        var newCheckedItems = args.NewValue as IList<ICascaderViewOption>;
 
         if (oldCheckedItems != null)
         {
@@ -53,10 +56,6 @@ public partial class CascaderView
                 CheckedSubTree(newItem);
             }
         }
-        
-        CheckedItemsChanged?.Invoke(this, new CascaderViewCheckedItemsChangedEventArgs(
-            oldCheckedItems,
-            newCheckedItems));
     }
     
     public void CheckedSubTree(CascaderViewItem item)

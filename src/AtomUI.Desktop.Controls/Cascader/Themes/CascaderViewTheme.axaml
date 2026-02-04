@@ -28,7 +28,9 @@
                                         Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
                                 <atom:CascaderViewLevelList Name="{x:Static atom:CascaderViewThemeConstants.RootLevelListPart}"
                                                             ItemsSource="{Binding Items, RelativeSource={RelativeSource TemplatedParent}}"
-                                                            ItemTemplate="{TemplateBinding ItemTemplate}"/>
+                                                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                                                            ExpandTrigger="{TemplateBinding ExpandTrigger}"
+                                                            IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
                             </StackPanel>
                         </atom:ScrollViewer>
                         <ContentPresenter

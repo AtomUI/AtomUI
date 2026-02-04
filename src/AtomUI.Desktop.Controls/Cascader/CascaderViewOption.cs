@@ -32,7 +32,6 @@ public record CascaderViewOption : ICascaderViewOption, ISelectTagTextProvider
     public bool? IsChecked { get; set; } = false;
     public bool IsExpanded { get; set; }
     public bool IsCheckBoxEnabled { get; set; } = true;
-    public bool IsLeaf { get; init; }
     public object? Value { get; set; }
     
     string? ISelectTagTextProvider.TagText => Header?.ToString();

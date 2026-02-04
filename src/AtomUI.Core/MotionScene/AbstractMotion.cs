@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
+﻿using System.Reactive.Threading.Tasks;
 using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Animation;
@@ -8,7 +6,6 @@ using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.Threading;
-using ReactiveUI.Avalonia;
 
 namespace AtomUI.MotionScene;
 

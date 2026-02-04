@@ -128,12 +128,12 @@ public partial class CascaderView
             {
                 var targetNode = paths[^1];
                 await ExpandItemAsync(targetNode);
-        
-                // if (!IsCheckable)
-                // {
-                //     SelectedItem = targetNode;
-                //     ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(targetNode));
-                // }
+                // 这里一定都是叶子节点
+                if (!IsCheckable)
+                {
+                    SelectedItem = targetNode;
+                    ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(targetNode));
+                }
             });
         }
     }

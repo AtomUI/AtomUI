@@ -198,6 +198,8 @@ public partial class CascaderView
                 ParentCascaderViewItem = cascaderViewItem
             };
             BindUtils.RelayBind(this, ItemTemplateProperty, childLevelList, CascaderViewLevelList.ItemTemplateProperty);
+            BindUtils.RelayBind(this, IsAllowSelectParentProperty, childLevelList, CascaderViewLevelList.IsAllowSelectParentProperty);
+            BindUtils.RelayBind(this, ExpandTriggerProperty, childLevelList, CascaderViewLevelList.ExpandTriggerProperty);
             _itemsPanel.Children.Add(childLevelList);
         }
         cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, true);

@@ -1,15 +1,18 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Reactive.Disposables;
+using AtomUI.Controls;
 using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class CascaderViewLevelList : SelectingItemsControl
+internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingContextAware
 {
     #region 公共属性定义
 
@@ -17,26 +20,43 @@ internal class CascaderViewLevelList : SelectingItemsControl
         AvaloniaProperty.RegisterDirect<CascaderViewLevelList, int>(nameof(Level), 
             o => o.Level);
     
+    public static readonly StyledProperty<CascaderViewExpandTrigger> ExpandTriggerProperty =
+        CascaderView.ExpandTriggerProperty.AddOwner<CascaderViewLevelList>();
+    
+    public static readonly StyledProperty<bool> IsAllowSelectParentProperty =
+        CascaderView.IsAllowSelectParentProperty.AddOwner<CascaderViewLevelList>();
+    
     private int _level;
     public int Level
     {
         get => _level;
         internal set => SetAndRaise(LevelProperty, ref _level, value);
     }
+    
+    public CascaderViewExpandTrigger ExpandTrigger
+    {
+        get => GetValue(ExpandTriggerProperty);
+        set => SetValue(ExpandTriggerProperty, value);
+    }
+    
+    public bool IsAllowSelectParent
+    {
+        get => GetValue(IsAllowSelectParentProperty);
+        set => SetValue(IsAllowSelectParentProperty, value);
+    }
 
     #endregion
     
+    internal CascaderView? OwnerView { get; set; }
+    internal CascaderViewItem? ParentCascaderViewItem { get; set; }
     private readonly Dictionary<CascaderViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     private readonly Dictionary<object, IDictionary<object, object?>> _virtualRestoreContext = new();
     
-    internal CascaderView? OwnerView { get; set; }
-    internal CascaderViewItem? ParentCascaderViewItem { get; set; }
-    
-
     static CascaderViewLevelList()
     {
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<CascaderViewLevelList>(false);
         RequestBringIntoViewEvent.AddClassHandler<CascaderViewLevelList>((view, e) => e.Handled = true);
+        CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderViewLevelList>((view, args) => view.HandleCascaderItemDoubleClicked(args));
     }
     
     public CascaderViewLevelList()
@@ -68,18 +88,9 @@ internal class CascaderViewLevelList : SelectingItemsControl
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var cascaderViewItem = new CascaderViewItem();
-        if (item != null && item is ICascaderViewOption option)
+        if (item is ICascaderViewOption option)
         {
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IconProperty, option.Icon);
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckedProperty, option.IsChecked);
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsEnabledProperty, option.IsEnabled);
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, option.IsExpanded);
-            cascaderViewItem.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, option.IsCheckBoxEnabled);
-            
-            if (!cascaderViewItem.IsSet(CascaderViewItem.IsLeafProperty))
-            {
-                cascaderViewItem.IsLeaf = option.IsLeaf;
-            }
+            NotifyRestoreDefaultContext(cascaderViewItem, option);
         }
         return cascaderViewItem;
     }
@@ -97,20 +108,31 @@ internal class CascaderViewLevelList : SelectingItemsControl
         {
             var disposables = new CompositeDisposable(8);
 
-            if (item != null && item is ICascaderViewOption option)
+            if (this is IListVirtualizingContextAware listVirtualizingContextAwareControl && 
+                cascaderViewItem is IListItemVirtualizingContextAware virtualListItem)
             {
-                cascaderViewItem.SetCurrentValue(CascaderViewItem.HeaderProperty, option);
-                cascaderViewItem.ItemKey   = option.ItemKey;
+                if (_virtualRestoreContext.TryGetValue(index, out var context))
+                {
+                    listVirtualizingContextAwareControl.RestoreVirtualizingContext(cascaderViewItem, context);
+                    _virtualRestoreContext.Remove(index);
+                }
+                else
+                {
+                    if (item is ICascaderViewOption option)
+                    {
+                        NotifyRestoreDefaultContext(cascaderViewItem, option);
+                    }
+                }
+                virtualListItem.VirtualIndex = index;
+            }
+            else
+            {
+                if (item is ICascaderViewOption option)
+                {
+                    NotifyRestoreDefaultContext(cascaderViewItem, option);
+                }
             }
             
-            if (_virtualRestoreContext.TryGetValue(index, out var context))
-            {
-                NotifyRestoreVirtualizingContext(cascaderViewItem, context);
-                _virtualRestoreContext.Remove(index);
-            }
-            
-            cascaderViewItem.VirtualIndex = index;
-
             if (ItemTemplate != null)
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, cascaderViewItem, CascaderViewItem.HeaderTemplateProperty));
@@ -148,19 +170,147 @@ internal class CascaderViewLevelList : SelectingItemsControl
         return false;
     }
     
+    private IDisposable? _clickDisposable;
+    private const int DoubleClickInterval = 180;
+    
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        if (e.Source is Visual source)
+        {
+            if (IsAllowSelectParent)
+            {
+                _clickDisposable ??= DispatcherTimer.RunOnce(() =>
+                {
+                    _clickDisposable = null;
+                    var point = e.GetCurrentPoint(source);
+                    if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                    {
+                        if (GetContainerFromEventSource(e.Source) is CascaderViewItem cascaderViewItem)
+                        {
+                            cascaderViewItem.RaiseClick();
+                            if (ExpandTrigger == CascaderViewExpandTrigger.Click)
+                            {
+                                if (cascaderViewItem.IsLeaf)
+                                {
+                                    if (!cascaderViewItem.IsExpanded)
+                                    {
+                                        cascaderViewItem.IsExpanded = true;
+                                    }
+                                    UpdateSelection(
+                                        cascaderViewItem,
+                                        cascaderViewItem.IsExpanded,
+                                        false,
+                                        true,
+                                        false);
+                                }
+                                else
+                                {
+                                    cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                                }
+                               
+                            }
+                        }
+                    
+                    }
+                }, TimeSpan.FromMilliseconds(DoubleClickInterval));
+                
+            }
+            else
+            {
+                var point = e.GetCurrentPoint(source);
+                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                {
+                    if (GetContainerFromEventSource(e.Source) is CascaderViewItem cascaderViewItem)
+                    {
+                        cascaderViewItem.RaiseClick();
+                        if (ExpandTrigger == CascaderViewExpandTrigger.Click)
+                        {
+                        
+                            if (cascaderViewItem.IsLeaf)
+                            {
+                                if (!cascaderViewItem.IsExpanded)
+                                {
+                                    cascaderViewItem.IsExpanded = true;
+                                }
+                                UpdateSelection(
+                                    cascaderViewItem,
+                                    cascaderViewItem.IsExpanded,
+                                    false,
+                                    true,
+                                    false);
+                            }
+                            else
+                            {
+                                cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
+                            }
+                           
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void HandleCascaderItemDoubleClicked(RoutedEventArgs args)
+    {
+        if (IsAllowSelectParent)
+        {
+            _clickDisposable?.Dispose();
+            _clickDisposable = null;
+            if (GetContainerFromEventSource(args.Source) is CascaderViewItem cascaderViewItem)
+            {
+                if (!cascaderViewItem.IsLeaf)
+                {
+                    cascaderViewItem.IsExpanded = true;
+                    UpdateSelection(
+                        cascaderViewItem,
+                        true,
+                        false,
+                        true,
+                        false);
+                    
+                }
+            }
+        }
+    }
+    
+    #region 虚拟化上下文管理
     protected override void ClearContainerForItemOverride(Control element)
     {
-        if (element is CascaderViewItem cascaderViewItem)
+        if (element is CascaderViewItem cascaderViewItem && 
+            element is IListItemVirtualizingContextAware virtualListItem)
         {
             var context = new Dictionary<object, object?>();
+            
             NotifySaveVirtualizingContext(cascaderViewItem, context);
-            _virtualRestoreContext.Add(cascaderViewItem.VirtualIndex, context);
+            _virtualRestoreContext.Add(virtualListItem.VirtualIndex, context);
         }
-        element.ClearValue(CascaderViewItem.IsEnabledProperty);
-        element.ClearValue(CascaderViewItem.IsCheckedProperty);
-        element.ClearValue(CascaderViewItem.IsExpandedProperty);
-        element.ClearValue(CascaderViewItem.IsCheckBoxEnabledProperty);
+
+        if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
+        {
+            var context = new Dictionary<object, object?>();
+            list.SaveVirtualizingContext(element, context);
+            _virtualRestoreContext.Add(listItem.VirtualIndex, context);
+            list.ClearContainerValues(element);
+        }
+        
         base.ClearContainerForItemOverride(element);
+    }
+    
+    protected virtual void NotifyRestoreDefaultContext(CascaderViewItem item, ICascaderViewOption option)
+    {
+        item.SetCurrentValue(CascaderViewItem.HeaderProperty, option);
+        item.ItemKey = option.ItemKey;
+        item.SetCurrentValue(CascaderViewItem.IconProperty, option.Icon);
+        item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, option.IsChecked);
+        item.SetCurrentValue(CascaderViewItem.IsEnabledProperty, option.IsEnabled);
+        item.SetCurrentValue(CascaderViewItem.IsExpandedProperty, option.IsExpanded);
+        item.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, option.IsCheckBoxEnabled);
+            
+        if (!item.IsSet(CascaderViewItem.IsLeafProperty))
+        {
+            item.IsLeaf = option.IsLeaf;
+        }
     }
     
     protected void NotifySaveVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
@@ -208,4 +358,45 @@ internal class CascaderViewLevelList : SelectingItemsControl
             }
         }
     }
+    
+    protected virtual void NotifyClearContainerForVirtualizingContext(CascaderViewItem item)
+    {
+        item.ClearValue(CascaderViewItem.IsEnabledProperty);
+        item.ClearValue(CascaderViewItem.IsCheckedProperty);
+        item.ClearValue(CascaderViewItem.IsExpandedProperty);
+        item.ClearValue(CascaderViewItem.IsCheckBoxEnabledProperty);
+    }
+
+    void IListVirtualizingContextAware.SaveVirtualizingContext(Control item, IDictionary<object, object?> context)
+    {
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifySaveVirtualizingContext(listItem, context));
+        }
+    }
+
+    void IListVirtualizingContextAware.RestoreVirtualizingContext(Control item, IDictionary<object, object?> context)
+    {
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreVirtualizingContext(listItem, context));
+        }
+    }
+
+    void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
+    {
+        if (item is CascaderViewItem cascaderViewItem && defaultContext is ICascaderViewOption option)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreDefaultContext(listItem, option));
+        }
+    }
+
+    void IListVirtualizingContextAware.ClearContainerValues(Control item)
+    {
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, NotifyClearContainerForVirtualizingContext);
+        }
+    }
+    #endregion
 }

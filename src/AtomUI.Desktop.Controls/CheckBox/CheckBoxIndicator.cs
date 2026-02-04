@@ -142,6 +142,7 @@ internal class CheckBoxIndicator : TemplatedControl
             if (change.Property == StateProperty &&
                 IsWaveSpiritEnabled &&
                 IsEnabled &&
+                IsMotionEnabled &&
                 PseudoClasses.Contains(StdPseudoClass.Checked))
             {
                 _waveSpiritDecorator?.Play();

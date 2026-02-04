@@ -23,14 +23,6 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _basicCascaderViewNodes, value);
     }
     
-    private List<ICascaderViewOption> _defaultValueCascaderNodes = [];
-    
-    public List<ICascaderViewOption> DefaultValueCascaderNodes
-    {
-        get => _defaultValueCascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _defaultValueCascaderNodes, value);
-    }
-    
     private TreeNodePath? _defaultSelectItemPath;
     
     public TreeNodePath? DefaultSelectItemPath
@@ -79,20 +71,12 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _multipleSelectCascaderNodes, value);
     }
     
-    private List<ICascaderViewOption> _checkStrategy1CascaderNodes = [];
+    private List<ICascaderViewOption> _checkStrategyCascaderNodes = [];
     
-    public List<ICascaderViewOption> CheckStrategy1CascaderNodes
+    public List<ICascaderViewOption> CheckStrategyCascaderNodes
     {
-        get => _checkStrategy1CascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _checkStrategy1CascaderNodes, value);
-    }
-    
-    private List<ICascaderViewOption> _checkStrategy2CascaderNodes = [];
-    
-    public List<ICascaderViewOption> CheckStrategy2CascaderNodes
-    {
-        get => _checkStrategy2CascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _checkStrategy2CascaderNodes, value);
+        get => _checkStrategyCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkStrategyCascaderNodes, value);
     }
     
     private List<ICascaderViewOption> _lazyLoadCascaderNodes = [];
@@ -231,13 +215,11 @@ public class CascaderItemDataLoader : ICascaderItemDataLoader
         children.AddRange([
             new CascaderViewOption()
             {
-                Header = $"{targetCascaderItem.Value} Dynamic 1",
-                IsLeaf = true
+                Header = $"{targetCascaderItem.Value} Dynamic 1"
             },
             new CascaderViewOption()
             {
-                Header = $"{targetCascaderItem.Value} Dynamic 2",
-                IsLeaf = true
+                Header = $"{targetCascaderItem.Value} Dynamic 2"
             }
         ]);
         return new CascaderItemLoadResult()

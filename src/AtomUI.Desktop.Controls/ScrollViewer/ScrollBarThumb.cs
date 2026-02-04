@@ -8,7 +8,7 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class ScrollBarThumb : Thumb, IMotionAwareControl
+public class ScrollBarThumb : Thumb, IMotionAwareControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<Orientation> OrientationProperty =

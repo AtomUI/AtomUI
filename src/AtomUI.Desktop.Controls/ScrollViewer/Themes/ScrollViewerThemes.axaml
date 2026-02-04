@@ -1,12 +1,13 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    x:ClassModifier="internal">
+                    x:ClassModifier="internal"
+                    xmlns:atom="https://atomui.net">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="AvaScrollViewerTheme.axaml" />
         <ResourceInclude Source="AvaScrollBarTheme.axaml" />
         <ResourceInclude Source="ScrollBarRepeatButtonTheme.axaml" />
         <ResourceInclude Source="ScrollBarTheme.axaml" />
-        <ResourceInclude Source="ScrollBarThumbTheme.axaml" />
         <ResourceInclude Source="ScrollViewerTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
+    <atom:ScrollBarThumbTheme x:Key="{x:Type atom:ScrollBarThumb}" TargetType="atom:ScrollBarThumb"/>
 </ResourceDictionary>

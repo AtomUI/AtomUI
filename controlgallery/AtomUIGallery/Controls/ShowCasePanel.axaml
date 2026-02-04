@@ -7,7 +7,10 @@
                   TargetType="{x:Type gallery:ShowCasePanel}">
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type gallery:ShowCasePanel}">
-                <atom:ScrollViewer VerticalScrollBarVisibility="Auto" AllowAutoHide="False" BringIntoViewOnFocusChange="False">
+                <atom:ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                   AllowAutoHide="False"
+                                   BringIntoViewOnFocusChange="False"
+                                   IsLiteMode="False">
                     <Grid Margin="5" Name="PART_MainPanel" RowSpacing="15" ColumnSpacing="15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"></ColumnDefinition>

@@ -14,7 +14,8 @@
     <atom:Window.Logo>
         <Image Source="/Assets/gallery-logo.png" />
     </atom:Window.Logo>
-    <DockPanel LastChildFill="True">
+    <DockPanel LastChildFill="True"
+               Margin="0 0 2 0">
         <atom:Menu DockPanel.Dock="Top" Margin="4, 0, 4, 0">
             <atom:MenuItem Header="{DynamicResource {x:Static lang:WorkspaceWindowLangResourceKey.MenuItemSettings}}">
                 <atom:MenuItem Header="{DynamicResource {x:Static lang:WorkspaceWindowLangResourceKey.MenuItemWindowOptions}}">

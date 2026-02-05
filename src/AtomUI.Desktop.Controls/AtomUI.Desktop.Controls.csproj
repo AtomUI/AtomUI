@@ -31,4 +31,8 @@
                           ReferenceOutputAssembly="false"
                           PrivateAssets="all" />
     </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Dialog\Themes\DialogHostXTheme.axaml" />
+    </ItemGroup>
 </Project>

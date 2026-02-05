@@ -503,7 +503,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class MenuTokenKey
     {
-        public static readonly TokenResourceKey ContextMenuBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuBgColor");
         public static readonly TokenResourceKey ContextMenuOffsetX = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuOffsetX");
         public static readonly TokenResourceKey ContextMenuOffsetY = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ContextMenuOffsetY");
         public static readonly TokenResourceKey DangerItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.DangerItemColor");
@@ -520,7 +519,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ItemMargin");
         public static readonly TokenResourceKey ItemPaddingInline = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.ItemPaddingInline");
         public static readonly TokenResourceKey KeyGestureColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.KeyGestureColor");
-        public static readonly TokenResourceKey MenuBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuBgColor");
+        public static readonly TokenResourceKey MenuPopupBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupBgColor");
         public static readonly TokenResourceKey MenuPopupContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupContentPadding");
         public static readonly TokenResourceKey MenuPopupMaxWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupMaxWidth");
         public static readonly TokenResourceKey MenuPopupMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.MenuPopupMinWidth");

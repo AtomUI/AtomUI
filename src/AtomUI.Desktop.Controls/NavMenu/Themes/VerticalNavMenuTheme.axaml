@@ -41,7 +41,7 @@
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalMenuContentPadding}}" />
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
+            <Setter Property="Background" Value="Transparent" />
             <Style Selector="^[IsDarkStyle=True]">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkMenuBg}}" />
             </Style>
@@ -55,7 +55,7 @@
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"
                     Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalMenuContentPadding}}" />
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
+            <Setter Property="Background" Value="Transparent" />
             <Style Selector="^[IsDarkStyle=True]">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkMenuBg}}" />
             </Style>

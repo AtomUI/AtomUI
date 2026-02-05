@@ -5,7 +5,7 @@
     xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
     x:ClassModifier="internal">
     <converters:CornerRadiusFilterConverter x:Key="CornerRadiusFilterConverter"
-                                            Filter="BottomLeft, BottomRight"/>
+                                            Filter="BottomLeft, BottomRight" />
     <ControlTheme x:Key="{x:Type atom:ImagePreviewerDialog}" TargetType="atom:ImagePreviewerDialog">
         <ControlTheme.BasedOn>
             <atom:WindowTheme TargetType="atom:ImagePreviewerDialog" />
@@ -14,66 +14,86 @@
             <ControlTemplate TargetType="atom:ImagePreviewerDialog">
                 <Panel>
                     <Border Name="WindowFrame"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            BackgroundSizing="InnerBorderEdge" />
-                    <Border Name="BodyFrame"
+                            BackgroundSizing="InnerBorderEdge"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             ClipToBounds="True">
-                        <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
-                            <Panel>
-                                <atom:GlobalDialogManager />
-                                <DockPanel LastChildFill="True"
-                                           Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
-                                    <Border Name="{x:Static atom:ImagePreviewerThemeConstants.WindowHeaderPart}"
-                                            Padding="{TemplateBinding TitleBarOSOffsetMargin}"
-                                            DockPanel.Dock="Top"
-                                            IsVisible="{TemplateBinding IsTitleBarVisible}">
-                                        <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}">
-                                            <atom:TitleBar.LeftAddOn>
-                                                <atom:ImagePreviewToolbar
-                                                    CurrentIndex="{Binding CurrentIndex, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    Count="{Binding Count, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    IsScaleDownEnabled="{Binding IsScaleDownEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    IsScaleUpEnabled="{Binding IsScaleUpEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    IsImageFitToWindow="{Binding IsImageFitToWindow, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    IsFirstImage="{Binding IsFirstImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    IsLastImage="{Binding IsLastImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                    />
-                                            </atom:TitleBar.LeftAddOn>
-                                        </atom:TitleBar>
-                                    </Border>
+                        <Panel>
+                            <ContentPresenter Name="WindowFrameLayer"
+                                              Background="{TemplateBinding Background}"
+                                              Opacity="{TemplateBinding WindowFrameLayerOpacity}"
+                                              ClipToBounds="True"
+                                              Content="{TemplateBinding WindowFrameLayer}"
+                                              ContentTemplate="{TemplateBinding WindowFrameLayerTemplate}" />
+                            <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
+                                <Panel>
+                                    <atom:GlobalDialogManager />
+                                    <DockPanel LastChildFill="True"
+                                               Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
+                                        <Panel DockPanel.Dock="Top">
+                                            <ContentPresenter Name="TitleBarFrameLayer"
+                                                              Background="{TemplateBinding TitleBarFrameBackground}"
+                                                              Content="{TemplateBinding TitleBarFrameLayer}"
+                                                              ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}" 
+                                                              Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
+                                                              ClipToBounds="True"/>
+                                            <Border
+                                                Name="{x:Static atom:ImagePreviewerThemeConstants.WindowHeaderPart}"
+                                                Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                                IsVisible="{TemplateBinding IsTitleBarVisible}">
+                                                <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}">
+                                                    <atom:TitleBar.LeftAddOn>
+                                                        <atom:ImagePreviewToolbar
+                                                            CurrentIndex="{Binding CurrentIndex, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                            Count="{Binding Count, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                            IsScaleDownEnabled="{Binding IsScaleDownEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                            IsScaleUpEnabled="{Binding IsScaleUpEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                            IsImageFitToWindow="{Binding IsImageFitToWindow, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                            IsFirstImage="{Binding IsFirstImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
+                                                            IsLastImage="{Binding IsLastImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}" />
+                                                    </atom:TitleBar.LeftAddOn>
+                                                </atom:TitleBar>
+                                            </Border>
+                                        </Panel>
 
-                                    <Border Name="ContentFrame"
-                                            CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource CornerRadiusFilterConverter}}"
-                                            ClipToBounds="True"
-                                            Cursor="Arrow"
-                                            Background="{TemplateBinding ContentBackground}"
-                                            Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"
-                                            Container.Sizing="WidthAndHeight"
-                                            Padding="{TemplateBinding Padding}">
-                                        <atom:ImageViewer
-                                            Name="{x:Static atom:ImagePreviewerThemeConstants.ImageViewerPart}"
-                                            Count="{TemplateBinding Count}"
-                                            CurrentIndex="{TemplateBinding CurrentIndex}"
-                                            CurrentImage="{TemplateBinding CurrentImage}"
-                                            IsFirstImage="{TemplateBinding IsFirstImage}"
-                                            IsLastImage="{TemplateBinding IsLastImage}"
-                                            IsMultiImages="{TemplateBinding IsMultiImages}"
-                                            IsScaleUpEnabled="{TemplateBinding IsScaleUpEnabled}"
-                                            IsScaleDownEnabled="{TemplateBinding IsScaleDownEnabled}"
-                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                            ImageScaleX="{TemplateBinding ImageScaleX}"
-                                            ImageScaleY="{TemplateBinding ImageScaleY}"
-                                            ImageRotate="{TemplateBinding ImageRotate}"
-                                            IsImageMovable="{TemplateBinding IsImageMovable}" 
-                                            IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
-                                            ImageScaleChanged="{TemplateBinding ImageScaleChanged}"
-                                            />
-                                    </Border>
-                                </DockPanel>
-                            </Panel>
-                        </atom:VisualLayerManager>
+                                        <Panel>
+                                            <ContentPresenter Name="ContentFrameLayer"
+                                                              Background="{TemplateBinding ContentFrameBackground}"
+                                                              ClipToBounds="True"
+                                                              Opacity="{TemplateBinding ContentFrameLayerOpacity}"
+                                                              Content="{TemplateBinding ContentFrameLayer}"
+                                                              ContentTemplate="{TemplateBinding ContentFrameLayerTemplate}"
+                                                              CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static atom:WindowTheme.CornerRadiusConverter}}" />
+                                            <Border Name="ContentFrame"
+                                                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource CornerRadiusFilterConverter}}"
+                                                    ClipToBounds="True"
+                                                    Cursor="Arrow"
+                                                    Background="{TemplateBinding ContentFrameBackground}"
+                                                    Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"
+                                                    Container.Sizing="WidthAndHeight"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <atom:ImageViewer
+                                                    Name="{x:Static atom:ImagePreviewerThemeConstants.ImageViewerPart}"
+                                                    Count="{TemplateBinding Count}"
+                                                    CurrentIndex="{TemplateBinding CurrentIndex}"
+                                                    CurrentImage="{TemplateBinding CurrentImage}"
+                                                    IsFirstImage="{TemplateBinding IsFirstImage}"
+                                                    IsLastImage="{TemplateBinding IsLastImage}"
+                                                    IsMultiImages="{TemplateBinding IsMultiImages}"
+                                                    IsScaleUpEnabled="{TemplateBinding IsScaleUpEnabled}"
+                                                    IsScaleDownEnabled="{TemplateBinding IsScaleDownEnabled}"
+                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                    ImageScaleX="{TemplateBinding ImageScaleX}"
+                                                    ImageScaleY="{TemplateBinding ImageScaleY}"
+                                                    ImageRotate="{TemplateBinding ImageRotate}"
+                                                    IsImageMovable="{TemplateBinding IsImageMovable}"
+                                                    IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
+                                                    ImageScaleChanged="{TemplateBinding ImageScaleChanged}" />
+                                            </Border>
+                                        </Panel>
+                                    </DockPanel>
+                                </Panel>
+                            </atom:VisualLayerManager>
+                        </Panel>
                     </Border>
                     <atom:WindowResizer Name="{x:Static atom:WindowThemeConstants.WindowResizerPart}"
                                         IsVisible="{Binding $parent[atom:Window].IsCustomResizerVisible}" />
@@ -92,8 +112,9 @@
         <Setter Property="IsMoveEnabled" Value="True" />
         <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinWidth}}" />
         <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.DialogMinHeight}}" />
-        <Setter Property="ContentBackground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgLayout}}" />
-        <Style Selector="^ /template/ Border#PART_WindowTitleFrame">
+        <Setter Property="ContentFrameBackground"
+                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgLayout}}" />
+        <Style Selector="^ /template/ Border#PART_WindowHeader">
             <Setter Property="Background"
                     Value="{DynamicResource {x:Static atom:ImagePreviewerTokenKey.TitleBarBackgroundColor}}" />
         </Style>

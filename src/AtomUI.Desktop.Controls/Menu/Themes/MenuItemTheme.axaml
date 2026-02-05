@@ -188,7 +188,7 @@
         </Style>
 
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgElevated}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:MenuTokenKey.MenuPopupBgColor}}" />
             <Setter Property="CornerRadius"
                     Value="{DynamicResource {x:Static atom:PopupHostTokenKey.BorderRadius}}" />
         </Style>

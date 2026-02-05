@@ -8,44 +8,67 @@
         <ControlTemplate TargetType="atom:Window">
             <Panel>
                 <Border Name="WindowFrame"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        BackgroundSizing="InnerBorderEdge" />
-                <Border Name="BodyFrame"
+                        BackgroundSizing="InnerBorderEdge"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         ClipToBounds="True">
-                    <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
-                        <Panel>
-                            <atom:GlobalDialogManager />
-                            <DockPanel LastChildFill="True"
-                                       Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
-                                <Border Padding="{TemplateBinding TitleBarOSOffsetMargin}" DockPanel.Dock="Top"
-                                        IsVisible="{TemplateBinding IsTitleBarVisible}">
-                                    <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
-                                                   Title="{TemplateBinding Title}"
-                                                   Logo="{TemplateBinding Logo}" />
-                                </Border>
-
-                                <Border Name="ContentFrame"
-                                        Background="{TemplateBinding ContentBackground}"
-                                        CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static atom:WindowTheme.CornerRadiusConverter}}"
-                                        ClipToBounds="True"
-                                        Cursor="Arrow"
-                                        Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"
-                                        Container.Sizing="WidthAndHeight"
-                                        Padding="{TemplateBinding Padding}">
-                                    <Panel>
-                                        <ContentPresenter Name="{x:Static atom:WindowThemeConstants.ContentPresenterPart}"
-                                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                          Content="{TemplateBinding Content}"
-                                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                                        <atom:WindowMediaQueryIndicator Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}"/>
+                    <Panel>
+                        <ContentPresenter Name="WindowFrameLayer"
+                                          Background="{TemplateBinding Background}"
+                                          Content="{TemplateBinding WindowFrameLayer}"
+                                          Opacity="{TemplateBinding WindowFrameLayerOpacity}"
+                                          ContentTemplate="{TemplateBinding WindowFrameLayerTemplate}"
+                                          ClipToBounds="True"/>
+                        <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
+                            <Panel>
+                                <atom:GlobalDialogManager />
+                                <DockPanel Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}"
+                                           LastChildFill="True">
+                                    <Panel DockPanel.Dock="Top">
+                                        <ContentPresenter Name="TitleBarFrameLayer"
+                                                          Background="{TemplateBinding TitleBarFrameBackground}"
+                                                          Content="{TemplateBinding TitleBarFrameLayer}"
+                                                          ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
+                                                          Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
+                                                          ClipToBounds="True"/>
+                                        <Border Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                                IsVisible="{TemplateBinding IsTitleBarVisible}">
+                                            <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
+                                                           Title="{TemplateBinding Title}"
+                                                           Logo="{TemplateBinding Logo}" />
+                                        </Border>
                                     </Panel>
-                                </Border>
-                            </DockPanel>
-                        </Panel>
-                    </atom:VisualLayerManager>
+
+                                    <Panel>
+                                        <ContentPresenter Name="ContentFrameLayer"
+                                                          Background="{TemplateBinding ContentFrameBackground}"
+                                                          ClipToBounds="True"
+                                                          Opacity="{TemplateBinding ContentFrameLayerOpacity}"
+                                                          Content="{TemplateBinding ContentFrameLayer}"
+                                                          ContentTemplate="{TemplateBinding ContentFrameLayerTemplate}"
+                                                          CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static atom:WindowTheme.CornerRadiusConverter}}"/>
+                                        <Border Name="ContentFrame"
+                                                CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static atom:WindowTheme.CornerRadiusConverter}}"
+                                                ClipToBounds="True"
+                                                Cursor="Arrow"
+                                                Container.Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}"
+                                                Container.Sizing="WidthAndHeight"
+                                                Padding="{TemplateBinding Padding}">
+                                            <Panel>
+                                                <ContentPresenter
+                                                    Name="{x:Static atom:WindowThemeConstants.ContentPresenterPart}"
+                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                    Content="{TemplateBinding Content}"
+                                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                <atom:WindowMediaQueryIndicator
+                                                    Name="{x:Static atom:WindowThemeConstants.MediaQueryIndicatorPart}" />
+                                            </Panel>
+                                        </Border>
+                                    </Panel>
+                                </DockPanel>
+                            </Panel>
+                        </atom:VisualLayerManager>
+                    </Panel>
                 </Border>
                 <atom:WindowResizer Name="{x:Static atom:WindowThemeConstants.WindowResizerPart}"
                                     IsVisible="{Binding $parent[atom:Window].IsCustomResizerVisible}" />
@@ -157,7 +180,7 @@
             </Style>
         </ContainerQuery.Children>
     </ContainerQuery>
-    
+
     <ContainerQuery Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}" Query="min-width:768">
         <ContainerQuery.Children>
             <Style Selector="atom|WindowMediaQueryIndicator#PART_MediaQueryIndicator">
@@ -165,7 +188,7 @@
             </Style>
         </ContainerQuery.Children>
     </ContainerQuery>
-    
+
     <ContainerQuery Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}" Query="min-width:992">
         <ContainerQuery.Children>
             <Style Selector="atom|WindowMediaQueryIndicator#PART_MediaQueryIndicator">
@@ -173,7 +196,7 @@
             </Style>
         </ContainerQuery.Children>
     </ContainerQuery>
-    
+
     <ContainerQuery Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}" Query="min-width:1200">
         <ContainerQuery.Children>
             <Style Selector="atom|WindowMediaQueryIndicator#PART_MediaQueryIndicator">
@@ -181,7 +204,7 @@
             </Style>
         </ContainerQuery.Children>
     </ContainerQuery>
-    
+
     <ContainerQuery Name="{x:Static atom:IMediaBreakAwareControl.GlobalQueryContainerName}" Query="min-width:1600">
         <ContainerQuery.Children>
             <Style Selector="atom|WindowMediaQueryIndicator#PART_MediaQueryIndicator">
@@ -189,5 +212,5 @@
             </Style>
         </ContainerQuery.Children>
     </ContainerQuery>
-    
+
 </ControlTheme>

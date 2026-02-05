@@ -9,9 +9,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -46,8 +48,38 @@ public class Window : AvaloniaWindow,
     public static readonly StyledProperty<Control?> LogoProperty =
         TitleBar.LogoProperty.AddOwner<Window>();
     
-    public static readonly StyledProperty<IBrush?> ContentBackgroundProperty =
-        AvaloniaProperty.Register<Window, IBrush?>(nameof(ContentBackground));
+    public static readonly StyledProperty<object?> WindowFrameLayerProperty =
+        AvaloniaProperty.Register<Window, object?>(nameof(WindowFrameLayer));
+    
+    public static readonly StyledProperty<IDataTemplate?> WindowFrameLayerTemplateProperty =
+        AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(WindowFrameLayerTemplate));
+    
+    public static readonly StyledProperty<double> WindowFrameLayerOpacityProperty =
+        AvaloniaProperty.Register<Window, double>(nameof(WindowFrameLayerOpacity), 1.0);
+    
+    public static readonly StyledProperty<object?> ContentFrameLayerProperty =
+        AvaloniaProperty.Register<Window, object?>(nameof(ContentFrameLayer));
+    
+    public static readonly StyledProperty<IDataTemplate?> ContentFrameLayerTemplateProperty =
+        AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(ContentFrameLayerTemplate));
+    
+    public static readonly StyledProperty<double> ContentFrameLayerOpacityProperty =
+        AvaloniaProperty.Register<Window, double>(nameof(ContentFrameLayerOpacity), 1.0);
+    
+    public static readonly StyledProperty<IBrush?> ContentFrameBackgroundProperty =
+        AvaloniaProperty.Register<Window, IBrush?>(nameof(ContentFrameBackground));
+    
+    public static readonly StyledProperty<object?> TitleBarFrameLayerProperty =
+        AvaloniaProperty.Register<Window, object?>(nameof(TitleBarFrameLayer));
+    
+    public static readonly StyledProperty<IDataTemplate?> TitleBarFrameLayerTemplateProperty =
+        AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(TitleBarFrameLayerTemplate));
+    
+    public static readonly StyledProperty<double> TitleBarFrameLayerOpacityProperty =
+        AvaloniaProperty.Register<Window, double>(nameof(TitleBarFrameLayerOpacity), 1.0);
+    
+    public static readonly StyledProperty<IBrush?> TitleBarFrameBackgroundProperty =
+        AvaloniaProperty.Register<Window, IBrush?>(nameof(TitleBarFrameBackground));
     
     public static readonly StyledProperty<bool> IsFullScreenCaptionButtonEnabledProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsFullScreenCaptionButtonEnabled));
@@ -106,16 +138,79 @@ public class Window : AvaloniaWindow,
         set => SetValue(TitleBarContextMenuProperty, value);
     }
     
-    public Control? Logo
+    [DependsOn(nameof(WindowFrameLayerTemplate))]
+    public object? WindowFrameLayer
+    {
+        get => GetValue(WindowFrameLayerProperty);
+        set => SetValue(WindowFrameLayerProperty, value);
+    }
+    
+    public object? WindowFrameLayerTemplate
+    {
+        get => GetValue(WindowFrameLayerTemplateProperty);
+        set => SetValue(WindowFrameLayerTemplateProperty, value);
+    }
+    
+    public double WindowFrameLayerOpacity
+    {
+        get => GetValue(WindowFrameLayerOpacityProperty);
+        set => SetValue(WindowFrameLayerOpacityProperty, value);
+    }
+    
+    [DependsOn(nameof(ContentFrameLayerTemplate))]
+    public object? ContentFrameLayer
+    {
+        get => GetValue(ContentFrameLayerProperty);
+        set => SetValue(ContentFrameLayerProperty, value);
+    }
+    
+    public object? ContentFrameLayerTemplate
+    {
+        get => GetValue(ContentFrameLayerTemplateProperty);
+        set => SetValue(ContentFrameLayerTemplateProperty, value);
+    }
+    
+    public double ContentFrameLayerOpacity
+    {
+        get => GetValue(ContentFrameLayerOpacityProperty);
+        set => SetValue(ContentFrameLayerOpacityProperty, value);
+    }
+    
+    public IBrush? ContentFrameBackground
+    {
+        get => GetValue(ContentFrameBackgroundProperty);
+        set => SetValue(ContentFrameBackgroundProperty, value);
+    }
+    
+    [DependsOn(nameof(TitleBarFrameLayerTemplate))]
+    public object? TitleBarFrameLayer
+    {
+        get => GetValue(TitleBarFrameLayerProperty);
+        set => SetValue(TitleBarFrameLayerProperty, value);
+    }
+    
+    public object? TitleBarFrameLayerTemplate
+    {
+        get => GetValue(TitleBarFrameLayerTemplateProperty);
+        set => SetValue(TitleBarFrameLayerTemplateProperty, value);
+    }
+    
+    public double TitleBarFrameLayerOpacity
+    {
+        get => GetValue(TitleBarFrameLayerOpacityProperty);
+        set => SetValue(TitleBarFrameLayerOpacityProperty, value);
+    }
+    
+    public IBrush? TitleBarFrameBackground
+    {
+        get => GetValue(TitleBarFrameBackgroundProperty);
+        set => SetValue(TitleBarFrameBackgroundProperty, value);
+    }
+    
+    public object? Logo
     {
         get => GetValue(LogoProperty);
         set => SetValue(LogoProperty, value);
-    }
-    
-    public IBrush? ContentBackground
-    {
-        get => GetValue(ContentBackgroundProperty);
-        set => SetValue(ContentBackgroundProperty, value);
     }
     
     public bool IsFullScreenCaptionButtonEnabled
@@ -244,7 +339,8 @@ public class Window : AvaloniaWindow,
 
     static Window()
     {
-        AffectsRender<Window>(ContentBackgroundProperty);
+        AffectsRender<Window>(TitleBarFrameBackgroundProperty, 
+            ContentFrameBackgroundProperty);
         ScrollViewer.ScrollChangedEvent.AddClassHandler<Window>((window, args) => window.HandleScrollOccurred());
     }
 

@@ -63,6 +63,7 @@ namespace AtomUI.Theme
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SeparatorToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SkeletonToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SliderToken));
+            tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SpaceToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SpinToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SplitterToken));
             tokenTypes.Add(typeof(AtomUI.Desktop.Controls.SplitViewToken));

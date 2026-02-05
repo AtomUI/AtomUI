@@ -914,6 +914,13 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey TrackHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.Slider.TrackHoverBg");
     }
 
+    public static class SpaceTokenKey
+    {
+        public static readonly TokenResourceKey GapLargeSize = new TokenResourceKey("AtomUI.Desktop.Controls.Space.GapLargeSize");
+        public static readonly TokenResourceKey GapMiddleSize = new TokenResourceKey("AtomUI.Desktop.Controls.Space.GapMiddleSize");
+        public static readonly TokenResourceKey GapSmallSize = new TokenResourceKey("AtomUI.Desktop.Controls.Space.GapSmallSize");
+    }
+
     public static class SpinTokenKey
     {
         public static readonly TokenResourceKey DotSize = new TokenResourceKey("AtomUI.Desktop.Controls.Spin.DotSize");

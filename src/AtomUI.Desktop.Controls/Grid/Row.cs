@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 

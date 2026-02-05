@@ -4,356 +4,357 @@
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
 
-<atom:FlexPanel Direction="Column">
-            <atom:Alert Type="Warning"
+    <atom:FlexPanel Direction="Column">
+        <atom:Alert Type="Warning"
                     IsShowIcon="True"
                     Margin="5,5,5,0"
                     Message="{DynamicResource CaseNavigation.Layout_BoxPanel_DeprecationNotice}" />
-        <gallery:ShowCasePanel >
-        <!-- 1. Basic Usage -->
-        <gallery:ShowCaseItem Description="The basic usage." Title="Basic">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <atom:BoxPanel Margin="0,0,0,20" Orientation="Horizontal" Spacing="10">
-                    <atom:RadioButton IsChecked="True" x:Name="Vertical">Vertical</atom:RadioButton>
-                    <atom:RadioButton x:Name="Horizontal">Horizontal</atom:RadioButton>
-                </atom:BoxPanel>
-
-                <Panel Height="200">
-                    <atom:BoxPanel
-                        Orientation="Vertical"
-                        Spacing="10"
-                        x:Name="BasicBoxPanel">
-                        <Panel Background="#1E90FF" atom:BoxPanel.Flex="1" />
-                        <Panel Background="#4169E1" atom:BoxPanel.Flex="1" />
-                        <Panel Background="#6495ED" atom:BoxPanel.Flex="1" />
-                        <Panel Background="#00BFFF" atom:BoxPanel.Flex="1" />
+        <gallery:ShowCasePanel>
+            <!-- 1. Basic Usage -->
+            <gallery:ShowCaseItem Description="The basic usage." Title="Basic">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <atom:BoxPanel Margin="0,0,0,20" Orientation="Horizontal" Spacing="10">
+                        <atom:RadioButton IsChecked="True" x:Name="Vertical">Vertical</atom:RadioButton>
+                        <atom:RadioButton x:Name="Horizontal">Horizontal</atom:RadioButton>
                     </atom:BoxPanel>
-                </Panel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
 
-        <!-- 2. Flex Ratio -->
-        <gallery:ShowCaseItem
-            Description="Use the flex property to control the width ratio of the child controls." Title="Flex Ratio">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <atom:BoxPanel Margin="0,0,0,20" Orientation="Horizontal" Spacing="10">
-                    <atom:RadioButton IsChecked="True" x:Name="Vertical1">Vertical</atom:RadioButton>
-                    <atom:RadioButton x:Name="Horizontal1">Horizontal</atom:RadioButton>
-                </atom:BoxPanel>
+                    <Panel Height="200">
+                        <atom:BoxPanel
+                            Orientation="Vertical"
+                            Spacing="10"
+                            x:Name="BasicBoxPanel">
+                            <Panel Background="#1E90FF" atom:BoxPanel.Flex="1" />
+                            <Panel Background="#4169E1" atom:BoxPanel.Flex="1" />
+                            <Panel Background="#6495ED" atom:BoxPanel.Flex="1" />
+                            <Panel Background="#00BFFF" atom:BoxPanel.Flex="1" />
+                        </atom:BoxPanel>
+                    </Panel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    Spacing="5"
-                    x:Name="FlexBoxPanel">
-                    <Panel Background="#1E90FF" atom:BoxPanel.Flex="1">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">flex= 1</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" atom:BoxPanel.Flex="1">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">flex= 1</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" atom:BoxPanel.Flex="2">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">flex= 2</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+            <!-- 2. Flex Ratio -->
+            <gallery:ShowCaseItem
+                Description="Use the flex property to control the width ratio of the child controls."
+                Title="Flex Ratio">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <atom:BoxPanel Margin="0,0,0,20" Orientation="Horizontal" Spacing="10">
+                        <atom:RadioButton IsChecked="True" x:Name="Vertical1">Vertical</atom:RadioButton>
+                        <atom:RadioButton x:Name="Horizontal1">Horizontal</atom:RadioButton>
+                    </atom:BoxPanel>
 
-        <!-- 3. AlignSelf (替换原来的 child alignment) -->
-        <gallery:ShowCaseItem
-            Description="Use AlignSelf property to control child control position on cross axis." Title="AlignSelf">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    AlignItems="Stretch"
-                    Spacing="10">
-                    <Panel Background="#1E90FF" Width="60" Height="50" atom:BoxPanel.AlignSelf="FlexStart">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">FlexStart</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="60" Height="50" atom:BoxPanel.AlignSelf="Center">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Center</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" Width="60" Height="80" atom:BoxPanel.AlignSelf="FlexEnd">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">FlexEnd</TextBlock>
-                    </Panel>
-                    <Panel Background="#00BFFF" Width="60" atom:BoxPanel.Flex="1">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=1 Stretch</TextBlock>
-                    </Panel>
-                    <Panel Background="#87CEEB" Width="80" atom:BoxPanel.Flex="2">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=2 Stretch</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        Spacing="5"
+                        x:Name="FlexBoxPanel">
+                        <Panel Background="#1E90FF" atom:BoxPanel.Flex="1">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">flex= 1</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" atom:BoxPanel.Flex="1">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">flex= 1</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" atom:BoxPanel.Flex="2">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">flex= 2</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
-        <!-- 4. Dynamic Spacing -->
-        <gallery:ShowCaseItem Description="Dynamically modify spacing and add/remove fixed space."
-                                      Title="Dynamic Spacing">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <StackPanel Orientation="Vertical" Spacing="10">
-                    <TextBlock>Spacing Value:</TextBlock>
-                    <atom:Slider
-                        Maximum="50"
-                        Minimum="0"
-                        TickFrequency="5"
-                        Value="10"
-                        ValueChanged="HandleSpaceSliderValueChanged"
-                        x:Name="SpaceSlider" />
+            <!-- 3. AlignSelf (替换原来的 child alignment) -->
+            <gallery:ShowCaseItem
+                Description="Use AlignSelf property to control child control position on cross axis." Title="AlignSelf">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        AlignItems="Stretch"
+                        Spacing="10">
+                        <Panel Background="#1E90FF" Width="60" Height="50" atom:BoxPanel.AlignSelf="FlexStart">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">FlexStart</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="60" Height="50" atom:BoxPanel.AlignSelf="Center">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Center</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" Width="60" Height="80" atom:BoxPanel.AlignSelf="FlexEnd">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">FlexEnd</TextBlock>
+                        </Panel>
+                        <Panel Background="#00BFFF" Width="60" atom:BoxPanel.Flex="1">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=1 Stretch</TextBlock>
+                        </Panel>
+                        <Panel Background="#87CEEB" Width="80" atom:BoxPanel.Flex="2">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=2 Stretch</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
+
+            <!-- 4. Dynamic Spacing -->
+            <gallery:ShowCaseItem Description="Dynamically modify spacing and add/remove fixed space."
+                                  Title="Dynamic Spacing">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <StackPanel Orientation="Vertical" Spacing="10">
+                        <TextBlock>Spacing Value:</TextBlock>
+                        <atom:Slider
+                            Maximum="50"
+                            Minimum="0"
+                            TickFrequency="5"
+                            Value="10"
+                            ValueChanged="HandleSpaceSliderValueChanged"
+                            x:Name="SpaceSlider" />
+                        <WrapPanel>
+                            <atom:Button Click="HandleAddSpaceButtonClicked" x:Name="AddSpaceButton" Margin="0,0,10,0">
+                                Add a space of size 40
+                            </atom:Button>
+                            <atom:Button Click="HandleChangFlexButtonClicked" x:Name="ChangFlexButton">
+                                Change flex
+                            </atom:Button>
+                        </WrapPanel>
+                    </StackPanel>
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        AlignItems="Stretch"
+                        Spacing="10"
+                        x:Name="ChangeSpaceBoxPanel">
+                        <Panel Background="#1E90FF" Width="60" Height="50" atom:BoxPanel.AlignSelf="FlexStart">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Top</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="60" Height="50" atom:BoxPanel.AlignSelf="Center">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Center</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" atom:BoxPanel.Flex="1">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=1</TextBlock>
+                        </Panel>
+                        <Panel Background="#00BFFF" atom:BoxPanel.Flex="2">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=2</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
+
+            <!-- 5. Add Flex Placeholder -->
+            <gallery:ShowCaseItem Description="Add/remove flexible placeholders dynamically."
+                                  Title="Add Flex Placeholder">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
                     <WrapPanel>
-                        <atom:Button Click="HandleAddSpaceButtonClicked" x:Name="AddSpaceButton" Margin="0,0,10,0">
-                            Add a space of size 40
-                        </atom:Button>
-                        <atom:Button Click="HandleChangFlexButtonClicked" x:Name="ChangFlexButton">
-                            Change flex
+                        <atom:Button Click="HandleAddFlexButtonClicked" x:Name="AddFlexButton">
+                            Add a placeholder flex
                         </atom:Button>
                     </WrapPanel>
+
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        Spacing="5"
+                        x:Name="AddPlaceholderBoxPanel">
+                        <Panel Background="#1E90FF" atom:BoxPanel.Flex="1">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">
+                                flex =
+                                1
+                            </TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" atom:BoxPanel.Flex="2">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">
+                                flex =
+                                2
+                            </TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
                 </StackPanel>
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    AlignItems="Stretch"
-                    Spacing="10"
-                    x:Name="ChangeSpaceBoxPanel">
-                    <Panel Background="#1E90FF" Width="60" Height="50" atom:BoxPanel.AlignSelf="FlexStart">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Top</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="60" Height="50" atom:BoxPanel.AlignSelf="Center">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Center</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" atom:BoxPanel.Flex="1">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=1</TextBlock>
-                    </Panel>
-                    <Panel Background="#00BFFF" atom:BoxPanel.Flex="2">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Flex=2</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
-        
-        <!-- 5. Add Flex Placeholder -->
-        <gallery:ShowCaseItem Description="Add/remove flexible placeholders dynamically."
-                                      Title="Add Flex Placeholder">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <WrapPanel>
-                    <atom:Button Click="HandleAddFlexButtonClicked" x:Name="AddFlexButton">
-                        Add a placeholder flex
-                    </atom:Button>
-                </WrapPanel>
+            </gallery:ShowCaseItem>
 
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    Spacing="5"
-                    x:Name="AddPlaceholderBoxPanel">
-                    <Panel Background="#1E90FF" atom:BoxPanel.Flex="1">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">
-                            flex =
-                            1
-                        </TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" atom:BoxPanel.Flex="2">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">
-                            flex =
-                            2
-                        </TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+            <!-- 6. JustifyContent -->
+            <gallery:ShowCaseItem Description="Use JustifyContent to control main axis alignment."
+                                  Title="JustifyContent">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <TextBlock FontWeight="Black">JustifyContent:</TextBlock>
+                    <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
+                        <atom:RadioButton GroupName="JustifyContent" IsChecked="True" x:Name="JustifyFlexStart">FlexStart</atom:RadioButton>
+                        <atom:RadioButton GroupName="JustifyContent" x:Name="JustifyFlexEnd">FlexEnd</atom:RadioButton>
+                        <atom:RadioButton GroupName="JustifyContent" x:Name="JustifyCenter">Center</atom:RadioButton>
+                        <atom:RadioButton GroupName="JustifyContent" x:Name="JustifySpaceBetween">SpaceBetween</atom:RadioButton>
+                        <atom:RadioButton GroupName="JustifyContent" x:Name="JustifySpaceAround">SpaceAround</atom:RadioButton>
+                        <atom:RadioButton GroupName="JustifyContent" x:Name="JustifySpaceEvenly">SpaceEvenly</atom:RadioButton>
+                    </atom:BoxPanel>
 
-        <!-- 6. JustifyContent -->
-        <gallery:ShowCaseItem Description="Use JustifyContent to control main axis alignment."
-                                      Title="JustifyContent">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <TextBlock FontWeight="Black">JustifyContent:</TextBlock>
-                <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
-                    <atom:RadioButton GroupName="JustifyContent" IsChecked="True" x:Name="JustifyFlexStart">FlexStart</atom:RadioButton>
-                    <atom:RadioButton GroupName="JustifyContent" x:Name="JustifyFlexEnd">FlexEnd</atom:RadioButton>
-                    <atom:RadioButton GroupName="JustifyContent" x:Name="JustifyCenter">Center</atom:RadioButton>
-                    <atom:RadioButton GroupName="JustifyContent" x:Name="JustifySpaceBetween">SpaceBetween</atom:RadioButton>
-                    <atom:RadioButton GroupName="JustifyContent" x:Name="JustifySpaceAround">SpaceAround</atom:RadioButton>
-                    <atom:RadioButton GroupName="JustifyContent" x:Name="JustifySpaceEvenly">SpaceEvenly</atom:RadioButton>
-                </atom:BoxPanel>
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        JustifyContent="FlexStart"
+                        Spacing="5"
+                        x:Name="JustifyContentBoxPanel">
+                        <Panel Background="#1E90FF" Width="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">1</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="80">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">2</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" Width="70">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">3</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    JustifyContent="FlexStart"
-                    Spacing="5"
-                    x:Name="JustifyContentBoxPanel">
-                    <Panel Background="#1E90FF" Width="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">1</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="80">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">2</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" Width="70">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">3</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+            <!-- 7. AlignItems -->
+            <gallery:ShowCaseItem Description="Use AlignItems to control cross axis alignment for all items."
+                                  Title="AlignItems">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <TextBlock FontWeight="Black">AlignItems:</TextBlock>
 
-        <!-- 7. AlignItems -->
-        <gallery:ShowCaseItem Description="Use AlignItems to control cross axis alignment for all items."
-                                      Title="AlignItems">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <TextBlock FontWeight="Black">AlignItems:</TextBlock>
+                    <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
+                        <atom:RadioButton GroupName="AlignItems" x:Name="AlignFlexStart">FlexStart</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignItems" x:Name="AlignFlexEnd">FlexEnd</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignItems" x:Name="AlignCenter">Center</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignItems" IsChecked="True" x:Name="AlignStretch">Stretch</atom:RadioButton>
+                    </atom:BoxPanel>
 
-                <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
-                    <atom:RadioButton GroupName="AlignItems" x:Name="AlignFlexStart">FlexStart</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignItems" x:Name="AlignFlexEnd">FlexEnd</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignItems" x:Name="AlignCenter">Center</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignItems" IsChecked="True" x:Name="AlignStretch">Stretch</atom:RadioButton>
-                </atom:BoxPanel>
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        AlignItems="Stretch"
+                        Spacing="10"
+                        x:Name="AlignItemsBoxPanel">
+                        <Panel Background="#1E90FF" Width="90">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Auto Height</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="90" Height="80">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Height=80</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" Width="90">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Auto Height</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                    <TextBlock Foreground="Gray" FontSize="12">
+                        Notes: Stretch only applies to items without explicit Height
+                    </TextBlock>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    AlignItems="Stretch"
-                    Spacing="10"
-                    x:Name="AlignItemsBoxPanel">
-                    <Panel Background="#1E90FF" Width="90">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Auto Height</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="90" Height="80">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Height=80</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" Width="90">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">Auto Height</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-                <TextBlock Foreground="Gray" FontSize="12">
-                    Notes: Stretch only applies to items without explicit Height
-                </TextBlock>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+            <!-- 8. FlexWrap -->
+            <gallery:ShowCaseItem Description="Use Wrap to enable wrapping when items exceed container size."
+                                  Title="FlexWrap">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <TextBlock FontWeight="Black">FlexWrap:</TextBlock>
 
-        <!-- 8. FlexWrap -->
-        <gallery:ShowCaseItem Description="Use Wrap to enable wrapping when items exceed container size."
-                                      Title="FlexWrap">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <TextBlock FontWeight="Black">FlexWrap:</TextBlock>
+                    <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
+                        <atom:RadioButton GroupName="FlexWrap" IsChecked="True" x:Name="NoWrap">NoWrap</atom:RadioButton>
+                        <atom:RadioButton GroupName="FlexWrap" x:Name="Wrap">Wrap</atom:RadioButton>
+                        <atom:RadioButton GroupName="FlexWrap" x:Name="WrapReverse">WrapReverse</atom:RadioButton>
+                    </atom:BoxPanel>
 
-                <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
-                    <atom:RadioButton GroupName="FlexWrap" IsChecked="True" x:Name="NoWrap">NoWrap</atom:RadioButton>
-                    <atom:RadioButton GroupName="FlexWrap" x:Name="Wrap">Wrap</atom:RadioButton>
-                    <atom:RadioButton GroupName="FlexWrap" x:Name="WrapReverse">WrapReverse</atom:RadioButton>
-                </atom:BoxPanel>
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        Wrap="Wrap"
+                        Spacing="10"
+                        RowSpacing="10"
+                        x:Name="WrapBoxPanel">
+                        <Panel Background="#1E90FF" Width="100" Height="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">1</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="120" Height="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">2</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" Width="150" Height="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">3</TextBlock>
+                        </Panel>
+                        <Panel Background="#00BFFF" Width="130" Height="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">4</TextBlock>
+                        </Panel>
+                        <Panel Background="#87CEEB" Width="110" Height="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">5</TextBlock>
+                        </Panel>
+                        <Panel Background="#ADD8E6" Width="140" Height="60">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center">6</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    Wrap="Wrap"
-                    Spacing="10"
-                    RowSpacing="10"
-                    x:Name="WrapBoxPanel">
-                    <Panel Background="#1E90FF" Width="100" Height="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">1</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="120" Height="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">2</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" Width="150" Height="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">3</TextBlock>
-                    </Panel>
-                    <Panel Background="#00BFFF" Width="130" Height="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">4</TextBlock>
-                    </Panel>
-                    <Panel Background="#87CEEB" Width="110" Height="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">5</TextBlock>
-                    </Panel>
-                    <Panel Background="#ADD8E6" Width="140" Height="60">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center">6</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+            <!-- 9. AlignContent -->
+            <gallery:ShowCaseItem
+                Description="Use AlignContent to control multi-line cross axis alignment (only works with Wrap)."
+                Title="AlignContent">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <TextBlock FontWeight="Black">AlignContent:</TextBlock>
 
-        <!-- 9. AlignContent -->
-        <gallery:ShowCaseItem
-            Description="Use AlignContent to control multi-line cross axis alignment (only works with Wrap)."
-            Title="AlignContent">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <TextBlock FontWeight="Black">AlignContent:</TextBlock>
+                    <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
+                        <atom:RadioButton GroupName="AlignContent" IsChecked="True" x:Name="ContentFlexStart">FlexStart</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignContent" x:Name="ContentFlexEnd">FlexEnd</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignContent" x:Name="ContentCenter">Center</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignContent" x:Name="ContentStretch">Stretch</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignContent" x:Name="ContentSpaceBetween">SpaceBetween</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignContent" x:Name="ContentSpaceAround">SpaceAround</atom:RadioButton>
+                        <atom:RadioButton GroupName="AlignContent" x:Name="ContentSpaceEvenly">SpaceEvenly</atom:RadioButton>
+                    </atom:BoxPanel>
 
-                <atom:BoxPanel Orientation="Horizontal" Wrap="Wrap" Spacing="4">
-                    <atom:RadioButton GroupName="AlignContent" IsChecked="True" x:Name="ContentFlexStart">FlexStart</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignContent" x:Name="ContentFlexEnd">FlexEnd</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignContent" x:Name="ContentCenter">Center</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignContent" x:Name="ContentStretch">Stretch</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignContent" x:Name="ContentSpaceBetween">SpaceBetween</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignContent" x:Name="ContentSpaceAround">SpaceAround</atom:RadioButton>
-                    <atom:RadioButton GroupName="AlignContent" x:Name="ContentSpaceEvenly">SpaceEvenly</atom:RadioButton>
-                </atom:BoxPanel>
+                    <atom:BoxPanel
+                        Height="300"
+                        Orientation="Horizontal"
+                        Wrap="Wrap"
+                        AlignContent="FlexStart"
+                        Spacing="10"
+                        RowSpacing="10"
+                        x:Name="AlignContentBoxPanel">
+                        <Panel Background="#1E90FF" Width="100" Height="50">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">1</TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="120" Height="50">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">2</TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" Width="150" Height="50">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">3</TextBlock>
+                        </Panel>
+                        <Panel Background="#00BFFF" Width="130" Height="50">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">4</TextBlock>
+                        </Panel>
+                        <Panel Background="#87CEEB" Width="110" Height="50">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">5</TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
-                <atom:BoxPanel
-                    Height="300"
-                    Orientation="Horizontal"
-                    Wrap="Wrap"
-                    AlignContent="FlexStart"
-                    Spacing="10"
-                    RowSpacing="10"
-                    x:Name="AlignContentBoxPanel">
-                    <Panel Background="#1E90FF" Width="100" Height="50">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">1</TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="120" Height="50">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">2</TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" Width="150" Height="50">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">3</TextBlock>
-                    </Panel>
-                    <Panel Background="#00BFFF" Width="130" Height="50">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">4</TextBlock>
-                    </Panel>
-                    <Panel Background="#87CEEB" Width="110" Height="50">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="White">5</TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-            </StackPanel>
-        </gallery:ShowCaseItem>
-
-        <!-- 10. Order -->
-        <gallery:ShowCaseItem Description="Use Order to reorder items without changing DOM structure."
-                                      Title="Order">
-            <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
-                <atom:BoxPanel
-                    Height="200"
-                    Orientation="Horizontal"
-                    Spacing="10">
-                    <Panel Background="#1E90FF" Width="100" atom:BoxPanel.Order="3">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
-                                   Foreground="White">
-                            Order=3(DOM 1st)
-                        </TextBlock>
-                    </Panel>
-                    <Panel Background="#4169E1" Width="100" atom:BoxPanel.Order="1">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
-                                   Foreground="White">
-                            Order=1(DOM 2nd)
-                        </TextBlock>
-                    </Panel>
-                    <Panel Background="#6495ED" Width="100" atom:BoxPanel.Order="2">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
-                                   Foreground="White">
-                            Order=2(DOM 3rd)
-                        </TextBlock>
-                    </Panel>
-                    <Panel Background="#00BFFF" Width="100" atom:BoxPanel.Order="0">
-                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
-                                   Foreground="White">
-                            Order=0(DOM 4th)
-                        </TextBlock>
-                    </Panel>
-                </atom:BoxPanel>
-                <TextBlock Foreground="Gray" FontSize="12">
-                    Visual order: 0 → 1 → 2 → 3 (different from DOM order)
-                </TextBlock>
-            </StackPanel>
-        </gallery:ShowCaseItem>
+            <!-- 10. Order -->
+            <gallery:ShowCaseItem Description="Use Order to reorder items without changing DOM structure."
+                                  Title="Order">
+                <StackPanel Margin="20" Orientation="Vertical" Spacing="20">
+                    <atom:BoxPanel
+                        Height="200"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <Panel Background="#1E90FF" Width="100" atom:BoxPanel.Order="3">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                                       Foreground="White">
+                                Order=3(DOM 1st)
+                            </TextBlock>
+                        </Panel>
+                        <Panel Background="#4169E1" Width="100" atom:BoxPanel.Order="1">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                                       Foreground="White">
+                                Order=1(DOM 2nd)
+                            </TextBlock>
+                        </Panel>
+                        <Panel Background="#6495ED" Width="100" atom:BoxPanel.Order="2">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                                       Foreground="White">
+                                Order=2(DOM 3rd)
+                            </TextBlock>
+                        </Panel>
+                        <Panel Background="#00BFFF" Width="100" atom:BoxPanel.Order="0">
+                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                                       Foreground="White">
+                                Order=0(DOM 4th)
+                            </TextBlock>
+                        </Panel>
+                    </atom:BoxPanel>
+                    <TextBlock Foreground="Gray" FontSize="12">
+                        Visual order: 0 → 1 → 2 → 3 (different from DOM order)
+                    </TextBlock>
+                </StackPanel>
+            </gallery:ShowCaseItem>
 
         </gallery:ShowCasePanel>
-</atom:FlexPanel>
+    </atom:FlexPanel>
 </UserControl>

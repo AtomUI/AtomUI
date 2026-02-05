@@ -72,6 +72,7 @@ namespace AtomUIGallery.Workspace.Localization.CaseNavigationLang
         public static readonly LanguageResourceKey Layout_BoxPanel_DeprecationNotice = new LanguageResourceKey("CaseNavigation.Layout_BoxPanel_DeprecationNotice", "AtomUIGallery");
         public static readonly LanguageResourceKey Layout_FlexPanel = new LanguageResourceKey("CaseNavigation.Layout_FlexPanel", "AtomUIGallery");
         public static readonly LanguageResourceKey Layout_Grid = new LanguageResourceKey("CaseNavigation.Layout_Grid", "AtomUIGallery");
+        public static readonly LanguageResourceKey Layout_Space = new LanguageResourceKey("CaseNavigation.Layout_Space", "AtomUIGallery");
         public static readonly LanguageResourceKey Layout_Splitter = new LanguageResourceKey("CaseNavigation.Layout_Splitter", "AtomUIGallery");
         public static readonly LanguageResourceKey Navigation = new LanguageResourceKey("CaseNavigation.Navigation", "AtomUIGallery");
         public static readonly LanguageResourceKey Navigation_Breadcrumb = new LanguageResourceKey("CaseNavigation.Navigation_Breadcrumb", "AtomUIGallery");

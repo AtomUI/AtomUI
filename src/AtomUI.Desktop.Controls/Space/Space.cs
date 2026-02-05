@@ -3,17 +3,24 @@
 // 
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Styling;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -35,7 +42,8 @@ public enum SpaceItemsAlignment
     End,
 }
 
-public class Space : Panel, 
+public class Space : Control,
+                     IChildIndexProvider, 
                      IControlSharedTokenResourcesHost, 
                      ICustomizableSizeTypeAware,
                      INavigableContainer
@@ -61,6 +69,10 @@ public class Space : Panel,
     
     public static readonly StyledProperty<double> ItemHeightProperty =
         AvaloniaProperty.Register<Space, double>(nameof(ItemHeight), double.NaN);
+    
+    public static readonly StyledProperty<ITemplate<Control>?> SplitTemplateProperty =
+        AvaloniaProperty.Register<Space, ITemplate<Control>?>(
+            nameof(SplitTemplate));
     
     public CustomizableSizeType SizeType
     {
@@ -103,9 +115,44 @@ public class Space : Panel,
         get => GetValue(ItemHeightProperty);
         set => SetValue(ItemHeightProperty, value);
     }
+    
+    public ITemplate<Control>? SplitTemplate
+    {
+        get => GetValue(SplitTemplateProperty);
+        set => SetValue(SplitTemplateProperty, value);
+    }
+    
+    [Content]
+    public AvaloniaList<Control> Children { get; } = new();
+    
+    public bool IsItemsHost { get; internal set; }
+    
+    event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
+    {
+        add
+        {
+            if (_childIndexChanged is null)
+            {
+                Children.PropertyChanged += ChildrenPropertyChanged;
+            }
+            _childIndexChanged += value;
+        }
+
+        remove
+        {
+            _childIndexChanged -= value;
+            if (_childIndexChanged is null)
+            {
+                Children.PropertyChanged -= ChildrenPropertyChanged;
+            }
+        }
+    }
+    
     #endregion
     
     #region 内部属性定义
+    private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => SpaceToken.ID;
     #endregion
@@ -119,12 +166,14 @@ public class Space : Panel,
             ItemHeightProperty,
             SizeTypeProperty);
         AffectsArrange<Space>(ItemsAlignmentProperty);
+        CustomizableSizeTypeControlProperty.SizeTypeProperty.OverrideDefaultValue<Space>(CustomizableSizeType.Small);
     }
     
     public Space()
     {
         this.RegisterResources();
         ConfigureInstanceStyle();
+        Children.CollectionChanged += ChildrenChanged;
     }
 
     private void ConfigureInstanceStyle()
@@ -150,6 +199,124 @@ public class Space : Panel,
             largeStyle.Add(LineSpacingProperty, SpaceTokenKey.GapLargeSize);
             Styles.Add(largeStyle);
         }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (this.IsAttachedToVisualTree())
+        {
+            if (change.Property == SplitTemplateProperty)
+            {
+                HandleSplitTemplateChanged();
+            }
+        }
+    }
+
+    protected virtual void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (SplitTemplate == null)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Control>().ToList());
+                    }
+                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Visual>());
+                    break;
+
+                case NotifyCollectionChangedAction.Move:
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
+                    }
+                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.RemoveAll(e.OldItems!.OfType<Control>().ToList());
+                    }
+                    VisualChildren.RemoveAll(e.OldItems!.OfType<Visual>());
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    for (var i = 0; i < e.OldItems!.Count; ++i)
+                    {
+                        var index = i + e.OldStartingIndex;
+                        var child = (Control)e.NewItems![i]!;
+                        if (!IsItemsHost)
+                        {
+                            LogicalChildren[index] = child;
+                        }
+                        VisualChildren[index] = child;
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    throw new NotSupportedException();
+            }
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
+            InvalidateMeasureOnChildrenChanged();
+        }
+        else
+        {
+            HandleSplitTemplateChanged();
+        }
+    }
+
+    private void HandleSplitTemplateChanged()
+    {
+        LogicalChildren.Clear();
+        VisualChildren.Clear();
+        for (var i = 0; i < Children.Count; ++i)
+        {
+            var child = Children[i];
+            if (!IsItemsHost)
+            {
+                LogicalChildren.Add(child);
+            }
+            VisualChildren.Add(child);
+            if (SplitTemplate != null)
+            {
+                if (i != Children.Count - 1)
+                {
+                    var split = SplitTemplate.Build();
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.Add(split);
+                    }
+                    VisualChildren.Add(split);
+                }
+            }
+        }
+    }
+
+    private protected virtual void InvalidateMeasureOnChildrenChanged()
+    {
+        InvalidateMeasure();
+    }
+    
+    private void ChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
+        {
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
+        }
+    }
+    
+    int IChildIndexProvider.GetChildIndex(ILogical child)
+    {
+        return child is Control control ? Children.IndexOf(control) : -1;
+    }
+    
+    bool IChildIndexProvider.TryGetTotalCount(out int count)
+    {
+        count = Children.Count;
+        return true;
     }
     
     IInputElement? INavigableContainer.GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
@@ -191,10 +358,7 @@ public class Space : Panel,
         {
             return children[index];
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
     
     protected override Size MeasureOverride(Size constraint)
@@ -204,7 +368,7 @@ public class Space : Panel,
         double itemSpacing   = ItemSpacing;
         double lineSpacing   = LineSpacing;
         var    orientation   = Orientation;
-        var    children      = Children;
+        var    children      = VisualChildren;
         var    curLineSize   = new UVSize(orientation);
         var    panelSize     = new UVSize(orientation);
         var    uvConstraint  = new UVSize(orientation, constraint.Width, constraint.Height);
@@ -219,7 +383,8 @@ public class Space : Panel,
 
         for (int i = 0, count = children.Count; i < count; ++i)
         {
-            var child = children[i];
+            var child = children[i] as Control;
+            Debug.Assert(child != null);
             // Flow passes its own constraint to children
             child.Measure(childConstraint);
 
@@ -263,10 +428,11 @@ public class Space : Panel,
         double lineSpacing   = LineSpacing;
         var    orientation   = Orientation;
         bool   isHorizontal  = orientation == Orientation.Horizontal;
-        var    children      = Children;
+        var    children      = VisualChildren;
         int    firstInLine   = 0;
         double accumulatedV  = 0;
         double itemU         = isHorizontal ? itemWidth : itemHeight;
+        double itemV         = isHorizontal ? itemHeight : itemWidth;
         var    curLineSize   = new UVSize(orientation);
         var    uvFinalSize   = new UVSize(orientation, finalSize.Width, finalSize.Height);
         bool   itemWidthSet  = !double.IsNaN(itemWidth);
@@ -276,7 +442,8 @@ public class Space : Panel,
 
         for (int i = 0; i < children.Count; ++i)
         {
-            var child = children[i];
+            var child = children[i] as Control;
+            Debug.Assert(child != null);
             var childSize = new UVSize(orientation,
                 itemWidthSet ? itemWidth : child.DesiredSize.Width,
                 itemHeightSet ? itemHeight : child.DesiredSize.Height);
@@ -315,34 +482,46 @@ public class Space : Panel,
         void ArrangeLine(double lineV, int start, int end)
         {
             bool   useItemU = isHorizontal ? itemWidthSet : itemHeightSet;
+            bool   useItemV = isHorizontal ? itemHeightSet : itemWidthSet;
+            double v        = accumulatedV;
             double u        = 0;
-            if (ItemsAlignment != SpaceItemsAlignment.Start)
-            {
-                double totalU = -itemSpacing;
-                for (int i = start; i < end; ++i)
-                {
-                    totalU += GetChildU(i) + (!children[i].IsVisible ? 0 : itemSpacing);
-                }
-
-                u = ItemsAlignment switch
-                {
-                    SpaceItemsAlignment.Center => (uvFinalSize.U - totalU) / 2,
-                    SpaceItemsAlignment.End => uvFinalSize.U - totalU,
-                    SpaceItemsAlignment.Start => 0,
-                    _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
-                };
-            }
-
             for (int i = start; i < end; ++i)
             {
+                var    newChild    = children[i] as Control;
+                Debug.Assert(newChild != null);
+                double layoutSlotV = GetChildV(i);
                 double layoutSlotU = GetChildU(i);
-                children[i].Arrange(isHorizontal ? new(u, accumulatedV, layoutSlotU, lineV) : new(accumulatedV, u, lineV, layoutSlotU));
+                if (ItemsAlignment != SpaceItemsAlignment.Start)
+                {
+                    v = ItemsAlignment switch
+                    {
+                        SpaceItemsAlignment.Center => (lineV - layoutSlotV) / 2,
+                        SpaceItemsAlignment.End => lineV - layoutSlotV,
+                        SpaceItemsAlignment.Start => accumulatedV,
+                        _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
+                    };
+                }
+                newChild.Arrange(isHorizontal ? new(u, v, layoutSlotU, layoutSlotV) : new(v, u, layoutSlotV, layoutSlotU));
                 u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
             }
 
             return;
-            double GetChildU(int i) => useItemU ? itemU :
-                isHorizontal ? children[i].DesiredSize.Width : children[i].DesiredSize.Height;
+
+            double GetChildU(int i)
+            {
+                var c = children[i] as Control;
+                Debug.Assert(c != null);
+                return useItemU ? itemU :
+                    isHorizontal ? c.DesiredSize.Width : c.DesiredSize.Height;
+            }
+
+            double GetChildV(int i)
+            {
+                var c = children[i] as Control;
+                Debug.Assert(c != null);
+                return useItemV ? itemV :
+                    isHorizontal ? c.DesiredSize.Height : c.DesiredSize.Width;
+            }
         }
     }
     

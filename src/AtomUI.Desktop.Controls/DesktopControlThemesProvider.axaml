@@ -4,7 +4,7 @@
                             x:Class="AtomUI.Desktop.Controls.DesktopControlThemesProvider"
                             Id="AtomUI.Desktop.Controls">
     <atom:ControlThemesProvider.ControlThemes>
-        <ResourceInclude Source="AdornerLayer/Themes/AdornerLayer.axaml" />
+        <ResourceInclude Source="AdornerLayer/Themes/AdornerLayerTheme.axaml" />
         <ResourceInclude Source="AutoComplete/Themes/AutoCompleteThemes.axaml" />
         <ResourceInclude Source="Alert/Themes/AlertTheme.axaml" />
         <ResourceInclude Source="Avatar/Themes/AvatarThemes.axaml" />

@@ -32,7 +32,7 @@ internal class CaptionButtonGroup : TemplatedControl, IOperationSystemAware
         Window.IsCloseCaptionButtonEnabledProperty.AddOwner<CaptionButtonGroup>();
     
     public static readonly StyledProperty<bool> IsWindowActiveProperty = 
-        TitleBar.IsWindowActiveProperty.AddOwner<CaptionButtonGroup>();
+        WindowTitleBar.IsWindowActiveProperty.AddOwner<CaptionButtonGroup>();
     
     public static readonly StyledProperty<OsType> OsTypeProperty =
         OperationSystemAwareControlProperty.OsTypeProperty.AddOwner<CaptionButtonGroup>();

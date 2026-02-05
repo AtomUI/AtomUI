@@ -4,6 +4,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="ComboBoxItemTheme.axaml"/>
         <ResourceInclude Source="ComboBoxTheme.axaml"/>
-        <ResourceInclude Source="ComboBoxHandle.axaml"/>
+        <ResourceInclude Source="ComboBoxHandleTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

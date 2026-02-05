@@ -1,8 +1,10 @@
 // Referenced from https://github.com/kikipoulet/SukiUI project
 
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using AtomUI.Controls;
+using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Native;
 using Avalonia;
@@ -42,11 +44,11 @@ public class Window : AvaloniaWindow,
     public static readonly StyledProperty<FontWeight> TitleFontWeightProperty =
         AvaloniaProperty.Register<Window, FontWeight>(nameof(TitleFontWeight), defaultValue: FontWeight.Bold);
     
-    public static readonly StyledProperty<ContextMenu> TitleBarContextMenuProperty =
-        AvaloniaProperty.Register<Window, ContextMenu>(nameof(TitleBarContextMenu));
+    public static readonly StyledProperty<ContextMenu?> TitleBarContextMenuProperty =
+        AvaloniaProperty.Register<Window, ContextMenu?>(nameof(TitleBarContextMenu));
     
     public static readonly StyledProperty<Control?> LogoProperty =
-        TitleBar.LogoProperty.AddOwner<Window>();
+        WindowTitleBar.LogoProperty.AddOwner<Window>();
     
     public static readonly StyledProperty<object?> WindowFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(WindowFrameLayer));
@@ -132,7 +134,7 @@ public class Window : AvaloniaWindow,
         set => SetValue(MaxHeightScreenRatioProperty, value);
     }
     
-    public ContextMenu TitleBarContextMenu
+    public ContextMenu? TitleBarContextMenu
     {
         get => GetValue(TitleBarContextMenuProperty);
         set => SetValue(TitleBarContextMenuProperty, value);
@@ -303,6 +305,12 @@ public class Window : AvaloniaWindow,
             o => o.IsCustomResizerVisible,
             (o, v) => o.IsCustomResizerVisible = v);
     
+    internal static readonly DirectProperty<Window, WindowTitleBar?> TitleBarProperty =
+        AvaloniaProperty.RegisterDirect<Window, WindowTitleBar?>(
+            nameof(TitleBar),
+            o => o.TitleBar,
+            (o, v) => o.TitleBar = v);
+    
     private Thickness _titleBarOSOffsetMargin;
     public Thickness TitleBarOSOffsetMargin
     {
@@ -325,15 +333,23 @@ public class Window : AvaloniaWindow,
         get => _isCustomResizerVisible;
         set => SetAndRaise(IsCustomResizerVisibleProperty, ref _isCustomResizerVisible, value);
     }
+    
+    private WindowTitleBar? _titleBar;
+
+    internal WindowTitleBar? TitleBar
+    {
+        get => _titleBar;
+        set => SetAndRaise(TitleBarProperty, ref _titleBar, value);
+    }
     #endregion
     
     protected override Type StyleKeyOverride { get; } = typeof(Window);
     private WindowResizer? _windowResizer;
-    private TitleBar? _titleBar;
     private bool _isDisposed;
     private Point? _lastMousePressedPoint;
     private PointerPressedEventArgs? _lastMousePressedEventArgs;
     private bool _isDragging;
+    private CompositeDisposable? _titleBarDisposable;
 
     protected bool CloseByClickCloseCaptionButton;
 
@@ -413,22 +429,7 @@ public class Window : AvaloniaWindow,
             _windowResizer.TargetWindow = this;
         }
 
-        if (_titleBar != null)
-        {
-            _titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
-            _titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
-            _titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
-            _titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
-        }
-        
-        _titleBar = e.NameScope.Find<TitleBar>(WindowThemeConstants.TitleBarPart);
-        if (_titleBar != null)
-        {
-            _titleBar.MaximizeWindowRequested += HandleTitleDoubleClicked;
-            _titleBar.PointerPressed          += HandleTitleBarPointerPressed;
-            _titleBar.PointerReleased         += HandleTitleBarPointerReleased;
-            _titleBar.PointerMoved            += HandleTitleBarPointerMoved;
-        }
+        HandleCreateTitleBar();
 
         var mediaQueryIndicator = e.NameScope.Find<WindowMediaQueryIndicator>(WindowThemeConstants.MediaQueryIndicatorPart);
         if (mediaQueryIndicator != null)
@@ -441,6 +442,45 @@ public class Window : AvaloniaWindow,
             this.SetMacOSWindowClosable(IsCloseCaptionButtonEnabled);
         }
         ConfigureCustomResizerVisible();
+    }
+
+    private void HandleCreateTitleBar()
+    {
+        if (_titleBar != null)
+        {
+            _titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
+            _titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
+            _titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
+            _titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
+        }
+        _titleBarDisposable?.Dispose();
+        _titleBarDisposable = new CompositeDisposable(8);
+
+        var titleBar = NotifyCreateTitleBar(_titleBar, _titleBarDisposable);
+        
+        if (titleBar != null)
+        {
+            titleBar.MaximizeWindowRequested += HandleTitleDoubleClicked;
+            titleBar.PointerPressed          += HandleTitleBarPointerPressed;
+            titleBar.PointerReleased         += HandleTitleBarPointerReleased;
+            titleBar.PointerMoved            += HandleTitleBarPointerMoved;
+            
+            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleProperty, titleBar, WindowTitleBar.TitleProperty));
+            _titleBarDisposable.Add(BindUtils.RelayBind(this, LogoProperty, titleBar, WindowTitleBar.LogoProperty));
+            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleFontSizeProperty, titleBar, WindowTitleBar.FontSizeProperty));
+            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleFontWeightProperty, titleBar, WindowTitleBar.FontWeightProperty));
+            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleBarContextMenuProperty, titleBar, WindowTitleBar.ContextMenuProperty));
+        }
+        
+        TitleBar = titleBar;
+    }
+
+    protected virtual WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar, CompositeDisposable disposables)
+    {
+        return new WindowTitleBar
+        {
+            Name = WindowThemeConstants.TitleBarPart
+        };
     }
 
     public static Window? GetMainWindow()

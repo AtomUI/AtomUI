@@ -3,7 +3,7 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="ButtonSpinnerTheme.axaml"/>
-        <ResourceInclude Source="ButtonSpinnerHandle.axaml"/>
+        <ResourceInclude Source="ButtonSpinnerHandleTheme.axaml"/>
         <ResourceInclude Source="ButtonSpinnerTheme.axaml"/>
         <ResourceInclude Source="ButtonSpinnerDecoratedBoxTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>

@@ -18,45 +18,45 @@ namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Active)]
 [PseudoClasses(StdPseudoClass.Normal, StdPseudoClass.Minimized, StdPseudoClass.Maximized, StdPseudoClass.Fullscreen)]
-internal class TitleBar : TemplatedControl, 
-                          IControlSharedTokenResourcesHost,
-                          IMotionAwareControl, 
-                          IOperationSystemAware
+public class WindowTitleBar : TemplatedControl, 
+                              IControlSharedTokenResourcesHost,
+                              IMotionAwareControl, 
+                              IOperationSystemAware
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<Control?> LogoProperty =
-        AvaloniaProperty.Register<TitleBar, Control?>(nameof(Logo));
+        AvaloniaProperty.Register<WindowTitleBar, Control?>(nameof(Logo));
     
     public static readonly StyledProperty<object?> TitleProperty =
-        AvaloniaProperty.Register<TitleBar, object?>(nameof(Title));
+        AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(Title));
     
     public static readonly StyledProperty<IDataTemplate?> TitleTemplateProperty = 
-        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof (TitleTemplate));
+        AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof (TitleTemplate));
     
     public static readonly StyledProperty<object?> LeftAddOnProperty =
-        AvaloniaProperty.Register<TitleBar, object?>(nameof(LeftAddOn));
+        AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(LeftAddOn));
 
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
-        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof(LeftAddOnTemplate));
+        AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof(LeftAddOnTemplate));
     
     public static readonly StyledProperty<object?> RightAddOnProperty =
-        AvaloniaProperty.Register<TitleBar, object?>(nameof(RightAddOn));
+        AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(RightAddOn));
 
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
-        AvaloniaProperty.Register<TitleBar, IDataTemplate?>(nameof(RightAddOnTemplate));
+        AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof(RightAddOnTemplate));
     
     public static readonly StyledProperty<bool> IsWindowActiveProperty = 
-        AvaloniaProperty.Register<TitleBar, bool>(nameof(IsWindowActive));
+        AvaloniaProperty.Register<WindowTitleBar, bool>(nameof(IsWindowActive));
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TitleBar>();
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowTitleBar>();
     
     public static readonly StyledProperty<OsType> OsTypeProperty =
-        OperationSystemAwareControlProperty.OsTypeProperty.AddOwner<TitleBar>();
+        OperationSystemAwareControlProperty.OsTypeProperty.AddOwner<WindowTitleBar>();
     
     public static readonly StyledProperty<Version> OsVersionProperty =
-        OperationSystemAwareControlProperty.OsVersionProperty.AddOwner<TitleBar>();
+        OperationSystemAwareControlProperty.OsVersionProperty.AddOwner<WindowTitleBar>();
 
     public Control? Logo
     {
@@ -135,13 +135,13 @@ internal class TitleBar : TemplatedControl,
     private CaptionButtonGroup? _captionButtonGroup;
     private CompositeDisposable? _disposables;
 
-    static TitleBar()
+    static WindowTitleBar()
     {
-        FontSizeProperty.OverrideDefaultValue<TitleBar>(13);
-        FontWeightProperty.OverrideDefaultValue<TitleBar>(FontWeight.Bold);
+        FontSizeProperty.OverrideDefaultValue<WindowTitleBar>(13);
+        FontWeightProperty.OverrideDefaultValue<WindowTitleBar>(FontWeight.Bold);
     }
 
-    public TitleBar()
+    public WindowTitleBar()
     {
         this.ConfigureOsType();
         this.RegisterResources();
@@ -167,12 +167,12 @@ internal class TitleBar : TemplatedControl,
             _disposables = new CompositeDisposable(6)
             {
                 window.GetObservable(Window.WindowStateProperty).Subscribe(x =>
-                      {
-                          PseudoClasses.Set(StdPseudoClass.Minimized, x == WindowState.Minimized);
-                          PseudoClasses.Set(StdPseudoClass.Normal, x == WindowState.Normal);
-                          PseudoClasses.Set(StdPseudoClass.Maximized, x == WindowState.Maximized);
-                          PseudoClasses.Set(StdPseudoClass.Fullscreen, x == WindowState.FullScreen);
-                      }),
+                {
+                    PseudoClasses.Set(StdPseudoClass.Minimized, x == WindowState.Minimized);
+                    PseudoClasses.Set(StdPseudoClass.Normal, x == WindowState.Normal);
+                    PseudoClasses.Set(StdPseudoClass.Maximized, x == WindowState.Maximized);
+                    PseudoClasses.Set(StdPseudoClass.Fullscreen, x == WindowState.FullScreen);
+                }),
                 window.GetObservable(WindowBase.IsActiveProperty).Subscribe(isActive =>
                 {
                     PseudoClasses.Set(StdPseudoClass.Active, isActive);

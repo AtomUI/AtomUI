@@ -1,6 +1,9 @@
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
 using AtomUI.Desktop.Controls.DialogPositioning;
+using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -654,5 +657,22 @@ internal class ImagePreviewerDialog : Window,
         SetCurrentValue(ImageScaleXProperty, 1.0);
         SetCurrentValue(ImageScaleYProperty, 1.0);
         SetCurrentValue(CurrentIndexProperty, Math.Max(CurrentIndex - 1, 0));
+    }
+    
+    protected override WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar, CompositeDisposable disposables)
+    {
+        var imagePreviewToolbar = new ImagePreviewToolbar();
+        disposables.Add(BindUtils.RelayBind(this, CurrentIndexProperty, imagePreviewToolbar, ImagePreviewToolbar.CurrentIndexProperty));
+        disposables.Add(BindUtils.RelayBind(this, CountProperty, imagePreviewToolbar, ImagePreviewToolbar.CountProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsScaleDownEnabledProperty, imagePreviewToolbar, ImagePreviewToolbar.IsScaleDownEnabledProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsScaleUpEnabledProperty, imagePreviewToolbar, ImagePreviewToolbar.IsScaleUpEnabledProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsImageFitToWindowProperty, imagePreviewToolbar, ImagePreviewToolbar.IsImageFitToWindowProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsFirstImageProperty, imagePreviewToolbar, ImagePreviewToolbar.IsFirstImageProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsLastImageProperty, imagePreviewToolbar, ImagePreviewToolbar.IsLastImageProperty));
+        return new WindowTitleBar
+        {
+            Name = WindowThemeConstants.TitleBarPart,
+            LeftAddOn = imagePreviewToolbar
+        };
     }
 }

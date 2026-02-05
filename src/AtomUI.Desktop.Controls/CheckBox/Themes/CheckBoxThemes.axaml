@@ -3,6 +3,6 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="CheckBoxTheme.axaml"/>
-        <ResourceInclude Source="CheckBoxIndicator.axaml"/>
+        <ResourceInclude Source="CheckBoxIndicatorTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

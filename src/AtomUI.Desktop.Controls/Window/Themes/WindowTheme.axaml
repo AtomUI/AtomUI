@@ -23,19 +23,16 @@
                                 <atom:GlobalDialogManager />
                                 <DockPanel Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}"
                                            LastChildFill="True">
-                                    <Panel DockPanel.Dock="Top">
+                                    <Panel DockPanel.Dock="Top" 
+                                           IsVisible="{TemplateBinding IsTitleBarVisible}">
                                         <ContentPresenter Name="TitleBarFrameLayer"
                                                           Background="{TemplateBinding TitleBarFrameBackground}"
                                                           Content="{TemplateBinding TitleBarFrameLayer}"
                                                           ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
                                                           Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
                                                           ClipToBounds="True"/>
-                                        <Border Padding="{TemplateBinding TitleBarOSOffsetMargin}"
-                                                IsVisible="{TemplateBinding IsTitleBarVisible}">
-                                            <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
-                                                           Title="{TemplateBinding Title}"
-                                                           Logo="{TemplateBinding Logo}" />
-                                        </Border>
+                                        <ContentPresenter Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                                          Content="{TemplateBinding TitleBar}"/>
                                     </Panel>
 
                                     <Panel>

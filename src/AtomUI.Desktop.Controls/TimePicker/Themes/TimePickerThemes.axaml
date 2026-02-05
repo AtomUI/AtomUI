@@ -6,6 +6,6 @@
         <ResourceInclude Source="RangeTimePickerTheme.axaml"/>
         <ResourceInclude Source="TimePickerPresenterTheme.axaml"/>
         <ResourceInclude Source="TimeViewTheme.axaml"/>
-        <ResourceInclude Source="TimeViewCell.axaml"/>
+        <ResourceInclude Source="TimeViewCellTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

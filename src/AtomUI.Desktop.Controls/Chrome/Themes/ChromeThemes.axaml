@@ -1,10 +1,11 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="TitleBar.axaml"/>
-        <ResourceInclude Source="CaptionButton.axaml"/>
-        <ResourceInclude Source="CaptionButtonGroup.axaml"/>
-        <ResourceInclude Source="WindowsCaptionButton.axaml"/>
+        <ResourceInclude Source="CaptionButtonTheme.axaml"/>
+        <ResourceInclude Source="CaptionButtonGroupTheme.axaml"/>
+        <ResourceInclude Source="WindowsCaptionButtonTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
+    <atom:WindowTitleBarTheme x:Key="{x:Type atom:WindowTitleBar}" TargetType="atom:WindowTitleBar"/>
 </ResourceDictionary>

@@ -29,7 +29,8 @@
                                     <atom:GlobalDialogManager />
                                     <DockPanel LastChildFill="True"
                                                Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
-                                        <Panel DockPanel.Dock="Top">
+                                        <Panel DockPanel.Dock="Top"
+                                               IsVisible="{TemplateBinding IsTitleBarVisible}">
                                             <ContentPresenter Name="TitleBarFrameLayer"
                                                               Background="{TemplateBinding TitleBarFrameBackground}"
                                                               Content="{TemplateBinding TitleBarFrameLayer}"
@@ -38,20 +39,9 @@
                                                               ClipToBounds="True"/>
                                             <Border
                                                 Name="{x:Static atom:ImagePreviewerThemeConstants.WindowHeaderPart}"
-                                                Padding="{TemplateBinding TitleBarOSOffsetMargin}"
-                                                IsVisible="{TemplateBinding IsTitleBarVisible}">
-                                                <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}">
-                                                    <atom:TitleBar.LeftAddOn>
-                                                        <atom:ImagePreviewToolbar
-                                                            CurrentIndex="{Binding CurrentIndex, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                            Count="{Binding Count, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                            IsScaleDownEnabled="{Binding IsScaleDownEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                            IsScaleUpEnabled="{Binding IsScaleUpEnabled, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                            IsImageFitToWindow="{Binding IsImageFitToWindow, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                            IsFirstImage="{Binding IsFirstImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}"
-                                                            IsLastImage="{Binding IsLastImage, RelativeSource={RelativeSource AncestorType=atom:ImagePreviewerDialog}}" />
-                                                    </atom:TitleBar.LeftAddOn>
-                                                </atom:TitleBar>
+                                                Padding="{TemplateBinding TitleBarOSOffsetMargin}">
+                                                <ContentPresenter Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                                                  Content="{TemplateBinding TitleBar}"/>
                                             </Border>
                                         </Panel>
 

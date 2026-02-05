@@ -23,7 +23,7 @@
                             <DockPanel LastChildFill="True"
                                        Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}">
                                 <Border Padding="{TemplateBinding TitleBarOSOffsetMargin}" DockPanel.Dock="Top">
-                                    <atom:TitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
+                                    <atom:WindowTitleBar Name="{x:Static atom:WindowThemeConstants.TitleBarPart}"
                                                    Title="{TemplateBinding Title}"
                                                    Logo="{TemplateBinding Logo}" />
                                 </Border>

@@ -71,7 +71,7 @@ internal class CaptionButton : AvaloniaButton, IControlSharedTokenResourcesHost
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CaptionButton>();
     
     internal static readonly StyledProperty<bool> IsWindowActiveProperty = 
-        TitleBar.IsWindowActiveProperty.AddOwner<CaptionButton>();
+        WindowTitleBar.IsWindowActiveProperty.AddOwner<CaptionButton>();
     
     internal static readonly DirectProperty<CaptionButton, CornerRadius> EffectiveCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<CaptionButton, CornerRadius>(

@@ -85,6 +85,8 @@ public class LineEdit : TextBox
         set => SetValue(InnerRightContentTemplateProperty, value);
     }
     #endregion
+
+    private AddOnDecoratedBox? _addOnDecoratedBox;
     
     public LineEdit()
     {
@@ -114,5 +116,22 @@ public class LineEdit : TextBox
     {
         base.OnApplyTemplate(e);
         UpdatePseudoClasses();
+        _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
+    }
+    
+    protected override double GetBorderThicknessForCompactSpace()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant == AddOnDecoratedVariant.Borderless)
+        {
+            return 0.0;
+        }
+
+        // 都一样宽
+        return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
 }

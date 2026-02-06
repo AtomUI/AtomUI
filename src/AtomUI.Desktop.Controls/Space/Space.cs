@@ -133,7 +133,7 @@ public class Space : Control,
         {
             if (_childIndexChanged is null)
             {
-                Children.PropertyChanged += ChildrenPropertyChanged;
+                Children.PropertyChanged += HandleChildrenPropertyChanged;
             }
             _childIndexChanged += value;
         }
@@ -143,7 +143,7 @@ public class Space : Control,
             _childIndexChanged -= value;
             if (_childIndexChanged is null)
             {
-                Children.PropertyChanged -= ChildrenPropertyChanged;
+                Children.PropertyChanged -= HandleChildrenPropertyChanged;
             }
         }
     }
@@ -173,7 +173,7 @@ public class Space : Control,
     {
         this.RegisterResources();
         ConfigureInstanceStyle();
-        Children.CollectionChanged += ChildrenChanged;
+        Children.CollectionChanged += HandleChildrenChanged;
     }
 
     private void ConfigureInstanceStyle()
@@ -213,7 +213,7 @@ public class Space : Control,
         }
     }
 
-    protected virtual void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    protected virtual void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (SplitTemplate == null)
         {
@@ -300,7 +300,7 @@ public class Space : Control,
         InvalidateMeasure();
     }
     
-    private void ChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void HandleChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
         {

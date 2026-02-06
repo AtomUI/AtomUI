@@ -12,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 
@@ -197,6 +198,15 @@ internal class AddOnDecoratedBox : ContentControl,
             o => o.IsInnerBoxPressed,
             (o, v) => o.IsInnerBoxPressed = v);
     
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<AddOnDecoratedBox>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<AddOnDecoratedBox>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<AddOnDecoratedBox>();
+    
     private Thickness _innerBoxBorderThickness;
 
     internal Thickness InnerBoxBorderThickness
@@ -259,6 +269,24 @@ internal class AddOnDecoratedBox : ContentControl,
     {
         get => _isInnerBoxPressed;
         set => SetAndRaise(IsInnerBoxPressedProperty, ref _isInnerBoxPressed, value);
+    }
+    
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
 
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -345,7 +373,9 @@ internal class AddOnDecoratedBox : ContentControl,
         if (change.Property == LeftAddOnProperty || 
             change.Property == RightAddOnProperty ||
             change.Property == CornerRadiusProperty ||
-            change.Property == StyleVariantProperty)
+            change.Property == StyleVariantProperty ||
+            change.Property == CompactSpaceItemPositionProperty ||
+            change.Property == CompactSpaceOrientationProperty)
         {
             ConfigureInnerBoxCornerRadius();
         }
@@ -357,7 +387,9 @@ internal class AddOnDecoratedBox : ContentControl,
         
         if (change.Property == CornerRadiusProperty || 
             change.Property == BorderThicknessProperty ||
-            change.Property == StyleVariantProperty)
+            change.Property == StyleVariantProperty ||
+            change.Property == CompactSpaceItemPositionProperty ||
+            change.Property == CompactSpaceOrientationProperty)
         {
             ConfigureAddOnBorderInfo();
         }
@@ -376,15 +408,82 @@ internal class AddOnDecoratedBox : ContentControl,
         var topRightRadius    = CornerRadius.TopRight;
         var bottomLeftRadius  = CornerRadius.BottomLeft;
         var bottomRightRadius = CornerRadius.BottomRight;
-            
-        LeftAddOnCornerRadius = new CornerRadius(topLeftRadius,
-            0,
-            bottomLeft: bottomLeftRadius,
-            bottomRight: 0);
-        RightAddOnCornerRadius = new CornerRadius(0,
-            topRightRadius,
-            bottomLeft: 0,
-            bottomRight: bottomRightRadius);
+        
+        if (IsUsedInCompactSpace)
+        {
+            if (CompactSpaceItemPosition == SpaceItemPosition.First)
+            {
+                if (CompactSpaceOrientation == Orientation.Horizontal)
+                {
+                    LeftAddOnCornerRadius = new CornerRadius(topLeft:topLeftRadius,
+                        topRight:0,
+                        bottomLeft: bottomLeftRadius,
+                        bottomRight: 0);
+                    RightAddOnCornerRadius = new CornerRadius(topLeft:0,
+                        topRight: 0,
+                        bottomLeft: 0,
+                        bottomRight: 0);
+                }
+                else
+                {
+                    LeftAddOnCornerRadius = new CornerRadius(topLeft:topLeftRadius,
+                        topRight:0,
+                        bottomLeft: 0,
+                        bottomRight: 0);
+                    RightAddOnCornerRadius = new CornerRadius(topLeft:0,
+                        topRight:topRightRadius,
+                        bottomLeft: 0,
+                        bottomRight: 0);
+                }
+            }
+            else if (CompactSpaceItemPosition == SpaceItemPosition.Middle)
+            {
+                LeftAddOnCornerRadius = new CornerRadius(topLeft:0,
+                    topRight:0,
+                    bottomLeft: 0,
+                    bottomRight: 0);
+                RightAddOnCornerRadius = new CornerRadius(topLeft:0,
+                    topRight:0,
+                    bottomLeft: 0,
+                    bottomRight: 0);
+            }
+            else if (CompactSpaceItemPosition == SpaceItemPosition.Last)
+            {
+                if (CompactSpaceOrientation == Orientation.Horizontal)
+                {
+                    LeftAddOnCornerRadius = new CornerRadius(topLeft:0,
+                        topRight:0,
+                        bottomLeft: 0,
+                        bottomRight: 0);
+                    RightAddOnCornerRadius = new CornerRadius(topLeft:0,
+                        topRight:topRightRadius,
+                        bottomLeft: 0,
+                        bottomRight: bottomRightRadius);
+                }
+                else
+                {
+                    LeftAddOnCornerRadius = new CornerRadius(topLeft:0,
+                        topRight:0,
+                        bottomLeft: bottomLeftRadius,
+                        bottomRight: 0);
+                    RightAddOnCornerRadius = new CornerRadius(topLeft:0,
+                        topRight:0,
+                        bottomLeft: 0,
+                        bottomRight: bottomRightRadius);
+                }
+            }
+        }
+        else
+        {
+            LeftAddOnCornerRadius = new CornerRadius(topLeft:topLeftRadius,
+                topRight:0,
+                bottomLeft: bottomLeftRadius,
+                bottomRight: 0);
+            RightAddOnCornerRadius = new CornerRadius(topLeft:0,
+                topRight:topRightRadius,
+                bottomLeft: 0,
+                bottomRight: bottomRightRadius);
+        }
         
         if (StyleVariant == AddOnDecoratedVariant.Outline ||
             StyleVariant == AddOnDecoratedVariant.Filled)
@@ -481,6 +580,43 @@ internal class AddOnDecoratedBox : ContentControl,
             {
                 topRightRadius    = 0;
                 bottomRightRadius = 0;
+            }
+
+            if (IsUsedInCompactSpace)
+            {
+                if (CompactSpaceItemPosition == SpaceItemPosition.First)
+                {
+                    if (CompactSpaceOrientation == Orientation.Horizontal)
+                    {
+                        topRightRadius    = 0;
+                        bottomRightRadius = 0;
+                    }
+                    else
+                    {
+                        bottomLeftRadius  = 0;
+                        bottomRightRadius = 0;
+                    }
+                }
+                else if (CompactSpaceItemPosition == SpaceItemPosition.Middle)
+                {
+                     topLeftRadius     = 0;
+                     topRightRadius    = 0;
+                     bottomLeftRadius  = 0;
+                     bottomRightRadius = 0;
+                }
+                else if (CompactSpaceItemPosition == SpaceItemPosition.Last)
+                {
+                    if (CompactSpaceOrientation == Orientation.Horizontal)
+                    {
+                        topLeftRadius    = 0;
+                        bottomLeftRadius = 0;
+                    }
+                    else
+                    {
+                        topLeftRadius = 0;
+                        topRightRadius = 0;
+                    }
+                }
             }
             
             SetCurrentValue(InnerBoxCornerRadiusProperty, new CornerRadius(topLeftRadius,

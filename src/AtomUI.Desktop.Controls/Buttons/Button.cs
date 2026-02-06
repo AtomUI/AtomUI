@@ -12,6 +12,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -48,7 +49,8 @@ public enum ButtonShape
 public class Button : AvaloniaButton,
                       ISizeTypeAware,
                       IWaveSpiritAwareControl,
-                      IControlSharedTokenResourcesHost
+                      IControlSharedTokenResourcesHost,
+                      ICompactSpaceAware
 {
     #region 公共属性定义
 
@@ -152,6 +154,12 @@ public class Button : AvaloniaButton,
     
     internal static readonly StyledProperty<WaveSpiritType> WaveSpiritTypeProperty =
         WaveSpiritAwareControlProperty.WaveSpiritTypeProperty.AddOwner<Button>();
+    
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<Button>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<Button>();
 
     internal bool IsIconVisible
     {
@@ -183,6 +191,18 @@ public class Button : AvaloniaButton,
         set => SetValue(WaveSpiritTypeProperty, value);
     }
     
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ButtonToken.ID;
     
@@ -195,7 +215,8 @@ public class Button : AvaloniaButton,
     {
         AffectsMeasure<Button>(SizeTypeProperty,
             ShapeProperty,
-            IconProperty);
+            IconProperty,
+            CompactSpaceItemPositionProperty);
         AffectsRender<Button>(ButtonTypeProperty,
             IsDangerProperty,
             IsGhostProperty);
@@ -460,5 +481,21 @@ public class Button : AvaloniaButton,
         PseudoClasses.Set(ButtonPseudoClass.LinkType, ButtonType == ButtonType.Link);
         PseudoClasses.Set(ButtonPseudoClass.TextType, ButtonType == ButtonType.Text);
         PseudoClasses.Set(ButtonPseudoClass.IsDanger, IsDanger);
+    }
+
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace = position != null;
+        CompactSpaceItemPosition = position;
+    }
+
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        return base.ArrangeOverride(finalSize);
     }
 }

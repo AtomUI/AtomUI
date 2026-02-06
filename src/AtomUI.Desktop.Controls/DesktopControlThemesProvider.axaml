@@ -58,6 +58,7 @@
         <ResourceInclude Source="Skeleton/Themes/SkeletonThemes.axaml" />
         <ResourceInclude Source="Select/Themes/SelectThemes.axaml" />
         <ResourceInclude Source="Slider/Themes/SliderThemes.axaml" />
+        <ResourceInclude Source="Space/Themes/SpaceThemes.axaml" />
         <ResourceInclude Source="Spin/Themes/SpinThemes.axaml" />
         <ResourceInclude Source="Splitter/Themes/SplitterThemes.axaml" />
         <ResourceInclude Source="SplitView/Themes/SplitViewTheme.axaml" />

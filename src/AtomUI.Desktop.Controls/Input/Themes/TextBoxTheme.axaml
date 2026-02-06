@@ -10,7 +10,7 @@
                 Name="InnerBoxDecorator"
                 Padding="{TemplateBinding Padding}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{TemplateBinding CornerRadius}"
+                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 Background="{TemplateBinding Background}">
                 <DockPanel Name="ContentLayout" LastChildFill="True">
@@ -104,6 +104,8 @@
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.SelectionBackground}}" />
         <Setter Property="CaretBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
         <Setter Property="SelectionForegroundBrush"
@@ -115,12 +117,15 @@
     
         <Style Selector="^[SizeType=Large]">
             <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightLG}}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
         </Style>
         <Style Selector="^[SizeType=Middle]">
             <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeight}}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
             <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
                 <Setter Property="Margin" Value="0, 1, 0, 1" />
             </Style>
@@ -129,12 +134,15 @@
         <Style Selector="^[IsCustomFontSize=False]">
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:LineEditTokenKey.InputFontSizeLG}}" />
+                <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
             </Style>
             <Style Selector="^[SizeType=Middle]">
                 <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:LineEditTokenKey.InputFontSize}}" />
+                <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:LineEditTokenKey.InputFontSizeSM}}" />
+                <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
             </Style>
         </Style>
     

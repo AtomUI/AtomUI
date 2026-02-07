@@ -83,6 +83,18 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey SeparatorMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Breadcrumb.SeparatorMargin");
     }
 
+    public static class ButtonSpinnerTokenKey
+    {
+        public static readonly TokenResourceKey ControlWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.ControlWidth");
+        public static readonly TokenResourceKey FilledHandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.FilledHandleBg");
+        public static readonly TokenResourceKey HandleActiveBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleActiveBg");
+        public static readonly TokenResourceKey HandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBg");
+        public static readonly TokenResourceKey HandleBorderColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBorderColor");
+        public static readonly TokenResourceKey HandleHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleHoverColor");
+        public static readonly TokenResourceKey HandleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleIconSize");
+        public static readonly TokenResourceKey HandleWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleWidth");
+    }
+
     public static class ButtonTokenKey
     {
         public static readonly TokenResourceKey BorderColorDisabled = new TokenResourceKey("AtomUI.Desktop.Controls.Button.BorderColorDisabled");
@@ -137,18 +149,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey TextTextActiveColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.TextTextActiveColor");
         public static readonly TokenResourceKey TextTextColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.TextTextColor");
         public static readonly TokenResourceKey TextTextHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.Button.TextTextHoverColor");
-    }
-
-    public static class ButtonSpinnerTokenKey
-    {
-        public static readonly TokenResourceKey ControlWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.ControlWidth");
-        public static readonly TokenResourceKey FilledHandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.FilledHandleBg");
-        public static readonly TokenResourceKey HandleActiveBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleActiveBg");
-        public static readonly TokenResourceKey HandleBg = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBg");
-        public static readonly TokenResourceKey HandleBorderColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleBorderColor");
-        public static readonly TokenResourceKey HandleHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleHoverColor");
-        public static readonly TokenResourceKey HandleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleIconSize");
-        public static readonly TokenResourceKey HandleWidth = new TokenResourceKey("AtomUI.Desktop.Controls.ButtonSpinner.HandleWidth");
     }
 
     public static class CalendarTokenKey
@@ -453,6 +453,23 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ResizeIndicatorLineColor = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.ResizeIndicatorLineColor");
     }
 
+    public static class ListBoxTokenKey
+    {
+        public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ContentPadding");
+        public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.FilterHighlightColor");
+        public static readonly TokenResourceKey ItemBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemBgColor");
+        public static readonly TokenResourceKey ItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemColor");
+        public static readonly TokenResourceKey ItemDisabledColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemDisabledColor");
+        public static readonly TokenResourceKey ItemHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemHoverBgColor");
+        public static readonly TokenResourceKey ItemHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemHoverColor");
+        public static readonly TokenResourceKey ItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemMargin");
+        public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPadding");
+        public static readonly TokenResourceKey ItemPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingLG");
+        public static readonly TokenResourceKey ItemPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingSM");
+        public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedBgColor");
+        public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedColor");
+    }
+
     public static class ListTokenKey
     {
         public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.List.ContentPadding");
@@ -469,23 +486,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemSelectedBgColor");
         public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemSelectedColor");
         public static readonly TokenResourceKey PaginationMargin = new TokenResourceKey("AtomUI.Desktop.Controls.List.PaginationMargin");
-    }
-
-    public static class ListBoxTokenKey
-    {
-        public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ContentPadding");
-        public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.FilterHighlightColor");
-        public static readonly TokenResourceKey ItemBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemBgColor");
-        public static readonly TokenResourceKey ItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemColor");
-        public static readonly TokenResourceKey ItemDisabledColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemDisabledColor");
-        public static readonly TokenResourceKey ItemHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemHoverBgColor");
-        public static readonly TokenResourceKey ItemHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemHoverColor");
-        public static readonly TokenResourceKey ItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemMargin");
-        public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPadding");
-        public static readonly TokenResourceKey ItemPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingLG");
-        public static readonly TokenResourceKey ItemPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingSM");
-        public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedBgColor");
-        public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedColor");
     }
 
     public static class MarqueeLabelTokenKey
@@ -546,6 +546,11 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey TopLevelItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.Menu.TopLevelItemSelectedColor");
     }
 
+    public static class MessageBoxTokenKey
+    {
+        public static readonly TokenResourceKey StyleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.MessageBox.StyleIconSize");
+    }
+
     public static class MessageTokenKey
     {
         public static readonly TokenResourceKey CardHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Message.CardHeight");
@@ -554,11 +559,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey MessageIconMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Message.MessageIconMargin");
         public static readonly TokenResourceKey MessageIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.Message.MessageIconSize");
         public static readonly TokenResourceKey MessageTopMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Message.MessageTopMargin");
-    }
-
-    public static class MessageBoxTokenKey
-    {
-        public static readonly TokenResourceKey StyleIconSize = new TokenResourceKey("AtomUI.Desktop.Controls.MessageBox.StyleIconSize");
     }
 
     public static class NavMenuTokenKey
@@ -692,13 +692,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PaginationQuickJumperInputWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Pagination.PaginationQuickJumperInputWidth");
     }
 
-    public static class PopupHostTokenKey
-    {
-        public static readonly TokenResourceKey BorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.BorderRadius");
-        public static readonly TokenResourceKey BoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.BoxShadows");
-        public static readonly TokenResourceKey MarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.MarginToAnchor");
-    }
-
     public static class PopupConfirmTokenKey
     {
         public static readonly TokenResourceKey ButtonContainerMargin = new TokenResourceKey("AtomUI.Desktop.Controls.PopupConfirm.ButtonContainerMargin");
@@ -708,6 +701,13 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PopupMinHeight = new TokenResourceKey("AtomUI.Desktop.Controls.PopupConfirm.PopupMinHeight");
         public static readonly TokenResourceKey PopupMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.PopupConfirm.PopupMinWidth");
         public static readonly TokenResourceKey TitleMargin = new TokenResourceKey("AtomUI.Desktop.Controls.PopupConfirm.TitleMargin");
+    }
+
+    public static class PopupHostTokenKey
+    {
+        public static readonly TokenResourceKey BorderRadius = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.BorderRadius");
+        public static readonly TokenResourceKey BoxShadows = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.BoxShadows");
+        public static readonly TokenResourceKey MarginToAnchor = new TokenResourceKey("AtomUI.Desktop.Controls.PopupHost.MarginToAnchor");
     }
 
     public static class AddOnDecoratedBoxTokenKey

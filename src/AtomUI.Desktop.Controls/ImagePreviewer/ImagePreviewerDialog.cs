@@ -675,4 +675,11 @@ internal class ImagePreviewerDialog : Window,
             LeftAddOn = imagePreviewToolbar
         };
     }
+    
+    protected override void NotifyConfigureTitleBar(WindowTitleBar titleBar, CompositeDisposable disposables)
+    {
+        disposables.Add(BindUtils.RelayBind(this, TitleFontSizeProperty, titleBar, WindowTitleBar.FontSizeProperty));
+        disposables.Add(BindUtils.RelayBind(this, TitleFontWeightProperty, titleBar, WindowTitleBar.FontWeightProperty));
+        disposables.Add(BindUtils.RelayBind(this, TitleBarContextMenuProperty, titleBar, WindowTitleBar.ContextMenuProperty));
+    }
 }

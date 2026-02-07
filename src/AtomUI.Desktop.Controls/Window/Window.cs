@@ -464,15 +464,20 @@ public class Window : AvaloniaWindow,
             titleBar.PointerPressed          += HandleTitleBarPointerPressed;
             titleBar.PointerReleased         += HandleTitleBarPointerReleased;
             titleBar.PointerMoved            += HandleTitleBarPointerMoved;
-            
-            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleProperty, titleBar, WindowTitleBar.TitleProperty));
-            _titleBarDisposable.Add(BindUtils.RelayBind(this, LogoProperty, titleBar, WindowTitleBar.LogoProperty));
-            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleFontSizeProperty, titleBar, WindowTitleBar.FontSizeProperty));
-            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleFontWeightProperty, titleBar, WindowTitleBar.FontWeightProperty));
-            _titleBarDisposable.Add(BindUtils.RelayBind(this, TitleBarContextMenuProperty, titleBar, WindowTitleBar.ContextMenuProperty));
+
+            NotifyConfigureTitleBar(titleBar, _titleBarDisposable);
         }
         
         TitleBar = titleBar;
+    }
+
+    protected virtual void NotifyConfigureTitleBar(WindowTitleBar titleBar, CompositeDisposable disposables)
+    {
+        disposables.Add(BindUtils.RelayBind(this, TitleProperty, titleBar, WindowTitleBar.TitleProperty));
+        disposables.Add(BindUtils.RelayBind(this, LogoProperty, titleBar, WindowTitleBar.LogoProperty));
+        disposables.Add(BindUtils.RelayBind(this, TitleFontSizeProperty, titleBar, WindowTitleBar.FontSizeProperty));
+        disposables.Add(BindUtils.RelayBind(this, TitleFontWeightProperty, titleBar, WindowTitleBar.FontWeightProperty));
+        disposables.Add(BindUtils.RelayBind(this, TitleBarContextMenuProperty, titleBar, WindowTitleBar.ContextMenuProperty));
     }
 
     protected virtual WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar, CompositeDisposable disposables)

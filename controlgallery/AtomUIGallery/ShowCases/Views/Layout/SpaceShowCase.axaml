@@ -205,7 +205,7 @@
                 </atom:CompactSpace>
                 
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:Select  IsAllowClear="True" DefaultValues="Zhejiang" Mode="Multiple">
+                    <atom:Select IsAllowClear="True" DefaultValues="Zhejiang">
                         <atom:SelectOption Header="Zhejiang" Value="Zhejiang" />
                         <atom:SelectOption Header="Jiangsu" Value="Jiangsu" />
                     </atom:Select>

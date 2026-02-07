@@ -683,11 +683,11 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
 
         _candidateListActivated = false;
+        base.PopupClosed(sender, e);
     }
 
     protected override void PopupOpened(object? sender, EventArgs e)
     {
-
         _candidateListActivated = true;
         if (_candidateList != null)
         {
@@ -708,6 +708,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         {
             _singleFilterInput?.Focus();
         }
+        base.PopupOpened(sender, e);
     }
 
     private void SyncSelectionToCandidateList()
@@ -1011,11 +1012,5 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 _addNewOption = null;
             }
         }
-    }
-    
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        ConfigurePopupMinWith(e.NewSize.Width);
     }
 }

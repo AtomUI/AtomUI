@@ -21,30 +21,30 @@ public partial class SpaceShowCase : ReactiveUserControl<SpaceViewModel>
         InitializeComponent();
     }
 
-    private void HandleSizeTypeChanged(object sender, RoutedEventArgs e)
-    {
-        if (sender is RadioButton radioButton)
-        {
-            if (radioButton.IsChecked == true)
-            {
-                var sizeType = (CustomizableSizeType)radioButton.Tag!;
-                if (DataContext is SpaceViewModel vm)
-                {
-                    vm.SizeType = sizeType;
-                }
-    
-                if (CustomSizeSlider != null)
-                {
-                    if (sizeType == CustomizableSizeType.Custom)
-                    {
-                        CustomSizeSlider.IsVisible = true;
-                    }
-                    else
-                    {
-                        CustomSizeSlider.IsVisible = false;
-                    }
-                }
-            }
-        }
-    }
+    // private void HandleSizeTypeChanged(object sender, RoutedEventArgs e)
+    // {
+    //     if (sender is RadioButton radioButton)
+    //     {
+    //         if (radioButton.IsChecked == true)
+    //         {
+    //             var sizeType = (CustomizableSizeType)radioButton.Tag!;
+    //             if (DataContext is SpaceViewModel vm)
+    //             {
+    //                 vm.SizeType = sizeType;
+    //             }
+    //
+    //             if (CustomSizeSlider != null)
+    //             {
+    //                 if (sizeType == CustomizableSizeType.Custom)
+    //                 {
+    //                     CustomSizeSlider.IsVisible = true;
+    //                 }
+    //                 else
+    //                 {
+    //                     CustomSizeSlider.IsVisible = false;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }

@@ -25,7 +25,10 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         IsSelectionEmpty="{TemplateBinding IsSelectionEmpty}"
-                        IsDropDownOpen="{TemplateBinding IsDropDownOpen}">
+                        IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
+                        CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                        CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">

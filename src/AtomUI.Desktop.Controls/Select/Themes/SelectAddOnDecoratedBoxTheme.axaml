@@ -22,7 +22,7 @@
                             <Setter Property="Padding"
                                     Value="{DynamicResource {x:Static atom:SelectTokenKey.MultiModePadding}}" />
                         </Style>
-
+                
                     </Style>
                     <Style Selector="^[SizeType=Small]">
                         <Style Selector="^ /template/ Border#PART_ContentFrame">
@@ -49,7 +49,7 @@
                     <Style Selector="^[SizeType=Small]">
                         <Style Selector="^ /template/ Border#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.Padding}}" />
+                                    Value="{DynamicResource {x:Static atom:SelectTokenKey.PaddingSM}}" />
                         </Style>
                     </Style>
                 </Style>

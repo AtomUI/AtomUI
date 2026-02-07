@@ -210,11 +210,19 @@ public class TextBox : AvaloniaTextBox,
         {
             ConfigureCornerRadius();
         }
+        
+        if (change.Property == CompactSpace.ItemSizeProperty)
+        {
+            if (change.NewValue is CompactSpaceSize newSize)
+            {
+                CompactSpace.ConfigureItemSize(this, newSize, IsUsedInCompactSpace, CompactSpaceOrientation);
+            }
+        }
     }
 
     private void ConfigureCornerRadius()
     {
-        if (IsUsedInCompactSpace)
+        if (!IsUsedInCompactSpace)
         {
             EffectiveCornerRadius = CornerRadius;
         }

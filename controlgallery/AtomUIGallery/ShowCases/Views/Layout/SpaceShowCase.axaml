@@ -19,161 +19,200 @@
                 <Setter Property="Width" Value="50" />
             </Style>
         </gallery:ShowCasePanel.Styles>
-        <gallery:ShowCaseItem Description="Crowded components horizontal spacing."
-                              Title="Basic" IsOccupyEntireRow="True">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:TextBlock VerticalAlignment="Center">Space:</atom:TextBlock>
-                <atom:Space>
-                    <atom:Button ButtonType="Primary">Button</atom:Button>
-                    <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button>
-                    <atom:PopupConfirm
-                        Title="Delete the task"
-                        ConfirmContent="Are you sure to delete this task?"
-                        OkText="Ok"
-                        CancelText="Cancel"
-                        Placement="Top"
-                        IsShowArrow="True">
-                        <atom:Button ButtonType="Default" IsDanger="True">Confirm</atom:Button>
-                    </atom:PopupConfirm>
-                </atom:Space>
-            </StackPanel>
-        </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem Description="Crowded components vertical spacing."
-                              Title="Vertical Space" IsOccupyEntireRow="True">
-            <atom:Space Orientation="Vertical" HorizontalAlignment="Stretch" Height="300">
-                <atom:Card Header="Card" SizeType="Middle" HorizontalAlignment="Stretch">
-                    <StackPanel Orientation="Vertical" Spacing="10">
-                        <atom:TextBlock>Card content</atom:TextBlock>
-                        <atom:TextBlock>Card content</atom:TextBlock>
-                    </StackPanel>
-                </atom:Card>
-        
-                <atom:Card Header="Card" SizeType="Middle" HorizontalAlignment="Stretch">
-                    <StackPanel Orientation="Vertical" Spacing="10">
-                        <atom:TextBlock>Card content</atom:TextBlock>
-                        <atom:TextBlock>Card content</atom:TextBlock>
-                    </StackPanel>
-                </atom:Card>
-        
-                <atom:Card Header="Card" SizeType="Middle" HorizontalAlignment="Stretch">
-                    <StackPanel Orientation="Vertical" Spacing="10">
-                        <atom:TextBlock>Card content</atom:TextBlock>
-                        <atom:TextBlock>Card content</atom:TextBlock>
-                    </StackPanel>
-                </atom:Card>
-            </atom:Space>
-        </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem Title="Space Size"
-                              IsOccupyEntireRow="True"
-                              Description="Use size to set the spacing, Three sizes are preset: small, middle, large. You can also customize the spacing. If size is not set, the spacing is small." >
-            <StackPanel Orientation="Vertical" Spacing="15">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Small}"
-                                      IsCheckedChanged="HandleSizeTypeChanged"
-                                      IsChecked="True">
-                        Small
-                    </atom:RadioButton>
-                    <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Middle}"
-                                      IsCheckedChanged="HandleSizeTypeChanged">
-                        Middle
-                    </atom:RadioButton>
-                    <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Large}"
-                                      IsCheckedChanged="HandleSizeTypeChanged">
-                        Large
-                    </atom:RadioButton>
-                    <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Custom}"
-                                      IsCheckedChanged="HandleSizeTypeChanged">
-                        Custom
-                    </atom:RadioButton>
-                </StackPanel>
-                <atom:Slider Name="CustomSizeSlider"
-                             Minimum="0" Maximum="100"
-                             Value="{Binding CustomSpacingValue, Mode=TwoWay}"
-                             IsVisible="False"/>
-                <atom:Space Orientation="Horizontal" SizeType="{Binding SizeType}"
-                            LineSpacing="{Binding #CustomSizeSlider.Value, Priority=Template}"
-                            ItemSpacing="{Binding #CustomSizeSlider.Value, Priority=Template}">
-                    <atom:Button ButtonType="Primary">Primary</atom:Button>
-                    <atom:Button>Default</atom:Button>
-                    <atom:Button ButtonType="Dashed">Dashed</atom:Button>
-                    <atom:Button ButtonType="Link">Link</atom:Button>
-                </atom:Space>
-            </StackPanel>
-        </gallery:ShowCaseItem>
-
-        <gallery:ShowCaseItem Title="Align"
-                              Description="Config item align."
+        <!-- <gallery:ShowCaseItem Description="Crowded components horizontal spacing." -->
+        <!--                       Title="Basic" IsOccupyEntireRow="True"> -->
+        <!--     <StackPanel Orientation="Horizontal" Spacing="10"> -->
+        <!--         <atom:TextBlock VerticalAlignment="Center">Space:</atom:TextBlock> -->
+        <!--         <atom:Space> -->
+        <!--             <atom:Button ButtonType="Primary">Button</atom:Button> -->
+        <!--             <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button> -->
+        <!--             <atom:PopupConfirm -->
+        <!--                 Title="Delete the task" -->
+        <!--                 ConfirmContent="Are you sure to delete this task?" -->
+        <!--                 OkText="Ok" -->
+        <!--                 CancelText="Cancel" -->
+        <!--                 Placement="Top" -->
+        <!--                 IsShowArrow="True"> -->
+        <!--                 <atom:Button ButtonType="Default" IsDanger="True">Confirm</atom:Button> -->
+        <!--             </atom:PopupConfirm> -->
+        <!--         </atom:Space> -->
+        <!--     </StackPanel> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem Description="Crowded components vertical spacing." -->
+        <!--                       Title="Vertical Space" IsOccupyEntireRow="True"> -->
+        <!--     <atom:Space Orientation="Vertical" HorizontalAlignment="Stretch" Height="300"> -->
+        <!--         <atom:Card Header="Card" SizeType="Middle" HorizontalAlignment="Stretch"> -->
+        <!--             <StackPanel Orientation="Vertical" Spacing="10"> -->
+        <!--                 <atom:TextBlock>Card content</atom:TextBlock> -->
+        <!--                 <atom:TextBlock>Card content</atom:TextBlock> -->
+        <!--             </StackPanel> -->
+        <!--         </atom:Card> -->
+        <!-- -->
+        <!--         <atom:Card Header="Card" SizeType="Middle" HorizontalAlignment="Stretch"> -->
+        <!--             <StackPanel Orientation="Vertical" Spacing="10"> -->
+        <!--                 <atom:TextBlock>Card content</atom:TextBlock> -->
+        <!--                 <atom:TextBlock>Card content</atom:TextBlock> -->
+        <!--             </StackPanel> -->
+        <!--         </atom:Card> -->
+        <!-- -->
+        <!--         <atom:Card Header="Card" SizeType="Middle" HorizontalAlignment="Stretch"> -->
+        <!--             <StackPanel Orientation="Vertical" Spacing="10"> -->
+        <!--                 <atom:TextBlock>Card content</atom:TextBlock> -->
+        <!--                 <atom:TextBlock>Card content</atom:TextBlock> -->
+        <!--             </StackPanel> -->
+        <!--         </atom:Card> -->
+        <!--     </atom:Space> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem Title="Space Size" -->
+        <!--                       IsOccupyEntireRow="True" -->
+        <!--                       Description="Use size to set the spacing, Three sizes are preset: small, middle, large. You can also customize the spacing. If size is not set, the spacing is small." > -->
+        <!--     <StackPanel Orientation="Vertical" Spacing="15"> -->
+        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
+        <!--             <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Small}" -->
+        <!--                               IsCheckedChanged="HandleSizeTypeChanged" -->
+        <!--                               IsChecked="True"> -->
+        <!--                 Small -->
+        <!--             </atom:RadioButton> -->
+        <!--             <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Middle}" -->
+        <!--                               IsCheckedChanged="HandleSizeTypeChanged"> -->
+        <!--                 Middle -->
+        <!--             </atom:RadioButton> -->
+        <!--             <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Large}" -->
+        <!--                               IsCheckedChanged="HandleSizeTypeChanged"> -->
+        <!--                 Large -->
+        <!--             </atom:RadioButton> -->
+        <!--             <atom:RadioButton Tag="{x:Static atom:CustomizableSizeType.Custom}" -->
+        <!--                               IsCheckedChanged="HandleSizeTypeChanged"> -->
+        <!--                 Custom -->
+        <!--             </atom:RadioButton> -->
+        <!--         </StackPanel> -->
+        <!--         <atom:Slider Name="CustomSizeSlider" -->
+        <!--                      Minimum="0" Maximum="100" -->
+        <!--                      Value="{Binding CustomSpacingValue, Mode=TwoWay}" -->
+        <!--                      IsVisible="False"/> -->
+        <!--         <atom:Space Orientation="Horizontal" SizeType="{Binding SizeType}" -->
+        <!--                     LineSpacing="{Binding #CustomSizeSlider.Value, Priority=Template}" -->
+        <!--                     ItemSpacing="{Binding #CustomSizeSlider.Value, Priority=Template}"> -->
+        <!--             <atom:Button ButtonType="Primary">Primary</atom:Button> -->
+        <!--             <atom:Button>Default</atom:Button> -->
+        <!--             <atom:Button ButtonType="Dashed">Dashed</atom:Button> -->
+        <!--             <atom:Button ButtonType="Link">Link</atom:Button> -->
+        <!--         </atom:Space> -->
+        <!--     </StackPanel> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem Title="Align" -->
+        <!--                       Description="Config item align." -->
+        <!--                       IsOccupyEntireRow="True"> -->
+        <!--     <StackPanel Orientation="Horizontal" Spacing="10"> -->
+        <!--         <Border Classes="align-box"> -->
+        <!--             <atom:Space ItemsAlignment="Start" Orientation="Horizontal"> -->
+        <!--                 <atom:TextBlock>center</atom:TextBlock> -->
+        <!--                 <atom:Button ButtonType="Primary">Primary</atom:Button> -->
+        <!--                 <Border Classes="align-block-item"> -->
+        <!--                     <atom:TextBlock VerticalAlignment="Center">Block</atom:TextBlock> -->
+        <!--                 </Border> -->
+        <!--             </atom:Space> -->
+        <!--         </Border> -->
+        <!-- -->
+        <!--         <Border Classes="align-box"> -->
+        <!--             <atom:Space ItemsAlignment="Center" Orientation="Horizontal"> -->
+        <!--                 <atom:TextBlock>center</atom:TextBlock> -->
+        <!--                 <atom:Button ButtonType="Primary">Primary</atom:Button> -->
+        <!--                 <Border Classes="align-block-item"> -->
+        <!--                     <atom:TextBlock VerticalAlignment="Center">Block</atom:TextBlock> -->
+        <!--                 </Border> -->
+        <!--             </atom:Space> -->
+        <!--         </Border> -->
+        <!-- -->
+        <!--         <Border Classes="align-box"> -->
+        <!--             <atom:Space ItemsAlignment="End" Orientation="Horizontal"> -->
+        <!--                 <atom:TextBlock>center</atom:TextBlock> -->
+        <!--                 <atom:Button ButtonType="Primary">Primary</atom:Button> -->
+        <!--                 <Border Classes="align-block-item"> -->
+        <!--                     <atom:TextBlock VerticalAlignment="Center">Block</atom:TextBlock> -->
+        <!--                 </Border> -->
+        <!--             </atom:Space> -->
+        <!--         </Border> -->
+        <!--     </StackPanel> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem Title="Align" -->
+        <!--                       Description="Auto wrap line." -->
+        <!--                       IsOccupyEntireRow="True"> -->
+        <!--     <atom:Space Orientation="Horizontal" ItemSpacing="8" LineSpacing="16"> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--         <atom:Button>Button</atom:Button> -->
+        <!--     </atom:Space> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem Title="Split" -->
+        <!--                       Description="Crowded components split." -->
+        <!--                       IsOccupyEntireRow="True"> -->
+        <!--     <atom:Space Orientation="Horizontal" ItemsAlignment="Center"> -->
+        <!--         <atom:Space.SplitTemplate> -->
+        <!--             <Template> -->
+        <!--                 <atom:Separator Orientation="Vertical"/> -->
+        <!--             </Template> -->
+        <!--         </atom:Space.SplitTemplate> -->
+        <!--         <atom:HyperLinkTextBlock>Link</atom:HyperLinkTextBlock> -->
+        <!--         <atom:HyperLinkTextBlock>Link</atom:HyperLinkTextBlock> -->
+        <!--         <atom:HyperLinkTextBlock>Link</atom:HyperLinkTextBlock> -->
+        <!--     </atom:Space> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <gallery:ShowCaseItem Title="Compact Mode for form component."
+                              Description="Compact Mode for form component."
                               IsOccupyEntireRow="True">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Border Classes="align-box">
-                    <atom:Space ItemsAlignment="Start" Orientation="Horizontal">
-                        <atom:TextBlock>center</atom:TextBlock>
-                        <atom:Button ButtonType="Primary">Primary</atom:Button>
-                        <Border Classes="align-block-item">
-                            <atom:TextBlock VerticalAlignment="Center">Block</atom:TextBlock>
-                        </Border>
-                    </atom:Space>
-                </Border>
-
-                <Border Classes="align-box">
-                    <atom:Space ItemsAlignment="Center" Orientation="Horizontal">
-                        <atom:TextBlock>center</atom:TextBlock>
-                        <atom:Button ButtonType="Primary">Primary</atom:Button>
-                        <Border Classes="align-block-item">
-                            <atom:TextBlock VerticalAlignment="Center">Block</atom:TextBlock>
-                        </Border>
-                    </atom:Space>
-                </Border>
-
-                <Border Classes="align-box">
-                    <atom:Space ItemsAlignment="End" Orientation="Horizontal">
-                        <atom:TextBlock>center</atom:TextBlock>
-                        <atom:Button ButtonType="Primary">Primary</atom:Button>
-                        <Border Classes="align-block-item">
-                            <atom:TextBlock VerticalAlignment="Center">Block</atom:TextBlock>
-                        </Border>
-                    </atom:Space>
-                </Border>
+            <StackPanel Spacing="10">
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:LineEdit Text="0571" atom:CompactSpace.ItemSize="2*"/>
+                    <atom:LineEdit Text="26888888" atom:CompactSpace.ItemSize="3*"/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
+                </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch" SizeType="Small">
+                    <atom:LineEdit Text="https://atomui.net" atom:CompactSpace.ItemSize="4*"/>
+                    <atom:Button ButtonType="Primary">Submit</atom:Button>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
+                </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:LineEdit Text="https://atomui.net" atom:CompactSpace.ItemSize="4*"/>
+                    <atom:Button ButtonType="Primary">Submit</atom:Button>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
+                </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:LineEdit Text="git@github.com:AtomUI/AtomUI.git" atom:CompactSpace.ItemSize="4*"/>
+                    <atom:Button Icon="{antdicons:AntDesignIconProvider CopyOutlined}" atom:ToolTip.Tip="copy git url"/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
+                </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:Select  IsAllowClear="True" DefaultValues="Zhejiang" Mode="Multiple">
+                        <atom:SelectOption Header="Zhejiang" Value="Zhejiang" />
+                        <atom:SelectOption Header="Jiangsu" Value="Jiangsu" />
+                    </atom:Select>
+                    <atom:LineEdit Text="Xihu District, Hangzhou" atom:CompactSpace.ItemSize="4*"/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="4*"/>
+                </atom:CompactSpace>
             </StackPanel>
-        </gallery:ShowCaseItem>
-
-        <gallery:ShowCaseItem Title="Align"
-                              Description="Auto wrap line."
-                              IsOccupyEntireRow="True">
-            <atom:Space Orientation="Horizontal" ItemSpacing="8" LineSpacing="16">
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-                <atom:Button>Button</atom:Button>
-            </atom:Space>
-        </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem Title="Split"
-                              Description="Crowded components split."
-                              IsOccupyEntireRow="True">
-            <atom:Space Orientation="Horizontal" ItemsAlignment="Center">
-                <atom:Space.SplitTemplate>
-                    <Template>
-                        <atom:Separator Orientation="Vertical"/>
-                    </Template>
-                </atom:Space.SplitTemplate>
-                <atom:HyperLinkTextBlock>Link</atom:HyperLinkTextBlock>
-                <atom:HyperLinkTextBlock>Link</atom:HyperLinkTextBlock>
-                <atom:HyperLinkTextBlock>Link</atom:HyperLinkTextBlock>
-            </atom:Space>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

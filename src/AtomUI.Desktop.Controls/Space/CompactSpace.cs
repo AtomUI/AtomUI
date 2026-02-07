@@ -1,6 +1,9 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
 using AtomUI.Utils;
@@ -92,7 +95,8 @@ public class CompactSpace : TemplatedControl,
     #endregion
 
     private Grid? _contentLayout;
-    private Dictionary<object, NotifyCollectionChangedEventHandler> _childClassesChangedHandlers = new();
+    private readonly Dictionary<object, NotifyCollectionChangedEventHandler> _childClassesChangedHandlers = new();
+    private readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
 
     static CompactSpace()
     {
@@ -184,6 +188,17 @@ public class CompactSpace : TemplatedControl,
         };
         _childClassesChangedHandlers.Add(child, childClassesChangedHandler);
         child.Classes.CollectionChanged += childClassesChangedHandler;
+        if (child is ICompactSpaceAware compactSpaceAware && compactSpaceAware.IsAlwaysActiveZIndex())
+        {
+            child.ZIndex = ACTIVE_ZINDEX;
+        }
+
+        if (child is ISizeTypeAware)
+        {
+            var disposables = new CompositeDisposable(2);
+            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, child, SizeTypeProperty));
+            _itemsBindingDisposables.Add(child, disposables);
+        }
     }
     
     private void NotifyRemoveCompactSpaceItem(Control child)
@@ -196,6 +211,12 @@ public class CompactSpace : TemplatedControl,
             child.Classes.CollectionChanged -= childClassesChangedHandler;
             _childClassesChangedHandlers.Remove(child);
         }
+
+        if (_itemsBindingDisposables.TryGetValue(child, out var disposables))
+        {
+            disposables.Dispose();
+            _itemsBindingDisposables.Remove(child);
+        }
     }
 
     #region 孩子的 ZIndex 处理方法
@@ -206,9 +227,16 @@ public class CompactSpace : TemplatedControl,
         {
             foreach (var child in Children)
             {
-                if (child != null)
+                if (child != null && child is ICompactSpaceAware compactSpaceAware)
                 {
-                    child.ZIndex = child == currentControl ? ACTIVE_ZINDEX : NORMAL_ZINDEX;
+                    if (child == currentControl)
+                    {
+                        child.ZIndex = ACTIVE_ZINDEX;
+                    }
+                    else if (!compactSpaceAware.IsAlwaysActiveZIndex())
+                    {
+                        child.ZIndex = NORMAL_ZINDEX;
+                    }
                 }
             }
         }
@@ -220,13 +248,13 @@ public class CompactSpace : TemplatedControl,
         {
             foreach (var child in Children)
             {
-                if (child != null)
+                if (child != null && child is ICompactSpaceAware compactSpaceAware)
                 {
                     if (child == currentControl)
                     {
                         child.ZIndex = ACTIVE_ZINDEX;
                     }
-                    else if (!IsEffectiveFocused(child))
+                    else  if (!IsEffectiveFocused(child) && !compactSpaceAware.IsAlwaysActiveZIndex())
                     {
                         child.ZIndex = NORMAL_ZINDEX;
                     }
@@ -237,9 +265,9 @@ public class CompactSpace : TemplatedControl,
 
     private void HandlePointerExited(object? sender, PointerEventArgs e)
     {
-        if (sender is Control control)
+        if (sender is Control control && control is ICompactSpaceAware compactSpaceAware)
         {
-            if (!IsEffectiveFocused(control))
+            if (!IsEffectiveFocused(control) && !compactSpaceAware.IsAlwaysActiveZIndex())
             {
                 control.ZIndex = NORMAL_ZINDEX;
             }
@@ -426,5 +454,55 @@ public class CompactSpace : TemplatedControl,
             return children[index];
         }
         return null;
+    }
+
+    internal static void ConfigureItemSize(Control control, 
+                                           CompactSpaceSize size,
+                                           bool isUsedInCompactSpace,
+                                           Orientation compactSpaceOrientation) 
+    {
+        Debug.Assert(control is ICompactSpaceAware);
+        if (!isUsedInCompactSpace)
+        {
+            control.ClearValue(HorizontalAlignmentProperty);
+            control.ClearValue(VerticalAlignmentProperty);
+        }
+        else
+        {
+            if (compactSpaceOrientation == Orientation.Horizontal)
+            {
+                if (size.IsStar)
+                {
+                    control.ClearValue(WidthProperty);
+                    control.SetCurrentValue(HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+                }
+                else if (size.IsAbsolute)
+                {
+                    control.SetCurrentValue(WidthProperty, size.Value);
+                }
+                else
+                {
+                    control.ClearValue(WidthProperty);
+                    control.ClearValue(HorizontalAlignmentProperty);
+                }
+            }
+            else
+            {
+                if (size.IsStar)
+                {
+                    control.ClearValue(HeightProperty);
+                    control.SetCurrentValue(VerticalAlignmentProperty, HorizontalAlignment.Stretch);
+                }
+                else if (size.IsAbsolute)
+                {
+                    control.SetCurrentValue(HeightProperty, size.Value);
+                }
+                else
+                {
+                    control.ClearValue(HeightProperty);
+                    control.ClearValue(VerticalAlignmentProperty);
+                }
+            }
+        }
     }
 }

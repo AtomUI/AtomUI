@@ -16,7 +16,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -155,8 +154,16 @@ public class Button : AvaloniaButton,
     internal static readonly StyledProperty<WaveSpiritType> WaveSpiritTypeProperty =
         WaveSpiritAwareControlProperty.WaveSpiritTypeProperty.AddOwner<Button>();
     
+    internal static readonly DirectProperty<Button, CornerRadius> EffectiveCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<Button, CornerRadius>(nameof(EffectiveCornerRadius),
+            o => o.EffectiveCornerRadius,
+            (o, v) => o.EffectiveCornerRadius = v);
+    
     internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<Button>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<Button>();
     
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<Button>();
@@ -191,10 +198,24 @@ public class Button : AvaloniaButton,
         set => SetValue(WaveSpiritTypeProperty, value);
     }
     
+    private CornerRadius _effectiveCornerRadius;
+
+    internal CornerRadius EffectiveCornerRadius
+    {
+        get => _effectiveCornerRadius;
+        set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
+    }
+    
     internal SpaceItemPosition? CompactSpaceItemPosition
     {
         get => GetValue(CompactSpaceItemPositionProperty);
         set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
     }
     
     internal bool IsUsedInCompactSpace
@@ -216,7 +237,8 @@ public class Button : AvaloniaButton,
         AffectsMeasure<Button>(SizeTypeProperty,
             ShapeProperty,
             IconProperty,
-            CompactSpaceItemPositionProperty);
+            CompactSpaceItemPositionProperty,
+            CompactSpaceOrientationProperty);
         AffectsRender<Button>(ButtonTypeProperty,
             IsDangerProperty,
             IsGhostProperty);
@@ -286,12 +308,9 @@ public class Button : AvaloniaButton,
             }
         }
 
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == ButtonTypeProperty)
         {
-            if (change.Property == ButtonTypeProperty)
-            {
-                ConfigureWaveSpiritType();
-            }
+            ConfigureWaveSpiritType();
         }
 
         if (change.Property == ContentProperty ||
@@ -304,7 +323,7 @@ public class Button : AvaloniaButton,
                  change.Property == IsEnabledProperty ||
                  change.Property == BorderThicknessProperty)
         {
-            SetupEffectiveBorderThickness();
+            ConfigureEffectiveBorderThickness();
         }
 
         if (IsLoaded)
@@ -315,12 +334,28 @@ public class Button : AvaloniaButton,
                 ConfigureTransitions(true);
             }
         }
+        
         if (change.Property == ButtonTypeProperty)
         {
             ConfigureControlThemeBindings(true);
         }
-    }
 
+        if (change.Property == CornerRadiusProperty ||
+            change.Property == CompactSpaceItemPositionProperty ||
+            change.Property == CompactSpaceOrientationProperty)
+        {
+            ConfigureEffectiveCornerRadius();
+        }
+
+        if (change.Property == CompactSpace.ItemSizeProperty)
+        {
+            if (change.NewValue is CompactSpaceSize newSize)
+            {
+                CompactSpace.ConfigureItemSize(this, newSize, IsUsedInCompactSpace, CompactSpaceOrientation);
+            }
+        }
+    }
+    
     private void ConfigureWaveSpiritType()
     {
         WaveSpiritType waveType = default;
@@ -432,7 +467,7 @@ public class Button : AvaloniaButton,
         UpdatePseudoClasses();
         ConfigureControlThemeBindings(false);
         ConfigureWaveSpiritType();
-        SetupEffectiveBorderThickness();
+        ConfigureEffectiveBorderThickness();
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -447,7 +482,7 @@ public class Button : AvaloniaButton,
         Transitions = null;
     }
 
-    private void SetupEffectiveBorderThickness()
+    private void ConfigureEffectiveBorderThickness()
     {
         if (ButtonType == ButtonType.Default ||
             ButtonType == ButtonType.Dashed)
@@ -471,6 +506,64 @@ public class Button : AvaloniaButton,
         }
     }
 
+    private void ConfigureEffectiveCornerRadius()
+    {
+        CompactSpace.ConfigureItemSize(this, CompactSpace.GetItemSize(this), IsUsedInCompactSpace, CompactSpaceOrientation);
+        if (!IsUsedInCompactSpace)
+        {
+            EffectiveCornerRadius = CornerRadius;
+        }
+        else
+        {
+            if (SpaceItemPosition.First == CompactSpaceItemPosition)
+            {
+                if (CompactSpaceOrientation == Orientation.Horizontal)
+                {
+                    EffectiveCornerRadius = new CornerRadius(
+                        topLeft:CornerRadius.TopLeft,
+                        bottomLeft:CornerRadius.BottomLeft,
+                        topRight:0, 
+                        bottomRight:0);
+                }
+                else
+                {
+                    EffectiveCornerRadius = new CornerRadius(
+                        topLeft:CornerRadius.TopLeft,
+                        bottomLeft:0,
+                        topRight:CornerRadius.TopRight, 
+                        bottomRight:0);
+                }
+            }
+            else if (SpaceItemPosition.Middle == CompactSpaceItemPosition)
+            {
+                EffectiveCornerRadius = new CornerRadius(
+                    topLeft:0,
+                    bottomLeft:0,
+                    topRight:0, 
+                    bottomRight:0);
+            }
+            else if (SpaceItemPosition.Last == CompactSpaceItemPosition)
+            {
+                if (CompactSpaceOrientation == Orientation.Horizontal)
+                {
+                    EffectiveCornerRadius = new CornerRadius(
+                        topLeft:0,
+                        bottomLeft:0,
+                        topRight:CornerRadius.TopRight, 
+                        bottomRight:CornerRadius.BottomRight);
+                }
+                else
+                {
+                    EffectiveCornerRadius = new CornerRadius(
+                        topLeft:0,
+                        bottomLeft:CornerRadius.BottomLeft,
+                        topRight:0, 
+                        bottomRight:CornerRadius.BottomRight);
+                }
+            }
+        }
+    }
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
@@ -491,11 +584,34 @@ public class Button : AvaloniaButton,
 
     void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
     {
-        
+        CompactSpaceOrientation = orientation;
     }
-
-    protected override Size ArrangeOverride(Size finalSize)
+    
+    bool ICompactSpaceAware.IsAlwaysActiveZIndex()
     {
-        return base.ArrangeOverride(finalSize);
+        return ButtonType == ButtonType.Primary;
+    }
+    
+    protected override void ArrangeCore(Rect finalRect)
+    {
+        if (CompactSpaceItemPosition == null ||
+            CompactSpaceItemPosition == SpaceItemPosition.First ||
+            CompactSpaceItemPosition == SpaceItemPosition.FirstAndLast)
+        {
+            base.ArrangeCore(finalRect);
+            return;
+        }
+
+        var offsetX = finalRect.X;
+        var offsetY = finalRect.Y;
+        if (CompactSpaceOrientation == Orientation.Horizontal)
+        {
+            offsetX -= BorderThickness.Left;
+        }
+        else
+        {
+            offsetY -=  BorderThickness.Top;
+        }
+        base.ArrangeCore(new Rect(offsetX, offsetY, finalRect.Width, finalRect.Height));
     }
 }

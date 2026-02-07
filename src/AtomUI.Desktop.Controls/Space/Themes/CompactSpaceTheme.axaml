@@ -9,5 +9,7 @@
                 <Grid Name="{x:Static atom:CompactSpaceThemeConstants.ContentLayoutPart}"/>
             </ControlTemplate>
         </Setter>
+        
+        <Setter Property="ClipToBounds" Value="False"/>
     </ControlTheme>
 </ResourceDictionary>

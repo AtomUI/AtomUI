@@ -7,6 +7,11 @@ internal interface ICompactSpaceAware
 {
     void NotifyPositionChange(SpaceItemPosition? position);
     void NotifyOrientationChange(Orientation orientation);
+
+    bool IsAlwaysActiveZIndex()
+    {
+        return false;
+    }
 }
 
 internal abstract class CompactSpaceAwareControlProperty

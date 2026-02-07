@@ -164,20 +164,22 @@ internal class SelectToken : AbstractControlDesignToken
         
         var lineWidth    = SharedToken.LineWidth;
         
-        var multiPaddingVertical =
-            Math.Round((SharedToken.ControlHeight - SharedToken.FontHeight) / 2 * 10) / 10 - lineWidth * 2;
-        var multiPaddingLeft  = multiPaddingVertical;
+        var multiPaddingVertical = Math.Round((SharedToken.ControlHeight - SharedToken.FontHeight) / 2 * 10) / 10 - lineWidth;
+        var multiPaddingVerticalSM = Math.Round((SharedToken.ControlHeightSM - SharedToken.FontHeight) / 2 * 10) / 10 - lineWidth;
+        var multiPaddingVerticalLG = Math.Ceiling((SharedToken.ControlHeightLG - SharedToken.FontHeightLG) / 2 * 10) / 10 -
+                                     lineWidth;
+        
         var multiPaddingRight = SharedToken.UniformlyPaddingSM - lineWidth;
-        MultiModePadding = new Thickness(multiPaddingLeft, multiPaddingVertical, multiPaddingRight, multiPaddingVertical);
+        MultiModePadding = new Thickness(multiPaddingVertical, multiPaddingVertical, multiPaddingRight, multiPaddingVertical);
         
         var multiPaddingRightSM = SharedToken.ControlPaddingHorizontalSM - lineWidth;
-        MultiModePaddingSM = new Thickness(multiPaddingVertical, multiPaddingVertical, multiPaddingRightSM, multiPaddingVertical);
+        MultiModePaddingSM = new Thickness(multiPaddingVerticalSM, multiPaddingVerticalSM, multiPaddingRightSM, multiPaddingVerticalSM);
         
         var multiPaddingRightLG = SharedToken.ControlPaddingHorizontal - lineWidth;
-        MultiModePaddingLG = new Thickness(multiPaddingVertical, multiPaddingVertical, multiPaddingRightLG, multiPaddingVertical);
+        MultiModePaddingLG = new Thickness(multiPaddingVerticalLG, multiPaddingVerticalLG, multiPaddingRightLG, multiPaddingVerticalLG);
         
-        Padding = new Thickness(multiPaddingRight, multiPaddingVertical);
-        PaddingSM = new Thickness(multiPaddingRightSM, multiPaddingVertical);
-        PaddingLG = new Thickness(multiPaddingRightLG,  multiPaddingVertical);
+        Padding   = new Thickness(multiPaddingRight, multiPaddingVertical);
+        PaddingSM = new Thickness(multiPaddingRightSM, multiPaddingVerticalSM);
+        PaddingLG = new Thickness(multiPaddingRightLG,  multiPaddingVerticalLG);
     }
 }

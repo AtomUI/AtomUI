@@ -11,13 +11,17 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input.Raw;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAware
+public class AbstractSelect : TemplatedControl, 
+                              IMotionAwareControl, 
+                              ISizeTypeAware,
+                              ICompactSpaceAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAllowClearProperty =
@@ -428,6 +432,15 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             o => o.EffectiveFilter,
             (o, v) => o.EffectiveFilter = v);
     
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<AbstractSelect>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<AbstractSelect>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<AbstractSelect>();
+    
     private double _itemHeight;
 
     internal double ItemHeight
@@ -516,6 +529,24 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
     }
     
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
+    }
+    
     #endregion
     
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
@@ -523,9 +554,11 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
     private protected bool IgnorePopupClose;
     private protected bool PopupHasOpened;
     private protected bool IgnorePropertyChange;
+    private AddOnDecoratedBox? _addOnDecoratedBox;
 
     static AbstractSelect()
     {
+        AffectsArrange<AbstractSelect>(CompactSpaceItemPositionProperty, CompactSpaceOrientationProperty);
         IsDropDownOpenProperty.Changed.AddClassHandler<AbstractSelect>((select, args) => select.HandleIsDropDownOpenChanged(args));
     }
 
@@ -619,6 +652,14 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         {
             ConfigureMaxDropdownHeight();
         }
+        
+        if (change.Property == CompactSpace.ItemSizeProperty)
+        {
+            if (change.NewValue is CompactSpaceSize newSize)
+            {
+                CompactSpace.ConfigureItemSize(this, newSize, IsUsedInCompactSpace, CompactSpaceOrientation);
+            }
+        }
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -665,6 +706,8 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
             Popup.Opened              += PopupOpened;
             Popup.Closed              += PopupClosed;
         }
+        _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
+        CompactSpace.ConfigureItemSize(this, CompactSpace.GetItemSize(this), IsUsedInCompactSpace, CompactSpaceOrientation);
     }
     
     protected virtual void PopupClosed(object? sender, EventArgs e)
@@ -827,5 +870,57 @@ public class AbstractSelect : TemplatedControl, IMotionAwareControl, ISizeTypeAw
         PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
         PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
         PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
+    }
+    
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+    
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+    
+    protected override void ArrangeCore(Rect finalRect)
+    {
+        if (CompactSpaceItemPosition == null ||
+            CompactSpaceItemPosition == SpaceItemPosition.First ||
+            CompactSpaceItemPosition == SpaceItemPosition.FirstAndLast)
+        {
+            base.ArrangeCore(finalRect);
+            return;
+        }
+        
+        var borderThickness = GetBorderThicknessForCompactSpace();
+
+        var offsetX = finalRect.X;
+        var offsetY = finalRect.Y;
+        if (CompactSpaceOrientation == Orientation.Horizontal)
+        {
+            offsetX -= borderThickness;
+        }
+        else
+        {
+            offsetY -=  borderThickness;
+        }
+        base.ArrangeCore(new Rect(offsetX, offsetY, finalRect.Width, finalRect.Height));
+    }
+    
+    protected virtual double GetBorderThicknessForCompactSpace()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant == AddOnDecoratedVariant.Borderless)
+        {
+            return 0.0;
+        }
+
+        // 都一样宽
+        return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
 }

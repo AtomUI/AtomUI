@@ -36,13 +36,8 @@
                                                                   ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
                                                                   Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
                                                                   ClipToBounds="True" />
-                                                <Border
-                                                    Name="{x:Static atom:ImagePreviewerThemeConstants.WindowHeaderPart}"
-                                                    Padding="{TemplateBinding TitleBarOSOffsetMargin}">
-                                                    <ContentPresenter
-                                                        Padding="{TemplateBinding TitleBarOSOffsetMargin}"
-                                                        Content="{TemplateBinding TitleBar}" />
-                                                </Border>
+                                                <ContentPresenter Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                                                  Content="{TemplateBinding TitleBar}" />
                                             </Panel>
                                             <Panel>
                                                 <ContentPresenter Name="ContentFrameLayer"

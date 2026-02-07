@@ -715,6 +715,7 @@ public class AbstractSelect : TemplatedControl,
             parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
         }
 
+        ConfigurePopupMinWith(DesiredSize.Width);
         NotifyPopupOpened();
     }
     
@@ -745,21 +746,12 @@ public class AbstractSelect : TemplatedControl,
             PopupPlacement = PlacementMode.TopEdgeAlignedRight;
         }
     }
-    
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        ConfigurePopupMinWith(e.NewSize.Width);
-    }
 
     protected virtual void ConfigurePopupMinWith(double selectWidth)
     {
         if (IsPopupMatchSelectWidth)
         {
-            if (!IsDropDownOpen)
-            {
-                SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
-            }
+            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
         }
         else
         {

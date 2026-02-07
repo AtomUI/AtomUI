@@ -55,6 +55,11 @@ internal class ListBoxToken : AbstractControlDesignToken
     public Color ItemSelectedBgColor { get; set; }
     
     /// <summary>
+    /// 列表项选中标记的外间距
+    /// </summary>
+    public Thickness SelectedIndicatorMargin { get; set; }
+    
+    /// <summary>
     /// 过滤高亮颜色
     /// </summary>
     public Color FilterHighlightColor { get; set; }
@@ -105,5 +110,7 @@ internal class ListBoxToken : AbstractControlDesignToken
         ItemMargin       = new Thickness(0, 0.5);
 
         FilterHighlightColor = SharedToken.ColorError;
+
+        SelectedIndicatorMargin = new Thickness(SharedToken.UniformlyMarginXXS, 0, 0, 0);
     }
 }

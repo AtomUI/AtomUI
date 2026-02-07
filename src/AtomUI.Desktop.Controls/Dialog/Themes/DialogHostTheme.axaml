@@ -11,66 +11,66 @@
         <ControlTemplate TargetType="atom:DialogHost">
             <Panel>
                 <Border Name="WindowFrame"
-                        BackgroundSizing="InnerBorderEdge"
+                        Background="{TemplateBinding Background}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         ClipToBounds="True">
                     <Panel>
                         <ContentPresenter Name="WindowFrameLayer"
-                                          Background="{TemplateBinding Background}"
-                                          ClipToBounds="True"
-                                          Opacity="{TemplateBinding WindowFrameLayerOpacity}"
                                           Content="{TemplateBinding WindowFrameLayer}"
-                                          ContentTemplate="{TemplateBinding WindowFrameLayerTemplate}" />
-                        <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
-                            <DockPanel Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}"
-                                       LastChildFill="True">
-                                <Panel DockPanel.Dock="Top"
-                                       IsVisible="{TemplateBinding IsTitleBarVisible}">
-                                    <ContentPresenter Name="TitleBarFrameLayer"
-                                                      Background="{TemplateBinding TitleBarFrameBackground}"
-                                                      Content="{TemplateBinding TitleBarFrameLayer}"
-                                                      ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}" 
-                                                      Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
-                                                      ClipToBounds="True"/>
-                                    <ContentPresenter Padding="{TemplateBinding TitleBarOSOffsetMargin}"
-                                                      Content="{TemplateBinding TitleBar}"/>
-                                </Panel>
-
-                                <Panel>
-                                    <ContentPresenter Name="ContentFrameLayer"
-                                                      Background="{TemplateBinding ContentFrameBackground}"
-                                                      ClipToBounds="True"
-                                                      Opacity="{TemplateBinding ContentFrameLayerOpacity}"
-                                                      Content="{TemplateBinding ContentFrameLayer}"
-                                                      ContentTemplate="{TemplateBinding ContentFrameLayerTemplate}"
-                                                      CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static atom:WindowTheme.CornerRadiusConverter}}" />
-                                    <DockPanel LastChildFill="True">
-                                        <Border Name="FooterFrame" DockPanel.Dock="Bottom"
-                                                IsVisible="{TemplateBinding IsEffectiveFooterVisible}">
-                                            <atom:DialogButtonBox
-                                                Name="{x:Static atom:DialogThemeConstants.ButtonBoxPart}"
-                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                StandardButtons="{TemplateBinding StandardButtons}"
-                                                DefaultStandardButton="{TemplateBinding DefaultStandardButton}"
-                                                EscapeStandardButton="{TemplateBinding EscapeStandardButton}" />
-                                        </Border>
-                                        <Border Name="ContentFrame"
-                                                CornerRadius="{TemplateBinding CornerRadius}"
-                                                ClipToBounds="True"
-                                                Cursor="Arrow"
-                                                Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter
-                                                Name="{x:Static atom:WindowThemeConstants.ContentPresenterPart}"
-                                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                Content="{TemplateBinding Content}"
-                                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                                        </Border>
-                                    </DockPanel>
-                                </Panel>
-
-                            </DockPanel>
-                        </atom:VisualLayerManager>
+                                          Opacity="{TemplateBinding WindowFrameLayerOpacity}"
+                                          CornerRadius="{TemplateBinding CornerRadius}"
+                                          ContentTemplate="{TemplateBinding WindowFrameLayerTemplate}"
+                                          ClipToBounds="True" />
+                        <Border CornerRadius="{TemplateBinding CornerRadius}"
+                                ClipToBounds="True">
+                            <atom:VisualLayerManager Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
+                                <DockPanel Name="{x:Static atom:WindowThemeConstants.ContentLayoutPart}"
+                                           LastChildFill="True">
+                                    <Panel DockPanel.Dock="Top"
+                                           IsVisible="{TemplateBinding IsTitleBarVisible}">
+                                        <ContentPresenter Name="TitleBarFrameLayer"
+                                                          Background="{TemplateBinding TitleBarFrameBackground}"
+                                                          Content="{TemplateBinding TitleBarFrameLayer}"
+                                                          ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
+                                                          Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
+                                                          ClipToBounds="True" />
+                                        <ContentPresenter Padding="{TemplateBinding TitleBarOSOffsetMargin}"
+                                                          Content="{TemplateBinding TitleBar}" />
+                                    </Panel>
+                                    <Panel>
+                                        <ContentPresenter Name="ContentFrameLayer"
+                                                          Background="{TemplateBinding ContentFrameBackground}"
+                                                          ClipToBounds="True"
+                                                          Opacity="{TemplateBinding ContentFrameLayerOpacity}"
+                                                          Content="{TemplateBinding ContentFrameLayer}"
+                                                          ContentTemplate="{TemplateBinding ContentFrameLayerTemplate}" />
+                                        <DockPanel LastChildFill="True">
+                                            <Border Name="FooterFrame" DockPanel.Dock="Bottom"
+                                                    IsVisible="{TemplateBinding IsEffectiveFooterVisible}">
+                                                <atom:DialogButtonBox
+                                                    Name="{x:Static atom:DialogThemeConstants.ButtonBoxPart}"
+                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                    StandardButtons="{TemplateBinding StandardButtons}"
+                                                    DefaultStandardButton="{TemplateBinding DefaultStandardButton}"
+                                                    EscapeStandardButton="{TemplateBinding EscapeStandardButton}" />
+                                            </Border>
+                                            <Border Name="ContentFrame"
+                                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                                    ClipToBounds="True"
+                                                    Cursor="Arrow"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter
+                                                    Name="{x:Static atom:WindowThemeConstants.ContentPresenterPart}"
+                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                    Content="{TemplateBinding Content}"
+                                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                            </Border>
+                                        </DockPanel>
+                                    </Panel>
+                                </DockPanel>
+                            </atom:VisualLayerManager>
+                        </Border>
                     </Panel>
                 </Border>
                 <atom:WindowResizer Name="{x:Static atom:WindowThemeConstants.WindowResizerPart}"
@@ -95,7 +95,6 @@
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:DialogTokenKey.FooterMarginTop}}" />
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:DialogTokenKey.FooterPadding}}" />
         </Style>
-
     </Style>
 
 </ControlTheme>

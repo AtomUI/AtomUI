@@ -30,6 +30,7 @@
         </Setter>
 
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^ /template/ DockPanel">
             <Setter Property="HorizontalSpacing" Value="{DynamicResource {x:Static atom:DialogTokenKey.ButtonGroupSpacing}}" />
         </Style>

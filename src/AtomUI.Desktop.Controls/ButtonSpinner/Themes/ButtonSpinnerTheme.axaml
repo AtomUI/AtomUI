@@ -24,14 +24,16 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Content="{TemplateBinding Content}"
-                    ContentTemplate="{TemplateBinding ContentTemplate}">
+                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                    CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                    CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                     <atom:ButtonSpinnerDecoratedBox.SpinnerContent>
                         <atom:ButtonSpinnerHandle
                             ButtonSpinnerLocation="{Binding (atom:ButtonSpinner.ButtonSpinnerLocation), RelativeSource={RelativeSource AncestorType=atom:ButtonSpinner}}"
                             IsMotionEnabled="{Binding (atom:ButtonSpinner.IsMotionEnabled), RelativeSource={RelativeSource AncestorType=atom:ButtonSpinner}}"
                             CornerRadius="{Binding (atom:ButtonSpinner.CornerRadius), RelativeSource={RelativeSource AncestorType=atom:ButtonSpinner}}"
-                            Width="{Binding (atom:ButtonSpinner.SpinnerHandleWidth), RelativeSource={RelativeSource AncestorType=atom:ButtonSpinner}}"
-                        />
+                            Width="{Binding (atom:ButtonSpinner.SpinnerHandleWidth), RelativeSource={RelativeSource AncestorType=atom:ButtonSpinner}}"/>
                     </atom:ButtonSpinnerDecoratedBox.SpinnerContent>
                 </atom:ButtonSpinnerDecoratedBox>
             </ControlTemplate>

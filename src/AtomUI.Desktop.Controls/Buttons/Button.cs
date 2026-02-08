@@ -346,14 +346,6 @@ public class Button : AvaloniaButton,
         {
             ConfigureEffectiveCornerRadius();
         }
-
-        if (change.Property == CompactSpace.ItemSizeProperty)
-        {
-            if (change.NewValue is CompactSpaceSize newSize)
-            {
-                CompactSpace.ConfigureItemSize(this, newSize, IsUsedInCompactSpace, CompactSpaceOrientation);
-            }
-        }
     }
     
     private void ConfigureWaveSpiritType()
@@ -508,7 +500,6 @@ public class Button : AvaloniaButton,
 
     private void ConfigureEffectiveCornerRadius()
     {
-        CompactSpace.ConfigureItemSize(this, CompactSpace.GetItemSize(this), IsUsedInCompactSpace, CompactSpaceOrientation);
         if (!IsUsedInCompactSpace)
         {
             EffectiveCornerRadius = CornerRadius;
@@ -591,27 +582,16 @@ public class Button : AvaloniaButton,
     {
         return ButtonType == ButtonType.Primary;
     }
-    
-    protected override void ArrangeCore(Rect finalRect)
+
+    double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
+
+    protected virtual double GetBorderThicknessForCompactSpace()
     {
-        if (CompactSpaceItemPosition == null ||
-            CompactSpaceItemPosition == SpaceItemPosition.First ||
-            CompactSpaceItemPosition == SpaceItemPosition.FirstAndLast)
+        if (!IsUsedInCompactSpace)
         {
-            base.ArrangeCore(finalRect);
-            return;
+            return 0.0;
         }
 
-        var offsetX = finalRect.X;
-        var offsetY = finalRect.Y;
-        if (CompactSpaceOrientation == Orientation.Horizontal)
-        {
-            offsetX -= BorderThickness.Left;
-        }
-        else
-        {
-            offsetY -=  BorderThickness.Top;
-        }
-        base.ArrangeCore(new Rect(offsetX, offsetY, finalRect.Width, finalRect.Height));
+        return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
     }
 }

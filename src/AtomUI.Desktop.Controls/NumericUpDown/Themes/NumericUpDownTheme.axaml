@@ -22,7 +22,10 @@
                     RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
                     InnerLeftContent="{TemplateBinding InnerLeftContent}"
                     InnerLeftContentTemplate="{TemplateBinding InnerLeftContentTemplate}"
-                    SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}">
+                    SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
+                    CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                    CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                     <atom:ButtonSpinner.InnerRightContent>
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyPaddingXXS}}">

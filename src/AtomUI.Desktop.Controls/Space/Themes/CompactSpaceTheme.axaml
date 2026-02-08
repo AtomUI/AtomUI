@@ -6,10 +6,11 @@
     <ControlTheme x:Key="{x:Type atom:CompactSpace}" TargetType="atom:CompactSpace">
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid Name="{x:Static atom:CompactSpaceThemeConstants.ContentLayoutPart}"/>
+                <Grid Name="{x:Static atom:CompactSpaceThemeConstants.ContentLayoutPart}" UseLayoutRounding="False"/>
             </ControlTemplate>
         </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
         
-        <Setter Property="ClipToBounds" Value="False"/>
     </ControlTheme>
 </ResourceDictionary>

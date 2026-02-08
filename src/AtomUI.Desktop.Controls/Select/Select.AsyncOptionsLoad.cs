@@ -109,6 +109,10 @@ public partial class Select
         if (isDropDownOpen != IsDropDownOpen)
         {
             IgnorePropertyChange = true;
+            if (isDropDownOpen)
+            {
+                Popup!.IgnoreFirstDetected = true;
+            }
             SetCurrentValue(IsDropDownOpenProperty, isDropDownOpen);
         }
         if (IsDropDownOpen)

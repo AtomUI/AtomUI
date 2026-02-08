@@ -26,7 +26,8 @@
                 CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                 CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                 IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
-                Focusable="True">
+                Focusable="True"
+                ClipToBounds="{TemplateBinding ClipToBounds}">
                 <atom:AddOnDecoratedBox.ContentRightAddOn>
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyPaddingXXS}}">
@@ -47,11 +48,11 @@
                             Focusable="False"
                             Content="{Binding InnerRightContent, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"
                             IsVisible="{Binding InnerRightContent, RelativeSource={RelativeSource AncestorType=atom:LineEdit}, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <atom:TextBlock Name="TextCountIndicator" 
+                        <atom:TextBlock Name="TextCountIndicator"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}"
                                         Text="{Binding CountText, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"
-                                        IsVisible="{Binding IsShowCount, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"/>
+                                        IsVisible="{Binding IsShowCount, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}" />
                     </StackPanel>
                 </atom:AddOnDecoratedBox.ContentRightAddOn>
 
@@ -99,6 +100,7 @@
     <Style Selector="^:is(atom|LineEdit)">
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^[StyleVariant=Borderless]">
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">

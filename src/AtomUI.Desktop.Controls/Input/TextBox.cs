@@ -211,13 +211,6 @@ public class TextBox : AvaloniaTextBox,
             ConfigureCornerRadius();
         }
         
-        if (change.Property == CompactSpace.ItemSizeProperty)
-        {
-            if (change.NewValue is CompactSpaceSize newSize)
-            {
-                CompactSpace.ConfigureItemSize(this, newSize, IsUsedInCompactSpace, CompactSpaceOrientation);
-            }
-        }
     }
 
     private void ConfigureCornerRadius()
@@ -228,7 +221,7 @@ public class TextBox : AvaloniaTextBox,
         }
         else
         {
-            if (SpaceItemPosition.First == CompactSpaceItemPosition)
+            if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
             {
                 if (CompactSpaceOrientation == Orientation.Horizontal)
                 {
@@ -247,7 +240,7 @@ public class TextBox : AvaloniaTextBox,
                         bottomRight:0);
                 }
             }
-            else if (SpaceItemPosition.Middle == CompactSpaceItemPosition)
+            else if ((CompactSpaceItemPosition & SpaceItemPosition.Middle) != 0)
             {
                 EffectiveCornerRadius = new CornerRadius(
                     topLeft:0,
@@ -255,7 +248,7 @@ public class TextBox : AvaloniaTextBox,
                     topRight:0, 
                     bottomRight:0);
             }
-            else if (SpaceItemPosition.Last == CompactSpaceItemPosition)
+            else if ((CompactSpaceItemPosition & SpaceItemPosition.Last) != 0)
             {
                 if (CompactSpaceOrientation == Orientation.Horizontal)
                 {
@@ -341,29 +334,9 @@ public class TextBox : AvaloniaTextBox,
         CompactSpaceOrientation = orientation;
     }
 
-    protected override void ArrangeCore(Rect finalRect)
+    double ICompactSpaceAware.GetBorderThickness()
     {
-        if (CompactSpaceItemPosition == null ||
-            CompactSpaceItemPosition == SpaceItemPosition.First ||
-            CompactSpaceItemPosition == SpaceItemPosition.FirstAndLast)
-        {
-            base.ArrangeCore(finalRect);
-            return;
-        }
-        
-        var borderThickness = GetBorderThicknessForCompactSpace();
-
-        var offsetX = finalRect.X;
-        var offsetY = finalRect.Y;
-        if (CompactSpaceOrientation == Orientation.Horizontal)
-        {
-            offsetX -= borderThickness;
-        }
-        else
-        {
-            offsetY -=  borderThickness;
-        }
-        base.ArrangeCore(new Rect(offsetX, offsetY, finalRect.Width, finalRect.Height));
+        return GetBorderThicknessForCompactSpace();
     }
     
     protected virtual double GetBorderThicknessForCompactSpace()

@@ -13,6 +13,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -27,7 +28,8 @@ public enum ButtonSpinnerLocation
 [PseudoClasses(ButtonSpinnerPseudoClass.Left, ButtonSpinnerPseudoClass.Right)]
 public class ButtonSpinner : Spinner,
                              IMotionAwareControl,
-                             IControlSharedTokenResourcesHost
+                             IControlSharedTokenResourcesHost,
+                             ICompactSpaceAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> AllowSpinProperty =
@@ -185,10 +187,37 @@ public class ButtonSpinner : Spinner,
     internal static readonly StyledProperty<double> SpinnerHandleWidthProperty =
         AvaloniaProperty.Register<ButtonSpinner, double>(nameof (SpinnerHandleWidth));
     
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<ButtonSpinner>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<ButtonSpinner>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<ButtonSpinner>();
+    
     internal double SpinnerHandleWidth
     {
         get => GetValue(SpinnerHandleWidthProperty);
         set => SetValue(SpinnerHandleWidthProperty, value);
+    }
+    
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -196,8 +225,9 @@ public class ButtonSpinner : Spinner,
 
     #endregion
     
-    private ButtonSpinnerDecoratedBox? _decoratedBox;
+    internal ButtonSpinnerDecoratedBox? DecoratedBox;
     private CompositeDisposable? _addOnBindingDisposables;
+    private ButtonSpinnerHandle? _spinnerHandle;
 
     static ButtonSpinner()
     {
@@ -207,6 +237,7 @@ public class ButtonSpinner : Spinner,
     public ButtonSpinner()
     {
         this.RegisterResources();
+        // RenderTransform = new TranslateTransform(-1, 0);
     }
     
     private IconButton? _decreaseButton;
@@ -247,7 +278,7 @@ public class ButtonSpinner : Spinner,
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        var borderThickness = _decoratedBox?.BorderThickness ?? default;
+        var borderThickness = DecoratedBox?.BorderThickness ?? default;
         return base.ArrangeOverride(finalSize).Inflate(borderThickness);
     }
 
@@ -269,22 +300,33 @@ public class ButtonSpinner : Spinner,
         {
             UpdatePseudoClasses();
         }
+        
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        _decoratedBox = e.NameScope.Find<ButtonSpinnerDecoratedBox>(ButtonSpinnerThemeConstants.DecoratedBoxPart);
-        base.OnApplyTemplate(e);
-        if (_decoratedBox?.SpinnerContent is ButtonSpinnerHandle spinnerHandle)
+        if (_spinnerHandle != null)
         {
-            spinnerHandle.ButtonsCreated += (sender, args) =>
-            {
-                IncreaseButton = spinnerHandle.IncreaseButton;
-                DecreaseButton = spinnerHandle.DecreaseButton;
-            };
+            _spinnerHandle.ButtonsCreated -= HandleButtonCreated;
+        }
+        DecoratedBox = e.NameScope.Find<ButtonSpinnerDecoratedBox>(ButtonSpinnerThemeConstants.DecoratedBoxPart);
+        base.OnApplyTemplate(e);
+        if (DecoratedBox?.SpinnerContent is ButtonSpinnerHandle spinnerHandle)
+        {
+            _spinnerHandle                =  spinnerHandle;
+            _spinnerHandle.ButtonsCreated += HandleButtonCreated;
         }
         SetButtonUsage();
         ConfigureAddOns();
+    }
+
+    private void HandleButtonCreated(object? sender, EventArgs e)
+    {
+        if (_spinnerHandle != null)
+        {
+            IncreaseButton = _spinnerHandle.IncreaseButton;
+            DecreaseButton = _spinnerHandle.DecreaseButton;
+        }
     }
 
     private void ConfigureAddOns()
@@ -293,7 +335,7 @@ public class ButtonSpinner : Spinner,
         _addOnBindingDisposables = new CompositeDisposable();
         if (LeftAddOn is PathIcon leftAddOnIcon)
         {
-            var iconPresenter = new SizeTypeAwareIconPresenter()
+            var iconPresenter = new SizeTypeAwareIconPresenter
             {
                 Icon = leftAddOnIcon
             };
@@ -302,7 +344,7 @@ public class ButtonSpinner : Spinner,
         }
         if (InnerLeftContent is PathIcon innerLeftContent)
         {
-            var iconPresenter = new SizeTypeAwareIconPresenter()
+            var iconPresenter = new SizeTypeAwareIconPresenter
             {
                 Icon = innerLeftContent
             };
@@ -311,7 +353,7 @@ public class ButtonSpinner : Spinner,
         }
         if (RightAddOn is PathIcon rightAddOnIcon)
         {
-            var iconPresenter = new SizeTypeAwareIconPresenter()
+            var iconPresenter = new SizeTypeAwareIconPresenter
             {
                 Icon = rightAddOnIcon
             };
@@ -320,7 +362,7 @@ public class ButtonSpinner : Spinner,
         }
         if (InnerRightContent is PathIcon innerRightContent)
         {
-            var iconPresenter = new SizeTypeAwareIconPresenter()
+            var iconPresenter = new SizeTypeAwareIconPresenter
             {
                 Icon = innerRightContent
             };
@@ -391,8 +433,8 @@ public class ButtonSpinner : Spinner,
             case Key.Enter:
             {
                 //Do not Spin on enter Key when spinners have focus
-                if (((IncreaseButton != null) && (IncreaseButton.IsFocused))
-                    || ((DecreaseButton != null) && DecreaseButton.IsFocused))
+                if ((IncreaseButton != null && IncreaseButton.IsFocused)
+                    || (DecreaseButton != null && DecreaseButton.IsFocused))
                 {
                     e.Handled = true;
                 }
@@ -456,5 +498,34 @@ public class ButtonSpinner : Spinner,
             var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
             OnSpin(new SpinEventArgs(SpinEvent, direction));
         }
+    }
+    
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+    
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+
+    double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
+    
+    protected virtual double GetBorderThicknessForCompactSpace()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+    
+        if (DecoratedBox == null || DecoratedBox.StyleVariant != AddOnDecoratedVariant.Outline)
+        {
+            return 0.0;
+        }
+    
+        // 都一样宽
+        return DecoratedBox.InnerBoxBorderThickness.Left;
     }
 }

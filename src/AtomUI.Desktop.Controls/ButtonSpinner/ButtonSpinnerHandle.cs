@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
-using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -98,17 +97,18 @@ internal class ButtonSpinnerHandle : TemplatedControl
             var handleOffsetY = Bounds.Height / 2;
             using var optionState = context.PushRenderOptions(new RenderOptions
             {
-                EdgeMode = EdgeMode.Aliased
+                EdgeMode = EdgeMode.Antialias
             });
+            
             {
                 // 画竖线
-                var startPoint = new Point(lineWidth / 2, lineWidth);
-                var endPoint   = new Point(lineWidth / 2, Bounds.Height - lineWidth);
+                var startPoint = new Point(lineWidth, lineWidth);
+                var endPoint   = new Point(lineWidth, Bounds.Height - lineWidth);
                 context.DrawLine(new Pen(BorderBrush, lineWidth), startPoint, endPoint);
             }
             {
                 // 画横线
-                var startPoint = new Point(0, handleOffsetY); 
+                var startPoint = new Point(lineWidth, handleOffsetY); 
                 var endPoint   = new Point(Bounds.Width - lineWidth, handleOffsetY);
                 context.DrawLine(new Pen(BorderBrush, lineWidth), startPoint, endPoint);
             }

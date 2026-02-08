@@ -25,6 +25,9 @@
                     IsEnabled="{TemplateBinding IsEnabled}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
+                    CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                    CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
                     Focusable="True">
                     <atom:SearchEditDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
@@ -46,10 +49,10 @@
                                 Focusable="False"
                                 Content="{Binding InnerRightContent, RelativeSource={RelativeSource AncestorType=atom:SearchEdit}}"
                                 ContentTemplate="{Binding InnerRightContentTemplate, RelativeSource={RelativeSource AncestorType=atom:SearchEdit}}"
-                                IsVisible="{Binding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}, RelativeSource={RelativeSource AncestorType=atom:SearchEdit}}"/>
+                                IsVisible="{Binding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}, RelativeSource={RelativeSource AncestorType=atom:SearchEdit}}" />
                         </StackPanel>
                     </atom:SearchEditDecoratedBox.ContentRightAddOn>
-                    
+
                     <atom:ScrollViewer
                         Name="PART_ScrollViewer"
                         Cursor="Ibeam"
@@ -90,7 +93,7 @@
                 </atom:SearchEditDecoratedBox>
             </ControlTemplate>
         </Setter>
-        <Setter Property="ClipToBounds" Value="False"/>
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     </ControlTheme>
 </ResourceDictionary>

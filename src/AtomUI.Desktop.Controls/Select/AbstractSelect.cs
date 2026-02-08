@@ -652,14 +652,6 @@ public class AbstractSelect : TemplatedControl,
         {
             ConfigureMaxDropdownHeight();
         }
-        
-        if (change.Property == CompactSpace.ItemSizeProperty)
-        {
-            if (change.NewValue is CompactSpaceSize newSize)
-            {
-                CompactSpace.ConfigureItemSize(this, newSize, IsUsedInCompactSpace, CompactSpaceOrientation);
-            }
-        }
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -701,13 +693,11 @@ public class AbstractSelect : TemplatedControl,
 
         if (Popup != null)
         {
-            Popup.IgnoreFirstDetected =  false;
             Popup.ClickHidePredicate  =  PopupClosePredicate;
             Popup.Opened              += PopupOpened;
             Popup.Closed              += PopupClosed;
         }
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
-        CompactSpace.ConfigureItemSize(this, CompactSpace.GetItemSize(this), IsUsedInCompactSpace, CompactSpaceOrientation);
     }
     
     protected virtual void PopupClosed(object? sender, EventArgs e)
@@ -883,29 +873,9 @@ public class AbstractSelect : TemplatedControl,
         CompactSpaceOrientation = orientation;
     }
     
-    protected override void ArrangeCore(Rect finalRect)
+    double ICompactSpaceAware.GetBorderThickness()
     {
-        if (CompactSpaceItemPosition == null ||
-            CompactSpaceItemPosition == SpaceItemPosition.First ||
-            CompactSpaceItemPosition == SpaceItemPosition.FirstAndLast)
-        {
-            base.ArrangeCore(finalRect);
-            return;
-        }
-        
-        var borderThickness = GetBorderThicknessForCompactSpace();
-
-        var offsetX = finalRect.X;
-        var offsetY = finalRect.Y;
-        if (CompactSpaceOrientation == Orientation.Horizontal)
-        {
-            offsetX -= borderThickness;
-        }
-        else
-        {
-            offsetY -=  borderThickness;
-        }
-        base.ArrangeCore(new Rect(offsetX, offsetY, finalRect.Width, finalRect.Height));
+        return GetBorderThicknessForCompactSpace();
     }
     
     protected virtual double GetBorderThicknessForCompactSpace()

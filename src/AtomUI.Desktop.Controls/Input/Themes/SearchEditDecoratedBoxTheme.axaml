@@ -17,7 +17,6 @@
                         VerticalAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Focusable="False"
-                        DockPanel.Dock="Left"
                         Content="{TemplateBinding LeftAddOn}"
                         ContentTemplate="{TemplateBinding LeftAddOnTemplate}"
                         BorderThickness="{TemplateBinding LeftAddOnBorderThickness}"
@@ -26,7 +25,6 @@
 
                     <atom:SearchButton
                         Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.RightAddOnPart}"
-                        DockPanel.Dock="Right"
                         Focusable="False"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         Icon="{antdicons:AntDesignIconProvider SearchOutlined}"

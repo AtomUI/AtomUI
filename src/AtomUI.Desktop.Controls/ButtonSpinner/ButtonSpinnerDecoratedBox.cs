@@ -223,27 +223,32 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
 
         if (args is RawPointerEventArgs pointerEventArgs)
         {
-            var pos = this.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!);
-            if (!pos.HasValue)
+            if (pointerEventArgs.Type == RawPointerEventType.Move ||
+                pointerEventArgs.Type == RawPointerEventType.LeftButtonUp || 
+                pointerEventArgs.Type == RawPointerEventType.RightButtonDown)
             {
-                return;
-            }
-
-            var bounds = new Rect(pos.Value, Bounds.Size);
-            if (bounds.Contains(pointerEventArgs.Position))
-            {
-                if (IsShowHandle && IsHandleFloatable)
+                var pos = this.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!);
+                if (!pos.HasValue)
                 {
-                    IsSpinnerContentHover = true;
-                    UpdateHandleVisualState();
+                    return;
                 }
-            }
-            else
-            {
-                if (IsShowHandle && IsHandleFloatable)
+
+                var bounds = new Rect(pos.Value, Bounds.Size);
+                if (bounds.Contains(pointerEventArgs.Position))
                 {
-                    IsSpinnerContentHover = false;
-                    UpdateHandleVisualState();
+                    if (IsShowHandle && IsHandleFloatable)
+                    {
+                        IsSpinnerContentHover = true;
+                        UpdateHandleVisualState();
+                    }
+                }
+                else
+                {
+                    if (IsShowHandle && IsHandleFloatable)
+                    {
+                        IsSpinnerContentHover = false;
+                        UpdateHandleVisualState();
+                    }
                 }
             }
         }

@@ -422,6 +422,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else if (!IsDropDownOpen && (e.Key == Key.Down || e.Key == Key.Up))
         {
+            Popup!.IgnoreFirstDetected = false;
             SetCurrentValue(IsDropDownOpenProperty, true);
             e.Handled = true;
         }
@@ -432,6 +433,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else if (!IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
         {
+            Popup!.IgnoreFirstDetected = false;
             SetCurrentValue(IsDropDownOpenProperty, true);
             e.Handled = true;
         }
@@ -532,6 +534,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else
         {
+            Popup!.IgnoreFirstDetected = true;
             SetCurrentValue(IsDropDownOpenProperty, true);
         }
     }

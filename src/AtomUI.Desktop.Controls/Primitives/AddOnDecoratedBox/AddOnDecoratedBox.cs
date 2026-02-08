@@ -411,7 +411,7 @@ internal class AddOnDecoratedBox : ContentControl,
         
         if (IsUsedInCompactSpace)
         {
-            if (CompactSpaceItemPosition == SpaceItemPosition.First)
+            if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
             {
                 if (CompactSpaceOrientation == Orientation.Horizontal)
                 {
@@ -436,7 +436,7 @@ internal class AddOnDecoratedBox : ContentControl,
                         bottomRight: 0);
                 }
             }
-            else if (CompactSpaceItemPosition == SpaceItemPosition.Middle)
+            else if ((CompactSpaceItemPosition & SpaceItemPosition.Middle) != 0)
             {
                 LeftAddOnCornerRadius = new CornerRadius(topLeft:0,
                     topRight:0,
@@ -447,7 +447,7 @@ internal class AddOnDecoratedBox : ContentControl,
                     bottomLeft: 0,
                     bottomRight: 0);
             }
-            else if (CompactSpaceItemPosition == SpaceItemPosition.Last)
+            else if ((CompactSpaceItemPosition & SpaceItemPosition.Last) != 0)
             {
                 if (CompactSpaceOrientation == Orientation.Horizontal)
                 {
@@ -584,7 +584,7 @@ internal class AddOnDecoratedBox : ContentControl,
 
             if (IsUsedInCompactSpace)
             {
-                if (CompactSpaceItemPosition == SpaceItemPosition.First)
+                if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
                 {
                     if (CompactSpaceOrientation == Orientation.Horizontal)
                     {
@@ -597,14 +597,14 @@ internal class AddOnDecoratedBox : ContentControl,
                         bottomRightRadius = 0;
                     }
                 }
-                else if (CompactSpaceItemPosition == SpaceItemPosition.Middle)
+                else if ((CompactSpaceItemPosition & SpaceItemPosition.Middle) != 0)
                 {
                      topLeftRadius     = 0;
                      topRightRadius    = 0;
                      bottomLeftRadius  = 0;
                      bottomRightRadius = 0;
                 }
-                else if (CompactSpaceItemPosition == SpaceItemPosition.Last)
+                else if ((CompactSpaceItemPosition & SpaceItemPosition.Last) != 0)
                 {
                     if (CompactSpaceOrientation == Orientation.Horizontal)
                     {

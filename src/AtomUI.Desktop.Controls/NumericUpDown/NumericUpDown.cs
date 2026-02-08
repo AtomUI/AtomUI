@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
@@ -11,13 +10,18 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaNumericUpDown = Avalonia.Controls.NumericUpDown;
 
-public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IControlSharedTokenResourcesHost
+public class NumericUpDown : AvaloniaNumericUpDown, 
+                             IMotionAwareControl, 
+                             IControlSharedTokenResourcesHost,
+                             ICompactSpaceAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -148,7 +152,6 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         set => SetValue(StringModeProperty, value);
     }
 
-
     public bool Keyboard
     {
         get => GetValue(KeyboardProperty);
@@ -182,6 +185,15 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
             o => o.IsEffectiveShowClearButton,
             (o, v) => o.IsEffectiveShowClearButton = v);
     
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<NumericUpDown>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<NumericUpDown>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<NumericUpDown>();
+    
     internal double SpinnerHandleWidth
     {
         get => GetValue(SpinnerHandleWidthProperty);
@@ -202,6 +214,24 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         set => SetAndRaise(IsEffectiveShowClearButtonProperty, ref _isEffectiveShowClearButton, value);
     }
     
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => NumericUpDownToken.ID;
     
@@ -216,6 +246,7 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
     private bool _isUpdatingFromValue;
     private bool _isUpdatingText;
     private bool _isParsingText;
+    private ButtonSpinner? _buttonSpinner;
     
     public NumericUpDown()
     {
@@ -242,6 +273,7 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
         }
         SetTextBoxPart(e.NameScope.Find<TextBox>("PART_TextBox"));
         ConfigureEffectiveShowClearButton();
+        _buttonSpinner =  e.NameScope.Find<ButtonSpinner>(NumericUpDownThemeConstants.SpinnerPart);
     }
     
     protected virtual void NotifyClearButtonClicked()
@@ -342,13 +374,13 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
     {
         if (_textBoxPart != null)
         {
-            _textBoxPart.KeyDown -= HandleTextBoxKeyDown;
+            _textBoxPart.KeyDown             -= HandleTextBoxKeyDown;
             _textBoxPart.PointerWheelChanged -= HandleTextBoxPointerWheelChanged;
         }
         _textBoxPart = textBox;
         if (_textBoxPart != null)
         {
-            _textBoxPart.KeyDown += HandleTextBoxKeyDown;
+            _textBoxPart.KeyDown             += HandleTextBoxKeyDown;
             _textBoxPart.PointerWheelChanged += HandleTextBoxPointerWheelChanged;
         }
     }
@@ -589,5 +621,40 @@ public class NumericUpDown : AvaloniaNumericUpDown, IMotionAwareControl, IContro
 
             return _owner.FormatDisplayText(raw, culture);
         }
+    }
+    
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+    
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+    
+    double ICompactSpaceAware.GetBorderThickness()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        var addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
+        if (addOnDecoratedBox == null && this.GetVisualRoot() is ILayoutRoot visualRoot)
+        {
+            var layoutManager = visualRoot.GetLayoutManager();
+            layoutManager.ExecuteLayoutPass();
+            addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
+        }
+        
+        if (addOnDecoratedBox == null || StyleVariant != AddOnDecoratedVariant.Outline)
+        {
+            return 0.0;
+        }
+
+        // 都一样宽
+        return addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
 }

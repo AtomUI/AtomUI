@@ -205,13 +205,45 @@
                 </atom:CompactSpace>
                 
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:Select  IsAllowClear="True" DefaultValues="Zhejiang" Mode="Multiple">
+                    <atom:Select IsAllowClear="True" DefaultValues="Zhejiang">
                         <atom:SelectOption Header="Zhejiang" Value="Zhejiang" />
                         <atom:SelectOption Header="Jiangsu" Value="Jiangsu" />
                     </atom:Select>
                     <atom:LineEdit Text="Xihu District, Hangzhou" atom:CompactSpace.ItemSize="4*"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="4*"/>
                 </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:Select  IsAllowClear="True" DefaultValues="Zhejiang" Mode="Multiple" atom:CompactSpace.ItemSize="4*">
+                        <atom:SelectOption Header="Zhejiang" Value="Zhejiang" />
+                        <atom:SelectOption Header="Jiangsu" Value="Jiangsu" />
+                    </atom:Select>
+                    <atom:LineEdit Text="Xihu District, Hangzhou" atom:CompactSpace.ItemSize="4*"/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="4*"/>
+                </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:SearchEdit Text="0571" atom:CompactSpace.ItemSize="3*"/>
+                    <atom:SearchEdit Text="26888888" atom:CompactSpace.ItemSize="5*"/>
+                    <atom:SearchEdit Text="+1" atom:CompactSpace.ItemSize="2*"/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="4*"/>
+                </atom:CompactSpace>
+                
+                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <atom:Select DefaultValues="Option1">
+                        <atom:SelectOption Header="Option1" Value="Option1" />
+                        <atom:SelectOption Header="Option2" Value="Option2" />
+                    </atom:Select>
+                    <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="5*"/>
+                    <atom:NumericUpDown Value="12" atom:CompactSpace.ItemSize="80"/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
+                </atom:CompactSpace>
+                
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="5*"/> -->
+                <!--     <atom:DatePicker atom:CompactSpace.ItemSize="5*"/> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
             </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

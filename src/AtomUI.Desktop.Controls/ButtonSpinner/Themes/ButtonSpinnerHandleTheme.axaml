@@ -7,25 +7,23 @@
     <ControlTheme x:Key="{x:Type atom:ButtonSpinnerHandle}" TargetType="atom:ButtonSpinnerHandle">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border
-                    BackgroundSizing="InnerBorderEdge">
-                    <UniformGrid
-                        Columns="1" Rows="2"
-                        RowSpacing="1">
-                        <atom:IconButton
-                            Name="{x:Static atom:ButtonSpinnerThemeConstants.IncreaseButtonPart}"
-                            Icon="{antdicons:AntDesignIconProvider UpOutlined}"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            BackgroundSizing="InnerBorderEdge"/>
-                        <atom:IconButton
-                            Name="{x:Static atom:ButtonSpinnerThemeConstants.DecreaseButtonPart}"
-                            Icon="{antdicons:AntDesignIconProvider DownOutlined}"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            BackgroundSizing="InnerBorderEdge"/>
-                    </UniformGrid>
-                </Border>
+                <UniformGrid
+                    Columns="1" 
+                    Rows="2"
+                    RowSpacing="1">
+                    <atom:IconButton
+                        Name="{x:Static atom:ButtonSpinnerThemeConstants.IncreaseButtonPart}"
+                        Icon="{antdicons:AntDesignIconProvider UpOutlined}"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        BackgroundSizing="InnerBorderEdge"/>
+                    <atom:IconButton
+                        Name="{x:Static atom:ButtonSpinnerThemeConstants.DecreaseButtonPart}"
+                        Icon="{antdicons:AntDesignIconProvider DownOutlined}"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        BackgroundSizing="InnerBorderEdge"/>
+                </UniformGrid>
             </ControlTemplate>
         </Setter>
         

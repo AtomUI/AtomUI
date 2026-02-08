@@ -14,4 +14,6 @@ public class CompactSpaceFiller : Control, ICompactSpaceAware
     {
         // no op
     }
+
+    double ICompactSpaceAware.GetBorderThickness() => 0.0;
 }

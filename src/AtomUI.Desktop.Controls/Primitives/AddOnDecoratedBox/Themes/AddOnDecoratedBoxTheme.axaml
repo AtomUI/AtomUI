@@ -76,6 +76,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="UseLayoutRounding" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />

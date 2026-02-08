@@ -12,6 +12,8 @@ internal interface ICompactSpaceAware
     {
         return false;
     }
+
+    double GetBorderThickness();
 }
 
 internal abstract class CompactSpaceAwareControlProperty

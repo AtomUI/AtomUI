@@ -126,7 +126,7 @@ public class LineEdit : TextBox
             return 0.0;
         }
 
-        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant == AddOnDecoratedVariant.Borderless)
+        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant != AddOnDecoratedVariant.Outline)
         {
             return 0.0;
         }

@@ -144,7 +144,6 @@
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightLG}}" />
                 <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightLG}}" />
-                <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightLG}}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Middle]">
@@ -155,7 +154,6 @@
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeight}}" />
                 <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeight}}" />
-                <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeight}}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
@@ -166,7 +164,6 @@
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
                 <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
-                <Setter Property="MinWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
             </Style>
         </Style>
 

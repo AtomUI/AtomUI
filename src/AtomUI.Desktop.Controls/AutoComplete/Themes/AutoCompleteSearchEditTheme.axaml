@@ -28,7 +28,10 @@
                                                     SearchButtonStyle="{TemplateBinding SearchButtonStyle}"
                                                     SearchButtonText="{TemplateBinding SearchButtonText}"
                                                     IsOperating="{TemplateBinding IsOperating}"
-                                                    ClearIcon="{TemplateBinding ClearIcon}" />
+                                                    ClearIcon="{TemplateBinding ClearIcon}" 
+                                                    CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                                                    CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                                                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"/>
 
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"

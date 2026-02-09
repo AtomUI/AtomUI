@@ -239,39 +239,51 @@
                 <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
                 <!-- </atom:CompactSpace> -->
                 
-                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="5*"/>
-                    <atom:DatePicker atom:CompactSpace.ItemSize="5*"/>
-                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
-                </atom:CompactSpace>
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="5*"/> -->
+                <!--     <atom:DatePicker atom:CompactSpace.ItemSize="5*"/> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
+                <!-- -->
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:RangeDatePicker atom:CompactSpace.ItemSize="7*"/> -->
+                <!--     <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="3*"/> -->
+                <!--     <atom:Button ButtonType="Primary">查询</atom:Button> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
+                <!-- -->
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:Select DefaultValues="Option1-1"> -->
+                <!--         <atom:SelectOption Header="Option1-1" Value="Option1-1" /> -->
+                <!--         <atom:SelectOption Header="Option2-1" Value="Option2-1" /> -->
+                <!--     </atom:Select> -->
+                <!--     <atom:Select DefaultValues="Option2-1"> -->
+                <!--         <atom:SelectOption Header="Option2-1" Value="Option2-1" /> -->
+                <!--         <atom:SelectOption Header="Option2-2" Value="Option2-2" /> -->
+                <!--     </atom:Select> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
+                <!-- -->
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:Select DefaultValues="1"> -->
+                <!--         <atom:SelectOption Header="Between" Value="1" /> -->
+                <!--         <atom:SelectOption Header="Except" Value="2" /> -->
+                <!--     </atom:Select> -->
+                <!--     <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Minimum"/> -->
+                <!--     <atom:LineEdit Watermark="~" IsEnabled="False"/> -->
+                <!--     <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Maximum"/> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
                 
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:RangeDatePicker atom:CompactSpace.ItemSize="7*"/>
-                    <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="3*"/>
-                    <atom:Button ButtonType="Primary">查询</atom:Button>
-                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
-                </atom:CompactSpace>
-                
-                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:Select DefaultValues="Option1-1">
-                        <atom:SelectOption Header="Option1-1" Value="Option1-1" />
-                        <atom:SelectOption Header="Option2-1" Value="Option2-1" />
+                    <atom:Select DefaultValues="Sign Up">
+                        <atom:SelectOption Header="Sign Up" Value="Sign Up" />
+                        <atom:SelectOption Header="Sign In" Value="Sign In" />
                     </atom:Select>
-                    <atom:Select DefaultValues="Option2-1">
-                        <atom:SelectOption Header="Option2-1" Value="Option2-1" />
-                        <atom:SelectOption Header="Option2-2" Value="Option2-2" />
-                    </atom:Select>
-                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
-                </atom:CompactSpace>
-                
-                <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:Select DefaultValues="1">
-                        <atom:SelectOption Header="Between" Value="1" />
-                        <atom:SelectOption Header="Except" Value="2" />
-                    </atom:Select>
-                    <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Minimum"/>
-                    <atom:LineEdit Watermark="~" IsEnabled="False"/>
-                    <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Maximum"/>
+                    <atom:AutoComplete PlaceholderText="Email">
+                        <atom:AutoCompleteOption Header="text 1" Value="text 1"/>
+                        <atom:AutoCompleteOption Header="text 2" Value="text 2"/>
+                    </atom:AutoComplete>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
                 </atom:CompactSpace>
             </StackPanel>

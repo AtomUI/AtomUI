@@ -24,7 +24,11 @@
                                                   Watermark="{TemplateBinding PlaceholderText}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}" 
-                                                  ClearIcon="{TemplateBinding ClearIcon}"/>
+                                                  ClearIcon="{TemplateBinding ClearIcon}"
+                                                  CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                                                  CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                                                  IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                                                  />
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"

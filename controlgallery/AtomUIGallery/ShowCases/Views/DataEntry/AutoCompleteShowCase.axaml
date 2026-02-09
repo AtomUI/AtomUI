@@ -80,7 +80,7 @@
                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                    StyleVariant="Outline"
                                    PlaceholderText="Outline"/>
-                <atom:AutoComplete Width="200"
+                <atom:AutoComplete Width="200"  
                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                    StyleVariant="Filled"
                                    PlaceholderText="Filled"/>

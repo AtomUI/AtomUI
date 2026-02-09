@@ -163,7 +163,7 @@ public class SearchEditOptionsAsyncLoader : ICompleteOptionsAsyncLoader
     }
 }
 
-public class CustomAutoCompleteOption : AutoCompleteOption
+public record CustomAutoCompleteOption : AutoCompleteOption
 {
-    public int ResultCount { get; init; }
+    public int ResultCount { get; set; }
 }

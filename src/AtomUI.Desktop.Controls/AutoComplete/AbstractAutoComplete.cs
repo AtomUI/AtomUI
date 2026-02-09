@@ -22,6 +22,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -29,6 +30,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
+using ItemCollection = AtomUI.Collections.ItemCollection;
 
 public enum AutoCompletePlacementMode
 {
@@ -398,6 +400,9 @@ public class AbstractAutoComplete : TemplatedControl,
         get => GetValue(IsPopupMatchSelectWidthProperty);
         set => SetValue(IsPopupMatchSelectWidthProperty, value);
     }
+    
+    [Content]
+    public ItemCollection Options { get; set; } = new();
     #endregion
 
     #region 公共事件定义
@@ -609,7 +614,6 @@ public class AbstractAutoComplete : TemplatedControl,
     #endregion
     
     private protected DispatcherTimer? _delayTimer;
-    private protected List<IAutoCompleteOption>? _items;
     private protected AvaloniaTextBox? _textBox;
     private protected IList<IAutoCompleteOption>? _view;
     private protected ICandidateList? _candidateList;
@@ -622,7 +626,6 @@ public class AbstractAutoComplete : TemplatedControl,
     private bool _ignorePropertyChange;
     private bool _popupHasOpened;
     private int _textSelectionStart;
-    private IDisposable? _collectionChangeSubscription;
     private CompositeDisposable? _subscriptionsOnOpen;
     private CancellationTokenSource? _populationCancellationTokenSource;
     private IDisposable? _textBoxSubscriptions;
@@ -641,7 +644,7 @@ public class AbstractAutoComplete : TemplatedControl,
         MinimumPopulateDelayProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleMinimumPopulateDelayChanged(e));
         PlacementProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandlePlacementChanged());
         ValueProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleValuePropertyChanged(e));
-        OptionsSourceProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleItemsSourceChanged((IEnumerable?)e.NewValue));
+        OptionsSourceProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleItemsSourceChanged(e));
         FilterModeProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleFilterModePropertyChanged(e));
         FilterProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleFilterPropertyChanged(e));
         FilterValueProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleFilterValuePropertyChanged(e));
@@ -650,6 +653,7 @@ public class AbstractAutoComplete : TemplatedControl,
     public AbstractAutoComplete()
     {
         this.RegisterResources();
+        Options.CollectionChanged += HandleOptionsChanged;
     }
 
     protected override void OnInitialized()
@@ -937,74 +941,16 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private void HandleItemsSourceChanged(IEnumerable? newValue)
+    private void HandleItemsSourceChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        
-        // Remove handler for oldValue.CollectionChanged (if present)
-        _collectionChangeSubscription?.Dispose();
-        _collectionChangeSubscription = null;
-        
-        // Add handler for newValue.CollectionChanged (if possible)
-        if (newValue is INotifyCollectionChanged newValueINotifyCollectionChanged)
-        {
-            _collectionChangeSubscription = newValueINotifyCollectionChanged.WeakSubscribe(ItemsCollectionChanged);
-        }
-        
-        // Store a local cached copy of the data
-        _items = newValue == null ? null : new List<IAutoCompleteOption>(newValue.Cast<IAutoCompleteOption>());
-        
         // Clear and set the view on the selection adapter
         ClearView();
+        Options.SetItemsSource(change.GetNewValue<IEnumerable<IAutoCompleteOption>?>());
+        RefreshView();
     }
-    
-    private void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+
+    private void HandleOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        // Update the cache
-        if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems != null)
-        {
-            for (int index = 0; index < e.OldItems.Count; index++)
-            {
-                _items!.RemoveAt(e.OldStartingIndex);
-            }
-        }
-        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null && _items!.Count >= e.NewStartingIndex)
-        {
-            for (int index = 0; index < e.NewItems.Count; index++)
-            {
-                var newItem = e.NewItems[index] as IAutoCompleteOption;
-                _items.Insert(e.NewStartingIndex + index, newItem!);
-            }
-        }
-        if (e.Action == NotifyCollectionChangedAction.Replace && e.NewItems != null && e.OldItems != null)
-        {
-            for (int index = 0; index < e.NewItems.Count; index++)
-            {
-                var newItem = e.NewItems[index] as IAutoCompleteOption;
-                _items![e.NewStartingIndex] = newItem!;
-            }
-        }
-
-        // Update the view
-        if ((e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace) && e.OldItems != null)
-        {
-            for (int index = 0; index < e.OldItems.Count; index++)
-            {
-                var oldItem = e.OldItems[index] as IAutoCompleteOption;
-                _view?.Remove(oldItem!);
-            }
-        }
-
-        if (e.Action == NotifyCollectionChangedAction.Reset)
-        {
-            // Significant changes to the underlying data.
-            ClearView();
-            if (OptionsSource != null)
-            {
-                _items = new List<IAutoCompleteOption>(OptionsSource);
-            }
-        }
-
-        // Refresh the observable collection used in the selection adapter.
         RefreshView();
     }
     
@@ -1121,19 +1067,13 @@ public class AbstractAutoComplete : TemplatedControl,
         
         try
         {
-            if (_items == null)
-            {
-                ClearView();
-                return;
-            }
-        
             // Cache the current text value
             var text = Value ?? string.Empty;
         
             // Determine if any filtering mode is on
             bool filtering = EffectiveFilter != null;
         
-            var items = _items;
+            var items = Options;
         
             // cache properties
             var newViewItems = new Collection<IAutoCompleteOption>();
@@ -1147,25 +1087,28 @@ public class AbstractAutoComplete : TemplatedControl,
         
             foreach (var item in items)
             {
-                // Exit the fitter when requested if cancellation is requested
-                if (_cancelRequested)
+                if (item is IAutoCompleteOption option)
                 {
-                    return;
-                }
-        
-                bool inResults = !filtering;
-
-                if (EffectiveFilter != null)
-                {
-                    if (!inResults)
+                    // Exit the fitter when requested if cancellation is requested
+                    if (_cancelRequested)
                     {
-                        inResults = EffectiveFilter.Filter(GetValueByOption(item), text);
+                        return;
                     }
-                }
+        
+                    var inResults = !filtering;
+
+                    if (EffectiveFilter != null)
+                    {
+                        if (!inResults)
+                        {
+                            inResults = EffectiveFilter.Filter(GetValueByOption(option), text);
+                        }
+                    }
               
-                if (inResults)
-                {
-                    newViewItems.Add(item);
+                    if (inResults)
+                    {
+                        newViewItems.Add(option);
+                    }
                 }
             }
             
@@ -1581,12 +1524,13 @@ public class AbstractAutoComplete : TemplatedControl,
             {
                 return;
             }
-
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            
+            SetCurrentValue(OptionsSourceProperty, resultList);
+            
+            Dispatcher.UIThread.Post(() =>
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    SetCurrentValue(OptionsSourceProperty, resultList);
                     PopulateComplete();
                 }
             });
@@ -1857,5 +1801,4 @@ public class AbstractAutoComplete : TemplatedControl,
         PseudoClasses.Set(StdPseudoClass.Pressed, false);
         base.OnPointerReleased(e);
     }
-    
 }

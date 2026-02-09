@@ -1,8 +1,10 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AutoCompleteSearchEdit : AbstractAutoComplete
+public class AutoCompleteSearchEdit : CompactSpaceAwareAutoComplete
 {
     #region 公共属性定义
 
@@ -34,4 +36,21 @@ public class AutoCompleteSearchEdit : AbstractAutoComplete
     }
 
     #endregion
+    
+    private AutoCompleteSearchEditBox? _searchEditBox;
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _searchEditBox = e.NameScope.Find<AutoCompleteSearchEditBox>(AutoCompleteThemeConstants.TextBoxPart);
+    }
+    
+    protected override double GetBorderThicknessForCompactSpace()
+    {
+        if (_searchEditBox is ICompactSpaceAware compactSpaceAware)
+        {
+            return compactSpaceAware.GetBorderThickness();
+        }
+        return 0.0d;
+    }
 }

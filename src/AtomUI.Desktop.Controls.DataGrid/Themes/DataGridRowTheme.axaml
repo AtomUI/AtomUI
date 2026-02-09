@@ -29,6 +29,7 @@
                             Grid.Column="0"
                             Grid.RowSpan="3"
                             atom:DataGridFrozenGrid.IsFrozen="True" 
+                            Background="{TemplateBinding Background}"
                             SizeType="{TemplateBinding SizeType}"
                             />
                         <atom:DataGridCellsPresenter
@@ -71,14 +72,14 @@
             <Style Selector="^[IsSelected=True]">
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableSelectedRowBg}}" />
-                <Style Selector="^:pointerover">
+                <Style Selector="^:row-hover">
                     <Setter Property="Background"
                             Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableSelectedRowHoverBg}}" />
                 </Style>
             </Style>
             <Style Selector="^[IsSelected=False]">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableBg}}" />
-                <Style Selector="^:pointerover">
+                <Style Selector="^:row-hover">
                     <Setter Property="Background"
                             Value="{DynamicResource {x:Static atom:DataGridTokenKey.TableRowHoverBg}}" />
                 </Style>

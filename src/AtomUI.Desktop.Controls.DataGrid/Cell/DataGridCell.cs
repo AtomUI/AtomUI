@@ -253,9 +253,11 @@ public class DataGridCell : ContentControl
             return;
         }
 
+        var handledByChild = e.Handled;
         OwningGrid.NotifyCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-        
-        if (e.Handled)
+
+        // If handlers on DataGrid canceled selection explicitly, do not continue.
+        if (!handledByChild && e.Handled)
         {
             return;
         }
@@ -272,14 +274,14 @@ public class DataGridCell : ContentControl
                 var handled = false;
                 if (OwningColumn != null && OwningColumn.IsEditable())
                 {
-                    handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                    handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !handledByChild);
                 }
                 
                 // Do not handle PointerPressed with touch or pen,
                 // so we can start scroll gesture on the same event.
                 if (e.Pointer.Type != PointerType.Touch && e.Pointer.Type != PointerType.Pen)
                 {
-                    e.Handled = handled;
+                    e.Handled = e.Handled || handled;
                 }
             }
         }
@@ -292,7 +294,8 @@ public class DataGridCell : ContentControl
 
             if (OwningRow != null)
             {
-                e.Handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                var handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, ColumnIndex, OwningRow.Slot, !handledByChild);
+                e.Handled = e.Handled || handled;
             }
         }
     }

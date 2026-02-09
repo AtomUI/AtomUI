@@ -26,18 +26,22 @@
                     ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
                     ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                    VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                    CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                    CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
-                        <StackPanel Orientation="Horizontal" Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">
                             <atom:PickerClearUpButton
                                 IsInClearMode="{Binding IsClearButtonVisible, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                 Name="{x:Static atom:InfoPickerInputThemeConstants.ClearUpButtonPart}"
-                                Icon="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}" 
-                                IsVisible="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                Icon="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}"
+                                IsVisible="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <ContentPresenter
                                 Content="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}"
                                 ContentTemplate="{Binding ContentRightAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}"
-                                IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         </StackPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <Grid ColumnDefinitions="*, Auto, *">
@@ -58,8 +62,9 @@
                                       IsReadOnly="{TemplateBinding IsReadOnly}"
                                       Text="{TemplateBinding Text}"
                                       Watermark="{TemplateBinding Watermark}" />
-                        <antdicons:SwapRightOutlined Name="{x:Static atom:RangeInfoPickerInputThemeConstants.RangePickerArrowPart}"
-                                                     Grid.Column="1" />
+                        <antdicons:SwapRightOutlined
+                            Name="{x:Static atom:RangeInfoPickerInputThemeConstants.RangePickerArrowPart}"
+                            Grid.Column="1" />
                         <atom:TextBox
                             Name="{x:Static atom:RangeInfoPickerInputThemeConstants.SecondaryInfoInputBoxPart}"
                             Grid.Column="2"
@@ -90,7 +95,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|RangeInfoPickerInput)">
-        
+
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
@@ -98,7 +103,7 @@
             <Setter Property="Foreground"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
         </Style>
-        
+
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|TextBox">
                 <Setter Property="Foreground"
@@ -117,7 +122,7 @@
                 </Style>
             </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
             <Setter Property="Margin"
                     Value="{DynamicResource {x:Static atom:InfoPickerInputTokenKey.RangePickerArrowMargin}}" />

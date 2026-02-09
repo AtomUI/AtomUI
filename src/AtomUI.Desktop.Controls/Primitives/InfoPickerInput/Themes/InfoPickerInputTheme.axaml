@@ -21,7 +21,10 @@
                     ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                    ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}">
+                    ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
+                    CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                    CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal" Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">
                             <atom:PickerClearUpButton

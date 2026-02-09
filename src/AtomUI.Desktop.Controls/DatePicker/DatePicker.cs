@@ -12,6 +12,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -270,7 +271,8 @@ public class DatePicker : InfoPickerInput,
                  change.Property == ClockIdentifierProperty ||
                  change.Property == MinWidthProperty ||
                  change.Property == WidthProperty ||
-                 change.Property == MaxWidthProperty)
+                 change.Property == MaxWidthProperty ||
+                 change.Property == HorizontalAlignmentProperty)
         {
             CalculatePreferredWidth();
         }
@@ -278,7 +280,7 @@ public class DatePicker : InfoPickerInput,
 
     private void CalculatePreferredWidth()
     {
-        if (!double.IsNaN(Width))
+        if (!double.IsNaN(Width) || HorizontalAlignment == HorizontalAlignment.Stretch)
         {
             PreferredInputWidth = double.NaN;
         }

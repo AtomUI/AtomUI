@@ -12,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
@@ -20,7 +21,8 @@ namespace AtomUI.Desktop.Controls.Primitives;
 [PseudoClasses(InfoPickerPseudoClass.Choosing, InfoPickerPseudoClass.FlyoutOpen)]
 public abstract class InfoPickerInput : TemplatedControl,
                                         IMotionAwareControl,
-                                        IControlSharedTokenResourcesHost
+                                        IControlSharedTokenResourcesHost,
+                                        ICompactSpaceAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> LeftAddOnProperty =
@@ -231,6 +233,15 @@ public abstract class InfoPickerInput : TemplatedControl,
             o => o.IsClearButtonVisible,
             (o, v) => o.IsClearButtonVisible = v);
     
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<InfoPickerInput>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<InfoPickerInput>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<InfoPickerInput>();
+    
     protected string? Text
     {
         get => GetValue(TextProperty);
@@ -253,6 +264,23 @@ public abstract class InfoPickerInput : TemplatedControl,
         set => SetAndRaise(IsClearButtonVisibleProperty, ref _isClearButtonVisible, value);
     }
 
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
+    }
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => InfoPickerInputToken.ID;
 
@@ -270,6 +298,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     private protected bool IsChoosing;
     private CompositeDisposable? _flyoutBindingDisposables;
     private CompositeDisposable? _flyoutHelperBindingDisposables;
+    private AddOnDecoratedBox? _addOnDecoratedBox;
 
     static InfoPickerInput()
     {
@@ -480,6 +509,8 @@ public abstract class InfoPickerInput : TemplatedControl,
             PickerClearUpButton.ClearRequest += (sender, args) => { NotifyClearButtonClicked(); };
         }
         
+        _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
+        
         SetupFlyoutProperties();
     }
 
@@ -568,5 +599,37 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
 
         return value;
+    }
+    
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+    
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+
+    double ICompactSpaceAware.GetBorderThickness()
+    {
+        return GetBorderThicknessForCompactSpace();
+    }
+    
+    protected virtual double GetBorderThicknessForCompactSpace()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant != AddOnDecoratedVariant.Outline)
+        {
+            return 0.0;
+        }
+
+        // 都一样宽
+        return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
 }

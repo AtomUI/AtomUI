@@ -62,6 +62,12 @@ AtomUI 是基于 .NET 技术的 Ant Design 实现，致力于将 Ant Design 优�
 Avalonia 11.1.1 及其以上<br>
 PS: AtomUI 目前仅在 Windows 11 平台测试<br>
 
+#### 感谢通明湖中心孵化 AtomUI OSS
+
+<div style="margin-top: 50px">
+  <img src="./resources/images/readme/TLAIC.png" width="400"/>
+</div>
+
 #### 感谢 Gitee 对 AtomUI 的认可
 
 <p align="center">

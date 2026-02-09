@@ -8,4 +8,5 @@ public static class DataGridPseudoClass
     public const string MiddleColumnHeader = ":middle-column-header";
     public const string LastColumnHeader = ":last-column-header";
     public const string GroupItemLeaf = ":is-leaf-item";
+    public const string RowHover = ":row-hover";
 }

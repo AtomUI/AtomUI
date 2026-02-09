@@ -495,6 +495,7 @@ public partial class DataGridRow
             IsSelected = isSelected;
             PseudoClasses.Set(StdPseudoClass.Editing, IsEditing);
             PseudoClasses.Set(StdPseudoClass.Invalid, !IsValid);
+            PseudoClasses.Set(DataGridPseudoClass.RowHover, IsMouseOver);
             IsEditingMode = IsEditing;
             ApplyHeaderStatus();
         }

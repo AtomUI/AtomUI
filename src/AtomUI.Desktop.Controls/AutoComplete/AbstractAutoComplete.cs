@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -12,7 +11,6 @@ using AtomUI.Input;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
@@ -22,7 +20,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -31,6 +28,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 using ItemCollection = AtomUI.Collections.ItemCollection;
+using ItemsSourceView = AtomUI.Collections.ItemsSourceView;
 
 public enum AutoCompletePlacementMode
 {
@@ -400,9 +398,10 @@ public class AbstractAutoComplete : TemplatedControl,
         get => GetValue(IsPopupMatchSelectWidthProperty);
         set => SetValue(IsPopupMatchSelectWidthProperty, value);
     }
+
+    public ItemsSourceView OptionsView => _options;
+    [Content] public ItemCollection Options => _options;
     
-    [Content]
-    public ItemCollection Options { get; set; } = new();
     #endregion
 
     #region 公共事件定义
@@ -612,7 +611,7 @@ public class AbstractAutoComplete : TemplatedControl,
     string IControlSharedTokenResourcesHost.TokenId => AutoCompleteToken.ID;
 
     #endregion
-    
+    private readonly ItemCollection _options = new();
     private protected DispatcherTimer? _delayTimer;
     private protected AvaloniaTextBox? _textBox;
     private protected IList<IAutoCompleteOption>? _view;
@@ -945,7 +944,7 @@ public class AbstractAutoComplete : TemplatedControl,
     {
         // Clear and set the view on the selection adapter
         ClearView();
-        Options.SetItemsSource(change.GetNewValue<IEnumerable<IAutoCompleteOption>?>());
+        _options.SetItemsSource(change.GetNewValue<IEnumerable<IAutoCompleteOption>?>());
         RefreshView();
     }
 

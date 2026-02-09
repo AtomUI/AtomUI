@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -257,7 +258,7 @@ public class TimePicker : InfoPickerInput, IControlSharedTokenResourcesHost
 
     private void CalculatePreferredWidth()
     {
-        if (!double.IsNaN(Width))
+        if (!double.IsNaN(Width) || HorizontalAlignment == HorizontalAlignment.Stretch)
         {
             PreferredInputWidth = double.NaN;
         }

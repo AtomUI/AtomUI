@@ -452,27 +452,30 @@ public class CompactSpace : TemplatedControl,
                 compactSpaceAware.NotifyPositionChange(SpaceItemPosition.First | SpaceItemPosition.Last);
             }
         }
-        for (var i = 0; i < realChildren.Count; i++)
+        else
         {
-            var child = realChildren[i];
-            if (child is CompactSpaceItem compactSpaceItem)
+            for (var i = 0; i < realChildren.Count; i++)
             {
-                compactSpaceItem.PositionIndex = i;
-            }
-            if (child is ICompactSpaceAware compactSpaceAware)
-            {
-                compactSpaceAware.NotifyOrientationChange(Orientation);
-                if (i == 0)
+                var child = realChildren[i];
+                if (child is CompactSpaceItem compactSpaceItem)
                 {
-                    compactSpaceAware.NotifyPositionChange(SpaceItemPosition.First);
+                    compactSpaceItem.PositionIndex = i;
                 }
-                else if (i == realChildren.Count - 1)
+                if (child is ICompactSpaceAware compactSpaceAware)
                 {
-                    compactSpaceAware.NotifyPositionChange(SpaceItemPosition.Last);
-                }
-                else
-                {
-                    compactSpaceAware.NotifyPositionChange(SpaceItemPosition.Middle);
+                    compactSpaceAware.NotifyOrientationChange(Orientation);
+                    if (i == 0)
+                    {
+                        compactSpaceAware.NotifyPositionChange(SpaceItemPosition.First);
+                    }
+                    else if (i == realChildren.Count - 1)
+                    {
+                        compactSpaceAware.NotifyPositionChange(SpaceItemPosition.Last);
+                    }
+                    else
+                    {
+                        compactSpaceAware.NotifyPositionChange(SpaceItemPosition.Middle);
+                    }
                 }
             }
         }

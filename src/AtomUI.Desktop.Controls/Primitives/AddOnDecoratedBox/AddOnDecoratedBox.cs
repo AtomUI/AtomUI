@@ -409,7 +409,7 @@ internal class AddOnDecoratedBox : ContentControl,
         var bottomLeftRadius  = CornerRadius.BottomLeft;
         var bottomRightRadius = CornerRadius.BottomRight;
         
-        if (IsUsedInCompactSpace)
+        if (IsUsedInCompactSpace && (CompactSpaceItemPosition & (SpaceItemPosition.First | SpaceItemPosition.Last)) == 0)
         {
             if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
             {
@@ -582,7 +582,7 @@ internal class AddOnDecoratedBox : ContentControl,
                 bottomRightRadius = 0;
             }
 
-            if (IsUsedInCompactSpace)
+            if (IsUsedInCompactSpace && (CompactSpaceItemPosition & (SpaceItemPosition.First | SpaceItemPosition.Last)) == 0)
             {
                 if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
                 {

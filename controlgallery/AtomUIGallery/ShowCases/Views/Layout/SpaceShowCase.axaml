@@ -275,15 +275,20 @@
                 <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
                 <!-- </atom:CompactSpace> -->
                 
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:Select DefaultValues="Sign Up"> -->
+                <!--         <atom:SelectOption Header="Sign Up" Value="Sign Up" /> -->
+                <!--         <atom:SelectOption Header="Sign In" Value="Sign In" /> -->
+                <!--     </atom:Select> -->
+                <!--     <atom:AutoComplete PlaceholderText="Email"> -->
+                <!--         <atom:AutoCompleteOption Header="text 1" Value="text 1"/> -->
+                <!--         <atom:AutoCompleteOption Header="text 2" Value="text 2"/> -->
+                <!--     </atom:AutoComplete> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
+                
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:Select DefaultValues="Sign Up">
-                        <atom:SelectOption Header="Sign Up" Value="Sign Up" />
-                        <atom:SelectOption Header="Sign In" Value="Sign In" />
-                    </atom:Select>
-                    <atom:AutoComplete PlaceholderText="Email">
-                        <atom:AutoCompleteOption Header="text 1" Value="text 1"/>
-                        <atom:AutoCompleteOption Header="text 2" Value="text 2"/>
-                    </atom:AutoComplete>
+                    <atom:TimePicker atom:CompactSpace.ItemSize="7*"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
                 </atom:CompactSpace>
             </StackPanel>

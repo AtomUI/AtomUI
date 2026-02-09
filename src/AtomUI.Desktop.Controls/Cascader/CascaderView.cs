@@ -20,7 +20,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 using ItemCollection = AtomUI.Collections.ItemCollection;
-using ItemsSourceView = AtomUI.Collections.ItemsSourceView;
+using OptionsSourceView = AtomUI.Collections.ItemsSourceView;
 
 public enum CascaderViewExpandTrigger
 {
@@ -28,14 +28,16 @@ public enum CascaderViewExpandTrigger
     Hover
 }
 
-public partial class CascaderView : TemplatedControl, IMotionAwareControl, IControlSharedTokenResourcesHost
+public partial class CascaderView : TemplatedControl, 
+                                    IMotionAwareControl,
+                                    IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-    public static readonly StyledProperty<IEnumerable<ICascaderViewOption>?> ItemsSourceProperty =
-        AvaloniaProperty.Register<CascaderView, IEnumerable<ICascaderViewOption>?>(nameof(ItemsSource));
+    public static readonly StyledProperty<IEnumerable<ICascaderOption>?> OptionsSourceProperty =
+        AvaloniaProperty.Register<CascaderView, IEnumerable<ICascaderOption>?>(nameof(OptionsSource));
     
-    public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
-        AvaloniaProperty.Register<CascaderView, IDataTemplate?>(nameof(ItemTemplate));
+    public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
+        AvaloniaProperty.Register<CascaderView, IDataTemplate?>(nameof(OptionTemplate));
     
     public static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
         AvaloniaProperty.Register<CascaderView, IconTemplate?>(nameof(ExpandIcon));
@@ -89,29 +91,29 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<CascaderView, Thickness>(nameof(EmptyIndicatorPadding));
     
-    public static readonly DirectProperty<CascaderView, ICascaderViewOption?> SelectedItemProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, ICascaderViewOption?>(
+    public static readonly DirectProperty<CascaderView, ICascaderOption?> SelectedItemProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, ICascaderOption?>(
             nameof(SelectedItem),
             o => o.SelectedItem,
             (o, v) => o.SelectedItem = v);
     
-    public static readonly DirectProperty<CascaderView, IList<ICascaderViewOption>?> CheckedItemsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, IList<ICascaderViewOption>?>(
+    public static readonly DirectProperty<CascaderView, IList<ICascaderOption>?> CheckedItemsProperty =
+        AvaloniaProperty.RegisterDirect<CascaderView, IList<ICascaderOption>?>(
             nameof(CheckedItems),
             o => o.CheckedItems,
             (o, v) => o.CheckedItems = v);
     
-    public IEnumerable<ICascaderViewOption>? ItemsSource
+    public IEnumerable<ICascaderOption>? OptionsSource
     {
-        get => GetValue(ItemsSourceProperty);
-        set => SetValue(ItemsSourceProperty, value);
+        get => GetValue(OptionsSourceProperty);
+        set => SetValue(OptionsSourceProperty, value);
     }
     
-    [InheritDataTypeFromItems("ItemsSource")]
-    public IDataTemplate? ItemTemplate
+    [InheritDataTypeFromItems("OptionsSource")]
+    public IDataTemplate? OptionTemplate
     {
-        get => GetValue(ItemTemplateProperty);
-        set => SetValue(ItemTemplateProperty, value);
+        get => GetValue(OptionTemplateProperty);
+        set => SetValue(OptionTemplateProperty, value);
     }
 
     public IconTemplate? ExpandIcon
@@ -222,26 +224,26 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
     
-    private ICascaderViewOption? _selectedItem;
+    private ICascaderOption? _selectedItem;
     
-    public ICascaderViewOption? SelectedItem
+    public ICascaderOption? SelectedItem
     {
         get => _selectedItem;
         set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
     }
     
-    private IList<ICascaderViewOption>? _checkedItems;
+    private IList<ICascaderOption>? _checkedItems;
     
-    public IList<ICascaderViewOption>? CheckedItems
+    public IList<ICascaderOption>? CheckedItems
     {
         get => _checkedItems;
         set => SetAndRaise(CheckedItemsProperty, ref _checkedItems, value);
     }
     
-    public ItemsSourceView ItemsView => _items;
+    public OptionsSourceView OptionsView => _options;
     
     [Content]
-    public ItemCollection Items => _items;
+    public ItemCollection Options => _options;
     
     #endregion
     
@@ -301,7 +303,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     
     #endregion
     
-    private readonly ItemCollection _items = new();
+    private readonly ItemCollection _options = new();
     private static readonly IList Empty = Array.Empty<object>();
     private bool _ignoreSyncCheckedItems;
     private StackPanel? _itemsPanel;
@@ -319,13 +321,13 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemDoubleClicked(args));
         CascaderViewItem.ClickedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
         CascaderViewItem.SelectedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemSelected(args));
-        ItemsSourceProperty.Changed.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderSourceChanged(args));
+        OptionsSourceProperty.Changed.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderSourceChanged(args));
     }
     
     public CascaderView()
     {
         this.RegisterResources();
-        Items.CollectionChanged += HandleCollectionChanged;
+        _options.CollectionChanged += HandleCollectionChanged;
     }
     
     protected override void OnInitialized()
@@ -378,14 +380,14 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         }
     }
 
-    internal bool TryParseSelectPath(TreeNodePath path, out IList<ICascaderViewOption> pathNodes)
+    internal bool TryParseSelectPath(TreeNodePath path, out IList<ICascaderOption> pathNodes)
     {
         var                        segments     = path.Segments;
         var                        count        = path.Segments.Count;
         var                        isPathValid  = true;
-        IList<ICascaderViewOption> currentItems = Items.Cast<ICascaderViewOption>().ToList();
+        IList<ICascaderOption> currentItems = _options.Cast<ICascaderOption>().ToList();
         
-        var                          options    = new List<ICascaderViewOption>();
+        var                          options    = new List<ICascaderOption>();
         for (var i = 0; i < count; i++)
         {
             var segment = segments[i];
@@ -414,7 +416,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
     private void ApplyDefaultExpandPath()
     {
         Debug.Assert(DefaultExpandedPath != null);
-        if (TryParseSelectPath(DefaultExpandedPath, out IList<ICascaderViewOption> pathNodes))
+        if (TryParseSelectPath(DefaultExpandedPath, out IList<ICascaderOption> pathNodes))
         {
             if (pathNodes.Count > 0)
             {
@@ -428,7 +430,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
 
     private void HandleCascaderSourceChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        _items.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderViewOption>?>());
+        _options.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderOption>?>());
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -441,14 +443,14 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         }
         else if (change.Property == FilterProperty ||
                  change.Property == FilterHighlightStrategyProperty ||
-                 change.Property == ItemsSourceProperty ||
+                 change.Property == OptionsSourceProperty ||
                  change.Property == FilterValueProperty)
         {
             FilterItems();
         }
     
         if (change.Property == IsShowEmptyIndicatorProperty ||
-            change.Property == ItemsSourceProperty ||
+            change.Property == OptionsSourceProperty ||
             change.Property == FilterResultCountProperty)
         {
             ConfigureEmptyIndicator();
@@ -478,7 +480,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         }
     }
     
-    private void SelectTargetItem(ICascaderViewOption option)
+    private void SelectTargetItem(ICascaderOption option)
     {
         var isLeaf = option.IsLeaf || option.Children.Count == 0;
     
@@ -549,9 +551,9 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
         }
         else
         {
-            if (ItemsSource != null)
+            if (OptionsSource != null)
             {
-                var enumerator = ItemsSource.GetEnumerator();
+                var enumerator = OptionsSource.GetEnumerator();
                 isEmpty = !enumerator.MoveNext();
                 if (enumerator is IDisposable disposable)
                 {
@@ -560,7 +562,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
             }
             else
             {
-                isEmpty = Items.Count == 0;
+                isEmpty = _options.Count == 0;
             }
         }
         IsEffectiveEmptyVisible = IsShowEmptyIndicator && isEmpty;
@@ -639,7 +641,7 @@ public partial class CascaderView : TemplatedControl, IMotionAwareControl, ICont
             {
                 return true;
             }
-            currentData = currentData.ParentNode as ICascaderViewOption;
+            currentData = currentData.ParentNode as ICascaderOption;
         }
     
         return false;

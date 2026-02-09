@@ -12,14 +12,14 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding BasicCascaderViewNodes}"
+                OptionsSource="{Binding BasicCascaderViewNodes}"
                 IsAllowClear="True">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -29,15 +29,15 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding BasicCascaderViewNodes}"
+                OptionsSource="{Binding BasicCascaderViewNodes}"
                 IsAllowClear="True"
                 DefaultSelectItemPath="{Binding DefaultSelectItemPath}">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -47,15 +47,15 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding HoverCascaderNodes}"
+                OptionsSource="{Binding HoverCascaderNodes}"
                 IsAllowClear="True"
                 ExpandTrigger="Hover">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -65,14 +65,14 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding DisabledCascaderNodes}"
+                OptionsSource="{Binding DisabledCascaderNodes}"
                 IsAllowClear="True">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -82,15 +82,15 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding SelectParentCascaderNodes}"
+                OptionsSource="{Binding SelectParentCascaderNodes}"
                 IsAllowClear="True"
                 IsAllowSelectParent="True">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -100,17 +100,17 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding MultipleSelectCascaderNodes}"
+                OptionsSource="{Binding MultipleSelectCascaderNodes}"
                 HorizontalAlignment="Stretch"
                 ShowCheckedStrategy="ShowParent"
                 IsAllowClear="True"
                 IsMultiple="True">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -122,35 +122,35 @@
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding CheckStrategyCascaderNodes}"
+                    OptionsSource="{Binding CheckStrategyCascaderNodes}"
                     HorizontalAlignment="Stretch"
                     ShowCheckedStrategy="All"
                     IsAllowClear="True"
                     IsResponsiveTagMode="True"
                     IsMultiple="True">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
                 <atom:Separator Title="ShowCheckedStrategy=ShowParent"/>
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding CheckStrategyCascaderNodes}"
+                    OptionsSource="{Binding CheckStrategyCascaderNodes}"
                     HorizontalAlignment="Stretch"
                     ShowCheckedStrategy="ShowParent"
                     IsAllowClear="True"
                     IsResponsiveTagMode="True"
                     IsMultiple="True">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -161,15 +161,15 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding SearchCascaderNodes}"
+                OptionsSource="{Binding SearchCascaderNodes}"
                 IsAllowClear="True"
                 IsFilterEnabled="True">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -179,15 +179,15 @@
             <atom:Cascader
                 x:DataType="viewModels:CascaderViewModel"
                 PlaceholderText="Please select"
-                ItemsSource="{Binding AsyncLoadCascaderViewNodes}"
+                OptionsSource="{Binding AsyncLoadCascaderViewNodes}"
                 DataLoader="{Binding AsyncCascaderNodeLoader}"
                 IsAllowClear="True">
-                <atom:Cascader.ItemTemplate>
+                <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:Cascader.ItemTemplate>
+                </atom:Cascader.OptionTemplate>
             </atom:Cascader>
         </gallery:ShowCaseItem>
         
@@ -198,49 +198,49 @@
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding PrefixAndSuffixCascaderNodes}"
+                    OptionsSource="{Binding PrefixAndSuffixCascaderNodes}"
                     IsAllowClear="True"
                     SuffixIcon="{antdicons:AntDesignIconProvider SmileOutlined}">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding PrefixAndSuffixCascaderNodes}"
+                    OptionsSource="{Binding PrefixAndSuffixCascaderNodes}"
                     IsAllowClear="True">
                     <atom:Cascader.ExpandIcon>
                         <atom:IconTemplate>
                             <antdicons:SmileOutlined/>
                         </atom:IconTemplate>
                     </atom:Cascader.ExpandIcon>
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding PrefixAndSuffixCascaderNodes}"
+                    OptionsSource="{Binding PrefixAndSuffixCascaderNodes}"
                     IsAllowClear="True">
                     <atom:Cascader.ContentLeftAddOn>
                         <antdicons:SmileOutlined/>
                     </atom:Cascader.ContentLeftAddOn>
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -254,12 +254,12 @@
                     PlaceholderText="Please select"
                     IsAllowClear="True"
                     StyleVariant="Borderless">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
@@ -267,12 +267,12 @@
                     PlaceholderText="Please select"
                     IsAllowClear="True"
                     StyleVariant="Filled">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
@@ -280,12 +280,12 @@
                     PlaceholderText="Please select"
                     IsAllowClear="True"
                     StyleVariant="Outline">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
@@ -293,12 +293,12 @@
                     PlaceholderText="Please select"
                     IsAllowClear="True"
                     StyleVariant="Underlined">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -318,15 +318,15 @@
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding PlacementCascaderNodes}"
+                    OptionsSource="{Binding PlacementCascaderNodes}"
                     IsAllowClear="True"
                     Placement="{Binding Placement}">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
             </StackPanel>
         
@@ -341,12 +341,12 @@
                     PlaceholderText="Please select"
                     IsAllowClear="True"
                     Status="Error">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
@@ -354,12 +354,12 @@
                     PlaceholderText="Please select"
                     IsAllowClear="True"
                     Status="Warning">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
             </StackPanel>
@@ -372,43 +372,43 @@
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    ItemsSource="{Binding SizeCascaderNodes}"
+                    OptionsSource="{Binding SizeCascaderNodes}"
                     IsAllowClear="True"
                     SizeType="Large">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
                     IsAllowClear="True"
-                    ItemsSource="{Binding SizeCascaderNodes}"
+                    OptionsSource="{Binding SizeCascaderNodes}"
                     SizeType="Middle">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
                     IsAllowClear="True"
-                    ItemsSource="{Binding SizeCascaderNodes}"
+                    OptionsSource="{Binding SizeCascaderNodes}"
                     SizeType="Small">
-                    <atom:Cascader.ItemTemplate>
+                    <atom:Cascader.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:Cascader.ItemTemplate>
+                    </atom:Cascader.OptionTemplate>
                 </atom:Cascader>
         
             </StackPanel>
@@ -419,31 +419,31 @@
             Description="The most basic usage.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:CascaderView>
-                    <atom:CascaderViewOption Header="Zhejiang" Value="zhejiang">
-                        <atom:CascaderViewOption Header="Hangzhou" Value="hangzhou">
-                            <atom:CascaderViewOption Header="West Lake" Value="xihu" />
-                            <atom:CascaderViewOption Header="Lingyin shi" Value="lingyinshi" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
-                    <atom:CascaderViewOption Header="Jiangsu" Value="jiangsu">
-                        <atom:CascaderViewOption Header="Nanjing" Value="nanjing">
-                            <atom:CascaderViewOption Header="Zhong Hua Men" Value="zhonghuamen" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
+                    <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
+                        <atom:CascaderOption Header="Hangzhou" Value="hangzhou">
+                            <atom:CascaderOption Header="West Lake" Value="xihu" />
+                            <atom:CascaderOption Header="Lingyin shi" Value="lingyinshi" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
+                    <atom:CascaderOption Header="Jiangsu" Value="jiangsu">
+                        <atom:CascaderOption Header="Nanjing" Value="nanjing">
+                            <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
                 </atom:CascaderView>
         
                 <atom:CascaderView IsCheckable="True">
-                    <atom:CascaderViewOption Header="Zhejiang" Value="zhejiang">
-                        <atom:CascaderViewOption Header="Hangzhou" Value="hangzhou">
-                            <atom:CascaderViewOption Header="West Lake" Value="xihu" />
-                            <atom:CascaderViewOption Header="Lingyin shi" Value="lingyinshi" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
-                    <atom:CascaderViewOption Header="Jiangsu" Value="jiangsu">
-                        <atom:CascaderViewOption Header="Nanjing" Value="nanjing">
-                            <atom:CascaderViewOption Header="Zhong Hua Men" Value="zhonghuamen" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
+                    <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
+                        <atom:CascaderOption Header="Hangzhou" Value="hangzhou">
+                            <atom:CascaderOption Header="West Lake" Value="xihu" />
+                            <atom:CascaderOption Header="Lingyin shi" Value="lingyinshi" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
+                    <atom:CascaderOption Header="Jiangsu" Value="jiangsu">
+                        <atom:CascaderOption Header="Nanjing" Value="nanjing">
+                            <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
                 </atom:CascaderView>
         
                 <atom:CascaderView />
@@ -456,25 +456,25 @@
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:CascaderView
                     x:DataType="viewModels:CascaderViewModel"
-                    ItemsSource="{Binding BasicCascaderViewNodes}">
-                    <atom:CascaderView.ItemTemplate>
+                    OptionsSource="{Binding BasicCascaderViewNodes}">
+                    <atom:CascaderView.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:CascaderView.ItemTemplate>
+                    </atom:CascaderView.OptionTemplate>
                 </atom:CascaderView>
-        
+                
                 <atom:CascaderView
                     IsCheckable="True"
                     x:DataType="viewModels:CascaderViewModel"
-                    ItemsSource="{Binding BasicCheckableCascaderViewNodes}">
-                    <atom:CascaderView.ItemTemplate>
-                        <TreeDataTemplate x:DataType="atom:ICascaderViewOption"
+                    OptionsSource="{Binding BasicCheckableCascaderViewNodes}">
+                    <atom:CascaderView.OptionTemplate>
+                        <TreeDataTemplate x:DataType="atom:ICascaderOption"
                                           ItemsSource="{Binding Children}">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:CascaderView.ItemTemplate>
+                    </atom:CascaderView.OptionTemplate>
                 </atom:CascaderView>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -484,14 +484,14 @@
             Description="Load options lazily with loadData.">
             <atom:CascaderView
                 x:DataType="viewModels:CascaderViewModel"
-                ItemsSource="{Binding AsyncLoadCascaderViewNodes}"
+                OptionsSource="{Binding AsyncLoadCascaderViewNodes}"
                 DataLoader="{Binding AsyncCascaderNodeLoader}">
-                <atom:CascaderView.ItemTemplate>
+                <atom:CascaderView.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
-                                      x:DataType="atom:ICascaderViewOption">
+                                      x:DataType="atom:ICascaderOption">
                         <atom:TextBlock Text="{Binding Header}" />
                     </TreeDataTemplate>
-                </atom:CascaderView.ItemTemplate>
+                </atom:CascaderView.OptionTemplate>
             </atom:CascaderView>
         </gallery:ShowCaseItem>
         
@@ -502,18 +502,18 @@
                 <atom:SearchEdit Watermark="Search"
                                  SearchButtonClick="HandleFilterCascaderViewClicked" />
                 <atom:CascaderView Name="SearchCascaderView">
-                    <atom:CascaderViewOption Header="Zhejiang" Value="zhejiang">
-                        <atom:CascaderViewOption Header="Hangzhou" Value="hangzhou">
-                            <atom:CascaderViewOption Header="West Lake" Value="xihu" />
-                            <atom:CascaderViewOption Header="Lingyin shi" Value="lingyinshi" />
-                            <atom:CascaderViewOption Header="XiSha" Value="xisha" IsEnabled="False" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
-                    <atom:CascaderViewOption Header="Jiangsu" Value="jiangsu">
-                        <atom:CascaderViewOption Header="Nanjing" Value="nanjing">
-                            <atom:CascaderViewOption Header="Zhong Hua Men" Value="zhonghuamen" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
+                    <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
+                        <atom:CascaderOption Header="Hangzhou" Value="hangzhou">
+                            <atom:CascaderOption Header="West Lake" Value="xihu" />
+                            <atom:CascaderOption Header="Lingyin shi" Value="lingyinshi" />
+                            <atom:CascaderOption Header="XiSha" Value="xisha" IsEnabled="False" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
+                    <atom:CascaderOption Header="Jiangsu" Value="jiangsu">
+                        <atom:CascaderOption Header="Nanjing" Value="nanjing">
+                            <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
                 </atom:CascaderView>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -526,13 +526,13 @@
                                  SearchButtonClick="HandleFilterCascaderViewItemsSourceClicked" />
                 <atom:CascaderView Name="SearchCascaderViewItemsSource"
                                    x:DataType="viewModels:CascaderViewModel"
-                                   ItemsSource="{Binding SearchCascaderViewNodes}">
-                    <atom:CascaderView.ItemTemplate>
+                                   OptionsSource="{Binding SearchCascaderViewNodes}">
+                    <atom:CascaderView.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:CascaderView.ItemTemplate>
+                    </atom:CascaderView.OptionTemplate>
                 </atom:CascaderView>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -542,29 +542,29 @@
             Description="You can set the default expansion path..">
             <StackPanel Spacing="10">
                 <atom:CascaderView DefaultExpandedPath="{Binding DefaultExpandPath}">
-                    <atom:CascaderViewOption Header="Zhejiang" ItemKey="zhejiang">
-                        <atom:CascaderViewOption Header="Hangzhou" ItemKey="hangzhou">
-                            <atom:CascaderViewOption Header="West Lake" ItemKey="xihu" />
-                            <atom:CascaderViewOption Header="Lingyin shi" ItemKey="lingyinshi" />
-                            <atom:CascaderViewOption Header="XiSha" ItemKey="xisha" IsEnabled="False" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
-                    <atom:CascaderViewOption Header="Jiangsu" ItemKey="jiangsu">
-                        <atom:CascaderViewOption Header="Nanjing" ItemKey="nanjing">
-                            <atom:CascaderViewOption Header="Zhong Hua Men" ItemKey="zhonghuamen" />
-                        </atom:CascaderViewOption>
-                    </atom:CascaderViewOption>
+                    <atom:CascaderOption Header="Zhejiang" ItemKey="zhejiang">
+                        <atom:CascaderOption Header="Hangzhou" ItemKey="hangzhou">
+                            <atom:CascaderOption Header="West Lake" ItemKey="xihu" />
+                            <atom:CascaderOption Header="Lingyin shi" ItemKey="lingyinshi" />
+                            <atom:CascaderOption Header="XiSha" ItemKey="xisha" IsEnabled="False" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
+                    <atom:CascaderOption Header="Jiangsu" ItemKey="jiangsu">
+                        <atom:CascaderOption Header="Nanjing" ItemKey="nanjing">
+                            <atom:CascaderOption Header="Zhong Hua Men" ItemKey="zhonghuamen" />
+                        </atom:CascaderOption>
+                    </atom:CascaderOption>
                 </atom:CascaderView>
                 <atom:Separator Title="By template"/>
                 <atom:CascaderView x:DataType="viewModels:CascaderViewModel"
-                                   ItemsSource="{Binding DefaultExpandCascaderViewNodes}"
+                                   OptionsSource="{Binding DefaultExpandCascaderViewNodes}"
                                    DefaultExpandedPath="{Binding DefaultExpandPath}">
-                    <atom:CascaderView.ItemTemplate>
+                    <atom:CascaderView.OptionTemplate>
                         <TreeDataTemplate ItemsSource="{Binding Children}"
-                                          x:DataType="atom:ICascaderViewOption">
+                                          x:DataType="atom:ICascaderOption">
                             <atom:TextBlock Text="{Binding Header}" />
                         </TreeDataTemplate>
-                    </atom:CascaderView.ItemTemplate>
+                    </atom:CascaderView.OptionTemplate>
                 </atom:CascaderView>
             </StackPanel>
         </gallery:ShowCaseItem>

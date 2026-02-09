@@ -236,7 +236,7 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
     }
 
     public int Level => GetLevel();
-    internal ICascaderViewOption? AttachedOption => DataContext as ICascaderViewOption;
+    internal ICascaderOption? AttachedOption => DataContext as ICascaderOption;
     
     int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
     bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
@@ -381,13 +381,13 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
     {
         var level = 0;
         // 通过数据
-        if (DataContext is ICascaderViewOption option)
+        if (DataContext is ICascaderOption option)
         {
             var current = option;
             while (current != null)
             {
                 ++level;
-                current = current.ParentNode as ICascaderViewOption;
+                current = current.ParentNode as ICascaderOption;
             }
         }
         return level;

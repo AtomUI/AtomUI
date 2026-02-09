@@ -6,7 +6,7 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public interface ICascaderViewOption : ITreeNode<ICascaderViewOption>
+public interface ICascaderOption : ITreeNode<ICascaderOption>
 {
     new object? Header { get; set; }
     bool? IsChecked { get; set; }
@@ -15,15 +15,15 @@ public interface ICascaderViewOption : ITreeNode<ICascaderViewOption>
     bool IsLeaf { get; set; }
     object? Value { get; set; }
     
-    void UpdateParentNode(ICascaderViewOption? parentNode)
+    void UpdateParentNode(ICascaderOption? parentNode)
     {
         throw new NotImplementedException();
     }
 }
 
-public record CascaderViewOption : ICascaderViewOption, ISelectTagTextProvider
+public record CascaderOption : ICascaderOption, ISelectTagTextProvider
 {
-    public ITreeNode<ICascaderViewOption>? ParentNode { get; private set; }
+    public ITreeNode<ICascaderOption>? ParentNode { get; private set; }
     
     public TreeNodeKey? ItemKey { get; init; }
     public object? Header { get; set; }
@@ -36,21 +36,21 @@ public record CascaderViewOption : ICascaderViewOption, ISelectTagTextProvider
     public object? Value { get; set; }
     
     string? ISelectTagTextProvider.TagText => Header?.ToString();
-    private readonly AvaloniaList<ICascaderViewOption> _children = [];
+    private readonly AvaloniaList<ICascaderOption> _children = [];
     
     [Content]
-    public IList<ICascaderViewOption> Children
+    public IList<ICascaderOption> Children
     {
         get => _children;
         init => _children.AddRange(value);
     }
     
-    public void UpdateParentNode(ICascaderViewOption? parentNode)
+    public void UpdateParentNode(ICascaderOption? parentNode)
     {
         ParentNode = parentNode;
     }
 
-    public CascaderViewOption()
+    public CascaderOption()
     {
         _children.CollectionChanged += HandleCollectionChanged;
     }
@@ -63,7 +63,7 @@ public record CascaderViewOption : ICascaderViewOption, ISelectTagTextProvider
             {
                 foreach (var child in e.NewItems)
                 {
-                    if (child is ICascaderViewOption option)
+                    if (child is ICascaderOption option)
                     {
                         option.UpdateParentNode(this);
                     }
@@ -76,7 +76,7 @@ public record CascaderViewOption : ICascaderViewOption, ISelectTagTextProvider
             {
                 foreach (var child in e.OldItems)
                 {
-                    if (child is ICascaderViewOption option)
+                    if (child is ICascaderOption option)
                     {
                         option.UpdateParentNode(null);
                     }

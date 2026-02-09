@@ -98,8 +98,7 @@
                                                Filter="{TemplateBinding Filter}"
                                                BorderThickness="0"
                                                FilterHighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
-                                               ItemsSource="{TemplateBinding ItemsSource}"
-                                               ItemTemplate="{TemplateBinding ItemTemplate}"
+                                               OptionTemplate="{TemplateBinding OptionTemplate}"
                                                SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
                                                DataLoader="{TemplateBinding DataLoader}"
                                                FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
@@ -195,8 +194,8 @@
             </Style>
         </Style>
 
-        <Setter Property="ItemTemplate">
-            <TreeDataTemplate x:DataType="atom:ICascaderViewOption"
+        <Setter Property="OptionTemplate">
+            <TreeDataTemplate x:DataType="atom:ICascaderOption"
                               ItemsSource="{Binding Children}">
                 <atom:TextBlock Text="{Binding Header}" />
             </TreeDataTemplate>

@@ -43,9 +43,9 @@ public partial class CascaderView
             if (_allPathInfos == null)
             {
                 var result = new List<CascaderViewFilterListItemData>();
-                foreach (var item in Items)
+                foreach (var item in _options)
                 {
-                    if (item is ICascaderViewOption viewOption)
+                    if (item is ICascaderOption viewOption)
                     {
                         CollectionPaths(viewOption, result);
                     }
@@ -69,16 +69,16 @@ public partial class CascaderView
         }
     }
 
-    private CascaderViewFilterListItemData GetFullPath(ICascaderViewOption option)
+    private CascaderViewFilterListItemData GetFullPath(ICascaderOption option)
     {
         var pathHeaders = new List<string>();
         var current     = option;
-        var pathNodes   = new  List<ICascaderViewOption>();
+        var pathNodes   = new  List<ICascaderOption>();
         while (current != null)
         {
             pathNodes.Add(current);
             pathHeaders.Add(current.Header?.ToString() ?? string.Empty);
-            current = current.ParentNode as ICascaderViewOption;
+            current = current.ParentNode as ICascaderOption;
         }
 
         pathNodes.Reverse();
@@ -91,7 +91,7 @@ public partial class CascaderView
         };
     }
     
-    private void CollectionPaths(ICascaderViewOption option, List<CascaderViewFilterListItemData> result)
+    private void CollectionPaths(ICascaderOption option, List<CascaderViewFilterListItemData> result)
     {
         Debug.Assert(Filter != null);
         foreach (var childItem in option.Children)
@@ -116,7 +116,7 @@ public partial class CascaderView
 
     private void HandleFilterListSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        IList<ICascaderViewOption>? paths = null;
+        IList<ICascaderOption>? paths = null;
         if (_filterList?.SelectedItem is CascaderViewFilterListItemData itemData)
         {
             paths = itemData.ExpandItems;

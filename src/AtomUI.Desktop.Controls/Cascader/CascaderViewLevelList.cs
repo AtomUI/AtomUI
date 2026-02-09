@@ -88,7 +88,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var cascaderViewItem = new CascaderViewItem();
-        if (item is ICascaderViewOption option)
+        if (item is ICascaderOption option)
         {
             NotifyRestoreDefaultContext(cascaderViewItem, option);
         }
@@ -118,7 +118,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
                 }
                 else
                 {
-                    if (item is ICascaderViewOption option)
+                    if (item is ICascaderOption option)
                     {
                         NotifyRestoreDefaultContext(cascaderViewItem, option);
                     }
@@ -127,7 +127,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
             }
             else
             {
-                if (item is ICascaderViewOption option)
+                if (item is ICascaderOption option)
                 {
                     NotifyRestoreDefaultContext(cascaderViewItem, option);
                 }
@@ -290,7 +290,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
         base.ClearContainerForItemOverride(element);
     }
     
-    protected virtual void NotifyRestoreDefaultContext(CascaderViewItem item, ICascaderViewOption option)
+    protected virtual void NotifyRestoreDefaultContext(CascaderViewItem item, ICascaderOption option)
     {
         item.SetCurrentValue(CascaderViewItem.HeaderProperty, option);
         item.ItemKey = option.ItemKey;
@@ -385,7 +385,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
 
     void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
     {
-        if (item is CascaderViewItem cascaderViewItem && defaultContext is ICascaderViewOption option)
+        if (item is CascaderViewItem cascaderViewItem && defaultContext is ICascaderOption option)
         {
             ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreDefaultContext(listItem, option));
         }

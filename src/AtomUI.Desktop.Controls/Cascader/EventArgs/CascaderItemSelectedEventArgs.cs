@@ -2,9 +2,9 @@ namespace AtomUI.Desktop.Controls;
 
 public class CascaderItemSelectedEventArgs : EventArgs
 {
-    public ICascaderViewOption Item { get; }
+    public ICascaderOption Item { get; }
 
-    public CascaderItemSelectedEventArgs(ICascaderViewOption item)
+    public CascaderItemSelectedEventArgs(ICascaderOption item)
     {
         Item = item;
     }

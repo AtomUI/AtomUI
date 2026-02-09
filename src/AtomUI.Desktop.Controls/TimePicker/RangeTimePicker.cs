@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
@@ -346,7 +347,7 @@ public class RangeTimePicker : RangeInfoPickerInput,
     
     private void CalculatePreferredWidth()
     {
-        if (!double.IsNaN(Width))
+        if (!double.IsNaN(Width) || HorizontalAlignment == HorizontalAlignment.Stretch)
         {
             PreferredInputWidth = double.NaN;
         }

@@ -29,8 +29,8 @@
                                 <StackPanel Orientation="Horizontal"
                                             Name="{x:Static atom:CascaderViewThemeConstants.ItemsPanelPart}">
                                     <atom:CascaderViewLevelList Name="{x:Static atom:CascaderViewThemeConstants.RootLevelListPart}"
-                                                                ItemsSource="{Binding Items, RelativeSource={RelativeSource TemplatedParent}}"
-                                                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                                                ItemsSource="{Binding Options, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                ItemTemplate="{TemplateBinding OptionTemplate}"
                                                                 ExpandTrigger="{TemplateBinding ExpandTrigger}"
                                                                 IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
                                 </StackPanel>
@@ -97,8 +97,8 @@
             </atom:IconTemplate>
         </Setter>
         
-        <Setter Property="ItemTemplate">
-            <DataTemplate x:DataType="atom:ICascaderViewOption">
+        <Setter Property="OptionTemplate">
+            <DataTemplate x:DataType="atom:ICascaderOption">
                 <atom:TextBlock Text="{Binding Header}" />
             </DataTemplate>
         </Setter>

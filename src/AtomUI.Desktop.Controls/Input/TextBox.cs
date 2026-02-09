@@ -215,7 +215,7 @@ public class TextBox : AvaloniaTextBox,
 
     private void ConfigureCornerRadius()
     {
-        if (!IsUsedInCompactSpace)
+        if (!IsUsedInCompactSpace || (CompactSpaceItemPosition & (SpaceItemPosition.First | SpaceItemPosition.Last)) != 0)
         {
             EffectiveCornerRadius = CornerRadius;
         }

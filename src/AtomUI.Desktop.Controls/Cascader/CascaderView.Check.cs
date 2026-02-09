@@ -29,8 +29,8 @@ public partial class CascaderView
 
     private void HandleCheckedItemsChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        var oldCheckedItems = args.OldValue as IList<ICascaderViewOption>;
-        var newCheckedItems = args.NewValue as IList<ICascaderViewOption>;
+        var oldCheckedItems = args.OldValue as IList<ICascaderOption>;
+        var newCheckedItems = args.NewValue as IList<ICascaderOption>;
         CheckedItemsChanged?.Invoke(this, new CascaderViewCheckedItemsChangedEventArgs(
             oldCheckedItems,
             newCheckedItems));
@@ -68,7 +68,7 @@ public partial class CascaderView
         CheckedSubTree(item.AttachedOption);
     }
     
-    public void CheckedSubTree(ICascaderViewOption viewOption)
+    public void CheckedSubTree(ICascaderOption viewOption)
     {
         var container = GetCascaderViewItem(viewOption);
         if (!container?.IsEffectiveCheckable() ?? viewOption.IsEnabled && viewOption.IsCheckBoxEnabled == false)
@@ -76,8 +76,8 @@ public partial class CascaderView
             return;
         }
 
-        ISet<ICascaderViewOption> checkedItems = DoCheckedSubTree(viewOption);
-        var originCheckedItems = new HashSet<ICascaderViewOption>();
+        ISet<ICascaderOption> checkedItems = DoCheckedSubTree(viewOption);
+        var originCheckedItems = new HashSet<ICascaderOption>();
         if (CheckedItems != null)
         {
             foreach (var checkedItem in CheckedItems)
@@ -85,7 +85,7 @@ public partial class CascaderView
                 originCheckedItems.Add(checkedItem);
             }
         }
-        var newCheckedItems = new HashSet<ICascaderViewOption>();
+        var newCheckedItems = new HashSet<ICascaderOption>();
         foreach (var checkedItem in originCheckedItems)
         {
             newCheckedItems.Add(checkedItem);
@@ -102,9 +102,9 @@ public partial class CascaderView
         }
     }
     
-    private ISet<ICascaderViewOption> DoCheckedSubTree(ICascaderViewOption viewOption)
+    private ISet<ICascaderOption> DoCheckedSubTree(ICascaderOption viewOption)
     {
-        var checkedItems = new HashSet<ICascaderViewOption>();
+        var checkedItems = new HashSet<ICascaderOption>();
         MarkViewOptionChecked(viewOption, true);
         checkedItems.Add(viewOption);
         foreach (var childItem in viewOption.Children)
@@ -123,7 +123,7 @@ public partial class CascaderView
         return checkedItems;
     }
 
-    private void MarkViewOptionChecked(ICascaderViewOption option, bool? value)
+    private void MarkViewOptionChecked(ICascaderOption option, bool? value)
     {
         option.IsChecked = value;
         var container = GetCascaderViewItem(option);
@@ -133,7 +133,7 @@ public partial class CascaderView
         }
     }
 
-    private CascaderViewItem? GetCascaderViewItem(ICascaderViewOption option)
+    private CascaderViewItem? GetCascaderViewItem(ICascaderOption option)
     {
         if (_itemsPanel == null)
         {
@@ -158,7 +158,7 @@ public partial class CascaderView
         UnCheckedSubTree(item.AttachedOption);
     }
     
-    public void UnCheckedSubTree(ICascaderViewOption viewOption)
+    public void UnCheckedSubTree(ICascaderOption viewOption)
     {
         var container = GetCascaderViewItem(viewOption);
         if (!container?.IsEffectiveCheckable() ?? viewOption.IsEnabled && viewOption.IsCheckBoxEnabled == false)
@@ -166,9 +166,9 @@ public partial class CascaderView
             return;
         }
         
-        ISet<ICascaderViewOption> unCheckedItems = DoUnCheckedSubTree(viewOption);
+        ISet<ICascaderOption> unCheckedItems = DoUnCheckedSubTree(viewOption);
             
-        var originCheckedItems = new HashSet<ICascaderViewOption>();
+        var originCheckedItems = new HashSet<ICascaderOption>();
         if (CheckedItems != null)
         {
             foreach (var checkedItem in CheckedItems)
@@ -176,7 +176,7 @@ public partial class CascaderView
                 originCheckedItems.Add(checkedItem);
             }
         }
-        var newCheckedItems = new HashSet<ICascaderViewOption>();
+        var newCheckedItems = new HashSet<ICascaderOption>();
         foreach (var checkedItem in originCheckedItems)
         {
             newCheckedItems.Add(checkedItem);
@@ -194,9 +194,9 @@ public partial class CascaderView
         }
     }
     
-    public ISet<ICascaderViewOption> DoUnCheckedSubTree(ICascaderViewOption viewOption)
+    public ISet<ICascaderOption> DoUnCheckedSubTree(ICascaderOption viewOption)
     {
-        var unCheckedItems = new HashSet<ICascaderViewOption>();
+        var unCheckedItems = new HashSet<ICascaderOption>();
         
         MarkViewOptionChecked(viewOption, false);
         unCheckedItems.Add(viewOption);
@@ -216,12 +216,12 @@ public partial class CascaderView
         return unCheckedItems;
     }
     
-    private (ISet<ICascaderViewOption>, ISet<ICascaderViewOption>) SetupParentNodeCheckedStatus(ICascaderViewOption viewOption)
+    private (ISet<ICascaderOption>, ISet<ICascaderOption>) SetupParentNodeCheckedStatus(ICascaderOption viewOption)
     {
         var parent           = viewOption.ParentNode;
-        var checkedParents   =  new HashSet<ICascaderViewOption>();
-        var unCheckedParents =  new HashSet<ICascaderViewOption>();
-        while (parent is ICascaderViewOption parentViewOption)
+        var checkedParents   =  new HashSet<ICascaderOption>();
+        var unCheckedParents =  new HashSet<ICascaderOption>();
+        while (parent is ICascaderOption parentViewOption)
         {
             var parentContainer = GetCascaderViewItem(parentViewOption);
             if ((parentContainer?.IsEnabled ?? parentViewOption.IsEnabled) == false)
@@ -306,15 +306,15 @@ public partial class CascaderView
                 {
                     if (e.OldItems != null)
                     {
-                        var removedItemsClosure = new HashSet<ICascaderViewOption>();
+                        var removedItemsClosure = new HashSet<ICascaderOption>();
                         foreach (var item in e.OldItems)
                         {
-                            if (item is ICascaderViewOption viewOption)
+                            if (item is ICascaderOption viewOption)
                             {
                                 CollectSubTreeOptions(viewOption, removedItemsClosure);
                             }
                         }
-                        var tobeRemoved = new List<ICascaderViewOption>();
+                        var tobeRemoved = new List<ICascaderOption>();
                         foreach (var checkedItem in CheckedItems)
                         {
                             if (removedItemsClosure.Contains(checkedItem))
@@ -337,7 +337,7 @@ public partial class CascaderView
         FilterItems();
     }
 
-    private void CollectSubTreeOptions(ICascaderViewOption viewOption, ISet<ICascaderViewOption> options)
+    private void CollectSubTreeOptions(ICascaderOption viewOption, ISet<ICascaderOption> options)
     {
         options.Add(viewOption);
         foreach (var childItem in viewOption.Children)

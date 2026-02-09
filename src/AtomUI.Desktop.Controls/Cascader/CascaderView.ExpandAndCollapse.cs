@@ -54,7 +54,7 @@ public partial class CascaderView
         await ExpandItemAsync(cascaderViewItem.AttachedOption);
     }
     
-    private async Task<CascaderViewItem?> ExpandItemAsync(ICascaderViewOption cascaderViewOption)
+    private async Task<CascaderViewItem?> ExpandItemAsync(ICascaderOption cascaderViewOption)
     {
         if (_itemsPanel == null || _ignoreExpandAndCollapseLevel > 0)
         {
@@ -69,7 +69,7 @@ public partial class CascaderView
             while (current != null)
             {
                 pathNodes.Add(current);
-                current = current.ParentNode as ICascaderViewOption;
+                current = current.ParentNode as ICascaderOption;
             }
             pathNodes.Reverse();
             
@@ -77,7 +77,7 @@ public partial class CascaderView
             // 检查是否是野数据
             var rootNode  = pathNodes.First();
             var foundRoot = false;
-            foreach (var root in Items)
+            foreach (var root in _options)
             {
                 if (rootNode == root)
                 {
@@ -88,7 +88,7 @@ public partial class CascaderView
             
             if (!foundRoot || cascaderViewOption != pathNodes[^1])
             {
-                throw new ArgumentOutOfRangeException(nameof(cascaderViewOption), "Wild CascaderViewOption, Only part of the path was found");
+                throw new ArgumentOutOfRangeException(nameof(cascaderViewOption), "Wild CascaderOption, Only part of the path was found");
             }
             
             CascaderViewLevelList? currentLevelList    = null;
@@ -197,7 +197,7 @@ public partial class CascaderView
                 ItemsSource            = attachedOption.Children,
                 ParentCascaderViewItem = cascaderViewItem
             };
-            BindUtils.RelayBind(this, ItemTemplateProperty, childLevelList, CascaderViewLevelList.ItemTemplateProperty);
+            BindUtils.RelayBind(this, OptionTemplateProperty, childLevelList, CascaderViewLevelList.ItemTemplateProperty);
             BindUtils.RelayBind(this, IsAllowSelectParentProperty, childLevelList, CascaderViewLevelList.IsAllowSelectParentProperty);
             BindUtils.RelayBind(this, ExpandTriggerProperty, childLevelList, CascaderViewLevelList.ExpandTriggerProperty);
             _itemsPanel.Children.Add(childLevelList);
@@ -223,7 +223,7 @@ public partial class CascaderView
         }
     }
 
-    private void DoCollapseItem(ICascaderViewOption cascaderViewOption)
+    private void DoCollapseItem(ICascaderOption cascaderViewOption)
     {
         if (_itemsPanel == null)
         {
@@ -257,14 +257,14 @@ public partial class CascaderView
         ItemCollapsed?.Invoke(this, new CascaderItemCollapsedEventArgs(cascaderViewItem));
     }
 
-    private int GetViewOptionLevel(ICascaderViewOption cascaderViewOption)
+    private int GetViewOptionLevel(ICascaderOption cascaderViewOption)
     {
         var level   = 0;
         var current = cascaderViewOption;
         while (current != null)
         {
             level++;
-            current = current.ParentNode as ICascaderViewOption;
+            current = current.ParentNode as ICascaderOption;
         }
         return level;
     }

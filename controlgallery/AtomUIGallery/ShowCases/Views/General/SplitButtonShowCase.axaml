@@ -182,7 +182,7 @@ If a large or small button is desired, set the size property to either large or 
                     </atom:SplitButton.Flyout>
                 </atom:SplitButton>
 
-                <atom:SplitButton FlyoutButtonIcon="{antdicons:AntDesignIconProvider Kind=UserOutlined}">
+                <atom:SplitButton OpenIndicator="{antdicons:AntDesignIconProvider Kind=UserOutlined}">
                     Primary
                     <atom:SplitButton.Flyout>
                         <atom:MenuFlyout>
@@ -222,7 +222,7 @@ If a large or small button is desired, set the size property to either large or 
                     </atom:SplitButton.Flyout>
                 </atom:SplitButton>
 
-                <atom:SplitButton FlyoutButtonIcon="{antdicons:AntDesignIconProvider Kind=UserOutlined}" TriggerType="Click">
+                <atom:SplitButton OpenIndicator="{antdicons:AntDesignIconProvider Kind=UserOutlined}" TriggerType="Click">
                     Click Me
                     <atom:SplitButton.Flyout>
                         <atom:MenuFlyout>

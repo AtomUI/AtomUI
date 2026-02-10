@@ -76,17 +76,14 @@ public class SplitButton : ContentControl,
     public static readonly StyledProperty<int> MouseLeaveDelayProperty =
         FlyoutStateHelper.MouseLeaveDelayProperty.AddOwner<SplitButton>();
 
-    public static readonly StyledProperty<bool> IsShowIndicatorProperty =
-        AvaloniaProperty.Register<SplitButton, bool>(nameof(IsShowIndicator), true);
-
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<SplitButton>();
 
     public static readonly StyledProperty<PathIcon?> IconProperty =
         Button.IconProperty.AddOwner<SplitButton>();
 
-    public static readonly StyledProperty<PathIcon?> FlyoutButtonIconProperty =
-        AvaloniaProperty.Register<SplitButton, PathIcon?>(nameof(FlyoutButtonIcon));
+    public static readonly StyledProperty<PathIcon?> OpenIndicatorProperty =
+        AvaloniaProperty.Register<SplitButton, PathIcon?>(nameof(OpenIndicator));
 
     public static readonly StyledProperty<bool> IsDangerProperty =
         Button.IsDangerProperty.AddOwner<SplitButton>();
@@ -193,12 +190,6 @@ public class SplitButton : ContentControl,
         set => SetValue(MouseLeaveDelayProperty, value);
     }
 
-    public bool IsShowIndicator
-    {
-        get => GetValue(IsShowIndicatorProperty);
-        set => SetValue(IsShowIndicatorProperty, value);
-    }
-
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -211,10 +202,10 @@ public class SplitButton : ContentControl,
         set => SetValue(IconProperty, value);
     }
 
-    public PathIcon? FlyoutButtonIcon
+    public PathIcon? OpenIndicator
     {
-        get => GetValue(FlyoutButtonIconProperty);
-        set => SetValue(FlyoutButtonIconProperty, value);
+        get => GetValue(OpenIndicatorProperty);
+        set => SetValue(OpenIndicatorProperty, value);
     }
 
     public bool IsDanger
@@ -328,7 +319,16 @@ public class SplitButton : ContentControl,
 
     internal virtual bool InternalIsChecked => false;
     protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-    
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (OpenIndicator == null)
+        {
+            SetCurrentValue(OpenIndicatorProperty, new EllipsisOutlined());
+        }
+    }
+
     void ICommandSource.CanExecuteChanged(object sender, EventArgs e)
     {
         CanExecuteChanged(sender, e);
@@ -433,15 +433,6 @@ public class SplitButton : ContentControl,
         }
     }
     
-    private void SetupDefaultFlyoutButtonIcon()
-    {
-        if (FlyoutButtonIcon == null)
-        {
-            ClearValue(FlyoutButtonIconProperty);
-            SetValue(FlyoutButtonIconProperty, new EllipsisOutlined(), BindingPriority.Template);
-        }
-    }
-    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -466,7 +457,6 @@ public class SplitButton : ContentControl,
         _flyoutStateHelper.NotifyAttachedToVisualTree();
         UpdatePseudoClasses();
         RegisterFlyoutEvents(Flyout);
-        SetupDefaultFlyoutButtonIcon();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

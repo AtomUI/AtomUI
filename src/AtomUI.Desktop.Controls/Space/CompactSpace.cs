@@ -100,7 +100,6 @@ public class CompactSpace : TemplatedControl,
 
     static CompactSpace()
     {
-        AffectsMeasure<CompactSpace>(ItemSizeProperty, SizeTypeProperty, OrientationProperty);
         OrientationProperty.Changed.AddClassHandler<CompactSpace>((space, _) => space.ConfigureSizeDefinitions());
     }
     

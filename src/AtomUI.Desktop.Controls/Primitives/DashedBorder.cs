@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Utilities;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -105,8 +104,6 @@ public class DashedBorder : Decorator
     #endregion
     
     private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
-    private Thickness? _layoutThickness;
-    private double _scale;
         
     static DashedBorder()
     {
@@ -121,53 +118,6 @@ public class DashedBorder : Decorator
         AffectsMeasure<DashedBorder>(BorderThicknessProperty);
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        switch (change.Property.Name)
-        {
-            case nameof(UseLayoutRounding):
-            case nameof(BorderThickness):
-                _layoutThickness = null;
-                break;
-        }
-    }
-
-    private Thickness LayoutThickness
-    {
-        get
-        {
-            VerifyScale();
-            if (_layoutThickness == null)
-            {
-                var borderThickness = BorderThickness;
-
-                if (UseLayoutRounding)
-                {
-                    borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
-                }
-                _layoutThickness = borderThickness;
-            }
-            return _layoutThickness.Value;
-        }
-    }
-
-    private void VerifyScale()
-    {
-        var currentScale = LayoutHelper.GetLayoutScale(this);
-        if (MathUtilities.AreClose(currentScale, _scale))
-        {
-            return;
-        }
-
-        _scale           = currentScale;
-        _layoutThickness = null;
-    }
-
-    /// <summary>
-    /// Renders the control.
-    /// </summary>
-    /// <param name="context">The drawing context.</param>
     public sealed override void Render(DrawingContext context)
     {
         _borderRenderHelper.Render(
@@ -182,22 +132,12 @@ public class DashedBorder : Decorator
             StrokeDaskOffset,
             BoxShadow);
     }
-
-    /// <summary>
-    /// Measures the control.
-    /// </summary>
-    /// <param name="availableSize">The available size.</param>
-    /// <returns>The desired size of the control.</returns>
+    
     protected override Size MeasureOverride(Size availableSize)
     {
         return LayoutHelper.MeasureChild(Child, availableSize, Padding, BorderThickness);
     }
-
-    /// <summary>
-    /// Arranges the control's child.
-    /// </summary>
-    /// <param name="finalSize">The size allocated to the control.</param>
-    /// <returns>The space taken.</returns>
+    
     protected override Size ArrangeOverride(Size finalSize)
     {
         return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);

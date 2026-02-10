@@ -21,15 +21,18 @@
                     Background="{TemplateBinding Background}">
                 <DockPanel Name="{x:Static atom:ButtonThemeConstants.RootLayoutPart}"
                            LastChildFill="True">
-                    <antdicons:DownOutlined Name="{x:Static atom:DropdownButtonThemeConstants.DropdownIndicatorPart}"
-                                            DockPanel.Dock="Right"
-                                            VerticalAlignment="Center"
-                                            StrokeBrush="{TemplateBinding Foreground}"
-                                            IsMotionEnabled="False"/>
+                    <atom:IconPresenter Name="{x:Static atom:DropdownButtonThemeConstants.DropdownIndicatorPart}"
+                                        DockPanel.Dock="Right"
+                                        VerticalAlignment="Center"
+                                        Icon="{TemplateBinding OpenIndicator}"
+                                        IconBrush="{TemplateBinding Foreground}"
+                                        IsMotionEnabled="False"
+                                        IsVisible="{TemplateBinding IsShowOpenIndicator}"/>
                     <StackPanel Name="{x:Static atom:ButtonThemeConstants.MainInfoLayoutPart}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center"
-                                Orientation="Horizontal">
+                                Orientation="Horizontal"
+                                IsVisible="{TemplateBinding IsContentVisible}">
                         <antdicons:LoadingOutlined Name="{x:Static atom:ButtonThemeConstants.LoadingIconPart}"
                                                    Margin="{Binding (atom:IconPresenter.Margin), 
                                    ElementName={x:Static atom:ButtonThemeConstants.ButtonIconPart}}" />
@@ -49,25 +52,25 @@
 
     <Style Selector="^:is(atom|DropdownButton):text">
         <Setter Property="MarginToAnchor" Value="{DynamicResource {x:Static atom:PopupHostTokenKey.MarginToAnchor}}"/>
-        <Style Selector="^ /template/ atom|Icon#PART_DropdownIndicator">
+        <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSizeSM}}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ atom|Icon#PART_DropdownIndicator">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
                 <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ButtonTokenKey.ExtraContentMarginLG}}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ atom|Icon#PART_DropdownIndicator">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
                 <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ButtonTokenKey.ExtraContentMargin}}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ atom|Icon#PART_DropdownIndicator">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
                 <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ButtonTokenKey.ExtraContentMarginSM}}" />
             </Style>
         </Style>

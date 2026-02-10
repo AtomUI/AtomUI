@@ -22,7 +22,8 @@ internal class BorderRenderHelper
     private IPen? _cachedPen;
 
     private void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-                        BackgroundSizing backgroundSizing)
+                        BackgroundSizing backgroundSizing,
+                        bool dashedEnabled)
     {
         _size             = finalSize;
         _borderThickness  = borderThickness;
@@ -30,9 +31,10 @@ internal class BorderRenderHelper
         _backgroundSizing = backgroundSizing;
         _initialized      = true;
 
-        if (borderThickness.IsUniform &&
-            cornerRadius.IsUniform &&
-            backgroundSizing == BackgroundSizing.CenterBorder)
+        if (dashedEnabled ||
+            (borderThickness.IsUniform &&
+             cornerRadius.IsUniform &&
+             backgroundSizing == BackgroundSizing.CenterBorder))
         {
             _backgroundGeometryCache = null;
             _borderGeometryCache     = null;
@@ -40,7 +42,7 @@ internal class BorderRenderHelper
         }
         else
         {
-            _useComplexRendering = true;
+            _useComplexRendering     = true;
 
             var boundRect = new Rect(finalSize);
             var innerRect = boundRect.Deflate(borderThickness);
@@ -119,7 +121,7 @@ internal class BorderRenderHelper
             || _backgroundSizing != backgroundSizing
             || !_initialized)
         {
-            Update(finalSize, borderThickness, cornerRadius, backgroundSizing);
+            Update(finalSize, borderThickness, cornerRadius, backgroundSizing, strokeDashArray != null);
         }
 
         if (_useComplexRendering)

@@ -19,7 +19,7 @@
                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
                     <atom:Button Name="{x:Static atom:SplitButtonThemeConstants.SecondaryButtonPart}"
                                  SizeType="{TemplateBinding SizeType}"
-                                 Icon="{TemplateBinding FlyoutButtonIcon}"
+                                 Icon="{TemplateBinding OpenIndicator}"
                                  IsEnabled="{TemplateBinding IsEnabled}"
                                  IsDanger="{TemplateBinding IsDanger}"
                                  ButtonType="{TemplateBinding EffectiveButtonType}"

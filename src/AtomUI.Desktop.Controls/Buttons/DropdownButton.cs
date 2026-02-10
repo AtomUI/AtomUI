@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Disposables;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -47,14 +48,12 @@ public class DropdownButton : Button
 
     public static readonly StyledProperty<int> MouseLeaveDelayProperty =
         FlyoutStateHelper.MouseLeaveDelayProperty.AddOwner<DropdownButton>();
-
-    public static readonly StyledProperty<bool> IsShowIndicatorProperty =
-        AvaloniaProperty.Register<DropdownButton, bool>(nameof(IsShowIndicator), true);
-
-    public static readonly RoutedEvent<FlyoutMenuItemClickedEventArgs> MenuItemClickedEvent =
-        RoutedEvent.Register<DropdownButton, FlyoutMenuItemClickedEventArgs>(
-            nameof(MenuItemClicked),
-            RoutingStrategies.Bubble);
+    
+    public static readonly StyledProperty<bool> IsShowOpenIndicatorProperty =
+        AvaloniaProperty.Register<DropdownButton, bool>(nameof(IsShowOpenIndicator), true);
+    
+    public static readonly StyledProperty<PathIcon?> OpenIndicatorProperty =
+        AvaloniaProperty.Register<DropdownButton, PathIcon?>(nameof(OpenIndicator));
 
     public MenuFlyout? DropdownFlyout
     {
@@ -115,17 +114,48 @@ public class DropdownButton : Button
         get => GetValue(MouseLeaveDelayProperty);
         set => SetValue(MouseLeaveDelayProperty, value);
     }
-
-    public bool IsShowIndicator
+    
+    public bool IsShowOpenIndicator
     {
-        get => GetValue(IsShowIndicatorProperty);
-        set => SetValue(IsShowIndicatorProperty, value);
+        get => GetValue(IsShowOpenIndicatorProperty);
+        set => SetValue(IsShowOpenIndicatorProperty, value);
+    }
+    
+    public PathIcon? OpenIndicator
+    {
+        get => GetValue(OpenIndicatorProperty);
+        set => SetValue(OpenIndicatorProperty, value);
     }
 
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<FlyoutMenuItemClickedEventArgs> MenuItemClickedEvent =
+        RoutedEvent.Register<DropdownButton, FlyoutMenuItemClickedEventArgs>(
+            nameof(MenuItemClicked),
+            RoutingStrategies.Bubble);
+    
     public event EventHandler<FlyoutMenuItemClickedEventArgs>? MenuItemClicked
     {
         add => AddHandler(MenuItemClickedEvent, value);
         remove => RemoveHandler(MenuItemClickedEvent, value);
+    }
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<DropdownButton, bool> IsContentVisibleProperty =
+        AvaloniaProperty.RegisterDirect<DropdownButton, bool>(nameof(IsContentVisible),
+            o => o.IsContentVisible,
+            (o, v) => o.IsContentVisible = v);
+        
+    private bool _isContentVisible;
+
+    internal bool IsContentVisible
+    {
+        get => _isContentVisible;
+        set => SetAndRaise(IsContentVisibleProperty, ref _isContentVisible, value);
     }
 
     #endregion
@@ -148,6 +178,15 @@ public class DropdownButton : Button
             AnchorTarget = this
         };
         _flyoutStateHelper.ClickHideFlyoutPredicate = ClickHideFlyoutPredicate;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (OpenIndicator == null)
+        {
+            SetCurrentValue(OpenIndicatorProperty, new DownOutlined());
+        }
     }
 
     protected override string GetThemeResourceKey()
@@ -293,6 +332,14 @@ public class DropdownButton : Button
                 newMenuFlyout.Closed += HandleFlyoutClosed;
             }
         }
+
+        if (change.Property == ContentProperty ||
+            change.Property == ContentTemplateProperty ||
+            change.Property == IsLoadingProperty ||
+            change.Property == IconProperty)
+        {
+            ConfigureContentVisible();
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -302,5 +349,12 @@ public class DropdownButton : Button
         {
             SetCurrentValue(RightExtraContentProperty, new Border());
         }
+
+        ConfigureContentVisible();
+    }
+
+    private void ConfigureContentVisible()
+    {
+        SetCurrentValue(IsContentVisibleProperty, IsLoading || Content != null || ContentTemplate != null || Icon != null);
     }
 }

@@ -22,8 +22,8 @@
                         Background="{TemplateBinding Background}">
                     <DockPanel Name="{x:Static atom:ButtonThemeConstants.RootLayoutPart}"
                                LastChildFill="True"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center">
+                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                         <antdicons:LoadingOutlined
                             Name="{x:Static atom:ButtonThemeConstants.LoadingIconPart}"
                             LoadingAnimation="Spin"

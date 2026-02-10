@@ -208,6 +208,8 @@ public class CompactSpaceAddOn : TemplatedControl,
         CompactSpaceOrientation = orientation;
     }
 
+    bool ICompactSpaceAware.IgnoreZIndexChange() => true;
+    
     double ICompactSpaceAware.GetBorderThickness()
     {
         return CompactSpaceOrientation ==  Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;

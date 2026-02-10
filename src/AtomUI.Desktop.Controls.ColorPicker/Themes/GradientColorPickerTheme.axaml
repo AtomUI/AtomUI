@@ -14,7 +14,7 @@
                 <Border Name="Frame"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}">
                     <DockPanel LastChildFill="True">

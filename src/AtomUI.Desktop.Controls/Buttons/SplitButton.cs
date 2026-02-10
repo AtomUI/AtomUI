@@ -20,7 +20,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -28,7 +27,8 @@ public class SplitButton : ContentControl,
                            ICommandSource, 
                            ISizeTypeAware,
                            IControlSharedTokenResourcesHost,
-                           IWaveSpiritAwareControl
+                           IWaveSpiritAwareControl,
+                           ICompactSpaceAware
 {
     #region 公共属性定义
 
@@ -253,6 +253,15 @@ public class SplitButton : ContentControl,
             o => o.EffectiveButtonType,
             (o, v) => o.EffectiveButtonType = v);
     
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<SplitButton>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<SplitButton>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<SplitButton>();
+    
     internal IBrush? SplitSeparatorBrush
     {
         get => GetValue(SplitSeparatorBrushProperty);
@@ -265,6 +274,24 @@ public class SplitButton : ContentControl,
     {
         get => _effectiveButtonType;
         set => SetAndRaise(EffectiveButtonTypeProperty, ref _effectiveButtonType, value);
+    }
+    
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -405,17 +432,6 @@ public class SplitButton : ContentControl,
             _flyoutBindingDisposables = null;
         }
     }
-
-    /// <summary>
-    /// Explicitly unregisters all events related to the two buttons in OnApplyTemplate().
-    /// </summary>
-    private void UnregisterEvents()
-    {
-        if (_primaryButton != null)
-        {
-            _primaryButton.Click -= HandlePrimaryButtonClick;
-        }
-    }
     
     private void SetupDefaultFlyoutButtonIcon()
     {
@@ -429,13 +445,15 @@ public class SplitButton : ContentControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-
-        UnregisterEvents();
-
+        
+        if (_primaryButton != null)
+        {
+            _primaryButton.Click -= HandlePrimaryButtonClick;
+        }
         _primaryButton                  = e.NameScope.Find<Button>(SplitButtonThemeConstants.PrimaryButtonPart);
         _secondaryButton                = e.NameScope.Find<Button>(SplitButtonThemeConstants.SecondaryButtonPart);
         _flyoutStateHelper.AnchorTarget = _secondaryButton;
-        SetupButtonCornerRadius();
+        ConfigureButtonCornerRadius();
         if (_primaryButton != null)
         {
             _primaryButton.Click += HandlePrimaryButtonClick;
@@ -544,12 +562,11 @@ public class SplitButton : ContentControl,
             SetupEffectiveButtonType();
         }
 
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == CornerRadiusProperty ||
+            change.Property == CompactSpaceItemPositionProperty ||
+            change.Property == CompactSpaceOrientationProperty)
         {
-            if (change.Property == CornerRadiusProperty)
-            {
-                SetupButtonCornerRadius();
-            }
+            ConfigureButtonCornerRadius();
         }
 
         base.OnPropertyChanged(change);
@@ -567,16 +584,24 @@ public class SplitButton : ContentControl,
         }
     }
 
-    private void SetupButtonCornerRadius()
+    private void ConfigureButtonCornerRadius()
     {
-        var primaryButtonCornerRadius = new CornerRadius(CornerRadius.TopLeft,
+        var effectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
+            CornerRadius, 
+            IsUsedInCompactSpace, 
+            CompactSpaceItemPosition,
+            CompactSpaceOrientation);
+        
+        var primaryButtonCornerRadius = new CornerRadius(effectiveCornerRadius.TopLeft,
             0,
             0,
-            CornerRadius.BottomLeft);
+            effectiveCornerRadius.BottomLeft);
+        
         var secondaryButtonCornerRadius = new CornerRadius(0,
-            CornerRadius.TopRight,
-            CornerRadius.BottomRight,
+            effectiveCornerRadius.TopRight,
+            effectiveCornerRadius.BottomRight,
             0);
+        
         if (_primaryButton is not null)
         {
             _primaryButton.CornerRadius = primaryButtonCornerRadius;
@@ -800,5 +825,28 @@ public class SplitButton : ContentControl,
                     cornerRadius);
             }
         }
+    }
+    
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+    
+    double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
+
+    protected virtual double GetBorderThicknessForCompactSpace()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
     }
 }

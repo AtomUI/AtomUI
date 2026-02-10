@@ -13,6 +13,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -31,7 +32,8 @@ public enum ColorPickerValueSyncMode
 public abstract class AbstractColorPicker : AvaloniaButton, 
                                             ISizeTypeAware,
                                             IMotionAwareControl,
-                                            IControlSharedTokenResourcesHost
+                                            IControlSharedTokenResourcesHost,
+                                            ICompactSpaceAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<ColorFormat> FormatProperty =
@@ -206,12 +208,52 @@ public abstract class AbstractColorPicker : AvaloniaButton,
             o => o.ColorBlockBackground,
             (o, v) => o.ColorBlockBackground = v);
     
+    internal static readonly DirectProperty<AbstractColorPicker, CornerRadius> EffectiveCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<AbstractColorPicker, CornerRadius>(nameof(EffectiveCornerRadius),
+            o => o.EffectiveCornerRadius,
+            (o, v) => o.EffectiveCornerRadius = v);
+    
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<AbstractColorPicker>();
+    
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<AbstractColorPicker>();
+    
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<AbstractColorPicker>();
+    
     private IBrush? _colorBlockBackground;
 
     internal IBrush? ColorBlockBackground
     {
         get => _colorBlockBackground;
         set => SetAndRaise(ColorBlockBackgroundProperty, ref _colorBlockBackground, value);
+    }
+        
+    private CornerRadius _effectiveCornerRadius;
+
+    internal CornerRadius EffectiveCornerRadius
+    {
+        get => _effectiveCornerRadius;
+        set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
+    }
+    
+    internal SpaceItemPosition? CompactSpaceItemPosition
+    {
+        get => GetValue(CompactSpaceItemPositionProperty);
+        set => SetValue(CompactSpaceItemPositionProperty, value);
+    }
+    
+    internal Orientation CompactSpaceOrientation
+    {
+        get => GetValue(CompactSpaceOrientationProperty);
+        set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+    
+    internal bool IsUsedInCompactSpace
+    {
+        get => GetValue(IsUsedInCompactSpaceProperty);
+        set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -289,6 +331,13 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         if (change.Property == IsShowTextProperty || change.Property == FormatProperty)
         {
             GenerateValueText();
+        }
+        
+        else if (change.Property == CornerRadiusProperty ||
+                 change.Property == CompactSpaceItemPositionProperty ||
+                 change.Property == CompactSpaceOrientationProperty)
+        {
+            ConfigureCornerRadius();
         }
     }
 
@@ -470,5 +519,30 @@ public abstract class AbstractColorPicker : AvaloniaButton,
 
         var hsvColor = color.ToHsv();
         return $"hsva({hsvColor.H:0}, {hsvColor.S * 100:0}%, {hsvColor.V * 100:0}%,  {hsvColor.A:0.00})";
+    }
+    
+    private void ConfigureCornerRadius()
+    {
+        EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
+            CornerRadius, 
+            IsUsedInCompactSpace, 
+            CompactSpaceItemPosition,
+            CompactSpaceOrientation);
+    }
+    
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+    
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+
+    double ICompactSpaceAware.GetBorderThickness()
+    {
+        return CompactSpaceOrientation ==  Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
     }
 }

@@ -14,17 +14,17 @@
         <ControlTemplate TargetType="atom:Button">
             <Panel>
                 <atom:WaveSpiritDecorator Name="{x:Static atom:ButtonThemeConstants.WaveSpiritPart}"
-                                          CornerRadius="{TemplateBinding CornerRadius}"
+                                          CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                           WaveType="{TemplateBinding WaveSpiritType}" />
                 <Border Name="ShadowsFrame"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                         Background="{TemplateBinding Background}" />
                 <atom:DashedBorder Name="Frame"
                                    Padding="{TemplateBinding Padding}"
                                    BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                                    BorderBrush="{TemplateBinding BorderBrush}"
                                    BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                    Background="{TemplateBinding Background}"
                                    StrokeDashArray="{x:Static atom:DashedButtonTheme.DashedStyle}">
                     <DockPanel Name="{x:Static atom:ButtonThemeConstants.RootLayoutPart}"
@@ -61,7 +61,7 @@
                         IsHitTestVisible="False"
                         BorderThickness="{DynamicResource {x:Static atom:SharedTokenKey.FocusVisualBorderThickness}}"
                         BorderBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorFocusBorder}}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                         Margin="{DynamicResource {x:Static atom:AdornerLayerTokenKey.FocusVisualMargin}}"
                         ZIndex="1" />
             </Panel>

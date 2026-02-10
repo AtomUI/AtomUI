@@ -17,7 +17,7 @@
                     BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
+                    CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                     Background="{TemplateBinding Background}">
                 <DockPanel Name="{x:Static atom:ButtonThemeConstants.RootLayoutPart}"
                            LastChildFill="True">

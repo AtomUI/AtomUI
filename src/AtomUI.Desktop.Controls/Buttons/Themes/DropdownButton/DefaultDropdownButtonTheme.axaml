@@ -14,17 +14,17 @@
         <ControlTemplate TargetType="atom:DropdownButton">
             <Panel>
                 <atom:WaveSpiritDecorator Name="{x:Static atom:ButtonThemeConstants.WaveSpiritPart}"
-                                          CornerRadius="{TemplateBinding CornerRadius}"
+                                          CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                           WaveType="{TemplateBinding WaveSpiritType}"/>
                 <Border Name="ShadowsFrame"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                         Background="{TemplateBinding Background}" />
                 <Border Name="Frame"
                         Padding="{TemplateBinding Padding}"
                         BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                         Background="{TemplateBinding Background}">
                     <DockPanel Name="{x:Static atom:ButtonThemeConstants.RootLayoutPart}"
                                LastChildFill="True">

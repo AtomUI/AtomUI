@@ -97,6 +97,16 @@ internal class CompactSpaceItem : Decorator, ICompactSpaceAware
         return false;
     }
 
+    bool ICompactSpaceAware.IgnoreZIndexChange()
+    {
+        if (Child is ICompactSpaceAware compactSpaceAware)
+        {
+            return compactSpaceAware.IgnoreZIndexChange();
+        }
+
+        return false;
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var size = base.MeasureOverride(availableSize);

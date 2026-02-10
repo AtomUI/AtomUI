@@ -500,59 +500,11 @@ public class Button : AvaloniaButton,
 
     private void ConfigureEffectiveCornerRadius()
     {
-        if (!IsUsedInCompactSpace)
-        {
-            EffectiveCornerRadius = CornerRadius;
-        }
-        else
-        {
-            if (SpaceItemPosition.First == CompactSpaceItemPosition)
-            {
-                if (CompactSpaceOrientation == Orientation.Horizontal)
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:CornerRadius.TopLeft,
-                        bottomLeft:CornerRadius.BottomLeft,
-                        topRight:0, 
-                        bottomRight:0);
-                }
-                else
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:CornerRadius.TopLeft,
-                        bottomLeft:0,
-                        topRight:CornerRadius.TopRight, 
-                        bottomRight:0);
-                }
-            }
-            else if (SpaceItemPosition.Middle == CompactSpaceItemPosition)
-            {
-                EffectiveCornerRadius = new CornerRadius(
-                    topLeft:0,
-                    bottomLeft:0,
-                    topRight:0, 
-                    bottomRight:0);
-            }
-            else if (SpaceItemPosition.Last == CompactSpaceItemPosition)
-            {
-                if (CompactSpaceOrientation == Orientation.Horizontal)
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:0,
-                        bottomLeft:0,
-                        topRight:CornerRadius.TopRight, 
-                        bottomRight:CornerRadius.BottomRight);
-                }
-                else
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:0,
-                        bottomLeft:CornerRadius.BottomLeft,
-                        topRight:0, 
-                        bottomRight:CornerRadius.BottomRight);
-                }
-            }
-        }
+        EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
+            CornerRadius, 
+            IsUsedInCompactSpace, 
+            CompactSpaceItemPosition,
+            CompactSpaceOrientation);
     }
 
     private void UpdatePseudoClasses()
@@ -569,7 +521,7 @@ public class Button : AvaloniaButton,
 
     void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
     {
-        IsUsedInCompactSpace = position != null;
+        IsUsedInCompactSpace     = position != null;
         CompactSpaceItemPosition = position;
     }
 

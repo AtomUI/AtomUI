@@ -215,61 +215,11 @@ public class TextBox : AvaloniaTextBox,
 
     private void ConfigureCornerRadius()
     {
-        if (IsUsedInCompactSpace &&
-            CompactSpaceItemPosition.HasValue &&
-            (!CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First) || !CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last)))
-        {
-            if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
-            {
-                if (CompactSpaceOrientation == Orientation.Horizontal)
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:CornerRadius.TopLeft,
-                        bottomLeft:CornerRadius.BottomLeft,
-                        topRight:0, 
-                        bottomRight:0);
-                }
-                else
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:CornerRadius.TopLeft,
-                        bottomLeft:0,
-                        topRight:CornerRadius.TopRight, 
-                        bottomRight:0);
-                }
-            }
-            else if ((CompactSpaceItemPosition & SpaceItemPosition.Middle) != 0)
-            {
-                EffectiveCornerRadius = new CornerRadius(
-                    topLeft:0,
-                    bottomLeft:0,
-                    topRight:0, 
-                    bottomRight:0);
-            }
-            else if ((CompactSpaceItemPosition & SpaceItemPosition.Last) != 0)
-            {
-                if (CompactSpaceOrientation == Orientation.Horizontal)
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:0,
-                        bottomLeft:0,
-                        topRight:CornerRadius.TopRight, 
-                        bottomRight:CornerRadius.BottomRight);
-                }
-                else
-                {
-                    EffectiveCornerRadius = new CornerRadius(
-                        topLeft:0,
-                        bottomLeft:CornerRadius.BottomLeft,
-                        topRight:0, 
-                        bottomRight:CornerRadius.BottomRight);
-                }
-            }
-        }
-        else
-        {
-            EffectiveCornerRadius = CornerRadius;
-        }
+        EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
+            CornerRadius, 
+            IsUsedInCompactSpace, 
+            CompactSpaceItemPosition,
+            CompactSpaceOrientation);
     }
 
     private void ConfigureEffectiveShowClearButton()

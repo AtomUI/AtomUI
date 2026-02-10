@@ -152,7 +152,7 @@ public class CompactSpace : TemplatedControl,
 
             case NotifyCollectionChangedAction.Remove:
             {
-                var oldItems          = e.OldItems!.OfType<Control>().ToList();
+                var oldItems             = e.OldItems!.OfType<Control>().ToList();
                 var oldCompactSpaceItems = new List<CompactSpaceItem>();
                 foreach (var oldItem in _contentLayout.Children)
                 {
@@ -194,11 +194,14 @@ public class CompactSpace : TemplatedControl,
     {
         if (compactSpaceItem.Child != null)
         {
-            var target = compactSpaceItem.Child;
-            
-            target.GotFocus       += HandleGotFocus;
-            target.PointerEntered += HandlePointerEntered;
-            target.PointerExited  += HandlePointerExited;
+            var target                  = compactSpaceItem.Child;
+            var targetCompactSpaceAware = target as ICompactSpaceAware;
+            if (targetCompactSpaceAware != null && !targetCompactSpaceAware.IgnoreZIndexChange())
+            {
+                target.GotFocus       += HandleGotFocus;
+                target.PointerEntered += HandlePointerEntered;
+                target.PointerExited  += HandlePointerExited;
+            }
 
             target.PropertyChanged += CompactSpaceItemChildPropertyChanged;
             SetItemSize(compactSpaceItem, GetItemSize(target));
@@ -209,7 +212,7 @@ public class CompactSpace : TemplatedControl,
             };
             _childClassesChangedHandlers.Add(target, childClassesChangedHandler);
             target.Classes.CollectionChanged += childClassesChangedHandler;
-            if (target is ICompactSpaceAware compactSpaceAware && compactSpaceAware.IsAlwaysActiveZIndex())
+            if (targetCompactSpaceAware != null && targetCompactSpaceAware.IsAlwaysActiveZIndex())
             {
                 compactSpaceItem.ZIndex = ACTIVE_ZINDEX;
             }
@@ -227,10 +230,14 @@ public class CompactSpace : TemplatedControl,
     {
         if (compactSpaceItem.Child != null)
         {
-            var target = compactSpaceItem.Child;
-            target.GotFocus        -= HandleGotFocus;
-            target.PointerEntered  -= HandlePointerEntered;
-            target.PointerExited   -= HandlePointerExited;
+            var target                  = compactSpaceItem.Child;
+            var targetCompactSpaceAware = target as ICompactSpaceAware;
+            if (targetCompactSpaceAware != null && !targetCompactSpaceAware.IgnoreZIndexChange())
+            {
+                target.GotFocus       -= HandleGotFocus;
+                target.PointerEntered -= HandlePointerEntered;
+                target.PointerExited  -= HandlePointerExited;
+            }
             target.PropertyChanged -= CompactSpaceItemChildPropertyChanged;
         
             if (_childClassesChangedHandlers.TryGetValue(target, out var childClassesChangedHandler))
@@ -366,7 +373,7 @@ public class CompactSpace : TemplatedControl,
         if (_contentLayout != null)
         {
             // 检查 filler 位置和数量
-            var fillerCount = 0;
+            var fillerCount   = 0;
             var childrenCount = _contentLayout.Children.Count;
             for (var i = 0; i < childrenCount; i++)
             {
@@ -540,5 +547,55 @@ public class CompactSpace : TemplatedControl,
             return children[index];
         }
         return null;
+    }
+
+    internal static CornerRadius CalculateEffectiveCornerRadius(CornerRadius cornerRadius, 
+                                                                bool isUsedInCompactSpace,
+                                                                SpaceItemPosition? compactSpaceItemPosition,
+                                                                Orientation compactSpaceOrientation)
+    {
+        var topLeft     = cornerRadius.TopLeft;
+        var topRight    = cornerRadius.TopRight;
+        var bottomRight = cornerRadius.BottomRight;
+        var bottomLeft  = cornerRadius.BottomLeft;
+        if (isUsedInCompactSpace &&
+            compactSpaceItemPosition.HasValue &&
+            (!compactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First) || !compactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last)))
+        {
+            if (compactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First))
+            {
+                if (compactSpaceOrientation == Orientation.Horizontal)
+                {
+                    topRight    = 0;
+                    bottomRight = 0;
+                }
+                else
+                {
+                    bottomLeft  = 0;
+                    bottomRight = 0;
+                }
+            }
+            else if (compactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Middle))
+            {
+                topRight    = 0;
+                topLeft     = 0;
+                bottomLeft  = 0;
+                bottomRight = 0;
+            }
+            else if (compactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last))
+            {
+                if (compactSpaceOrientation == Orientation.Horizontal)
+                {
+                    topLeft    = 0;
+                    bottomLeft = 0;
+                }
+                else
+                {
+                    topLeft  = 0;
+                    topRight = 0;
+                }
+            }
+        }
+        return new CornerRadius(topLeft, topRight, bottomRight, bottomLeft);
     }
 }

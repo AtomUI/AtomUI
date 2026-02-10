@@ -8,10 +8,8 @@ internal interface ICompactSpaceAware
     void NotifyPositionChange(SpaceItemPosition? position);
     void NotifyOrientationChange(Orientation orientation);
 
-    bool IsAlwaysActiveZIndex()
-    {
-        return false;
-    }
+    bool IsAlwaysActiveZIndex() => false;
+    bool IgnoreZIndexChange() => false;
 
     double GetBorderThickness();
 }

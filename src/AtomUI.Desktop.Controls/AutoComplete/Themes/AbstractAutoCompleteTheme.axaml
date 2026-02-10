@@ -10,6 +10,7 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="PlaceholderForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
         <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.OptionHeight}}" />
         <Setter Property="PopupContentPadding"
                 Value="{DynamicResource {x:Static atom:AutoCompleteTokenKey.PopupContentPadding}}" />

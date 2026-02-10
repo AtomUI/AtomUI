@@ -63,7 +63,7 @@ public class AutoCompleteTextArea : AbstractAutoComplete
 
     private void ConfigurePopupOffset()
     {
-        if (TextBox is AutoCompleteTextAreaBox textBox)
+        if (TextInputBox is AutoCompleteTextAreaBox textBox)
         {
             var caretBounds = textBox.GetCaretBounds(this);
             if (_popup != null)

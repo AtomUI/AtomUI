@@ -20,6 +20,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -104,7 +105,10 @@ public class AbstractAutoComplete : TemplatedControl,
         AddOnDecoratedBox.StatusProperty.AddOwner<AbstractAutoComplete>();
     
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, string?>(nameof(PlaceholderText));
+        TextBox.PlaceholderTextProperty.AddOwner<AbstractAutoComplete>();
+    
+    public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+        TextBox.PlaceholderForegroundProperty.AddOwner<AbstractAutoComplete>();
     
     public static readonly StyledProperty<IEnumerable<IAutoCompleteOption>?> OptionsSourceProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, IEnumerable<IAutoCompleteOption>?>(nameof(OptionsSource));
@@ -162,9 +166,9 @@ public class AbstractAutoComplete : TemplatedControl,
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(
             nameof(IsCompletionEnabled));
     
-    public static readonly StyledProperty<object?> SelectedItemProperty =
-        AvaloniaProperty.Register<AbstractAutoComplete, object?>(
-            nameof(SelectedItem),
+    public static readonly StyledProperty<IAutoCompleteOption?> SelectedOptionProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, IAutoCompleteOption?>(
+            nameof(SelectedOption),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
     
@@ -281,6 +285,12 @@ public class AbstractAutoComplete : TemplatedControl,
         get => GetValue(PlaceholderTextProperty);
         set => SetValue(PlaceholderTextProperty, value);
     }
+
+    public IBrush? PlaceholderForeground
+    {
+        get => GetValue(PlaceholderForegroundProperty);
+        set => SetValue(PlaceholderForegroundProperty, value);
+    }
     
     public IEnumerable<IAutoCompleteOption>? OptionsSource
     {
@@ -381,10 +391,10 @@ public class AbstractAutoComplete : TemplatedControl,
         set => SetValue(IsCompletionEnabledProperty, value);
     }
     
-    public object? SelectedItem
+    public IAutoCompleteOption? SelectedOption
     {
-        get => GetValue(SelectedItemProperty);
-        set => SetValue(SelectedItemProperty, value);
+        get => GetValue(SelectedOptionProperty);
+        set => SetValue(SelectedOptionProperty, value);
     }
     
     public bool ClearSelectionOnLostFocus
@@ -536,21 +546,21 @@ public class AbstractAutoComplete : TemplatedControl,
         set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
     }
     
-    protected AvaloniaTextBox? TextBox
+    protected AvaloniaTextBox? TextInputBox
     {
-        get => _textBox;
+        get => _textInputBox;
         set
         {
-            _textBoxSubscriptions?.Dispose();
-            _textBox = value;
+            _textInputBoxSubscriptions?.Dispose();
+            _textInputBox = value;
 
             // Attach handlers
-            if (_textBox != null)
+            if (_textInputBox != null)
             {
-                _textBoxSubscriptions =
-                    _textBox.GetObservable(AvaloniaTextBox.TextProperty)
+                _textInputBoxSubscriptions =
+                    _textInputBox.GetObservable(AvaloniaTextBox.TextProperty)
                             .Skip(1)
-                            .Subscribe(_ => HandleTextBoxTextChanged());
+                            .Subscribe(_ => HandleTextInputBoxTextChanged());
 
                 if (Value != null)
                 {
@@ -560,25 +570,25 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private int TextBoxSelectionStart
+    private int TextInputBoxSelectionStart
     {
         get
         {
-            if (TextBox != null)
+            if (TextInputBox != null)
             {
-                return Math.Min(TextBox.SelectionStart, TextBox.SelectionEnd);
+                return Math.Min(TextInputBox.SelectionStart, TextInputBox.SelectionEnd);
             }
             return 0;
         }
     }
     
-    private int TextBoxSelectionLength
+    private int TextInputBoxSelectionLength
     {
         get
         {
-            if (TextBox != null)
+            if (TextInputBox != null)
             {
-                return Math.Abs(TextBox.SelectionEnd - TextBox.SelectionStart);
+                return Math.Abs(TextInputBox.SelectionEnd - TextInputBox.SelectionStart);
             }
             return 0;
         }
@@ -591,18 +601,18 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             if (_candidateList != null)
             {
-                _candidateList.Commit           -= HandleCandidateListComplete;
-                _candidateList.Cancel           -= HandleCandidateListCanceled;
-                _candidateList.ItemsSource      =  null;
+                _candidateList.Commit      -= HandleCandidateListComplete;
+                _candidateList.Cancel      -= HandleCandidateListCanceled;
+                _candidateList.ItemsSource =  null;
             }
 
             _candidateList = value;
 
             if (_candidateList != null)
             {
-                _candidateList.Commit           += HandleCandidateListComplete;
-                _candidateList.Cancel           += HandleCandidateListCanceled;
-                _candidateList.ItemsSource      =  _view;
+                _candidateList.Commit      += HandleCandidateListComplete;
+                _candidateList.Cancel      += HandleCandidateListCanceled;
+                _candidateList.ItemsSource =  _view;
             }
         }
     }
@@ -613,7 +623,7 @@ public class AbstractAutoComplete : TemplatedControl,
     #endregion
     private readonly ItemCollection _options = new();
     private protected DispatcherTimer? _delayTimer;
-    private protected AvaloniaTextBox? _textBox;
+    private protected AvaloniaTextBox? _textInputBox;
     private protected IList<IAutoCompleteOption>? _view;
     private protected ICandidateList? _candidateList;
     private protected Popup? _popup;
@@ -627,10 +637,10 @@ public class AbstractAutoComplete : TemplatedControl,
     private int _textSelectionStart;
     private CompositeDisposable? _subscriptionsOnOpen;
     private CancellationTokenSource? _populationCancellationTokenSource;
-    private IDisposable? _textBoxSubscriptions;
+    private IDisposable? _textInputBoxSubscriptions;
     private bool _userCalledPopulate;
     private bool _ignoreTextSelectionChange;
-    private bool _skipSelectedItemTextUpdate;
+    private bool _skipSelectedOptionTextUpdate;
     private bool _isFocused;
     
     static AbstractAutoComplete()
@@ -638,7 +648,7 @@ public class AbstractAutoComplete : TemplatedControl,
         IsTabStopProperty.OverrideDefaultValue<AbstractAutoComplete>(false);
         FocusableProperty.OverrideDefaultValue<AbstractAutoComplete>(true);
         
-        SelectedItemProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleSelectedItemPropertyChanged(e));
+        SelectedOptionProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleSelectedOptionPropertyChanged(e));
         IsDropDownOpenProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleIsDropDownOpenChanged(e));
         MinimumPopulateDelayProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandleMinimumPopulateDelayChanged(e));
         PlacementProperty.Changed.AddClassHandler<AbstractAutoComplete>((x,e) => x.HandlePlacementChanged());
@@ -714,10 +724,10 @@ public class AbstractAutoComplete : TemplatedControl,
         if (hasFocus)
         {
         
-            if (!wasFocused && TextBox != null && TextBoxSelectionLength <= 0)
+            if (!wasFocused && TextInputBox != null && TextInputBoxSelectionLength <= 0)
             {
-                TextBox.Focus();
-                TextBox.SelectAll();
+                TextInputBox.Focus();
+                TextInputBox.SelectAll();
             }
         }
         else
@@ -733,12 +743,12 @@ public class AbstractAutoComplete : TemplatedControl,
         
             _userCalledPopulate = false;
         
-            var textBoxContextMenuIsOpen = TextBox?.ContextFlyout?.IsOpen == true || TextBox?.ContextMenu?.IsOpen == true;
+            var TextInputBoxContextMenuIsOpen = TextInputBox?.ContextFlyout?.IsOpen == true || TextInputBox?.ContextMenu?.IsOpen == true;
             var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
         
-            if (!textBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
+            if (!TextInputBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
             {
-                ClearTextBoxSelection();
+                ClearTextInputBoxSelection();
             }
         }
         
@@ -829,13 +839,13 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    private void ClearTextBoxSelection()
+    private void ClearTextInputBoxSelection()
     {
-        if (TextBox != null)
+        if (TextInputBox != null)
         {
-            int length = TextBox.Text?.Length ?? 0;
-            TextBox.SelectionStart = length;
-            TextBox.SelectionEnd   = length;
+            int length = TextInputBox.Text?.Length ?? 0;
+            TextInputBox.SelectionStart = length;
+            TextInputBox.SelectionEnd   = length;
         }
     }
     
@@ -965,10 +975,10 @@ public class AbstractAutoComplete : TemplatedControl,
         
         newText ??= string.Empty;
         
-        // The TextBox.TextChanged event was not firing immediately and
+        // The TextInputBox.TextChanged event was not firing immediately and
         // was causing an immediate update, even with wrapping. If there is
         // a selection currently, no update should happen.
-        if (IsCompletionEnabled && TextBox != null && TextBoxSelectionLength > 0 && TextBoxSelectionStart != (TextBox.Text?.Length ?? 0))
+        if (IsCompletionEnabled && TextInputBox != null && TextInputBoxSelectionLength > 0 && TextInputBoxSelectionStart != (TextInputBox.Text?.Length ?? 0))
         {
             return;
         }
@@ -999,12 +1009,12 @@ public class AbstractAutoComplete : TemplatedControl,
         else
         {
             FilterValue = string.Empty;
-            if (SelectedItem != null)
+            if (SelectedOption != null)
             {
-                _skipSelectedItemTextUpdate = true;
+                _skipSelectedOptionTextUpdate = true;
             }
         
-            SetCurrentValue(SelectedItemProperty, null);
+            SetCurrentValue(SelectedOptionProperty, null);
         
             if (IsDropDownOpen)
             {
@@ -1029,11 +1039,11 @@ public class AbstractAutoComplete : TemplatedControl,
             callTextChanged = true;
         }
         
-        // Update the TextBox's Text dependency property
-        if ((userInitiated == null || userInitiated == false) && TextBox != null && TextBox.Text != value)
+        // Update the TextInputBox's Text dependency property
+        if ((userInitiated == null || userInitiated == false) && TextInputBox != null && TextInputBox.Text != value)
         {
             _ignoreValuePropertyChange++;
-            TextBox.Text = value ?? string.Empty;
+            TextInputBox.Text = value ?? string.Empty;
         
             // Text dependency property value was set, fire event
             if (!callTextChanged && (Value == value || Value == null))
@@ -1228,7 +1238,7 @@ public class AbstractAutoComplete : TemplatedControl,
         UpdatePseudoClasses();
     }
     
-    private void HandleSelectedItemPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+    private void HandleSelectedOptionPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (_ignorePropertyChange)
         {
@@ -1237,13 +1247,13 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     
         // Update the text display
-        if (_skipSelectedItemTextUpdate)
+        if (_skipSelectedOptionTextUpdate)
         {
-            _skipSelectedItemTextUpdate = false;
+            _skipSelectedOptionTextUpdate = false;
         }
         else
         {
-            HandleSelectedItemChanged(e.NewValue);
+            HandleSelectedOptionChanged(e.NewValue);
         }
     
         // Fire the SelectionChanged event
@@ -1343,7 +1353,7 @@ public class AbstractAutoComplete : TemplatedControl,
             _popup.Closed -= HandlePopupClosed;
         }
 
-        TextBox       = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
+        TextInputBox       = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
         _popup        = e.NameScope.Find<Popup>(AutoCompleteThemeConstants.PopupPart);
         CandidateList = e.NameScope.Find<ICandidateList>(AutoCompleteThemeConstants.CandidateListPart);
 
@@ -1472,14 +1482,14 @@ public class AbstractAutoComplete : TemplatedControl,
         }
     }
     
-    protected virtual void HandleTextBoxTextChanged()
+    protected virtual void HandleTextInputBoxTextChanged()
     {
-        //Uses Dispatcher.Post to allow the TextBox selection to update before processing
+        //Uses Dispatcher.Post to allow the TextInputBox selection to update before processing
         Dispatcher.UIThread.Post(() =>
         {
             // Call the central updated text method as a user-initiated action
-            HandleValueUpdated(_textBox!.Text, true);
-            if (TextBox != null && string.IsNullOrWhiteSpace(TextBox.Text))
+            HandleValueUpdated(_textInputBox!.Text, true);
+            if (TextInputBox != null && string.IsNullOrWhiteSpace(TextInputBox.Text))
             {
                 ClearView();
             }
@@ -1588,10 +1598,10 @@ public class AbstractAutoComplete : TemplatedControl,
         // only valid when there is data and the user initiated the action.
         if (_view?.Count > 0)
         {
-            if (IsCompletionEnabled && TextBox != null && userInitiated)
+            if (IsCompletionEnabled && TextInputBox != null && userInitiated)
             {
-                int currentLength = TextBox.Text?.Length ?? 0;
-                int selectionStart = TextBoxSelectionStart;
+                int currentLength = TextInputBox.Text?.Length ?? 0;
+                int selectionStart = TextInputBoxSelectionStart;
                 if (selectionStart == value?.Length && selectionStart > _textSelectionStart)
                 {
                     // When the FilterMode dependency property is set to
@@ -1604,7 +1614,7 @@ public class AbstractAutoComplete : TemplatedControl,
                         ? _view[0]
                         : TryGetMatch(value, _view, ValueFilterFactory.BuildFilter(ValueFilterMode.StartsWith));
                 
-                    // If the search was successful, update SelectedItem
+                    // If the search was successful, update SelectedOption
                     if (top != null)
                     {
                         newSelectedItem = top;
@@ -1617,8 +1627,8 @@ public class AbstractAutoComplete : TemplatedControl,
                             // Update the text
                             UpdateValue(topString);
                             // Select the text past the user's caret
-                            TextBox.SelectionStart = currentLength;
-                            TextBox.SelectionEnd = topString?.Length ?? 0;
+                            TextInputBox.SelectionStart = currentLength;
+                            TextInputBox.SelectionEnd = topString?.Length ?? 0;
                         }
                     }
                 }
@@ -1638,19 +1648,19 @@ public class AbstractAutoComplete : TemplatedControl,
         
         // Update the selected item property
         
-        if (SelectedItem != newSelectedItem)
+        if (SelectedOption != newSelectedItem)
         {
-            _skipSelectedItemTextUpdate = true;
+            _skipSelectedOptionTextUpdate = true;
         }
-        SetCurrentValue(SelectedItemProperty, newSelectedItem);
+        SetCurrentValue(SelectedOptionProperty, newSelectedItem);
         
         // Restore updates for TextSelection
         if (_ignoreTextSelectionChange)
         {
             _ignoreTextSelectionChange = false;
-            if (TextBox != null)
+            if (TextInputBox != null)
             {
-                _textSelectionStart = TextBoxSelectionStart;
+                _textSelectionStart = TextInputBoxSelectionStart;
             }
         }
     }
@@ -1691,7 +1701,7 @@ public class AbstractAutoComplete : TemplatedControl,
         return value;
     }
     
-    private void HandleSelectedItemChanged(object? newItem)
+    private void HandleSelectedOptionChanged(object? newItem)
     {
         string? text = null;
 
@@ -1703,20 +1713,20 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             text = option.Value?.ToString() ?? option.Header?.ToString() ?? option.Key;
         }
-        // Update the Text property and the TextBox values
+        // Update the Text property and the TextInputBox values
         UpdateValue(text);
         
         // Move the caret to the end of the text box
-        ClearTextBoxSelection();
+        ClearTextInputBoxSelection();
     }
     
     private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
     {
-        SetCurrentValue(SelectedItemProperty, _candidateList!.SelectedItem);
+        SetCurrentValue(SelectedOptionProperty, _candidateList!.SelectedItem);
         SetCurrentValue(IsDropDownOpenProperty, false);
         // Text should not be selected
-        ClearTextBoxSelection();
-        TextBox!.Focus();
+        ClearTextInputBoxSelection();
+        TextInputBox!.Focus();
     }
     
     private void HandleCandidateListCanceled(object? sender, RoutedEventArgs e)
@@ -1753,8 +1763,8 @@ public class AbstractAutoComplete : TemplatedControl,
             // is pressed, close the drop-down
             if (e.Source is Control sourceControl)
             {
-                var textBox = sourceControl.FindAncestorOfType<AvaloniaTextBox>();
-                if (textBox != null)
+                var TextInputBox = sourceControl.FindAncestorOfType<AvaloniaTextBox>();
+                if (TextInputBox != null)
                 {
                     _ignorePopupClose = true;
                     return;

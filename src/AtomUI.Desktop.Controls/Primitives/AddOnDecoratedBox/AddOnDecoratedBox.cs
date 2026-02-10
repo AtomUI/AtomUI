@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives.Themes;
@@ -409,7 +410,9 @@ internal class AddOnDecoratedBox : ContentControl,
         var bottomLeftRadius  = CornerRadius.BottomLeft;
         var bottomRightRadius = CornerRadius.BottomRight;
         
-        if (IsUsedInCompactSpace && (CompactSpaceItemPosition & (SpaceItemPosition.First | SpaceItemPosition.Last)) == 0)
+        if (IsUsedInCompactSpace && CompactSpaceItemPosition.HasValue &&
+            (!CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First) || 
+             !CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last)))
         {
             if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
             {
@@ -582,9 +585,10 @@ internal class AddOnDecoratedBox : ContentControl,
                 bottomRightRadius = 0;
             }
 
-            if (IsUsedInCompactSpace && (CompactSpaceItemPosition & (SpaceItemPosition.First | SpaceItemPosition.Last)) == 0)
+            if (IsUsedInCompactSpace && CompactSpaceItemPosition.HasValue &&
+                (!CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First) || !CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last)))
             {
-                if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
+                if (CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First))
                 {
                     if (CompactSpaceOrientation == Orientation.Horizontal)
                     {
@@ -597,14 +601,14 @@ internal class AddOnDecoratedBox : ContentControl,
                         bottomRightRadius = 0;
                     }
                 }
-                else if ((CompactSpaceItemPosition & SpaceItemPosition.Middle) != 0)
+                else if (CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Middle))
                 {
                      topLeftRadius     = 0;
                      topRightRadius    = 0;
                      bottomLeftRadius  = 0;
                      bottomRightRadius = 0;
                 }
-                else if ((CompactSpaceItemPosition & SpaceItemPosition.Last) != 0)
+                else if (CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last))
                 {
                     if (CompactSpaceOrientation == Orientation.Horizontal)
                     {
@@ -628,7 +632,6 @@ internal class AddOnDecoratedBox : ContentControl,
         {
             SetCurrentValue(InnerBoxCornerRadiusProperty, new CornerRadius(0));
         }
-       
     }
 
     private void ConfigureInnerBoxBorderThickness()

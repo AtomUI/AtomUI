@@ -143,7 +143,7 @@ internal class NodeSwitcherButton : ToggleButton
     #endregion
 
     private readonly BorderRenderHelper _borderRenderHelper;
-    private TreeViewItem? _owningTreeItem;
+    private TreeItem? _owningTreeItem;
 
     static NodeSwitcherButton()
     {
@@ -260,7 +260,7 @@ internal class NodeSwitcherButton : ToggleButton
             return;
         }
         
-        _owningTreeItem ??= this.FindAncestorOfType<TreeViewItem>();
+        _owningTreeItem ??= this.FindAncestorOfType<TreeItem>();
         Debug.Assert(_owningTreeItem != null);
         if (_owningTreeItem.HasTreeItemDataLoader && !_owningTreeItem.AsyncLoaded)
         {

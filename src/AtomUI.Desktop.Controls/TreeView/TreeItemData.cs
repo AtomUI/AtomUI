@@ -1,12 +1,12 @@
 using AtomUI.Controls;
-using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public record TreeViewItemData : ITreeViewItemData, ISelectTagTextProvider
+public record TreeItemData : ITreeItemData, ISelectTagTextProvider
 {
-    public ITreeNode<ITreeViewItemData>? ParentNode { get; private set; }
+    public ITreeNode<ITreeItemData>? ParentNode { get; private set; }
     public TreeNodeKey? ItemKey { get; init; }
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
@@ -20,8 +20,10 @@ public record TreeViewItemData : ITreeViewItemData, ISelectTagTextProvider
     public object? Value { get; set; }
     string? ISelectTagTextProvider.TagText => Header?.ToString();
 
-    private IList<ITreeViewItemData> _children = [];
-    public IList<ITreeViewItemData> Children
+    private IList<ITreeItemData> _children = [];
+    
+    [Content]
+    public IList<ITreeItemData> Children
     {
         get => _children;
         init
@@ -29,7 +31,7 @@ public record TreeViewItemData : ITreeViewItemData, ISelectTagTextProvider
             _children = value;
             foreach (var child in _children)
             {
-                if (child is TreeViewItemData item)
+                if (child is TreeItemData item)
                 {
                     item.ParentNode = this;
                 }
@@ -37,7 +39,7 @@ public record TreeViewItemData : ITreeViewItemData, ISelectTagTextProvider
         }
     }
     
-    public void UpdateParentNode(ITreeViewItemData? parentNode)
+    public void UpdateParentNode(ITreeItemData? parentNode)
     {
         ParentNode = parentNode;
     }

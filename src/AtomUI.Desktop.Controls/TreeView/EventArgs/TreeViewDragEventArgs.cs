@@ -2,9 +2,9 @@ namespace AtomUI.Desktop.Controls;
 
 public class TreeViewDragStartedEventArgs : EventArgs
 {
-    public TreeViewItem Item { get; }
+    public TreeItem Item { get; }
 
-    public TreeViewDragStartedEventArgs(TreeViewItem item)
+    public TreeViewDragStartedEventArgs(TreeItem item)
     {
         Item = item;
     }
@@ -12,9 +12,9 @@ public class TreeViewDragStartedEventArgs : EventArgs
 
 public class TreeViewDragCompletedEventArgs : EventArgs
 {
-    public TreeViewItem Item { get; }
+    public TreeItem Item { get; }
 
-    public TreeViewDragCompletedEventArgs(TreeViewItem item)
+    public TreeViewDragCompletedEventArgs(TreeItem item)
     {
         Item = item;
     }
@@ -22,10 +22,10 @@ public class TreeViewDragCompletedEventArgs : EventArgs
 
 public class TreeViewDragEnterEventArgs : EventArgs
 {
-    public TreeViewItem DraggedItem { get; }
-    public TreeViewItem DragOverItem { get; }
+    public TreeItem DraggedItem { get; }
+    public TreeItem DragOverItem { get; }
 
-    public TreeViewDragEnterEventArgs(TreeViewItem draggedItem, TreeViewItem dragOverItem)
+    public TreeViewDragEnterEventArgs(TreeItem draggedItem, TreeItem dragOverItem)
     {
         DraggedItem  = draggedItem;
         DragOverItem = dragOverItem;
@@ -34,10 +34,10 @@ public class TreeViewDragEnterEventArgs : EventArgs
 
 public class TreeViewDragLeaveEventArgs : EventArgs
 {
-    public TreeViewItem DraggedItem { get; }
-    public TreeViewItem DragOverItem { get; }
+    public TreeItem DraggedItem { get; }
+    public TreeItem DragOverItem { get; }
 
-    public TreeViewDragLeaveEventArgs(TreeViewItem draggedItem, TreeViewItem dragOverItem)
+    public TreeViewDragLeaveEventArgs(TreeItem draggedItem, TreeItem dragOverItem)
     {
         DraggedItem  = draggedItem;
         DragOverItem = dragOverItem;
@@ -46,10 +46,10 @@ public class TreeViewDragLeaveEventArgs : EventArgs
 
 public class TreeViewDragOverEventArgs : EventArgs
 {
-    public TreeViewItem DraggedItem { get; }
-    public TreeViewItem DragOverItem { get; }
+    public TreeItem DraggedItem { get; }
+    public TreeItem DragOverItem { get; }
 
-    public TreeViewDragOverEventArgs(TreeViewItem draggedItem, TreeViewItem dragOverItem)
+    public TreeViewDragOverEventArgs(TreeItem draggedItem, TreeItem dragOverItem)
     {
         DraggedItem  = draggedItem;
         DragOverItem = dragOverItem;
@@ -58,12 +58,12 @@ public class TreeViewDragOverEventArgs : EventArgs
 
 public class TreeViewDroppedEventArgs : EventArgs
 {
-    public TreeViewItem DraggedItem { get; }
-    public TreeViewItem? DroppedItem { get; }
+    public TreeItem DraggedItem { get; }
+    public TreeItem? DroppedItem { get; }
     
     public int DropIndex { get; }
 
-    public TreeViewDroppedEventArgs(TreeViewItem draggedItem, TreeViewItem? droppedItem, int dropIndex)
+    public TreeViewDroppedEventArgs(TreeItem draggedItem, TreeItem? droppedItem, int dropIndex)
     {
         DraggedItem = draggedItem;
         DroppedItem = droppedItem;

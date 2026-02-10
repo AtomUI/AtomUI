@@ -14,20 +14,20 @@
                            DefaultExpandedPaths="{Binding BasicTreeViewDefaultExpandedPaths}"
                            DefaultSelectedPaths="{Binding BasicTreeViewDefaultSelectedPaths}"
                            DefaultCheckedPaths="{Binding BasicTreeViewDefaultCheckedPaths}">
-                <atom:TreeViewItem Header="parent 1" ItemKey="0-0">
-                    <atom:TreeViewItem Header="parent 1-0" ItemKey="0-0-0">
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-0" IsEnabled="False"/>
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-1" />
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="parent 1-1" ItemKey="0-0-1">
-                        <atom:TreeViewItem Header="sss" ItemKey="0-0-1-0">
-                            <atom:TreeViewItem Header="ccc" ItemKey="0-0-1-0-0" />
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="xxx" ItemKey="0-0-1-1">
-                            <atom:TreeViewItem Header="aaaa" ItemKey="0-0-1-1-0" />
-                        </atom:TreeViewItem>
-                    </atom:TreeViewItem>
-                </atom:TreeViewItem>
+                <atom:TreeItem Header="parent 1" ItemKey="0-0">
+                    <atom:TreeItem Header="parent 1-0" ItemKey="0-0-0">
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-0-0" IsEnabled="False"/>
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-0-1" />
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="parent 1-1" ItemKey="0-0-1">
+                        <atom:TreeItem Header="sss" ItemKey="0-0-1-0">
+                            <atom:TreeItem Header="ccc" ItemKey="0-0-1-0-0" />
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="xxx" ItemKey="0-0-1-1">
+                            <atom:TreeItem Header="aaaa" ItemKey="0-0-1-1-0" />
+                        </atom:TreeItem>
+                    </atom:TreeItem>
+                </atom:TreeItem>
             </atom:TreeView>
         </gallery:ShowCaseItem>
         
@@ -52,10 +52,10 @@
             Title="Block Node"
             Description="Block Node.">
             <atom:TreeView ToggleType="CheckBox" IsDefaultExpandAll="True" NodeHoverMode="Block">
-                <atom:TreeViewItem Header="parent">
-                    <atom:TreeViewItem Header="child 1" IsEnabled="False" />
-                    <atom:TreeViewItem Header="child 2" IsIndicatorEnabled="False"/>
-                </atom:TreeViewItem>
+                <atom:TreeItem Header="parent">
+                    <atom:TreeItem Header="child 1" IsEnabled="False" />
+                    <atom:TreeItem Header="child 2" IsIndicatorEnabled="False"/>
+                </atom:TreeItem>
             </atom:TreeView>
         </gallery:ShowCaseItem>
         
@@ -91,27 +91,27 @@
                                NodeHoverMode="{Binding TreeViewNodeHoverMode}"
                                IsSwitcherRotation="{Binding ShowLineSwitchChecked, Converter={x:Static BoolConverters.Not}}"
                                x:DataType="viewModels:TreeViewViewModel">
-                    <atom:TreeViewItem Header="parent 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
+                    <atom:TreeItem Header="parent 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
                                        IsExpanded="True">
-                        <atom:TreeViewItem Header="parent 1-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
+                        <atom:TreeItem Header="parent 1-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}"
                                            IsExpanded="True">
-                            <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                            <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="parent 1-1">
-                            <atom:TreeViewItem Header="leaf" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="parent 1-2">
-                            <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                            <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                        </atom:TreeViewItem>
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="parent 2">
-                        <atom:TreeViewItem Header="parent 2-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}">
-                            <atom:TreeViewItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                            <atom:TreeViewItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
-                        </atom:TreeViewItem>
-                    </atom:TreeViewItem>
+                            <atom:TreeItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                            <atom:TreeItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="parent 1-1">
+                            <atom:TreeItem Header="leaf" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="parent 1-2">
+                            <atom:TreeItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                            <atom:TreeItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeItem>
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="parent 2">
+                        <atom:TreeItem Header="parent 2-0" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}">
+                            <atom:TreeItem Header="leaf 1" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                            <atom:TreeItem Header="leaf 2" Icon="{antdicons:AntDesignIconProvider Kind=CarryOutOutlined}" />
+                        </atom:TreeItem>
+                    </atom:TreeItem>
                 </atom:TreeView>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -120,33 +120,33 @@
             Title="draggable"
             Description="Drag treeNode to insert after the other treeNode or insert into the other parent TreeNode.">
             <atom:TreeView IsDraggable="True" NodeHoverMode="Block">
-                <atom:TreeViewItem Header="0-0">
-                    <atom:TreeViewItem Header="0-0-0">
-                        <atom:TreeViewItem Header="0-0-0-0" />
-                        <atom:TreeViewItem Header="0-0-0-1" />
-                        <atom:TreeViewItem Header="0-0-0-2" />
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="0-0-1">
-                        <atom:TreeViewItem Header="0-0-1-0" />
-                        <atom:TreeViewItem Header="0-0-1-1" />
-                        <atom:TreeViewItem Header="0-0-1-2" />
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="0-0-2" />
-                </atom:TreeViewItem>
-                <atom:TreeViewItem Header="0-1">
-                    <atom:TreeViewItem Header="0-1-0">
-                        <atom:TreeViewItem Header="0-1-0-0" />
-                        <atom:TreeViewItem Header="0-1-0-1" />
-                        <atom:TreeViewItem Header="0-1-0-2" />
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="0-1-1">
-                        <atom:TreeViewItem Header="0-1-1-0" />
-                        <atom:TreeViewItem Header="0-1-1-1" />
-                        <atom:TreeViewItem Header="0-1-1-2" />
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="0-1-2" />
-                </atom:TreeViewItem>
-                <atom:TreeViewItem Header="0-2" />
+                <atom:TreeItem Header="0-0">
+                    <atom:TreeItem Header="0-0-0">
+                        <atom:TreeItem Header="0-0-0-0" />
+                        <atom:TreeItem Header="0-0-0-1" />
+                        <atom:TreeItem Header="0-0-0-2" />
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="0-0-1">
+                        <atom:TreeItem Header="0-0-1-0" />
+                        <atom:TreeItem Header="0-0-1-1" />
+                        <atom:TreeItem Header="0-0-1-2" />
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="0-0-2" />
+                </atom:TreeItem>
+                <atom:TreeItem Header="0-1">
+                    <atom:TreeItem Header="0-1-0">
+                        <atom:TreeItem Header="0-1-0-0" />
+                        <atom:TreeItem Header="0-1-0-1" />
+                        <atom:TreeItem Header="0-1-0-2" />
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="0-1-1">
+                        <atom:TreeItem Header="0-1-1-0" />
+                        <atom:TreeItem Header="0-1-1-1" />
+                        <atom:TreeItem Header="0-1-1-2" />
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="0-1-2" />
+                </atom:TreeItem>
+                <atom:TreeItem Header="0-2" />
             </atom:TreeView>
         </gallery:ShowCaseItem>
         
@@ -160,20 +160,20 @@
                         <antdicons:RightOutlined/>
                     </atom:IconTemplate>
                 </atom:TreeView.SwitcherRotationIcon>
-                <atom:TreeViewItem Header="parent 1" ItemKey="0-0">
-                    <atom:TreeViewItem Header="parent 1-0" ItemKey="0-0-0">
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-0"/>
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-1" />
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-0-2" />
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="parent 1-1" ItemKey="0-0-1">
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-1-0"/>
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="parent 1-2" ItemKey="0-0-2">
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-2-0"/>
-                        <atom:TreeViewItem Header="leaf" ItemKey="0-0-2-1"/>
-                    </atom:TreeViewItem>
-                </atom:TreeViewItem>
+                <atom:TreeItem Header="parent 1" ItemKey="0-0">
+                    <atom:TreeItem Header="parent 1-0" ItemKey="0-0-0">
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-0-0"/>
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-0-1" />
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-0-2" />
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="parent 1-1" ItemKey="0-0-1">
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-1-0"/>
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="parent 1-2" ItemKey="0-0-2">
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-2-0"/>
+                        <atom:TreeItem Header="leaf" ItemKey="0-0-2-1"/>
+                    </atom:TreeItem>
+                </atom:TreeItem>
             </atom:TreeView>
         </gallery:ShowCaseItem>
         
@@ -216,34 +216,34 @@
                 <atom:SearchEdit Watermark="Search"
                                  SearchButtonClick="HandleFilterTreeClicked"/>
                 <atom:TreeView Name="SearchTreeView">
-                    <atom:TreeViewItem Header="0-0">
-                        <atom:TreeViewItem Header="0-0-0">
-                            <atom:TreeViewItem Header="0-0-0-0"/>
-                            <atom:TreeViewItem Header="0-0-0-1"/>
-                            <atom:TreeViewItem Header="0-0-0-2"/>
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="0-0-1">
-                            <atom:TreeViewItem Header="0-0-1-0"/>
-                            <atom:TreeViewItem Header="0-0-1-1"/>
-                            <atom:TreeViewItem Header="0-0-1-2"/>
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="0-0-2"/>
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="0-1">
-                        <atom:TreeViewItem Header="0-1-0">
-                            <atom:TreeViewItem Header="0-1-0-0"/>
-                            <atom:TreeViewItem Header="0-1-0-1"/>
-                            <atom:TreeViewItem Header="0-1-0-2"/>
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="0-1-1">
-                            <atom:TreeViewItem Header="0-1-1-0"/>
-                            <atom:TreeViewItem Header="0-1-1-1"/>
-                            <atom:TreeViewItem Header="0-1-1-2"/>
-                        </atom:TreeViewItem>
-                        <atom:TreeViewItem Header="0-0-2"/>
-                    </atom:TreeViewItem>
-                    <atom:TreeViewItem Header="0-2">
-                    </atom:TreeViewItem>
+                    <atom:TreeItem Header="0-0">
+                        <atom:TreeItem Header="0-0-0">
+                            <atom:TreeItem Header="0-0-0-0"/>
+                            <atom:TreeItem Header="0-0-0-1"/>
+                            <atom:TreeItem Header="0-0-0-2"/>
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="0-0-1">
+                            <atom:TreeItem Header="0-0-1-0"/>
+                            <atom:TreeItem Header="0-0-1-1"/>
+                            <atom:TreeItem Header="0-0-1-2"/>
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="0-0-2"/>
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="0-1">
+                        <atom:TreeItem Header="0-1-0">
+                            <atom:TreeItem Header="0-1-0-0"/>
+                            <atom:TreeItem Header="0-1-0-1"/>
+                            <atom:TreeItem Header="0-1-0-2"/>
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="0-1-1">
+                            <atom:TreeItem Header="0-1-1-0"/>
+                            <atom:TreeItem Header="0-1-1-1"/>
+                            <atom:TreeItem Header="0-1-1-2"/>
+                        </atom:TreeItem>
+                        <atom:TreeItem Header="0-0-2"/>
+                    </atom:TreeItem>
+                    <atom:TreeItem Header="0-2">
+                    </atom:TreeItem>
                 </atom:TreeView>
             </StackPanel>
         </gallery:ShowCaseItem>

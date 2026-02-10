@@ -25,7 +25,10 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         IsSelectionEmpty="{TemplateBinding IsSelectionEmpty}"
-                        IsDropDownOpen="{TemplateBinding IsDropDownOpen}">
+                        IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
+                        CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
+                        CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
+                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Spacing="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}">
@@ -64,7 +67,7 @@
                                               Content="{TemplateBinding SelectedItem}"
                                               IsVisible="False">
                                 <ContentPresenter.ContentTemplate>
-                                    <DataTemplate x:DataType="atom:ITreeViewItemData">
+                                    <DataTemplate x:DataType="atom:ITreeItemData">
                                         <TextBlock Text="{Binding Header}" />
                                     </DataTemplate>
                                 </ContentPresenter.ContentTemplate>
@@ -104,11 +107,10 @@
                                                      VerticalAlignment="Stretch"
                                                      NodeHoverMode="Block"
                                                      ToggleType="{TemplateBinding TreeViewToggleType}"
-                                                     IsDefaultExpandAll="{TemplateBinding IsTreeDefaultExpandAll}"
+                                                     IsDefaultExpandAll="{TemplateBinding IsDefaultExpandAll}"
                                                      FilterValue="{TemplateBinding ActivateFilterValue}"
                                                      Filter="{TemplateBinding Filter}"
                                                      FilterHighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
-                                                     ItemsSource="{TemplateBinding ItemsSource}"
                                                      ItemTemplate="{TemplateBinding ItemTemplate}"
                                                      DataLoader="{TemplateBinding DataLoader}"
                                                      FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
@@ -204,7 +206,7 @@
         </Style>
 
         <Setter Property="ItemTemplate">
-            <TreeDataTemplate x:DataType="atom:ITreeViewItemData"
+            <TreeDataTemplate x:DataType="atom:ITreeItemData"
                               ItemsSource="{Binding Children}">
                 <atom:TextBlock Text="{Binding Header}" />
             </TreeDataTemplate>

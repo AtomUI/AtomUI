@@ -2,7 +2,7 @@ using AtomUI.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public interface ITreeViewItemData : ITreeNode<ITreeViewItemData>
+public interface ITreeItemData : ITreeNode<ITreeItemData>
 {
     bool? IsChecked { get; set; }
     bool IsSelected { get; set; }
@@ -12,7 +12,7 @@ public interface ITreeViewItemData : ITreeNode<ITreeViewItemData>
     bool IsLeaf { get; }
     object? Value { get; set; }
 
-    void UpdateParentNode(ITreeViewItemData? parentNode)
+    void UpdateParentNode(ITreeItemData? parentNode)
     {
         throw new NotImplementedException();
     }

@@ -7,7 +7,7 @@ internal class TreeItemDataConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is ITreeViewItemData data)
+        if (value is ITreeItemData data)
         {
             return data.Header;
         }

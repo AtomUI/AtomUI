@@ -65,52 +65,52 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
     private void InitBasicTreeNodes(TreeViewViewModel viewModel)
     {
         viewModel.BasicTreeNodes = [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "parent 1",
                 ItemKey = "0-0",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "parent 1-0",
                         ItemKey = "0-0-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header    = "leaf 1",
                                 ItemKey   = "0-0-0-0",
                                 IsEnabled = false
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "leaf 2",
                                 ItemKey = "0-0-0-1"
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "parent 1-1",
                         ItemKey = "0-0-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "sss",
                                 ItemKey = "0-0-1-0",
                                 Children = [
-                                    new TreeViewItemData()
+                                    new TreeItemData()
                                     {
                                         Header  = "ccc",
                                         ItemKey = "0-0-1-0-0"
                                     }
                                 ]
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "xxx",
                                 ItemKey = "0-0-1-1",
                                 Children = [
-                                    new TreeViewItemData()
+                                    new TreeItemData()
                                     {
                                         Header  = "aaaa",
                                         ItemKey = "0-0-1-1-0"
@@ -135,17 +135,17 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
     {
         viewModel.AsyncLoadTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "Expand to load",
                 ItemKey = "0",
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "Expand to load",
                 ItemKey = "1",
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "Tree Node",
                 ItemKey = "2",
@@ -158,119 +158,119 @@ public partial class TreeViewShowCase : ReactiveUserControl<TreeViewViewModel>
     {
         viewModel.FilterTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "0-0",
                 ItemKey = "0-0",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "0-0-0",
                         ItemKey = "0-0-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-0-0-0",
                                 ItemKey = "0-0-0-0",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-0-0-1",
                                 ItemKey = "0-0-0-1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-0-0-2",
                                 ItemKey = "0-0-0-2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "0-0-1",
                         ItemKey = "0-0-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-0-1-0",
                                 ItemKey = "0-0-1-0",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-0-1-1",
                                 ItemKey = "0-0-1-1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-0-1-2",
                                 ItemKey = "0-0-1-2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  ="0-0-2",
                         ItemKey ="0-0-2",
                     },
                 ]
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "0-1",
                 ItemKey = "0-1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "0-1-0",
                         ItemKey = "0-1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-1-0-0",
                                 ItemKey = "0-1-0-0",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-1-0-1",
                                 ItemKey = "0-1-0-1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-1-0-2",
                                 ItemKey = "0-1-0-2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "0-1-1",
                         ItemKey = "0-1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-1-1-0",
                                 ItemKey = "0-1-1-0",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-1-1-1",
                                 ItemKey = "0-1-1-1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "0-1-1-2",
                                 ItemKey = "0-1-1-2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  ="0-1-2",
                         ItemKey ="0-1-2",
                     },
                 ]
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "0-2",
                 ItemKey = "0-2",

@@ -77,25 +77,25 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _treeViewNodeHoverMode, value);
     }
     
-    private List<ITreeViewItemData> _basicTreeNodes = [];
+    private List<ITreeItemData> _basicTreeNodes = [];
     
-    public List<ITreeViewItemData> BasicTreeNodes
+    public List<ITreeItemData> BasicTreeNodes
     {
         get => _basicTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _basicTreeNodes, value);
     }
     
-    private List<ITreeViewItemData> _asyncLoadTreeNodes = [];
+    private List<ITreeItemData> _asyncLoadTreeNodes = [];
     
-    public List<ITreeViewItemData> AsyncLoadTreeNodes
+    public List<ITreeItemData> AsyncLoadTreeNodes
     {
         get => _asyncLoadTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodes, value);
     }
     
-    private List<ITreeViewItemData> _filterTreeNodes = [];
+    private List<ITreeItemData> _filterTreeNodes = [];
     
-    public List<ITreeViewItemData> FilterTreeNodes
+    public List<ITreeItemData> FilterTreeNodes
     {
         get => _filterTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _filterTreeNodes, value);
@@ -117,26 +117,26 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
 
 public class TreeItemDataLoader : ITreeItemDataLoader
 {
-    public async Task<TreeItemLoadResult> LoadAsync(ITreeViewItemData targetTreeItemData, CancellationToken token)
+    public async Task<TreeItemLoadResult> LoadAsync(ITreeItemData targetTreeItemData, CancellationToken token)
     {
         var                           level   = 0;
-        ITreeNode<ITreeViewItemData>? current = targetTreeItemData;
+        ITreeNode<ITreeItemData>? current = targetTreeItemData;
         while (current != null)
         {
             level++;
             current = current.ParentNode;
         }
         await Task.Delay(TimeSpan.FromMilliseconds(600), token);
-        var children = new List<TreeViewItemData>();
+        var children = new List<TreeItemData>();
         if (level < 3)
         {
             children.AddRange([
-                new TreeViewItemData()
+                new TreeItemData()
                 {
                     ItemKey = $"{targetTreeItemData.ItemKey}-0",
                     Header  = "Child Node"
                 },
-                new TreeViewItemData()
+                new TreeItemData()
                 {
                     ItemKey = $"{targetTreeItemData.ItemKey}-1",
                     Header  = "Child Node"

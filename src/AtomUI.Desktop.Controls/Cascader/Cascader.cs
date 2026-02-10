@@ -20,7 +20,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 using ItemCollection = AtomUI.Collections.ItemCollection;
-using OptionsSourceView = AtomUI.Collections.ItemsSourceView;
+using ItemsSourceView = AtomUI.Collections.ItemsSourceView;
 
 public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
 {
@@ -33,7 +33,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         AvaloniaProperty.Register<Cascader, bool>(
             nameof(IsMultiple));
     
-    public static readonly StyledProperty<IEnumerable<ICascaderOption>?> OptionsSourceProperty =
+    public static readonly StyledProperty<IEnumerable?> OptionsSourceProperty =
         CascaderView.OptionsSourceProperty.AddOwner<Cascader>();
     
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
@@ -90,7 +90,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsMultipleProperty, value);
     }
     
-    public IEnumerable<ICascaderOption>? OptionsSource
+    public IEnumerable? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
@@ -173,7 +173,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsAllowSelectParentProperty, value);
     }
     
-    public OptionsSourceView OptionsView => _options;
+    public ItemsSourceView OptionsView => _options;
     
     [Content]
     public ItemCollection Options => _options;
@@ -251,14 +251,14 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleCascaderSourceChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        _options.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderOption>?>());
+        _options.SetItemsSource(args.GetNewValue<IEnumerable?>());
     }
 
     private void HandleCascaderOptionsChanged(object? sender, NotifyCollectionChangedEventArgs args)
     {
         if (_cascaderView != null)
         {
-            _cascaderView.OptionsSource = Options.Cast<ICascaderOption>().ToList();
+            _cascaderView.OptionsSource = Options.ToList();
         }
     }
 
@@ -426,6 +426,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             _cascaderView.CheckedItemsChanged -= HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemDoubleClicked   -= HandleCascaderViewItemDoubleClicked;
             _cascaderView.ItemSelected        -= HandleCascaderViewItemSelected;
+            _cascaderView.OptionsSource       =  null;
         }
         
         _singleFilterInput = e.NameScope.Find<SelectFilterTextBox>(CascaderThemeConstants.SingleFilterInputPart);

@@ -916,6 +916,10 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class SpaceTokenKey
     {
+        public static readonly TokenResourceKey AddonBg = new TokenResourceKey("AtomUI.Desktop.Controls.Space.AddonBg");
+        public static readonly TokenResourceKey AddOnPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Space.AddOnPadding");
+        public static readonly TokenResourceKey AddOnPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.Space.AddOnPaddingLG");
+        public static readonly TokenResourceKey AddOnPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.Space.AddOnPaddingSM");
         public static readonly TokenResourceKey GapLargeSize = new TokenResourceKey("AtomUI.Desktop.Controls.Space.GapLargeSize");
         public static readonly TokenResourceKey GapMiddleSize = new TokenResourceKey("AtomUI.Desktop.Controls.Space.GapMiddleSize");
         public static readonly TokenResourceKey GapSmallSize = new TokenResourceKey("AtomUI.Desktop.Controls.Space.GapSmallSize");

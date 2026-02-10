@@ -3,5 +3,6 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="CompactSpaceTheme.axaml"/>
+        <ResourceInclude Source="CompactSpaceAddOnTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

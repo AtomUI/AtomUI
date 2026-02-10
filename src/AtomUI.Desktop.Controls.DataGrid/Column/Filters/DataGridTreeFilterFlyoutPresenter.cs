@@ -74,13 +74,13 @@ internal class DataGridTreeFilterFlyoutPresenter : TreeViewFlyoutPresenter
         for (var i = 0; i < itemsControl.ItemCount; i++)
         {
             var item = itemsControl.ContainerFromIndex(i);
-            if (item is TreeViewItem filterTreeViewItem)
+            if (item is TreeItem filterTreeViewItem)
             {
                 ClearCheckStateRecursive(filterTreeViewItem);
             }
         }
 
-        if (itemsControl is TreeViewItem treeViewItem && itemsControl.ItemCount == 0)
+        if (itemsControl is TreeItem treeViewItem && itemsControl.ItemCount == 0)
         {
             treeViewItem.IsChecked = false;
         }

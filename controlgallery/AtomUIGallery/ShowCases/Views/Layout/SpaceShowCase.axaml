@@ -238,7 +238,7 @@
                 <!--     <atom:NumericUpDown Value="12" atom:CompactSpace.ItemSize="80"/> -->
                 <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
                 <!-- </atom:CompactSpace> -->
-                
+                <!-- -->
                 <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
                 <!--     <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="5*"/> -->
                 <!--     <atom:DatePicker atom:CompactSpace.ItemSize="5*"/> -->
@@ -274,7 +274,7 @@
                 <!--     <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Maximum"/> -->
                 <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
                 <!-- </atom:CompactSpace> -->
-                
+                <!-- -->
                 <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
                 <!--     <atom:Select DefaultValues="Sign Up"> -->
                 <!--         <atom:SelectOption Header="Sign Up" Value="Sign Up" /> -->
@@ -286,10 +286,59 @@
                 <!--     </atom:AutoComplete> -->
                 <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
                 <!-- </atom:CompactSpace> -->
+                <!-- -->
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:TimePicker atom:CompactSpace.ItemSize="7*" Watermark="Select Time"/> -->
+                <!--     <atom:Cascader atom:CompactSpace.ItemSize="7*" PlaceholderText="Select Address"> -->
+                <!--         <atom:CascaderOption Header="Zhejiang" Value="zhejiang"> -->
+                <!--             <atom:CascaderOption Header="Hangzhou" Value="hangzhou"> -->
+                <!--                 <atom:CascaderOption Header="West Lake" Value="xihu" /> -->
+                <!--                 <atom:CascaderOption Header="Lingyin shi" Value="lingyinshi" /> -->
+                <!--             </atom:CascaderOption> -->
+                <!--         </atom:CascaderOption> -->
+                <!--         <atom:CascaderOption Header="Jiangsu" Value="jiangsu"> -->
+                <!--             <atom:CascaderOption Header="Nanjing" Value="nanjing"> -->
+                <!--                 <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" /> -->
+                <!--             </atom:CascaderOption> -->
+                <!--         </atom:CascaderOption> -->
+                <!--     </atom:Cascader> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/> -->
+                <!-- </atom:CompactSpace> -->
+                <!-- -->
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:RangeTimePicker Watermark="Start time" SecondaryWatermark="End time" /> -->
+                <!--     <atom:TreeSelect atom:CompactSpace.ItemSize="7*" -->
+                <!--                      IsAllowClear="True" -->
+                <!--                      IsFilterEnabled="True" -->
+                <!--                      IsDefaultExpandAll="True" -->
+                <!--                      PlaceholderText="Please select"> -->
+                <!--         <atom:TreeItemData Header="parent 1" Value="parent 1"> -->
+                <!--             <atom:TreeItemData Header="parent 1-0" Value="parent 1-0"> -->
+                <!--                 <atom:TreeItemData Header="leaf1" Value="leaf1"/> -->
+                <!--                 <atom:TreeItemData Header="leaf2" Value="leaf2"/> -->
+                <!--             </atom:TreeItemData> -->
+                <!--             <atom:TreeItemData Header="parent 1-1" Value="parent 1-1"> -->
+                <!--                 <atom:TreeItemData Header="leaf3" Value="leaf3"/> -->
+                <!--             </atom:TreeItemData> -->
+                <!--         </atom:TreeItemData> -->
+                <!--     </atom:TreeSelect> -->
+                <!--     <atom:Button ButtonType="Primary">Submit</atom:Button> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*" /> -->
+                <!-- </atom:CompactSpace> -->
+                
+                <!-- <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch"> -->
+                <!--     <atom:LineEdit Watermark="input here"/> -->
+                <!--     <atom:CompactSpaceAddOn Content="$"/> -->
+                <!--     <atom:NumericUpDown Watermark="another input" atom:CompactSpace.ItemSize="1*"/>  -->
+                <!--     <atom:NumericUpDown Watermark="another input" atom:CompactSpace.ItemSize="1*"/>  -->
+                <!--     <atom:CompactSpaceAddOn Content="$"/> -->
+                <!--     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="*" /> -->
+                <!-- </atom:CompactSpace> -->
                 
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:TimePicker atom:CompactSpace.ItemSize="7*"/>
-                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
+                    <atom:LineEdit Watermark="input here"/>
+                    <atom:ColorPicker/>
+                    <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="*" />
                 </atom:CompactSpace>
             </StackPanel>
         </gallery:ShowCaseItem>

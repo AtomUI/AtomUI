@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Specialized;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
@@ -16,6 +17,9 @@ using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
+
+using ItemCollection = AtomUI.Collections.ItemCollection;
+using ItemsSourceView = AtomUI.Collections.ItemsSourceView;
 
 public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
 {
@@ -45,9 +49,9 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsMultiple));
     
-    public static readonly StyledProperty<bool> IsTreeDefaultExpandAllProperty =
+    public static readonly StyledProperty<bool> IsDefaultExpandAllProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
-            nameof(IsTreeDefaultExpandAll));
+            nameof(IsDefaultExpandAll));
     
     public static readonly StyledProperty<bool> IsShowTreeLineProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
@@ -141,10 +145,10 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsMultipleProperty, value);
     }
     
-    public bool IsTreeDefaultExpandAll
+    public bool IsDefaultExpandAll
     {
-        get => GetValue(IsTreeDefaultExpandAllProperty);
-        set => SetValue(IsTreeDefaultExpandAllProperty, value);
+        get => GetValue(IsDefaultExpandAllProperty);
+        set => SetValue(IsDefaultExpandAllProperty, value);
     }
     
     public bool IsShowTreeLine
@@ -228,6 +232,10 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
     }
 
+    public ItemsSourceView ItemsView => _items;
+    
+    [Content]
+    public ItemCollection Items => _items;
     #endregion
     
     #region 内部属性定义
@@ -305,31 +313,50 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     private TreeView? _treeView;
     private bool _needSkipSyncSelection;
     private bool _needSkipCollectionChangedEvent;
+    private readonly ItemCollection _items = new();
     
     static TreeSelect()
     {
         FocusableProperty.OverrideDefaultValue<TreeSelect>(true);
         SelectHandle.ClearRequestedEvent.AddClassHandler<TreeSelect>((target, args) => target.HandleClearRequest());
-        TreeViewItem.ClickEvent.AddClassHandler<TreeSelect>((treeSelect, args) =>
+        TreeItem.ClickEvent.AddClassHandler<TreeSelect>((treeSelect, args) =>
         {
-            if (args.Source is TreeViewItem item)
+            if (args.Source is TreeItem item)
             {
                 treeSelect.HandleTreeViewItemClicked(item);
             }
         });
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleSearchInputTextChanged(e));
         SelectTag.ClosedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleTagCloseRequest(e));
+        ItemsSourceProperty.Changed.AddClassHandler<TreeSelect>((view, args) => view.HandleItemsSourceChanged(args));
     }
     
     public TreeSelect()
     {
         this.RegisterResources();
+        Items.CollectionChanged += HandleItemsChanged;
+    }
+    
+    private void HandleItemsSourceChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        _items.SetItemsSource(args.GetNewValue<IEnumerable?>());
+    }
+    
+    private void HandleItemsChanged(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (_treeView != null)
+        {
+            _treeView.ItemsSource = Items.ToList();
+        }
     }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Filter ??= new DefaultTreeItemFilter();
+        if (Filter == null)
+        {
+            SetCurrentValue(FilterProperty, new DefaultTreeItemFilter());
+        }
         ConfigureMaxSelectReached();
     }
 
@@ -428,6 +455,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             _treeView.SelectionChanged    -= HandleTreeViewSelectionChanged;
             _treeView.CheckedItemsChanged -= HandleTreeViewItemsCheckedChanged;
+            _treeView.ItemsSource         =  null;
         }
 
         _singleFilterInput = e.NameScope.Find<SelectFilterTextBox>(TreeSelectThemeConstants.SingleFilterInputPart);
@@ -438,6 +466,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             _treeView.SelectionChanged    += HandleTreeViewSelectionChanged;
             _treeView.CheckedItemsChanged += HandleTreeViewItemsCheckedChanged;
+            _treeView.ItemsSource         =  Items.ToList();
         }
 
         if (Popup != null)
@@ -676,7 +705,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnPointerReleased(e);
     }
 
-    private void HandleTreeViewItemClicked(TreeViewItem item)
+    private void HandleTreeViewItemClicked(TreeItem item)
     {
         if (!IsMultiple)
         {
@@ -759,7 +788,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             return;
         }
-        if (e.Source is SelectTag tag && tag.Item is ITreeViewItemData treeItemData)
+        if (e.Source is SelectTag tag && tag.Item is ITreeItemData treeItemData)
         {
             if (SelectedItems != null)
             {
@@ -775,7 +804,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         e.Handled = true;
     }
 
-    private void RemoveItemRecursive(List<object> items, ITreeViewItemData item)
+    private void RemoveItemRecursive(List<object> items, ITreeItemData item)
     {
         foreach (var child in item.Children)
         {
@@ -810,7 +839,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                         {
                             foreach (var item in SelectedItems)
                             {
-                                if (item is ITreeViewItemData itemData)
+                                if (item is ITreeItemData itemData)
                                 {
                                     itemData.IsSelected = true;
                                 }
@@ -895,12 +924,12 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowParent))
                 {
                     var selectedSet = SelectedItems.Cast<object>().ToHashSet();
-                    var fullySelectedParents = SelectedItems.Cast<ITreeViewItemData>()
+                    var fullySelectedParents = SelectedItems.Cast<ITreeItemData>()
                                                             .Where(node => node.Children.All(child => selectedSet.Contains(child)))
                                                             .ToHashSet();
                     foreach (var node in SelectedItems)
                     {
-                        if (node is ITreeViewItemData treeViewItemData)
+                        if (node is ITreeItemData treeViewItemData)
                         {
                             bool isDescendantOfFullySelectedParent = fullySelectedParents
                                 .Any(parent => IsDescendantOf(treeViewItemData, parent));
@@ -916,7 +945,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 {
                     foreach (var item in SelectedItems)
                     {
-                        if (item is ITreeViewItemData treeViewItemData)
+                        if (item is ITreeItemData treeViewItemData)
                         {
                             if (treeViewItemData.Children.Count == 0)
                             {
@@ -934,13 +963,13 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
         
-    private bool IsDescendantOf(ITreeViewItemData node, ITreeViewItemData parent)
+    private bool IsDescendantOf(ITreeItemData node, ITreeItemData parent)
     {
         if (node == parent)
         {
             return false;
         }
-        ITreeNode<ITreeViewItemData>? current = node;
+        ITreeNode<ITreeItemData>? current = node;
         while (current != null)
         {
             if (current == parent)

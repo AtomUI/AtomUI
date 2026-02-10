@@ -59,54 +59,54 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         vm.BasicTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "parent 1",
                 Value  = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf1",
                                 Value  = "leaf1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf2",
                                 Value  = "leaf2",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf3",
                                 Value  = "leaf3",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf4",
                                 Value  = "leaf4",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf5",
                                 Value  = "leaf5",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf6",
                                 Value  = "leaf6",
                             },
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-1",
                         Value  = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "leaf11",
                                 Value  = "leaf11",
@@ -122,34 +122,34 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         vm.MultiSelectionTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "parent 1",
                 Value  = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "my leaf",
                                 Value  = "leaf1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "your leaf",
                                 Value  = "leaf2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-1",
                         Value  = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "sss",
                                 Value  = "sss",
@@ -165,34 +165,34 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         vm.LeftAddTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "parent 1",
                 Value  = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "my leaf",
                                 Value  = "leaf1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "your leaf",
                                 Value  = "leaf2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-1",
                         Value  = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "sss",
                                 Value  = "sss",
@@ -208,34 +208,34 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         vm.ContentLeftAddTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "parent 1",
                 Value  = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "my leaf",
                                 Value  = "leaf1",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "your leaf",
                                 Value  = "leaf2",
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-1",
                         Value  = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "sss",
                                 Value  = "sss",
@@ -251,24 +251,24 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         vm.ItemsSourceTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "Node1",
                 Value  = "0-0",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "Child Node1",
                         Value  = "0-0-1",
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "Child Node2",
                         Value  = "0-0-2",
                     }
                 ]
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "Node2",
                 Value  = "0-1",
@@ -280,46 +280,46 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         vm.CheckableTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "Node1",
                 ItemKey = "0-0",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "Child Node1",
                         Value  = "0-0-0",
                     }
                 ]
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header = "Node2",
                 ItemKey = "0-1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "Child Node3",
                         Value  = "0-1-0",
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "Child Node4",
                         Value  = "0-1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "Child Node6",
                                 Value  = "0-1-1-0",
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header = "Child Node7",
                                 Value  = "0-1-1-1",
                             },
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "Child Node5",
                         Value  = "0-1-2",
@@ -333,17 +333,17 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         viewModel.AsyncLoadTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "Expand to load",
                 ItemKey = "0",
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "Expand to load",
                 ItemKey = "1",
             },
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "Tree Node",
                 ItemKey = "2",
@@ -356,25 +356,25 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         viewModel.ShowTreeLineTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "parent 1",
                 ItemKey = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Icon   = new CarryOutOutlined(),
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf1",
                                 ItemKey = "Leaf1",
                                 IsLeaf  = true,
                                 Icon    = new CarryOutOutlined(),
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf2",
                                 ItemKey = "Leaf2",
@@ -383,13 +383,13 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "parent 1-1",
                         ItemKey = "parent 1-1",
                         Icon    = new CarryOutOutlined(),
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "sss",
                                 ItemKey = "sss",
@@ -407,23 +407,23 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         viewModel.PlacementTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "parent 1",
                 ItemKey = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf1",
                                 ItemKey = "Leaf1",
                                 IsLeaf  = true,
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf2",
                                 ItemKey = "Leaf2",
@@ -431,12 +431,12 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "parent 1-1",
                         ItemKey = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "sss",
                                 ItemKey = "sss",
@@ -453,23 +453,23 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         viewModel.MaxSelectedTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "parent 1",
                 ItemKey = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf1",
                                 ItemKey = "Leaf1",
                                 IsLeaf  = true,
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf2",
                                 ItemKey = "Leaf2",
@@ -477,12 +477,12 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "parent 1-1",
                         ItemKey = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "sss",
                                 ItemKey = "sss",
@@ -499,23 +499,23 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
     {
         viewModel.MaxCheckedTreeNodes =
         [
-            new TreeViewItemData()
+            new TreeItemData()
             {
                 Header  = "parent 1",
                 ItemKey = "parent 1",
                 Children = [
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header = "parent 1-0",
                         Value  = "parent 1-0",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf1",
                                 ItemKey = "Leaf1",
                                 IsLeaf  = true,
                             },
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "Leaf2",
                                 ItemKey = "Leaf2",
@@ -523,12 +523,12 @@ public partial class TreeSelectShowCase : ReactiveUserControl<TreeSelectViewMode
                             }
                         ]
                     },
-                    new TreeViewItemData()
+                    new TreeItemData()
                     {
                         Header  = "parent 1-1",
                         ItemKey = "parent 1-1",
                         Children = [
-                            new TreeViewItemData()
+                            new TreeItemData()
                             {
                                 Header  = "sss",
                                 ItemKey = "sss",

@@ -1,0 +1,103 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:CompactSpaceAddOn}" TargetType="atom:CompactSpaceAddOn">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  HorizontalContentAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  Background="{TemplateBinding Background}" 
+                                  Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="FontSize"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeLG}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
+            <Setter Property="Padding"
+                    Value="{DynamicResource {x:Static atom:SpaceTokenKey.AddOnPaddingLG}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightLG}}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="FontSize"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
+            <Setter Property="Padding"
+                    Value="{DynamicResource {x:Static atom:SpaceTokenKey.AddOnPadding}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="FontSize"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeSM}}" />
+            <Setter Property="CornerRadius"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
+            <Setter Property="Padding"
+                    Value="{DynamicResource {x:Static atom:SpaceTokenKey.AddOnPaddingSM}}" />
+            <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightSM}}" />
+        </Style>
+        
+        <Style Selector="^[Status=Error]">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorText}}" />
+        </Style>
+        
+        <Style Selector="^[Status=Warning]">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningText}}" />
+        </Style>
+        
+        <Style Selector="^[StyleVariant=Outline]">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:SpaceTokenKey.AddonBg}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+            
+            <Style Selector="^[Status=Error]">
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+        
+            <Style Selector="^[Status=Warning]">
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[StyleVariant=Filled]">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:SpaceTokenKey.AddonBg}}" />
+            
+            <Style Selector="^[Status=Error]">
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBg}}" />
+            </Style>
+        
+            <Style Selector="^[Status=Warning]">
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningBg}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainerDisabled}}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

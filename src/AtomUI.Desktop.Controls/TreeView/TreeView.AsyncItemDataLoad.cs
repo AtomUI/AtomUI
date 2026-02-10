@@ -22,7 +22,7 @@ public partial class TreeView
     }
     #endregion
 
-    private void HandleNodeLoadRequest(TreeViewItem item)
+    private void HandleNodeLoadRequest(TreeItem item)
     {
         if (DataLoader == null)
         {
@@ -33,7 +33,7 @@ public partial class TreeView
             throw new InvalidOperationException("ITreeNodeDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
         var data = TreeItemFromContainer(item);
-        if (data is ITreeViewItemData treeItemData)
+        if (data is ITreeItemData treeItemData)
         {
             var cts = new CancellationTokenSource(); // TODO 做一个超时结束
             item.IsLoading = true;

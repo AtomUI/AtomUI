@@ -215,11 +215,9 @@ public class TextBox : AvaloniaTextBox,
 
     private void ConfigureCornerRadius()
     {
-        if (!IsUsedInCompactSpace || (CompactSpaceItemPosition & (SpaceItemPosition.First | SpaceItemPosition.Last)) != 0)
-        {
-            EffectiveCornerRadius = CornerRadius;
-        }
-        else
+        if (IsUsedInCompactSpace &&
+            CompactSpaceItemPosition.HasValue &&
+            (!CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.First) || !CompactSpaceItemPosition.Value.HasFlag(SpaceItemPosition.Last)))
         {
             if ((CompactSpaceItemPosition & SpaceItemPosition.First) != 0)
             {
@@ -267,6 +265,10 @@ public class TextBox : AvaloniaTextBox,
                         bottomRight:CornerRadius.BottomRight);
                 }
             }
+        }
+        else
+        {
+            EffectiveCornerRadius = CornerRadius;
         }
     }
 

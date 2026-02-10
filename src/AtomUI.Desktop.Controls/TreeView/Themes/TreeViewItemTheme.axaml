@@ -1,11 +1,11 @@
-<ControlTheme TargetType="atom:TreeViewItem"
+<ControlTheme TargetType="atom:TreeItem"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.TreeViewItemTheme">
     <Setter Property="Template">
-        <ControlTemplate TargetType="atom:TreeViewItem">
+        <ControlTemplate TargetType="atom:TreeItem">
             <StackPanel Orientation="Vertical">
                 <atom:TreeViewItemHeader Name="{x:Static atom:TreeViewItemThemeConstants.HeaderPart}"
                                          Icon="{TemplateBinding Icon}"
@@ -53,7 +53,7 @@
         </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:is(atom|TreeViewItem)">
+    <Style Selector="^:is(atom|TreeItem)">
         <Setter Property="Focusable" Value="False" /> 
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />

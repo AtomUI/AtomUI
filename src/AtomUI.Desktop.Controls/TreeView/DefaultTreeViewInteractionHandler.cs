@@ -37,7 +37,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
             _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(_root);
             for (var i = 0; i < TreeView.ItemCount; i++)
             {
-                if (TreeView.ContainerFromIndex(i) is TreeViewItem item)
+                if (TreeView.ContainerFromIndex(i) is TreeItem item)
                 {
                     AddTreeViewItemToRadioGroup(_groupManager, item);
                 }
@@ -65,7 +65,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
             _groupManager = null;
             for (var i = 0; i < TreeView.ItemCount; i++)
             {
-                if (TreeView.ContainerFromIndex(i) is TreeViewItem item)
+                if (TreeView.ContainerFromIndex(i) is TreeItem item)
                 {
                     RemoveTreeViewItemToRadioGroup(oldManager, item);
                 }
@@ -82,7 +82,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         _root = null;
     }
 
-    internal static TreeViewItem? GetTreeViewItemCore(StyledElement? item)
+    internal static TreeItem? GetTreeViewItemCore(StyledElement? item)
     {
         while (true)
         {
@@ -91,7 +91,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
                 return null;
             }
 
-            if (item is TreeViewItem treeViewItem)
+            if (item is TreeItem treeViewItem)
             {
                 return treeViewItem;
             }
@@ -134,7 +134,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         }
     }
 
-    internal void Click(TreeViewItem item)
+    internal void Click(TreeItem item)
     {
         item.RaiseClick();
     }
@@ -166,7 +166,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         }
     }
 
-    internal void OnCheckedChanged(TreeViewItem item)
+    internal void OnCheckedChanged(TreeItem item)
     {
         if (TreeView != null)
         {
@@ -207,7 +207,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         }
     }
 
-    private static void AddTreeViewItemToRadioGroup(RadioButtonGroupManager manager, TreeViewItem element)
+    private static void AddTreeViewItemToRadioGroup(RadioButtonGroupManager manager, TreeItem element)
     {
         // Instead add menu item to the group on attached/detached + ensure checked stated on attached.
         if (element is IRadioButton button)
@@ -218,14 +218,14 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         for (var i = 0; i < element.ItemCount; i++)
         {
             var item = element.ContainerFromIndex(i);
-            if (item is TreeViewItem treeViewItem)
+            if (item is TreeItem treeViewItem)
             {
                 AddTreeViewItemToRadioGroup(manager, treeViewItem);
             }
         }
     }
 
-    private static void RemoveTreeViewItemToRadioGroup(RadioButtonGroupManager manager, TreeViewItem element)
+    private static void RemoveTreeViewItemToRadioGroup(RadioButtonGroupManager manager, TreeItem element)
     {
         if (element is IRadioButton button)
         {
@@ -235,7 +235,7 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
         for (var i = 0; i < element.ItemCount; i++)
         {
             var item = element.ContainerFromIndex(i);
-            if (item is TreeViewItem treeViewItem)
+            if (item is TreeItem treeViewItem)
             {
                 RemoveTreeViewItemToRadioGroup(manager, treeViewItem);
             }

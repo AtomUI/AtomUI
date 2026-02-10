@@ -33,8 +33,8 @@ public partial class CascaderView : TemplatedControl,
                                     IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-    public static readonly StyledProperty<IEnumerable<ICascaderOption>?> OptionsSourceProperty =
-        AvaloniaProperty.Register<CascaderView, IEnumerable<ICascaderOption>?>(nameof(OptionsSource));
+    public static readonly StyledProperty<IEnumerable?> OptionsSourceProperty =
+        AvaloniaProperty.Register<CascaderView, IEnumerable?>(nameof(OptionsSource));
     
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         AvaloniaProperty.Register<CascaderView, IDataTemplate?>(nameof(OptionTemplate));
@@ -103,7 +103,7 @@ public partial class CascaderView : TemplatedControl,
             o => o.CheckedItems,
             (o, v) => o.CheckedItems = v);
     
-    public IEnumerable<ICascaderOption>? OptionsSource
+    public IEnumerable? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
@@ -430,7 +430,7 @@ public partial class CascaderView : TemplatedControl,
 
     private void HandleCascaderSourceChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        _options.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderOption>?>());
+        _options.SetItemsSource(args.GetNewValue<IEnumerable?>());
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

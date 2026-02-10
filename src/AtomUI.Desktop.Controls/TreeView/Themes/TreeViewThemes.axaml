@@ -8,5 +8,5 @@
         <ResourceInclude Source="TreeViewItemHeaderTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
     <themes:TreeViewTheme x:Key="{x:Type atom:TreeView}" TargetType="atom:TreeView"/>
-    <themes:TreeViewItemTheme x:Key="{x:Type atom:TreeViewItem}" TargetType="atom:TreeViewItem"/>
+    <themes:TreeViewItemTheme x:Key="{x:Type atom:TreeItem}" TargetType="atom:TreeItem"/>
 </ResourceDictionary>

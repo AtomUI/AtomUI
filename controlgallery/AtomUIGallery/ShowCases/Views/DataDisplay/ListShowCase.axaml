@@ -109,7 +109,7 @@
             Title="Searchable"
             Description="Searchable Tree.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:SearchEdit Watermark="Search"
+                <atom:SearchEdit PlaceholderText="Search"
                                  SearchButtonClick="HandleFilterListBoxClicked"/>
                 <atom:ListBox Name="SearchListBox">
                     <atom:ListBoxItem>Racing car sprays burning fuel into crowd.</atom:ListBoxItem>

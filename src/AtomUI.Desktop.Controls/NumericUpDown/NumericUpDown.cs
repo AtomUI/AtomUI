@@ -11,6 +11,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -71,6 +72,12 @@ public class NumericUpDown : AvaloniaNumericUpDown,
     
     public static readonly StyledProperty<string?> StringValueProperty =
         AvaloniaProperty.Register<NumericUpDown, string?>(nameof(StringValue));
+    
+    public static readonly StyledProperty<string?> PlaceholderTextProperty =
+        TextBox.PlaceholderTextProperty.AddOwner<NumericUpDown>();
+    
+    public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+        TextBox.PlaceholderForegroundProperty.AddOwner<NumericUpDown>();
     
     public PathIcon? ClearIcon
     {
@@ -170,6 +177,18 @@ public class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(StringValueProperty, value);
     }
     
+    public string? PlaceholderText
+    {
+        get => GetValue(PlaceholderTextProperty);
+        set => SetValue(PlaceholderTextProperty, value);
+    }
+
+    public IBrush? PlaceholderForeground
+    {
+        get => GetValue(PlaceholderForegroundProperty);
+        set => SetValue(PlaceholderForegroundProperty, value);
+    }
+    
     #endregion
     
     #region 内部属性定义
@@ -247,6 +266,11 @@ public class NumericUpDown : AvaloniaNumericUpDown,
     private bool _isUpdatingText;
     private bool _isParsingText;
     private ButtonSpinner? _buttonSpinner;
+
+    static NumericUpDown()
+    {
+        WatermarkProperty.Changed.AddClassHandler<NumericUpDown>((textBox, args) => textBox.SetCurrentValue(PlaceholderTextProperty, args.NewValue));
+    }
     
     public NumericUpDown()
     {

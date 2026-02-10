@@ -22,7 +22,7 @@
                                                   InnerRightContent="{TemplateBinding ContentRightAddOn}"
                                                   InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                                   SizeType="{TemplateBinding SizeType}"
-                                                  Watermark="{TemplateBinding PlaceholderText}"
+                                                  PlaceholderText="{TemplateBinding PlaceholderText}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                                   Lines="{TemplateBinding Lines}"

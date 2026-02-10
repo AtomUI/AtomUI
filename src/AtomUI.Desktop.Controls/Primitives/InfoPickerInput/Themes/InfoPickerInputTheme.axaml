@@ -48,7 +48,7 @@
                                   IsEnableClearButton="False"
                                   IsEnableRevealButton="False"
                                   Text="{TemplateBinding Text}"
-                                  Watermark="{TemplateBinding Watermark}"
+                                  PlaceholderText="{TemplateBinding PlaceholderText}"
                                   DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                   SizeType="{TemplateBinding SizeType}"
                                   IsReadOnly="{TemplateBinding IsReadOnly}" />

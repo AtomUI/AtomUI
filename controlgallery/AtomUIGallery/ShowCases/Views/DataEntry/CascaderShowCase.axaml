@@ -499,7 +499,7 @@
             Title="Searchable"
             Description="Searchable CascaderView.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:SearchEdit Watermark="Search"
+                <atom:SearchEdit PlaceholderText="Search"
                                  SearchButtonClick="HandleFilterCascaderViewClicked" />
                 <atom:CascaderView Name="SearchCascaderView">
                     <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
@@ -522,7 +522,7 @@
             Title="Searchable"
             Description="Searchable CascaderView with ItemsSource.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:SearchEdit Watermark="Search"
+                <atom:SearchEdit PlaceholderText="Search"
                                  SearchButtonClick="HandleFilterCascaderViewItemsSourceClicked" />
                 <atom:CascaderView Name="SearchCascaderViewItemsSource"
                                    x:DataType="viewModels:CascaderViewModel"

@@ -75,7 +75,7 @@
                             <atom:SelectFilterTextBox Name="{x:Static atom:SelectThemeConstants.SingleFilterInputPart}"
                                                       IsVisible="False"
                                                       SizeType="{TemplateBinding SizeType}"
-                                                      Watermark="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}" />
+                                                      PlaceholderText="{TemplateBinding SelectedOption, Converter={StaticResource OptionHeaderConverter}}" />
                             <atom:SelectResultOptionsBox
                                 Name="SelectedOptionsBox"
                                 HorizontalAlignment="Stretch"
@@ -168,12 +168,12 @@
             <Style Selector="^[IsFilterEnabled=True]">
                 <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                     <Setter Property="IsVisible" Value="True" />
-                    <Setter Property="WatermarkForeground"
+                    <Setter Property="PlaceholderForeground"
                             Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
                     <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
-                        <Setter Property="WatermarkForeground"
+                        <Setter Property="PlaceholderForeground"
                                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
                     </Style>
                 </Style>

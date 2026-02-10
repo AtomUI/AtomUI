@@ -356,14 +356,14 @@ public class RangeTimePicker : RangeInfoPickerInput,
             var text = DateTimeUtils.FormatTimeSpan(TimeSpan.Zero,
                 ClockIdentifier == ClockIdentifierType.HourClock12);
             var preferredInputWidth = TextUtils.CalculateTextSize(text, FontSize, FontFamily, FontStyle, FontWeight).Width;
-            if (Watermark != null)
+            if (PlaceholderText != null)
             {
-                preferredInputWidth = Math.Max(preferredInputWidth, TextUtils.CalculateTextSize(Watermark, FontSize, FontFamily, FontStyle, FontWeight).Width);
+                preferredInputWidth = Math.Max(preferredInputWidth, TextUtils.CalculateTextSize(PlaceholderText, FontSize, FontFamily, FontStyle, FontWeight).Width);
             }
 
-            if (SecondaryWatermark != null)
+            if (SecondaryPlaceholderText != null)
             {
-                preferredInputWidth = Math.Max(preferredInputWidth, TextUtils.CalculateTextSize(SecondaryWatermark, FontSize, FontFamily, FontStyle, FontWeight).Width);
+                preferredInputWidth = Math.Max(preferredInputWidth, TextUtils.CalculateTextSize(SecondaryPlaceholderText, FontSize, FontFamily, FontStyle, FontWeight).Width);
             }
 
             preferredInputWidth *= 1.1;

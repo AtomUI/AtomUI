@@ -8,13 +8,13 @@
         <gallery:ShowCaseItem
             Title="Basic"
             Description="Click TimePicker, and then we could select or input a time in panel.">
-            <atom:TimePicker Watermark="Select time" IsNeedConfirm="False" IsShowNow="True" />
+            <atom:TimePicker PlaceholderText="Select time" IsNeedConfirm="False" IsShowNow="True" />
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
             Title="12-hour and 24-hour formats"
             Description="TimePicker supports two time types, 12-hour and 24-hour.">
-            <atom:TimePicker Watermark="Select time" IsNeedConfirm="True" IsShowNow="True"
+            <atom:TimePicker PlaceholderText="Select time" IsNeedConfirm="True" IsShowNow="True"
                              ClockIdentifier="HourClock24" />
         </gallery:ShowCaseItem>
         
@@ -22,9 +22,9 @@
             Title="Three Sizes"
             Description="The input box comes in three sizes: large, middle and small. Large is used in the form, while the medium size is the default.">
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:TimePicker Watermark="Select time" SizeType="Large" DefaultTime="12:08:23" />
-                <atom:TimePicker Watermark="Select time" SizeType="Middle" DefaultTime="12:08:23" />
-                <atom:TimePicker Watermark="Select time" SizeType="Small" DefaultTime="12:08:23" />
+                <atom:TimePicker PlaceholderText="Select time" SizeType="Large" DefaultTime="12:08:23" />
+                <atom:TimePicker PlaceholderText="Select time" SizeType="Middle" DefaultTime="12:08:23" />
+                <atom:TimePicker PlaceholderText="Select time" SizeType="Small" DefaultTime="12:08:23" />
             </StackPanel>
         </gallery:ShowCaseItem>
         
@@ -32,7 +32,7 @@
             Title="Disabled"
             Description="A disabled state of the TimePicker.">
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:TimePicker Watermark="Select time" IsEnabled="False" DefaultTime="12:08:23" />
+                <atom:TimePicker PlaceholderText="Select time" IsEnabled="False" DefaultTime="12:08:23" />
             </StackPanel>
         </gallery:ShowCaseItem>
         
@@ -40,7 +40,7 @@
             Title="Interval option"
             Description="Show stepped options by MinuteIncrement SecondIncrement.">
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:TimePicker Watermark="Select time"
+                <atom:TimePicker PlaceholderText="Select time"
                                  DefaultTime="12:08:23"
                                  MinuteIncrement="15"
                                  SecondIncrement="10" />
@@ -51,10 +51,10 @@
             Title="12 hours"
             Description="TimePicker of 12 hours format, with default format h:mm:ss a.">
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:TimePicker Watermark="Select time"
+                <atom:TimePicker PlaceholderText="Select time"
                                  DefaultTime="12:08:23"
                                  ClockIdentifier="HourClock12" />
-                <atom:TimePicker Watermark="Select time"
+                <atom:TimePicker PlaceholderText="Select time"
                                  DefaultTime="12:08:23"
                                  ClockIdentifier="HourClock24" />
             </StackPanel>
@@ -65,22 +65,22 @@
             Description="Bordered-less style component.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <StackPanel Orientation="Horizontal" Spacing="5">
-                    <atom:TimePicker Watermark="Outline"
+                    <atom:TimePicker PlaceholderText="Outline"
                                      StyleVariant="Outline" />
                     <atom:RangeTimePicker StyleVariant="Outline"
-                                          Watermark="Outline" />
+                                          PlaceholderText="Outline" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="5">
-                    <atom:TimePicker Watermark="Filled"
+                    <atom:TimePicker PlaceholderText="Filled"
                                      StyleVariant="Filled" />
                     <atom:RangeTimePicker StyleVariant="Filled"
-                                          Watermark="Filled" />
+                                          PlaceholderText="Filled" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="5">
-                    <atom:TimePicker Watermark="Borderless"
+                    <atom:TimePicker PlaceholderText="Borderless"
                                      StyleVariant="Borderless" />
                     <atom:RangeTimePicker StyleVariant="Borderless"
-                                          Watermark="Borderless" />
+                                          PlaceholderText="Borderless" />
                 </StackPanel>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -91,31 +91,31 @@
             <StackPanel Orientation="Vertical" Spacing="10">
                 <StackPanel Orientation="Horizontal" Spacing="5">
                     <atom:TimePicker Status="Default"
-                                     Watermark="Select time" />
+                                     PlaceholderText="Select time" />
                     <atom:RangeTimePicker StyleVariant="Outline"
                                           Status="Default"
-                                          Watermark="Start time"
-                                          SecondaryWatermark="End time"
+                                          PlaceholderText="Start time"
+                                          SecondaryPlaceholderText="End time"
                                           IsNeedConfirm="True"
                                           ClockIdentifier="HourClock24" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="5">
                     <atom:TimePicker Status="Warning"
-                                     Watermark="Select time" />
+                                     PlaceholderText="Select time" />
                     <atom:RangeTimePicker StyleVariant="Outline"
                                           Status="Warning"
-                                          Watermark="Start time"
-                                          SecondaryWatermark="End time"
+                                          PlaceholderText="Start time"
+                                          SecondaryPlaceholderText="End time"
                                           IsNeedConfirm="True"
                                           ClockIdentifier="HourClock24" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="5">
                     <atom:TimePicker Status="Error"
-                                     Watermark="Select time" />
+                                     PlaceholderText="Select time" />
                     <atom:RangeTimePicker StyleVariant="Outline"
                                           Status="Error"
-                                          Watermark="Start time"
-                                          SecondaryWatermark="End time"
+                                          PlaceholderText="Start time"
+                                          SecondaryPlaceholderText="End time"
                                           IsNeedConfirm="True"
                                           ClockIdentifier="HourClock24" />
                 </StackPanel>
@@ -127,8 +127,8 @@
             Description="Use time range picker with RangeTimePicker.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:RangeTimePicker Status="Default"
-                                      Watermark="Start time"
-                                      SecondaryWatermark="End time"
+                                      PlaceholderText="Start time"
+                                      SecondaryPlaceholderText="End time"
                                       RangeStartDefaultTime="10:09:20"
                                       RangeEndDefaultTime="12:12:20" />
             </StackPanel>

@@ -91,7 +91,7 @@
                 </atom:ThemeConfigProvider.Algorithms>
                 <Border Background="#2b2d30" Padding="20">
                     <StackPanel Orientation="Horizontal" Spacing="5">
-                        <atom:LineEdit Watermark="Please input" Width="200" />
+                        <atom:LineEdit PlaceholderText="Please input" Width="200" />
                         <atom:Button ButtonType="Primary">Submit</atom:Button>
                     </StackPanel>
                 </Border>
@@ -115,7 +115,7 @@
                         </atom:ThemeConfigProvider.ControlTokenInfoSetters>
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <atom:TextBlock VerticalAlignment="Center" Width="120">Enable algorithm:</atom:TextBlock>
-                            <atom:LineEdit Watermark="Please input" Width="200" VerticalAlignment="Center" />
+                            <atom:LineEdit PlaceholderText="Please input" Width="200" VerticalAlignment="Center" />
                             <atom:Button ButtonType="Primary" VerticalAlignment="Center">Submit</atom:Button>
                         </StackPanel>
                     </atom:ThemeConfigProvider>
@@ -131,7 +131,7 @@
                         </atom:ThemeConfigProvider.ControlTokenInfoSetters>
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <atom:TextBlock VerticalAlignment="Center" Width="120">Disable algorithm:</atom:TextBlock>
-                            <atom:LineEdit Watermark="Please input" Width="200" VerticalAlignment="Center" />
+                            <atom:LineEdit PlaceholderText="Please input" Width="200" VerticalAlignment="Center" />
                             <atom:Button ButtonType="Primary" VerticalAlignment="Center">Submit</atom:Button>
                         </StackPanel>
                     </atom:ThemeConfigProvider>

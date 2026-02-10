@@ -25,7 +25,7 @@
                                     Increment="0.0001"
                                     Minimum="0"
                                     Maximum="100"
-                                    Watermark="Input weight" />
+                                    PlaceholderText="Input weight" />
                 <TextBlock Text="{Binding StringModeValue, StringFormat=Raw: {0}}"/>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -39,7 +39,7 @@
                 <atom:NumericUpDown Value="1.2"
                                     Increment="0.1"
                                     Keyboard="{Binding KeyboardEnabled}"
-                                    Watermark="Keyboard disabled" />
+                                    PlaceholderText="Keyboard disabled" />
             </StackPanel>
         </gallery:ShowCaseItem>
 
@@ -52,7 +52,7 @@
                 <atom:NumericUpDown Value="2.5"
                                     Increment="0.5"
                                     MouseWheel="{Binding MouseWheelEnabled}"
-                                    Watermark="Mouse wheel disabled" />
+                                    PlaceholderText="Mouse wheel disabled" />
             </StackPanel>
         </gallery:ShowCaseItem>
 
@@ -127,7 +127,7 @@
         <gallery:ShowCaseItem
             Title="With clear icon"
             Description="Input box with the remove icon, click the icon to delete everything.">
-            <atom:NumericUpDown Watermark="input with clear icon" Width="400" HorizontalAlignment="Left"
+            <atom:NumericUpDown PlaceholderText="input with clear icon" Width="400" HorizontalAlignment="Left"
                                 IsEnableClearButton="True" />
         </gallery:ShowCaseItem>
 
@@ -135,7 +135,7 @@
             Title="prefix and suffix"
             Description="Add a prefix or suffix icons inside input.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:NumericUpDown Watermark="Enter your value"
+                <atom:NumericUpDown PlaceholderText="Enter your value"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined, FillBrush=#D7D7D7}"
                                     InnerRightContent="{antdicons:AntDesignIconProvider Kind=InfoCircleOutlined, FillBrush=#8C8C8C}" />
                 <atom:NumericUpDown InnerLeftContent="￥" InnerRightContent="RMB" />
@@ -147,24 +147,24 @@
             Title="Status"
             Description="Add status to Input with status, which could be error or warning.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
-                <atom:NumericUpDown Watermark="Error" Status="Error" />
-                <atom:NumericUpDown Watermark="Warning" Status="Warning" />
-                <atom:NumericUpDown Watermark="Error with prefix"
+                <atom:NumericUpDown PlaceholderText="Error" Status="Error" />
+                <atom:NumericUpDown PlaceholderText="Warning" Status="Warning" />
+                <atom:NumericUpDown PlaceholderText="Error with prefix"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}" Status="Error" />
-                <atom:NumericUpDown Watermark="Warning with prefix"
+                <atom:NumericUpDown PlaceholderText="Warning with prefix"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}" Status="Warning" />
 
-                <atom:NumericUpDown Watermark="Error" Status="Error"
+                <atom:NumericUpDown PlaceholderText="Error" Status="Error"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                     StyleVariant="Filled" />
-                <atom:NumericUpDown Watermark="Warning" Status="Warning"
+                <atom:NumericUpDown PlaceholderText="Warning" Status="Warning"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                     StyleVariant="Filled" />
 
-                <atom:NumericUpDown Watermark="Error" Status="Error"
+                <atom:NumericUpDown PlaceholderText="Error" Status="Error"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                     StyleVariant="Borderless" />
-                <atom:NumericUpDown Watermark="Warning" Status="Warning"
+                <atom:NumericUpDown PlaceholderText="Warning" Status="Warning"
                                     InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                     StyleVariant="Borderless" />
             </StackPanel>

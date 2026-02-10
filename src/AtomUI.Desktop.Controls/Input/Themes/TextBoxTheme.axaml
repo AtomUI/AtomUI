@@ -67,11 +67,11 @@
                         IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
                         <Panel>
                             <atom:TextBlock
-                                Name="Watermark"
+                                Name="Placeholder"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Text="{TemplateBinding Watermark}"
-                                Foreground="{TemplateBinding WatermarkForeground}"
+                                Text="{TemplateBinding PlaceholderText}"
+                                Foreground="{TemplateBinding PlaceholderForeground}"
                                 LineHeight="{TemplateBinding LineHeight}"
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}"
@@ -145,7 +145,7 @@
             </Style>
         </Style>
     
-        <Setter Property="WatermarkForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
+        <Setter Property="PlaceholderForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
 
         <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
             <Setter Property="Margin"

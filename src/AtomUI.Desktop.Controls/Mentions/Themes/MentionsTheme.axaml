@@ -21,7 +21,7 @@
                                           IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                                           MaxLines="{TemplateBinding MaxLines}"
                                           MinLines="{TemplateBinding MinLines}"
-                                          Watermark="{TemplateBinding PlaceholderText}"
+                                          PlaceholderText="{TemplateBinding PlaceholderText}"
                                           Text="{TemplateBinding Value, Mode=TwoWay}"
                                           TriggerPrefix="{TemplateBinding TriggerPrefix}"
                                           IsReadOnly="{TemplateBinding IsReadOnly}"

@@ -195,7 +195,7 @@
             Title="Searchable by TreeDataTemplate"
             Description="Searchable Tree use ItemsSource datasource.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:SearchEdit Watermark="Search"
+                <atom:SearchEdit PlaceholderText="Search"
                                  SearchButtonClick="HandleFilterItemsSourceTreeClicked"/>
                 <atom:TreeView Name="SearchTreeViewByItemsSource"
                                x:DataType="viewModels:TreeViewViewModel"
@@ -213,7 +213,7 @@
             Title="Searchable"
             Description="Searchable Tree.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:SearchEdit Watermark="Search"
+                <atom:SearchEdit PlaceholderText="Search"
                                  SearchButtonClick="HandleFilterTreeClicked"/>
                 <atom:TreeView Name="SearchTreeView">
                     <atom:TreeItem Header="0-0">

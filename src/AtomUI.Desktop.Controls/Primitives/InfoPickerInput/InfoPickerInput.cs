@@ -58,8 +58,8 @@ public abstract class InfoPickerInput : TemplatedControl,
     public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
         AddOnDecoratedBox.StatusProperty.AddOwner<InfoPickerInput>();
 
-    public static readonly StyledProperty<string?> WatermarkProperty =
-        AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(Watermark));
+    public static readonly StyledProperty<string?> PlaceholderTextProperty =
+        AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(PlaceholderText));
     
     public static readonly StyledProperty<PathIcon?> InfoIconProperty =
         AvaloniaProperty.Register<InfoPickerInput, PathIcon?>(nameof(InfoIcon));
@@ -156,10 +156,10 @@ public abstract class InfoPickerInput : TemplatedControl,
         set => SetValue(StatusProperty, value);
     }
 
-    public string? Watermark
+    public string? PlaceholderText
     {
-        get => GetValue(WatermarkProperty);
-        set => SetValue(WatermarkProperty, value);
+        get => GetValue(PlaceholderTextProperty);
+        set => SetValue(PlaceholderTextProperty, value);
     }
     
     public PathIcon? InfoIcon

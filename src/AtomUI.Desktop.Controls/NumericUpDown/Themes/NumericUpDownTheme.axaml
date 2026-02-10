@@ -58,7 +58,9 @@
                         SizeType="{TemplateBinding SizeType}"
                         IsReadOnly="{TemplateBinding IsReadOnly}"
                         Text="{TemplateBinding Text, Mode=TwoWay}"
-                        Watermark="{TemplateBinding Watermark}"/>
+                        PlaceholderText="{TemplateBinding PlaceholderText}"
+                        PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                        />
                 </atom:ButtonSpinner>
             </ControlTemplate>
         </Setter>
@@ -69,6 +71,7 @@
                 Value="{DynamicResource {x:Static atom:ButtonSpinnerTokenKey.HandleWidth}}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="PlaceholderForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
 
     </ControlTheme>
 </ResourceDictionary>

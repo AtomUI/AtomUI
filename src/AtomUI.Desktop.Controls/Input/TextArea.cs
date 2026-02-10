@@ -49,8 +49,11 @@ public class TextArea : AvaloniaTextBox,
     public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
         AvaloniaProperty.Register<TextArea, bool>(nameof(IsEnableClearButton));
 
-    public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty =
-        AvaloniaProperty.Register<TextArea, IBrush?>(nameof(WatermarkForeground));
+    public static readonly StyledProperty<string?> PlaceholderTextProperty =
+        AvaloniaProperty.Register<TextArea, string?>(nameof(PlaceholderText));
+    
+    public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+        AvaloniaProperty.Register<TextArea, IBrush?>(nameof(PlaceholderForeground));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TextArea>();
@@ -119,10 +122,16 @@ public class TextArea : AvaloniaTextBox,
         set => SetValue(IsEnableClearButtonProperty, value);
     }
 
-    public IBrush? WatermarkForeground
+    public string? PlaceholderText
     {
-        get => GetValue(WatermarkForegroundProperty);
-        set => SetValue(WatermarkForegroundProperty, value);
+        get => GetValue(PlaceholderTextProperty);
+        set => SetValue(PlaceholderTextProperty, value);
+    }
+    
+    public IBrush? PlaceholderForeground
+    {
+        get => GetValue(PlaceholderForegroundProperty);
+        set => SetValue(PlaceholderForegroundProperty, value);
     }
 
     public bool IsMotionEnabled
@@ -186,6 +195,7 @@ public class TextArea : AvaloniaTextBox,
     static TextArea()
     {
         AffectsMeasure<TextArea>(IsAutoSizeProperty, LinesProperty);
+        WatermarkProperty.Changed.AddClassHandler<TextArea>((textBox, args) => textBox.SetCurrentValue(PlaceholderTextProperty, args.NewValue));
     }
     
     public TextArea()

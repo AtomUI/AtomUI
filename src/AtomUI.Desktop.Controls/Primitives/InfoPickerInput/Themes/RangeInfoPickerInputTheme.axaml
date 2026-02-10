@@ -61,7 +61,7 @@
                                       SizeType="{TemplateBinding SizeType}"
                                       IsReadOnly="{TemplateBinding IsReadOnly}"
                                       Text="{TemplateBinding Text}"
-                                      Watermark="{TemplateBinding Watermark}" />
+                                      PlaceholderText="{TemplateBinding PlaceholderText}" />
                         <antdicons:SwapRightOutlined
                             Name="{x:Static atom:RangeInfoPickerInputThemeConstants.RangePickerArrowPart}"
                             Grid.Column="1" />
@@ -82,7 +82,7 @@
                             SizeType="{TemplateBinding SizeType}"
                             IsReadOnly="{TemplateBinding IsReadOnly}"
                             Text="{TemplateBinding SecondaryText}"
-                            Watermark="{TemplateBinding SecondaryWatermark}" />
+                            PlaceholderText="{TemplateBinding SecondaryPlaceholderText}" />
                     </Grid>
                 </atom:AddOnDecoratedBox>
 

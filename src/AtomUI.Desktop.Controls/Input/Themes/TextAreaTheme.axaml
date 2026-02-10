@@ -52,11 +52,11 @@
 
                         <Panel Name="ContentLayout">
                             <atom:TextBlock
-                                Name="Watermark"
+                                Name="Placeholder"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Text="{TemplateBinding Watermark}"
-                                Foreground="{TemplateBinding WatermarkForeground}"
+                                Text="{TemplateBinding PlaceholderText}"
+                                Foreground="{TemplateBinding PlaceholderForeground}"
                                 LineHeight="{TemplateBinding LineHeight}"
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}"
@@ -99,7 +99,7 @@
         <Setter Property="SelectionForegroundBrush"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.SelectionForeground}}" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
-        <Setter Property="WatermarkForeground"
+        <Setter Property="PlaceholderForeground"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="AcceptsReturn" Value="True" />

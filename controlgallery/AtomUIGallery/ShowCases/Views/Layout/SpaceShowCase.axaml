@@ -269,9 +269,9 @@
                         <atom:SelectOption Header="Between" Value="1" />
                         <atom:SelectOption Header="Except" Value="2" />
                     </atom:Select>
-                    <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Minimum"/>
-                    <atom:LineEdit Watermark="~" IsEnabled="False"/>
-                    <atom:LineEdit atom:CompactSpace.ItemSize="100" Watermark="Maximum"/>
+                    <atom:LineEdit atom:CompactSpace.ItemSize="100" PlaceholderText="Minimum"/>
+                    <atom:LineEdit PlaceholderText="~" IsEnabled="False"/>
+                    <atom:LineEdit atom:CompactSpace.ItemSize="100" PlaceholderText="Maximum"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
                 </atom:CompactSpace>
         
@@ -288,7 +288,7 @@
                 </atom:CompactSpace>
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:TimePicker atom:CompactSpace.ItemSize="7*" Watermark="Select Time"/>
+                    <atom:TimePicker atom:CompactSpace.ItemSize="7*" PlaceholderText="Select Time"/>
                     <atom:Cascader atom:CompactSpace.ItemSize="7*" PlaceholderText="Select Address">
                         <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
                             <atom:CascaderOption Header="Hangzhou" Value="hangzhou">
@@ -306,7 +306,7 @@
                 </atom:CompactSpace>
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:RangeTimePicker Watermark="Start time" SecondaryWatermark="End time" />
+                    <atom:RangeTimePicker PlaceholderText="Start time" SecondaryPlaceholderText="End time" />
                     <atom:TreeSelect atom:CompactSpace.ItemSize="7*"
                                      IsAllowClear="True"
                                      IsFilterEnabled="True"
@@ -327,23 +327,23 @@
                 </atom:CompactSpace>
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:LineEdit Watermark="input here"/>
+                    <atom:LineEdit PlaceholderText="input here"/>
                     <atom:CompactSpaceAddOn Content="$"/>
-                    <atom:NumericUpDown Watermark="another input" atom:CompactSpace.ItemSize="1*"/>
-                    <atom:NumericUpDown Watermark="another input" atom:CompactSpace.ItemSize="1*"/>
+                    <atom:NumericUpDown PlaceholderText="another input" atom:CompactSpace.ItemSize="1*"/>
+                    <atom:NumericUpDown PlaceholderText="another input" atom:CompactSpace.ItemSize="1*"/>
                     <atom:CompactSpaceAddOn Content="$"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="*" />
                 </atom:CompactSpace>
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <atom:LineEdit Watermark="input here"/>
+                    <atom:LineEdit PlaceholderText="input here"/>
                     <atom:ColorPicker DefaultValue="#1677ff"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="*" />
                 </atom:CompactSpace>
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Button ButtonType="Primary">Button</atom:Button>
-                    <atom:LineEdit Watermark="input here"/>
+                    <atom:LineEdit PlaceholderText="input here"/>
                     <atom:CompactSpaceAddOn Content="$"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="*" />
                 </atom:CompactSpace>

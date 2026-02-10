@@ -76,7 +76,7 @@
                                 Name="{x:Static atom:TreeSelectThemeConstants.SingleFilterInputPart}"
                                 IsVisible="False"
                                 SizeType="{TemplateBinding SizeType}"
-                                Watermark="{TemplateBinding SelectedItem, Converter={StaticResource TreeItemDataConverter}}" />
+                                PlaceholderText="{TemplateBinding SelectedItem, Converter={StaticResource TreeItemDataConverter}}" />
                             <atom:SelectTagAwareTextBox Name="SelectedItemsBox"
                                                         HorizontalAlignment="Stretch"
                                                         VerticalAlignment="Center"
@@ -182,12 +182,12 @@
             <Style Selector="^[IsFilterEnabled=True]">
                 <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                     <Setter Property="IsVisible" Value="True" />
-                    <Setter Property="WatermarkForeground"
+                    <Setter Property="PlaceholderForeground"
                             Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
                     <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
-                        <Setter Property="WatermarkForeground"
+                        <Setter Property="PlaceholderForeground"
                                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
                     </Style>
                 </Style>

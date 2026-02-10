@@ -15,13 +15,13 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<string?> SecondaryWatermarkProperty =
-        AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(SecondaryWatermark));
+    public static readonly StyledProperty<string?> SecondaryPlaceholderTextProperty =
+        AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(SecondaryPlaceholderText));
     
-    public string? SecondaryWatermark
+    public string? SecondaryPlaceholderText
     {
-        get => GetValue(SecondaryWatermarkProperty);
-        set => SetValue(SecondaryWatermarkProperty, value);
+        get => GetValue(SecondaryPlaceholderTextProperty);
+        set => SetValue(SecondaryPlaceholderTextProperty, value);
     }
     
     #endregion

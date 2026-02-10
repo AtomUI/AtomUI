@@ -288,10 +288,10 @@ public class DatePicker : InfoPickerInput,
         {
             var text = FormatDateTime(DateTime.Today);
             var preferredInputWidth = TextUtils.CalculateTextSize(text, FontSize, FontFamily, FontStyle, FontWeight).Width;
-            if (Watermark != null)
+            if (PlaceholderText != null)
             {
                 preferredInputWidth = Math.Max(preferredInputWidth,
-                    TextUtils.CalculateTextSize(Watermark, FontSize, FontFamily, FontStyle, FontWeight).Width);
+                    TextUtils.CalculateTextSize(PlaceholderText, FontSize, FontFamily, FontStyle, FontWeight).Width);
             }
 
             preferredInputWidth *= 1.1;

@@ -8,18 +8,18 @@
         <gallery:ShowCaseItem
             Title="Basic usage"
             Description="Basic usage example.">
-            <atom:LineEdit Watermark="Basic usage" />
+            <atom:LineEdit PlaceholderText="Basic usage" />
         </gallery:ShowCaseItem>
 
         <gallery:ShowCaseItem
             Title="Three sizes of Input"
             Description="There are three sizes of an Input box: large (40px), default (32px) and small (24px).">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
-                <atom:LineEdit Watermark="Large" SizeType="Large"
+                <atom:LineEdit PlaceholderText="Large" SizeType="Large"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined}" />
-                <atom:LineEdit Watermark="Middle" SizeType="Middle"
+                <atom:LineEdit PlaceholderText="Middle" SizeType="Middle"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined}" />
-                <atom:LineEdit Watermark="Small" SizeType="Small"
+                <atom:LineEdit PlaceholderText="Small" SizeType="Small"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined}" />
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -29,11 +29,11 @@
             Description="Variants of Input.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:Separator Title="Normal" />
-                <atom:LineEdit Watermark="Outlined" StyleVariant="Outline" />
-                <atom:LineEdit Watermark="Filled" StyleVariant="Filled" />
-                <atom:LineEdit Watermark="Borderless" StyleVariant="Borderless" />
-                <atom:LineEdit Watermark="Underlined" StyleVariant="Underlined" />
-                <atom:SearchEdit Watermark="Filled" StyleVariant="Filled" />
+                <atom:LineEdit PlaceholderText="Outlined" StyleVariant="Outline" />
+                <atom:LineEdit PlaceholderText="Filled" StyleVariant="Filled" />
+                <atom:LineEdit PlaceholderText="Borderless" StyleVariant="Borderless" />
+                <atom:LineEdit PlaceholderText="Underlined" StyleVariant="Underlined" />
+                <atom:SearchEdit PlaceholderText="Filled" StyleVariant="Filled" />
                 <atom:Separator Title="LeftAddOn and RightAddOn" />
                 <atom:LineEdit LeftAddOn="http://" RightAddOn=".com" Text="mysite" />
                 <atom:LineEdit LeftAddOn="http://" RightAddOn=".com" Text="mysite" StyleVariant="Filled" />
@@ -47,15 +47,15 @@
             Description="Variants of Input disabled style.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:Separator Title="Normal" />
-                <atom:LineEdit Watermark="Outlined" StyleVariant="Outline" IsEnabled="False" />
-                <atom:LineEdit Watermark="Filled" StyleVariant="Filled" IsEnabled="False" />
-                <atom:LineEdit Watermark="Borderless" StyleVariant="Borderless" IsEnabled="False" />
-                <atom:LineEdit Watermark="Underlined" StyleVariant="Underlined" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Outlined" StyleVariant="Outline" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Filled" StyleVariant="Filled" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Borderless" StyleVariant="Borderless" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Underlined" StyleVariant="Underlined" IsEnabled="False" />
 
-                <atom:LineEdit Watermark="Outlined" StyleVariant="Outline" Status="Error" IsEnabled="False" />
-                <atom:LineEdit Watermark="Filled" StyleVariant="Filled" Status="Error" IsEnabled="False" />
-                <atom:LineEdit Watermark="Borderless" StyleVariant="Borderless" Status="Error" IsEnabled="False" />
-                <atom:LineEdit Watermark="Underlined" StyleVariant="Underlined" Status="Error" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Outlined" StyleVariant="Outline" Status="Error" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Filled" StyleVariant="Filled" Status="Error" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Borderless" StyleVariant="Borderless" Status="Error" IsEnabled="False" />
+                <atom:LineEdit PlaceholderText="Underlined" StyleVariant="Underlined" Status="Error" IsEnabled="False" />
 
                 <atom:Separator Title="LeftAddOn and RightAddOn" />
                 <atom:LineEdit LeftAddOn="http://" RightAddOn=".com" Text="mysite" Status="Error" IsEnabled="False" />
@@ -86,8 +86,8 @@
             Title="With clear icon"
             Description="Input box with the remove icon, click the icon to delete everything.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:LineEdit Watermark="input with clear icon" IsEnableClearButton="True" />
-                <atom:TextArea Watermark="textarea with clear icon" IsEnableClearButton="True" />
+                <atom:LineEdit PlaceholderText="input with clear icon" IsEnableClearButton="True" />
+                <atom:TextArea PlaceholderText="textarea with clear icon" IsEnableClearButton="True" />
             </StackPanel>
         </gallery:ShowCaseItem>
 
@@ -96,13 +96,13 @@
             Description="Input type of password.">
             <StackPanel Orientation="Vertical" Spacing="10">
 
-                <atom:LineEdit Watermark="input password"
+                <atom:LineEdit PlaceholderText="input password"
                                Width="400"
                                RevealPassword="False"
                                PasswordChar="•"
                                HorizontalAlignment="Left"
                                IsEnableRevealButton="True" />
-                <atom:LineEdit Watermark="input password"
+                <atom:LineEdit PlaceholderText="input password"
                                Width="400"
                                RevealPassword="False"
                                HorizontalAlignment="Left"
@@ -116,7 +116,7 @@
             Title="prefix and suffix"
             Description="Add a prefix or suffix icons inside input.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:LineEdit Watermark="Enter your username"
+                <atom:LineEdit PlaceholderText="Enter your username"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined, StrokeBrush=#D7D7D7}"
                                InnerRightContent="{antdicons:AntDesignIconProvider Kind=InfoCircleOutlined, StrokeBrush=#8C8C8C}" />
                 <atom:LineEdit InnerLeftContent="￥" InnerRightContent="RMB" />
@@ -129,29 +129,29 @@
             Description="Add status to Input with status, which could be error or warning.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
                 <atom:Separator Title="Normal" />
-                <atom:LineEdit Watermark="Error" Status="Error" />
-                <atom:LineEdit Watermark="Warning" Status="Warning" />
-                <atom:LineEdit Watermark="Error with prefix"
+                <atom:LineEdit PlaceholderText="Error" Status="Error" />
+                <atom:LineEdit PlaceholderText="Warning" Status="Warning" />
+                <atom:LineEdit PlaceholderText="Error with prefix"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}" Status="Error" />
-                <atom:LineEdit Watermark="Warning with prefix"
+                <atom:LineEdit PlaceholderText="Warning with prefix"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}" Status="Warning" />
 
-                <atom:LineEdit Watermark="Error" Status="Error"
+                <atom:LineEdit PlaceholderText="Error" Status="Error"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}" StyleVariant="Filled" />
-                <atom:LineEdit Watermark="Warning" Status="Warning"
+                <atom:LineEdit PlaceholderText="Warning" Status="Warning"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}" StyleVariant="Filled" />
 
-                <atom:LineEdit Watermark="Error" Status="Error"
+                <atom:LineEdit PlaceholderText="Error" Status="Error"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                StyleVariant="Borderless" />
-                <atom:LineEdit Watermark="Warning" Status="Warning"
+                <atom:LineEdit PlaceholderText="Warning" Status="Warning"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                StyleVariant="Borderless" />
 
-                <atom:LineEdit Watermark="Error" Status="Error"
+                <atom:LineEdit PlaceholderText="Error" Status="Error"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                StyleVariant="Underlined" />
-                <atom:LineEdit Watermark="Warning" Status="Warning"
+                <atom:LineEdit PlaceholderText="Warning" Status="Warning"
                                InnerLeftContent="{antdicons:AntDesignIconProvider Kind=ClockCircleOutlined}"
                                StyleVariant="Underlined" />
 
@@ -171,34 +171,34 @@
                                Status="Warning" />
 
                 <atom:Separator Title="Search" />
-                <atom:SearchEdit Watermark="input search text"
+                <atom:SearchEdit PlaceholderText="input search text"
                                  Width="400"
                                  HorizontalAlignment="Left"
                                  LeftAddOn="https://"
                                  StyleVariant="Outline"
                                  Status="Error" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Outline" Status="Warning" />
 
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Outline" Status="Error"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Outline" Status="Warning"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search" />
 
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Filled" Status="Error" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Filled" Status="Warning" />
 
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Filled" Status="Error"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  LeftAddOn="https://" StyleVariant="Filled" Status="Warning"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search" />
@@ -210,21 +210,21 @@
             Description="Example of creating a search box by grouping a standard input with a search button.">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:Separator Title="Search" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch" SizeType="Large" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch" SizeType="Large" />
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search" />
 
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary" SearchButtonText="Search" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary" SearchButtonText="Search" />
 
-                <atom:SearchEdit Watermark="input search text"
+                <atom:SearchEdit PlaceholderText="input search text"
                                  HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search"
                                  IsEnableClearButton="True" />
-                <atom:SearchEdit Watermark="input search text"
+                <atom:SearchEdit PlaceholderText="input search text"
                                  HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="搜索一下"
@@ -232,27 +232,27 @@
                                  IsEnableClearButton="True"
                                  SizeType="Large" />
                 <atom:Separator Title="Filled" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search"
                                  LeftAddOn="https://"
                                  StyleVariant="Filled" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  LeftAddOn="https://"
                                  StyleVariant="Filled" />
                 <atom:Separator Title="Borderless" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search"
                                  LeftAddOn="https://"
                                  StyleVariant="Borderless" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  LeftAddOn="https://"
                                  StyleVariant="Borderless" />
                 <atom:Separator Title="Underlined" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  SearchButtonText="Search"
                                  LeftAddOn="https://"
                                  StyleVariant="Underlined" />
-                <atom:SearchEdit Watermark="input search text" HorizontalAlignment="Stretch"
+                <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
                                  LeftAddOn="https://"
                                  StyleVariant="Underlined" />
             </StackPanel>
@@ -262,23 +262,23 @@
             Title="Disabled search box"
             Description="Example of creating a search box by grouping a standard input with a search button.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left" SizeType="Large"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left" SizeType="Large"
                                  IsEnabled="False" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  SearchButtonText="Search" IsEnabled="False" />
 
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  SearchButtonStyle="Primary" SearchButtonText="Search" IsEnabled="False" />
-                <atom:SearchEdit Watermark="input search text" Width="400" HorizontalAlignment="Left"
+                <atom:SearchEdit PlaceholderText="input search text" Width="400" HorizontalAlignment="Left"
                                  SearchButtonStyle="Primary" SearchButtonText="Search" IsEnabled="False" />
 
-                <atom:SearchEdit Watermark="input search text"
+                <atom:SearchEdit PlaceholderText="input search text"
                                  Width="400"
                                  HorizontalAlignment="Left"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search"
                                  IsEnableClearButton="True" IsEnabled="False" />
-                <atom:SearchEdit Watermark="input search text"
+                <atom:SearchEdit PlaceholderText="input search text"
                                  Width="400"
                                  HorizontalAlignment="Left"
                                  SearchButtonStyle="Primary"
@@ -302,16 +302,16 @@
             Title="Search box with loading"
             Description="Search loading when onSearch.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
-                <atom:SearchEdit Watermark="input search loading default"
+                <atom:SearchEdit PlaceholderText="input search loading default"
                                  Width="400"
                                  IsOperating="True"
                                  HorizontalAlignment="Left" />
-                <atom:SearchEdit Watermark="input search loading with enterButton" Width="400"
+                <atom:SearchEdit PlaceholderText="input search loading with enterButton" Width="400"
                                  HorizontalAlignment="Left"
                                  IsOperating="True"
                                  SearchButtonStyle="Primary" />
 
-                <atom:SearchEdit Watermark="input search text"
+                <atom:SearchEdit PlaceholderText="input search text"
                                  Width="400"
                                  IsOperating="True"
                                  HorizontalAlignment="Left"
@@ -326,9 +326,9 @@
             Description="For multi-line input.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
                 <atom:TextArea Lines="4" />
-                <atom:TextArea Lines="4" Watermark="maxLength is 6" MaxLength="6" />
-                <atom:TextArea Lines="4" Watermark="maxLength is 6" MaxLength="6" StyleVariant="Filled" />
-                <atom:TextArea Lines="4" Watermark="disabled" MaxLength="6" IsEnabled="False" />
+                <atom:TextArea Lines="4" PlaceholderText="maxLength is 6" MaxLength="6" />
+                <atom:TextArea Lines="4" PlaceholderText="maxLength is 6" MaxLength="6" StyleVariant="Filled" />
+                <atom:TextArea Lines="4" PlaceholderText="disabled" MaxLength="6" IsEnabled="False" />
             </StackPanel>
         </gallery:ShowCaseItem>
 
@@ -336,8 +336,8 @@
             Title="Autosizing the height to fit the content"
             Description="autoSize prop for a textarea type of Input makes the height to automatically adjust based on the content. An option object can be provided to autoSize to specify the minimum and maximum number of lines the textarea will automatically adjust.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
-                <atom:TextArea Watermark="Autosize height based on content lines" IsAutoSize="True" />
-                <atom:TextArea Watermark="Autosize height with minimum and maximum number of lines" MinLines="3"
+                <atom:TextArea PlaceholderText="Autosize height based on content lines" IsAutoSize="True" />
+                <atom:TextArea PlaceholderText="Autosize height with minimum and maximum number of lines" MinLines="3"
                                MaxLines="6" />
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -347,8 +347,8 @@
             Description="Show character counting.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
                 <atom:LineEdit IsShowCount="True" MaxLength="20" />
-                <atom:TextArea IsShowCount="True" MaxLength="100" Watermark="can resize" IsResizable="True" />
-                <atom:TextArea IsShowCount="True" MaxLength="100" Watermark="disable resize" Height="120"
+                <atom:TextArea IsShowCount="True" MaxLength="100" PlaceholderText="can resize" IsResizable="True" />
+                <atom:TextArea IsShowCount="True" MaxLength="100" PlaceholderText="disable resize" Height="120"
                                IsResizable="True" />
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -357,8 +357,8 @@
             Title="Status"
             Description="Add status to TextArea with status, which could be error or warning.">
             <StackPanel Orientation="Vertical" Spacing="10" Margin="0, 0, 20, 0">
-                <atom:TextArea IsShowCount="True" MaxLength="100" Watermark="Error" IsResizable="True" Status="Error" />
-                <atom:TextArea IsShowCount="True" MaxLength="100" Watermark="Warning" IsResizable="True" Status="Warning"/>
+                <atom:TextArea IsShowCount="True" MaxLength="100" PlaceholderText="Error" IsResizable="True" Status="Error" />
+                <atom:TextArea IsShowCount="True" MaxLength="100" PlaceholderText="Warning" IsResizable="True" Status="Warning"/>
             </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

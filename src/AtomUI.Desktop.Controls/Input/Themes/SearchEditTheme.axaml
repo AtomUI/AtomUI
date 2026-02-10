@@ -62,11 +62,11 @@
                         IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
                         <Panel>
                             <atom:TextBlock
-                                Name="Watermark"
+                                Name="Placeholder"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Foreground="{TemplateBinding WatermarkForeground}"
-                                Text="{TemplateBinding Watermark}"
+                                Foreground="{TemplateBinding PlaceholderForeground}"
+                                Text="{TemplateBinding PlaceholderText}"
                                 LineHeight="{TemplateBinding LineHeight}"
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}"

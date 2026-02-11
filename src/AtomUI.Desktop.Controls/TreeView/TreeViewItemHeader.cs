@@ -615,7 +615,7 @@ internal class TreeViewItemHeader : ContentControl
         else if (FilterHighlightWords != null)
         { 
             string? headerText   = null;
-            if (Content is ITreeItemData treeViewItemData)
+            if (Content is ITreeItemNode treeViewItemData)
             {
                 headerText = treeViewItemData.Header as string;
             }

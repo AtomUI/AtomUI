@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Specialized;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
@@ -69,14 +68,14 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.TreeDefaultExpandedPaths,
             (o, v) => o.TreeDefaultExpandedPaths = v);
     
-    public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
-        AvaloniaProperty.Register<TreeSelect, IEnumerable?>(nameof(ItemsSource));
+    public static readonly StyledProperty<IEnumerable<ITreeItemNode>?> ItemsSourceProperty =
+        AvaloniaProperty.Register<TreeSelect, IEnumerable<ITreeItemNode>?>(nameof(ItemsSource));
     
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         AvaloniaProperty.Register<TreeSelect, IDataTemplate?>(nameof(ItemTemplate));
     
-    public static readonly StyledProperty<ITreeItemDataLoader?> DataLoaderProperty =
-        AvaloniaProperty.Register<TreeSelect, ITreeItemDataLoader?>(
+    public static readonly StyledProperty<ITreeItemNodeLoader?> DataLoaderProperty =
+        AvaloniaProperty.Register<TreeSelect, ITreeItemNodeLoader?>(
             nameof(DataLoader));
     
     public static readonly StyledProperty<ITreeItemFilter?> FilterProperty =
@@ -92,13 +91,14 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<TreeSelect, IBrush?>(nameof(FilterHighlightForeground));
     
-    public static readonly DirectProperty<TreeSelect, object?> SelectedItemProperty =
-        SelectingItemsControl.SelectedItemProperty.AddOwner<TreeSelect>(
+    public static readonly DirectProperty<TreeSelect, ITreeItemNode?> SelectedItemProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemNode?>(
+            nameof(SelectedItem),
             o => o.SelectedItem,
             (o, v) => o.SelectedItem = v);
     
-    public static readonly DirectProperty<TreeSelect, IList?> SelectedItemsProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelect, IList?>(
+    public static readonly DirectProperty<TreeSelect, IList<ITreeItemNode>?> SelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, IList<ITreeItemNode>?>(
             nameof(SelectedItems),
             o => o.SelectedItems,
             (o, v) => o.SelectedItems = v);
@@ -177,7 +177,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetAndRaise(TreeDefaultExpandedPathsProperty, ref _treeDefaultExpandedPaths, value);
     }
     
-    public IEnumerable? ItemsSource
+    public IEnumerable<ITreeItemNode>? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
@@ -190,7 +190,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(ItemTemplateProperty, value);
     }
     
-    public ITreeItemDataLoader? DataLoader
+    public ITreeItemNodeLoader? DataLoader
     {
         get => GetValue(DataLoaderProperty);
         set => SetValue(DataLoaderProperty, value);
@@ -216,17 +216,17 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(FilterHighlightForegroundProperty, value);
     }
 
-    private object? _selectedItem;
+    private ITreeItemNode? _selectedItem;
     
-    public object? SelectedItem
+    public ITreeItemNode? SelectedItem
     {
         get => _selectedItem;
         set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
     }
     
-    private IList? _selectedItems;
+    private IList<ITreeItemNode>? _selectedItems;
     
-    public IList? SelectedItems
+    public IList<ITreeItemNode>? SelectedItems
     {
         get => _selectedItems;
         set => SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
@@ -260,8 +260,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.IsMaxSelectReached,
             (o, v) => o.IsMaxSelectReached = v);
     
-    internal static readonly DirectProperty<TreeSelect, IList?> EffectiveSelectedItemsProperty =
-        AvaloniaProperty.RegisterDirect<TreeSelect, IList?>(
+    internal static readonly DirectProperty<TreeSelect, IList<ITreeItemNode>?> EffectiveSelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<TreeSelect, IList<ITreeItemNode>?>(
             nameof(EffectiveSelectedItems),
             o => o.EffectiveSelectedItems,
             (o, v) => o.EffectiveSelectedItems = v);
@@ -296,9 +296,9 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetAndRaise(IsMaxSelectReachedProperty, ref _isMaxSelectReached, value);
     }
     
-    private IList? _effectiveSelectedItems;
+    private IList<ITreeItemNode>? _effectiveSelectedItems;
 
-    internal IList? EffectiveSelectedItems
+    internal IList<ITreeItemNode>? EffectiveSelectedItems
     {
         get => _effectiveSelectedItems;
         set => SetAndRaise(EffectiveSelectedItemsProperty, ref _effectiveSelectedItems, value);
@@ -339,7 +339,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleItemsSourceChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        _items.SetItemsSource(args.GetNewValue<IEnumerable?>());
+        _items.SetItemsSource(args.GetNewValue<IEnumerable<ITreeItemNode>?>());
     }
     
     private void HandleItemsChanged(object? sender, NotifyCollectionChangedEventArgs args)
@@ -532,8 +532,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             }
             else
             {
-                var currentSet  = _selectedItems.Cast<object>().ToHashSet();
-                var treeViewSet = _treeView.SelectedItems.Cast<object>().ToHashSet();
+                var currentSet  = _selectedItems.ToHashSet();
+                var treeViewSet = _treeView.SelectedItems.Cast<ITreeItemNode>().ToHashSet();
                 if (!currentSet.SetEquals(treeViewSet))
                 {
                     needSync = true;
@@ -545,7 +545,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 try
                 {
                     _needSkipSyncSelection = true;
-                    SelectedItems          = _treeView.SelectedItems.Cast<object>().ToList();
+                    SelectedItems          = _treeView.SelectedItems.Cast<ITreeItemNode>().ToList();
                 }
                 finally
                 {
@@ -558,7 +558,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             try
             {
                 _needSkipSyncSelection = true;
-                SelectedItem           = _treeView.SelectedItem;
+                SelectedItem           = _treeView.SelectedItem as ITreeItemNode;
             }
             finally
             {
@@ -582,8 +582,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
         else
         {
-            var currentSet  = _selectedItems.Cast<object>().ToHashSet();
-            var treeViewSet = _treeView.CheckedItems.Cast<object>().ToHashSet();
+            var currentSet  = _selectedItems.ToHashSet();
+            var treeViewSet = _treeView.CheckedItems.Cast<ITreeItemNode>().ToHashSet();
             if (!currentSet.SetEquals(treeViewSet))
             {
                 needSync = true;
@@ -595,7 +595,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             try
             {
                 _needSkipSyncSelection = true;
-                SelectedItems          = _treeView.CheckedItems.Cast<object>().ToList();
+                SelectedItems          = _treeView.CheckedItems.Cast<ITreeItemNode>().ToList();
             }
             finally
             {
@@ -788,23 +788,23 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             return;
         }
-        if (e.Source is SelectTag tag && tag.Item is ITreeItemData treeItemData)
+        if (e.Source is SelectTag tag && tag.Item is ITreeItemNode treeItemNode)
         {
             if (SelectedItems != null)
             {
-                var selectedItems = new List<object>();
+                var selectedItems = new List<ITreeItemNode>();
                 foreach (var item in SelectedItems)
                 {
                     selectedItems.Add(item);
                 }
-                RemoveItemRecursive(selectedItems, treeItemData);
+                RemoveItemRecursive(selectedItems, treeItemNode);
                 SelectedItems = selectedItems;
             }
         }
         e.Handled = true;
     }
 
-    private void RemoveItemRecursive(List<object> items, ITreeItemData item)
+    private void RemoveItemRecursive(List<ITreeItemNode> items, ITreeItemNode item)
     {
         foreach (var child in item.Children)
         {
@@ -839,10 +839,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                         {
                             foreach (var item in SelectedItems)
                             {
-                                if (item is ITreeItemData itemData)
-                                {
-                                    itemData.IsSelected = true;
-                                }
+                                item.IsSelected = true;
                             }
                             if (_treeView.SelectedItems.Count == 0)
                             {
@@ -853,8 +850,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                             }
                             else
                             {
-                                var treeViewSet  = _treeView.SelectedItems.Cast<object>().ToList();
-                                var currentSet   = SelectedItems.Cast<object>().ToList();
+                                var treeViewSet  = _treeView.SelectedItems.Cast<ITreeItemNode>().ToList();
+                                var currentSet   = SelectedItems.ToList();
                                 var deletedItems = treeViewSet.Except(currentSet);
                                 var addedItems   = currentSet.Except(treeViewSet);
                        
@@ -885,8 +882,8 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                         }
                         else
                         {
-                            var treeViewSet  = _treeView.CheckedItems.Cast<object>().ToList();
-                            var currentSet   = SelectedItems.Cast<object>().ToList();
+                            var treeViewSet  = _treeView.CheckedItems.Cast<ITreeItemNode>().ToList();
+                            var currentSet   = SelectedItems.ToList();
                             var deletedItems = treeViewSet.Except(currentSet);
                             var addedItems   = currentSet.Except(treeViewSet);
                             foreach (var item in deletedItems)
@@ -920,37 +917,30 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             }
             else
             {
-                var effectiveSelectedItems = new List<object>();
+                var effectiveSelectedItems = new List<ITreeItemNode>();
                 if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowParent))
                 {
-                    var selectedSet = SelectedItems.Cast<object>().ToHashSet();
-                    var fullySelectedParents = SelectedItems.Cast<ITreeItemData>()
-                                                            .Where(node => node.Children.All(child => selectedSet.Contains(child)))
+                    var selectedSet = SelectedItems.ToHashSet();
+                    var fullySelectedParents = SelectedItems.Where(node => node.Children.All(child => selectedSet.Contains(child)))
                                                             .ToHashSet();
                     foreach (var node in SelectedItems)
                     {
-                        if (node is ITreeItemData treeViewItemData)
-                        {
-                            bool isDescendantOfFullySelectedParent = fullySelectedParents
-                                .Any(parent => IsDescendantOf(treeViewItemData, parent));
+                        bool isDescendantOfFullySelectedParent = fullySelectedParents
+                            .Any(parent => IsDescendantOf(node, parent));
             
-                            if (!isDescendantOfFullySelectedParent)
-                            {
-                                effectiveSelectedItems.Add(node);
-                            }
+                        if (!isDescendantOfFullySelectedParent)
+                        {
+                            effectiveSelectedItems.Add(node);
                         }
                     }
                 }
                 if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowChild))
                 {
-                    foreach (var item in SelectedItems)
+                    foreach (var node in SelectedItems)
                     {
-                        if (item is ITreeItemData treeViewItemData)
+                        if (node.Children.Count == 0)
                         {
-                            if (treeViewItemData.Children.Count == 0)
-                            {
-                                effectiveSelectedItems.Add(treeViewItemData);
-                            }
+                            effectiveSelectedItems.Add(node);
                         }
                     }
                 }
@@ -963,13 +953,13 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
         
-    private bool IsDescendantOf(ITreeItemData node, ITreeItemData parent)
+    private bool IsDescendantOf(ITreeItemNode node, ITreeItemNode parent)
     {
         if (node == parent)
         {
             return false;
         }
-        ITreeNode<ITreeItemData>? current = node;
+        ITreeNode<ITreeItemNode>? current = node;
         while (current != null)
         {
             if (current == parent)

@@ -1,5 +1,4 @@
 using System.Collections;
-using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 

@@ -12,49 +12,49 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
     
     public string UrlPathSegment { get; } = ID.ToString();
     
-    private List<ITreeItemData> _basicTreeNodes = [];
+    private List<ITreeItemNode> _basicTreeNodes = [];
     
-    public List<ITreeItemData> BasicTreeNodes
+    public List<ITreeItemNode> BasicTreeNodes
     {
         get => _basicTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _basicTreeNodes, value);
     }
     
-    private IList<ITreeItemData>? _selectedItems;
+    private IList<ITreeItemNode>? _selectedItems;
     
-    public IList<ITreeItemData>? SelectedItems
+    public IList<ITreeItemNode>? SelectedItems
     {
         get => _selectedItems;
         set => this.RaiseAndSetIfChanged(ref _selectedItems, value);
     }
     
-    private List<ITreeItemData> _multiSelectionTreeNodes = [];
+    private List<ITreeItemNode> _multiSelectionTreeNodes = [];
     
-    public List<ITreeItemData> MultiSelectionTreeNodes
+    public List<ITreeItemNode> MultiSelectionTreeNodes
     {
         get => _multiSelectionTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _multiSelectionTreeNodes, value);
     }
     
-    private List<ITreeItemData> _itemsSourceTreeNodes = [];
+    private List<ITreeItemNode> _itemsSourceTreeNodes = [];
     
-    public List<ITreeItemData> ItemsSourceTreeNodes
+    public List<ITreeItemNode> ItemsSourceTreeNodes
     {
         get => _itemsSourceTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _itemsSourceTreeNodes, value);
     }
     
-    private List<ITreeItemData> _checkableTreeNodes = [];
+    private List<ITreeItemNode> _checkableTreeNodes = [];
     
-    public List<ITreeItemData> CheckableTreeNodes
+    public List<ITreeItemNode> CheckableTreeNodes
     {
         get => _checkableTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _checkableTreeNodes, value);
     }
     
-    private List<ITreeItemData> _asyncLoadTreeNodes = [];
+    private List<ITreeItemNode> _asyncLoadTreeNodes = [];
     
-    public List<ITreeItemData> AsyncLoadTreeNodes
+    public List<ITreeItemNode> AsyncLoadTreeNodes
     {
         get => _asyncLoadTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodes, value);
@@ -68,33 +68,33 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _asyncLoadTreeNodeLoader, value);
     }
     
-    private List<ITreeItemData> _showTreeLineTreeNodes = [];
+    private List<ITreeItemNode> _showTreeLineTreeNodes = [];
     
-    public List<ITreeItemData> ShowTreeLineTreeNodes
+    public List<ITreeItemNode> ShowTreeLineTreeNodes
     {
         get => _showTreeLineTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _showTreeLineTreeNodes, value);
     }
     
-    private List<ITreeItemData> _leftAddTreeNodes = [];
+    private List<ITreeItemNode> _leftAddTreeNodes = [];
     
-    public List<ITreeItemData> LeftAddTreeNodes
+    public List<ITreeItemNode> LeftAddTreeNodes
     {
         get => _leftAddTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _leftAddTreeNodes, value);
     }
     
-    private List<ITreeItemData> _contentLeftAddTreeNodes = [];
+    private List<ITreeItemNode> _contentLeftAddTreeNodes = [];
     
-    public List<ITreeItemData> ContentLeftAddTreeNodes
+    public List<ITreeItemNode> ContentLeftAddTreeNodes
     {
         get => _contentLeftAddTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _contentLeftAddTreeNodes, value);
     }
     
-    private List<ITreeItemData> _placementTreeNodes = [];
+    private List<ITreeItemNode> _placementTreeNodes = [];
     
-    public List<ITreeItemData> PlacementTreeNodes
+    public List<ITreeItemNode> PlacementTreeNodes
     {
         get => _placementTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _placementTreeNodes, value);
@@ -108,17 +108,17 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _placement, value);
     }
     
-    private List<ITreeItemData> _maxSelectedTreeNodes = [];
+    private List<ITreeItemNode> _maxSelectedTreeNodes = [];
     
-    public List<ITreeItemData> MaxSelectedTreeNodes
+    public List<ITreeItemNode> MaxSelectedTreeNodes
     {
         get => _maxSelectedTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _maxSelectedTreeNodes, value);
     }
     
-    private List<ITreeItemData> _maxCheckedTreeNodes = [];
+    private List<ITreeItemNode> _maxCheckedTreeNodes = [];
     
-    public List<ITreeItemData> MaxCheckedTreeNodes
+    public List<ITreeItemNode> MaxCheckedTreeNodes
     {
         get => _maxCheckedTreeNodes;
         set => this.RaiseAndSetIfChanged(ref _maxCheckedTreeNodes, value);

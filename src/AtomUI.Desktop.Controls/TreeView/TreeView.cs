@@ -123,15 +123,14 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             o => o.DefaultExpandedPaths,
             (o, v) => o.DefaultExpandedPaths = v);
     
-    public static readonly StyledProperty<ITreeItemDataLoader?> DataLoaderProperty =
-        AvaloniaProperty.Register<TreeView, ITreeItemDataLoader?>(nameof(DataLoader));
+    public static readonly StyledProperty<ITreeItemNodeLoader?> DataLoaderProperty =
+        AvaloniaProperty.Register<TreeView, ITreeItemNodeLoader?>(nameof(DataLoader));
     
     public static readonly StyledProperty<ITreeItemFilter?> FilterProperty =
         AvaloniaProperty.Register<TreeView, ITreeItemFilter?>(nameof(Filter), new DefaultTreeItemFilter());
     
     public static readonly StyledProperty<object?> FilterValueProperty =
         AvaloniaProperty.Register<TreeView, object?>(nameof(FilterValue));
-    
     
     public static readonly StyledProperty<TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
         AvaloniaProperty.Register<TreeView, TreeFilterHighlightStrategy>(nameof(FilterHighlightStrategy), TreeFilterHighlightStrategy.All);
@@ -293,7 +292,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         set => SetAndRaise(DefaultExpandedPathsProperty, ref _defaultExpandedPaths, value);
     }
     
-    public ITreeItemDataLoader? DataLoader
+    public ITreeItemNodeLoader? DataLoader
     {
         get => GetValue(DataLoaderProperty);
         set => SetValue(DataLoaderProperty, value);
@@ -751,7 +750,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             treeViewItem.OwnerTreeView = this;
             var disposables = new CompositeDisposable(8);
             
-            if (item != null && item is not Visual && item is ITreeItemData treeViewItemData)
+            if (item != null && item is not Visual && item is ITreeItemNode treeViewItemData)
             {
                 TreeItem.ApplyNodeData(treeViewItem, treeViewItemData, disposables);
             }
@@ -1096,7 +1095,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
     }
     
-    private List<TreeItem>? TraverTreeViewPath(TreeNodePath treeNodePath, Action<TreeItem>? action)
+    private List<TreeItem>? TraverTreeViewPath(TreeNodePath treeNodePath, Action<TreeItem, int>? action)
     {
         if (treeNodePath.Length == 0)
         {
@@ -1113,12 +1112,13 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             var   pathNodeExpandStatus = new List<bool>();
             try
             {
-                foreach (var segment in segments)
+                for (int i = 0; i < segments.Count; i++)
                 {
+                    var  segment    = segments[i];
                     bool childFound = false;
-                    for (var i = 0; i < items.Count; i++)
+                    for (var j = 0; j < items.Count; j++)
                     {
-                        var item = items[i];
+                        var item = items[j];
                         if (item != null)
                         {
                             var treeViewItem = TreeContainerFromItem(item) as TreeItem;
@@ -1141,7 +1141,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                                 items      = treeViewItem.Items;
                                 childFound = true;
                                 pathNodes.Add(treeViewItem);
-                                action?.Invoke(treeViewItem);
+                                action?.Invoke(treeViewItem, i);
                                 break;
                             }
                         }
@@ -1258,9 +1258,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         {
             foreach (var checkedPath in DefaultCheckedPaths)
             {
-                TraverTreeViewPath(checkedPath, treeViewItem =>
+                TraverTreeViewPath(checkedPath, (treeViewItem, i) =>
                 {
-                    treeViewItem.SetCurrentValue(TreeItem.IsCheckedProperty, true);
+                    if (i == checkedPath.Length - 1)
+                    {
+                        treeViewItem.SetCurrentValue(TreeItem.IsCheckedProperty, true);
+                    }
                 });
             }
         }
@@ -1287,9 +1290,17 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
                 {
                     foreach (var selectedPath in DefaultSelectedPaths)
                     {
-                        TraverTreeViewPath(selectedPath, treeViewItem =>
+                        TraverTreeViewPath(selectedPath, (treeViewItem, i) =>
                         {
-                            treeViewItem.SetCurrentValue(TreeItem.IsSelectedProperty, true);
+                            if (i == selectedPath.Length - 1)
+                            {
+                                UpdateSelectionFromEventSource(
+                                    treeViewItem,
+                                    true,
+                                    true,
+                                    false,
+                                    false);
+                            }
                         });
                     }
                 }
@@ -1535,13 +1546,13 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
     private List<object> GetTreePathFromItem(object item)
     {
         var paths = new List<object>();
-        if (item is ITreeItemData itemData)
+        if (item is ITreeItemNode itemData)
         {
             var current = itemData;
             while (current != null)
             {
                 paths.Add(current);
-                current = current.ParentNode as ITreeItemData;
+                current = current.ParentNode as ITreeItemNode;
             }
         }
         else if (item is TreeItem treeViewItem)
@@ -1555,7 +1566,7 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         }
         else
         {
-            throw new ArgumentException("Invalid item type, Must ITreeItemData or TreeItem.");
+            throw new ArgumentException("Invalid item type, Must ITreeItemNode or TreeItem.");
         }
 
         paths.Reverse();
@@ -1611,7 +1622,12 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
 
             if (current is TreeItem treeViewItem)
             {
-                treeViewItem.SetCurrentValue(TreeItem.IsSelectedProperty, true);
+                UpdateSelectionFromEventSource(
+                    treeViewItem,
+                    true,
+                    true,
+                    false,
+                    false);
             }
         }
         finally

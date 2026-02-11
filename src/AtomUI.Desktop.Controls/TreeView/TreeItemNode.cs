@@ -4,9 +4,9 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public record TreeItemData : ITreeItemData, ISelectTagTextProvider
+public record TreeItemNode : ITreeItemNode, ISelectTagTextProvider
 {
-    public ITreeNode<ITreeItemData>? ParentNode { get; private set; }
+    public ITreeNode<ITreeItemNode>? ParentNode { get; private set; }
     public TreeNodeKey? ItemKey { get; init; }
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
@@ -20,10 +20,10 @@ public record TreeItemData : ITreeItemData, ISelectTagTextProvider
     public object? Value { get; set; }
     string? ISelectTagTextProvider.TagText => Header?.ToString();
 
-    private IList<ITreeItemData> _children = [];
+    private IList<ITreeItemNode> _children = [];
     
     [Content]
-    public IList<ITreeItemData> Children
+    public IList<ITreeItemNode> Children
     {
         get => _children;
         init
@@ -31,7 +31,7 @@ public record TreeItemData : ITreeItemData, ISelectTagTextProvider
             _children = value;
             foreach (var child in _children)
             {
-                if (child is TreeItemData item)
+                if (child is TreeItemNode item)
                 {
                     item.ParentNode = this;
                 }
@@ -39,7 +39,7 @@ public record TreeItemData : ITreeItemData, ISelectTagTextProvider
         }
     }
     
-    public void UpdateParentNode(ITreeItemData? parentNode)
+    public void UpdateParentNode(ITreeItemNode? parentNode)
     {
         ParentNode = parentNode;
     }

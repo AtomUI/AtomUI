@@ -33,7 +33,7 @@ public partial class TreeView
             throw new InvalidOperationException("ITreeNodeDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
         var data = TreeItemFromContainer(item);
-        if (data is ITreeItemData treeItemData)
+        if (data is ITreeItemNode treeItemData)
         {
             var cts = new CancellationTokenSource(); // TODO 做一个超时结束
             item.IsLoading = true;

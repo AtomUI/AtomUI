@@ -11,7 +11,7 @@ public class DefaultTreeItemFilter : ITreeItemFilter
         }
         if (treeView.ItemsSource != null)
         {
-            if (treeItem.Header is ITreeItemData treeItemData)
+            if (treeItem.Header is ITreeItemNode treeItemData)
             {
                 var headerStr = treeItemData.Header?.ToString();
                 if (!string.IsNullOrWhiteSpace(headerStr) && headerStr.IndexOf(strFilterValue, StringComparison.OrdinalIgnoreCase) != -1)

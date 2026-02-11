@@ -24,8 +24,8 @@
                     <atom:SelectOption Header="Lucy" Value="lucy" />
                 </atom:Select>
         
-                <atom:Select Mode="Single" 
-                             PlaceholderText="Please select" 
+                <atom:Select Mode="Single"
+                             PlaceholderText="Please select"
                              Width="120"
                              DefaultValues="lucy"
                              OptionsLoader="{Binding SelectOptionsAsyncLoader}">

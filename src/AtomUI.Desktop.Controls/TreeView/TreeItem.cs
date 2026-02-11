@@ -21,7 +21,7 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaTreeItem = Avalonia.Controls.TreeViewItem;
 
 [PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio)]
-public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemData
+public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> IconProperty =
@@ -94,8 +94,8 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemData
         set => SetValue(IsIndicatorEnabledProperty, value);
     }
     
-    IList<ITreeItemData> ITreeNode<ITreeItemData>.Children => Items.OfType<ITreeItemData>().ToList();
-    ITreeNode<ITreeItemData>? ITreeNode<ITreeItemData>.ParentNode => Parent as ITreeNode<ITreeItemData>;
+    IList<ITreeItemNode> ITreeNode<ITreeItemNode>.Children => Items.OfType<ITreeItemNode>().ToList();
+    ITreeNode<ITreeItemNode>? ITreeNode<ITreeItemNode>.ParentNode => Parent as ITreeNode<ITreeItemNode>;
     
     public TreeNodeKey? ItemKey { get; set; }
 
@@ -807,7 +807,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemData
             treeViewItem.OwnerTreeView = OwnerTreeView;
             var disposables = new CompositeDisposable(8);
             
-            if (item != null && item is not Visual && item is ITreeItemData treeViewItemData)
+            if (item != null && item is not Visual && item is ITreeItemNode treeViewItemData)
             {
                 ApplyNodeData(treeViewItem, treeViewItemData, disposables);
             }
@@ -851,7 +851,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemData
     {
     }
 
-    internal static void ApplyNodeData(TreeItem treeItem, ITreeItemData treeItemData, CompositeDisposable disposables)
+    internal static void ApplyNodeData(TreeItem treeItem, ITreeItemNode treeItemData, CompositeDisposable disposables)
     {
         treeItem.SetCurrentValue(IconProperty, treeItemData.Icon);
         treeItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);

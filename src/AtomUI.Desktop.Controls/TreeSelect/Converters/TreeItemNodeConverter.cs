@@ -3,13 +3,13 @@ using Avalonia.Data.Converters;
 
 namespace AtomUI.Desktop.Controls.Converters;
 
-internal class TreeItemDataConverter : IValueConverter
+internal class TreeItemNodeConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is ITreeItemData data)
+        if (value is ITreeItemNode node)
         {
-            return data.Header;
+            return node.Header;
         }
         return value;
     }

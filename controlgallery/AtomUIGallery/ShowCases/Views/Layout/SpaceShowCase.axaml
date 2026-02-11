@@ -312,15 +312,15 @@
                                      IsFilterEnabled="True"
                                      IsDefaultExpandAll="True"
                                      PlaceholderText="Please select">
-                        <atom:TreeItemData Header="parent 1" Value="parent 1">
-                            <atom:TreeItemData Header="parent 1-0" Value="parent 1-0">
-                                <atom:TreeItemData Header="leaf1" Value="leaf1"/>
-                                <atom:TreeItemData Header="leaf2" Value="leaf2"/>
-                            </atom:TreeItemData>
-                            <atom:TreeItemData Header="parent 1-1" Value="parent 1-1">
-                                <atom:TreeItemData Header="leaf3" Value="leaf3"/>
-                            </atom:TreeItemData>
-                        </atom:TreeItemData>
+                        <atom:TreeItemNode Header="parent 1" Value="parent 1">
+                            <atom:TreeItemNode Header="parent 1-0" Value="parent 1-0">
+                                <atom:TreeItemNode Header="leaf1" Value="leaf1"/>
+                                <atom:TreeItemNode Header="leaf2" Value="leaf2"/>
+                            </atom:TreeItemNode>
+                            <atom:TreeItemNode Header="parent 1-1" Value="parent 1-1">
+                                <atom:TreeItemNode Header="leaf3" Value="leaf3"/>
+                            </atom:TreeItemNode>
+                        </atom:TreeItemNode>
                     </atom:TreeSelect>
                     <atom:Button ButtonType="Primary">Submit</atom:Button>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*" />

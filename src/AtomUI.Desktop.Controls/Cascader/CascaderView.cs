@@ -312,7 +312,6 @@ public partial class CascaderView : TemplatedControl,
     private bool _ignoreSelectedPropertyChanged;
     private CascaderViewLevelList? _rootLevelList;
     private readonly Dictionary<CascaderViewLevelList, CompositeDisposable> _levelListDisposables = new();
-    private CascaderViewItem? _lastHoveredItem; // 触发器是 hover 的时候使用
     
     static CascaderView()
     {
@@ -614,35 +613,20 @@ public partial class CascaderView : TemplatedControl,
                 var cascaderViewItem = GetContainerFromEventSource(e.Source);
                 if (cascaderViewItem != null)
                 {
-                    if (_lastHoveredItem != null &&
-                        _lastHoveredItem != cascaderViewItem &&
-                        !IsDescendantOf(cascaderViewItem, _lastHoveredItem))
+                    if (!cascaderViewItem.IsExpanded)
                     {
-                        _lastHoveredItem.IsExpanded = false;
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await ExpandItemAsync(cascaderViewItem);
+                        });
                     }
-                    cascaderViewItem.IsExpanded = true;
-                    _lastHoveredItem            = cascaderViewItem;
+                    else
+                    {
+                        cascaderViewItem.NotifyClearDescendantExpanded();
+                    }
                 }
             }
         }
-    }
-    
-    private bool IsDescendantOf(CascaderViewItem lhs, CascaderViewItem rhs)
-    {
-        var lhsData = lhs.AttachedOption;
-        var rhsData = rhs.AttachedOption;
-        Debug.Assert(lhsData != null && rhsData != null);
-        var currentData = lhsData;
-        while (currentData != null)
-        {
-            if (currentData == rhsData)
-            {
-                return true;
-            }
-            currentData = currentData.ParentNode as ICascaderOption;
-        }
-    
-        return false;
     }
     
     public void HandleKeyDown(KeyEventArgs e)

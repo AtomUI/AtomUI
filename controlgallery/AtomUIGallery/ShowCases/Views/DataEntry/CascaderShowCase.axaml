@@ -31,7 +31,7 @@
                 PlaceholderText="Please select"
                 OptionsSource="{Binding BasicCascaderViewNodes}"
                 IsAllowClear="True"
-                DefaultSelectItemPath="{Binding DefaultSelectItemPath}">
+                DefaultSelectOptionPath="{Binding DefaultSelectOptionPath}">
                 <atom:Cascader.OptionTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}"
                                       x:DataType="atom:ICascaderOption">
@@ -122,7 +122,7 @@
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    OptionsSource="{Binding CheckStrategyCascaderNodes}"
+                    OptionsSource="{Binding CheckStrategyShowAllCascaderNodes}"
                     HorizontalAlignment="Stretch"
                     ShowCheckedStrategy="All"
                     IsAllowClear="True"
@@ -139,7 +139,7 @@
                 <atom:Cascader
                     x:DataType="viewModels:CascaderViewModel"
                     PlaceholderText="Please select"
-                    OptionsSource="{Binding CheckStrategyCascaderNodes}"
+                    OptionsSource="{Binding CheckStrategyShowParentCascaderNodes}"
                     HorizontalAlignment="Stretch"
                     ShowCheckedStrategy="ShowParent"
                     IsAllowClear="True"
@@ -464,7 +464,7 @@
                         </TreeDataTemplate>
                     </atom:CascaderView.OptionTemplate>
                 </atom:CascaderView>
-                
+        
                 <atom:CascaderView
                     IsCheckable="True"
                     x:DataType="viewModels:CascaderViewModel"

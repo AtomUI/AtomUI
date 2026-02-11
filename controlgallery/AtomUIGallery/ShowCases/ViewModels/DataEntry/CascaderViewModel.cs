@@ -71,12 +71,20 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _multipleSelectCascaderNodes, value);
     }
     
-    private List<ICascaderOption> _checkStrategyCascaderNodes = [];
+    private List<ICascaderOption> _checkStrategyShowParentCascaderNodes = [];
     
-    public List<ICascaderOption> CheckStrategyCascaderNodes
+    public List<ICascaderOption> CheckStrategyShowParentCascaderNodes
     {
-        get => _checkStrategyCascaderNodes;
-        set => this.RaiseAndSetIfChanged(ref _checkStrategyCascaderNodes, value);
+        get => _checkStrategyShowParentCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkStrategyShowParentCascaderNodes, value);
+    }
+    
+    private List<ICascaderOption> _checkStrategyShowAllCascaderNodes = [];
+    
+    public List<ICascaderOption> CheckStrategyShowAllCascaderNodes
+    {
+        get => _checkStrategyShowAllCascaderNodes;
+        set => this.RaiseAndSetIfChanged(ref _checkStrategyShowAllCascaderNodes, value);
     }
     
     private List<ICascaderOption> _prefixAndSuffixCascaderNodes = [];

@@ -32,7 +32,7 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                 InitDefaultExpandCascaderViewData(vm);
                 vm.AsyncCascaderNodeLoader = new CascaderItemDataLoader();
                 vm.DefaultExpandPath       = new TreeNodePath("jiangsu/nanjing/zhonghuamen");
-                vm.DefaultSelectItemPath   = new TreeNodePath("zhejiang/hangzhou/xihu");
+                vm.DefaultSelectOptionPath = new TreeNodePath("zhejiang/hangzhou/xihu");
             }
         });
         InitializeComponent();
@@ -41,22 +41,22 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
     private List<ICascaderOption> GenerateCascaderViewItems()
     {
         return [
-            new CascaderOption()
+            new CascaderOption
             {
                 Header = "Zhejiang",
                 Value  = "zhejiang",
                 Children = [
-                    new CascaderOption()
+                    new CascaderOption
                     {
                         Header = "Hangzhou",
                         Value  = "hangzhou",
                         Children = [
-                            new CascaderOption()
+                            new CascaderOption
                             {
                                 Header = "West Lake",
                                 Value  = "xihu",
                             },
-                            new CascaderOption()
+                            new CascaderOption
                             {
                                 Header = "Lingyin shi",
                                 Value  = "lingyinshi",
@@ -163,6 +163,12 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
                             {
                                 Header  = "Lingyin shi",
                                 ItemKey = "lingyinshi",
+                            },
+                            new CascaderOption()
+                            {
+                                IsEnabled = false,
+                                Header  = "Hefang jie",
+                                ItemKey = "Hefang jie",
                             }
                         ]
                     }
@@ -297,7 +303,8 @@ public partial class CascaderShowCase : ReactiveUserControl<CascaderViewModel>
 
     private void InitCheckStrategyCascaderData(CascaderViewModel viewModel)
     {
-        viewModel.CheckStrategyCascaderNodes = GenerateMultiSelectCascaderNodes();
+        viewModel.CheckStrategyShowAllCascaderNodes = GenerateMultiSelectCascaderNodes();
+        viewModel.CheckStrategyShowParentCascaderNodes = GenerateMultiSelectCascaderNodes();
     }
 
     private void InitSearchCascaderData(CascaderViewModel viewModel)

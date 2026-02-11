@@ -141,6 +141,10 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
             nameof(Clicked),
             RoutingStrategies.Bubble);
     
+    internal static readonly RoutedEvent<RoutedEventArgs> ClearDescendantExpandedEvent =
+        RoutedEvent.Register<CascaderViewItem, RoutedEventArgs>(nameof(ClearDescendantExpanded), 
+            RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
     internal event EventHandler<RoutedEventArgs>? Clicked
     {
         add => AddHandler(ClickedEvent, value);
@@ -169,6 +173,12 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
     {
         add => AddHandler(SelectedEvent, value);
         remove => RemoveHandler(SelectedEvent, value);
+    }
+    
+    internal event EventHandler<RoutedEventArgs>? ClearDescendantExpanded
+    {
+        add => AddHandler(ClearDescendantExpandedEvent, value);
+        remove => RemoveHandler(ClearDescendantExpandedEvent, value);
     }
     #endregion
 
@@ -398,5 +408,10 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         PseudoClasses.Set(CascaderViewPseudoClass.NodeToggleTypeCheckBox, ToggleType == ItemToggleType.CheckBox);
         PseudoClasses.Set(StdPseudoClass.Expanded, IsExpanded);
         PseudoClasses.Set(StdPseudoClass.Checked, IsChecked == true);
+    }
+
+    internal void NotifyClearDescendantExpanded()
+    {
+        RaiseEvent(new RoutedEventArgs(ClearDescendantExpandedEvent, this));
     }
 }

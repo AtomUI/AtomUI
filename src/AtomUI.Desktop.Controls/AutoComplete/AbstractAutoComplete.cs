@@ -410,7 +410,9 @@ public class AbstractAutoComplete : TemplatedControl,
     }
 
     public ItemsSourceView OptionsView => _options;
-    [Content] public ItemCollection Options => _options;
+    
+    [Content] 
+    public ItemCollection Options => _options;
     
     #endregion
 

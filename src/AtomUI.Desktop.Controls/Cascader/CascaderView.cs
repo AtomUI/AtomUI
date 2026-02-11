@@ -33,8 +33,8 @@ public partial class CascaderView : TemplatedControl,
                                     IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-    public static readonly StyledProperty<IEnumerable?> OptionsSourceProperty =
-        AvaloniaProperty.Register<CascaderView, IEnumerable?>(nameof(OptionsSource));
+    public static readonly StyledProperty<IEnumerable<ICascaderOption>?> OptionsSourceProperty =
+        AvaloniaProperty.Register<CascaderView, IEnumerable<ICascaderOption>?>(nameof(OptionsSource));
     
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         AvaloniaProperty.Register<CascaderView, IDataTemplate?>(nameof(OptionTemplate));
@@ -91,19 +91,19 @@ public partial class CascaderView : TemplatedControl,
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<CascaderView, Thickness>(nameof(EmptyIndicatorPadding));
     
-    public static readonly DirectProperty<CascaderView, ICascaderOption?> SelectedItemProperty =
+    public static readonly DirectProperty<CascaderView, ICascaderOption?> SelectedOptionProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, ICascaderOption?>(
-            nameof(SelectedItem),
-            o => o.SelectedItem,
-            (o, v) => o.SelectedItem = v);
+            nameof(SelectedOption),
+            o => o.SelectedOption,
+            (o, v) => o.SelectedOption = v);
     
-    public static readonly DirectProperty<CascaderView, IList<ICascaderOption>?> CheckedItemsProperty =
+    public static readonly DirectProperty<CascaderView, IList<ICascaderOption>?> CheckedOptionsProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, IList<ICascaderOption>?>(
-            nameof(CheckedItems),
-            o => o.CheckedItems,
-            (o, v) => o.CheckedItems = v);
+            nameof(CheckedOptions),
+            o => o.CheckedOptions,
+            (o, v) => o.CheckedOptions = v);
     
-    public IEnumerable? OptionsSource
+    public IEnumerable<ICascaderOption>? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
@@ -224,20 +224,20 @@ public partial class CascaderView : TemplatedControl,
         set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
     
-    private ICascaderOption? _selectedItem;
+    private ICascaderOption? _selectedOption;
     
-    public ICascaderOption? SelectedItem
+    public ICascaderOption? SelectedOption
     {
-        get => _selectedItem;
-        set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+        get => _selectedOption;
+        set => SetAndRaise(SelectedOptionProperty, ref _selectedOption, value);
     }
     
-    private IList<ICascaderOption>? _checkedItems;
+    private IList<ICascaderOption>? _checkedOptions;
     
-    public IList<ICascaderOption>? CheckedItems
+    public IList<ICascaderOption>? CheckedOptions
     {
-        get => _checkedItems;
-        set => SetAndRaise(CheckedItemsProperty, ref _checkedItems, value);
+        get => _checkedOptions;
+        set => SetAndRaise(CheckedOptionsProperty, ref _checkedOptions, value);
     }
     
     public OptionsSourceView OptionsView => _options;
@@ -249,13 +249,13 @@ public partial class CascaderView : TemplatedControl,
     
     #region 公共事件定义
     
-    public event EventHandler<CascaderViewCheckedItemsChangedEventArgs>? CheckedItemsChanged;
+    public event EventHandler<CascaderViewCheckedOptionsChangedEventArgs>? CheckedOptionsChanged;
     public event EventHandler<CascaderViewItemLoadedEventArgs>? ItemAsyncLoaded;
     public event EventHandler<CascaderItemExpandedEventArgs>? ItemExpanded;
     public event EventHandler<CascaderItemCollapsedEventArgs>? ItemCollapsed;
     public event EventHandler<CascaderItemClickedEventArgs>? ItemClicked;
     public event EventHandler<CascaderItemDoubleClickedEventArgs>? ItemDoubleClicked;
-    public event EventHandler<CascaderItemSelectedEventArgs>? ItemSelected;
+    public event EventHandler<CascaderOptionSelectedEventArgs>? OptionSelected;
     #endregion
 
     #region 内部属性定义
@@ -305,7 +305,7 @@ public partial class CascaderView : TemplatedControl,
     
     private readonly ItemCollection _options = new();
     private static readonly IList Empty = Array.Empty<object>();
-    private bool _ignoreSyncCheckedItems;
+    private bool _ignoreSyncCheckedOptions;
     private StackPanel? _itemsPanel;
     private int _ignoreExpandAndCollapseLevel;
     private bool _defaultExpandPathApplied;
@@ -320,7 +320,7 @@ public partial class CascaderView : TemplatedControl,
         SetupChecked();
         CascaderViewItem.DoubleTappedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemDoubleClicked(args));
         CascaderViewItem.ClickedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemClicked(args));
-        CascaderViewItem.SelectedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemSelected(args));
+        CascaderViewItem.SelectedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderOptionSelected(args));
         OptionsSourceProperty.Changed.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderSourceChanged(args));
     }
     
@@ -374,17 +374,17 @@ public partial class CascaderView : TemplatedControl,
             _defaultExpandPathApplied = true;
         }
         
-        if (SelectedItem != null)
+        if (SelectedOption != null)
         {
-            SelectTargetItem(SelectedItem);
+            SelectTargetOption(SelectedOption);
         }
     }
 
     internal bool TryParseSelectPath(TreeNodePath path, out IList<ICascaderOption> pathNodes)
     {
-        var                        segments     = path.Segments;
-        var                        count        = path.Segments.Count;
-        var                        isPathValid  = true;
+        var                    segments     = path.Segments;
+        var                    count        = path.Segments.Count;
+        var                    isPathValid  = true;
         IList<ICascaderOption> currentItems = _options.Cast<ICascaderOption>().ToList();
         
         var                          options    = new List<ICascaderOption>();
@@ -430,7 +430,7 @@ public partial class CascaderView : TemplatedControl,
 
     private void HandleCascaderSourceChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        _options.SetItemsSource(args.GetNewValue<IEnumerable?>());
+        _options.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderOption>?>());
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -459,18 +459,18 @@ public partial class CascaderView : TemplatedControl,
         {
             ConfigureEffectiveToggleType();
         }
-        else if (change.Property == SelectedItemProperty)
+        else if (change.Property == SelectedOptionProperty)
         {
             if (_ignoreSelectedPropertyChanged)
             {
                 _ignoreSelectedPropertyChanged = false;
                 return;
             }
-            if (SelectedItem != null)
+            if (SelectedOption != null)
             {
                 if (IsLoaded)
                 {
-                    SelectTargetItem(SelectedItem);
+                    SelectTargetOption(SelectedOption);
                 }
             }
             else
@@ -480,13 +480,13 @@ public partial class CascaderView : TemplatedControl,
         }
     }
     
-    private void SelectTargetItem(ICascaderOption option)
+    private void SelectTargetOption(ICascaderOption option)
     {
         var isLeaf = option.IsLeaf || option.Children.Count == 0;
     
         if (!isLeaf && !IsAllowSelectParent)
         {
-            throw new ArgumentException($"Item {option.Header} is not a Leaf node.");
+            throw new ArgumentException($"Option {option.Header} is not a Leaf node.");
         }
     
         Dispatcher.UIThread.InvokeAsync(async () =>
@@ -524,7 +524,7 @@ public partial class CascaderView : TemplatedControl,
         }
     }
 
-    private void HandleCascaderItemSelected(RoutedEventArgs args)
+    private void HandleCascaderOptionSelected(RoutedEventArgs args)
     {
         if (args.Source is CascaderViewItem item)
         {
@@ -532,8 +532,8 @@ public partial class CascaderView : TemplatedControl,
             {
                 var option = item.AttachedOption!;
                 _ignoreSelectedPropertyChanged = true;
-                SetCurrentValue(SelectedItemProperty, option);
-                ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(option));
+                SetCurrentValue(SelectedOptionProperty, option);
+                OptionSelected?.Invoke(this, new CascaderOptionSelectedEventArgs(option));
             }
         }
     }
@@ -570,15 +570,12 @@ public partial class CascaderView : TemplatedControl,
     
     private void HandleCascaderItemDoubleClicked(RoutedEventArgs args)
     {
-        if (IsAllowSelectParent)
+        if (args.Source is Control source)
         {
-            if (args.Source is Control source)
+            var cascaderItem = source.FindAncestorOfType<CascaderViewItem>();
+            if (cascaderItem != null)
             {
-                var cascaderItem = source.FindAncestorOfType<CascaderViewItem>();
-                if (cascaderItem != null)
-                {
-                    ItemDoubleClicked?.Invoke(this, new CascaderItemDoubleClickedEventArgs(cascaderItem));
-                }
+                ItemDoubleClicked?.Invoke(this, new CascaderItemDoubleClickedEventArgs(cascaderItem));
             }
         }
     }
@@ -614,7 +611,8 @@ public partial class CascaderView : TemplatedControl,
         {
             if (ExpandTrigger == CascaderViewExpandTrigger.Hover)
             {
-                if (GetContainerFromEventSource(e.Source) is CascaderViewItem cascaderViewItem)
+                var cascaderViewItem = GetContainerFromEventSource(e.Source);
+                if (cascaderViewItem != null)
                 {
                     if (_lastHoveredItem != null &&
                         _lastHoveredItem != cascaderViewItem &&

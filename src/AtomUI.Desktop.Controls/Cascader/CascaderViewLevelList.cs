@@ -177,100 +177,83 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
     {
         if (e.Source is Visual source)
         {
+            var point = e.GetCurrentPoint(source);
             if (IsAllowSelectParent)
             {
                 _clickDisposable ??= DispatcherTimer.RunOnce(() =>
                 {
                     _clickDisposable = null;
-                    var point = e.GetCurrentPoint(source);
-                    if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                    {
-                        if (GetContainerFromEventSource(e.Source) is CascaderViewItem cascaderViewItem)
-                        {
-                            cascaderViewItem.RaiseClick();
-                            if (ExpandTrigger == CascaderViewExpandTrigger.Click)
-                            {
-                                if (cascaderViewItem.IsLeaf)
-                                {
-                                    if (!cascaderViewItem.IsExpanded)
-                                    {
-                                        cascaderViewItem.IsExpanded = true;
-                                    }
-                                }
-                                else
-                                {
-                                    cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
-                                }
-                            }
-                            if (cascaderViewItem.IsLeaf && !cascaderViewItem.IsLoading)
-                            {
-                                UpdateSelection(
-                                    cascaderViewItem,
-                                    cascaderViewItem.IsExpanded,
-                                    false,
-                                    true,
-                                    false);
-                            }
-                        }
-                    
-                    }
+                    HandlePointerPressed(source, point);
                 }, TimeSpan.FromMilliseconds(DoubleClickInterval));
-                
             }
             else
             {
-                var point = e.GetCurrentPoint(source);
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                HandlePointerPressed(source, point);
+            }
+        }
+    }
+
+    private void HandlePointerPressed(Visual item, PointerPoint point)
+    {
+        if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+        {
+            if (GetContainerFromEventSource(item) is CascaderViewItem cascaderViewItem)
+            {
+                cascaderViewItem.RaiseClick();
+                if (ExpandTrigger == CascaderViewExpandTrigger.Click)
                 {
-                    if (GetContainerFromEventSource(e.Source) is CascaderViewItem cascaderViewItem)
+                    if (cascaderViewItem.IsExpanded)
                     {
-                        cascaderViewItem.RaiseClick();
-                        if (ExpandTrigger == CascaderViewExpandTrigger.Click)
-                        {
-                            if (cascaderViewItem.IsLeaf)
-                            {
-                                if (!cascaderViewItem.IsExpanded)
-                                {
-                                    cascaderViewItem.IsExpanded = true;
-                                }
-                            }
-                            else
-                            {
-                                cascaderViewItem.IsExpanded = !cascaderViewItem.IsExpanded;
-                            }
-                        }
-                        if (cascaderViewItem.IsLeaf && !cascaderViewItem.IsLoading)
-                        {
-                            UpdateSelection(
-                                cascaderViewItem,
-                                cascaderViewItem.IsExpanded,
-                                false,
-                                true,
-                                false);
-                        }
+                        cascaderViewItem.NotifyClearDescendantExpanded();
                     }
+                    cascaderViewItem.IsExpanded = true;
+                }
+
+                var isUpdateSelection =
+                    (cascaderViewItem.IsLeaf || IsAllowSelectParent) && !cascaderViewItem.IsLoading;
+                if (isUpdateSelection)
+                {
+                    UpdateSelection(
+                        cascaderViewItem,
+                        !cascaderViewItem.IsSelected,
+                        false,
+                        true,
+                        false);
                 }
             }
         }
     }
     
-    private void HandleCascaderItemDoubleClicked(RoutedEventArgs args)
+    private void HandleCascaderItemDoubleClicked(TappedEventArgs e)
     {
-        if (IsAllowSelectParent)
+        if (e.Source is Visual source)
         {
-            _clickDisposable?.Dispose();
-            _clickDisposable = null;
-            if (GetContainerFromEventSource(args.Source) is CascaderViewItem cascaderViewItem)
+            if (IsAllowSelectParent)
             {
-                if (!cascaderViewItem.IsLeaf)
+                _clickDisposable?.Dispose();
+                _clickDisposable = null;
+                if (GetContainerFromEventSource(source) is CascaderViewItem cascaderViewItem)
                 {
-                    cascaderViewItem.IsExpanded = true;
-                    UpdateSelection(
-                        cascaderViewItem,
-                        true,
-                        false,
-                        true,
-                        false);
+                    if (ExpandTrigger == CascaderViewExpandTrigger.Click)
+                    {
+                        if (cascaderViewItem.IsExpanded)
+                        {
+                            cascaderViewItem.NotifyClearDescendantExpanded();
+                        }
+                        cascaderViewItem.IsExpanded = true;
+                    }
+
+                    var isUpdateSelection =
+                        (cascaderViewItem.IsLeaf || IsAllowSelectParent) && !cascaderViewItem.IsLoading;
+                    if (isUpdateSelection)
+                    {
+                        UpdateSelection(
+                            cascaderViewItem,
+                            !cascaderViewItem.IsSelected,
+                            false,
+                            true,
+                            false);
+                    }
                 }
             }
         }

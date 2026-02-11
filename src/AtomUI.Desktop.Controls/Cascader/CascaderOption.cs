@@ -21,6 +21,14 @@ public interface ICascaderOption : ITreeNode<ICascaderOption>
     }
 }
 
+public static class ICascaderOptionExtensions
+{
+    public static bool IsEffectiveLeaf(this ICascaderOption option)
+    {
+        return option.IsLeaf || option.Children.Count == 0;
+    }
+}
+
 public record CascaderOption : ICascaderOption, ISelectTagTextProvider
 {
     public ITreeNode<ICascaderOption>? ParentNode { get; private set; }

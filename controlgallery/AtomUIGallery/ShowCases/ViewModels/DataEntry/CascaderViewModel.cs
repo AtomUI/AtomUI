@@ -23,12 +23,12 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatabl
         set => this.RaiseAndSetIfChanged(ref _basicCascaderViewNodes, value);
     }
     
-    private TreeNodePath? _defaultSelectItemPath;
+    private TreeNodePath? _defaultSelectOptionPath;
     
-    public TreeNodePath? DefaultSelectItemPath
+    public TreeNodePath? DefaultSelectOptionPath
     {
-        get => _defaultSelectItemPath;
-        set => this.RaiseAndSetIfChanged(ref _defaultSelectItemPath, value);
+        get => _defaultSelectOptionPath;
+        set => this.RaiseAndSetIfChanged(ref _defaultSelectOptionPath, value);
     }
     
     private List<ICascaderOption> _basicCheckableCascaderViewNodes = [];

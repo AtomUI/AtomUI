@@ -17,6 +17,7 @@ public partial class CascaderView
     {
         CascaderViewItem.ExpandedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemExpanded(args));
         CascaderViewItem.CollapsedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleCascaderItemCollapsed(args));
+        CascaderViewItem.ClearDescendantExpandedEvent.AddClassHandler<CascaderView>((view, args) => view.HandleClearCascaderDescendantExpanded(args));
     }
 
     private void HandleCascaderItemExpanded(RoutedEventArgs args)
@@ -233,7 +234,7 @@ public partial class CascaderView
 
         if (!cascaderViewOption.IsLeaf)
         {
-            ClearExpandedState(level + 1);
+            ClearExpandedStateForLevel(level + 1);
         
             var targetIndex = level;
             var count       = _itemsPanel.Children.Count;
@@ -279,7 +280,7 @@ public partial class CascaderView
         try
         {
             ++_ignoreExpandAndCollapseLevel;
-            ClearExpandedState();
+            ClearExpandedStateForLevel();
             var count       = _itemsPanel.Children.Count;
             while (count > 1)
             {
@@ -300,13 +301,14 @@ public partial class CascaderView
         }
     }
     
-    private void ClearExpandedState(int level = 0)
+    private void ClearExpandedStateForLevel(int level = 1)
     {
         if (_itemsPanel == null)
         {
             return;
         }
-        for (var i = _itemsPanel.Children.Count - 1; i >= level; i--)
+        var stop = Math.Max(0, level - 1);
+        for (var i = _itemsPanel.Children.Count - 1; i >= stop; i--)
         {
             if (_itemsPanel.Children[i] is CascaderViewLevelList levelList)
             {
@@ -323,4 +325,44 @@ public partial class CascaderView
             }
         }
     }
+    
+    private void HandleClearCascaderDescendantExpanded(RoutedEventArgs args)
+    {
+        if (args.Source is CascaderViewItem item)
+        {
+            var option = item.AttachedOption;
+            if (_itemsPanel == null || _ignoreExpandAndCollapseLevel > 0 || !item.IsExpanded || option == null)
+            {
+                return;
+            }
+    
+            try
+            {
+                ++_ignoreExpandAndCollapseLevel;
+                var level = GetViewOptionLevel(option);
+                ClearExpandedStateForLevel(level + 1);
+                item.IsSelected = false;
+                var count = _itemsPanel.Children.Count;
+                while (count > level + 1)
+                {
+                    --count;
+                    if (_itemsPanel.Children[count] is CascaderViewLevelList levelList)
+                    {
+                        levelList.ItemsSource = null;
+                        levelList.Items.Clear();
+                    }
+                
+                    _itemsPanel.Children.RemoveAt(count);
+                }
+
+                args.Handled = true;
+                InvalidateMeasure();
+            }
+            finally
+            {
+                --_ignoreExpandAndCollapseLevel;
+            }
+        }
+    }
+
 }

@@ -132,8 +132,8 @@ public partial class CascaderView
             if (!IsCheckable)
             {
                 _ignoreSelectedPropertyChanged = true;
-                SelectedItem                   = targetNode;
-                ItemSelected?.Invoke(this, new CascaderItemSelectedEventArgs(targetNode));
+                SelectedOption                 = targetNode;
+                OptionSelected?.Invoke(this, new CascaderOptionSelectedEventArgs(targetNode));
             }
         }
     }

@@ -63,19 +63,19 @@
                                 IsVisible="{TemplateBinding IsPlaceholderTextVisible}"
                                 Foreground="{TemplateBinding PlaceholderForeground}" />
                             <TextBlock Name="SingleSelectResultPresenter"
-                                       Text="{TemplateBinding SelectedItemPath}"
+                                       Text="{TemplateBinding SelectedOptionPath}"
                                        IsVisible="False"
-                                       TextTrimming="CharacterEllipsis"/>
+                                       TextTrimming="CharacterEllipsis" />
                             <atom:SelectFilterTextBox
                                 Name="{x:Static atom:CascaderThemeConstants.SingleFilterInputPart}"
                                 IsVisible="False"
                                 SizeType="{TemplateBinding SizeType}"
-                                PlaceholderText="{TemplateBinding SelectedItemPath}" />
-                            <atom:SelectTagAwareTextBox Name="SelectedItemsBox"
+                                PlaceholderText="{TemplateBinding SelectedOptionPath}" />
+                            <atom:SelectTagAwareTextBox Name="SelectedOptionsBox"
                                                         HorizontalAlignment="Stretch"
                                                         VerticalAlignment="Center"
                                                         SizeType="{TemplateBinding SizeType}"
-                                                        SelectedItems="{TemplateBinding EffectiveCheckedItems}"
+                                                        SelectedItems="{TemplateBinding EffectiveCheckedOptions}"
                                                         IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
                                                         IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                                                         MaxTagCount="{TemplateBinding MaxTagCount}"
@@ -102,16 +102,16 @@
                                                BorderThickness="0"
                                                FilterHighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
                                                OptionTemplate="{TemplateBinding OptionTemplate}"
-                                               SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
+                                               SelectedOption="{TemplateBinding SelectedOption, Mode=TwoWay}"
                                                DataLoader="{TemplateBinding DataLoader}"
                                                FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                                IsShowEmptyIndicator="{TemplateBinding IsShowEmptyIndicator}"
-                                               IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}" 
+                                               IsMaxSelectReached="{TemplateBinding IsMaxSelectReached}"
                                                ExpandIcon="{TemplateBinding ExpandIcon}"
                                                LoadingIcon="{TemplateBinding LoadingIcon}"
                                                ExpandTrigger="{TemplateBinding ExpandTrigger}"
-                                               DefaultExpandedPath="{TemplateBinding DefaultSelectItemPath}"
-                                               IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
+                                               DefaultExpandedPath="{TemplateBinding DefaultSelectOptionPath}"
+                                               IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}" />
                         </Border>
                     </atom:Popup>
                 </Panel>
@@ -127,7 +127,7 @@
         <Setter Property="ItemHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
         <Setter Property="PlaceholderForeground"
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextPlaceholder}}" />
-        
+
         <Style Selector="^:not(^[HorizontalAlignment=Stretch])">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:CascaderTokenKey.ControlWidth}}" />
         </Style>
@@ -187,7 +187,7 @@
         </Style>
 
         <Style Selector="^[IsMultiple=True]">
-            <Style Selector="^ /template/ atom|SelectTagAwareTextBox#SelectedItemsBox">
+            <Style Selector="^ /template/ atom|SelectTagAwareTextBox#SelectedOptionsBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Style Selector="^[IsFilterEnabled=False]">
@@ -211,13 +211,13 @@
 
         <Setter Property="ExpandIcon">
             <atom:IconTemplate>
-                <antdicons:RightOutlined/>
+                <antdicons:RightOutlined />
             </atom:IconTemplate>
         </Setter>
-        
+
         <Setter Property="LoadingIcon">
             <atom:IconTemplate>
-                <antdicons:LoadingOutlined LoadingAnimation="Spin"/>
+                <antdicons:LoadingOutlined LoadingAnimation="Spin" />
             </atom:IconTemplate>
         </Setter>
     </ControlTheme>

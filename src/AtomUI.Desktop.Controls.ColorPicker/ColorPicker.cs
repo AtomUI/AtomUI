@@ -4,8 +4,8 @@ using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -92,7 +92,21 @@ public class ColorPicker : AbstractColorPicker
     {
         AffectsMeasure<ColorPicker>(ColorTextFormatterProperty);
     }
-    
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        if (DefaultValue != null && Value == null)
+        {
+            SetCurrentValue(ValueProperty, DefaultValue);
+        }
+
+        if (Value == null)
+        {
+            ClearColor();
+        }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -106,14 +120,6 @@ public class ColorPicker : AbstractColorPicker
         if (change.Property == ColorTextFormatterProperty)
         {
             GenerateValueText();
-        }
-        
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == DefaultValueProperty)
-            {
-                Value ??= DefaultValue;
-            }
         }
     }
     
@@ -144,16 +150,17 @@ public class ColorPicker : AbstractColorPicker
 
     protected override void GenerateColorBlockBackground()
     {
-        if (_colorIndicator != null)
-        {
-            _colorIndicator.SetCurrentValue(ColorBlock.IsEmptyColorModeProperty, false);
-        }
         if (Value == null)
         {
             SetCurrentValue(ColorBlockBackgroundProperty, new SolidColorBrush(Colors.Transparent));
+            ClearColor();
         }
         else
         {
+            if (_colorIndicator != null)
+            {
+                _colorIndicator.SetCurrentValue(ColorBlock.IsEmptyColorModeProperty, false);
+            }
             SetCurrentValue(ColorBlockBackgroundProperty, new SolidColorBrush(Value.Value));
         }
     }
@@ -161,7 +168,6 @@ public class ColorPicker : AbstractColorPicker
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        Value ??= DefaultValue;
         _colorIndicator =  e.NameScope.Find<ColorBlock>(ColorPickerThemeConstants.ColorIndicatorPart);
     }
     
@@ -206,7 +212,7 @@ public class ColorPicker : AbstractColorPicker
     {
         if (_presenter != null)
         {
-            var effectiveColor = Value ?? DefaultValue;
+            var effectiveColor = Value ?? DefaultValue ?? Colors.White;
             _presenter.SetCurrentValue(ColorPickerView.ValueProperty, effectiveColor);
             _presenter.ValueChanged      += HandleColorPickerViewValueChanged;
             _presenter.ColorValueCleared += HandleColorCleared;
@@ -237,6 +243,11 @@ public class ColorPicker : AbstractColorPicker
     }
 
     private void HandleColorCleared(object? sender, EventArgs args)
+    {
+        ClearColor();
+    }
+
+    private void ClearColor()
     {
         if (_colorIndicator != null)
         {

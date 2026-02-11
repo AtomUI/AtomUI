@@ -2,11 +2,11 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public class MentionOptionItemClickedEventArgs : RoutedEventArgs
+public class MentionOptionClickedEventArgs : RoutedEventArgs
 {
     public IMentionOption Option { get; }
     
-    public MentionOptionItemClickedEventArgs(IMentionOption option)
+    public MentionOptionClickedEventArgs(IMentionOption option)
     {
         Option = option;
     }

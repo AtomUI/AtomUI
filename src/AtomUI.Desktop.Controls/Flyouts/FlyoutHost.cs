@@ -184,7 +184,6 @@ public class FlyoutHost : ContentControl,
     private readonly FlyoutStateHelper _flyoutStateHelper;
     private CompositeDisposable? _flyoutStateHelperDisposables;
     private CompositeDisposable? _flyoutDisposables;
-    private ContentPresenter? _contentPresenter;
     
     static FlyoutHost()
     {
@@ -253,12 +252,6 @@ public class FlyoutHost : ContentControl,
                 }
             }
         }
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _contentPresenter = e.NameScope.Find<ContentPresenter>(FlyoutHostThemeConstants.ContentPresenterPart);
     }
 
     public void ShowFlyout(bool immediately)

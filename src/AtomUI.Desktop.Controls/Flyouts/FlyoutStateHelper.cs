@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Disposables;
+using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -299,21 +301,21 @@ internal class FlyoutStateHelper : AvaloniaObject
 
     private void HandleAnchorTargetClick(RawInputEventArgs args)
     {
-        if (args is RawPointerEventArgs pointerEventArgs)
+        if (args is RawPointerEventArgs pointerEventArgs && pointerEventArgs.Type == RawPointerEventType.LeftButtonUp)
         {
+            var hitTestResult = pointerEventArgs.GetInputHitTestResult();
             if (AnchorTarget is not null && 
                 AnchorTarget.IsEnabled && 
-                AnchorTarget.IsVisible && 
-                pointerEventArgs.Type == RawPointerEventType.LeftButtonDown)
+                AnchorTarget.IsVisible)
             {
                 if (Flyout is null)
                 {
                     return;
                 }
-
+       
                 if (TriggerType == FlyoutTriggerType.Click)
                 {
-                    if (!Flyout.IsOpen && TopLevel.GetTopLevel(AnchorTarget) == args.Root)
+                    if (!Flyout.IsOpen && AnchorTarget.IsVisualAncestorOf(hitTestResult.firstEnabledAncestor as Visual))
                     {
                         if (OpenFlyoutPredicate is not null)
                         {

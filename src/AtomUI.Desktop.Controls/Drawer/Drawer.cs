@@ -392,6 +392,7 @@ public class Drawer : Control,
 
     protected internal virtual void NotifyBeforeOpen(ScopeAwareAdornerLayer layer)
     {
+        Drawer? firstParentDrawer = null;
         var current = Parent;
         while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
         {
@@ -399,12 +400,19 @@ public class Drawer : Control,
             {
                 if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
                 {
+                    if (firstParentDrawer == null)
+                    {
+                        firstParentDrawer = drawer;
+                        DataContext       =  firstParentDrawer.DataContext;
+                    }
                     drawer.NotifyChildDrawerAboutToOpen(this);
                 }
             }
 
             current = current.Parent;
         }
+
+        
     }
 
     internal void NotifyChildDrawerAboutToOpen(Drawer childDrawer)

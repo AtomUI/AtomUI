@@ -2,49 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Views.DrawerShowCase"
              xmlns:atom="https://atomui.net"
-             xmlns:gallery="https://atomui.net/oss-controls/gallery"
-             xmlns:utils="clr-namespace:AtomUIGallery.Utils"
-             xmlns:views="clr-namespace:AtomUIGallery.ShowCases.Views">
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <UserControl.Styles>
-        <!-- ListBox -->
-        <Style Selector="ListBox">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="ItemsPanel">
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="10" />
-                </ItemsPanelTemplate>
-            </Setter>
-        </Style>
 
-        <!-- ListBoxItem -->
-        <Style Selector="ListBoxItem">
-            <Setter Property="Template">
-                <ControlTemplate TargetType="ListBoxItem">
-                    <atom:RadioButton
-                        Content="{TemplateBinding Content, Converter={x:Static views:DrawerShowCase.PlacementTextConverter}}"
-                        GroupName="{Binding $parent[ListBox].Name}"
-                        IsChecked="{TemplateBinding IsSelected, Mode=TwoWay}">
-                    </atom:RadioButton>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-
-        <!-- ListBox.PlacementList -->
-        <Style Selector="ListBox.PlacementList">
-            <Setter Property="ItemTemplate">
-                <DataTemplate DataType="atom:DrawerPlacement">
-                    <atom:RadioButton Content="{Binding}" IsChecked="{Binding $parent[ListBoxItem].IsSelected}" />
-                </DataTemplate>
-            </Setter>
-        </Style>
-
-        <!-- StackPanel.ControllerPanel -->
         <Style Selector="StackPanel.ControllerPanel">
-            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Orientation" Value="Vertical" />
             <Setter Property="Spacing" Value="8" />
-            <Style Selector="^&gt;:is(Control)">
-                <Setter Property="VerticalAlignment" Value="Center" />
-            </Style>
         </Style>
     </UserControl.Styles>
 
@@ -55,8 +18,8 @@
             <Panel>
                 <atom:ToggleSwitch />
                 <atom:Drawer IsOpen="{Binding $parent[Panel].((atom:ToggleSwitch)Children[0]).IsChecked}"
-                              Title="Basic Drawer"
-                              DialogSize="50%">
+                             Title="Basic Drawer"
+                             DialogSize="50%">
                     <StackPanel Orientation="Vertical" Spacing="5">
                         <atom:TextBlock Text="Some contents..." />
                         <atom:TextBlock Text="Some contents..." />
@@ -65,21 +28,29 @@
                 </atom:Drawer>
             </Panel>
         </gallery:ShowCaseItem>
-        
+
         <!-- Multi-level drawer -->
         <gallery:ShowCaseItem Title="Multi-level drawer"
-                                      Description="Open a new drawer on top of an existing drawer to handle multi branch tasks.">
+                              Description="Open a new drawer on top of an existing drawer to handle multi branch tasks.">
             <Panel>
                 <StackPanel Height="120" Classes="ControllerPanel">
-                    <ListBox Classes="PlacementList"
-                             ItemsSource="{utils:Enum atom:DrawerPlacement}"
-                             SelectedIndex="2" />
+                    <StackPanel Orientation="Horizontal" Spacing="5" DockPanel.Dock="Top">
+                        <atom:TextBlock VerticalAlignment="Center">Placement:</atom:TextBlock>
+                        <atom:OptionButtonGroup ButtonStyle="Outline"
+                                                Name="MultiLevelPlacementGroup"
+                                                OptionCheckedChanged="HandleMultiLevelPlacementChanged">
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Left}">Left</atom:OptionButton>
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Top}">Top</atom:OptionButton>
+                            <atom:OptionButton IsChecked="True" Tag="{x:Static atom:DrawerPlacement.Right}">Right</atom:OptionButton>
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Bottom}">Bottom</atom:OptionButton>
+                        </atom:OptionButtonGroup>
+                    </StackPanel>
                     <atom:ToggleSwitch />
                 </StackPanel>
-        
+
                 <atom:Drawer Title="First-level Drawer"
-                              IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
-                              Placement="{Binding $parent[Panel].((Panel)Children[0]).((ListBox)Children[0]).SelectedItem}">
+                             IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
+                             Placement="{Binding MultiLevelPlacement}">
                     <StackPanel Orientation="Vertical" Spacing="5">
                         <atom:TextBlock Text="Some contents..." />
                         <atom:TextBlock Text="Some contents..." />
@@ -89,7 +60,8 @@
                             Two-level drawer
                         </atom:Button>
                         <atom:Drawer Title="Two-level Drawer"
-                                      Name="MultiLevelDrawerLevelTwo">
+                                     Name="MultiLevelDrawerLevelTwo"
+                                     Placement="{Binding MultiLevelPlacement}">
                             <StackPanel Orientation="Vertical" Spacing="5">
                                 <atom:TextBlock Text="Some contents..." />
                                 <atom:TextBlock Text="Some contents..." />
@@ -100,20 +72,28 @@
                 </atom:Drawer>
             </Panel>
         </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem Title="Extra and Footer" Description="Set the header extra area and footer area.">
+
+        <gallery:ShowCaseItem Title="Extra and Footer"
+                              Description="Set the header extra area and footer area.">
             <Panel>
                 <StackPanel Classes="ControllerPanel">
-                    <ListBox Classes="PlacementList"
-                             Name="ExtraAndFooter"
-                             ItemsSource="{utils:Enum atom:DrawerPlacement}"
-                             SelectedIndex="2" />
+                    <StackPanel Orientation="Horizontal" Spacing="5" DockPanel.Dock="Top">
+                        <atom:TextBlock VerticalAlignment="Center">Placement:</atom:TextBlock>
+                        <atom:OptionButtonGroup ButtonStyle="Outline"
+                                                Name="ExtraAndFooterPlacementGroup"
+                                                OptionCheckedChanged="HandleExtraAndFooterPlacementChanged">
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Left}">Left</atom:OptionButton>
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Top}">Top</atom:OptionButton>
+                            <atom:OptionButton IsChecked="True" Tag="{x:Static atom:DrawerPlacement.Right}">Right</atom:OptionButton>
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Bottom}">Bottom</atom:OptionButton>
+                        </atom:OptionButtonGroup>
+                    </StackPanel>
                     <atom:ToggleSwitch Content="Open" />
                 </StackPanel>
                 <atom:Drawer
                     IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
                     Title="Basic Drawer"
-                    Placement="{Binding $parent[Panel].((Panel)Children[0]).((ListBox)Children[0]).SelectedItem}">
+                    Placement="{Binding ExtraAndFooterPlacement}">
                     <atom:Drawer.Extra>
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <atom:Button>Cancel</atom:Button>
@@ -134,16 +114,15 @@
                     </StackPanel>
                 </atom:Drawer>
             </Panel>
-        
         </gallery:ShowCaseItem>
-        
+
         <!-- No Mask -->
         <gallery:ShowCaseItem Title="No Mask" Description="Without a mask.">
             <Panel>
                 <atom:ToggleSwitch Content="Open" />
                 <atom:Drawer IsOpen="{Binding $parent[Panel].((atom:ToggleSwitch)Children[0]).IsChecked}"
-                              Title="Basic Drawer"
-                              IsShowMask="False">
+                             Title="Basic Drawer"
+                             IsShowMask="False">
                     <StackPanel Orientation="Vertical" Spacing="5">
                         <atom:TextBlock Text="Some contents..." />
                         <atom:TextBlock Text="Some contents..." />
@@ -152,22 +131,30 @@
                 </atom:Drawer>
             </Panel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Custom Placement"
-                                      Description="The Drawer can appear from any edge of the screen.">
+                              Description="The Drawer can appear from any edge of the screen.">
             <Panel>
                 <StackPanel Classes="ControllerPanel">
-                    <ListBox Classes="PlacementList"
-                             Name="CustomPlacement"
-                             ItemsSource="{utils:Enum atom:DrawerPlacement}"
-                             SelectedIndex="2" />
+                    <StackPanel Orientation="Horizontal" Spacing="5" DockPanel.Dock="Top">
+                        <atom:TextBlock VerticalAlignment="Center">Placement:</atom:TextBlock>
+                        <atom:OptionButtonGroup ButtonStyle="Outline"
+                                                Name="CustomPlacementGroup"
+                                                OptionCheckedChanged="HandleCustomPlacementChanged">
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Left}">Left</atom:OptionButton>
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Top}">Top</atom:OptionButton>
+                            <atom:OptionButton IsChecked="True" Tag="{x:Static atom:DrawerPlacement.Right}">Right</atom:OptionButton>
+                            <atom:OptionButton Tag="{x:Static atom:DrawerPlacement.Bottom}">Bottom</atom:OptionButton>
+                        </atom:OptionButtonGroup>
+                    </StackPanel>
+
                     <atom:ToggleSwitch Content="Open" />
                 </StackPanel>
-        
+
                 <atom:Drawer
                     IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
                     Title="Basic Drawer"
-                    Placement="{Binding $parent[Panel].((Panel)Children[0]).((ListBox)Children[0]).SelectedItem}">
+                    Placement="{Binding CustomPlacement}">
                     <StackPanel Orientation="Vertical" Spacing="5">
                         <atom:TextBlock Text="Some contents..." />
                         <atom:TextBlock Text="Some contents..." />
@@ -176,19 +163,20 @@
                 </atom:Drawer>
             </Panel>
         </gallery:ShowCaseItem>
-        
+
         <!-- Render in current area -->
         <gallery:ShowCaseItem Title="Render in current area" Description="Render in current area."
-                                      Height="300">
+                              Height="300">
             <Panel>
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <atom:TextBlock>Render in this</atom:TextBlock>
-                    <atom:ToggleSwitch/>
+                    <atom:ToggleSwitch />
                 </StackPanel>
-        
-                <atom:Drawer IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
-                              Title="Basic Drawer"
-                              OpenOn="{Binding $parent[gallery:ShowCaseItem]}">
+
+                <atom:Drawer
+                    IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
+                    Title="Basic Drawer"
+                    OpenOn="{Binding $parent[gallery:ShowCaseItem]}">
                     <StackPanel Orientation="Vertical" Spacing="5">
                         <atom:TextBlock Text="Some contents..." />
                         <atom:TextBlock Text="Some contents..." />
@@ -197,9 +185,9 @@
                 </atom:Drawer>
             </Panel>
         </gallery:ShowCaseItem>
-        
+
         <gallery:ShowCaseItem Title="Preset size"
-                                      Description="The default width (or height) of Drawer is 378px, and there is a preset large size 736px.">
+                              Description="The default width (or height) of Drawer is 378px, and there is a preset large size 736px.">
             <Panel>
                 <WrapPanel>
                     <WrapPanel.Styles>
@@ -215,20 +203,20 @@
                                  Click="HandleOpenLargeSizeDrawer">
                         Open Large Size (736px)
                     </atom:Button>
-                    
+
                     <atom:Button ButtonType="Primary"
                                  Click="HandleOpenCustomSizeDrawer">
                         Open Custom Size (400px)
                     </atom:Button>
-                    
+
                     <atom:Button ButtonType="Primary"
                                  Click="HandleOpenCustomPercentageSizeDrawer">
                         Open Custom Size (50%)
                     </atom:Button>
                 </WrapPanel>
-        
+
                 <atom:Drawer Title="Basic Drawer"
-                              Name="PresetSizeDrawer">
+                             Name="PresetSizeDrawer">
                     <StackPanel Orientation="Vertical" Spacing="5">
                         <atom:TextBlock Text="Some contents..." />
                         <atom:TextBlock Text="Some contents..." />

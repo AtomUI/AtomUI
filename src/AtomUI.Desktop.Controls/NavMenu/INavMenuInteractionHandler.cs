@@ -1,6 +1,6 @@
-﻿namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Desktop.Controls;
 
-public interface INavMenuInteractionHandler
+internal interface INavMenuInteractionHandler
 {
     /// <summary>
     /// Attaches the interaction handler to a menu.
@@ -13,9 +13,5 @@ public interface INavMenuInteractionHandler
     /// </summary>
     void Detach(NavMenu menu);
     
-    /// <summary>
-    /// Select the specified NavMenuItem
-    /// </summary>
-    /// <param name="navMenuItem"></param>
-    void Select(NavMenuItem navMenuItem);
+    void Select(NavMenuItem menuItem);
 }

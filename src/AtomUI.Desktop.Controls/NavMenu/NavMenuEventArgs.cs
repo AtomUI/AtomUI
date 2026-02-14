@@ -13,13 +13,13 @@ public class NavMenuItemClickEventArgs : RoutedEventArgs
     public INavMenuItem NavMenuItem { get; }
 }
 
-public class NavMenuItemSelectedEventArgs : RoutedEventArgs
+public class NavMenuNodeSelectedEventArgs : RoutedEventArgs
 {
-    public NavMenuItemSelectedEventArgs(RoutedEvent routedEvent, INavMenuItem navMenuItem)
+    public NavMenuNodeSelectedEventArgs(RoutedEvent routedEvent, INavMenuNode menuNode)
         : base(routedEvent)
     {
-        NavMenuItem = navMenuItem;
+        NavMenuNode = menuNode;
     }
 
-    public INavMenuItem NavMenuItem { get; }
+    public INavMenuNode NavMenuNode { get; }
 }

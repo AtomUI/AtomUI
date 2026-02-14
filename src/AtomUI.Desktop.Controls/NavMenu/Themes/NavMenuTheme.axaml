@@ -1,0 +1,136 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:NavMenu}" TargetType="atom:NavMenu">
+        <Style Selector="^[Mode=Inline],^[Mode=Vertical]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <atom:ScrollViewer AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                       IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                       HorizontalScrollBarVisibility="{TemplateBinding atom:ScrollViewer.HorizontalScrollBarVisibility}"
+                                       VerticalScrollBarVisibility="{TemplateBinding atom:ScrollViewer.VerticalScrollBarVisibility}"
+                                       IsScrollChainingEnabled="{TemplateBinding atom:ScrollViewer.IsScrollChainingEnabled}"
+                                       IsDeferredScrollingEnabled="{TemplateBinding atom:ScrollViewer.IsDeferredScrollingEnabled}">
+                        <Border HorizontalAlignment="Stretch"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                            <ItemsPresenter Name="{x:Static atom:NavMenuThemeConstants.ItemsPresenterPart}"
+                                            KeyboardNavigation.TabNavigation="Continue">
+                                <ItemsPresenter.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsPresenter.ItemsPanel>
+                            </ItemsPresenter>
+                        </Border>
+                    </atom:ScrollViewer>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="^[Mode=Horizontal]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel LastChildFill="True">
+                        <Rectangle Name="{x:Static atom:NavMenuThemeConstants.HorizontalLinePart}"
+                                   DockPanel.Dock="Bottom"
+                                   Height="{DynamicResource {x:Static atom:SharedTokenKey.LineWidth}}" />
+                        <Border HorizontalAlignment="Stretch"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                            <ItemsPresenter Name="{x:Static atom:NavMenuThemeConstants.ItemsPresenterPart}"
+                                            KeyboardNavigation.TabNavigation="Continue">
+                                <ItemsPresenter.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsPresenter.ItemsPanel>
+                            </ItemsPresenter>
+                        </Border>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
+        <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
+        
+        <Setter Property="ItemTemplate">
+            <TreeDataTemplate ItemsSource="{Binding Children}"
+                              x:DataType="atom:INavMenuNode">
+                <atom:TextBlock Text="{Binding Header}" />
+            </TreeDataTemplate>
+        </Setter>
+        
+        <Style Selector="^[Mode=Vertical]">
+            <Setter Property="ItemsPanel">
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </Setter>
+            
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Padding"
+                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalMenuContentPadding}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Style Selector="^[IsDarkStyle=True]">
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkMenuBg}}" />
+            </Style>
+            <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
+                <Setter Property="Spacing"
+                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalItemsPanelSpacing}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[Mode=Inline]">
+            <Setter Property="ItemsPanel">
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </Setter>
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Padding"
+                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalMenuContentPadding}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Style Selector="^[IsDarkStyle=True]">
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkMenuBg}}" />
+            </Style>
+            <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
+                <Setter Property="Spacing"
+                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.VerticalItemsPanelSpacing}}" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^[Mode=Horizontal]">
+            <Setter Property="ItemsPanel">
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </Setter>
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.MenuHorizontalHeight}}" />
+            <Style Selector="^ /template/ Rectangle#PART_HorizontalLine">
+                <Setter Property="Fill" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
+            </Style>
+            
+            <Style Selector="^[IsDarkStyle=True]">
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkMenuPopupBg}}" />
+            </Style>
+        </Style>
+
+    </ControlTheme>
+</ResourceDictionary>

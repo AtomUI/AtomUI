@@ -78,7 +78,7 @@
 
                 <Style Selector="^[IsDarkStyle=False]">
                     <Setter Property="Padding" Value="0" />
-                    <Style Selector="^[IsSelected=True]">
+                    <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
                         <Setter Property="Background" Value="Transparent" />
                     </Style>
                     <Style Selector="^ /template/ Rectangle#PART_ActiveIndicator">
@@ -91,7 +91,7 @@
 
                 <Style Selector="^[IsDarkStyle=True]">
                     <Setter Property="CornerRadius" Value="0" />
-                    <Style Selector="^[IsSelected=True]">
+                    <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
                         <Setter Property="Background"
                                 Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedBg}}" />
                     </Style>
@@ -113,7 +113,7 @@
 
                 <Setter Property="ActiveBarColor" Value="Transparent" />
 
-                <Style Selector="^:pointerover, ^[IsSubMenuOpen=True], ^[IsSelected=True]">
+                <Style Selector="^:pointerover, ^[IsSubMenuOpen=True], ^[IsSelected=True], ^[IsInSelectedPath=True]">
                     <Setter Property="ActiveBarColor"
                             Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
                 </Style>

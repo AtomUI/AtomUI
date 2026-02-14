@@ -907,7 +907,10 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleOptionsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         ClearValue();
-        Options.Clear();
+        if (!Options.IsReadOnly)
+        {
+            Options.Clear();
+        }
         Options.SetItemsSource(change.GetNewValue<IEnumerable<ISelectOption>?>());
     }
 

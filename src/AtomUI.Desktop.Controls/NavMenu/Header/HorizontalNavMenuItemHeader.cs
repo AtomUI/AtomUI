@@ -9,7 +9,8 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
-internal class HorizontalNavMenuItemHeader : BaseNavMenuItemHeader
+
+public class HorizontalNavMenuItemHeader : BaseNavMenuItemHeader
 {
     #region 公共属性定义
     

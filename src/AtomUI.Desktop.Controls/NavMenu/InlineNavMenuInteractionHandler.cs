@@ -1,21 +1,21 @@
-﻿using System.Diagnostics;
+using AtomUI.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-using NavMenuControl = NavMenu;
-
 internal class InlineNavMenuInteractionHandler : INavMenuInteractionHandler
 {
-    internal INavMenu? Menu { get; private set; }
+     internal INavMenu? Menu { get; private set; }
     
     public void Attach(NavMenu navMenu) => AttachCore(navMenu);
     public void Detach(NavMenu navMenu) => DetachCore(navMenu);
 
     private bool _currentPressedIsValid = false;
-    internal StyledElement? LatestSelectedItem = null;
+    private NavMenuItem? _latestSelectedItem = null;
+    private NavMenuItem? _latestClickedItem = null;
 
     internal void AttachCore(INavMenu navMenu)
     {
@@ -41,114 +41,26 @@ internal class InlineNavMenuInteractionHandler : INavMenuInteractionHandler
     
     protected virtual void PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        var item = GetMenuItemCore(e.Source as Control);
-        if (item is null || !item.PointInNavMenuItemHeader(e.GetCurrentPoint(item).Position)) 
+        var sourceControl = e.Source as Control;
+        var menuItem      = GetMenuItemCore(sourceControl);
+        if (menuItem is null || !menuItem.ItemHeader.IsVisualAncestorOf(sourceControl)) 
         {
             return;
         }
-
         _currentPressedIsValid = true;
+        _latestClickedItem     = menuItem;
         
         if (sender is Visual visual &&
             e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
         {
-            Select(item);
+            Select(menuItem);
             e.Handled = true;
         }
     }
 
-    public void Select(NavMenuItem navMenuItem)
-    {
-        if (navMenuItem.HasSubMenu)
-        {
-            if (navMenuItem.IsSubMenuOpen)
-            {
-                navMenuItem.Close();
-            }
-            else
-            {
-                Open(navMenuItem);
-            }
-        }
-        else
-        {
-            // 判断当前选中的是不是自己
-            if (!ReferenceEquals(LatestSelectedItem, navMenuItem))
-            {
-                var navMenu = Menu as NavMenu;
-                if (LatestSelectedItem != null)
-                {
-                    var ancestorInfo = HasCommonAncestor(LatestSelectedItem, navMenuItem);
-                    if (!ancestorInfo.Item1)
-                    {
-                        navMenu?.ClearSelection();
-                    }
-                    else
-                    {
-                        if (ancestorInfo.Item2 is NavMenuItem neededClearAncestor)
-                        {
-                            NavMenuControl.ClearSelectionRecursively(neededClearAncestor, true);
-                        }
-                    }
-                }
-                
-                navMenuItem.SelectItemRecursively();
-                LatestSelectedItem = navMenuItem;
-                navMenu?.RaiseNavMenuItemSelected(navMenuItem);
-            }
-        }
-    }
-
-    private (bool, StyledElement?) HasCommonAncestor(StyledElement lhs, StyledElement rhs)
-    {
-        var lhsAncestors = CollectAncestors(lhs);
-        var rhsAncestors = CollectAncestors(rhs);
-        var hasOverlaps = lhsAncestors.ToHashSet().Overlaps(rhsAncestors.ToHashSet());
-        if (!hasOverlaps)
-        {
-            return (false, null);
-        }
-        // 找共同的祖先
-        StyledElement? commonAncestor = null;
-        for (var i = 0; i < lhsAncestors.Count; i++)
-        {
-            var lhsAncestor = lhsAncestors[i];
-            for (var j = 0; j < rhsAncestors.Count; j++)
-            {
-                var rhsAncestor = rhsAncestors[j];
-                if (ReferenceEquals(lhsAncestor, rhsAncestor))
-                {
-                    commonAncestor = lhsAncestor;
-                    break;
-                }
-            }
-
-            if (commonAncestor != null)
-            {
-                break;
-            }
-        }
-        Debug.Assert(commonAncestor != null);
-        return (true, commonAncestor);
-    }
-
-    private IList<StyledElement> CollectAncestors(StyledElement control)
-    {
-        var            ancestors = new List<StyledElement>();
-        StyledElement? current   = control.Parent;
-        while (current != null && (current is NavMenuItem || control is NavMenu))
-        {
-            ancestors.Add(current);
-            current = current.Parent;
-        }
-
-        return ancestors;
-    }
-    
     protected virtual void PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        var item = GetMenuItemCore(e.Source as Control);
-        if (item is null || !_currentPressedIsValid) 
+        if (_latestClickedItem is null || !_currentPressedIsValid) 
         {
             return;
         }
@@ -157,40 +69,96 @@ internal class InlineNavMenuInteractionHandler : INavMenuInteractionHandler
 
         if (e.InitialPressMouseButton == MouseButton.Left)
         {
-            Click(item);
+            Click(_latestClickedItem);
             e.Handled = true;
         }
     }
     
     internal void Click(INavMenuItem item)
     {
-        item.RaiseClick();
+        if (item is IClickableControl clickableControl)
+        {
+            clickableControl.RaiseClick();
+        }
         if (Menu is NavMenu navMenu)
         {
             navMenu.RaiseNavMenuItemClick(item);
         }
     }
     
-    internal void Open(INavMenuItem item)
+    public void Select(NavMenuItem menuItem)
     {
-        item.Open();
+        if (menuItem.HasSubMenu)
+        {
+            if (menuItem.IsSubMenuOpen)
+            {
+                menuItem.Close();
+            }
+            else
+            {
+                Open(menuItem);
+            }
+        }
+        else
+        {
+            // 判断当前选中的是不是自己
+            if (!ReferenceEquals(_latestSelectedItem, menuItem))
+            {
+                ISet<NavMenuItem> oldSelectedPaths = new HashSet<NavMenuItem>();
+                if (_latestSelectedItem != null)
+                {
+                    var oldItems = NavMenu.CollectSelectPathItems(_latestSelectedItem);
+                    foreach (var oldItem in oldItems)
+                    {
+                        oldSelectedPaths.Add(oldItem);
+                    }
+                }
+                
+                var newItems         = NavMenu.CollectSelectPathItems(menuItem);
+                var newSelectedPaths = newItems.ToHashSet();
+                
+                var delta = oldSelectedPaths.Except(newSelectedPaths);
+
+                var navMenu = Menu as NavMenu;
+                foreach (var oldInSelectPathItem in delta)
+                {
+                    oldInSelectPathItem.SetCurrentValue(NavMenuItem.IsInSelectedPathProperty, false);
+                }
+
+                if (_latestSelectedItem != null)
+                {
+                    var oldParentItem = ItemsControl.ItemsControlFromItemContainer(_latestSelectedItem) as IMenuChildSelectable;
+                    oldParentItem?.SelectChildItem(_latestSelectedItem, false);
+                }
+
+                foreach (var newInSelectPathItem in newSelectedPaths)
+                {
+                    newInSelectPathItem.SetCurrentValue(NavMenuItem.IsInSelectedPathProperty, true);
+                }
+
+                var parentItem = ItemsControl.ItemsControlFromItemContainer(menuItem) as IMenuChildSelectable;
+                parentItem?.SelectChildItem(menuItem, true);
+                _latestSelectedItem = menuItem;
+                navMenu?.RaiseNavMenuItemSelected(menuItem);
+            }
+        }
     }
+
+    internal void Open(INavMenuItem menuItem) => menuItem.Open();
     
     internal static NavMenuItem? GetMenuItemCore(StyledElement? item)
     {
-        while (true)
+        NavMenuItem? target = null;
+        var current = item;
+        while (current != null)
         {
-            if (item == null)
+            if (current is NavMenuItem menuItem)
             {
-                return null;
+                target = menuItem;
+                break;
             }
-
-            if (item is NavMenuItem menuItem)
-            {
-                return menuItem;
-            }
-               
-            item = item.Parent;
+            current = current.Parent;
         }
+        return target;
     }
 }

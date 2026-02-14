@@ -1,4 +1,6 @@
+using System.Collections.Specialized;
 using AtomUI.Controls;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 
@@ -19,28 +21,60 @@ public record TreeItemNode : ITreeItemNode, ISelectTagTextProvider
     public bool IsLeaf { get; init; }
     public object? Value { get; set; }
     string? ISelectTagTextProvider.TagText => Header?.ToString();
-
-    private IList<ITreeItemNode> _children = [];
+    
+    private readonly AvaloniaList<ITreeItemNode> _children = [];
     
     [Content]
     public IList<ITreeItemNode> Children
     {
         get => _children;
-        init
-        {
-            _children = value;
-            foreach (var child in _children)
-            {
-                if (child is TreeItemNode item)
-                {
-                    item.ParentNode = this;
-                }
-            }
-        }
+        init => _children.AddRange(value);
+    }
+
+    public TreeItemNode()
+    {
+        _children.CollectionChanged += HandleCollectionChanged;
     }
     
     public void UpdateParentNode(ITreeItemNode? parentNode)
     {
         ParentNode = parentNode;
+    }
+    
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var child in e.NewItems)
+                {
+                    if (child is ITreeItemNode treeNode)
+                    {
+                        treeNode.UpdateParentNode(this);
+                    }
+                }
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Remove)
+        {
+            if (e.OldItems != null)
+            {
+                foreach (var child in e.OldItems)
+                {
+                    if (child is ITreeItemNode treeNode)
+                    {
+                        treeNode.UpdateParentNode(null);
+                    }
+                }
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var child in Children)
+            {
+                child.UpdateParentNode(this);
+            }
+        }
     }
 }

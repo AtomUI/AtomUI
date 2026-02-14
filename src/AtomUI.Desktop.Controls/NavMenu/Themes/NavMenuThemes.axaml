@@ -2,11 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="InlineNavMenuItemTheme.axaml" />
-        <ResourceInclude Source="HorizontalNavMenuItemTheme.axaml" />
-        <ResourceInclude Source="VerticalNavMenuItemTheme.axaml" />
-        <ResourceInclude Source="HorizontalNavMenuTheme.axaml" />
-        <ResourceInclude Source="VerticalNavMenuTheme.axaml" />
+        <ResourceInclude Source="NavMenuTheme.axaml" />
+        <ResourceInclude Source="NavMenuItemTheme.axaml" />
         <ResourceInclude Source="InlineNavMenuItemHeaderTheme.axaml" />
         <ResourceInclude Source="VerticalNavMenuItemHeaderTheme.axaml" />
         <ResourceInclude Source="HorizontalNavMenuItemHeaderTheme.axaml" />

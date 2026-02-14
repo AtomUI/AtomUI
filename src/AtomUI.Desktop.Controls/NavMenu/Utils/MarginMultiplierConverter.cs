@@ -20,8 +20,8 @@ internal class MarginMultiplierConverter : IMultiValueConverter
         {
             return new Thickness(0);
         }
-        int    level  = System.Convert.ToInt32(values[0]);
-        double indent = System.Convert.ToDouble(values[1]);
+        var level  = System.Convert.ToInt32(values[0]);
+        var indent = System.Convert.ToDouble(values[1]);
         return new Thickness(
             Left ? indent * level : 0,
             Top ? indent * level : 0,

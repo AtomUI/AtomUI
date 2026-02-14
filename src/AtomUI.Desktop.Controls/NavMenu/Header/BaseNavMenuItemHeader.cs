@@ -3,15 +3,13 @@ using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-[PseudoClasses(NavMenuItemPseudoClass.Icon)]
-internal class BaseNavMenuItemHeader : TemplatedControl
+public class BaseNavMenuItemHeader : TemplatedControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> HeaderProperty =
@@ -44,6 +42,12 @@ internal class BaseNavMenuItemHeader : TemplatedControl
             nameof(IsSelected), 
             o => o.IsSelected,
             (o, v) => o.IsSelected = v);
+    
+    public static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsInSelectedPathProperty =
+        AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(
+            nameof(IsInSelectedPath), 
+            o => o.IsInSelectedPath,
+            (o, v) => o.IsInSelectedPath = v);
     
     public object? Header
     {
@@ -97,6 +101,14 @@ internal class BaseNavMenuItemHeader : TemplatedControl
     {
         get => _isSelected;
         set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
+    }
+    
+    private bool _isInSelectedPath;
+    
+    public bool IsInSelectedPath
+    {
+        get => _isInSelectedPath;
+        set => SetAndRaise(IsInSelectedPathProperty, ref _isInSelectedPath, value);
     }
     #endregion
 
@@ -162,5 +174,4 @@ internal class BaseNavMenuItemHeader : TemplatedControl
         base.OnUnloaded(e);
         Transitions = null;
     }
-
 }

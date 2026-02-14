@@ -14,9 +14,9 @@ public class CaseNavigationViewModel : ReactiveObject
     private TreeNodeKey? _currentShowCase;
     private DispatcherTimer _dispatcherTimer;
     
-    private INavMenuItemData? _selectedItem;
+    private INavMenuNode? _selectedItem;
     
-    public INavMenuItemData? SelectedItem
+    public INavMenuNode? SelectedItem
     {
         get => _selectedItem;
         set => this.RaiseAndSetIfChanged(ref _selectedItem, value);

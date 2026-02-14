@@ -1,4 +1,4 @@
-﻿using Avalonia.Input;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -9,14 +9,4 @@ public interface INavMenuElement : IInputElement, ILogical
     /// Gets the submenu items.
     /// </summary>
     IEnumerable<INavMenuItem> SubItems { get; }
-    
-    /// <summary>
-    /// Opens the menu or menu item.
-    /// </summary>
-    void Open();
-    
-    /// <summary>
-    /// Closes the menu or menu item.
-    /// </summary>
-    void Close();
 }

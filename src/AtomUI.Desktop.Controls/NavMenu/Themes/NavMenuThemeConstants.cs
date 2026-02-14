@@ -21,13 +21,6 @@ internal static class NavMenuThemeConstants
     // 菜单项 SizeGridName
     public const string IconPresenterSizeGroup = "IconPresenter";
     public const string MenuIndicatorIconSizeGroup = "MenuIndicatorIcon";
-    
-    // theme id 定义
-    public const string HorizontalNavMenuThemeId = "HorizontalNavMenuTheme";
-    public const string VerticalNavMenuThemeId = "VerticalNavMenuTheme";
-    public const string VerticalNavMenuItemThemeId = "VerticalNavMenuItemTheme";
-    public const string HorizontalNavMenuItemThemeId = "HorizontalNavMenuItemTheme";
-    public const string InlineNavMenuItemThemeId = "InlineNavMenuItemTheme";
 }
 
 internal static class TopLevelHorizontalNavMenuItemThemeConstants

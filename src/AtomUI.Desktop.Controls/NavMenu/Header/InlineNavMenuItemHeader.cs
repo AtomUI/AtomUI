@@ -5,7 +5,7 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class InlineNavMenuItemHeader : BaseNavMenuItemHeader
+public class InlineNavMenuItemHeader : BaseNavMenuItemHeader
 {
     #region 公共属性定义
     public static readonly DirectProperty<InlineNavMenuItemHeader, int> LevelProperty =

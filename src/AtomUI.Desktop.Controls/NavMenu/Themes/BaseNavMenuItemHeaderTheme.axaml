@@ -2,7 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    TargetType="atom:NavMenuItem"
+    TargetType="atom:BaseNavMenuItemHeader"
     x:Class="AtomUI.Desktop.Controls.Themes.BaseNavMenuItemHeaderTheme"
     x:ClassModifier="internal">
 
@@ -25,20 +25,23 @@
                         Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemHoverColor}}" />
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemHoverBg}}" />
             </Style>
-            <Style Selector="^[IsSelected=True]">
-                <Setter Property="Foreground"
-                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedColor}}" />
-                <Setter Property="Background"
-                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedBg}}" />
-            </Style>
         </Style>
+        
+        <Style Selector="^[IsSelected=True]">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedColor}}" />
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedBg}}" />
+        </Style>
+        
+        <Style Selector="^[IsInSelectedPath=True]">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedColor}}" />
+        </Style>
+        
         <Style Selector="^[HasSubMenu=True]">
             <Style Selector="^:pointerover">
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemHoverBg}}" />
-            </Style>
-            <Style Selector="^[IsSelected=True]">
-                <Setter Property="Foreground"
-                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedColor}}" />
             </Style>
         </Style>
 
@@ -53,22 +56,24 @@
                     <Setter Property="Background"
                             Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemHoverBg}}" />
                 </Style>
-                <Style Selector="^[IsSelected=True]">
-                    <Setter Property="Foreground"
-                            Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedColor}}" />
-                    <Setter Property="Background"
-                            Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedBg}}" />
-                </Style>
             </Style>
             <Style Selector="^[HasSubMenu=True]">
                 <Style Selector="^:pointerover">
                     <Setter Property="Foreground"
                             Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemHoverColor}}" />
                 </Style>
-                <Style Selector="^[IsSelected=True]">
-                    <Setter Property="Foreground"
-                            Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedColor}}" />
-                </Style>
+            </Style>
+            
+            <Style Selector="^[IsSelected=True]">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedColor}}" />
+                <Setter Property="Background"
+                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedBg}}" />
+            </Style>
+            
+            <Style Selector="^[IsInSelectedPath=True]">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedColor}}" />
             </Style>
         </Style>
 
@@ -80,7 +85,7 @@
             <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemColor}}" />
         </Style>
 
-        <Style Selector="^[IsSelected=True]">
+        <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
             <Style Selector="^ /template/ atom|Icon#MenuIndicatorIcon">
                 <Setter Property="FillBrush"
                         Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedColor}}" />
@@ -104,7 +109,7 @@
                 <Setter Property="StrokeBrush" Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemColor}}" />
             </Style>
 
-            <Style Selector="^[IsSelected=True]">
+            <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
                 <Style Selector="^ /template/ atom|Icon#MenuIndicatorIcon">
                     <Setter Property="FillBrush"
                             Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedColor}}" />
@@ -148,7 +153,7 @@
             </Style>
         </Style>
 
-        <Style Selector="^[IsSelected=True]">
+        <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="IconBrush"
                         Value="{DynamicResource {x:Static atom:NavMenuTokenKey.ItemSelectedColor}}" />
@@ -167,7 +172,7 @@
                 </Style>
             </Style>
 
-            <Style Selector="^[IsSelected=True]">
+            <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
                 <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                     <Setter Property="IconBrush"
                             Value="{DynamicResource {x:Static atom:NavMenuTokenKey.DarkItemSelectedColor}}" />

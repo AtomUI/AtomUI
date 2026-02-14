@@ -543,7 +543,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     /// </summary>
     internal void AdjustPopupHostPosition(Control placementTarget)
     {
-        var topLevel  = TopLevel.GetTopLevel(placementTarget)!;
+        var topLevel = TopLevel.GetTopLevel(placementTarget)!;
 
         Size popupSize = default;
         if (Host is PopupRoot popupRoot)
@@ -679,11 +679,14 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             opened?.Invoke();
             return;
         }
-  
         Open();
         if (MotionActor == null)
         {
-            opened?.Invoke();
+            using (BeginIgnoringIsOpen())
+            {
+                SetCurrentValue(IsMotionAwareOpenProperty, false);
+            }
+            Close();
             return;
         }
         _openAnimating = true;
@@ -732,7 +735,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             _overlayPopupHostOpenMotionDisposable?.Dispose();
             return;
         }
-        var motion       = OpenMotion ?? new ZoomBigInMotion();
+
+        var motion = OpenMotion ?? new ZoomBigInMotion();
         if (MotionDuration != TimeSpan.Zero)
         {
             motion.Duration = MotionDuration;

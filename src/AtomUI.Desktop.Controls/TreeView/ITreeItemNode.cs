@@ -12,8 +12,5 @@ public interface ITreeItemNode : ITreeNode<ITreeItemNode>
     bool IsLeaf { get; }
     object? Value { get; set; }
 
-    void UpdateParentNode(ITreeItemNode? parentNode)
-    {
-        throw new NotImplementedException();
-    }
+    void UpdateParentNode(ITreeItemNode? parentNode) => throw new NotImplementedException();
 }

@@ -1,18 +1,15 @@
-﻿using AtomUI.Controls;
+using AtomUI.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public interface INavMenuItem : INavMenuElement
+public interface INavMenuItem: INavMenuElement
 {
-    /// <summary>
-    /// Gets or sets the currently selected submenu item.
-    /// </summary>
-    INavMenuItem? SelectedItem { get; set; }
-    
     /// <summary>
     /// Gets or sets a value that item key.
     /// </summary>
     TreeNodeKey? ItemKey { get; }
+    
+    INavMenuNode? Node { get; }
     
     /// <summary>
     /// Gets or sets a value that indicates whether the item has a submenu.
@@ -47,7 +44,12 @@ public interface INavMenuItem : INavMenuElement
     INavMenuElement? Parent { get; }
     
     /// <summary>
-    /// Raises a click event on the menu item.
+    /// Opens the menu or menu item.
     /// </summary>
-    void RaiseClick();
+    void Open();
+    
+    /// <summary>
+    /// Closes the menu or menu item.
+    /// </summary>
+    void Close();
 }

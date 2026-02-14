@@ -69,10 +69,18 @@ public class MenuViewModel : ReactiveObject, IRoutableViewModel
         get => _defaultSelectedPath;
         set => this.RaiseAndSetIfChanged(ref _defaultSelectedPath, value);
     }
-
-    private List<INavMenuItemData> _navMenuItems = [];
     
-    public List<INavMenuItemData> NavMenuItems
+    private INavMenuNode? _defaultSelectedNode;
+    
+    public INavMenuNode? DefaultSelectedNode
+    {
+        get => _defaultSelectedNode;
+        set => this.RaiseAndSetIfChanged(ref _defaultSelectedNode, value);
+    }
+
+    private List<INavMenuNode> _navMenuItems = [];
+    
+    public List<INavMenuNode> NavMenuItems
     {
         get => _navMenuItems;
         set => this.RaiseAndSetIfChanged(ref _navMenuItems, value);

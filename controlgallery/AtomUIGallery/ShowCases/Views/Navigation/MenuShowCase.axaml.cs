@@ -11,7 +11,7 @@ namespace AtomUIGallery.ShowCases.Views;
 public partial class 
     MenuShowCase : ReactiveUserControl<MenuViewModel>
 {
-    private NavMenuItemData? _navMenuDefaultSelectedItem;
+    private NavMenuNode? _navMenuDefaultSelectedItem;
     
     public MenuShowCase()
     {
@@ -125,48 +125,48 @@ public partial class
 
     private void InitNavMenuTreeNodes(MenuViewModel viewModel)
     {
-        _navMenuDefaultSelectedItem = new NavMenuItemData()
+        _navMenuDefaultSelectedItem = new NavMenuNode()
         {
             Header  = "Option 4",
             ItemKey = "Option4",
             Icon = new TwitterOutlined()
         };
-        var nodes = new List<INavMenuItemData>();
-        nodes.Add(new NavMenuItemData()
+        var nodes = new List<INavMenuNode>();
+        nodes.Add(new NavMenuNode()
         {
             Header  = "Navigation One",
             Icon    = new MailOutlined(),
             ItemKey = "1"
         });
-        nodes.Add(new NavMenuItemData()
+        nodes.Add(new NavMenuNode()
         {
             Header  = "Navigation Two",
             Icon    = new AppstoreOutlined(),
             ItemKey = "2"
         });
-        nodes.Add(new NavMenuItemData()
+        nodes.Add(new NavMenuNode()
         {
             Header  = "Navigation Three - Submenu",
             Icon    = new SettingOutlined(),
             ItemKey = "3",
-            Children = [new NavMenuItemData()
+            Children = [new NavMenuNode()
             {
                 Header  = "Item 1",
                 ItemKey = "SubGroup1",
-                Children = [new NavMenuItemData()
+                Children = [new NavMenuNode()
                 {
                     Header  = "Option 1",
                     ItemKey = "Option1",
-                }, new NavMenuItemData()
+                }, new NavMenuNode()
                 {
                     Header  = "Option 2",
                     ItemKey = "Option2",
                 }]
-            },new NavMenuItemData()
+            },new NavMenuNode()
             {
                 Header  = "Item 2",
                 ItemKey = "SubGroup2",
-                Children = [new NavMenuItemData()
+                Children = [new NavMenuNode()
                     {
                         Header  = "Option 3",
                         ItemKey = "Option3",
@@ -175,12 +175,13 @@ public partial class
                 ]
             }]
         });
-        nodes.Add(new NavMenuItemData()
+        nodes.Add(new NavMenuNode()
         {
             Header  = "Navigation Four",
             ItemKey = "4"
         });
-        viewModel.NavMenuItems              = nodes;
+        viewModel.NavMenuItems        = nodes;
+        viewModel.DefaultSelectedNode = _navMenuDefaultSelectedItem;
         ItemsSourceDemoNavMenu.SelectedItem = _navMenuDefaultSelectedItem;
     }
 

@@ -218,7 +218,7 @@
         
             <StackPanel>
                 <atom:Separator Title="Normal"/>
-                <Border Classes="ContextFlyoutContainer"> 
+                <Border Classes="ContextFlyoutContainer">
                     <Border.ContextFlyout>
                         <atom:MenuFlyout IsMotionEnabled="True"
                                          atom:Flyout.HorizontalOffset="10"
@@ -263,21 +263,21 @@
             Title="Vertical nav menu"
             Description="Submenus open as pop-ups.">
             <atom:NavMenu Mode="Vertical" Width="300" Margin="0, 0, 0, 20">
-                <atom:NavMenuItem Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
-                <atom:NavMenuItem Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
+                <atom:NavMenuNode Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                <atom:NavMenuNode Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
                                   IsEnabled="False" />
-                <atom:NavMenuItem Header="Navigation Three - Submenu" Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
-                    <atom:NavMenuItem Header="Item 1">
-                        <atom:NavMenuItem Header="Option 1" />
-                        <atom:NavMenuItem Header="Option 2" />
-                    </atom:NavMenuItem>
+                <atom:NavMenuNode Header="Navigation Three - Submenu" Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
+                    <atom:NavMenuNode Header="Item 1">
+                        <atom:NavMenuNode Header="Option 1" />
+                        <atom:NavMenuNode Header="Option 2" />
+                    </atom:NavMenuNode>
         
-                    <atom:NavMenuItem Header="Item 2">
-                        <atom:NavMenuItem Header="Option 3" />
-                        <atom:NavMenuItem Header="Option 4" />
-                    </atom:NavMenuItem>
-                </atom:NavMenuItem>
-                <atom:NavMenuItem Header="Navigation Four" />
+                    <atom:NavMenuNode Header="Item 2">
+                        <atom:NavMenuNode Header="Option 3" />
+                        <atom:NavMenuNode Header="Option 4" />
+                    </atom:NavMenuNode>
+                </atom:NavMenuNode>
+                <atom:NavMenuNode Header="Navigation Four" />
             </atom:NavMenu>
         </gallery:ShowCaseItem>
         
@@ -285,21 +285,21 @@
             Title="Inline menu"
             Description="Vertical menu with inline submenus.">
             <atom:NavMenu Mode="Inline" Width="300" Margin="0, 0, 0, 20">
-                <atom:NavMenuItem Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
-                <atom:NavMenuItem Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
+                <atom:NavMenuNode Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                <atom:NavMenuNode Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
                                   IsEnabled="False" />
-                <atom:NavMenuItem Header="Navigation Three - Submenu" Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
-                    <atom:NavMenuItem Header="Item 1">
-                        <atom:NavMenuItem Header="Option 1" />
-                        <atom:NavMenuItem Header="Option 2" />
-                    </atom:NavMenuItem>
+                <atom:NavMenuNode Header="Navigation Three - Submenu" Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
+                    <atom:NavMenuNode Header="Item 1">
+                        <atom:NavMenuNode Header="Option 1" />
+                        <atom:NavMenuNode Header="Option 2" />
+                    </atom:NavMenuNode>
         
-                    <atom:NavMenuItem Header="Item 2">
-                        <atom:NavMenuItem Header="Option 3" />
-                        <atom:NavMenuItem Header="Option 4" />
-                    </atom:NavMenuItem>
-                </atom:NavMenuItem>
-                <atom:NavMenuItem Header="Navigation Four" />
+                    <atom:NavMenuNode Header="Item 2">
+                        <atom:NavMenuNode Header="Option 3" />
+                        <atom:NavMenuNode Header="Option 4" />
+                    </atom:NavMenuNode>
+                </atom:NavMenuNode>
+                <atom:NavMenuNode Header="Navigation Four" />
             </atom:NavMenu>
         </gallery:ShowCaseItem>
         
@@ -308,42 +308,42 @@
             Description="Horizontal top navigation menu."
             IsOccupyEntireRow="True">
             <StackPanel>
-                <atom:NavMenu>
-                    <atom:NavMenuItem Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
-                    <atom:NavMenuItem Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
+                <atom:NavMenu Mode="Horizontal">
+                    <atom:NavMenuNode Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                    <atom:NavMenuNode Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
                                       IsEnabled="False" />
-                    <atom:NavMenuItem Header="Navigation Three - Submenu"
+                    <atom:NavMenuNode Header="Navigation Three - Submenu"
                                       Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
-                        <atom:NavMenuItem Header="Item 1">
-                            <atom:NavMenuItem Header="Option 1" />
-                            <atom:NavMenuItem Header="Option 2" />
-                        </atom:NavMenuItem>
+                        <atom:NavMenuNode Header="Item 1">
+                            <atom:NavMenuNode Header="Option 1" />
+                            <atom:NavMenuNode Header="Option 2" />
+                        </atom:NavMenuNode>
         
-                        <atom:NavMenuItem Header="Item 2">
-                            <atom:NavMenuItem Header="Option 3" />
-                            <atom:NavMenuItem Header="Option 4" />
-                        </atom:NavMenuItem>
-                    </atom:NavMenuItem>
-                    <atom:NavMenuItem Header="Navigation Four" />
+                        <atom:NavMenuNode Header="Item 2">
+                            <atom:NavMenuNode Header="Option 3" />
+                            <atom:NavMenuNode Header="Option 4" />
+                        </atom:NavMenuNode>
+                    </atom:NavMenuNode>
+                    <atom:NavMenuNode Header="Navigation Four" />
                 </atom:NavMenu>
                 <atom:Separator />
-                <atom:NavMenu IsDarkStyle="True">
-                    <atom:NavMenuItem Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
-                    <atom:NavMenuItem Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
+                <atom:NavMenu IsDarkStyle="True" Mode="Horizontal">
+                    <atom:NavMenuNode Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                    <atom:NavMenuNode Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
                                       IsEnabled="False" />
-                    <atom:NavMenuItem Header="Navigation Three - Submenu"
+                    <atom:NavMenuNode Header="Navigation Three - Submenu"
                                       Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
-                        <atom:NavMenuItem Header="Item 1">
-                            <atom:NavMenuItem Header="Option 1" />
-                            <atom:NavMenuItem Header="Option 2" />
-                        </atom:NavMenuItem>
+                        <atom:NavMenuNode Header="Item 1">
+                            <atom:NavMenuNode Header="Option 1" />
+                            <atom:NavMenuNode Header="Option 2" />
+                        </atom:NavMenuNode>
         
-                        <atom:NavMenuItem Header="Item 2">
-                            <atom:NavMenuItem Header="Option 3" />
-                            <atom:NavMenuItem Header="Option 4" />
-                        </atom:NavMenuItem>
-                    </atom:NavMenuItem>
-                    <atom:NavMenuItem Header="Navigation Four" />
+                        <atom:NavMenuNode Header="Item 2">
+                            <atom:NavMenuNode Header="Option 3" />
+                            <atom:NavMenuNode Header="Option 4" />
+                        </atom:NavMenuNode>
+                    </atom:NavMenuNode>
+                    <atom:NavMenuNode Header="Navigation Four" />
                 </atom:NavMenu>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -358,23 +358,25 @@
                     <atom:ToggleSwitch Margin="10, 0, 0, 0" Name="ChangeStyleSwitch" />
                     <atom:TextBlock>Change Style</atom:TextBlock>
                 </StackPanel>
-                <atom:NavMenu Mode="{Binding Mode}" Width="300" Margin="0, 0, 0, 20" IsDarkStyle="{Binding IsDark}">
-                    <atom:NavMenuItem Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
-                    <atom:NavMenuItem Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
+                <atom:NavMenu Mode="{Binding Mode}" Width="300"
+                               Margin="0, 0, 0, 20"
+                               IsDarkStyle="{Binding IsDark}">
+                    <atom:NavMenuNode Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                    <atom:NavMenuNode Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
                                       IsEnabled="False" />
-                    <atom:NavMenuItem Header="Navigation Three - Submenu"
+                    <atom:NavMenuNode Header="Navigation Three - Submenu"
                                       Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
-                        <atom:NavMenuItem Header="Item 1">
-                            <atom:NavMenuItem Header="Option 1" />
-                            <atom:NavMenuItem Header="Option 2" />
-                        </atom:NavMenuItem>
+                        <atom:NavMenuNode Header="Item 1">
+                            <atom:NavMenuNode Header="Option 1" />
+                            <atom:NavMenuNode Header="Option 2" />
+                        </atom:NavMenuNode>
         
-                        <atom:NavMenuItem Header="Item 2">
-                            <atom:NavMenuItem Header="Option 3" />
-                            <atom:NavMenuItem Header="Option 4" />
-                        </atom:NavMenuItem>
-                    </atom:NavMenuItem>
-                    <atom:NavMenuItem Header="Navigation Four" />
+                        <atom:NavMenuNode Header="Item 2">
+                            <atom:NavMenuNode Header="Option 3" />
+                            <atom:NavMenuNode Header="Option 4" />
+                        </atom:NavMenuNode>
+                    </atom:NavMenuNode>
+                    <atom:NavMenuNode Header="Navigation Four" />
                 </atom:NavMenu>
             </StackPanel>
         
@@ -384,25 +386,25 @@
             Title="Default Opened paths"
             Description="You can open or select the path by default.">
             <atom:NavMenu Mode="Inline" Margin="0, 0, 0, 20"
-                          DefaultOpenPaths="{Binding DefaultOpenPaths}"
-                          DefaultSelectedPath="{Binding DefaultSelectedPath}">
-                <atom:NavMenuItem Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" ItemKey="1" />
-                <atom:NavMenuItem Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
-                                  IsEnabled="False"
-                                  ItemKey="2" />
-                <atom:NavMenuItem Header="Navigation Three - Submenu" Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}"
-                                  ItemKey="3">
-                    <atom:NavMenuItem Header="Item 1" ItemKey="SubGroup1">
-                        <atom:NavMenuItem Header="Option 1" ItemKey="Option1" />
-                        <atom:NavMenuItem Header="Option 2" ItemKey="Option2" />
-                    </atom:NavMenuItem>
+                           DefaultOpenPaths="{Binding DefaultOpenPaths}"
+                           DefaultSelectedPath="{Binding DefaultSelectedPath}">
+                <atom:NavMenuNode Header="Navigation One" Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" ItemKey="1" />
+                <atom:NavMenuNode Header="Navigation Two" Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}"
+                                      IsEnabled="False"
+                                      ItemKey="2" />
+                <atom:NavMenuNode Header="Navigation Three - Submenu" Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}"
+                                      ItemKey="3">
+                    <atom:NavMenuNode Header="Item 1" ItemKey="SubGroup1">
+                        <atom:NavMenuNode Header="Option 1" ItemKey="Option1" />
+                        <atom:NavMenuNode Header="Option 2" ItemKey="Option2" />
+                    </atom:NavMenuNode>
         
-                    <atom:NavMenuItem Header="Item 2" ItemKey="SubGroup2">
-                        <atom:NavMenuItem Header="Option 3" ItemKey="Option3" />
-                        <atom:NavMenuItem Header="Option 4" ItemKey="Option4" />
-                    </atom:NavMenuItem>
-                </atom:NavMenuItem>
-                <atom:NavMenuItem Header="Navigation Four" ItemKey="4" />
+                    <atom:NavMenuNode Header="Item 2" ItemKey="SubGroup2">
+                        <atom:NavMenuNode Header="Option 3" ItemKey="Option3" />
+                        <atom:NavMenuNode Header="Option 4" ItemKey="Option4" />
+                    </atom:NavMenuNode>
+                </atom:NavMenuNode>
+                <atom:NavMenuNode Header="Navigation Four" ItemKey="4" />
             </atom:NavMenu>
         </gallery:ShowCaseItem>
         
@@ -410,14 +412,11 @@
             Title="Generate NavMenuItem by ItemsSource"
             Description="Generate structure based on ItemsSource and template">
             <atom:NavMenu Name="ItemsSourceDemoNavMenu"
-                          Mode="Inline" ItemsSource="{Binding NavMenuItems}"
-                          x:DataType="viewModels:MenuViewModel">
-                <atom:NavMenu.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding Children}">
-                        <atom:TextBlock Text="{Binding Header}" />
-                    </TreeDataTemplate>
-                </atom:NavMenu.ItemTemplate>
-            </atom:NavMenu>
+                          Mode="Inline"
+                          SelectedItem="{Binding DefaultSelectedNode}"
+                          DefaultSelectedPath="{Binding DefaultSelectedPath}"
+                          ItemsSource="{Binding NavMenuItems}"
+                          x:DataType="viewModels:MenuViewModel"/>
         </gallery:ShowCaseItem>
 
     </gallery:ShowCasePanel>

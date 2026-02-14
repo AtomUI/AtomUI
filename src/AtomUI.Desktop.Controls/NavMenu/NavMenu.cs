@@ -254,6 +254,14 @@ public class NavMenu : ItemsControl,
         {
             UpdatePseudoClasses();
         }
+
+        if (change.Property == SelectedItemProperty)
+        {
+            if (SelectedItem != null)
+            {
+                SelectTargetMenuNode(SelectedItem);
+            }
+        }
     }
     
     private void HandleModeChanged()
@@ -408,23 +416,28 @@ public class NavMenu : ItemsControl,
         // 直接设置 SelectedItem 优先级高于 DefaultSelectedPath
         if (SelectedItem != null)
         {
-            var selectPathNodes = CollectPathNodes(SelectedItem);
-            if (selectPathNodes.Count > 0)
-            {
-                Dispatcher.UIThread.InvokeAsync(async () => await TraverNavMenuPathAsync(selectPathNodes, (menuItem, i) =>
-                {
-                    if (i == selectPathNodes.Count - 1)
-                    {
-                        InteractionHandler?.Select(menuItem);
-                    }
-                }));
-            }
+            SelectTargetMenuNode(SelectedItem);
         }
         else if (DefaultSelectedPath != null)
         {
             Dispatcher.UIThread.InvokeAsync(async () => await TraverNavMenuPathAsync(DefaultSelectedPath, (menuItem, i) =>
             {
                 if (i == DefaultSelectedPath.Length - 1)
+                {
+                    InteractionHandler?.Select(menuItem);
+                }
+            }));
+        }
+    }
+
+    private void SelectTargetMenuNode(INavMenuNode node)
+    {
+        var selectPathNodes = CollectPathNodes(node);
+        if (selectPathNodes.Count > 0)
+        {
+            Dispatcher.UIThread.InvokeAsync(async () => await TraverNavMenuPathAsync(selectPathNodes, (menuItem, i) =>
+            {
+                if (i == selectPathNodes.Count - 1)
                 {
                     InteractionHandler?.Select(menuItem);
                 }

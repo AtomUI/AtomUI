@@ -3,6 +3,7 @@ using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia.Input;
+using Avalonia.Threading;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 
@@ -30,8 +31,12 @@ public partial class
                 InitContextMenuItems(viewModel);
                 InitMenuFlyoutMenuItems(viewModel);
             }
+            ItemsSourceDemoNavMenu.NavMenuNodeSelected += (sender, args) =>
+            {
+                Console.WriteLine(args.NavMenuNode.Header);
+            };
         });
-        
+   
         InitializeComponent();
     }
 

@@ -286,6 +286,8 @@ public class NavMenu : ItemsControl,
                     menuItem.SetCurrentValue(NavMenuItem.HeaderProperty, menuNode);
                     disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.Icon), menuItem, NavMenuItem.IconProperty));
                     disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.IsEnabled), menuItem, NavMenuItem.IsEnabledProperty));
+                    disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.Command), menuItem, NavMenuItem.CommandProperty));
+                    disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.CommandParameter), menuItem, NavMenuItem.CommandParameterProperty));
                     menuItem.ItemKey = menuNode.ItemKey;
                 }
             }

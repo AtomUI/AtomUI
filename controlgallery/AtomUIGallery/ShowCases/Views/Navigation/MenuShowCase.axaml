@@ -400,8 +400,8 @@
                     </atom:NavMenuNode>
         
                     <atom:NavMenuNode Header="Item 2" ItemKey="SubGroup2">
-                        <atom:NavMenuNode Header="Option 3" ItemKey="Option3" />
-                        <atom:NavMenuNode Header="Option 4" ItemKey="Option4" />
+                        <atom:NavMenuNode Header="Option 3" ItemKey="Option3" Command="{Binding NavigateCommand}" CommandParameter="Option3"/>
+                        <atom:NavMenuNode Header="Option 4" ItemKey="Option4" Command="{Binding NavigateCommand}" CommandParameter="Option4"/>
                     </atom:NavMenuNode>
                 </atom:NavMenuNode>
                 <atom:NavMenuNode Header="Navigation Four" ItemKey="4" />

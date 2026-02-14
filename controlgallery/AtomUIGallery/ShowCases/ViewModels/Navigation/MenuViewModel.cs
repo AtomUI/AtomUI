@@ -1,4 +1,6 @@
-﻿using AtomUI.Controls;
+﻿using System.Reactive;
+using System.Reactive.Linq;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -86,9 +88,18 @@ public class MenuViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _navMenuItems, value);
     }
 
+    public ReactiveCommand<string, Unit> NavigateCommand { get; set; }
+    
     public MenuViewModel(IScreen screen)
     {
-        HostScreen = screen;
+        HostScreen      = screen;
+        NavigateCommand = ReactiveCommand.CreateFromTask<string>(OnNavigate, Observable.Return(true));
+    }
+    
+    private async Task OnNavigate(string? itemKey)
+    {
+        await Task.Delay(100);
+        Console.WriteLine(itemKey);
     }
 
     public void HandleChangeModeCheckChanged(object? sender, RoutedEventArgs? args)

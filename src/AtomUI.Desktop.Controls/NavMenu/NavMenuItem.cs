@@ -822,6 +822,8 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
                     menuItem.SetCurrentValue(NavMenuItem.HeaderProperty, menuNode);
                     disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.Icon), menuItem, NavMenuItem.IconProperty));
                     disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.IsEnabled), menuItem, NavMenuItem.IsEnabledProperty));
+                    disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.Command), menuItem, NavMenuItem.CommandProperty));
+                    disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.CommandParameter), menuItem, NavMenuItem.CommandParameterProperty));
                     menuItem.ItemKey = menuNode.ItemKey;
                 }
             }
@@ -862,7 +864,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
 
     protected virtual void NotifyClicked(RoutedEventArgs e)
     {
-        (var command, var parameter) = (Command, CommandParameter);
+        var (command, parameter) = (Command, CommandParameter);
         if (!e.Handled && command is not null && command.CanExecute(parameter) == true)
         {
             command.Execute(parameter);

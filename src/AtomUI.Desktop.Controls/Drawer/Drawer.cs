@@ -371,6 +371,7 @@ public class Drawer : Control,
             };
             _containerDisposables?.Dispose();
             _containerDisposables = new CompositeDisposable();
+            _containerDisposables.Add(BindUtils.RelayBind(this, DataContextProperty, _container, DrawerContainer.DataContextProperty));
             _containerDisposables.Add(BindUtils.RelayBind(this, ContentProperty, _container, DrawerContainer.ContentProperty));
             _containerDisposables.Add(BindUtils.RelayBind(this, ContentTemplateProperty, _container, DrawerContainer.ContentTemplateProperty));
             _containerDisposables.Add(BindUtils.RelayBind(this, FooterProperty, _container, DrawerContainer.FooterProperty));

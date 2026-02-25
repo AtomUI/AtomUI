@@ -347,7 +347,7 @@ public class Flyout : PopupFlyoutBase
                 }
                 else if (arrowPosition == ArrowPosition.RightEdgeAlignedBottom)
                 {
-                    arrowPosition = ArrowPosition.RightEdgeAlignedBottom;
+                    arrowPosition = ArrowPosition.LeftEdgeAlignedBottom;
                 }
             }
             SetCurrentValue(ArrowPositionProperty, arrowPosition);

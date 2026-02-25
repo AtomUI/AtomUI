@@ -162,7 +162,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private PopupBuddyLayer? _buddyLayer;
     private IDisposable? _selfLightDismissDisposable;
     private IManagedPopupPositionerPopup? _managedPopupPositioner;
-    private bool _isNeedDetectFlip = true;
     private bool _ignoreIsOpenChanged;
     private CompositeDisposable? _hostDecoratorDisposable;
 
@@ -217,7 +216,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     {
         _hostDecoratorDisposable?.Dispose();
         _placementAwareDecorator = null;
-        HostDecoratorDirection   = GetHostDecoratorDirection(Placement);
         if (popupHost is PopupRoot popupRoot)
         {
             MotionActor              = popupRoot.FindDescendantOfType<MotionActor>();
@@ -258,44 +256,57 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 window.ScrollOccurred -= HandlePlacementTargetScrolled; 
             }
+            if (Host is PopupRoot popupRoot)
+            {
+                popupRoot.PositionChanged -= HandlePositionAndSizeChanged;
+                popupRoot.SizeChanged     -= HandlePositionAndSizeChanged;
+            }
+            else if (Host is OverlayPopupHost overlayPopupHost)
+            {
+                overlayPopupHost.PropertyChanged -= HandleOverlayPopupHostPropertyChanged;
+                overlayPopupHost.SizeChanged     -= HandlePositionAndSizeChanged;
+            }
+            
         }
     }
 
     private void HandleOpened(object? sender, EventArgs? args)
     {
-        if (Host is PopupRoot popupRoot)
         {
-            var popupPositioner = popupRoot.PlatformImpl?.PopupPositioner;
-            if (popupPositioner is ManagedPopupPositioner managedPopupPositioner)
+            if (Host is PopupRoot popupRoot)
             {
-                _managedPopupPositioner = managedPopupPositioner.GetManagedPopupPositionerPopup();
-            }
+                var popupPositioner = popupRoot.PlatformImpl?.PopupPositioner;
+                if (popupPositioner is ManagedPopupPositioner managedPopupPositioner)
+                {
+                    _managedPopupPositioner = managedPopupPositioner.GetManagedPopupPositionerPopup();
+                }
 #if DEBUG
-            if (popupRoot is TopLevel topLevel)
-            {
-                topLevel.AttachDevTools();
-            }
+                if (popupRoot is TopLevel topLevel)
+                {
+                    topLevel.AttachDevTools();
+                }
 #endif
+            }
         }
         
         var placementTarget = GetEffectivePlacementTarget();
         if (placementTarget is not null)
         {
-            if (_isNeedDetectFlip)
+            if (Placement != PlacementMode.Pointer && Placement != PlacementMode.Center)
             {
-                if (Placement != PlacementMode.Pointer && Placement != PlacementMode.Center)
+                if (Host is PopupRoot popupRoot)
                 {
-                    if (Host is PopupRoot)
-                    {
-                        AdjustPopupHostPosition(placementTarget);
-                    }
-                    else if (Host is OverlayPopupHost overlayPopupHost)
-                    {
-                        overlayPopupHost.PropertyChanged += HandleOverlayPopupHostPropertyChanged;
-                        overlayPopupHost.SizeChanged += (o, eventArgs) => AdjustPopupHostPosition(placementTarget);
-                    }
+                    popupRoot.PositionChanged += HandlePositionAndSizeChanged;
+                    popupRoot.SizeChanged     += HandlePositionAndSizeChanged;
+                }
+                else if (Host is OverlayPopupHost overlayPopupHost)
+                {
+                    overlayPopupHost.PropertyChanged += HandleOverlayPopupHostPropertyChanged;
+                    overlayPopupHost.SizeChanged     += HandlePositionAndSizeChanged;
                 }
             }
+            
+            AdjustPopupHostPosition(placementTarget);
 
             // 如果没有启动，我们使用自己的处理函数，一般是为了增加我们自己的动画效果
             HandleIsLightDismissEnabledChanged();
@@ -304,6 +315,15 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 window.ScrollOccurred += HandlePlacementTargetScrolled; 
             }
+        }
+    }
+
+    private void HandlePositionAndSizeChanged(object? sender, EventArgs e)
+    {
+        var placementTarget = GetEffectivePlacementTarget();
+        if (placementTarget != null)
+        {
+            AdjustPopupHostPosition(placementTarget);
         }
     }
     
@@ -486,14 +506,17 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         var geo = GetUnconstrained(anchor, gravity);
         // If flipping geometry and anchor is allowed and helps, use the flipped one,
         // otherwise leave it as is
-        if (!FitsInBounds(geo, PopupAnchor.HorizontalMask))
+        if (!FitsInBounds(geo, anchor))
         {
-            result.Item1 = true;
-        }
+            if (anchor.HasFlag(PopupAnchor.Left) || anchor.HasFlag(PopupAnchor.Right))
+            {
+                result.Item1 = true;
+            }
 
-        if (!FitsInBounds(geo, PopupAnchor.VerticalMask))
-        {
-            result.Item2 = true;
+            if (anchor.HasFlag(PopupAnchor.Top) || anchor.HasFlag(PopupAnchor.Bottom))
+            {
+                result.Item2 = true;
+            }
         }
 
         return result;
@@ -544,7 +567,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     internal void AdjustPopupHostPosition(Control placementTarget)
     {
         var topLevel = TopLevel.GetTopLevel(placementTarget)!;
-
+        
         Size popupSize = default;
         if (Host is PopupRoot popupRoot)
         {
@@ -567,7 +590,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         Debug.Assert(positionerPopup != null);
         var scaling      = positionerPopup.Scaling;
         var parentOrigin = positionerPopup.ParentClientAreaScreenGeometry.TopLeft;
-
+        
         if (Placement != PlacementMode.Center && Placement != PlacementMode.Pointer)
         {
             // 计算是否 flip
@@ -588,28 +611,30 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 parameters.AnchorRectangle.Size * scaling);
             
             anchorRect = anchorRect.Translate(parentOrigin);
-
+        
             var flipInfo = CalculateFlipInfo(popupSize * scaling,
                 anchorRect,
                 parameters.Anchor,
                 parameters.Gravity,
                 offset * scaling);
-            
+        
+            var originFlipped = IsFlipped;
             if (flipInfo.Item1 || flipInfo.Item2)
             {
-                var flipPlacement        = GetFlipPlacement(Placement, flipInfo.Item1, flipInfo.Item2);
-                var flipAnchorAndGravity = PopupUtils.GetAnchorAndGravity(flipPlacement);
-
-                Placement        = flipPlacement;
-                PlacementAnchor  = flipAnchorAndGravity.Item1;
-                PlacementGravity = flipAnchorAndGravity.Item2;
-                IsFlipped = true;
+                var flipPlacement = GetFlipPlacement(Placement, flipInfo.Item1, flipInfo.Item2);
+                IsFlipped              = true;
+                HostDecoratorDirection = GetHostDecoratorDirection(flipPlacement);
             }
             else
             {
-                IsFlipped = false;
+                HostDecoratorDirection = GetHostDecoratorDirection(Placement);
+                IsFlipped              = false;
             }
-            PositionFlipped?.Invoke(this, new PopupFlippedEventArgs(IsFlipped));
+            
+            if (originFlipped != IsFlipped)
+            {
+                PositionFlipped?.Invoke(this, new PopupFlippedEventArgs(IsFlipped));
+            }
         }
     }
 
@@ -680,6 +705,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
         Open();
+        
         if (MotionActor == null)
         {
             using (BeginIgnoringIsOpen())
@@ -703,25 +729,32 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private void OpenPopupRootHost(Action? opened = null)
     {
-        CreatePopupRootBuddyLayer();
-        _buddyLayer?.Attach();
-        _buddyLayer?.Show();
-        var shadowAwareLayer = _buddyLayer as IShadowAwareLayer;
-        Debug.Assert(shadowAwareLayer != null);
-        shadowAwareLayer.RunOpenMotion(null, () =>
+        if (Host?.Presenter != null)
         {
-            opened?.Invoke();
-            _openAnimating     = false;
-            _motionAwareOpened = true;
-            using (BeginIgnoringIsOpen())
+            Host?.Presenter.Opacity = 0.0;
+        }
+        Dispatcher.UIThread.Post(() =>
+        {
+            CreatePopupRootBuddyLayer();
+            _buddyLayer?.Attach();
+            _buddyLayer?.Show();
+            var shadowAwareLayer = _buddyLayer as IShadowAwareLayer;
+            Debug.Assert(shadowAwareLayer != null);
+            shadowAwareLayer.RunOpenMotion(null, () =>
             {
-                SetCurrentValue(IsMotionAwareOpenProperty, true);
-            }
-            if (RequestCloseWhereAnimationCompleted)
-            {
-                RequestCloseWhereAnimationCompleted = false;
-                Dispatcher.UIThread.Post(() => MotionAwareClose());
-            }
+                opened?.Invoke();
+                _openAnimating     = false;
+                _motionAwareOpened = true;
+                using (BeginIgnoringIsOpen())
+                {
+                    SetCurrentValue(IsMotionAwareOpenProperty, true);
+                }
+                if (RequestCloseWhereAnimationCompleted)
+                {
+                    RequestCloseWhereAnimationCompleted = false;
+                    Dispatcher.UIThread.Post(() => MotionAwareClose());
+                }
+            });
         });
     }
 
@@ -814,7 +847,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         
         if (!IsMotionEnabled || Host == null)
         {
-            _isNeedDetectFlip = true;
             Close();
             if (!ShouldUseOverlayLayer)
             {
@@ -859,7 +891,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 SetCurrentValue(IsMotionAwareOpenProperty, false);
             }
-            _isNeedDetectFlip  = true;
         });
     }
 
@@ -875,7 +906,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 SetCurrentValue(IsMotionAwareOpenProperty, false);
             }
-            _isNeedDetectFlip  = true;
             return;
         }
 
@@ -900,7 +930,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 {
                     SetCurrentValue(IsMotionAwareOpenProperty, false);
                 }
-                _isNeedDetectFlip   = true;
                 completedFuncCalled = true;
             }
         }, motion.Duration * 1.2);
@@ -915,7 +944,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 closed?.Invoke();
                 _closeAnimating     = false;
                 _motionAwareOpened  = false;
-                _isNeedDetectFlip   = true;
                 using (BeginIgnoringIsOpen())
                 {
                     SetCurrentValue(IsMotionAwareOpenProperty, false);

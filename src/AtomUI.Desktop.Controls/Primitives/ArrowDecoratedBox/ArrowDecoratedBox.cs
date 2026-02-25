@@ -251,7 +251,9 @@ public class ArrowDecoratedBox : ContentControl,
             {
                 _arrowPlacementFlipped = true;
             }
+            
         }
+        
     }
 
     public CornerRadius GetMaskCornerRadius()

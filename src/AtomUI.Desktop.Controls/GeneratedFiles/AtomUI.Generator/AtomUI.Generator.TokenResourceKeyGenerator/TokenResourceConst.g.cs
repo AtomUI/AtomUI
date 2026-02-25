@@ -486,6 +486,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemPaddingSM");
         public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedBgColor");
         public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedColor");
+        public static readonly TokenResourceKey SelectedIndicatorMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.SelectedIndicatorMargin");
     }
 
     public static class MarqueeLabelTokenKey

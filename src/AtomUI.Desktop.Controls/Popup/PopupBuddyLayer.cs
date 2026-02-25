@@ -4,6 +4,7 @@ using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Media;
 using AtomUI.MotionScene;
 using Avalonia;
@@ -213,11 +214,11 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         {
             if (_popupHost is PopupRoot oldPopupRoot)
             {
-                oldPopupRoot.SizeChanged     -= HandleBuddyPopupRootSizeChanged;
-                oldPopupRoot.PositionChanged -= HandleBuddyPopupRootPositionChanged;
+                oldPopupRoot.SizeChanged     -= HandleBuddyPopupRootSizeAndPositionChanged;
+                oldPopupRoot.PositionChanged -= HandleBuddyPopupRootSizeAndPositionChanged;
             }
-            popupRoot.SizeChanged     += HandleBuddyPopupRootSizeChanged;
-            popupRoot.PositionChanged += HandleBuddyPopupRootPositionChanged;
+            popupRoot.SizeChanged     += HandleBuddyPopupRootSizeAndPositionChanged;
+            popupRoot.PositionChanged += HandleBuddyPopupRootSizeAndPositionChanged;
             ConfigureSizeAndPosition(popupRoot);
             ConfigureShadowInfo(popupRoot.Presenter);
             ConfigurePaddingForShadows();
@@ -254,18 +255,11 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         }
     }
 
-    private void HandleBuddyPopupRootSizeChanged(object? sender, SizeChangedEventArgs e)
+    private void HandleBuddyPopupRootSizeAndPositionChanged(object? sender, EventArgs e)
     {
         if (sender is PopupRoot popupRoot)
         {
-            ConfigureSizeAndPosition(popupRoot);
-        }
-    }
-
-    private void HandleBuddyPopupRootPositionChanged(object? sender, PixelPointEventArgs e)
-    {
-        if (sender is PopupRoot popupRoot)
-        {
+            ConfigurePaddingForShadows();
             ConfigureSizeAndPosition(popupRoot);
         }
     }
@@ -297,34 +291,8 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         
         var   offset      = new Point(position.X, position.Y);
         Point layerOffset = default;
-        // 不知道为何这里的行为 macOS 和 Linux 与 Windows 不一样
-        if (OperatingSystem.IsMacOS())
-        {
-            layerOffset = new Point(offset.X - maskShadowsThickness.Left, offset.Y - maskShadowsThickness.Top);
-            var topOffsetMark = 0d;
-            if (ManagedPopupPositionerPopup != null)
-            {
-                var screens = ManagedPopupPositionerPopup.Screens;
-                foreach (var screen in screens)
-                {
-                    topOffsetMark = Math.Max(topOffsetMark, screen.WorkingArea.Top);
-                }
-            }
-            var delta = layerOffset.Y - topOffsetMark;
-            if (delta < 0)
-            {
-                RenderTransform = new TranslateTransform(0, delta);
-            }
-            else
-            {
-                RenderTransform = null;
-            }
-        }
-        else
-        {
-            var renderScaling = GetRenderScaling();
-            layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling, offset.Y - maskShadowsThickness.Top * renderScaling);
-        }
+        var renderScaling = TopLevelUtils.GetDesktopScaling(this);
+        layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling, offset.Y - maskShadowsThickness.Top * renderScaling);
         MoveAndResize(layerOffset, size.Inflate(MaskShadows.Thickness()));
     }
 
@@ -365,7 +333,6 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         {
             motion.Duration = MotionDuration;
         }
-
         var shadowAwareLayer = this as IShadowAwareLayer;
         Debug.Assert(shadowAwareLayer != null);
         shadowAwareLayer.NotifyOpenMotionAboutToStart();
@@ -381,7 +348,6 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
                 completedAction?.Invoke();
                 completedFuncCalled = true;
             }
-      
         }, motion.Duration * 1.2);
         
         motion.Run(MotionActor, aboutToStart, () =>
@@ -462,6 +428,10 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
                 }
             }
         }
+        else if (change.Property == ArrowDirectionProperty)
+        {
+            ConfigurePaddingForShadows();
+        }
     }
 
     private void ConfigurePaddingForShadows()
@@ -499,7 +469,6 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
                 }
             }
         }
-
         Padding = thickness;
     }
 
@@ -588,7 +557,8 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
                 offsetX = shadowRenderBounds.Width;
                 offsetY = ArrowIndicatorLayoutBounds.Top;
             }
-            _arrowIndicatorLayout.Arrange(new Rect(new Point(offsetX, offsetY), new Size(indicatorBounds.Width, indicatorBounds.Height)));
+            Canvas.SetLeft(_arrowIndicatorLayout, offsetX);
+            Canvas.SetTop(_arrowIndicatorLayout, offsetY);
         }
         return size;
     }
@@ -607,6 +577,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         }
         if (popupPresenter != null)
         {
+            popupPresenter.Opacity         = 1.0;
             _ghostContentPresenter.Content = new MotionTargetBitmapControl(popupPresenter.CaptureCurrentBitmap())
             {
                 Width  = popupPresenter.DesiredSize.Width,
@@ -621,10 +592,10 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
     {
         Debug.Assert(_ghostContentPresenter != null);
         var popupPresenter = _popupHost?.Presenter;
-
+        
         if (popupPresenter != null)
         {
-            popupPresenter.Opacity         = 1.0;
+            popupPresenter.Opacity = 1.0;
         }
         if (_popupArrowDecoratedBox != null)
         {

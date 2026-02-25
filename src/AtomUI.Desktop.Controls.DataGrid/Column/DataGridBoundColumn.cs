@@ -17,7 +17,7 @@ namespace AtomUI.Desktop.Controls;
 
 public abstract class DataGridBoundColumn : DataGridColumn
 {
-    private IBinding? _binding; 
+    private IBinding? _binding;
 
     /// <summary>
     /// Gets or sets the binding that associates the column with a property in the data source.
@@ -81,27 +81,27 @@ public abstract class DataGridBoundColumn : DataGridColumn
     {
         get => base.ClipboardContentBinding ?? Binding;
         set => base.ClipboardContentBinding = value;
-    } 
+    }
 
     //TODO Rename
     //TODO Validation
     protected sealed override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding? editBinding)
     {
         Control element = GenerateEditingElementDirect(cell, dataItem);
-        editBinding = null; 
+        editBinding = null;
 
         if (Binding != null)
         {
             Debug.Assert(BindingTarget != null);
             editBinding = BindEditingElement(element, BindingTarget, Binding);
-        } 
+        }
 
         return element;
     } 
 
     private static ICellEditBinding? BindEditingElement(AvaloniaObject target, AvaloniaProperty property, IBinding binding)
     {
-        var result = binding.Initiate(target, property, enableDataValidation: true); 
+        var result = binding.Initiate(target, property, enableDataValidation: true);
 
         if (result != null)
         {
@@ -112,7 +112,7 @@ public abstract class DataGridBoundColumn : DataGridColumn
                 
                 BindingOperations.Apply(target, property, instanceBinding, null);
                 return bindingHelper;
-            } 
+            }
 
             BindingOperations.Apply(target, property, result, null);
         } 
@@ -120,14 +120,15 @@ public abstract class DataGridBoundColumn : DataGridColumn
         return null;
     }
 
-    protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem); 
+    protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem);
 
     protected AvaloniaProperty? BindingTarget { get; set; }
 
     internal void SetHeaderFromBinding()
     {
         if (OwningGrid != null && OwningGrid.DataConnection.DataType != null
-                               && Header == null && Binding != null && Binding is BindingBase binding)
+                               && Header == null && Binding != null 
+                               && Binding is BindingBase binding)
         {
             var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
             if (!string.IsNullOrWhiteSpace(path))

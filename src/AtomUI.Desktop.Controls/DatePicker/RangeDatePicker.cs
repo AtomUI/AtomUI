@@ -220,11 +220,11 @@ public class RangeDatePicker : RangeInfoPickerInput,
     {
         if (RangeActivatedPart == RangeActivatedPart.Start)
         {
-            Text = FormatDateTime(RangeStartSelectedDate);
+            Text = FormatDateTime(_pickerPresenter?.SelectedDateTime ?? RangeStartSelectedDate);
         }
         else if (RangeActivatedPart == RangeActivatedPart.End)
         {
-            SecondaryText = FormatDateTime(RangeEndSelectedDate);
+            SecondaryText = FormatDateTime(_pickerPresenter?.SecondarySelectedDateTime ?? RangeEndSelectedDate);
         }
     }
     

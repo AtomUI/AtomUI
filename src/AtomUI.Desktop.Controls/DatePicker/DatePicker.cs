@@ -238,7 +238,7 @@ public class DatePicker : InfoPickerInput,
 
     private void ClearHoverSelectedInfo()
     {
-        Text = FormatDateTime(SelectedDateTime);
+        Text = FormatDateTime(_pickerPresenter?.SelectedDateTime ?? SelectedDateTime);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

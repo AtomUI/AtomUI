@@ -13,7 +13,7 @@
                     VerticalContentAlignment="Center"
                     Focusable="False"
                     DockPanel.Dock="Left"
-                    BackgroundSizing="OuterBorderEdge"
+                    BackgroundSizing="InnerBorderEdge"
                     Content="{TemplateBinding LeftAddOn}"
                     ContentTemplate="{TemplateBinding LeftAddOnTemplate}"
                     BorderThickness="{TemplateBinding LeftAddOnBorderThickness}"
@@ -273,7 +273,7 @@
 
         <Style Selector="^[StyleVariant=Filled]">
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
 
             <Style Selector="^[IsInnerBoxHover=True]">
                 <Setter Property="Background"
@@ -294,17 +294,17 @@
             <Style Selector="^ /template/ ContentPresenter#PART_LeftAddOn">
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
-                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
             </Style>
 
             <Style Selector="^ /template/ ContentPresenter#PART_RightAddOn">
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
-                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillTertiary}}" />
             </Style>
 
             <Style Selector="^[Status=Error]">
-                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBg}}" />
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorBg}}" />
 
@@ -338,7 +338,7 @@
             </Style>
 
             <Style Selector="^[Status=Warning]">
-                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningBg}}" />
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningBg}}" />
 

@@ -1,0 +1,15 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net">
+    <ControlTheme x:Key="{x:Type atom:FormItem}" TargetType="atom:FormItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+               <Grid Name="{x:Static atom:FormItemThemeConstants.RootLayoutPart}">
+                   <ContentPresenter Name="{x:Static atom:FormItemThemeConstants.LabelPart}"/>
+                   <StackPanel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}"/>
+               </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

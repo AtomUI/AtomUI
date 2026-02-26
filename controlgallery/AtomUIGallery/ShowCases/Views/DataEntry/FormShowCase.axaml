@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.FormShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem
+            Title="Basic usage"
+            Description="Basic Form data control. Includes layout, initial values, validation and submit.">
+            <atom:Form LabelColInfo="8*" WrapperColInfo="16*">
+                <atom:FormItem LabelText="Username"
+                               FieldName="username">
+                    <atom:LineEdit/>
+                </atom:FormItem>
+                <atom:FormItem LabelText="Password"
+                               FieldName="password">
+                    <atom:LineEdit RevealPassword="False"
+                                   PasswordChar="•"
+                                   IsEnableRevealButton="True"/>
+                </atom:FormItem>
+                <atom:FormItem FieldName="remember">
+                    <atom:CheckBox>Remember me</atom:CheckBox>
+                </atom:FormItem>
+                
+                <atom:FormItem>
+                    <atom:SubmitButton/>
+                </atom:FormItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

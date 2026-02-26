@@ -41,6 +41,9 @@ internal class zh_CN : LanguageProvider
     public const string DataEntry_CheckBox = "CheckBox 多选框";
     public const string DataEntry_ColorPicker = "ColorPicker 颜色选择器";
     public const string DataEntry_LineEdit = "LineEdit 输入框";
+    public const string DataEntry_DatePicker = "DatePicker 日期选择器";
+    public const string DataEntry_TimePicker = "TimePicker 时间选择器";
+    public const string DataEntry_Form = "Form 表单";
     public const string DataEntry_Mentions = "Mentions 提及";
     public const string DataEntry_NumberUpDown = "NumberUpDown 数字输入框";
     public const string DataEntry_RadioButton = "RadioButton 单选框";
@@ -48,8 +51,6 @@ internal class zh_CN : LanguageProvider
     public const string DataEntry_ToggleSwitch = "ToggleSwitch 开关";
     public const string DataEntry_Select = "Select 选择器";
     public const string DataEntry_Slider = "Slider 滑动输入条";
-    public const string DataEntry_DatePicker = "DatePicker 日期选择器";
-    public const string DataEntry_TimePicker = "TimePicker 时间选择器";
     public const string DataEntry_TreeSelect = "TreeSelect 树选择";
     public const string DataEntry_Upload = "Upload 上传";
     

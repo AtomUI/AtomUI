@@ -40,6 +40,9 @@ internal class en_US : LanguageProvider
     public const string DataEntry_Cascader = "Cascader";
     public const string DataEntry_CheckBox = "CheckBox";
     public const string DataEntry_ColorPicker = "ColorPicker";
+    public const string DataEntry_DatePicker = "DatePicker";
+    public const string DataEntry_TimePicker = "TimePicker";
+    public const string DataEntry_Form = "Form";
     public const string DataEntry_LineEdit = "LineEdit";
     public const string DataEntry_Mentions = "Mentions";
     public const string DataEntry_NumberUpDown = "NumberUpDown";
@@ -48,8 +51,6 @@ internal class en_US : LanguageProvider
     public const string DataEntry_ToggleSwitch = "ToggleSwitch";
     public const string DataEntry_Select = "Select";
     public const string DataEntry_Slider = "Slider";
-    public const string DataEntry_DatePicker = "DatePicker";
-    public const string DataEntry_TimePicker = "TimePicker";
     public const string DataEntry_TreeSelect = "TreeSelect";
     public const string DataEntry_Upload = "Upload";
     

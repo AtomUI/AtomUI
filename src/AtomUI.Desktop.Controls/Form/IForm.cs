@@ -1,0 +1,8 @@
+namespace AtomUI.Desktop.Controls;
+
+public interface IForm
+{
+    void Validate();
+    void Submit();
+    void Reset();
+}

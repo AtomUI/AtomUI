@@ -408,6 +408,19 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey PopupMinWidth = new TokenResourceKey("AtomUI.Desktop.Controls.TreeFlyout.PopupMinWidth");
     }
 
+    public static class FormTokenKey
+    {
+        public static readonly TokenResourceKey InlineItemMarginBottom = new TokenResourceKey("AtomUI.Desktop.Controls.Form.InlineItemMarginBottom");
+        public static readonly TokenResourceKey ItemMarginBottom = new TokenResourceKey("AtomUI.Desktop.Controls.Form.ItemMarginBottom");
+        public static readonly TokenResourceKey LabelColonMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelColonMargin");
+        public static readonly TokenResourceKey LabelColor = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelColor");
+        public static readonly TokenResourceKey LabelFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelFontSize");
+        public static readonly TokenResourceKey LabelHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelHeight");
+        public static readonly TokenResourceKey LabelRequiredMarkColor = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelRequiredMarkColor");
+        public static readonly TokenResourceKey VerticalLabelMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Form.VerticalLabelMargin");
+        public static readonly TokenResourceKey VerticalLabelPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Form.VerticalLabelPadding");
+    }
+
     public static class GroupBoxTokenKey
     {
         public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.GroupBox.ContentPadding");

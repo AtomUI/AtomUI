@@ -34,6 +34,7 @@
 
     <ItemGroup>
       <AdditionalFiles Include="Dialog\Themes\DialogHostXTheme.axaml" />
+      <AdditionalFiles Include="Form\Themes\SubmitButtonTheme.axaml" />
       <AdditionalFiles Include="NavMenu\Themes\NavMenuThemes.axaml" />
     </ItemGroup>
 </Project>

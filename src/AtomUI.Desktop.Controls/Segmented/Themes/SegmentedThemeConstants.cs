@@ -9,6 +9,5 @@ internal static class SegmentedItemThemeConstants
 
 internal static class SegmentedThemeConstants
 {
-    public const string FramePart = "PART_Frame";
     public const string ItemsPresenterPart = "PART_ItemsPresenter";
 }

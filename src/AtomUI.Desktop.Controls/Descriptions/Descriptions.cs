@@ -155,6 +155,12 @@ public class Descriptions : TemplatedControl,
         Items.CollectionChanged += HandleCollectionChanged;
     }
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        
+    }
+
     protected virtual void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_gridLayout != null && this.IsAttachedToVisualTree())

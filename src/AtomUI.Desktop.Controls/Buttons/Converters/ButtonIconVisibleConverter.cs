@@ -4,7 +4,7 @@ using Avalonia.Data.Converters;
 
 namespace AtomUI.Desktop.Controls.Converters;
 
-internal class ButtonIconVisibleConverter : IMultiValueConverter
+public class ButtonIconVisibleConverter : IMultiValueConverter
 {
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {

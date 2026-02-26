@@ -14,7 +14,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
@@ -334,11 +333,6 @@ public class Button : AvaloniaButton,
                 ConfigureTransitions(true);
             }
         }
-        
-        if (change.Property == ButtonTypeProperty)
-        {
-            ConfigureControlThemeBindings(true);
-        }
 
         if (change.Property == CornerRadiusProperty ||
             change.Property == CompactSpaceItemPositionProperty ||
@@ -365,54 +359,6 @@ public class Button : AvaloniaButton,
         }
 
         WaveSpiritType = waveType;
-    }
-
-    private void ConfigureControlThemeBindings(bool force)
-    {
-        if (!ThemeConfigured || force)
-        {
-            var resourceKey = GetThemeResourceKey();
-            if (Application.Current != null)
-            {
-                if (Application.Current.TryFindResource(resourceKey, out var resource))
-                {
-                    if (resource is ControlTheme theme)
-                    {
-                        Theme = theme;
-                    }
-                }
-            }
-         
-            ThemeConfigured = true;
-        }
-    }
-
-    protected virtual string GetThemeResourceKey()
-    {
-        string? resourceKey = null;
-        if (ButtonType == ButtonType.Default)
-        {
-            resourceKey = DefaultButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Primary)
-        {
-            resourceKey = PrimaryButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Dashed)
-        {
-            resourceKey = DashedButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Text)
-        {
-            resourceKey = TextButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Link)
-        {
-            resourceKey = LinkButtonTheme.ID;
-        }
-
-        resourceKey ??= DefaultButtonTheme.ID;
-        return resourceKey;
     }
 
     private void ConfigureTransitions(bool force)
@@ -457,7 +403,6 @@ public class Button : AvaloniaButton,
         base.OnApplyTemplate(e);
         _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(ButtonThemeConstants.WaveSpiritPart);
         UpdatePseudoClasses();
-        ConfigureControlThemeBindings(false);
         ConfigureWaveSpiritType();
         ConfigureEffectiveBorderThickness();
     }

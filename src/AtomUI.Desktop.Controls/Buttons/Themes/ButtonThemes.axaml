@@ -3,11 +3,11 @@
                     xmlns:atom="https://atomui.net"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="Button/ButtonTheme.axaml"/>
-        <ResourceInclude Source="DropdownButton/DropdownButtonThemes.axaml"/>
         <ResourceInclude Source="SplitButtonTheme.axaml"/>
         <ResourceInclude Source="HyperLinkButtonTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
+    <atom:ButtonTheme x:Key="{x:Type atom:Button}" TargetType="atom:Button"/>
+    <atom:DropdownButtonTheme x:Key="{x:Type atom:DropdownButton}" TargetType="atom:DropdownButton"/>
     <atom:IconButtonTheme x:Key="{x:Type atom:IconButton}" TargetType="atom:IconButton"/>
     <atom:ToggleIconButtonTheme x:Key="{x:Type atom:ToggleIconButton}" TargetType="atom:ToggleIconButton"/>
 </ResourceDictionary>

@@ -1,6 +1,5 @@
 ﻿using System.Reactive.Disposables;
 using AtomUI.Data;
-using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
@@ -187,30 +186,6 @@ public class DropdownButton : Button
         {
             SetCurrentValue(OpenIndicatorProperty, new DownOutlined());
         }
-    }
-
-    protected override string GetThemeResourceKey()
-    {
-        string? resourceKey = null;
-        if (ButtonType == ButtonType.Default)
-        {
-            resourceKey = DefaultDropdownButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Primary)
-        {
-            resourceKey = PrimaryDropdownButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Text)
-        {
-            resourceKey = TextDropdownButtonTheme.ID;
-        }
-        else if (ButtonType == ButtonType.Link)
-        {
-            resourceKey = LinkDropdownButtonTheme.ID;
-        }
-
-        resourceKey ??= DefaultDropdownButtonTheme.ID;
-        return resourceKey;
     }
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)

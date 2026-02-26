@@ -2,6 +2,6 @@ using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls.Themes;
 
-internal class SearchButtonTheme : ControlTheme
+public class DropdownButtonTheme : ControlTheme
 {
 }

@@ -6,7 +6,7 @@
               TargetType="{x:Type atom:SearchButton}"
               x:ClassModifier="internal">
     <ControlTheme.BasedOn>
-        <themes:TextButtonTheme TargetType="{x:Type atom:SearchButton}" />
+        <themes:ButtonTheme TargetType="{x:Type atom:SearchButton}" />
     </ControlTheme.BasedOn>
 
     <Style Selector="^:is(atom|SearchButton)[ButtonType=Text]">

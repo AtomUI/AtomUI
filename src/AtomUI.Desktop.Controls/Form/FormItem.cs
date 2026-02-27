@@ -41,8 +41,6 @@ public class FormItem : TemplatedControl,
                         IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-    public static readonly StyledProperty<bool> IsShowColonProperty =
-        Form.IsShowColonProperty.AddOwner<FormItem>();
     
     public static readonly StyledProperty<object?> ExtraProperty =
         AvaloniaProperty.Register<FormItem, object?>(nameof(Extra));
@@ -109,12 +107,6 @@ public class FormItem : TemplatedControl,
     
     public static readonly StyledProperty<double> ChildrenSpacingProperty =
         AvaloniaProperty.Register<FormItem, double>(nameof(ChildrenSpacing));
-    
-    public bool IsShowColon
-    {
-        get => GetValue(IsShowColonProperty);
-        set => SetValue(IsShowColonProperty, value);
-    }
     
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
@@ -254,12 +246,38 @@ public class FormItem : TemplatedControl,
     #endregion
 
     #region 内部属性定义
+    internal static readonly StyledProperty<bool> IsShowColonProperty =
+        Form.IsShowColonProperty.AddOwner<FormItem>();
 
     internal static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<FormItem>();
     
     internal static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
         AddOnDecoratedBox.StyleVariantProperty.AddOwner<FormItem>();
+    
+    internal static readonly DirectProperty<FormItem, bool> IsColonVisibleProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(IsColonVisible),
+            o => o.IsColonVisible,
+            (o, v) => o.IsColonVisible = v);
+    
+    internal static readonly DirectProperty<FormItem, bool> IsRequireMarkVisibleProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(IsRequireMarkVisible),
+            o => o.IsRequireMarkVisible,
+            (o, v) => o.IsRequireMarkVisible = v);
+    
+    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
+        Form.RequiredMarkProperty.AddOwner<FormItem>();
+    
+    internal bool IsShowColon
+    {
+        get => GetValue(IsShowColonProperty);
+        set => SetValue(IsShowColonProperty, value);
+    }
     
     internal SizeType SizeType
     {
@@ -273,14 +291,44 @@ public class FormItem : TemplatedControl,
         set => SetValue(StyleVariantProperty, value);
     }
     
+    internal bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+    
+    private bool _isColonVisible;
+
+    internal bool IsColonVisible
+    {
+        get => _isColonVisible;
+        set => SetAndRaise(IsColonVisibleProperty, ref _isColonVisible, value);
+    }
+    
+    private bool _isRequireMarkVisible;
+
+    internal bool IsRequireMarkVisible
+    {
+        get => _isRequireMarkVisible;
+        set => SetAndRaise(IsRequireMarkVisibleProperty, ref _isRequireMarkVisible, value);
+    }
+    
+    public FormRequiredMark RequiredMark
+    {
+        get => GetValue(RequiredMarkProperty);
+        set => SetValue(RequiredMarkProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
     private readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     #endregion
 
     private Grid? _rootLayout;
-    private StackPanel? _childrenLayout;
-    private Control? _label;
+    private StackPanel? _childrenContainer;
+    private Panel? _childrenLayout;
+    private Panel? _labelLayout;
+    private MediaBreakPoint? _breakPoint;
     
     static FormItem()
     {
@@ -321,7 +369,7 @@ public class FormItem : TemplatedControl,
         {
             case NotifyCollectionChangedAction.Add:
                 var newChildren = e.NewItems!.OfType<FormItem>().ToList();
-                _childrenLayout?.Children.InsertRange(e.NewStartingIndex, newChildren);
+                _childrenContainer?.Children.InsertRange(e.NewStartingIndex, newChildren);
                 foreach (var child in newChildren)
                 {
                     NotifyChildrenAdded(child);
@@ -329,11 +377,11 @@ public class FormItem : TemplatedControl,
                 break;
 
             case NotifyCollectionChangedAction.Move:
-                _childrenLayout?.Children.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
+                _childrenContainer?.Children.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
                 break;
 
             case NotifyCollectionChangedAction.Remove:
-                _childrenLayout?.Children.RemoveAll(e.OldItems!.OfType<Control>().ToList());
+                _childrenContainer?.Children.RemoveAll(e.OldItems!.OfType<Control>().ToList());
                 break;
 
             case NotifyCollectionChangedAction.Replace:
@@ -341,7 +389,7 @@ public class FormItem : TemplatedControl,
                 {
                     var index = i + e.OldStartingIndex;
                     var child = (Control)e.NewItems![i]!;
-                    _childrenLayout?.Children[index] = child;
+                    _childrenContainer?.Children[index] = child;
                 }
                 break;
 
@@ -352,23 +400,143 @@ public class FormItem : TemplatedControl,
 
     protected virtual void NotifyChildrenAdded(Control child)
     {
-        
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsShowColonProperty ||
+            change.Property == LabelTextProperty)
+        {
+            ConfigureLabelColonVisible();
+        }
+        else if (change.Property == LayoutProperty)
+        {
+            ConfigureLayout();
+        }
+        else if (change.Property == RequiredMarkProperty ||
+                 change.Property == IsRequiredProperty)
+        {
+            ConfigureRequireMarkVisible();
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _rootLayout     = e.NameScope.Find<Grid>(FormItemThemeConstants.RootLayoutPart);
-        _childrenLayout = e.NameScope.Find<StackPanel>(FormItemThemeConstants.ChildrenLayoutPart);
-        _label          = e.NameScope.Find<Control>(FormItemThemeConstants.LabelPart);
+        _rootLayout        = e.NameScope.Find<Grid>(FormItemThemeConstants.RootLayoutPart);
+        _childrenContainer = e.NameScope.Find<StackPanel>(FormItemThemeConstants.ChildrenPart);
+        _labelLayout       = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
+        _childrenLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.ChildrenLayoutPart);
         
         foreach (var child in Children)
         {
             if (child != null)
             {
-                _childrenLayout?.Children.Add(child);
+                _childrenContainer?.Children.Add(child);
                 NotifyChildrenAdded(child);
             }
+        }
+        ConfigureLayout();
+        ConfigureRequireMarkVisible();
+    }
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            window.MediaBreakPointChanged += HandleMediaBreakChanged;
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            window.MediaBreakPointChanged -= HandleMediaBreakChanged;
+        }
+    }
+    
+    private void HandleMediaBreakChanged(object? sender, MediaBreakPointChangedEventArgs args)
+    {
+        _breakPoint = args.MediaBreakPoint;
+        if (_breakPoint != null)
+        {
+            if (Layout == FormItemLayout.Horizontal)
+            {
+                ConfigureLayout();
+            }
+        }
+    }
+
+    private void ConfigureLabelColonVisible()
+    {
+        IsColonVisible = !string.IsNullOrWhiteSpace(LabelText) && IsShowColon;
+    }
+
+    private void ConfigureLayout()
+    {
+        if (_rootLayout == null || _labelLayout == null || _childrenLayout == null)
+        {
+            return;
+        }
+        if (Layout == FormItemLayout.Horizontal)
+        {
+            _rootLayout.ColumnDefinitions.Clear();
+            var columnDefinitions = new ColumnDefinitions();
+            columnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
+                LabelColInfo ?? new MediaBreakGridLength(new GridLength(1, GridUnitType.Star)))));
+            columnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
+                WrapperColInfo ?? new MediaBreakGridLength(new GridLength(3, GridUnitType.Star)))));
+            _rootLayout.ColumnDefinitions = columnDefinitions;
+            
+            Grid.SetColumn(_labelLayout, 0);
+            Grid.SetColumn(_childrenLayout, 1);
+        }
+    }
+    
+    private GridLength GetGridLengthForMediaBreak(MediaBreakPoint breakPoint, MediaBreakGridLength info)
+    {
+        var gridLength = GridLength.Auto;
+        if (breakPoint == MediaBreakPoint.ExtraSmall)
+        {
+            gridLength = info.ExtraSmall;
+        }
+        else if (breakPoint == MediaBreakPoint.Small)
+        {
+            gridLength = info.Small;
+        }
+        else if (breakPoint == MediaBreakPoint.Medium)
+        {
+            gridLength = info.Medium;
+        }
+        else if (breakPoint == MediaBreakPoint.Large)
+        {
+            gridLength = info.Large;
+        }
+        else if (breakPoint == MediaBreakPoint.ExtraLarge)
+        {
+            gridLength = info.ExtraLarge;
+        }
+        else if (breakPoint == MediaBreakPoint.ExtraExtraLarge)
+        {
+            gridLength = info.ExtraExtraLarge;
+        }
+
+        return gridLength;
+    }
+
+    private void ConfigureRequireMarkVisible()
+    {
+        if (RequiredMark == FormRequiredMark.Default)
+        {
+            IsRequireMarkVisible = IsRequired;
+        }
+        else
+        {
+            IsRequireMarkVisible = false;
         }
     }
 }

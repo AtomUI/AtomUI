@@ -3,10 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:SubmitButton}" TargetType="atom:SubmitButton">
-        <Setter Property="Template">
-            <ControlTemplate>
-              
-            </ControlTemplate>
-        </Setter>
+        <ControlTheme.BasedOn>
+            <atom:ButtonTheme TargetType="{x:Type atom:SubmitButton}" />
+        </ControlTheme.BasedOn>
+        
+        <Setter Property="ButtonType" Value="Primary"/>
+        <Setter Property="Content" Value="{DynamicResource {x:Static atom:CommonLangResourceKey.Submit}}"/>
+        
     </ControlTheme>
 </ResourceDictionary>

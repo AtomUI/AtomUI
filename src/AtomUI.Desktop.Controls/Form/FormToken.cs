@@ -21,6 +21,11 @@ internal class FormToken : AbstractControlDesignToken
     public Color LabelRequiredMarkColor { get; set; }
     
     /// <summary>
+    /// 必填项标记外间距
+    /// </summary>
+    public Thickness LabelRequiredMarkMargin { get; set; }
+    
+    /// <summary>
     /// 标签颜色
     /// Label color
     /// </summary>
@@ -72,6 +77,7 @@ internal class FormToken : AbstractControlDesignToken
     {
         base.CalculateTokenValues(isDarkMode);
         LabelRequiredMarkColor = SharedToken.ColorError;
+        LabelRequiredMarkMargin = new Thickness(0, 0, SharedToken.UniformlyMarginXXS, 0);
         LabelColor             = SharedToken.ColorTextHeading;
         LabelFontSize          = SharedToken.FontSize;
         LabelHeight            = SharedToken.ControlHeight;

@@ -6,6 +6,7 @@ namespace AtomUI.Controls.Localization;
 internal class en_US : LanguageProvider
 {
     public const string Ok = "Ok";
+    public const string Submit = "Submit";
     public const string Cancel = "Cancel";
     public const string Reset = "Reset";
     public const string Edit = "Edit";

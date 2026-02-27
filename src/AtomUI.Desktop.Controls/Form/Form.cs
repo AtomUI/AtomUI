@@ -7,6 +7,7 @@ using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Media;
 
@@ -49,7 +50,7 @@ public class Form : ItemsControl,
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsShowColonProperty =
         AvaloniaProperty.Register<Form, bool>(
-            nameof(IsShowColon));
+            nameof(IsShowColon), true);
     
     public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
         AddOnDecoratedBox.StyleVariantProperty.AddOwner<Form>();
@@ -295,10 +296,12 @@ public class Form : ItemsControl,
         {
             var disposables = new CompositeDisposable(2);
             
-            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, formItem, SegmentedItem.SizeTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, formItem, SegmentedItem.IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, formItem, FormItem.SizeTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, formItem, FormItem.IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsShowColonProperty, formItem, FormItem.IsShowColonProperty));
+            disposables.Add(BindUtils.RelayBind(this, RequiredMarkProperty, formItem, FormItem.RequiredMarkProperty));
             
-            PrepareSegmentedItem(formItem, item, index, disposables);
+            PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))
             {
@@ -313,7 +316,7 @@ public class Form : ItemsControl,
         }
     }
 
-    protected virtual void PrepareSegmentedItem(FormItem formItem, object? item, int index, CompositeDisposable disposables)
+    protected virtual void PrepareFormItem(FormItem formItem, object? item, int index, CompositeDisposable disposables)
     {
     }
     
@@ -330,5 +333,56 @@ public class Form : ItemsControl,
     public void Reset()
     {
         
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        SyncConfigToItems();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == LabelAlignProperty ||
+            change.Property == LabelWrappingProperty ||
+            change.Property == FormLayoutProperty)
+        {
+            SyncConfigToItems();
+        }
+    }
+
+    private void SyncConfigToItems()
+    {
+        for (int i = 0; i < ItemCount; i++)
+        {
+            var item = Items[i];
+            if (item is FormItem formItem)
+            {
+                SyncConfigToItem(formItem);
+            }
+        }
+    }
+
+    private void SyncConfigToItem(FormItem formItem)
+    {
+        if (!formItem.IsSet(FormItem.LabelWrappingProperty))
+        {
+            formItem.SetCurrentValue(FormItem.LabelWrappingProperty, LabelWrapping);
+        }
+
+        if (!formItem.IsSet(FormItem.LabelAlignProperty))
+        {
+            formItem.SetCurrentValue(FormItem.LabelAlignProperty, LabelAlign);
+        }
+        
+        if (FormLayout == FormLayout.Horizontal || FormLayout == FormLayout.Inline)
+        {
+            formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Horizontal);
+        }
+        else
+        {
+            formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Vertical);
+        }
     }
 }

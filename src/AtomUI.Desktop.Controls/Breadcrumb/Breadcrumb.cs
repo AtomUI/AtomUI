@@ -211,15 +211,12 @@ public class Breadcrumb : ItemsControl, IControlSharedTokenResourcesHost, IMotio
         if (change.Property == SeparatorProperty ||
             change.Property == SeparatorTemplateProperty)
         {
-            if (Items.Count > 0)
+            for (int i = 0; i < ItemCount; i++)
             {
-                for (int i = 0; i < ItemCount; i++)
+                var item = Items[i];
+                if (item is BreadcrumbItem breadcrumbItem)
                 {
-                    var item = Items[i];
-                    if (item is BreadcrumbItem breadcrumbItem)
-                    {
-                        ConfigureItemSeparator(breadcrumbItem);
-                    }
+                    ConfigureItemSeparator(breadcrumbItem);
                 }
             }
         }

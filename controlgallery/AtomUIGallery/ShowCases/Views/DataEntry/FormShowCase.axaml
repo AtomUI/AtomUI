@@ -2,19 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Views.FormShowCase"
              xmlns:atom="https://atomui.net"
-             xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem
             Title="Basic usage"
-            Description="Basic Form data control. Includes layout, initial values, validation and submit.">
-            <atom:Form LabelColInfo="8*" WrapperColInfo="16*">
+            Description="Basic Form data control. Includes layout, initial values, validation and submit."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*" 
+                       WrapperColInfo="16*" 
+                       MinWidth="600"
+                       HorizontalAlignment="Left">
                 <atom:FormItem LabelText="Username"
-                               FieldName="username">
+                               FieldName="username"
+                               IsRequired="True">
                     <atom:LineEdit/>
                 </atom:FormItem>
                 <atom:FormItem LabelText="Password"
-                               FieldName="password">
+                               FieldName="password"
+                               IsRequired="True">
                     <atom:LineEdit RevealPassword="False"
                                    PasswordChar="•"
                                    IsEnableRevealButton="True"/>

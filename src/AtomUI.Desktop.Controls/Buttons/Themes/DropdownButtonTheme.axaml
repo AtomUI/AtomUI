@@ -2,11 +2,10 @@
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               xmlns:antdicons="https://atomui.net/icons/antdesign"
-              xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
               TargetType="{x:Type atom:DropdownButton}"
               x:Class="AtomUI.Desktop.Controls.Themes.DropdownButtonTheme">
     <ControlTheme.BasedOn>
-        <themes:ButtonTheme TargetType="{x:Type atom:DropdownButton}" />
+        <atom:ButtonTheme TargetType="{x:Type atom:DropdownButton}" />
     </ControlTheme.BasedOn>
 
     <Style Selector="^:is(atom|DropdownButton)">

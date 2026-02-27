@@ -5,11 +5,54 @@
     <ControlTheme x:Key="{x:Type atom:FormItem}" TargetType="atom:FormItem">
         <Setter Property="Template">
             <ControlTemplate>
-               <Grid Name="{x:Static atom:FormItemThemeConstants.RootLayoutPart}">
-                   <ContentPresenter Name="{x:Static atom:FormItemThemeConstants.LabelPart}"/>
-                   <StackPanel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}"/>
-               </Grid>
+                <Grid Name="{x:Static atom:FormItemThemeConstants.RootLayoutPart}">
+                    <StackPanel Name="{x:Static atom:FormItemThemeConstants.LabelLayoutPart}"
+                               VerticalAlignment="Top"
+                               Height="{Binding #PART_Children.Bounds.Height}"
+                               Orientation="Horizontal"
+                               HorizontalAlignment="Right">
+                        <TextBlock Text="*" Name="{x:Static atom:FormItemThemeConstants.DefaultRequireMarkPart}"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{TemplateBinding IsRequireMarkVisible}"/>
+                        <TextBlock Name="{x:Static atom:FormItemThemeConstants.LabelPart}"
+                                   Text="{TemplateBinding LabelText}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text=":" Name="{x:Static atom:FormItemThemeConstants.ColonPart}"
+                                   IsVisible="{TemplateBinding IsColonVisible}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Panel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}">
+                        <StackPanel Name="PART_Children"
+                                    Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}" />
+                        <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
+                                   VerticalAlignment="Bottom" />
+                    </Panel>
+                </Grid>
             </ControlTemplate>
         </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
+
+        <Style Selector="^[ValidateStatus=Error]">
+            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorText}}"/>
+            </Style>
+        </Style>
+
+        <Style Selector="^[ValidateStatus=Warning]">
+            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningText}}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^ /template/ TextBlock#PART_Colon">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:FormTokenKey.LabelColonMargin}}"/>
+        </Style>
+        
+        <Style Selector="^ /template/ TextBlock#PART_DefaultRequireMark">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:FormTokenKey.LabelRequiredMarkColor}}"/>
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:FormTokenKey.LabelRequiredMarkMargin}}"/>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

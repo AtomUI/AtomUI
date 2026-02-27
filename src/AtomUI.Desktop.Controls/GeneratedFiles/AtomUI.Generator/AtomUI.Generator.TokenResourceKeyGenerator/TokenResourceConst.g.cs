@@ -417,6 +417,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey LabelFontSize = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelFontSize");
         public static readonly TokenResourceKey LabelHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelHeight");
         public static readonly TokenResourceKey LabelRequiredMarkColor = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelRequiredMarkColor");
+        public static readonly TokenResourceKey LabelRequiredMarkMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelRequiredMarkMargin");
         public static readonly TokenResourceKey VerticalLabelMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Form.VerticalLabelMargin");
         public static readonly TokenResourceKey VerticalLabelPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Form.VerticalLabelPadding");
     }

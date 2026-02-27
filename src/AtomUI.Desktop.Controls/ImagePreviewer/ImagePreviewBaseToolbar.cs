@@ -6,6 +6,22 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
+internal enum ImagePreviewToolbarSource
+{
+    TitleBar,
+    Floating
+}
+
+internal class ImagePreviewToolbarRequestEventArgs : RoutedEventArgs
+{
+    public ImagePreviewToolbarSource ToolbarSource { get; }
+
+    public ImagePreviewToolbarRequestEventArgs(ImagePreviewToolbarSource source)
+    {
+        ToolbarSource = source;
+    }
+}
+
 internal class ImagePreviewBaseToolbar : TemplatedControl
 {
     public static readonly DirectProperty<ImagePreviewBaseToolbar, int> CurrentIndexProperty =
@@ -94,76 +110,76 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
 
     #region 公共事件定义
 
-    public static RoutedEvent<RoutedEventArgs> HorizontalFlipRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(HorizontalFlipRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> HorizontalFlipRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(HorizontalFlipRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> VerticalFlipRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(VerticalFlipRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> VerticalFlipRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(VerticalFlipRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> ScaleUpRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(ScaleUpRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleUpRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(ScaleUpRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> ScaleDownRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(ScaleDownRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleDownRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(ScaleDownRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> PreviousRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(PreviousRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> PreviousRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(PreviousRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> NextRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(NextRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> NextRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(NextRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> RotateLeftRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(RotateLeftRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateLeftRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(RotateLeftRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<RoutedEventArgs> RotateRightRequestEvent =
-        RoutedEvent.Register<ImagePreviewBaseToolbar, RoutedEventArgs>(nameof(RotateRightRequest), RoutingStrategies.Bubble);
+    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateRightRequestEvent =
+        RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(RotateRightRequest), RoutingStrategies.Bubble);
     
     public static RoutedEvent<ImageFitToWindowEventArgs> FitToWindowRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImageFitToWindowEventArgs>(nameof(FitToWindowRequest), RoutingStrategies.Bubble);
     
-    public event EventHandler<RoutedEventArgs>? HorizontalFlipRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? HorizontalFlipRequest
     {
         add => AddHandler(HorizontalFlipRequestEvent, value);
         remove => RemoveHandler(HorizontalFlipRequestEvent, value);
     }
 
-    public event EventHandler<RoutedEventArgs>? VerticalFlipRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? VerticalFlipRequest
     {
         add => AddHandler(VerticalFlipRequestEvent, value);
         remove => RemoveHandler(VerticalFlipRequestEvent, value);
     }
 
-    public event EventHandler<RoutedEventArgs>? ScaleUpRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? ScaleUpRequest
     {
         add => AddHandler(ScaleUpRequestEvent, value);
         remove => RemoveHandler(ScaleUpRequestEvent, value);
     }
 
-    public event EventHandler<RoutedEventArgs>? ScaleDownRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? ScaleDownRequest
     {
         add => AddHandler(ScaleDownRequestEvent, value);
         remove => RemoveHandler(ScaleDownRequestEvent, value);
     }
     
-    public event EventHandler<RoutedEventArgs>? PreviousRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? PreviousRequest
     {
         add => AddHandler(PreviousRequestEvent, value);
         remove => RemoveHandler(PreviousRequestEvent, value);
     }
 
-    public event EventHandler<RoutedEventArgs>? NextRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? NextRequest
     {
         add => AddHandler(NextRequestEvent, value);
         remove => RemoveHandler(NextRequestEvent, value);
     }
 
-    public event EventHandler<RoutedEventArgs>? RotateLeftRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? RotateLeftRequest
     {
         add => AddHandler(RotateLeftRequestEvent, value);
         remove => RemoveHandler(RotateLeftRequestEvent, value);
     }
 
-    public event EventHandler<RoutedEventArgs>? RotateRightRequest
+    public event EventHandler<ImagePreviewToolbarRequestEventArgs>? RotateRightRequest
     {
         add => AddHandler(RotateRightRequestEvent, value);
         remove => RemoveHandler(RotateRightRequestEvent, value);
@@ -185,6 +201,8 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
     private IconButton? _rotateLeftButton;
     private IconButton? _rotateRightButton;
     private ToggleIconButton? _fitToWindowButton;
+
+    protected virtual ImagePreviewToolbarSource ToolbarSource => ImagePreviewToolbarSource.Floating;
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -251,35 +269,35 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
     {
         if (sender == _horizontalFlipButton)
         {
-            RaiseEvent(new RoutedEventArgs(HorizontalFlipRequestEvent));
+            RaiseRequestEvent(HorizontalFlipRequestEvent);
         }
         else if (sender == _verticalFlipButton)
         {
-            RaiseEvent(new RoutedEventArgs(VerticalFlipRequestEvent));
+            RaiseRequestEvent(VerticalFlipRequestEvent);
         }
         else if (sender == _scaleUpButton)
         {
-            RaiseEvent(new RoutedEventArgs(ScaleUpRequestEvent));
+            RaiseRequestEvent(ScaleUpRequestEvent);
         }
         else if (sender == _scaleDownButton)
         {
-            RaiseEvent(new RoutedEventArgs(ScaleDownRequestEvent));
+            RaiseRequestEvent(ScaleDownRequestEvent);
         }
         else if (sender == _previousButton)
         {
-            RaiseEvent(new RoutedEventArgs(PreviousRequestEvent));
+            RaiseRequestEvent(PreviousRequestEvent);
         }
         else if (sender == _nextButton)
         {
-            RaiseEvent(new RoutedEventArgs(NextRequestEvent));
+            RaiseRequestEvent(NextRequestEvent);
         }
         else if (sender == _rotateLeftButton)
         {
-            RaiseEvent(new RoutedEventArgs(RotateLeftRequestEvent));
+            RaiseRequestEvent(RotateLeftRequestEvent);
         }
         else if (sender == _rotateRightButton)
         {
-            RaiseEvent(new RoutedEventArgs(RotateRightRequestEvent));
+            RaiseRequestEvent(RotateRightRequestEvent);
         }
         else if (sender == _fitToWindowButton)
         {
@@ -288,5 +306,13 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
                 RoutedEvent = FitToWindowRequestEvent
             });
         }
+    }
+
+    private void RaiseRequestEvent(RoutedEvent<ImagePreviewToolbarRequestEventArgs> routedEvent)
+    {
+        RaiseEvent(new ImagePreviewToolbarRequestEventArgs(ToolbarSource)
+        {
+            RoutedEvent = routedEvent
+        });
     }
 }

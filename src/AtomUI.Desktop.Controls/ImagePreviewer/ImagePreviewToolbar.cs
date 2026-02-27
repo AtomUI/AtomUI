@@ -4,6 +4,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ImagePreviewToolbar : ImagePreviewBaseToolbar
 {
+    protected override ImagePreviewToolbarSource ToolbarSource => ImagePreviewToolbarSource.TitleBar;
+
     #region 内部属性定义
 
     internal static readonly DirectProperty<ImagePreviewToolbar, bool> IsLastImageProperty =

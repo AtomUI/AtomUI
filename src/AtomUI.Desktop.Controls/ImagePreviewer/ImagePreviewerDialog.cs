@@ -7,6 +7,8 @@ using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -20,6 +22,33 @@ internal class ImagePreviewerDialog : Window,
                                       IMotionAwareControl,
                                       IManagedDialogPositionerDialog
 {
+    private enum ImageTransformRetentionMode
+    {
+        Reset,
+        Retain
+    }
+
+    private struct ImageSwitchTransformPolicy
+    {
+        public ImageTransformRetentionMode RetentionMode;
+        public bool SuppressResetAnimation;
+        public double RetainedScaleX;
+        public double RetainedScaleY;
+        public double RetainedRotate;
+
+        public static ImageSwitchTransformPolicy CreateDefault()
+        {
+            return new ImageSwitchTransformPolicy
+            {
+                RetentionMode = ImageTransformRetentionMode.Reset,
+                SuppressResetAnimation = false,
+                RetainedScaleX = 1.0,
+                RetainedScaleY = 1.0,
+                RetainedRotate = 0.0
+            };
+        }
+    }
+
     #region 公共属性定义
     public static readonly StyledProperty<IList<PreviewImageSource>?> SourcesProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, IList<PreviewImageSource>?>(nameof(Sources));
@@ -206,6 +235,12 @@ internal class ImagePreviewerDialog : Window,
             nameof(IsImageFitToWindow),
             o => o.IsImageFitToWindow,
             (o, v) => o.IsImageFitToWindow = v);
+
+    internal static readonly DirectProperty<ImagePreviewerDialog, bool> SuppressTransformAnimationProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerDialog, bool>(
+            nameof(SuppressTransformAnimation),
+            o => o.SuppressTransformAnimation,
+            (o, v) => o.SuppressTransformAnimation = v);
     
     private PreviewImageSource? _currentImage;
 
@@ -294,6 +329,14 @@ internal class ImagePreviewerDialog : Window,
         get => _isImageFitToWindow;
         set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
     }
+
+    private bool _suppressTransformAnimation;
+
+    internal bool SuppressTransformAnimation
+    {
+        get => _suppressTransformAnimation;
+        set => SetAndRaise(SuppressTransformAnimationProperty, ref _suppressTransformAnimation, value);
+    }
     
     #endregion
     
@@ -304,30 +347,32 @@ internal class ImagePreviewerDialog : Window,
     private bool _needsUpdate;
     private readonly ManagedDialogPositioner _positioner;
     private AbstractImagePreviewer _imagePreviewer;
+    private ImageViewer? _imageViewer;
     private PixelPoint _latestDialogPosition;
     private bool _firstSizeCalculated;
+    private ImageSwitchTransformPolicy _switchTransformPolicy = ImageSwitchTransformPolicy.CreateDefault();
 
     static ImagePreviewerDialog()
     {
         AffectsRender<ImagePreviewerDialog>(CurrentImageProperty);
         ImagePreviewBaseToolbar.HorizontalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleHorizontalFlipRequest();
+            dialog.HandleHorizontalFlipRequest(args);
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.VerticalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleVerticalFlipRequest();
+            dialog.HandleVerticalFlipRequest(args);
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.RotateLeftRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleRotateLeftRequest();
+            dialog.HandleRotateLeftRequest(args);
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.RotateRightRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleRotateRightRequest();
+            dialog.HandleRotateRightRequest(args);
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.ScaleDownRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
@@ -347,22 +392,34 @@ internal class ImagePreviewerDialog : Window,
         });
         ImagePreviewBaseToolbar.PreviousRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandlePreviousRequest();
+            dialog.HandlePreviousRequest(useTransformPolicy: true);
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleNextImageRequest();
+            dialog.HandleNextImageRequest(useTransformPolicy: true);
             args.Handled = true;
         });
         ImageViewer.PreviousRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandlePreviousRequest();
+            dialog.HandlePreviousRequest(useTransformPolicy: true);
             args.Handled = true;
         });
         ImageViewer.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleNextImageRequest();
+            dialog.HandleNextImageRequest(useTransformPolicy: true);
+            args.Handled = true;
+        });
+        ImageViewer.ScaleDownRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+        {
+            var viewer = args.Source as ImageViewer;
+            dialog.HandleScaleDownRequest(viewer?.WheelScaleStep);
+            args.Handled = true;
+        });
+        ImageViewer.ScaleUpRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
+        {
+            var viewer = args.Source as ImageViewer;
+            dialog.HandleScaleUpRequest(viewer?.WheelScaleStep);
             args.Handled = true;
         });
     }
@@ -372,6 +429,7 @@ internal class ImagePreviewerDialog : Window,
         ParentTopLevel  = parent;
         _positioner     = new ManagedDialogPositioner(this);
         _imagePreviewer = imagePreviewer;
+        AddHandler(KeyDownEvent, HandleDialogKeyDown, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
 #if DEBUG
         this.AttachDevTools();
 #endif
@@ -527,6 +585,7 @@ internal class ImagePreviewerDialog : Window,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        _imageViewer = e.NameScope.Find<ImageViewer>(ImagePreviewerThemeConstants.ImageViewerPart);
         HandleCurrentIndexChanged();
     }
 
@@ -550,30 +609,73 @@ internal class ImagePreviewerDialog : Window,
         return ClientSize;
     }
     
-    private void HandleHorizontalFlipRequest()
+    private void UpdateSwitchTransformPolicy(ImagePreviewToolbarSource source)
     {
+        if (source == ImagePreviewToolbarSource.TitleBar)
+        {
+            _switchTransformPolicy.RetentionMode = ImageTransformRetentionMode.Retain;
+            _switchTransformPolicy.SuppressResetAnimation = false;
+            return;
+        }
+
+        _switchTransformPolicy.RetentionMode = ImageTransformRetentionMode.Reset;
+        _switchTransformPolicy.SuppressResetAnimation = true;
+    }
+
+    private void CaptureRetainedFlipRotateState()
+    {
+        _switchTransformPolicy.RetainedScaleX = ImageScaleX > 0.0 ? 1.0 : -1.0;
+        _switchTransformPolicy.RetainedScaleY = ImageScaleY > 0.0 ? 1.0 : -1.0;
+        _switchTransformPolicy.RetainedRotate = ImageRotate;
+    }
+
+    private bool ShouldRetainFlipRotateOnSwitch => _switchTransformPolicy.RetentionMode == ImageTransformRetentionMode.Retain;
+
+    private void HandleHorizontalFlipRequest(ImagePreviewToolbarRequestEventArgs args)
+    {
+        UpdateSwitchTransformPolicy(args.ToolbarSource);
         SetCurrentValue(ImageScaleXProperty, -1 * ImageScaleX);
+        if (ShouldRetainFlipRotateOnSwitch)
+        {
+            CaptureRetainedFlipRotateState();
+        }
     }
     
-    private void HandleVerticalFlipRequest()
+    private void HandleVerticalFlipRequest(ImagePreviewToolbarRequestEventArgs args)
     {
+        UpdateSwitchTransformPolicy(args.ToolbarSource);
         SetCurrentValue(ImageScaleYProperty, -1 * ImageScaleY);
+        if (ShouldRetainFlipRotateOnSwitch)
+        {
+            CaptureRetainedFlipRotateState();
+        }
     }
     
-    private void HandleRotateLeftRequest()
+    private void HandleRotateLeftRequest(ImagePreviewToolbarRequestEventArgs args)
     {
+        UpdateSwitchTransformPolicy(args.ToolbarSource);
         SetCurrentValue(ImageRotateProperty, ImageRotate - MathUtilities.Deg2Rad(90));
+        if (ShouldRetainFlipRotateOnSwitch)
+        {
+            CaptureRetainedFlipRotateState();
+        }
     }
     
-    private void HandleRotateRightRequest()
+    private void HandleRotateRightRequest(ImagePreviewToolbarRequestEventArgs args)
     {
+        UpdateSwitchTransformPolicy(args.ToolbarSource);
         SetCurrentValue(ImageRotateProperty, ImageRotate + MathUtilities.Deg2Rad(90));
+        if (ShouldRetainFlipRotateOnSwitch)
+        {
+            CaptureRetainedFlipRotateState();
+        }
     }
     
-    private void HandleScaleDownRequest()
+    private void HandleScaleDownRequest(double? scaleStep = null)
     {
-        var scaleX = ImageScaleX * (1 / (1 + ScaleStep));
-        var scaleY = ImageScaleY * (1 / (1 + ScaleStep));
+        var step = ResolveScaleStep(scaleStep);
+        var scaleX = ImageScaleX * (1 / (1 + step));
+        var scaleY = ImageScaleY * (1 / (1 + step));
         if (MathUtilities.LessThan(Math.Abs(scaleX), MinScale))
         {
             if (scaleX > 0)
@@ -601,10 +703,11 @@ internal class ImagePreviewerDialog : Window,
         SetCurrentValue(ImageScaleChangedProperty, true);
     }
     
-    private void HandleScaleUpRequest()
+    private void HandleScaleUpRequest(double? scaleStep = null)
     {
-        var scaleX = ImageScaleX * (1 + ScaleStep);
-        var scaleY = ImageScaleY * (1 + ScaleStep);
+        var step = ResolveScaleStep(scaleStep);
+        var scaleX = ImageScaleX * (1 + step);
+        var scaleY = ImageScaleY * (1 + step);
 
         if (MathUtilities.GreaterThan(Math.Abs(scaleX), MaxScale))
         {
@@ -633,6 +736,48 @@ internal class ImagePreviewerDialog : Window,
         SetCurrentValue(ImageScaleChangedProperty, true);
     }
 
+    private double ResolveScaleStep(double? scaleStep)
+    {
+        var step = scaleStep ?? ScaleStep;
+        return MathUtilities.LessThanOrClose(step, 0.0) ? 0.1 : step;
+    }
+
+    private void HandleImageSwitchKeyDown(KeyEventArgs e)
+    {
+        var imageCount = Sources?.Count ?? Count;
+        if (imageCount <= 1)
+        {
+            return;
+        }
+
+        if (e.Key == Key.Right)
+        {
+            e.Handled = true;
+            if (CurrentIndex < imageCount - 1)
+            {
+                HandleNextImageRequest(useTransformPolicy: true);
+            }
+        }
+        else if (e.Key == Key.Left)
+        {
+            e.Handled = true;
+            if (CurrentIndex > 0)
+            {
+                HandlePreviousRequest(useTransformPolicy: true);
+            }
+        }
+    }
+
+    private void HandleDialogKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled)
+        {
+            return;
+        }
+
+        HandleImageSwitchKeyDown(e);
+    }
+
     private void HandleFitToWindowRequest(bool isFitToWindow)
     {
         SetCurrentValue(ImageScaleXProperty, ImageScaleX > 0.0 ? 1.0 : -1.0);
@@ -640,23 +785,81 @@ internal class ImagePreviewerDialog : Window,
         SetCurrentValue(ImageScaleChangedProperty, false);
         SetCurrentValue(IsImageFitToWindowProperty, isFitToWindow);
     }
-    
-    private void HandleNextImageRequest()
+
+    private void EnsureDialogKeyboardFocus()
     {
-        SetCurrentValue(IsImageFitToWindowProperty, true);
-        SetCurrentValue(ImageScaleChangedProperty, false);
-        SetCurrentValue(ImageScaleXProperty, 1.0);
-        SetCurrentValue(ImageScaleYProperty, 1.0);
-        SetCurrentValue(CurrentIndexProperty, Math.Min(CurrentIndex + 1, Count - 1));
+        if (_imageViewer?.Focus() != true)
+        {
+            Focus();
+        }
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_imageViewer?.Focus() == true)
+            {
+                return;
+            }
+            
+            Focus();
+        }, DispatcherPriority.Background);
     }
     
-    private void HandlePreviousRequest()
+    private void ResetImageStateBeforeSwitch(bool useTransformPolicy)
     {
         SetCurrentValue(IsImageFitToWindowProperty, true);
         SetCurrentValue(ImageScaleChangedProperty, false);
+
+        if (useTransformPolicy && ShouldRetainFlipRotateOnSwitch)
+        {
+            SetCurrentValue(ImageScaleXProperty, _switchTransformPolicy.RetainedScaleX);
+            SetCurrentValue(ImageScaleYProperty, _switchTransformPolicy.RetainedScaleY);
+            SetCurrentValue(ImageRotateProperty, _switchTransformPolicy.RetainedRotate);
+            return;
+        }
+
         SetCurrentValue(ImageScaleXProperty, 1.0);
         SetCurrentValue(ImageScaleYProperty, 1.0);
-        SetCurrentValue(CurrentIndexProperty, Math.Max(CurrentIndex - 1, 0));
+        if (useTransformPolicy)
+        {
+            SetCurrentValue(ImageRotateProperty, 0.0);
+        }
+    }
+
+    private void SwitchImage(int offset, bool useTransformPolicy)
+    {
+        if (Count <= 0 || offset == 0)
+        {
+            return;
+        }
+
+        var suppressTransformAnimation = useTransformPolicy && _switchTransformPolicy.SuppressResetAnimation;
+        if (suppressTransformAnimation)
+        {
+            SetCurrentValue(SuppressTransformAnimationProperty, true);
+        }
+
+        ResetImageStateBeforeSwitch(useTransformPolicy);
+        var targetIndex = offset > 0
+            ? Math.Min(CurrentIndex + offset, Count - 1)
+            : Math.Max(CurrentIndex + offset, 0);
+        SetCurrentValue(CurrentIndexProperty, targetIndex);
+
+        if (suppressTransformAnimation)
+        {
+            SetCurrentValue(SuppressTransformAnimationProperty, false);
+        }
+
+        EnsureDialogKeyboardFocus();
+    }
+
+    private void HandleNextImageRequest(bool useTransformPolicy = false)
+    {
+        SwitchImage(1, useTransformPolicy);
+    }
+    
+    private void HandlePreviousRequest(bool useTransformPolicy = false)
+    {
+        SwitchImage(-1, useTransformPolicy);
     }
     
     protected override WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar, CompositeDisposable disposables)

@@ -68,6 +68,7 @@
                                                         ImageRotate="{TemplateBinding ImageRotate}"
                                                         IsImageMovable="{TemplateBinding IsImageMovable}"
                                                         IsImageFitToWindow="{TemplateBinding IsImageFitToWindow}"
+                                                        SuppressTransformAnimation="{TemplateBinding SuppressTransformAnimation}"
                                                         ImageScaleChanged="{TemplateBinding ImageScaleChanged}" />
                                                 </Border>
                                             </Panel>

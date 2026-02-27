@@ -25,6 +25,7 @@ public class DataGridCheckBoxColumn : DataGridBoundColumn
     public DataGridCheckBoxColumn()
     {
         BindingTarget = CheckBox.IsCheckedProperty;
+        IsReadOnly    = false;
     }
 
     /// <summary>

@@ -82,6 +82,12 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     public static RoutedEvent<RoutedEventArgs> NextRequestEvent =
         RoutedEvent.Register<ImageViewer, RoutedEventArgs>(nameof(NextRequest), RoutingStrategies.Bubble);
     
+    public static RoutedEvent<RoutedEventArgs> ScaleUpRequestEvent =
+        RoutedEvent.Register<ImageViewer, RoutedEventArgs>(nameof(ScaleUpRequest), RoutingStrategies.Bubble);
+    
+    public static RoutedEvent<RoutedEventArgs> ScaleDownRequestEvent =
+        RoutedEvent.Register<ImageViewer, RoutedEventArgs>(nameof(ScaleDownRequest), RoutingStrategies.Bubble);
+    
     public event EventHandler<RoutedEventArgs>? PreviousRequest
     {
         add => AddHandler(PreviousRequestEvent, value);
@@ -92,6 +98,18 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     {
         add => AddHandler(NextRequestEvent, value);
         remove => RemoveHandler(NextRequestEvent, value);
+    }
+    
+    public event EventHandler<RoutedEventArgs>? ScaleUpRequest
+    {
+        add => AddHandler(ScaleUpRequestEvent, value);
+        remove => RemoveHandler(ScaleUpRequestEvent, value);
+    }
+    
+    public event EventHandler<RoutedEventArgs>? ScaleDownRequest
+    {
+        add => AddHandler(ScaleDownRequestEvent, value);
+        remove => RemoveHandler(ScaleDownRequestEvent, value);
     }
     
     #endregion
@@ -171,6 +189,12 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
             nameof(IsImageFitToWindow),
             o => o.IsImageFitToWindow,
             (o, v) => o.IsImageFitToWindow = v);
+
+    internal static readonly DirectProperty<ImageViewer, bool> SuppressTransformAnimationProperty =
+        AvaloniaProperty.RegisterDirect<ImageViewer, bool>(
+            nameof(SuppressTransformAnimation),
+            o => o.SuppressTransformAnimation,
+            (o, v) => o.SuppressTransformAnimation = v);
     
     private PreviewImageSource? _currentImage;
 
@@ -273,6 +297,14 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         get => _isImageFitToWindow;
         set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
     }
+
+    private bool _suppressTransformAnimation;
+
+    internal bool SuppressTransformAnimation
+    {
+        get => _suppressTransformAnimation;
+        set => SetAndRaise(SuppressTransformAnimationProperty, ref _suppressTransformAnimation, value);
+    }
     
     #endregion
     
@@ -284,9 +316,17 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     private Point _delta;
     private ImagePreviewNavButton? _previousButton;
     private ImagePreviewNavButton? _nextButton;
+    private double _wheelScaleStep = 0.1;
+
+    internal double WheelScaleStep
+    {
+        get => _wheelScaleStep;
+        private set => _wheelScaleStep = value;
+    }
     
     static ImageViewer()
     {
+        FocusableProperty.OverrideDefaultValue<ImageViewer>(true);
         AffectsArrange<ImageViewer>(ImageTranslateXProperty, ImageTranslateYProperty, CurrentIndexProperty);
     }
 
@@ -317,6 +357,8 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         {
             RaiseEvent(new RoutedEventArgs(NextRequestEvent));
         }
+
+        Focus();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -325,7 +367,8 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         
         if (IsLoaded)
         {
-            if (change.Property == IsMotionEnabledProperty)
+            if (change.Property == IsMotionEnabledProperty ||
+                change.Property == SuppressTransformAnimationProperty)
             {
                 ConfigureTransitions(true);
             }
@@ -406,6 +449,12 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
     
     private void ConfigureTransitions(bool force)
     {
+        if (SuppressTransformAnimation)
+        {
+            Transitions = null;
+            return;
+        }
+
         if (IsMotionEnabled)
         {
             if (force || Transitions == null)
@@ -453,6 +502,35 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
                 HandleDragging(e.GetPosition(this), delta);
             }
         }
+    }
+    
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+        
+        if (_image == null || MathUtilities.AreClose(e.Delta.Y, 0.0))
+        {
+            return;
+        }
+        
+        // Map wheel delta to dynamic zoom step: touchpad tiny deltas become smooth small steps.
+        WheelScaleStep = Math.Clamp(Math.Abs(e.Delta.Y) * 0.08, 0.005, 0.12);
+        if (e.Delta.Y > 0.0)
+        {
+            if (IsScaleUpEnabled)
+            {
+                RaiseEvent(new RoutedEventArgs(ScaleUpRequestEvent));
+            }
+        }
+        else
+        {
+            if (IsScaleDownEnabled)
+            {
+                RaiseEvent(new RoutedEventArgs(ScaleDownRequestEvent));
+            }
+        }
+
+        e.Handled = true;
     }
     
     private void HandleDragging(Point position, Point delta)

@@ -92,7 +92,7 @@ public class Form : ItemsControl,
         AvaloniaProperty.Register<Form, bool>(nameof(ScrollToFirstError));
     
     public static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
-        AvaloniaProperty.Register<Form, FormValidateTrigger>(nameof(ValidateTrigger), FormValidateTrigger.OnSubmit);
+        AvaloniaProperty.Register<Form, FormValidateTrigger>(nameof(ValidateTrigger), FormValidateTrigger.OnChanged);
     
     public static readonly StyledProperty<MediaBreakGridLength?> LabelColInfoProperty =
         AvaloniaProperty.Register<Form, MediaBreakGridLength?>(nameof(LabelColInfo));
@@ -300,6 +300,7 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, formItem, FormItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowColonProperty, formItem, FormItem.IsShowColonProperty));
             disposables.Add(BindUtils.RelayBind(this, RequiredMarkProperty, formItem, FormItem.RequiredMarkProperty));
+            disposables.Add(BindUtils.RelayBind(this, ValidateTriggerProperty, formItem, FormItem.ValidateTriggerProperty));
             
             PrepareFormItem(formItem, item, index, disposables);
             

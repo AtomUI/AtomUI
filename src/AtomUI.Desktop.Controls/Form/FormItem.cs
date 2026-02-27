@@ -1,5 +1,6 @@
-using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Reactive.Disposables;
+using System.Text;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
@@ -10,8 +11,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Media;
 using Avalonia.Metadata;
-
-using ControlList = Avalonia.Controls.Controls;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -84,14 +84,11 @@ public class FormItem : TemplatedControl,
     public static readonly StyledProperty<bool> IsRequiredProperty =
         AvaloniaProperty.Register<FormItem, bool>(nameof(IsRequired));
     
-    public static readonly StyledProperty<IList<IFormValidator>?> ValidatorProperty =
-        AvaloniaProperty.Register<FormItem, IList<IFormValidator>?>(nameof(Validator));
+    public static readonly StyledProperty<IList<IFormValidator>?> ValidatorsProperty =
+        AvaloniaProperty.Register<FormItem, IList<IFormValidator>?>(nameof(Validators));
     
     public static readonly StyledProperty<string?> TooltipProperty =
         AvaloniaProperty.Register<FormItem, string?>(nameof(Tooltip));
-    
-    public static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
-        Form.ValidateTriggerProperty.AddOwner<FormItem>();
     
     public static readonly StyledProperty<TimeSpan?> ValidateDebounceProperty =
         AvaloniaProperty.Register<FormItem, TimeSpan?>(nameof(ValidateDebounce));
@@ -107,6 +104,9 @@ public class FormItem : TemplatedControl,
     
     public static readonly StyledProperty<double> ChildrenSpacingProperty =
         AvaloniaProperty.Register<FormItem, double>(nameof(ChildrenSpacing));
+    
+    public static readonly StyledProperty<Control?> ContentProperty =
+        AvaloniaProperty.Register<FormItem, Control?>(nameof(Content));
     
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
@@ -193,22 +193,16 @@ public class FormItem : TemplatedControl,
         set => SetValue(IsRequiredProperty, value);
     }
     
-    public IList<IFormValidator>? Validator
+    public IList<IFormValidator>? Validators
     {
-        get => GetValue(ValidatorProperty);
-        set => SetValue(ValidatorProperty, value);
+        get => GetValue(ValidatorsProperty);
+        set => SetValue(ValidatorsProperty, value);
     }
     
     public string? Tooltip
     {
         get => GetValue(TooltipProperty);
         set => SetValue(TooltipProperty, value);
-    }
-    
-    public FormValidateTrigger ValidateTrigger
-    {
-        get => GetValue(ValidateTriggerProperty);
-        set => SetValue(ValidateTriggerProperty, value);
     }
     
     public TimeSpan? ValidateDebounce
@@ -242,7 +236,11 @@ public class FormItem : TemplatedControl,
     }
     
     [Content]
-    public ControlList Children { get; } = new();
+    public Control? Content
+    {
+        get => GetValue(ContentProperty);
+        set => SetValue(ContentProperty, value);
+    }
     #endregion
 
     #region 内部属性定义
@@ -272,6 +270,15 @@ public class FormItem : TemplatedControl,
     
     internal static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
         Form.RequiredMarkProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
+        Form.ValidateTriggerProperty.AddOwner<FormItem>();
+    
+    internal static readonly DirectProperty<FormItem, string?> ValidateMsgProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, string?>(
+            nameof(ValidateMsg),
+            o => o.ValidateMsg,
+            (o, v) => o.ValidateMsg = v);
     
     internal bool IsShowColon
     {
@@ -313,19 +320,31 @@ public class FormItem : TemplatedControl,
         set => SetAndRaise(IsRequireMarkVisibleProperty, ref _isRequireMarkVisible, value);
     }
     
-    public FormRequiredMark RequiredMark
+    internal FormRequiredMark RequiredMark
     {
         get => GetValue(RequiredMarkProperty);
         set => SetValue(RequiredMarkProperty, value);
     }
     
+    internal FormValidateTrigger ValidateTrigger
+    {
+        get => GetValue(ValidateTriggerProperty);
+        set => SetValue(ValidateTriggerProperty, value);
+    }
+    
+    private string? _validateMsg;
+
+    internal string? ValidateMsg
+    {
+        get => _validateMsg;
+        set => SetAndRaise(ValidateMsgProperty, ref _validateMsg, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
-    private readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     #endregion
 
     private Grid? _rootLayout;
-    private StackPanel? _childrenContainer;
     private Panel? _childrenLayout;
     private Panel? _labelLayout;
     private MediaBreakPoint? _breakPoint;
@@ -338,68 +357,135 @@ public class FormItem : TemplatedControl,
     public FormItem()
     {
         this.RegisterResources();
-        LogicalChildren.CollectionChanged += HandleCollectionChanged;
-        Children.CollectionChanged        += HandleChildrenChanged;
     }
-    
-    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+
+    protected virtual void NotifyContentAdded(AvaloniaPropertyChangedEventArgs change)
     {
-        if (e.OldItems != null)
+        if (change.OldValue is IFormItemAware oldFormItemAware)
         {
-            if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems.Count > 0)
+            oldFormItemAware.ValueChanged -= HandleContentValueChanged;
+        }
+        
+        if (change.NewValue is IFormItemAware newFormItemAware)
+        {
+            newFormItemAware.ValueChanged += HandleContentValueChanged;
+        }
+    }
+
+    private void HandleContentValueChanged(object? sender, EventArgs e)
+    {
+        if (ValidateTrigger == FormValidateTrigger.OnChanged)
+        {
+            Dispatcher.UIThread.InvokeAsync(async () => ValidateValueAsync());
+        }
+    }
+
+    private async Task ValidateValueAsync()
+    {
+        if (Content == null || Validators == null || Validators.Count == 0)
+        {
+            return;
+        }
+        ValidateStatus = FormValidateStatus.Validating;
+        var formItemAware     = Content as IFormItemAware;
+        Debug.Assert(formItemAware != null);
+        var value             = formItemAware.GetFormValue();
+        var warningMsgBuilder = new StringBuilder();
+        var hasWarning        = false;
+        
+        if (ValidateStrategy == FormValidateStrategy.Parallel || ValidateStrategy == FormValidateStrategy.Sequential)
+        {
+            var hasError        = false;
+            var tasks           = new Dictionary<Task<FormValidateResult>, IFormValidator>();
+            var errorMsgBuilder = new StringBuilder();
+            if (ValidateStrategy == FormValidateStrategy.Parallel)
             {
-                foreach (var item in e.OldItems)
+                foreach (var validator in Validators)
                 {
-                    if (item != null)
+                    var task = validator.ValidateAsync(FieldName ?? string.Empty, value);
+                    tasks.Add(task, validator);
+                }
+                await Task.WhenAll(tasks.Keys);
+                foreach (var task in tasks.Keys)
+                {
+                    var result    = await task;
+                    var validator = tasks[task];
+                    if (result == FormValidateResult.Error)
                     {
-                        if (_itemsBindingDisposables.TryGetValue(item, out var disposable))
-                        {
-                            disposable.Dispose();
-                            _itemsBindingDisposables.Remove(item);
-                        }
+                        hasError = true;
+                        errorMsgBuilder.Append(validator.Message);
+                    }
+                    else if (result == FormValidateResult.Warning)
+                    {
+                        hasWarning = true;
+                        warningMsgBuilder.Append(validator.Message);
                     }
                 }
             }
+            else
+            {
+                foreach (var validator in Validators)
+                {
+                    var result = await validator.ValidateAsync(FieldName ?? string.Empty, value);
+                    if (result == FormValidateResult.Error)
+                    {
+                        hasError = true;
+                        errorMsgBuilder.Append(validator.Message);
+                    }
+                    else if (result == FormValidateResult.Warning)
+                    {
+                        hasWarning = true;
+                        warningMsgBuilder.Append(validator.Message);
+                    }
+                }
+            }
+            
+            if (hasError)
+            {
+                ValidateMsg = errorMsgBuilder.ToString();
+                ValidateStatus = FormValidateStatus.Error;
+            }
+            else if (hasWarning)
+            {
+                ValidateMsg = warningMsgBuilder.ToString();
+                ValidateStatus = FormValidateStatus.Warning;
+            }
+            else
+            {
+                ValidateMsg    = null;
+                ValidateStatus = FormValidateStatus.Success;
+            }
         }
-    }
-    
-    protected virtual void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        switch (e.Action)
+        else
         {
-            case NotifyCollectionChangedAction.Add:
-                var newChildren = e.NewItems!.OfType<FormItem>().ToList();
-                _childrenContainer?.Children.InsertRange(e.NewStartingIndex, newChildren);
-                foreach (var child in newChildren)
+            foreach (var validator in Validators)
+            {
+                var result = await validator.ValidateAsync(FieldName ?? string.Empty, value);
+                if (result == FormValidateResult.Error)
                 {
-                    NotifyChildrenAdded(child);
+                    ValidateStatus = FormValidateStatus.Error;
+                    ValidateMsg    = validator.Message;
+                    return;
                 }
-                break;
-
-            case NotifyCollectionChangedAction.Move:
-                _childrenContainer?.Children.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
-                break;
-
-            case NotifyCollectionChangedAction.Remove:
-                _childrenContainer?.Children.RemoveAll(e.OldItems!.OfType<Control>().ToList());
-                break;
-
-            case NotifyCollectionChangedAction.Replace:
-                for (var i = 0; i < e.OldItems!.Count; ++i)
+                if (result == FormValidateResult.Warning)
                 {
-                    var index = i + e.OldStartingIndex;
-                    var child = (Control)e.NewItems![i]!;
-                    _childrenContainer?.Children[index] = child;
+                    hasWarning = true;
+                    warningMsgBuilder.Append(validator.Message);
                 }
-                break;
-
-            case NotifyCollectionChangedAction.Reset:
-                throw new NotSupportedException();
+            }
+            
+            if  (hasWarning)
+            {
+                ValidateMsg = warningMsgBuilder.ToString();
+                ValidateStatus = FormValidateStatus.Warning;
+            }
+            else
+            {
+                ValidateMsg    = null;
+                ValidateStatus = FormValidateStatus.Success;
+            }
         }
-    }
-
-    protected virtual void NotifyChildrenAdded(Control child)
-    {
+        formItemAware.NotifyValidateStatus(ValidateStatus);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -419,24 +505,19 @@ public class FormItem : TemplatedControl,
         {
             ConfigureRequireMarkVisible();
         }
+
+        if (change.Property == ContentProperty)
+        {
+            NotifyContentAdded(change);
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _rootLayout        = e.NameScope.Find<Grid>(FormItemThemeConstants.RootLayoutPart);
-        _childrenContainer = e.NameScope.Find<StackPanel>(FormItemThemeConstants.ChildrenPart);
         _labelLayout       = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
         _childrenLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.ChildrenLayoutPart);
-        
-        foreach (var child in Children)
-        {
-            if (child != null)
-            {
-                _childrenContainer?.Children.Add(child);
-                NotifyChildrenAdded(child);
-            }
-        }
         ConfigureLayout();
         ConfigureRequireMarkVisible();
     }

@@ -134,4 +134,20 @@ public class LineEdit : TextBox
         // 都一样宽
         return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
+    
+    protected override void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
 }

@@ -8,7 +8,7 @@
                 <Grid Name="{x:Static atom:FormItemThemeConstants.RootLayoutPart}">
                     <StackPanel Name="{x:Static atom:FormItemThemeConstants.LabelLayoutPart}"
                                VerticalAlignment="Top"
-                               Height="{Binding #PART_Children.Bounds.Height}"
+                               Height="{Binding #ContentPresenter.Bounds.Height}"
                                Orientation="Horizontal"
                                HorizontalAlignment="Right">
                         <TextBlock Text="*" Name="{x:Static atom:FormItemThemeConstants.DefaultRequireMarkPart}"
@@ -22,10 +22,12 @@
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                     <Panel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}">
-                        <StackPanel Name="PART_Children"
-                                    Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}" />
+                        <ContentPresenter Name="ContentPresenter"
+                                          Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}" 
+                                          Content="{TemplateBinding Content}"/>
                         <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
-                                   VerticalAlignment="Bottom" />
+                                   VerticalAlignment="Bottom" 
+                                   Text="{TemplateBinding ValidateMsg}"/>
                     </Panel>
                 </Grid>
             </ControlTemplate>

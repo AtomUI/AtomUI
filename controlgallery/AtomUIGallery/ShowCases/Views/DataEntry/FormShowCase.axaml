@@ -15,11 +15,21 @@
                 <atom:FormItem LabelText="Username"
                                FieldName="username"
                                IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
                     <atom:LineEdit/>
                 </atom:FormItem>
                 <atom:FormItem LabelText="Password"
                                FieldName="password"
                                IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your password!"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
                     <atom:LineEdit RevealPassword="False"
                                    PasswordChar="•"
                                    IsEnableRevealButton="True"/>

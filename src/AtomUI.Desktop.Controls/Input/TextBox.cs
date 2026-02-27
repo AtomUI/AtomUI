@@ -19,7 +19,8 @@ public class TextBox : AvaloniaTextBox,
                        IControlSharedTokenResourcesHost,
                        IMotionAwareControl,
                        ISizeTypeAware,
-                       ICompactSpaceAware
+                       ICompactSpaceAware,
+                       IFormItemAware
 {
     #region 公共属性定义
 
@@ -105,6 +106,17 @@ public class TextBox : AvaloniaTextBox,
     }
     #endregion
 
+    #region 公共事件定义
+
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    #endregion
+
     #region 内部属性定义
 
     internal static readonly DirectProperty<TextBox, bool> IsEffectiveShowClearButtonProperty =
@@ -183,6 +195,7 @@ public class TextBox : AvaloniaTextBox,
     {
         AffectsArrange<TextBox>(CompactSpaceItemPositionProperty, CompactSpaceOrientationProperty);
         WatermarkProperty.Changed.AddClassHandler<TextBox>((textBox, args) => textBox.SetCurrentValue(PlaceholderTextProperty, args.NewValue));
+        TextChangedEvent.AddClassHandler<TextBox>((textBox, args) => textBox.HandleTextChanged());
     }
 
     public TextBox()
@@ -266,10 +279,7 @@ public class TextBox : AvaloniaTextBox,
         NotifyClearButtonClicked();
     }
     
-    protected virtual void NotifyClearButtonClicked()
-    {
-        Clear();
-    }
+    protected virtual void NotifyClearButtonClicked() => Clear();
 
     protected override void OnTextInput(TextInputEventArgs e)
     {
@@ -305,4 +315,37 @@ public class TextBox : AvaloniaTextBox,
     {
         return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
     }
+
+    #region 实现 FormItem 接口
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    private void HandleTextChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(string? value)
+    {
+        SetCurrentValue(TextProperty, value);
+    }
+
+    protected virtual string? NotifyGetFormValue()
+    {
+        return Text;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(TextProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

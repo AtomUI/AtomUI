@@ -256,8 +256,15 @@ public class DataGridCell : ContentControl
         var handledByChild = e.Handled;
         OwningGrid.NotifyCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
 
+        // If a child control already handled this click (for example, a ToggleButton),
+        // let the child complete its own interaction without DataGrid overriding focus/state.
+        if (handledByChild)
+        {
+            return;
+        }
+
         // If handlers on DataGrid canceled selection explicitly, do not continue.
-        if (!handledByChild && e.Handled)
+        if (e.Handled)
         {
             return;
         }

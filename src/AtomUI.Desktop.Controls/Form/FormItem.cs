@@ -96,8 +96,15 @@ public class FormItem : TemplatedControl,
     public static readonly StyledProperty<FormValidateStrategy> ValidateStrategyProperty =
         AvaloniaProperty.Register<FormItem, FormValidateStrategy>(nameof(ValidateStrategy), FormValidateStrategy.Sequential);
     
-    public static readonly StyledProperty<FormValidateStatus> ValidateStatusProperty =
-        AvaloniaProperty.Register<FormItem, FormValidateStatus>(nameof(ValidateStatus), FormValidateStatus.Default);
+    public static readonly DirectProperty<FormItem, FormValidateStatus> ValidateStatusProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, FormValidateStatus>(
+            nameof(ValidateStatus),
+            o => o.ValidateStatus);
+    
+    public static readonly DirectProperty<FormItem, FormValidateResult> ValidateResultProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, FormValidateResult>(
+            nameof(ValidateResult),
+            o => o.ValidateResult);
     
     public static readonly StyledProperty<FormItemLayout> LayoutProperty =
         AvaloniaProperty.Register<FormItem, FormItemLayout>(nameof(Layout), FormItemLayout.Horizontal);
@@ -217,10 +224,20 @@ public class FormItem : TemplatedControl,
         set => SetValue(ValidateStrategyProperty, value);
     }
     
-    public FormValidateStatus ValidateStatus
+    private FormValidateStatus _validateStatus = FormValidateStatus.Default;
+
+    internal FormValidateStatus ValidateStatus
     {
-        get => GetValue(ValidateStatusProperty);
-        set => SetValue(ValidateStatusProperty, value);
+        get => _validateStatus;
+        set => SetAndRaise(ValidateStatusProperty, ref _validateStatus, value);
+    }
+    
+    private FormValidateResult _validateResult = FormValidateResult.Success;
+
+    internal FormValidateResult ValidateResult
+    {
+        get => _validateResult;
+        set => SetAndRaise(ValidateResultProperty, ref _validateResult, value);
     }
     
     public FormItemLayout Layout
@@ -380,7 +397,7 @@ public class FormItem : TemplatedControl,
         }
     }
 
-    private async Task ValidateValueAsync()
+    public async Task ValidateValueAsync()
     {
         if (Content == null || Validators == null || Validators.Count == 0)
         {
@@ -485,7 +502,37 @@ public class FormItem : TemplatedControl,
                 ValidateStatus = FormValidateStatus.Success;
             }
         }
+
+        if (ValidateStatus == FormValidateStatus.Error)
+        {
+            ValidateResult = FormValidateResult.Error;
+        }
+        else if (ValidateStatus == FormValidateStatus.Warning)
+        {
+            ValidateResult = FormValidateResult.Warning;
+        }
+        else
+        {
+            ValidateResult = FormValidateResult.Success;
+        }
         formItemAware.NotifyValidateStatus(ValidateStatus);
+    }
+
+    public object? GetValue()
+    {
+        if (Content is IFormItemAware formItemAware)
+        {
+            return formItemAware.GetFormValue();
+        }
+        return null;
+    }
+
+    public void ResetValue()
+    {
+        if (Content is IFormItemAware formItemAware)
+        { 
+            formItemAware.ClearFormValue();
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

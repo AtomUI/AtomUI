@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace AtomUI.Desktop.Controls;
 
-public class DefaultFormValue : IFormValue
+public class FormValues : IFormValues
 {
     private readonly Dictionary<string, object?> _dictionary = new ();
 
@@ -16,7 +16,7 @@ public class DefaultFormValue : IFormValue
     public ICollection<object?> Values => _dictionary.Values;
     public int Count => _dictionary.Count;
 
-    public void Add(string key, object value) => _dictionary.Add(key, value);
+    public void Add(string key, object? value) => _dictionary.Add(key, value);
     public bool Remove(string key) => _dictionary.Remove(key);
     public bool ContainsKey(string key) => _dictionary.ContainsKey(key);
     public bool TryGetValue(string key, out object? value) => _dictionary.TryGetValue(key, out value);

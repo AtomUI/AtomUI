@@ -31,10 +31,6 @@ public partial class
                 InitContextMenuItems(viewModel);
                 InitMenuFlyoutMenuItems(viewModel);
             }
-            ItemsSourceDemoNavMenu.NavMenuNodeSelected += (sender, args) =>
-            {
-                Console.WriteLine(args.NavMenuNode.Header);
-            };
         });
    
         InitializeComponent();

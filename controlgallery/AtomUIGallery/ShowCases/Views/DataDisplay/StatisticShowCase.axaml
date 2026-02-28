@@ -52,13 +52,13 @@
             <UniformGrid Columns="2" Rows="2">
                 <atom:Statistic Header="Active Users" Value="112893">
                     <atom:Statistic.Content>
-                        <atom:StatisticCountUp EndValue="{Binding Value}"
+                        <atom:StatisticCountUp EndValue="{Binding Values}"
                                                Precision="2"/>
                     </atom:Statistic.Content>
                 </atom:Statistic>
                 <atom:Statistic Header="Account Balance (CNY)" Value="112893" >
                     <atom:Statistic.Content>
-                        <atom:StatisticCountUp EndValue="{Binding Value}"
+                        <atom:StatisticCountUp EndValue="{Binding Values}"
                                                Precision="2"/>
                     </atom:Statistic.Content>
                 </atom:Statistic>

@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls;
 
-public interface IFormValue : IEnumerable<KeyValuePair<string, object>>
+public interface IFormValues : IEnumerable<KeyValuePair<string, object>>
 {
     /// <summary>
     /// 获取或设置与指定键关联的值。
@@ -30,7 +30,7 @@ public interface IFormValue : IEnumerable<KeyValuePair<string, object>>
     /// <summary>
     /// 添加一个键值对。
     /// </summary>
-    void Add(string key, object value);
+    void Add(string key, object? value);
 
     /// <summary>
     /// 移除指定键的键值对。

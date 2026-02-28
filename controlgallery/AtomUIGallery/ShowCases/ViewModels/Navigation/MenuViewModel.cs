@@ -99,7 +99,6 @@ public class MenuViewModel : ReactiveObject, IRoutableViewModel
     private async Task OnNavigate(string? itemKey)
     {
         await Task.Delay(100);
-        Console.WriteLine(itemKey);
     }
 
     public void HandleChangeModeCheckChanged(object? sender, RoutedEventArgs? args)

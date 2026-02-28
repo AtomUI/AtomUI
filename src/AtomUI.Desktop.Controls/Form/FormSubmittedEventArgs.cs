@@ -2,10 +2,10 @@ namespace AtomUI.Desktop.Controls;
 
 public class FormSubmittedEventArgs : EventArgs
 {
-    public IFormValue Value { get; }
+    public IFormValues Values { get; }
     
-    public FormSubmittedEventArgs(IFormValue value)
+    public FormSubmittedEventArgs(IFormValues values)
     {
-        Value = value;
+        Values = values;
     }
 }

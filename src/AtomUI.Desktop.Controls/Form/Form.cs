@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -70,8 +71,8 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<IconTemplate?> WarningFeedbackIconProperty =
         AvaloniaProperty.Register<Form, IconTemplate?>(nameof(WarningFeedbackIcon));
     
-    public static readonly StyledProperty<IFormValue?> InitialValuesProperty =
-        AvaloniaProperty.Register<Form, IFormValue?>(nameof(InitialValues));
+    public static readonly StyledProperty<IFormValues?> InitialValuesProperty =
+        AvaloniaProperty.Register<Form, IFormValues?>(nameof(InitialValues));
     
     public static readonly StyledProperty<FormLabelAlign> LabelAlignProperty =
         AvaloniaProperty.Register<Form, FormLabelAlign>(nameof(LabelAlign), FormLabelAlign.Right);
@@ -100,9 +101,11 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<MediaBreakGridLength?> WrapperColInfoProperty =
         AvaloniaProperty.Register<Form, MediaBreakGridLength?>(nameof(WrapperColInfo));
     
-    public static readonly StyledProperty<Type> ValueTypeProperty =
-        AvaloniaProperty.Register<Form, Type>(nameof(ValueType), typeof(DefaultFormValue),
-            validate: ValidateValueType);
+    public static readonly DirectProperty<Form, IFormValues?> ValuesProperty =
+        AvaloniaProperty.RegisterDirect<Form, IFormValues?>(
+            nameof(Values),
+            o => o.Values,
+            (o, v) => o.Values = v);
     
     public bool IsShowColon
     {
@@ -146,7 +149,7 @@ public class Form : ItemsControl,
         set => SetValue(WarningFeedbackIconProperty, value);
     }
         
-    public IFormValue? InitialValues
+    public IFormValues? InitialValues
     {
         get => GetValue(InitialValuesProperty);
         set => SetValue(InitialValuesProperty, value);
@@ -206,12 +209,6 @@ public class Form : ItemsControl,
         set => SetValue(WrapperColInfoProperty, value);
     }
     
-    public Type ValueType
-    {
-        get => GetValue(ValueTypeProperty);
-        set => SetValue(ValueTypeProperty, value);
-    }
-    
     private new IEnumerable? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -224,12 +221,20 @@ public class Form : ItemsControl,
         set => SetValue(ItemTemplateProperty, value);
     }
     
+    private IFormValues? _values;
+
+    internal IFormValues? Values
+    {
+        get => _values;
+        set => SetAndRaise(ValuesProperty, ref _values, value);
+    }
+    
     #endregion
 
     #region 公共事件定义
 
-    public event EventHandler<FormAboutToValidateEventArgs>? AboutToValdiate;
-    public event EventHandler<FormValidatedEventArgs>? Valdiated;
+    public event EventHandler<EventArgs>? AboutToValidate;
+    public event EventHandler<FormValidatedEventArgs>? Validated;
     public event EventHandler<FormSubmittedEventArgs>? Submitted;
     public event EventHandler? ResetCompleted;
 
@@ -245,17 +250,14 @@ public class Form : ItemsControl,
     static Form()
     {
         AffectsMeasure<Form>(SizeTypeProperty);
+        SubmitButton.SubmitEvent.AddClassHandler<Form>((form, args) => form.HandleSubmitButtonClick());
+        ResetButton.ResetEvent.AddClassHandler<Form>((form, args) => form.HandleResetButtonClick());
     }
     
     public Form()
     {
         this.RegisterResources();
         LogicalChildren.CollectionChanged += HandleCollectionChanged;
-    }
-        
-    private static bool ValidateValueType(Type value)
-    {
-        return typeof(IFormValue).IsAssignableFrom(value);
     }
     
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -323,17 +325,92 @@ public class Form : ItemsControl,
     
     public void Validate()
     {
-        
+        Dispatcher.UIThread.InvokeAsync(async () => ValidateAsync());
+    }
+
+    public async Task<FormValidateResult> ValidateAsync()
+    {
+        AboutToValidate?.Invoke(this, EventArgs.Empty);
+        var tasks = new List<Task>();
+        foreach (var item in Items)
+        {
+            if (item is FormItem formItem)
+            {
+                tasks.Add(formItem.ValidateValueAsync());
+            }
+        }
+        await Task.WhenAll(tasks);
+        var results          = new List<FormValidateResult>();
+        var validateMessages = new List<FormValidateMessage>();
+        foreach (var item in Items)
+        {
+            if (item is FormItem formItem)
+            {
+                results.Add(formItem.ValidateResult);
+                if (formItem.ValidateResult == FormValidateResult.Error ||
+                    formItem.ValidateResult == FormValidateResult.Warning)
+                {
+                    validateMessages.Add(new FormValidateMessage(formItem.FieldName ?? string.Empty, formItem.ValidateMsg ?? string.Empty));
+                }
+            }
+        }
+
+        var validateResult = FormValidateResult.Success;
+        if (results.Any(item => item == FormValidateResult.Error))
+        {
+            validateResult = FormValidateResult.Error;
+        }
+
+        else if (results.Any(item => item == FormValidateResult.Warning))
+        {
+            validateResult = FormValidateResult.Warning;
+        }
+        else
+        {
+            validateResult = FormValidateResult.Success;
+        }
+
+        if (validateResult == FormValidateResult.Error || validateResult == FormValidateResult.Warning)
+        {
+            Validated?.Invoke(this, new FormValidatedEventArgs(validateResult, null, validateMessages));
+        }
+        return FormValidateResult.Success;
     }
 
     public void Submit()
     {
-        
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var result = await ValidateAsync();
+            if (result == FormValidateResult.Success)
+            {
+                var values = new FormValues();
+                // 收集值
+                CollectValues(values);
+                Validated?.Invoke(this, new FormValidatedEventArgs(result, values, null));
+                NotifySubmit(values);
+                Submitted?.Invoke(this, new FormSubmittedEventArgs(values));
+            }
+        });
+    }
+
+    protected virtual void NotifySubmit(FormValues values)
+    {
     }
 
     public void Reset()
     {
-        
+        foreach (var item in Items)
+        {
+            if (item is FormItem formItem)
+            {
+                formItem.ResetValue();
+            }
+        }
+    }
+
+    protected virtual void NotifyReset()
+    {
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -355,9 +432,8 @@ public class Form : ItemsControl,
 
     private void SyncConfigToItems()
     {
-        for (int i = 0; i < ItemCount; i++)
+        foreach (var item in Items)
         {
-            var item = Items[i];
             if (item is FormItem formItem)
             {
                 SyncConfigToItem(formItem);
@@ -384,6 +460,32 @@ public class Form : ItemsControl,
         else
         {
             formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Vertical);
+        }
+    }
+
+    private void HandleSubmitButtonClick()
+    {
+        Submit();
+    }
+
+    private void HandleResetButtonClick()
+    {
+        Reset();
+    }
+
+    private void CollectValues(FormValues formValues)
+    {
+        foreach (var item in Items)
+        {
+            if (item is FormItem formItem)
+            {
+                var fieldName = formItem.FieldName;
+                if (string.IsNullOrWhiteSpace(fieldName))
+                {
+                    throw new Exception("Field name cannot be empty.");
+                }
+                formValues.Add(fieldName, formItem.GetValue());
+            }
         }
     }
 }

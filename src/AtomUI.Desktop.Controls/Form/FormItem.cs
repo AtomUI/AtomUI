@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reactive.Disposables;
 using System.Text;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Themes;
@@ -9,6 +8,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -38,7 +38,8 @@ public enum FormItemLayout
 }
 
 public class FormItem : TemplatedControl,
-                        IControlSharedTokenResourcesHost
+                        IControlSharedTokenResourcesHost,
+                        IFormItem
 {
     #region 公共属性定义
     
@@ -361,6 +362,19 @@ public class FormItem : TemplatedControl,
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
     #endregion
 
+    #region 内部事件定义
+
+    internal static readonly RoutedEvent<RoutedEventArgs> ValueChangedEvent =
+        RoutedEvent.Register<FormItem, RoutedEventArgs>(nameof(ValueChanged), RoutingStrategies.Bubble);
+    
+    internal event EventHandler<RoutedEventArgs>? ValueChanged
+    {
+        add => AddHandler(ValueChangedEvent, value);
+        remove => RemoveHandler(ValueChangedEvent, value);
+    }
+
+    #endregion
+
     private Grid? _rootLayout;
     private Panel? _childrenLayout;
     private Panel? _labelLayout;
@@ -395,6 +409,7 @@ public class FormItem : TemplatedControl,
         {
             Dispatcher.UIThread.InvokeAsync(async () => ValidateValueAsync());
         }
+        RaiseEvent(new RoutedEventArgs(ValueChangedEvent, this));
     }
 
     public async Task ValidateValueAsync()
@@ -525,6 +540,14 @@ public class FormItem : TemplatedControl,
             return formItemAware.GetFormValue();
         }
         return null;
+    }
+
+    public void SetValue(object? value)
+    {
+        if (Content is IFormItemAware formItemAware)
+        {
+            formItemAware.SetFormValue(value);
+        }
     }
 
     public void ResetValue()

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
@@ -9,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 
@@ -71,9 +73,6 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<IconTemplate?> WarningFeedbackIconProperty =
         AvaloniaProperty.Register<Form, IconTemplate?>(nameof(WarningFeedbackIcon));
     
-    public static readonly StyledProperty<IFormValues?> InitialValuesProperty =
-        AvaloniaProperty.Register<Form, IFormValues?>(nameof(InitialValues));
-    
     public static readonly StyledProperty<FormLabelAlign> LabelAlignProperty =
         AvaloniaProperty.Register<Form, FormLabelAlign>(nameof(LabelAlign), FormLabelAlign.Right);
     
@@ -104,8 +103,13 @@ public class Form : ItemsControl,
     public static readonly DirectProperty<Form, IFormValues?> ValuesProperty =
         AvaloniaProperty.RegisterDirect<Form, IFormValues?>(
             nameof(Values),
-            o => o.Values,
-            (o, v) => o.Values = v);
+            o => o.Values);
+    
+    public static readonly DirectProperty<Form, IFormValues?> InitialValuesProperty =
+        AvaloniaProperty.RegisterDirect<Form, IFormValues?>(
+            nameof(InitialValues),
+            o => o.InitialValues,
+            (o, v) => o.InitialValues = v);
     
     public bool IsShowColon
     {
@@ -147,12 +151,6 @@ public class Form : ItemsControl,
     {
         get => GetValue(WarningFeedbackIconProperty);
         set => SetValue(WarningFeedbackIconProperty, value);
-    }
-        
-    public IFormValues? InitialValues
-    {
-        get => GetValue(InitialValuesProperty);
-        set => SetValue(InitialValuesProperty, value);
     }
     
     public FormLabelAlign LabelAlign
@@ -223,10 +221,18 @@ public class Form : ItemsControl,
     
     private IFormValues? _values;
 
-    internal IFormValues? Values
+    public IFormValues? Values
     {
         get => _values;
-        set => SetAndRaise(ValuesProperty, ref _values, value);
+        private set => SetAndRaise(ValuesProperty, ref _values, value);
+    }
+    
+    private IFormValues? _initialValues;
+
+    public IFormValues? InitialValues
+    {
+        get => _initialValues;
+        set => SetAndRaise(InitialValuesProperty, ref _initialValues, value);
     }
     
     #endregion
@@ -236,8 +242,9 @@ public class Form : ItemsControl,
     public event EventHandler<EventArgs>? AboutToValidate;
     public event EventHandler<FormValidatedEventArgs>? Validated;
     public event EventHandler<FormSubmittedEventArgs>? Submitted;
+    public event EventHandler<FormItemValueChangedEventArgs>? ItemValueChanged;
     public event EventHandler? ResetCompleted;
-
+    
     #endregion
     
     #region 内部属性定义
@@ -246,12 +253,15 @@ public class Form : ItemsControl,
     
     private readonly Dictionary<FormItem, CompositeDisposable> _itemsBindingDisposables = new();
     #endregion
+
+    private bool _initValueApplied;
     
     static Form()
     {
         AffectsMeasure<Form>(SizeTypeProperty);
-        SubmitButton.SubmitEvent.AddClassHandler<Form>((form, args) => form.HandleSubmitButtonClick());
-        ResetButton.ResetEvent.AddClassHandler<Form>((form, args) => form.HandleResetButtonClick());
+        SubmitButton.SubmitEvent.AddClassHandler<Form>((form, args) => form.HandleSubmitButtonClick(args));
+        ResetButton.ResetEvent.AddClassHandler<Form>((form, args) => form.HandleResetButtonClick(args));
+        FormItem.ValueChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValueChanged(args));
     }
     
     public Form()
@@ -407,6 +417,9 @@ public class Form : ItemsControl,
                 formItem.ResetValue();
             }
         }
+
+        NotifyReset();
+        ResetCompleted?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void NotifyReset()
@@ -463,14 +476,24 @@ public class Form : ItemsControl,
         }
     }
 
-    private void HandleSubmitButtonClick()
+    private void HandleSubmitButtonClick(RoutedEventArgs args)
     {
         Submit();
+        args.Handled = true;
     }
 
-    private void HandleResetButtonClick()
+    private void HandleResetButtonClick(RoutedEventArgs args)
     {
         Reset();
+        args.Handled = true;
+    }
+
+    private void HandleFormItemValueChanged(RoutedEventArgs args)
+    {
+        var formItem = args.Source as IFormItem;
+        Debug.Assert(formItem != null);
+        ItemValueChanged?.Invoke(this, new FormItemValueChangedEventArgs(formItem, formItem.GetValue()));
+        args.Handled = true;
     }
 
     private void CollectValues(FormValues formValues)
@@ -482,10 +505,39 @@ public class Form : ItemsControl,
                 var fieldName = formItem.FieldName;
                 if (string.IsNullOrWhiteSpace(fieldName))
                 {
-                    throw new Exception("Field name cannot be empty.");
+                    continue;
                 }
                 formValues.Add(fieldName, formItem.GetValue());
             }
+        }
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        if (_initialValues == null)
+        {
+            return;
+        }
+        if (!_initValueApplied)
+        {
+            foreach (var item in Items)
+            {
+                if (item is FormItem formItem)
+                {
+                    var fieldName = formItem.FieldName;
+                    if (string.IsNullOrWhiteSpace(fieldName))
+                    {
+                        continue;
+                    }
+
+                    if (_initialValues.ContainsKey(fieldName))
+                    {
+                        formItem.SetValue(_initialValues[fieldName]);
+                    }
+                }
+            }
+            _initValueApplied = true;
         }
     }
 }

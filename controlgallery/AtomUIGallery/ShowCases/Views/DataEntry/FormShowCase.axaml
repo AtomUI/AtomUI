@@ -11,7 +11,8 @@
             <atom:Form LabelColInfo="8*" 
                        WrapperColInfo="16*" 
                        MinWidth="600"
-                       HorizontalAlignment="Left">
+                       HorizontalAlignment="Left"
+                       Name="BasicForm">
                 <atom:FormItem LabelText="Username"
                                FieldName="username"
                                IsRequired="True">

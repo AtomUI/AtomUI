@@ -374,11 +374,15 @@ public class FormItem : TemplatedControl,
     }
 
     #endregion
+    
+    protected override Type StyleKeyOverride => typeof(FormItem);
 
     private Grid? _rootLayout;
     private Panel? _childrenLayout;
     private Panel? _labelLayout;
     private MediaBreakPoint? _breakPoint;
+
+    internal Form? OwnerForm;
     
     static FormItem()
     {
@@ -405,7 +409,8 @@ public class FormItem : TemplatedControl,
 
     private void HandleContentValueChanged(object? sender, EventArgs e)
     {
-        if (ValidateTrigger == FormValidateTrigger.OnChanged)
+        Debug.Assert(OwnerForm != null);
+        if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnChanged)
         {
             Dispatcher.UIThread.InvokeAsync(async () => ValidateValueAsync());
         }
@@ -530,10 +535,11 @@ public class FormItem : TemplatedControl,
         {
             ValidateResult = FormValidateResult.Success;
         }
+
         formItemAware.NotifyValidateStatus(ValidateStatus);
     }
 
-    public object? GetValue()
+    public object? GetItemValue()
     {
         if (Content is IFormItemAware formItemAware)
         {
@@ -542,7 +548,7 @@ public class FormItem : TemplatedControl,
         return null;
     }
 
-    public void SetValue(object? value)
+    public void SetItemValue(object? value)
     {
         if (Content is IFormItemAware formItemAware)
         {
@@ -550,11 +556,13 @@ public class FormItem : TemplatedControl,
         }
     }
 
-    public void ResetValue()
+    public void ResetItemValue()
     {
         if (Content is IFormItemAware formItemAware)
         { 
             formItemAware.ClearFormValue();
+            formItemAware.NotifyValidateStatus(FormValidateStatus.Default);
+            ValidateStatus = FormValidateStatus.Default;
         }
     }
 
@@ -689,5 +697,14 @@ public class FormItem : TemplatedControl,
         {
             IsRequireMarkVisible = false;
         }
+    }
+
+    internal virtual bool IsSkipValidate()
+    {
+        return !IsVisible;
+    }
+
+    protected internal virtual void NotifyFormItemChanged(IFormItem formItem)
+    {
     }
 }

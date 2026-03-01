@@ -34,15 +34,20 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
+        <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
 
         <Style Selector="^[ValidateStatus=Error]">
             <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+                <Setter Property="IsVisible" Value="True"/>
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorText}}"/>
             </Style>
         </Style>
 
         <Style Selector="^[ValidateStatus=Warning]">
             <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+                <Setter Property="IsVisible" Value="True"/>
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningText}}"/>
             </Style>
         </Style>

@@ -8,8 +8,8 @@
             Title="Basic usage"
             Description="Basic Form data control. Includes layout, initial values, validation and submit."
             IsOccupyEntireRow="True">
-            <atom:Form LabelColInfo="8*" 
-                       WrapperColInfo="16*" 
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
                        MinWidth="600"
                        HorizontalAlignment="Left"
                        Name="BasicForm">
@@ -18,29 +18,84 @@
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your username!"/>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:LineEdit/>
+                    <atom:LineEdit />
                 </atom:FormItem>
                 <atom:FormItem LabelText="Password"
                                FieldName="password"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your password!"/>
+                            <atom:FormStringNotEmptyValidator Message="Please input your password!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
                     <atom:LineEdit RevealPassword="False"
                                    PasswordChar="•"
-                                   IsEnableRevealButton="True"/>
+                                   IsEnableRevealButton="True" />
                 </atom:FormItem>
                 <atom:FormItem FieldName="remember">
                     <atom:CheckBox>Remember me</atom:CheckBox>
                 </atom:FormItem>
-                
+
                 <atom:FormItem>
-                    <atom:SubmitButton/>
+                    <atom:SubmitButton />
+                </atom:FormItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Form methods"
+            Description="Call form method with Form."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left">
+                <gallery:NoteFormItem LabelText="Note"
+                                      FieldName="note"
+                                      IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter Note" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </gallery:NoteFormItem>
+                <atom:FormItem LabelText="Gender"
+                               FieldName="gender"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please enter Gender" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Select IsAllowClear="True"
+                                 PlaceholderText="Select a option and change input text above"
+                                 HorizontalAlignment="Stretch">
+                        <atom:SelectOption Header="male" Value="male" />
+                        <atom:SelectOption Header="female" Value="female" />
+                        <atom:SelectOption Header="other" Value="other" />
+                    </atom:Select>
+                </atom:FormItem>
+                <gallery:CustomizeGenderFormItem LabelText="Customize Gender"
+                                                 FieldName="customizeGender"
+                                                 IsRequired="True"
+                                                 IsVisible="False">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter Customize Gender" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </gallery:CustomizeGenderFormItem>
+
+                <atom:FormItem>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <atom:SubmitButton />
+                        <atom:ResetButton />
+                    </StackPanel>
                 </atom:FormItem>
             </atom:Form>
         </gallery:ShowCaseItem>

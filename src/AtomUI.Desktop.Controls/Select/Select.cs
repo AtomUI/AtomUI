@@ -270,8 +270,10 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         SelectResultOptionsBox.KeyDownEvent.AddClassHandler<Select>(
             (x, e) => x.HandleFilterInputKeyDown(e),
             RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        FilterModeProperty.Changed.AddClassHandler<Select>((x,e) => x.HandleFilterModePropertyChanged(e));
-        FilterProperty.Changed.AddClassHandler<Select>((x,e) => x.HandleFilterPropertyChanged(e));
+        FilterModeProperty.Changed.AddClassHandler<Select>((select,e) => select.HandleFilterModePropertyChanged(e));
+        FilterProperty.Changed.AddClassHandler<Select>((select, e) => select.HandleFilterPropertyChanged(e));
+        SelectedOptionProperty.Changed.AddClassHandler<Select>((select, args) => select.NotifyFormValueChanged(args.NewValue));
+        SelectedOptionsProperty.Changed.AddClassHandler<Select>((select, args) => select.NotifyFormValueChanged(args.NewValue));
     }
 
     public Select()
@@ -792,7 +794,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
             if (_addNewOption != null)
             {
-                var isSelected = SelectedOptions?.Contains(_addNewOption) == true;
+                var isSelected     = SelectedOptions?.Contains(_addNewOption) == true;
                 var isCurrentInput = ActivateFilterValue == _addNewOption.Header?.ToString();
                 if (!isSelected && !isCurrentInput)
                 {
@@ -848,8 +850,8 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             {
                 _addNewOption = new SelectOption()
                 {
-                    Header = ActivateFilterValue,
-                    Value  = ActivateFilterValue,
+                    Header         = ActivateFilterValue,
+                    Value          = ActivateFilterValue,
                     IsDynamicAdded = true
                 };
                 Options.Add(_addNewOption);
@@ -896,9 +898,9 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             var oldFilter = _filterDescription;
             _filterDescription = new ListFilterDescription()
             {
-                FilterPropertySelector     = FilterValueSelector,
-                Filter           =  oldFilter.Filter,
-                FilterConditions = oldFilter.FilterConditions
+                FilterPropertySelector = FilterValueSelector,
+                Filter                 =  oldFilter.Filter,
+                FilterConditions       = oldFilter.FilterConditions
             };
             _candidateList.FilterDescriptions.Remove(oldFilter);
             _candidateList.FilterDescriptions.Add(_filterDescription);
@@ -1018,6 +1020,55 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             {
                 _addNewOption = null;
             }
+        }
+    }
+    
+    protected override void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
+    
+    protected override void NotifySetFormValue(object? value)
+    {
+        if (Mode == SelectMode.Single)
+        {
+            SelectedOption = value as ISelectOption;
+        }
+        else
+        {
+            SelectedOptions = value as IList<ISelectOption>;
+        }
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        if (Mode == SelectMode.Single)
+        {
+            return SelectedOption;
+        }
+        return SelectedOptions;
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        if (Mode == SelectMode.Single)
+        {
+            SelectedOption = null;
+        }
+        else
+        {
+            SelectedOptions = null;
         }
     }
 }

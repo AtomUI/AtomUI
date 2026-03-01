@@ -21,7 +21,8 @@ namespace AtomUI.Desktop.Controls;
 public class AbstractSelect : TemplatedControl, 
                               IMotionAwareControl, 
                               ISizeTypeAware,
-                              ICompactSpaceAware
+                              ICompactSpaceAware,
+                              IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAllowClearProperty =
@@ -366,6 +367,17 @@ public class AbstractSelect : TemplatedControl,
     public event EventHandler? DropDownOpened;
     public event EventHandler<CancelEventArgs>? DropDownClosing;
     public event EventHandler? DropDownClosed;
+
+    #endregion
+    
+    #region 公共事件定义
+
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
 
     #endregion
 
@@ -715,7 +727,7 @@ public class AbstractSelect : TemplatedControl,
             parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(SubscriptionsOnOpen);
         }
 
-        ConfigurePopupMinWith(DesiredSize.Width);
+        ConfigurePopupMinWith(Bounds.Width);
         NotifyPopupOpened();
     }
     
@@ -885,4 +897,35 @@ public class AbstractSelect : TemplatedControl,
         // 都一样宽
         return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
+    
+    #region 实现 FormItem 接口
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return null;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

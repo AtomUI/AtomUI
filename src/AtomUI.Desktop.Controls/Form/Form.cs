@@ -255,6 +255,7 @@ public class Form : ItemsControl,
     #endregion
 
     private bool _initValueApplied;
+    internal bool IsResetting;
     
     static Form()
     {
@@ -293,7 +294,10 @@ public class Form : ItemsControl,
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new FormItem();
+        return new FormItem()
+        {
+            OwnerForm = this
+        };
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -306,6 +310,7 @@ public class Form : ItemsControl,
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is FormItem formItem)
         {
+            formItem.OwnerForm = this;
             var disposables = new CompositeDisposable(2);
             
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, formItem, FormItem.SizeTypeProperty));
@@ -344,7 +349,7 @@ public class Form : ItemsControl,
         var tasks = new List<Task>();
         foreach (var item in Items)
         {
-            if (item is FormItem formItem)
+            if (item is FormItem formItem && !formItem.IsSkipValidate())
             {
                 tasks.Add(formItem.ValidateValueAsync());
             }
@@ -354,7 +359,7 @@ public class Form : ItemsControl,
         var validateMessages = new List<FormValidateMessage>();
         foreach (var item in Items)
         {
-            if (item is FormItem formItem)
+            if (item is FormItem formItem && !formItem.IsSkipValidate())
             {
                 results.Add(formItem.ValidateResult);
                 if (formItem.ValidateResult == FormValidateResult.Error ||
@@ -410,16 +415,27 @@ public class Form : ItemsControl,
 
     public void Reset()
     {
-        foreach (var item in Items)
+        try
         {
-            if (item is FormItem formItem)
+            IsResetting = true;
+            foreach (var item in Items)
             {
-                formItem.ResetValue();
+                if (item is FormItem formItem)
+                {
+                    formItem.ResetItemValue();
+                }
             }
-        }
 
-        NotifyReset();
-        ResetCompleted?.Invoke(this, EventArgs.Empty);
+            NotifyReset();
+            ResetCompleted?.Invoke(this, EventArgs.Empty);
+        }
+        finally
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                IsResetting = false;
+            });
+        }
     }
 
     protected virtual void NotifyReset()
@@ -492,8 +508,15 @@ public class Form : ItemsControl,
     {
         var formItem = args.Source as IFormItem;
         Debug.Assert(formItem != null);
-        ItemValueChanged?.Invoke(this, new FormItemValueChangedEventArgs(formItem, formItem.GetValue()));
+        ItemValueChanged?.Invoke(this, new FormItemValueChangedEventArgs(formItem, formItem.GetItemValue()));
         args.Handled = true;
+        foreach (var item in Items)
+        {
+            if (item is FormItem childFormItem && childFormItem != formItem)
+            {
+                childFormItem.NotifyFormItemChanged(formItem);
+            }
+        }
     }
 
     private void CollectValues(FormValues formValues)
@@ -507,7 +530,7 @@ public class Form : ItemsControl,
                 {
                     continue;
                 }
-                formValues.Add(fieldName, formItem.GetValue());
+                formValues.Add(fieldName, formItem.GetItemValue());
             }
         }
     }
@@ -533,7 +556,7 @@ public class Form : ItemsControl,
 
                     if (_initialValues.ContainsKey(fieldName))
                     {
-                        formItem.SetValue(_initialValues[fieldName]);
+                        formItem.SetItemValue(_initialValues[fieldName]);
                     }
                 }
             }

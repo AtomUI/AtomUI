@@ -21,3 +21,42 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
         BasicForm.InitialValues = values;
     }
 }
+
+public class NoteFormItem : FormItem
+{
+    protected override void NotifyFormItemChanged(IFormItem formItem)
+    {
+        if (formItem.FieldName == "gender")
+        {
+            if (formItem.Content is Select select && select.Mode == SelectMode.Single)
+            {
+                if (formItem.GetItemValue() is ISelectOption selectOption)
+                {
+                    SetItemValue($"Hi, {selectOption.Value}!");
+                }
+            }
+        }
+    }
+}
+
+public class CustomizeGenderFormItem : FormItem
+{
+    protected override void NotifyFormItemChanged(IFormItem formItem)
+    {
+        if (formItem.FieldName == "gender")
+        {
+            if (formItem.Content is Select select && select.Mode == SelectMode.Single)
+            {
+                var option = formItem.GetItemValue() as ISelectOption;
+                if (option?.Value?.ToString() == "other")
+                {
+                    IsVisible = true;
+                }
+                else
+                {
+                    IsVisible = false;
+                }
+            }
+        }
+    }
+}

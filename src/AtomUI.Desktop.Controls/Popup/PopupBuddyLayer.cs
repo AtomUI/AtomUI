@@ -291,7 +291,7 @@ internal class PopupBuddyLayer : SceneLayer, IShadowAwareLayer
         
         var   offset      = new Point(position.X, position.Y);
         Point layerOffset = default;
-        var renderScaling = OperatingSystem.IsLinux() ? GetRenderScaling() : 1.0;
+        var renderScaling = !OperatingSystem.IsMacOS() ? GetRenderScaling() : 1.0;
         layerOffset = new Point(offset.X - maskShadowsThickness.Left * renderScaling, offset.Y - maskShadowsThickness.Top * renderScaling);
         MoveAndResize(layerOffset, size.Inflate(MaskShadows.Thickness()));
     }

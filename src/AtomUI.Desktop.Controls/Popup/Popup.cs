@@ -469,32 +469,33 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         _buddyLayer.Topmost = true;
     }
 
-    internal (bool, bool) CalculateFlipInfo(Size translatedSize, Rect anchorRect, PopupAnchor anchor,
-                                            PopupGravity gravity,
-                                            Point offset)
+    internal (bool left, bool top, bool right, bool bottom) CalculateFlipInfo(Size translatedSize, Rect anchorRect, PopupAnchor anchor,
+                                                                              PopupGravity gravity,
+                                                                              Point offset)
     {
         var bounds = GetBounds(anchorRect);
         return CalculateFlipInfo(bounds, translatedSize, anchorRect, anchor, gravity, offset);
     }
 
-    internal static (bool, bool) CalculateFlipInfo(Rect bounds, Size translatedSize, Rect anchorRect,
+    internal static (bool left, bool top, bool right, bool bottom) CalculateFlipInfo(Rect bounds, Size translatedSize, Rect anchorRect,
                                                    PopupAnchor anchor,
                                                    PopupGravity gravity,
                                                    Point offset)
     {
-        var result = (false, false);
-
-        bool FitsInBounds(Rect rc, PopupAnchor edge = PopupAnchor.AllMask)
+        (bool left, bool top, bool right, bool bottom) FitsInBounds(Rect rc, PopupAnchor edge = PopupAnchor.AllMask)
         {
             if ((edge.HasFlag(PopupAnchor.Left) && rc.X < bounds.X) ||
                 (edge.HasFlag(PopupAnchor.Top) && rc.Y < bounds.Y) ||
                 (edge.HasFlag(PopupAnchor.Right) && rc.Right > bounds.Right) ||
                 (edge.HasFlag(PopupAnchor.Bottom) && rc.Bottom > bounds.Bottom))
             {
-                return false;
+                return ((edge.HasFlag(PopupAnchor.Left) && rc.X < bounds.X),
+                        (edge.HasFlag(PopupAnchor.Top) && rc.Y < bounds.Y),
+                        (edge.HasFlag(PopupAnchor.Right) && rc.Right > bounds.Right),
+                        (edge.HasFlag(PopupAnchor.Bottom) && rc.Bottom > bounds.Bottom));
             }
 
-            return true;
+            return (false, false, false, false);
         }
 
         Rect GetUnconstrained(PopupAnchor a, PopupGravity g)
@@ -506,20 +507,20 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         var geo = GetUnconstrained(anchor, gravity);
         // If flipping geometry and anchor is allowed and helps, use the flipped one,
         // otherwise leave it as is
-        if (!FitsInBounds(geo, anchor))
-        {
-            if (anchor.HasFlag(PopupAnchor.Left) || anchor.HasFlag(PopupAnchor.Right))
-            {
-                result.Item1 = true;
-            }
-
-            if (anchor.HasFlag(PopupAnchor.Top) || anchor.HasFlag(PopupAnchor.Bottom))
-            {
-                result.Item2 = true;
-            }
-        }
-
-        return result;
+        return FitsInBounds(geo, anchor);
+        // if ((anchor.HasFlag(PopupAnchor.Left) && boundsDetectInfo.left) ||
+        //     (anchor.HasFlag(PopupAnchor.Right) && boundsDetectInfo.right))
+        // {
+        //     result.Item1 = true;
+        // }
+        //
+        // if ((anchor.HasFlag(PopupAnchor.Top) && boundsDetectInfo.top) || 
+        //     (anchor.HasFlag(PopupAnchor.Bottom) && boundsDetectInfo.bottom))
+        // {
+        //     result.Item2 = true;
+        // }
+        //
+        // return result;
     }
 
     private Rect GetBounds(Rect anchorRect)
@@ -617,19 +618,27 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 parameters.Anchor,
                 parameters.Gravity,
                 offset * scaling);
-        
+            
+            var direction     = GetHostDecoratorDirection(Placement);
             var originFlipped = IsFlipped;
-            if (flipInfo.Item1 || flipInfo.Item2)
+            var flipPlacement = Placement;
+            if ((direction == PopupHostMarginPlacement.Top && flipInfo.bottom) ||
+                (direction == PopupHostMarginPlacement.Bottom && flipInfo.top))
             {
-                var flipPlacement = GetFlipPlacement(Placement, flipInfo.Item1, flipInfo.Item2);
-                IsFlipped              = true;
-                HostDecoratorDirection = GetHostDecoratorDirection(flipPlacement);
+                flipPlacement = GetFlipPlacement(Placement, false, true);
+                IsFlipped     = true;
+            }
+            else if ((direction == PopupHostMarginPlacement.Left && flipInfo.right) ||
+                     (direction == PopupHostMarginPlacement.Right && flipInfo.left))
+            {
+                flipPlacement = GetFlipPlacement(Placement, true, false);
+                IsFlipped     = true;
             }
             else
             {
-                HostDecoratorDirection = GetHostDecoratorDirection(Placement);
-                IsFlipped              = false;
+                IsFlipped     = false;
             }
+            HostDecoratorDirection = GetHostDecoratorDirection(flipPlacement);
             
             if (originFlipped != IsFlipped)
             {

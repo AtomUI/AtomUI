@@ -570,11 +570,13 @@ public class FormItem : TemplatedControl,
     {
         base.OnPropertyChanged(change);
         if (change.Property == IsShowColonProperty ||
-            change.Property == LabelTextProperty)
+            change.Property == LabelTextProperty ||
+            change.Property == LayoutProperty)
         {
             ConfigureLabelColonVisible();
         }
-        else if (change.Property == LayoutProperty)
+        
+        if (change.Property == LayoutProperty)
         {
             ConfigureLayout();
         }
@@ -632,7 +634,7 @@ public class FormItem : TemplatedControl,
 
     private void ConfigureLabelColonVisible()
     {
-        IsColonVisible = !string.IsNullOrWhiteSpace(LabelText) && IsShowColon;
+        IsColonVisible = !string.IsNullOrWhiteSpace(LabelText) && IsShowColon && Layout == FormItemLayout.Horizontal;
     }
 
     private void ConfigureLayout()
@@ -643,16 +645,29 @@ public class FormItem : TemplatedControl,
         }
         if (Layout == FormItemLayout.Horizontal)
         {
+            _rootLayout.RowDefinitions.Clear();
             _rootLayout.ColumnDefinitions.Clear();
-            var columnDefinitions = new ColumnDefinitions();
-            columnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
+            _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
                 LabelColInfo ?? new MediaBreakGridLength(new GridLength(1, GridUnitType.Star)))));
-            columnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
+            _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
                 WrapperColInfo ?? new MediaBreakGridLength(new GridLength(3, GridUnitType.Star)))));
-            _rootLayout.ColumnDefinitions = columnDefinitions;
-            
+            _rootLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            Grid.SetRow(_labelLayout, 0);
+            Grid.SetRow(_childrenLayout, 0);
             Grid.SetColumn(_labelLayout, 0);
             Grid.SetColumn(_childrenLayout, 1);
+        }
+        else if (Layout == FormItemLayout.Vertical)
+        {
+            _rootLayout.RowDefinitions.Clear();
+            _rootLayout.ColumnDefinitions.Clear();
+            _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            _rootLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            _rootLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            Grid.SetRow(_labelLayout, 0);
+            Grid.SetRow(_childrenLayout, 1);
+            Grid.SetColumn(_labelLayout, 0);
+            Grid.SetColumn(_childrenLayout, 0);
         }
     }
     

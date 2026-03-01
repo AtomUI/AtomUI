@@ -57,9 +57,9 @@ internal class FormToken : AbstractControlDesignToken
     
     /// <summary>
     /// 行内布局表单项间距
-    /// Inline layout form item margin bottom
+    /// Inline layout form item spacing
     /// </summary>
-    public Thickness InlineItemMarginBottom { get; set; }
+    public double InlineItemSpacing { get; set; }
     
     /// <summary>
     /// 垂直布局标签内边距
@@ -84,7 +84,7 @@ internal class FormToken : AbstractControlDesignToken
         LabelColonMargin       = new Thickness(SharedToken.UniformlyMarginXXS / 2, 0, SharedToken.UniformlyMarginXS, 0);
         ItemMarginBottom       = new Thickness(0, 0, 0, SharedToken.UniformlyMarginLG);
         VerticalLabelPadding   = new Thickness(0, 0, 0, SharedToken.UniformlyPaddingXS);
-        InlineItemMarginBottom = default;
+        InlineItemSpacing = SharedToken.Spacing;
         VerticalLabelMargin    = default;
     }
 }

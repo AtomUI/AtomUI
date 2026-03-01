@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 
@@ -80,7 +81,7 @@ public class Form : ItemsControl,
         AvaloniaProperty.Register<Form, TextWrapping>(nameof(LabelWrapping), TextWrapping.NoWrap);
     
     public static readonly StyledProperty<FormLayout> FormLayoutProperty =
-        AvaloniaProperty.Register<Form, FormLayout>(nameof(FormLayout), FormLayout.Horizontal);
+        AvaloniaProperty.Register<Form, FormLayout>(nameof(FormLayout));
     
     public static readonly StyledProperty<IControlTemplate?> CustomRequireMarkProperty =
         AvaloniaProperty.Register<Form, IControlTemplate?>(nameof(CustomRequireMark));
@@ -248,6 +249,28 @@ public class Form : ItemsControl,
     #endregion
     
     #region 内部属性定义
+    internal static readonly DirectProperty<Form, Orientation> FormLayoutOrientationProperty =
+        AvaloniaProperty.RegisterDirect<Form, Orientation>(
+            nameof(FormLayoutOrientation),
+            o => o.FormLayoutOrientation);
+    
+    internal static readonly StyledProperty<double> FormLayoutSpacingProperty =
+        AvaloniaProperty.Register<Form, double>(nameof(FormLayoutSpacing));
+    
+    private Orientation _formLayoutOrientation;
+
+    internal Orientation FormLayoutOrientation
+    {
+        get => _formLayoutOrientation;
+        set => SetAndRaise(FormLayoutOrientationProperty, ref _formLayoutOrientation, value);
+    }
+    
+    internal double FormLayoutSpacing
+    {
+        get => GetValue(FormLayoutSpacingProperty);
+        set => SetValue(FormLayoutSpacingProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
     
@@ -446,6 +469,7 @@ public class Form : ItemsControl,
     {
         base.OnApplyTemplate(e);
         SyncConfigToItems();
+        ConfigureFormLayoutOrientation();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -457,6 +481,12 @@ public class Form : ItemsControl,
         {
             SyncConfigToItems();
         }
+
+        if (change.Property == FormLayoutProperty)
+        {
+            ConfigureFormLayoutOrientation();
+        }
+        
     }
 
     private void SyncConfigToItems()
@@ -484,12 +514,23 @@ public class Form : ItemsControl,
         
         if (FormLayout == FormLayout.Horizontal || FormLayout == FormLayout.Inline)
         {
-            formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Horizontal);
+            if (!formItem.IsSet(FormItem.LayoutProperty))
+            {
+                formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Horizontal);
+            }
         }
         else
         {
-            formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Vertical);
+            if (!formItem.IsSet(FormItem.LayoutProperty))
+            {
+                formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Vertical);
+            }
         }
+    }
+
+    private void ConfigureFormLayoutOrientation()
+    {
+        FormLayoutOrientation = (FormLayout == FormLayout.Horizontal || FormLayout == FormLayout.Vertical) ? Orientation.Vertical : Orientation.Horizontal;
     }
 
     private void HandleSubmitButtonClick(RoutedEventArgs args)

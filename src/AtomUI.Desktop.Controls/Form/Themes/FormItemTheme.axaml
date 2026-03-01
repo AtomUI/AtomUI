@@ -61,5 +61,16 @@
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:FormTokenKey.LabelRequiredMarkMargin}}"/>
         </Style>
 
+        <Style Selector="^[Layout=Vertical]">
+            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:FormTokenKey.VerticalLabelMargin}}" />
+            </Style>
+            <Style Selector="^ /template/ TextBlock#PART_Label">
+                <Setter Property="Padding" Value="{DynamicResource {x:Static atom:FormTokenKey.VerticalLabelPadding}}" />
+            </Style>
+            
+        </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

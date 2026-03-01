@@ -38,13 +38,13 @@
                 <atom:FormItem FieldName="remember">
                     <atom:CheckBox>Remember me</atom:CheckBox>
                 </atom:FormItem>
-
+        
                 <atom:FormItem>
                     <atom:SubmitButton />
                 </atom:FormItem>
             </atom:Form>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Form methods"
             Description="Call form method with Form."
@@ -90,7 +90,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit />
                 </gallery:CustomizeGenderFormItem>
-
+        
                 <atom:FormItem>
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <atom:SubmitButton />
@@ -99,5 +99,100 @@
                 </atom:FormItem>
             </atom:Form>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form Layout"
+            Description="There are three layout for form: horizontal, vertical, inline."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:TextBlock VerticalAlignment="Center">Form Layout :</atom:TextBlock>
+                    <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormLayoutOptionCheckedChanged">
+                        <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormLayout.Horizontal}">Horizontal</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:FormLayout.Vertical}">Vertical</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:FormLayout.Inline}">Inline</atom:OptionButton>
+                    </atom:OptionButtonGroup>
+                </StackPanel>
+        
+                <atom:Form LabelColInfo="8*"
+                           WrapperColInfo="16*"
+                           Name="LayoutCaseForm"
+                           FormLayout="{Binding FormLayout}"
+                           HorizontalAlignment="Left"
+                           MinWidth="600">
+                    <atom:FormItem LabelText="Field A" FieldName="FieldA">
+                        <atom:LineEdit MinWidth="178"/>
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Field B" FieldName="Field B">
+                        <atom:LineEdit MinWidth="178"/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem>
+                        <atom:SubmitButton />
+                    </atom:FormItem>
+                </atom:Form>
+            </StackPanel>
+        
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form Layout"
+            Description="There are three layout for form: horizontal, vertical, inline."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <atom:Form FormLayout="Horizontal">
+                    <atom:FormItem LabelText="horizontal" FieldName="horizontal"
+                                   LabelColInfo="4*"
+                                   WrapperColInfo="20*"
+                                   IsRequired="True"
+                                   Layout="Horizontal">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                    
+                    <atom:FormItem LabelText="vertical"
+                                   FieldName="vertical"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                    
+                    <atom:FormItem LabelText="vertical2"
+                                   FieldName="vertical2"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                </atom:Form>
+                
+                <atom:Separator/>
+                
+                <atom:Form FormLayout="Vertical">
+                    
+                    <atom:FormItem LabelText="vertical"
+                                   FieldName="vertical"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                    
+                    <atom:FormItem LabelText="vertical2"
+                                   FieldName="vertical2"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                    
+                    <atom:FormItem LabelText="horizontal" FieldName="horizontal"
+                                   LabelColInfo="4*"
+                                   WrapperColInfo="20*"
+                                   IsRequired="True"
+                                   Layout="Horizontal">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                </atom:Form>
+            </StackPanel>
+
+        </gallery:ShowCaseItem>
+
     </gallery:ShowCasePanel>
 </UserControl>

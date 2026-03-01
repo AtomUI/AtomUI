@@ -8,28 +8,22 @@
                 <Border Name="Frame"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}">
-                    <ItemsPresenter Name="{x:Static atom:FormThemeConstants.ItemsPresenterPart}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                    <ItemsPresenter Name="{x:Static atom:FormThemeConstants.ItemsPresenterPart}">
+                        <ItemsPresenter.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="{Binding FormLayoutOrientation, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Spacing="{Binding FormLayoutSpacing, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsPresenter.ItemsPanel>
+                    </ItemsPresenter>
                 </Border>
             </ControlTemplate>
         </Setter>
         
         <Setter Property="ClipToBounds" Value="False"/>
-        
-        <Style Selector="^[FormLayout=Vertical], ^[FormLayout=Horizontal]">
-            <Setter Property="ItemsPanel">
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </Setter>
-        </Style>
-        
         <Style Selector="^[FormLayout=Inline]">
-            <Setter Property="ItemsPanel">
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </Setter>
+            <Setter Property="FormLayoutSpacing" Value="{DynamicResource {x:Static atom:FormTokenKey.InlineItemSpacing}}" />
         </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

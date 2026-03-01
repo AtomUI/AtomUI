@@ -410,7 +410,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class FormTokenKey
     {
-        public static readonly TokenResourceKey InlineItemMarginBottom = new TokenResourceKey("AtomUI.Desktop.Controls.Form.InlineItemMarginBottom");
+        public static readonly TokenResourceKey InlineItemSpacing = new TokenResourceKey("AtomUI.Desktop.Controls.Form.InlineItemSpacing");
         public static readonly TokenResourceKey ItemMarginBottom = new TokenResourceKey("AtomUI.Desktop.Controls.Form.ItemMarginBottom");
         public static readonly TokenResourceKey LabelColonMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelColonMargin");
         public static readonly TokenResourceKey LabelColor = new TokenResourceKey("AtomUI.Desktop.Controls.Form.LabelColor");

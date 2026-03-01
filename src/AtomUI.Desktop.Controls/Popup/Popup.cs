@@ -508,19 +508,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         // If flipping geometry and anchor is allowed and helps, use the flipped one,
         // otherwise leave it as is
         return FitsInBounds(geo, anchor);
-        // if ((anchor.HasFlag(PopupAnchor.Left) && boundsDetectInfo.left) ||
-        //     (anchor.HasFlag(PopupAnchor.Right) && boundsDetectInfo.right))
-        // {
-        //     result.Item1 = true;
-        // }
-        //
-        // if ((anchor.HasFlag(PopupAnchor.Top) && boundsDetectInfo.top) || 
-        //     (anchor.HasFlag(PopupAnchor.Bottom) && boundsDetectInfo.bottom))
-        // {
-        //     result.Item2 = true;
-        // }
-        //
-        // return result;
     }
 
     private Rect GetBounds(Rect anchorRect)

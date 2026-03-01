@@ -22,33 +22,6 @@ internal class ImagePreviewerDialog : Window,
                                       IMotionAwareControl,
                                       IManagedDialogPositionerDialog
 {
-    private enum ImageTransformRetentionMode
-    {
-        Reset,
-        Retain
-    }
-
-    private struct ImageSwitchTransformPolicy
-    {
-        public ImageTransformRetentionMode RetentionMode;
-        public bool SuppressResetAnimation;
-        public double RetainedScaleX;
-        public double RetainedScaleY;
-        public double RetainedRotate;
-
-        public static ImageSwitchTransformPolicy CreateDefault()
-        {
-            return new ImageSwitchTransformPolicy
-            {
-                RetentionMode = ImageTransformRetentionMode.Reset,
-                SuppressResetAnimation = false,
-                RetainedScaleX = 1.0,
-                RetainedScaleY = 1.0,
-                RetainedRotate = 0.0
-            };
-        }
-    }
-
     #region 公共属性定义
     public static readonly StyledProperty<IList<PreviewImageSource>?> SourcesProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, IList<PreviewImageSource>?>(nameof(Sources));
@@ -884,5 +857,32 @@ internal class ImagePreviewerDialog : Window,
         disposables.Add(BindUtils.RelayBind(this, TitleFontSizeProperty, titleBar, WindowTitleBar.FontSizeProperty));
         disposables.Add(BindUtils.RelayBind(this, TitleFontWeightProperty, titleBar, WindowTitleBar.FontWeightProperty));
         disposables.Add(BindUtils.RelayBind(this, TitleBarContextMenuProperty, titleBar, WindowTitleBar.ContextMenuProperty));
+    }
+    
+    private enum ImageTransformRetentionMode
+    {
+        Reset,
+        Retain
+    }
+
+    private struct ImageSwitchTransformPolicy
+    {
+        public ImageTransformRetentionMode RetentionMode;
+        public bool SuppressResetAnimation;
+        public double RetainedScaleX;
+        public double RetainedScaleY;
+        public double RetainedRotate;
+
+        public static ImageSwitchTransformPolicy CreateDefault()
+        {
+            return new ImageSwitchTransformPolicy
+            {
+                RetentionMode          = ImageTransformRetentionMode.Reset,
+                SuppressResetAnimation = false,
+                RetainedScaleX         = 1.0,
+                RetainedScaleY         = 1.0,
+                RetainedRotate         = 0.0
+            };
+        }
     }
 }

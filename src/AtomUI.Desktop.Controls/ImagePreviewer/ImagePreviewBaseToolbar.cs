@@ -110,31 +110,31 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
 
     #region 公共事件定义
 
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> HorizontalFlipRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> HorizontalFlipRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(HorizontalFlipRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> VerticalFlipRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> VerticalFlipRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(VerticalFlipRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleUpRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleUpRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(ScaleUpRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleDownRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleDownRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(ScaleDownRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> PreviousRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> PreviousRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(PreviousRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> NextRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> NextRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(NextRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateLeftRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateLeftRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(RotateLeftRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateRightRequestEvent =
+    public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateRightRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(RotateRightRequest), RoutingStrategies.Bubble);
     
-    public static RoutedEvent<ImageFitToWindowEventArgs> FitToWindowRequestEvent =
+    public static readonly RoutedEvent<ImageFitToWindowEventArgs> FitToWindowRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImageFitToWindowEventArgs>(nameof(FitToWindowRequest), RoutingStrategies.Bubble);
     
     public event EventHandler<ImagePreviewToolbarRequestEventArgs>? HorizontalFlipRequest

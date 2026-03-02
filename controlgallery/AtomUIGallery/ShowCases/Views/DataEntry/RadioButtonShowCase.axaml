@@ -6,11 +6,6 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:showCase="clr-namespace:AtomUIGallery.ShowCases.Views">
     <gallery:ShowCasePanel>
-        <gallery:ShowCasePanel.Styles>
-            <Style Selector="atom|RadioButton">
-                <Setter Property="Margin" Value="0, 0, 5, 10" />
-            </Style>
-        </gallery:ShowCasePanel.Styles>
         <gallery:ShowCaseItem
             Title="Basic"
             Description="The simplest use.">
@@ -40,7 +35,7 @@
         <gallery:ShowCaseItem
             Title="Radio Group"
             Description="A group of radio components.">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+            <atom:RadioButtonGroup>
                 <atom:RadioButton>
                     <StackPanel Spacing="5" Orientation="Vertical">
                         <antdicons:LineChartOutlined Width="18" Height="18"/>
@@ -65,18 +60,24 @@
                         <TextBlock>PieChart</TextBlock>
                     </StackPanel>
                 </atom:RadioButton>
-            </WrapPanel>
+            </atom:RadioButtonGroup>
         </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
             Title="Vertical Radio Group"
             Description="Vertical Radio Group.">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+            <atom:RadioButtonGroup Orientation="Vertical" HorizontalAlignment="Left">
                 <atom:RadioButton>Option A</atom:RadioButton>
                 <atom:RadioButton>Option B</atom:RadioButton>
                 <atom:RadioButton>Option C</atom:RadioButton>
                 <atom:RadioButton>Option D</atom:RadioButton>
-            </StackPanel>
+            </atom:RadioButtonGroup>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Radio Group by Items source"
+            Description="Radio Group.">
+            <atom:RadioButtonGroup HorizontalAlignment="Left" ItemsSource="{Binding RadioOptions}"/>
         </gallery:ShowCaseItem>
 
         <gallery:ShowCaseItem
@@ -98,7 +99,7 @@
                     <atom:OptionButton>Pear</atom:OptionButton>
                     <atom:OptionButton>Orange</atom:OptionButton>
                 </atom:OptionButtonGroup>
-                
+        
                 <atom:OptionButtonGroup ButtonStyle="Outline">
                     <atom:OptionButton>Apple</atom:OptionButton>
                     <atom:OptionButton IsChecked="True">Pear</atom:OptionButton>
@@ -116,19 +117,19 @@
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=LinuxOutlined}">Linux</atom:OptionButton>
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=WindowsOutlined}">Windows</atom:OptionButton>
                 </atom:OptionButtonGroup>
-                
+        
                 <atom:OptionButtonGroup ButtonStyle="Outline">
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}">macOS</atom:OptionButton>
                     <atom:OptionButton IsChecked="True" Icon="{antdicons:AntDesignIconProvider Kind=LinuxOutlined}">Linux</atom:OptionButton>
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=WindowsOutlined}">Windows</atom:OptionButton>
                 </atom:OptionButtonGroup>
-                
+        
                 <atom:OptionButtonGroup ButtonStyle="Solid" IsEnabled="False">
                     <atom:OptionButton IsChecked="True" Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}">macOS</atom:OptionButton>
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=LinuxOutlined}">Linux</atom:OptionButton>
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=WindowsOutlined}">Windows</atom:OptionButton>
                 </atom:OptionButtonGroup>
-                
+        
                 <atom:OptionButtonGroup ButtonStyle="Outline" IsEnabled="False">
                     <atom:OptionButton Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}">macOS</atom:OptionButton>
                     <atom:OptionButton IsChecked="True" Icon="{antdicons:AntDesignIconProvider Kind=LinuxOutlined}">Linux</atom:OptionButton>

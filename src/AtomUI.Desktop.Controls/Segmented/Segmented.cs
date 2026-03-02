@@ -225,10 +225,7 @@ public class Segmented : SelectingItemsControl,
             
             if (item != null && item is not Visual)
             {
-                if (!segmentedItem.IsSet(SegmentedItem.ContentProperty))
-                {
-                    segmentedItem.SetCurrentValue(SegmentedItem.ContentProperty, item);
-                }
+                segmentedItem.SetCurrentValue(SegmentedItem.ContentProperty, item);
             }
             
             if (ItemTemplate != null)

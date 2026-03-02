@@ -59,6 +59,6 @@ internal class RadioButtonToken : AbstractControlDesignToken
         // internal
         RadioColor   = colorWhite;
         RadioBgColor = colorPrimary;
-        TextMargin   = new Thickness(SharedToken.UniformlyMarginXXS, 0, 0, 0);
+        TextMargin   = new Thickness(SharedToken.UniformlyMarginXS, 0, SharedToken.UniformlyMarginXS, 0);
     }
 }

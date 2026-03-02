@@ -4,5 +4,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="RadioButtonTheme.axaml"/>
         <ResourceInclude Source="RadioIndicatorTheme.axaml"/>
+        <ResourceInclude Source="RadioButtonGroupTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

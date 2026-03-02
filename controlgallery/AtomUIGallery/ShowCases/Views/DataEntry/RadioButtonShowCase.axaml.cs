@@ -1,4 +1,5 @@
-﻿using AtomUIGallery.ShowCases.ViewModels;
+﻿using AtomUI.Desktop.Controls;
+using AtomUIGallery.ShowCases.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 
@@ -8,8 +9,25 @@ public partial class RadioButtonShowCase : ReactiveUserControl<RadioButtonViewMo
 {
     public RadioButtonShowCase()
     {
-        this.WhenActivated(disposables => { });
+        this.WhenActivated(disposables =>
+        {
+            if (DataContext is RadioButtonViewModel viewModel)
+            {
+                ConfigureRadioOptions(viewModel);
+            }
+        });
         InitializeComponent();
+    }
+
+    private void ConfigureRadioOptions(RadioButtonViewModel viewModel)
+    {
+        viewModel.RadioOptions = new List<RadioButtonOption>
+        {
+            new () { Content = "Option A"},
+            new () { Content = "Option B", IsChecked = true},
+            new () { Content = "Option C"},
+            new () { Content = "Option D", IsEnabled = false},
+        };
     }
     
     public void ToggleDisabledStatus(object arg)

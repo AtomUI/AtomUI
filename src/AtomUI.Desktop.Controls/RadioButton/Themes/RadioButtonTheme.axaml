@@ -41,7 +41,7 @@
                 Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableWaveSpirit}}" />
 
         <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
-            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:CheckBoxTokenKey.TextMargin}}" />
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:RadioButtonTokenKey.TextMargin}}" />
         </Style>
 
         <Style Selector="^:disabled">

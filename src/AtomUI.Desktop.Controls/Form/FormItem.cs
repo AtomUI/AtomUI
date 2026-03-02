@@ -405,6 +405,10 @@ public class FormItem : TemplatedControl,
         {
             newFormItemAware.ValueChanged += HandleContentValueChanged;
         }
+        else
+        {
+            throw new Exception($"Form item content: {change.NewValue?.GetType().FullName} not implement IFormItemAware interface");
+        }
     }
 
     private void HandleContentValueChanged(object? sender, EventArgs e)

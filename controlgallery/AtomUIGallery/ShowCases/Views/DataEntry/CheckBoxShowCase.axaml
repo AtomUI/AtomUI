@@ -16,7 +16,7 @@
                 <atom:CheckBox>Checkbox</atom:CheckBox>
             </StackPanel>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Disabled"
             Description="Disabled checkbox.">
@@ -26,7 +26,7 @@
                 <atom:CheckBox IsChecked="True" IsEnabled="False">Checked</atom:CheckBox>
             </StackPanel>
         </gallery:ShowCaseItem>
-
+        
         <gallery:ShowCaseItem
             Title="Controlled Checkbox"
             Description="Communicated with other components.">
@@ -54,21 +54,23 @@
             Title="Checkbox Group"
             Description="Generate a group of checkboxes from an array.">
             <StackPanel HorizontalAlignment="Left" Spacing="10" Orientation="Vertical">
-                <WrapPanel Margin="0, 0, 0, 10">
+                <atom:CheckBoxGroup>
                     <atom:CheckBox IsChecked="True">Apple</atom:CheckBox>
                     <atom:CheckBox IsChecked="True">Pear</atom:CheckBox>
                     <atom:CheckBox IsChecked="True">Orange</atom:CheckBox>
-                </WrapPanel>
-                <WrapPanel Margin="0, 0, 0, 10">
+                </atom:CheckBoxGroup>
+                <atom:CheckBoxGroup>
                     <atom:CheckBox>Apple</atom:CheckBox>
                     <atom:CheckBox IsChecked="True">Pear</atom:CheckBox>
                     <atom:CheckBox>Orange</atom:CheckBox>
-                </WrapPanel>
-                <WrapPanel Margin="0, 0, 0, 10">
+                </atom:CheckBoxGroup>
+                <atom:CheckBoxGroup>
                     <atom:CheckBox IsChecked="True" IsEnabled="False">Apple</atom:CheckBox>
                     <atom:CheckBox IsEnabled="False">Pear</atom:CheckBox>
                     <atom:CheckBox IsEnabled="False">Orange</atom:CheckBox>
-                </WrapPanel>
+                </atom:CheckBoxGroup>
+                <atom:CheckBoxGroup ItemsSource="{Binding CheckBoxOptions}"
+                                    CheckedItems="{Binding DefaultCheckBoxOptions}"/>
             </StackPanel>
         </gallery:ShowCaseItem>
         

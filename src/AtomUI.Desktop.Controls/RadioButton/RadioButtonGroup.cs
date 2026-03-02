@@ -183,6 +183,7 @@ public class RadioButtonGroup : ItemsControl,
             {
                 SetCurrentValue(CheckedItemProperty, radioButton);
             }
+            args.Handled = true;
         }
     }
 

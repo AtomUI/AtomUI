@@ -4,5 +4,7 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="CheckBoxTheme.axaml"/>
         <ResourceInclude Source="CheckBoxIndicatorTheme.axaml"/>
+        <ResourceInclude Source="CheckBoxGroupTheme.axaml"/>
+        <ResourceInclude Source="CheckBoxItemsControlTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

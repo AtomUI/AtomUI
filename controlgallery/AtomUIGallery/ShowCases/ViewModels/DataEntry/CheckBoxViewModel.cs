@@ -87,6 +87,22 @@ public class CheckBoxViewModel : ReactiveObject, IRoutableViewModel,
         get => _orangeCheckedStatus;
         set => this.RaiseAndSetIfChanged(ref _orangeCheckedStatus, value);
     }
+    
+    private IList<CheckBoxOption>? _checkBoxOptions;
+
+    public IList<CheckBoxOption>? CheckBoxOptions
+    {
+        get => _checkBoxOptions;
+        set => this.RaiseAndSetIfChanged(ref _checkBoxOptions, value);
+    }
+    
+    private IList<CheckBoxOption>? _defaultCheckBoxOptions;
+
+    public IList<CheckBoxOption>? DefaultCheckBoxOptions
+    {
+        get => _defaultCheckBoxOptions;
+        set => this.RaiseAndSetIfChanged(ref _defaultCheckBoxOptions, value);
+    }
 
     public ReactiveCommand<Button, Unit> CheckStatusCommand { get; }
     public ReactiveCommand<Button, Unit> EnableStatusCommand { get; }

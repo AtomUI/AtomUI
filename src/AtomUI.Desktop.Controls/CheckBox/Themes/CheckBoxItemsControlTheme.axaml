@@ -1,0 +1,24 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:CheckBoxItemsControl}" TargetType="atom:CheckBoxItemsControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ItemsPresenter Name="{x:Static atom:OptionButtonGroupThemeConstants.ItemsPresenterPart}"
+                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
+        
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="{Binding (atom:CheckBoxItemsControl).Orientation, RelativeSource={RelativeSource TemplatedParent}}"
+                            Spacing="{Binding (atom:CheckBoxItemsControl).ItemSpacing, RelativeSource={RelativeSource TemplatedParent}}"/>
+            </ItemsPanelTemplate>
+        </Setter>
+        
+    </ControlTheme>
+</ResourceDictionary>

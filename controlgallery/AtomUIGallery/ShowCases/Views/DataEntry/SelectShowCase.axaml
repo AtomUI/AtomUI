@@ -9,7 +9,7 @@
     <gallery:ShowCasePanel>
         <gallery:ShowCaseItem
             Title="Basic"
-            Description="Basic Usage." IsOccupyEntireRow="False">
+            Description="Basic Usage." IsOccupyEntireRow="True">
             <WrapPanel ItemSpacing="10" LineSpacing="10">
                 <atom:Select Mode="Single" PlaceholderText="Please select" Width="120"
                              DefaultValues="lucy">

@@ -4,6 +4,7 @@
                             x:Class="AtomUIGallery.Controls.GalleryControlThemesProvider"
                             Id="AtomUIGallery.Controls">
     <atom:ControlThemesProvider.ControlThemes>
+        <ResourceInclude Source="AxamlCodeBlock.axaml" />
         <ResourceInclude Source="ShowCaseItem.axaml" />
         <ResourceInclude Source="ShowCasePanel.axaml" />
         <ResourceInclude Source="ColorItemControl.axaml" />

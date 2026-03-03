@@ -2,7 +2,9 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:gallery="https://atomui.net/oss-controls/gallery">
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    xmlns:gallery="https://atomui.net/oss-controls/gallery"
+    xmlns:lang="using:AtomUIGallery.Controls.Localization.ShowCaseItemLang">
 
     <ControlTheme x:Key="{x:Type gallery:ShowCaseItem}"
                   TargetType="{x:Type gallery:ShowCaseItem}">
@@ -15,13 +17,54 @@
                         <ContentPresenter
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Margin="0, 0, 0, 40" />
+                            Margin="0,0,0,24" />
                         <atom:Separator TitlePosition="Left"
                                         FontWeight="Bold"
                                         Title="{TemplateBinding Title}" />
                         <atom:TextBlock TextWrapping="Wrap"
-                                        Margin="0, 10, 0, 0"
+                                        Margin="0,10,0,0"
                                         Text="{TemplateBinding Description}" />
+                        <Grid Margin="0,0,0,0"
+                              IsVisible="{TemplateBinding HasAxamlSource}"
+                              RowDefinitions="Auto,Auto,Auto">
+                            <Border Name="PART_CodeToolbarDivider"
+                                    Grid.Row="0"
+                                    Height="1" />
+                            <StackPanel Grid.Row="1"
+                                        Margin="0,6,0,0"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="6">
+                                <atom:Button Name="PART_ToggleCodeButton"
+                                             Shape="Circle"
+                                             SizeType="Small"
+                                             atom:ToolTip.Tip="{DynamicResource {x:Static lang:ShowCaseItemLangResourceKey.ToolTipShowHideCode}}" />
+                                <atom:Button Name="PART_CopyCodeButton"
+                                             Shape="Circle"
+                                             ButtonType="Text"
+                                             SizeType="Small"
+                                             atom:ToolTip.Tip="{DynamicResource {x:Static lang:ShowCaseItemLangResourceKey.ToolTipCopyCode}}" />
+                                <atom:Button Name="PART_OpenInNewWindowButton"
+                                             Shape="Circle"
+                                             ButtonType="Text"
+                                             SizeType="Small"
+                                             atom:ToolTip.Tip="{DynamicResource {x:Static lang:ShowCaseItemLangResourceKey.ToolTipOpenInNewWindow}}" />
+                                <atom:Button Name="PART_OpenRepositoryButton"
+                                             Shape="Circle"
+                                             ButtonType="Text"
+                                             SizeType="Small"
+                                             IsVisible="{TemplateBinding HasRepositorySourceUrl}"
+                                             Icon="{antdicons:AntDesignIconProvider Kind=GithubOutlined}"
+                                             atom:ToolTip.Tip="{DynamicResource {x:Static lang:ShowCaseItemLangResourceKey.ToolTipOpenOnGitHub}}" />
+                            </StackPanel>
+                            <Border Name="PART_CodePanel"
+                                    Grid.Row="2"
+                                    IsVisible="{TemplateBinding IsCodeExpanded}">
+                                <gallery:AxamlCodeBlock Code="{TemplateBinding AxamlSource}"
+                                                        FontFamily="Consolas,Menlo,Monaco,monospace"
+                                                        FontSize="13" />
+                            </Border>
+                        </Grid>
                     </StackPanel>
                 </Border>
             </ControlTemplate>
@@ -37,6 +80,52 @@
         </Style>
         <Style Selector="^[IsFake=True] /template/ atom|Separator">
             <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^ /template/ Border#PART_CodeToolbarDivider">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
+        </Style>
+        <Style Selector="^ /template/ atom|Button#PART_ToggleCodeButton">
+            <Setter Property="ButtonType" Value="Text" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+        </Style>
+        <Style Selector="^[IsCodeExpanded=False] /template/ atom|Button#PART_ToggleCodeButton">
+            <Setter Property="Icon">
+                <Template>
+                    <antdicons:ExpandAltOutlined />
+                </Template>
+            </Setter>
+        </Style>
+        <Style Selector="^ /template/ atom|Button#PART_CopyCodeButton">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+            <Setter Property="Icon">
+                <Template>
+                    <antdicons:CopyOutlined />
+                </Template>
+            </Setter>
+        </Style>
+        <Style Selector="^ /template/ atom|Button#PART_OpenRepositoryButton">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+        </Style>
+        <Style Selector="^ /template/ atom|Button#PART_OpenInNewWindowButton">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+            <Setter Property="Icon">
+                <Template>
+                    <antdicons:ExportOutlined />
+                </Template>
+            </Setter>
+        </Style>
+        <Style Selector="^[IsCodeExpanded=True] /template/ atom|Button#PART_ToggleCodeButton">
+            <Setter Property="ButtonType" Value="Default" />
+            <Setter Property="Icon">
+                <Template>
+                    <antdicons:CompressOutlined />
+                </Template>
+            </Setter>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PART_CodePanel">
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorFillQuaternary}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorderSecondary}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

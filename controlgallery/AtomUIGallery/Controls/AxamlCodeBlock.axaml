@@ -1,0 +1,22 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:gallery="https://atomui.net/oss-controls/gallery"
+                    xmlns:avaloniaEdit="https://github.com/avaloniaui/avaloniaedit"
+                    x:CompileBindings="True">
+
+    <ControlTheme x:Key="{x:Type gallery:AxamlCodeBlock}" TargetType="gallery:AxamlCodeBlock">
+        <Setter Property="FontFamily" Value="Consolas,Menlo,Monaco,monospace" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="gallery:AxamlCodeBlock">
+                <avaloniaEdit:TextEditor x:Name="PART_Editor"
+                                         IsReadOnly="True"
+                                         ShowLineNumbers="True"
+                                         Padding="16"
+                                         FontFamily="{TemplateBinding FontFamily}"
+                                         FontSize="{TemplateBinding FontSize}" />
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

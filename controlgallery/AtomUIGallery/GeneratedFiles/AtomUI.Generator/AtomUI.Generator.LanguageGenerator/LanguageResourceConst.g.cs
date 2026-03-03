@@ -1,6 +1,18 @@
 ﻿using AtomUI.Theme;
 using AtomUI.Theme.Language;
 
+namespace AtomUIGallery.Controls.Localization.ShowCaseItemLang
+{
+    internal static class ShowCaseItemLangResourceKey
+    {
+        public static readonly LanguageResourceKey CopySuccessMessage = new LanguageResourceKey("ShowCaseItem.CopySuccessMessage", "AtomUIGallery");
+        public static readonly LanguageResourceKey ToolTipCopyCode = new LanguageResourceKey("ShowCaseItem.ToolTipCopyCode", "AtomUIGallery");
+        public static readonly LanguageResourceKey ToolTipOpenInNewWindow = new LanguageResourceKey("ShowCaseItem.ToolTipOpenInNewWindow", "AtomUIGallery");
+        public static readonly LanguageResourceKey ToolTipOpenOnGitHub = new LanguageResourceKey("ShowCaseItem.ToolTipOpenOnGitHub", "AtomUIGallery");
+        public static readonly LanguageResourceKey ToolTipShowHideCode = new LanguageResourceKey("ShowCaseItem.ToolTipShowHideCode", "AtomUIGallery");
+    }
+}
+
 namespace AtomUIGallery.Workspace.Localization.CaseNavigationLang
 {
     internal static class CaseNavigationLangResourceKey

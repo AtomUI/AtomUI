@@ -28,6 +28,14 @@ public class FormViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _isFormDisabled, value);
     }
     
+    private InputControlStyleVariant _formStyleVariant = InputControlStyleVariant.Outline;
+
+    public InputControlStyleVariant FormStyleVariant
+    {
+        get => _formStyleVariant;
+        set => this.RaiseAndSetIfChanged(ref _formStyleVariant, value);
+    }
+    
     public FormViewModel(IScreen screen)
     {
         HostScreen = screen;

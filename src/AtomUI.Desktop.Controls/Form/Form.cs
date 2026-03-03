@@ -49,15 +49,16 @@ public class Form : ItemsControl,
                     ISizeTypeAware,
                     IMotionAwareControl,
                     IControlSharedTokenResourcesHost,
-                    IForm
+                    IForm,
+                    IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsShowColonProperty =
         AvaloniaProperty.Register<Form, bool>(
             nameof(IsShowColon), true);
     
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<Form>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<Form>();
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<Form>();
@@ -118,7 +119,7 @@ public class Form : ItemsControl,
         set => SetValue(IsShowColonProperty, value);
     }
     
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
@@ -341,7 +342,7 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, IsShowColonProperty, formItem, FormItem.IsShowColonProperty));
             disposables.Add(BindUtils.RelayBind(this, RequiredMarkProperty, formItem, FormItem.RequiredMarkProperty));
             disposables.Add(BindUtils.RelayBind(this, ValidateTriggerProperty, formItem, FormItem.ValidateTriggerProperty));
-            
+            disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, formItem, FormItem.StyleVariantProperty));
             PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))

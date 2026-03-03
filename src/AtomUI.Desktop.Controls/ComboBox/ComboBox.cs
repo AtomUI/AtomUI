@@ -21,7 +21,9 @@ using AvaloniaComboBox = Avalonia.Controls.ComboBox;
 public class ComboBox : AvaloniaComboBox,
                         IMotionAwareControl,
                         IControlSharedTokenResourcesHost,
-                        ISizeTypeAware
+                        ISizeTypeAware,
+                        IInputControlStatusAware,
+                        IInputControlStyleVariantAware
 {
     #region 公共属性定义
 
@@ -52,11 +54,11 @@ public class ComboBox : AvaloniaComboBox,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<ComboBox>();
 
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<ComboBox>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<ComboBox>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<ComboBox>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<ComboBox>();
 
     public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
         TextBox.IsEnableClearButtonProperty.AddOwner<ComboBox>();
@@ -124,13 +126,13 @@ public class ComboBox : AvaloniaComboBox,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -419,8 +421,8 @@ public class ComboBox : AvaloniaComboBox,
 
     private void UpdatePseudoClasses()
     {
-        PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
-        PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
+        PseudoClasses.Set(StdPseudoClass.Error, Status == InputControlStatus.Error);
+        PseudoClasses.Set(StdPseudoClass.Warning, Status == InputControlStatus.Warning);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

@@ -20,7 +20,9 @@ public class TextArea : AvaloniaTextBox,
                         IControlSharedTokenResourcesHost,
                         IMotionAwareControl,
                         ISizeTypeAware,
-                        IFormItemAware
+                        IFormItemAware,
+                        IInputControlStatusAware,
+                        IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -38,11 +40,11 @@ public class TextArea : AvaloniaTextBox,
     public static readonly StyledProperty<bool> IsResizableProperty =
         AvaloniaProperty.Register<TextArea, bool>(nameof(IsResizable));
     
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<TextArea>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<TextArea>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<TextArea>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<TextArea>();
 
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<TextArea>();
@@ -99,13 +101,13 @@ public class TextArea : AvaloniaTextBox,
         set => SetValue(IsResizableProperty, value);
     }
 
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -207,11 +209,11 @@ public class TextArea : AvaloniaTextBox,
 
     private void UpdatePseudoClasses()
     {
-        PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
-        PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
+        PseudoClasses.Set(StdPseudoClass.Error, Status == InputControlStatus.Error);
+        PseudoClasses.Set(StdPseudoClass.Warning, Status == InputControlStatus.Warning);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == InputControlStyleVariant.Outline);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == InputControlStyleVariant.Filled);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == InputControlStyleVariant.Borderless);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -444,15 +446,15 @@ public class TextArea : AvaloniaTextBox,
     {
         if (status == FormValidateStatus.Error)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
         }
         else if (status == FormValidateStatus.Warning)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
         }
         else
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
     }
     #endregion

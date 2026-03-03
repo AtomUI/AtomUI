@@ -36,7 +36,9 @@ public delegate object? MentionsFilterValueSelector(IMentionOption option);
 public class Mentions : TemplatedControl, 
                         IControlSharedTokenResourcesHost,
                         IMotionAwareControl,
-                        IFormItemAware
+                        IFormItemAware,
+                        IInputControlStatusAware,
+                        IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -93,11 +95,11 @@ public class Mentions : TemplatedControl,
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<Mentions>();
     
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<Mentions>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<Mentions>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<Mentions>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<Mentions>();
     
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         AvaloniaProperty.Register<Mentions, string?>(nameof(PlaceholderText));
@@ -260,13 +262,13 @@ public class Mentions : TemplatedControl,
         set => SetValue(ContentRightAddOnTemplateProperty, value);
     }
     
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -1342,15 +1344,15 @@ public class Mentions : TemplatedControl,
     {
         if (status == FormValidateStatus.Error)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
         }
         else if (status == FormValidateStatus.Warning)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
         }
         else
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
     }
     #endregion

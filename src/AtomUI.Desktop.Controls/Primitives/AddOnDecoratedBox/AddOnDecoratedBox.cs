@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives.Themes;
@@ -19,25 +18,12 @@ using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls;
 
-public enum AddOnDecoratedVariant
-{
-    Outline,
-    Filled,
-    Borderless,
-    Underlined
-}
-
-public enum AddOnDecoratedStatus
-{
-    Default,
-    Warning,
-    Error
-}
-
 internal class AddOnDecoratedBox : ContentControl, 
                                    IControlSharedTokenResourcesHost,
                                    ISizeTypeAware,
-                                   IMotionAwareControl
+                                   IMotionAwareControl,
+                                   IInputControlStatusAware,
+                                   IInputControlStyleVariantAware
 {
     public const string AddOnDecoratedBoxPart = "PART_AddOnDecoratedBox";
     
@@ -70,12 +56,11 @@ internal class AddOnDecoratedBox : ContentControl,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AddOnDecoratedBox>();
 
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AvaloniaProperty.Register<AddOnDecoratedBox, AddOnDecoratedVariant>(
-            nameof(StyleVariant));
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<AddOnDecoratedBox>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AvaloniaProperty.Register<AddOnDecoratedBox, AddOnDecoratedStatus>(nameof(Status));
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<AddOnDecoratedBox>();
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AddOnDecoratedBox>();
@@ -138,13 +123,13 @@ internal class AddOnDecoratedBox : ContentControl,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -321,9 +306,9 @@ internal class AddOnDecoratedBox : ContentControl,
     
     protected virtual void UpdatePseudoClasses()
     {
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == InputControlStyleVariant.Outline);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == InputControlStyleVariant.Filled);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == InputControlStyleVariant.Borderless);
     }
     
     protected override void OnLoaded(RoutedEventArgs e)
@@ -488,8 +473,8 @@ internal class AddOnDecoratedBox : ContentControl,
                 bottomRight: bottomRightRadius);
         }
         
-        if (StyleVariant == AddOnDecoratedVariant.Outline ||
-            StyleVariant == AddOnDecoratedVariant.Filled)
+        if (StyleVariant == InputControlStyleVariant.Outline ||
+            StyleVariant == InputControlStyleVariant.Filled)
         {
             var topThickness    = BorderThickness.Top;
             var rightThickness  = BorderThickness.Right;
@@ -501,7 +486,7 @@ internal class AddOnDecoratedBox : ContentControl,
             RightAddOnBorderThickness =
                 new Thickness(top: topThickness, right: rightThickness, bottom: bottomThickness, left: 0);
         }
-        else if (StyleVariant == AddOnDecoratedVariant.Underlined)
+        else if (StyleVariant == InputControlStyleVariant.Underlined)
         {
             LeftAddOnBorderThickness  = new Thickness(0);
             RightAddOnBorderThickness = new Thickness(0);
@@ -566,7 +551,7 @@ internal class AddOnDecoratedBox : ContentControl,
     
     private void ConfigureInnerBoxCornerRadius()
     {
-        if (StyleVariant != AddOnDecoratedVariant.Underlined)
+        if (StyleVariant != InputControlStyleVariant.Underlined)
         {
             var topLeftRadius     = CornerRadius.TopLeft;
             var topRightRadius    = CornerRadius.TopRight;
@@ -636,11 +621,11 @@ internal class AddOnDecoratedBox : ContentControl,
 
     private void ConfigureInnerBoxBorderThickness()
     {
-        if (StyleVariant == AddOnDecoratedVariant.Borderless)
+        if (StyleVariant == InputControlStyleVariant.Borderless)
         {
             SetCurrentValue(InnerBoxBorderThicknessProperty, new Thickness(0));
         }
-        else if (StyleVariant == AddOnDecoratedVariant.Underlined)
+        else if (StyleVariant == InputControlStyleVariant.Underlined)
         {
             SetCurrentValue(InnerBoxBorderThicknessProperty, new Thickness(0, 0, 0, BorderThickness.Bottom));
         }
@@ -654,7 +639,7 @@ internal class AddOnDecoratedBox : ContentControl,
     {
         {
             var warningStyle = new Style(x =>
-                x.PropertyEquals(StatusProperty, AddOnDecoratedStatus.Warning));
+                x.PropertyEquals(StatusProperty, InputControlStatus.Warning));
             
             var iconStyle = new Style(x => Selectors.Or(
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
@@ -674,7 +659,7 @@ internal class AddOnDecoratedBox : ContentControl,
         }
         {
             var errorStyle = new Style(x =>
-                x.PropertyEquals(StatusProperty, AddOnDecoratedStatus.Error));
+                x.PropertyEquals(StatusProperty, InputControlStatus.Error));
                
             var iconStyle = new Style(x => Selectors.Or(
                 x.Nesting().Descendant().OfType<ContentPresenter>().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()

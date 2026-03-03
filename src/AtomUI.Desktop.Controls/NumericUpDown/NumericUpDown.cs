@@ -23,7 +23,9 @@ public class NumericUpDown : AvaloniaNumericUpDown,
                              IMotionAwareControl, 
                              IControlSharedTokenResourcesHost,
                              ICompactSpaceAware,
-                             IFormItemAware
+                             IFormItemAware,
+                             IInputControlStatusAware,
+                             IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -50,11 +52,11 @@ public class NumericUpDown : AvaloniaNumericUpDown,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<NumericUpDown>();
 
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<NumericUpDown>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<NumericUpDown>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<NumericUpDown>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<NumericUpDown>();
 
     public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
         TextBox.IsEnableClearButtonProperty.AddOwner<NumericUpDown>();
@@ -130,13 +132,13 @@ public class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -675,7 +677,7 @@ public class NumericUpDown : AvaloniaNumericUpDown,
             addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
         }
         
-        if (addOnDecoratedBox == null || StyleVariant != AddOnDecoratedVariant.Outline)
+        if (addOnDecoratedBox == null || StyleVariant != InputControlStyleVariant.Outline)
         {
             return 0.0;
         }
@@ -722,15 +724,15 @@ public class NumericUpDown : AvaloniaNumericUpDown,
     {
         if (status == FormValidateStatus.Error)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
         }
         else if (status == FormValidateStatus.Warning)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
         }
         else
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
     }
     #endregion

@@ -1,5 +1,8 @@
+using System.Diagnostics;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
+using Avalonia.Controls;
 using Avalonia.Layout;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -53,6 +56,22 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
             if (args.CheckedOption.Tag is FormLayout formLayout)
             {
                 vm.FormLayout = formLayout;
+            }
+        }
+    }
+
+    private void HandleFormStyleVariantChanged(object? sender, SelectionChangedEventArgs args)
+    {
+        if (sender is Segmented segmented)
+        {
+            if (segmented.SelectedItem is SegmentedItem segmentedItem)
+            {
+                var styleVariant = segmentedItem.Tag as InputControlStyleVariant?;
+                Debug.Assert(styleVariant != null);
+                if (DataContext is FormViewModel vm)
+                {
+                    vm.FormStyleVariant = styleVariant.Value;
+                }
             }
         }
     }

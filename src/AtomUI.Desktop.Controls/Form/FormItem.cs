@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Text;
 using AtomUI.Controls;
+using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
 using AtomUI.Utils;
@@ -268,8 +270,8 @@ public class FormItem : TemplatedControl,
     internal static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<FormItem>();
     
-    internal static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<FormItem>();
+    internal static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<FormItem>();
     
     internal static readonly DirectProperty<FormItem, bool> IsColonVisibleProperty =
         AvaloniaProperty.RegisterDirect<FormItem, bool>(
@@ -310,7 +312,7 @@ public class FormItem : TemplatedControl,
         set => SetValue(SizeTypeProperty, value);
     }
     
-    internal AddOnDecoratedVariant StyleVariant
+    internal InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
@@ -381,6 +383,7 @@ public class FormItem : TemplatedControl,
     private Panel? _childrenLayout;
     private Panel? _labelLayout;
     private MediaBreakPoint? _breakPoint;
+    private CompositeDisposable? _disposables;
 
     internal Form? OwnerForm;
     
@@ -408,6 +411,18 @@ public class FormItem : TemplatedControl,
         else
         {
             throw new Exception($"Form item content: {change.NewValue?.GetType().FullName} not implement IFormItemAware interface");
+        }
+        
+        _disposables?.Dispose();
+        _disposables = new CompositeDisposable(2);
+        if (Content is ISizeTypeAware)
+        {
+            _disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, Content, SizeTypeProperty));
+        }
+
+        if (Content is IInputControlStyleVariantAware)
+        {
+            _disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, Content, StyleVariantProperty));
         }
     }
 

@@ -195,120 +195,145 @@
         <!-- -->
         <!-- </gallery:ShowCaseItem> -->
         <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Form Layout" -->
+        <!--     Description="There are three layout for form: horizontal, vertical, inline." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <StackPanel Orientation="Vertical" Spacing="5"> -->
+        <!--         <atom:CheckBox IsChecked="{Binding IsFormDisabled, Mode=TwoWay}">Form disabled</atom:CheckBox> -->
+        <!--         <atom:Form LabelColInfo="8*" -->
+        <!--                    WrapperColInfo="16*" -->
+        <!--                    MinWidth="600" -->
+        <!--                    HorizontalAlignment="Left" -->
+        <!--                    IsEnabled="{Binding IsFormDisabled, Converter={x:Static BoolConverters.Not}}"> -->
+        <!--             <atom:FormItem LabelText="Checkbox" FieldName="checkbox"> -->
+        <!--                 <atom:CheckBox>Checkbox</atom:CheckBox> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem LabelText="Radio" FieldName="radio"> -->
+        <!--                 <atom:RadioButtonGroup> -->
+        <!--                     <atom:RadioButton>Apple</atom:RadioButton> -->
+        <!--                     <atom:RadioButton>Pear</atom:RadioButton> -->
+        <!--                 </atom:RadioButtonGroup> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem LabelText="Input" FieldName="input"> -->
+        <!--                 <atom:LineEdit/> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem LabelText="Select" FieldName="select"> -->
+        <!--                 <atom:Select HorizontalAlignment="Stretch"> -->
+        <!--                     <atom:SelectOption Header="Demo" Value="demo"/> -->
+        <!--                 </atom:Select> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="TreeSelect" FieldName="treeSelect"> -->
+        <!--                 <atom:TreeSelect HorizontalAlignment="Stretch"> -->
+        <!--                     <atom:TreeItemNode Header="Light" Value="light"> -->
+        <!--                         <atom:TreeItemNode Header="Bamboo" Value="bamboo"/> -->
+        <!--                     </atom:TreeItemNode> -->
+        <!--                 </atom:TreeSelect> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Cascader" FieldName="cascader"> -->
+        <!--                 <atom:Cascader HorizontalAlignment="Stretch"> -->
+        <!--                     <atom:CascaderOption Header="Zhejiang" Value="zhejiang"> -->
+        <!--                         <atom:CascaderOption Header="Hangzhou" Value="hangzhou"/> -->
+        <!--                     </atom:CascaderOption> -->
+        <!--                 </atom:Cascader> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="DatePicker" FieldName="datePicker"> -->
+        <!--                 <atom:DatePicker PlaceholderText="Select date"/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="RangePicker" FieldName="rangePicker"> -->
+        <!--                 <atom:RangeDatePicker PlaceholderText="Start date" -->
+        <!--                                       SecondaryPlaceholderText="End date"/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="InputNumber" FieldName="inputNumber"> -->
+        <!--                 <atom:NumericUpDown MinWidth="80"/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="TextArea" FieldName="textArea"> -->
+        <!--                 <atom:TextArea Lines="4"/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Switch" FieldName="switch"> -->
+        <!--                 <atom:ToggleSwitch/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Upload" FieldName="upload"> -->
+        <!--                 <atom:Upload Name="AvatarDemoPictureCardUpload" ListType="PictureCard"> -->
+        <!--                     <StackPanel Orientation="Vertical"> -->
+        <!--                         <Panel> -->
+        <!--                             <antdicons:PlusOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}, Converter={x:Static BoolConverters.Not}}" -->
+        <!--                                                     StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"/> -->
+        <!--                             <antdicons:LoadingOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}}" -->
+        <!--                                                        StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}" -->
+        <!--                                                        LoadingAnimation="Spin"/> -->
+        <!--                         </Panel> -->
+        <!--                         <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock> -->
+        <!--                     </StackPanel> -->
+        <!--                 </atom:Upload> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Button" FieldName="button"> -->
+        <!--                 <atom:Button>Button</atom:Button> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Slider" FieldName="slider"> -->
+        <!--                 <atom:Slider/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="ColorPicker" FieldName="colorPicker"> -->
+        <!--                 <atom:ColorPicker/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Rate" FieldName="rate"> -->
+        <!--                 <atom:Rate/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Mentions" FieldName="mentions"> -->
+        <!--                 <atom:Mentions DefaultValue="@afc163"/> -->
+        <!--             </atom:FormItem> -->
+        <!--              -->
+        <!--             <atom:FormItem LabelText="Tree" FieldName="tree"> -->
+        <!--                 <atom:TreeView> -->
+        <!--                     <atom:TreeItem Header="Parent 1" ItemKey="0-0"> -->
+        <!--                         <atom:TreeItem Header="Child 1-1" ItemKey="0-0-0"> -->
+        <!--                             <atom:TreeItem Header="Grandchild 1-1-1" ItemKey="0-0-0-0"/> -->
+        <!--                         </atom:TreeItem> -->
+        <!--                         <atom:TreeItem Header="Child 1-2" ItemKey="0-0-1"/> -->
+        <!--                     </atom:TreeItem> -->
+        <!--                     <atom:TreeItem Header="Parent 2" ItemKey="0-1"> -->
+        <!--                         <atom:TreeItem Header="Child 2-1" ItemKey="0-1-0"/> -->
+        <!--                     </atom:TreeItem> -->
+        <!--                 </atom:TreeView> -->
+        <!--             </atom:FormItem> -->
+        <!--         </atom:Form> -->
+        <!--     </StackPanel> -->
+        <!-- </gallery:ShowCaseItem> -->
+
         <gallery:ShowCaseItem
-            Title="Form Layout"
-            Description="There are three layout for form: horizontal, vertical, inline."
+            Title="Form variants"
+            Description="Change the variant of all components in the form, options include: outlined filled borderless and underlined."
             IsOccupyEntireRow="True">
-            <StackPanel Orientation="Vertical" Spacing="5">
-                <atom:CheckBox IsChecked="{Binding IsFormDisabled, Mode=TwoWay}">Form disabled</atom:CheckBox>
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:TextBlock VerticalAlignment="Center">Form variant:</atom:TextBlock>
+                    <atom:Segmented SelectionChanged="HandleFormStyleVariantChanged">
+                        <atom:SegmentedItem IsSelected="True" Tag="{x:Static atom:InputControlStyleVariant.Outline}">outlined</atom:SegmentedItem>
+                        <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Filled}">filled</atom:SegmentedItem>
+                        <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Borderless}">borderless</atom:SegmentedItem>
+                        <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Underlined}">underlined</atom:SegmentedItem>
+                    </atom:Segmented>
+                </StackPanel>
+
                 <atom:Form LabelColInfo="8*"
                            WrapperColInfo="16*"
                            MinWidth="600"
                            HorizontalAlignment="Left"
-                           IsEnabled="{Binding IsFormDisabled, Converter={x:Static BoolConverters.Not}}">
-                    <atom:FormItem LabelText="Checkbox" FieldName="checkbox">
-                        <atom:CheckBox>Checkbox</atom:CheckBox>
-                    </atom:FormItem>
-                    <atom:FormItem LabelText="Radio" FieldName="radio">
-                        <atom:RadioButtonGroup>
-                            <atom:RadioButton>Apple</atom:RadioButton>
-                            <atom:RadioButton>Pear</atom:RadioButton>
-                        </atom:RadioButtonGroup>
-                    </atom:FormItem>
-                    <atom:FormItem LabelText="Input" FieldName="input">
-                        <atom:LineEdit/>
-                    </atom:FormItem>
-                    <atom:FormItem LabelText="Select" FieldName="select">
-                        <atom:Select HorizontalAlignment="Stretch">
-                            <atom:SelectOption Header="Demo" Value="demo"/>
-                        </atom:Select>
-                    </atom:FormItem>
+                           StyleVariant="{Binding FormStyleVariant}">
                     
-                    <atom:FormItem LabelText="TreeSelect" FieldName="treeSelect">
-                        <atom:TreeSelect HorizontalAlignment="Stretch">
-                            <atom:TreeItemNode Header="Light" Value="light">
-                                <atom:TreeItemNode Header="Bamboo" Value="bamboo"/>
-                            </atom:TreeItemNode>
-                        </atom:TreeSelect>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Cascader" FieldName="cascader">
-                        <atom:Cascader HorizontalAlignment="Stretch">
-                            <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
-                                <atom:CascaderOption Header="Hangzhou" Value="hangzhou"/>
-                            </atom:CascaderOption>
-                        </atom:Cascader>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="DatePicker" FieldName="datePicker">
-                        <atom:DatePicker PlaceholderText="Select date"/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="RangePicker" FieldName="rangePicker">
-                        <atom:RangeDatePicker PlaceholderText="Start date"
-                                              SecondaryPlaceholderText="End date"/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="InputNumber" FieldName="inputNumber">
-                        <atom:NumericUpDown MinWidth="80"/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="TextArea" FieldName="textArea">
-                        <atom:TextArea Lines="4"/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Switch" FieldName="switch">
-                        <atom:ToggleSwitch/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Upload" FieldName="upload">
-                        <atom:Upload Name="AvatarDemoPictureCardUpload" ListType="PictureCard">
-                            <StackPanel Orientation="Vertical">
-                                <Panel>
-                                    <antdicons:PlusOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}, Converter={x:Static BoolConverters.Not}}"
-                                                            StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"/>
-                                    <antdicons:LoadingOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"
-                                                               StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"
-                                                               LoadingAnimation="Spin"/>
-                                </Panel>
-                                <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock>
-                            </StackPanel>
-                        </atom:Upload>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Button" FieldName="button">
-                        <atom:Button>Button</atom:Button>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Slider" FieldName="slider">
-                        <atom:Slider/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="ColorPicker" FieldName="colorPicker">
-                        <atom:ColorPicker/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Rate" FieldName="rate">
-                        <atom:Rate/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Mentions" FieldName="mentions">
-                        <atom:Mentions DefaultValue="@afc163"/>
-                    </atom:FormItem>
-                    
-                    <atom:FormItem LabelText="Tree" FieldName="tree">
-                        <atom:TreeView>
-                            <atom:TreeItem Header="Parent 1" ItemKey="0-0">
-                                <atom:TreeItem Header="Child 1-1" ItemKey="0-0-0">
-                                    <atom:TreeItem Header="Grandchild 1-1-1" ItemKey="0-0-0-0"/>
-                                </atom:TreeItem>
-                                <atom:TreeItem Header="Child 1-2" ItemKey="0-0-1"/>
-                            </atom:TreeItem>
-                            <atom:TreeItem Header="Parent 2" ItemKey="0-1">
-                                <atom:TreeItem Header="Child 2-1" ItemKey="0-1-0"/>
-                            </atom:TreeItem>
-                        </atom:TreeView>
-                    </atom:FormItem>
                 </atom:Form>
             </StackPanel>
         </gallery:ShowCaseItem>

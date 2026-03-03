@@ -14,7 +14,9 @@ namespace AtomUI.Desktop.Controls;
 public class CompactSpaceAddOn : TemplatedControl,
                                  IControlSharedTokenResourcesHost,
                                  ISizeTypeAware,
-                                 ICompactSpaceAware
+                                 ICompactSpaceAware,
+                                 IInputControlStatusAware,
+                                 IInputControlStyleVariantAware
 {
     #region 公共属性定义
 
@@ -27,11 +29,11 @@ public class CompactSpaceAddOn : TemplatedControl,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<CompactSpaceAddOn>();
     
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<CompactSpaceAddOn>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<CompactSpaceAddOn>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<CompactSpaceAddOn>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<CompactSpaceAddOn>();
 
     [Content]
     [DependsOn(nameof(ContentTemplate))]
@@ -53,13 +55,13 @@ public class CompactSpaceAddOn : TemplatedControl,
         set => SetValue(SizeTypeProperty, value);
     }
     
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -141,7 +143,7 @@ public class CompactSpaceAddOn : TemplatedControl,
 
     private void ConfigureEffectiveCornerRadius()
     {
-        if (StyleVariant != AddOnDecoratedVariant.Underlined)
+        if (StyleVariant != InputControlStyleVariant.Underlined)
         {
             var topLeftRadius     = CornerRadius.TopLeft;
             var topRightRadius    = CornerRadius.TopRight;

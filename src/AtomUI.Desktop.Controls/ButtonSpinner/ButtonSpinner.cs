@@ -29,7 +29,9 @@ public enum ButtonSpinnerLocation
 public class ButtonSpinner : Spinner,
                              IMotionAwareControl,
                              IControlSharedTokenResourcesHost,
-                             ICompactSpaceAware
+                             ICompactSpaceAware,
+                             IInputControlStatusAware,
+                             IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> AllowSpinProperty =
@@ -68,11 +70,11 @@ public class ButtonSpinner : Spinner,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<ButtonSpinner>();
 
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<ButtonSpinner>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<ButtonSpinner>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<ButtonSpinner>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<ButtonSpinner>();
     
     public static readonly StyledProperty<bool> IsButtonSpinnerFloatableProperty =
         AvaloniaProperty.Register<ButtonSpinner, bool>(nameof (IsButtonSpinnerFloatable), false);
@@ -156,13 +158,13 @@ public class ButtonSpinner : Spinner,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -520,7 +522,7 @@ public class ButtonSpinner : Spinner,
             return 0.0;
         }
     
-        if (DecoratedBox == null || DecoratedBox.StyleVariant != AddOnDecoratedVariant.Outline)
+        if (DecoratedBox == null || DecoratedBox.StyleVariant != InputControlStyleVariant.Outline)
         {
             return 0.0;
         }

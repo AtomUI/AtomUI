@@ -228,15 +228,19 @@ public class Segmented : SelectingItemsControl,
             if (item != null && item is not Visual)
             {
                 segmentedItem.SetCurrentValue(SegmentedItem.ContentProperty, item);
-            }
-            
-            if (ItemTemplate != null)
-            {
-                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, segmentedItem, SegmentedItem.ContentTemplateProperty));
+                if (ItemTemplate != null)
+                {
+                    disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, segmentedItem, SegmentedItem.ContentTemplateProperty));
+                }
             }
             
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, segmentedItem, SegmentedItem.SizeTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, segmentedItem, SegmentedItem.IsMotionEnabledProperty));
+
+            if (segmentedItem.IsSelected)
+            {
+                SetCurrentValue(SelectedItemProperty, ItemFromContainer(segmentedItem));
+            }
             
             PrepareSegmentedItem(segmentedItem, item, index, disposables);
             

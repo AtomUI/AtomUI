@@ -44,7 +44,9 @@ public class AbstractAutoComplete : TemplatedControl,
                                     IControlSharedTokenResourcesHost, 
                                     ISizeTypeAware,
                                     IMotionAwareControl,
-                                    IFormItemAware
+                                    IFormItemAware,
+                                    IInputControlStatusAware,
+                                    IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -99,11 +101,11 @@ public class AbstractAutoComplete : TemplatedControl,
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<AbstractAutoComplete>();
     
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<AbstractAutoComplete>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<AbstractAutoComplete>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<AbstractAutoComplete>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<AbstractAutoComplete>();
     
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         TextBox.PlaceholderTextProperty.AddOwner<AbstractAutoComplete>();
@@ -269,13 +271,13 @@ public class AbstractAutoComplete : TemplatedControl,
         set => SetValue(ContentRightAddOnTemplateProperty, value);
     }
     
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -1848,15 +1850,15 @@ public class AbstractAutoComplete : TemplatedControl,
     {
         if (status == FormValidateStatus.Error)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
         }
         else if (status == FormValidateStatus.Warning)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
         }
         else
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
     }
     #endregion

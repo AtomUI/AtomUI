@@ -23,7 +23,9 @@ public abstract class InfoPickerInput : TemplatedControl,
                                         IMotionAwareControl,
                                         IControlSharedTokenResourcesHost,
                                         ICompactSpaceAware,
-                                        IFormItemAware
+                                        IFormItemAware,
+                                        IInputControlStatusAware,
+                                        IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> LeftAddOnProperty =
@@ -53,11 +55,11 @@ public abstract class InfoPickerInput : TemplatedControl,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<InfoPickerInput>();
 
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<InfoPickerInput>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<InfoPickerInput>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<InfoPickerInput>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<InfoPickerInput>();
 
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(PlaceholderText));
@@ -145,13 +147,13 @@ public abstract class InfoPickerInput : TemplatedControl,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -625,7 +627,7 @@ public abstract class InfoPickerInput : TemplatedControl,
             return 0.0;
         }
 
-        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant != AddOnDecoratedVariant.Outline)
+        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant != InputControlStyleVariant.Outline)
         {
             return 0.0;
         }
@@ -671,15 +673,15 @@ public abstract class InfoPickerInput : TemplatedControl,
     {
         if (status == FormValidateStatus.Error)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
         }
         else if (status == FormValidateStatus.Warning)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
         }
         else
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
     }
     #endregion

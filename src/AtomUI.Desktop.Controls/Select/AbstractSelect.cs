@@ -22,7 +22,9 @@ public class AbstractSelect : TemplatedControl,
                               IMotionAwareControl, 
                               ISizeTypeAware,
                               ICompactSpaceAware,
-                              IFormItemAware
+                              IFormItemAware,
+                              IInputControlStatusAware,
+                              IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAllowClearProperty =
@@ -91,11 +93,11 @@ public class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<AbstractSelect>();
     
-    public static readonly StyledProperty<AddOnDecoratedVariant> StyleVariantProperty =
-        AddOnDecoratedBox.StyleVariantProperty.AddOwner<AbstractSelect>();
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<AbstractSelect>();
 
-    public static readonly StyledProperty<AddOnDecoratedStatus> StatusProperty =
-        AddOnDecoratedBox.StatusProperty.AddOwner<AbstractSelect>();
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<AbstractSelect>();
     
     public static readonly StyledProperty<SelectPopupPlacement> PlacementProperty =
         AvaloniaProperty.Register<AbstractSelect, SelectPopupPlacement>(nameof(Placement), SelectPopupPlacement.BottomEdgeAlignedLeft);
@@ -273,13 +275,13 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(ContentRightAddOnTemplateProperty, value);
     }
     
-    public AddOnDecoratedVariant StyleVariant
+    public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public AddOnDecoratedStatus Status
+    public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -848,11 +850,11 @@ public class AbstractSelect : TemplatedControl,
     protected void UpdatePseudoClasses()
     {
         PseudoClasses.Set(SelectPseudoClass.DropdownOpen, IsDropDownOpen);
-        PseudoClasses.Set(StdPseudoClass.Error, Status == AddOnDecoratedStatus.Error);
-        PseudoClasses.Set(StdPseudoClass.Warning, Status == AddOnDecoratedStatus.Warning);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == AddOnDecoratedVariant.Outline);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == AddOnDecoratedVariant.Filled);
-        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == AddOnDecoratedVariant.Borderless);
+        PseudoClasses.Set(StdPseudoClass.Error, Status == InputControlStatus.Error);
+        PseudoClasses.Set(StdPseudoClass.Warning, Status == InputControlStatus.Warning);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Outline, StyleVariant == InputControlStyleVariant.Outline);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Filled, StyleVariant == InputControlStyleVariant.Filled);
+        PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Borderless, StyleVariant == InputControlStyleVariant.Borderless);
     }
     
     void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
@@ -878,7 +880,7 @@ public class AbstractSelect : TemplatedControl,
             return 0.0;
         }
 
-        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant == AddOnDecoratedVariant.Borderless)
+        if (_addOnDecoratedBox == null || _addOnDecoratedBox.StyleVariant == InputControlStyleVariant.Borderless)
         {
             return 0.0;
         }
@@ -924,15 +926,15 @@ public class AbstractSelect : TemplatedControl,
     {
         if (status == FormValidateStatus.Error)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
         }
         else if (status == FormValidateStatus.Warning)
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
         }
         else
         {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
     }
     #endregion

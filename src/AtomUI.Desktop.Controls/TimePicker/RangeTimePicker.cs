@@ -137,6 +137,8 @@ public class RangeTimePicker : RangeInfoPickerInput,
     static RangeTimePicker()
     {
         AffectsMeasure<RangeTimePicker>(PreferredWidthProperty);
+        RangeStartSelectedTimeProperty.Changed.AddClassHandler<RangeTimePicker>((picker, args) => picker.HandleSelectedValueChanged(args));
+        RangeEndSelectedTimeProperty.Changed.AddClassHandler<RangeTimePicker>((picker, args) => picker.HandleSelectedValueChanged(args));
     }
 
     public RangeTimePicker()
@@ -511,4 +513,32 @@ public class RangeTimePicker : RangeInfoPickerInput,
             SetValue(InfoIconProperty, new ClockCircleOutlined(), BindingPriority.Template);
         }
     }
+    
+    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(object? value)
+    {
+        var rangeValue = value as (TimeSpan?, TimeSpan?)?;
+        if (rangeValue != null)
+        {
+            RangeStartSelectedTime = rangeValue.Value.Item1;
+            RangeEndSelectedTime   = rangeValue.Value.Item2;
+        }
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        return (RangeStartSelectedTime, RangeEndSelectedTime);
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        RangeStartSelectedTime = null;
+        RangeEndSelectedTime   = null;
+    }
+
+    private void HandleSelectedValueChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        NotifyFormValueChanged((RangeStartSelectedTime, RangeEndSelectedTime));
+    }
+    #endregion
 }

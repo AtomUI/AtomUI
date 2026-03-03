@@ -73,6 +73,10 @@ internal class UploadTriggerContent : ContentControl, IMotionAwareControl
     
     private void ListenForMouseEvent(RawInputEventArgs e)
     {
+        if (Classes.Contains(StdPseudoClass.Disabled))
+        {
+            return;
+        }
         if (e is RawPointerEventArgs mouseEventArgs)
         {
             if (_trigger != null && _trigger.Child != null)

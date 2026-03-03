@@ -43,7 +43,8 @@ public delegate object? AutoCompleteFilterValueSelector(IAutoCompleteOption opti
 public class AbstractAutoComplete : TemplatedControl, 
                                     IControlSharedTokenResourcesHost, 
                                     ISizeTypeAware,
-                                    IMotionAwareControl
+                                    IMotionAwareControl,
+                                    IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -932,6 +933,7 @@ public class AbstractAutoComplete : TemplatedControl,
     private void HandleValuePropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         HandleValueUpdated((string?)e.NewValue, false);
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
     
     private void HandleFilterValuePropertyChanged(AvaloniaPropertyChangedEventArgs e)
@@ -1812,4 +1814,50 @@ public class AbstractAutoComplete : TemplatedControl,
         PseudoClasses.Set(StdPseudoClass.Pressed, false);
         base.OnPointerReleased(e);
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    protected virtual void NotifySetFormValue(string? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual string? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
+    #endregion
 }

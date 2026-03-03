@@ -13,7 +13,10 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenResourcesHost
+public class Upload : ContentControl, 
+                      IMotionAwareControl,
+                      IControlSharedTokenResourcesHost,
+                      IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<IReadOnlyList<string>?> AcceptsProperty =
@@ -580,4 +583,42 @@ public class Upload : ContentControl, IMotionAwareControl, IControlSharedTokenRe
             }
         }
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return null;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

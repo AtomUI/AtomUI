@@ -484,22 +484,12 @@ public class SliderTrack : TemplatedControl
         // TODO 暂时先不加 Margin 试试
         if (Orientation == Orientation.Horizontal)
         {
-            if (!double.IsInfinity(availableSize.Width))
-            {
-                targetWidth = availableSize.Width;
-            }
-
-            targetWidth  = Math.Max(targetWidth, SliderTrackSize);
+            targetWidth  = Math.Max(0, SliderTrackSize);
             targetHeight = SliderTrackSize + _markLabelSize.Height;
         }
         else
         {
-            if (!double.IsInfinity(availableSize.Height))
-            {
-                targetHeight = availableSize.Height;
-            }
-
-            targetHeight = Math.Max(targetHeight, SliderTrackSize);
+            targetHeight = Math.Max(0, SliderTrackSize);
             targetWidth  = SliderTrackSize + _markLabelSize.Width;
         }
 

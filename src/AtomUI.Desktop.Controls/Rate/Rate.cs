@@ -17,7 +17,8 @@ namespace AtomUI.Desktop.Controls;
 public class Rate : TemplatedControl, 
                     IMotionAwareControl, 
                     ISizeTypeAware,
-                    IControlSharedTokenResourcesHost
+                    IControlSharedTokenResourcesHost,
+                    IFormItemAware
 {
     #region 公共属性定义
     
@@ -168,6 +169,7 @@ public class Rate : TemplatedControl,
     {
         AffectsMeasure<Rate>(CountProperty, CharacterProperty);
         AffectsRender<Rate>(ValueProperty, StarColorProperty);
+        ValueProperty.Changed.AddClassHandler<Rate>((rate, args) => rate.HandleValueChanged());
     }
     
     public Rate()
@@ -510,4 +512,43 @@ public class Rate : TemplatedControl,
             SetCurrentValue(ValueProperty, currentValue);
         }
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as double?);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    private void HandleValueChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(double? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual double? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, 0.0);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

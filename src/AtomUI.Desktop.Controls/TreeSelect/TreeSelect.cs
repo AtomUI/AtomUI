@@ -326,9 +326,13 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
                 treeSelect.HandleTreeViewItemClicked(item);
             }
         });
-        SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleSearchInputTextChanged(e));
-        SelectTag.ClosedEvent.AddClassHandler<TreeSelect>((x, e) => x.HandleTagCloseRequest(e));
+        SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((view, e) => view.HandleSearchInputTextChanged(e));
+        SelectTag.ClosedEvent.AddClassHandler<TreeSelect>((view, e) => view.HandleTagCloseRequest(e));
         ItemsSourceProperty.Changed.AddClassHandler<TreeSelect>((view, args) => view.HandleItemsSourceChanged(args));
+        SelectedItemProperty.Changed.AddClassHandler<TreeSelect>((view, args) =>
+            view.NotifyFormValueChanged(args.NewValue));
+        SelectedItemsProperty.Changed.AddClassHandler<TreeSelect>((view, args) =>
+            view.NotifyFormValueChanged(args.NewValue));
     }
     
     public TreeSelect()

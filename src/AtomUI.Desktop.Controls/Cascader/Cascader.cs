@@ -240,7 +240,11 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<Cascader>((x, e) => x.HandleSearchInputTextChanged(e));
         SelectTag.ClosedEvent.AddClassHandler<Cascader>((x, e) => x.HandleTagCloseRequest(e));
         IsMultipleProperty.Changed.AddClassHandler<Cascader>((cascader, e) => cascader.HandleIsCheckableChanged());
-        OptionsSourceProperty.Changed.AddClassHandler<Cascader>((view, args) => view.HandleCascaderSourceChanged(args));
+        OptionsSourceProperty.Changed.AddClassHandler<Cascader>((cascader, args) => cascader.HandleCascaderSourceChanged(args));
+        SelectedOptionProperty.Changed.AddClassHandler<Cascader>((cascader, args) =>
+            cascader.NotifyFormValueChanged(args.NewValue));
+        SelectedOptionsProperty.Changed.AddClassHandler<Cascader>((cascader, args) =>
+            cascader.NotifyFormValueChanged(args.NewValue));
     }
     
     public Cascader()

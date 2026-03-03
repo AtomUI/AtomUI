@@ -25,7 +25,8 @@ public class ToggleSwitch : ToggleButton,
                             ISizeTypeAware,
                             ICustomHitTest,
                             IWaveSpiritAwareControl,
-                            IControlSharedTokenResourcesHost
+                            IControlSharedTokenResourcesHost,
+                            IFormItemAware
 {
     #region 公共属性定义
 
@@ -275,8 +276,8 @@ public class ToggleSwitch : ToggleButton,
             KnobMovingRectProperty,
             OnContentOffsetProperty,
             OffContentOffsetProperty);
-        AffectsRender<ToggleSwitch>(GrooveBackgroundProperty,
-            SwitchOpacityProperty);
+        AffectsRender<ToggleSwitch>(GrooveBackgroundProperty, SwitchOpacityProperty);
+        IsCheckedProperty.Changed.AddClassHandler<ToggleSwitch>((toggleSwitch, args) => toggleSwitch.NotifyFormValueChanged(args.NewValue as bool?));
     }
 
     public ToggleSwitch()
@@ -471,7 +472,6 @@ public class ToggleSwitch : ToggleButton,
                 ConfigureTransitions(true);
             }
         }
-        
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -643,4 +643,44 @@ public class ToggleSwitch : ToggleButton,
 
         return targetRect;
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as bool?);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(bool? value)
+    {
+        IsChecked = value;
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return IsChecked;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        IsChecked = null;
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

@@ -335,6 +335,11 @@ public class GradientColorPicker : AbstractColorPicker
     
     private void HandleColorCleared(object? sender, EventArgs args)
     {
+        ClearColor();
+    }
+    
+    private void ClearColor()
+    {
         if (_colorIndicator != null)
         {
             _colorIndicator.SetCurrentValue(ColorBlock.IsEmptyColorModeProperty, true);
@@ -345,4 +350,21 @@ public class GradientColorPicker : AbstractColorPicker
             _textPanel?.Children.Add(emptyTextBlock);
         }
     }
+    
+    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(object? value)
+    {
+        Value = value as LinearGradientBrush;
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        ClearColor();
+    }
+    #endregion
 }

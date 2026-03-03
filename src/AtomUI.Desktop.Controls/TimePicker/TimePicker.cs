@@ -107,6 +107,11 @@ public class TimePicker : InfoPickerInput, IControlSharedTokenResourcesHost
     {
         this.RegisterResources();
     }
+    
+    static TimePicker()
+    {
+        SelectedTimeProperty.Changed.AddClassHandler<TimePicker>((timePicker, args) => timePicker.NotifyFormValueChanged(args.NewValue));
+    }
 
     protected override Flyout CreatePickerFlyout()
     {
@@ -303,4 +308,21 @@ public class TimePicker : InfoPickerInput, IControlSharedTokenResourcesHost
             SetValue(InfoIconProperty, new ClockCircleOutlined(), BindingPriority.Template);
         }
     }
+    
+    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(object? value)
+    {
+        SelectedTime = value as TimeSpan?;
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        return SelectedTime;
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        SelectedTime = null;
+    }
+    #endregion
 }

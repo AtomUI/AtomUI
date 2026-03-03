@@ -124,6 +124,12 @@ public class RangeDatePicker : RangeInfoPickerInput,
     {
         this.RegisterResources();
     }
+
+    static RangeDatePicker()
+    {
+        RangeStartSelectedDateProperty.Changed.AddClassHandler<RangeDatePicker>((picker, args) => picker.HandleSelectedValueChanged(args));
+        RangeEndSelectedDateProperty.Changed.AddClassHandler<RangeDatePicker>((picker, args) => picker.HandleSelectedValueChanged(args));
+    }
     
     protected override Flyout CreatePickerFlyout()
     {
@@ -496,4 +502,32 @@ public class RangeDatePicker : RangeInfoPickerInput,
         Text = FormatDateTime(RangeStartSelectedDate);
         SecondaryText = FormatDateTime(RangeEndSelectedDate);
     }
+    
+    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(object? value)
+    {
+        var rangeValue = value as (DateTime?, DateTime?)?;
+        if (rangeValue != null)
+        {
+            RangeStartSelectedDate = rangeValue.Value.Item1;
+            RangeEndSelectedDate   = rangeValue.Value.Item2;
+        }
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        return (RangeStartSelectedDate, RangeEndSelectedDate);
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        RangeStartSelectedDate = null;
+        RangeEndSelectedDate   = null;
+    }
+
+    private void HandleSelectedValueChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        NotifyFormValueChanged((RangeStartSelectedDate, RangeEndSelectedDate));
+    }
+    #endregion
 }

@@ -6,14 +6,13 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Name="{x:Static atom:FormItemThemeConstants.RootLayoutPart}">
-                    <StackPanel Name="{x:Static atom:FormItemThemeConstants.LabelLayoutPart}"
-                               VerticalAlignment="Top"
-                               Height="{Binding #ContentPresenter.Bounds.Height}"
-                               Orientation="Horizontal"
-                               HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Top"
+                                Name="PART_LabelLayout"
+                                HorizontalAlignment="Right">
                         <TextBlock Text="*" Name="{x:Static atom:FormItemThemeConstants.DefaultRequireMarkPart}"
-                                   VerticalAlignment="Center"
-                                   IsVisible="{TemplateBinding IsRequireMarkVisible}"/>
+                                   IsVisible="{TemplateBinding IsRequireMarkVisible}"
+                                   VerticalAlignment="Center"/>
                         <TextBlock Name="{x:Static atom:FormItemThemeConstants.LabelPart}"
                                    Text="{TemplateBinding LabelText}"
                                    VerticalAlignment="Center"/>
@@ -22,9 +21,12 @@
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                     <Panel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}">
-                        <ContentPresenter Name="ContentPresenter"
-                                          Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}" 
-                                          Content="{TemplateBinding Content}"/>
+                        <Border Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}" 
+                                MinHeight="{Binding #PART_LabelLayout.Bounds.Height}">
+                            <ContentPresenter Name="ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
                         <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
                                    VerticalAlignment="Bottom" 
                                    Text="{TemplateBinding ValidateMsg}"/>
@@ -70,6 +72,25 @@
                 <Setter Property="Padding" Value="{DynamicResource {x:Static atom:FormTokenKey.VerticalLabelPadding}}" />
             </Style>
             
+        </Style>
+        
+        <Style Selector="^[SizeType=Large]">
+            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
+                <Setter Property="Height"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightLG}}" />
+            </Style>
+        </Style>
+        <Style Selector="^[SizeType=Middle]">
+            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
+                <Setter Property="Height"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
+            </Style>
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
+                <Setter Property="Height"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightSM}}" />
+            </Style>
         </Style>
         
     </ControlTheme>

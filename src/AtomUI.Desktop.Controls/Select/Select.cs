@@ -272,8 +272,6 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         FilterModeProperty.Changed.AddClassHandler<Select>((select,e) => select.HandleFilterModePropertyChanged(e));
         FilterProperty.Changed.AddClassHandler<Select>((select, e) => select.HandleFilterPropertyChanged(e));
-        SelectedOptionProperty.Changed.AddClassHandler<Select>((select, args) => select.NotifyFormValueChanged(args.NewValue));
-        SelectedOptionsProperty.Changed.AddClassHandler<Select>((select, args) => select.NotifyFormValueChanged(args.NewValue));
     }
 
     public Select()
@@ -314,6 +312,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void HandleSelectedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
     {
+        NotifyFormValueChanged(args.NewValue);
         if (_ignoreSyncSelection)
         {
             _ignoreSyncSelection = false;
@@ -327,6 +326,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void HandleSelectedOptionChanged(AvaloniaPropertyChangedEventArgs args)
     {
+        NotifyFormValueChanged(args.NewValue);
         if (_ignoreSyncSelection)
         {
             _ignoreSyncSelection = false;

@@ -19,7 +19,8 @@ using AvaloniaTextBox = Avalonia.Controls.TextBox;
 public class TextArea : AvaloniaTextBox,
                         IControlSharedTokenResourcesHost,
                         IMotionAwareControl,
-                        ISizeTypeAware
+                        ISizeTypeAware,
+                        IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -195,7 +196,8 @@ public class TextArea : AvaloniaTextBox,
     static TextArea()
     {
         AffectsMeasure<TextArea>(IsAutoSizeProperty, LinesProperty);
-        WatermarkProperty.Changed.AddClassHandler<TextArea>((textBox, args) => textBox.SetCurrentValue(PlaceholderTextProperty, args.NewValue));
+        WatermarkProperty.Changed.AddClassHandler<TextArea>((textArea, args) => textArea.SetCurrentValue(PlaceholderTextProperty, args.NewValue));
+        TextChangedEvent.AddClassHandler<TextArea>((textArea, args) => textArea.HandleTextChanged());
     }
     
     public TextArea()
@@ -403,4 +405,55 @@ public class TextArea : AvaloniaTextBox,
     {
         _originHeight = null;
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    private void HandleTextChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(string? value)
+    {
+        SetCurrentValue(TextProperty, value);
+    }
+
+    protected virtual string? NotifyGetFormValue()
+    {
+        return Text;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(TextProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
+    #endregion
 }

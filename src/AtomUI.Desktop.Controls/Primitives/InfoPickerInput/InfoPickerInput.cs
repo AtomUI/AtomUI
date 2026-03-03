@@ -22,7 +22,8 @@ namespace AtomUI.Desktop.Controls.Primitives;
 public abstract class InfoPickerInput : TemplatedControl,
                                         IMotionAwareControl,
                                         IControlSharedTokenResourcesHost,
-                                        ICompactSpaceAware
+                                        ICompactSpaceAware,
+                                        IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> LeftAddOnProperty =
@@ -632,4 +633,54 @@ public abstract class InfoPickerInput : TemplatedControl,
         // 都一样宽
         return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return null;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
+    #endregion
 }

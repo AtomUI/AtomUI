@@ -256,4 +256,21 @@ public class ColorPicker : AbstractColorPicker
             _emptyTextBindingDisposable = BindUtils.RelayBind(this, EmptyColorTextProperty, this, ColorTextProperty);
         }
     }
+    
+    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(object? value)
+    {
+        Value = value as Color?;
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        ClearColor();
+    }
+    #endregion
 }

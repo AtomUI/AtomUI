@@ -72,7 +72,7 @@ internal class FormToken : AbstractControlDesignToken
     /// Vertical layout label margin
     /// </summary>
     public Thickness VerticalLabelMargin { get; set; }
-    
+
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);

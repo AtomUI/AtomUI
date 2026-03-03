@@ -44,7 +44,10 @@ public enum TreeFilterHighlightStrategy
 }
 
 [PseudoClasses(StdPseudoClass.Draggable)]
-public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlSharedTokenResourcesHost
+public partial class TreeView : AvaloniaTreeView, 
+                                IMotionAwareControl,
+                                IControlSharedTokenResourcesHost,
+                                IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAutoExpandParentProperty =
@@ -451,6 +454,9 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
         TreeItem.ContextMenuRequestEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemContextMenuRequest(args));
         TreeItem.ClickEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemClicked(args));
         ConfigureFilter();
+
+        SelectedItemProperty.Changed.AddClassHandler<TreeView>((treeView, args) => treeView.NotifyFormValueChanged(args.NewValue));
+        SelectedItemsProperty.Changed.AddClassHandler<TreeView>((treeView, args) => treeView.NotifyFormValueChanged(args.NewValue));
     }
 
     public TreeView()
@@ -1635,4 +1641,62 @@ public partial class TreeView : AvaloniaTreeView, IMotionAwareControl, IControlS
             SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
         }
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+        if (SelectionMode.HasFlag(SelectionMode.Multiple))
+        {
+            SelectedItems = value as IList;
+        }
+        else
+        {
+            SelectedItem = value;
+        }
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        if (SelectionMode.HasFlag(SelectionMode.Multiple))
+        {
+            return SelectedItems;
+        }
+        return SelectedItem;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        if (SelectionMode.HasFlag(SelectionMode.Multiple))
+        {
+            SelectedItems = null;
+        }
+        else
+        {
+            SelectedItem = null;
+        }
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

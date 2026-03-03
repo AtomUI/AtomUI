@@ -22,7 +22,8 @@ using AvaloniaNumericUpDown = Avalonia.Controls.NumericUpDown;
 public class NumericUpDown : AvaloniaNumericUpDown, 
                              IMotionAwareControl, 
                              IControlSharedTokenResourcesHost,
-                             ICompactSpaceAware
+                             ICompactSpaceAware,
+                             IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -270,6 +271,7 @@ public class NumericUpDown : AvaloniaNumericUpDown,
     static NumericUpDown()
     {
         WatermarkProperty.Changed.AddClassHandler<NumericUpDown>((textBox, args) => textBox.SetCurrentValue(PlaceholderTextProperty, args.NewValue));
+        ValueChangedEvent.AddClassHandler<NumericUpDown>((textBox, args) => textBox.HandleValueChanged());
     }
     
     public NumericUpDown()
@@ -681,4 +683,55 @@ public class NumericUpDown : AvaloniaNumericUpDown,
         // 都一样宽
         return addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as decimal?);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    private void HandleValueChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(decimal? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual decimal? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
+    #endregion
 }

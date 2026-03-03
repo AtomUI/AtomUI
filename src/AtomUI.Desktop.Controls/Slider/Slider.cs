@@ -89,7 +89,8 @@ public record SliderMark(string Label, double Value)
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal, StdPseudoClass.Pressed)]
 public class Slider : RangeBase,
                       IMotionAwareControl,
-                      IControlSharedTokenResourcesHost
+                      IControlSharedTokenResourcesHost,
+                      IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -228,6 +229,9 @@ public class Slider : RangeBase,
 
         ValueProperty.OverrideMetadata<Slider>(new StyledPropertyMetadata<double>(enableDataValidation: true));
         AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
+
+        ValueProperty.Changed.AddClassHandler<Slider>((slider, args) => slider.NotifyFormValueChanged(args.NewValue));
+        RangeValueProperty.Changed.AddClassHandler<Slider>((slider, args) => slider.NotifyFormValueChanged(args.NewValue));
     }
     public Slider()
     {
@@ -707,4 +711,58 @@ public class Slider : RangeBase,
             }
         }
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+        if (IsRangeMode)
+        {
+            if (value is SliderRangeValue rangeValue)
+            {
+                RangeValue = rangeValue;
+            }
+            else
+            {
+                RangeValue = default;
+            }
+        }
+        else
+        {
+            Value = value != null ? (double)value : 0.0;
+        }
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return IsRangeMode ? RangeValue : Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        RangeValue = default;
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

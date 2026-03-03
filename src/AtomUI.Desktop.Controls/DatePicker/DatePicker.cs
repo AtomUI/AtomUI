@@ -100,6 +100,11 @@ public class DatePicker : InfoPickerInput,
         this.RegisterResources();
     }
 
+    static DatePicker()
+    {
+        SelectedDateTimeProperty.Changed.AddClassHandler<DatePicker>((datePicker, args) => datePicker.NotifyFormValueChanged(args.NewValue));
+    }
+
     private DatePickerPresenter? _pickerPresenter;
     private CompositeDisposable? _flyoutBindingDisposables;
 
@@ -313,4 +318,21 @@ public class DatePicker : InfoPickerInput,
     {
         return SelectedDateTime is not null;
     }
+    
+    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(object? value)
+    {
+        SelectedDateTime = value as DateTime?;
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        return SelectedDateTime;
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        SelectedDateTime = null;
+    }
+    #endregion
 }

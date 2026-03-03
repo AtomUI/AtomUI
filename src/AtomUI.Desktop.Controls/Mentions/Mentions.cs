@@ -33,7 +33,10 @@ namespace AtomUI.Desktop.Controls;
 public delegate object? MentionsFilterValueSelector(IMentionOption option);
 
 [PseudoClasses(MentionPseudoClass.CandidatePopupOpen)]
-public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMotionAwareControl
+public class Mentions : TemplatedControl, 
+                        IControlSharedTokenResourcesHost,
+                        IMotionAwareControl,
+                        IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -508,11 +511,12 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
         FocusableProperty.OverrideDefaultValue<Mentions>(true);
         LinesProperty.OverrideDefaultValue<Mentions>(1);
         
-        IsDropDownOpenProperty.Changed.AddClassHandler<Mentions>((x,e) => x.HandleIsDropDownOpenChanged(e));
-        MinimumPopulateDelayProperty.Changed.AddClassHandler<Mentions>((x,e) => x.HandleMinimumPopulateDelayChanged(e));
-        PlacementProperty.Changed.AddClassHandler<Mentions>((x,e) => x.ConfigurePopupPlacement());
-        OptionsSourceProperty.Changed.AddClassHandler<Mentions>((x,e) => x.HandleItemsSourceChanged((IEnumerable?)e.NewValue));
-        OptionFilterValueProperty.Changed.AddClassHandler<Mentions>((x,e) => x.HandleOptionFilterValueChanged());
+        IsDropDownOpenProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleIsDropDownOpenChanged(e));
+        MinimumPopulateDelayProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleMinimumPopulateDelayChanged(e));
+        PlacementProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.ConfigurePopupPlacement());
+        OptionsSourceProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleItemsSourceChanged((IEnumerable?)e.NewValue));
+        OptionFilterValueProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleOptionFilterValueChanged());
+        ValueProperty.Changed.AddClassHandler<Mentions>(((mentions, args) => mentions.HandleValueChanged()));
     }
     
     public Mentions()
@@ -1299,4 +1303,55 @@ public class Mentions : TemplatedControl, IControlSharedTokenResourcesHost, IMot
     {
         DropDownClosed?.Invoke(this, eventArgs);
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    private void HandleValueChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(string? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual string? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
+    }
+    #endregion
 }

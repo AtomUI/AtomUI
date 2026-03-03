@@ -19,6 +19,14 @@ public class FormViewModel : ReactiveObject, IRoutableViewModel
         get => _formLayout;
         set => this.RaiseAndSetIfChanged(ref _formLayout, value);
     }
+
+    private bool _isFormDisabled = true;
+
+    public bool IsFormDisabled
+    {
+        get => _isFormDisabled;
+        set => this.RaiseAndSetIfChanged(ref _isFormDisabled, value);
+    }
     
     public FormViewModel(IScreen screen)
     {

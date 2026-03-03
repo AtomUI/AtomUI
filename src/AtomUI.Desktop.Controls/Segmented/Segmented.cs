@@ -18,7 +18,8 @@ namespace AtomUI.Desktop.Controls;
 public class Segmented : SelectingItemsControl,
                          IMotionAwareControl,
                          ISizeTypeAware,
-                         IControlSharedTokenResourcesHost
+                         IControlSharedTokenResourcesHost,
+                         IFormItemAware
 {
     #region 公共属性定义
 
@@ -118,6 +119,7 @@ public class Segmented : SelectingItemsControl,
             SelectedThumbSizeProperty, 
             SelectedThumbPosProperty);
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<Segmented>(false);
+        SelectedItemProperty.Changed.AddClassHandler<Segmented>((segmented, args) => segmented.NotifyFormValueChanged(args.NewValue));
     }
 
     public Segmented()
@@ -315,4 +317,44 @@ public class Segmented : SelectingItemsControl,
         base.OnUnloaded(e);
         Transitions = null;
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as bool?);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+        SelectedItem = value;
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return SelectedItem;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SelectedItem = null;
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

@@ -1,11 +1,11 @@
 namespace AtomUI.Desktop.Controls;
 
-public class CascaderViewCheckedOptionsChangedEventArgs : EventArgs
+public class CascaderOptionsSelectedChangedEventArgs : EventArgs
 {
     public IList<ICascaderOption>? OldOptions { get; }
     public IList<ICascaderOption>? NewOptions { get; }
     
-    public CascaderViewCheckedOptionsChangedEventArgs(IList<ICascaderOption>? oldOptions, IList<ICascaderOption>? newOptions)
+    public CascaderOptionsSelectedChangedEventArgs(IList<ICascaderOption>? oldOptions, IList<ICascaderOption>? newOptions)
     {
         OldOptions = oldOptions;
         NewOptions = newOptions;

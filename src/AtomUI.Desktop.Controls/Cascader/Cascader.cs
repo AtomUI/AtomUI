@@ -45,11 +45,11 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.SelectedOption,
             (o, v) => o.SelectedOption = v);
     
-    public static readonly DirectProperty<CascaderView, IList<ICascaderOption>?> CheckedOptionsProperty =
-        AvaloniaProperty.RegisterDirect<CascaderView, IList<ICascaderOption>?>(
-            nameof(CheckedOptions),
-            o => o.CheckedOptions,
-            (o, v) => o.CheckedOptions = v);
+    public static readonly DirectProperty<Cascader, IList<ICascaderOption>?> SelectedOptionsProperty =
+        AvaloniaProperty.RegisterDirect<Cascader, IList<ICascaderOption>?>(
+            nameof(SelectedOptions),
+            o => o.SelectedOptions,
+            (o, v) => o.SelectedOptions = v);
     
     public static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
         CascaderView.ExpandIconProperty.AddOwner<Cascader>();
@@ -113,10 +113,10 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         
     private IList<ICascaderOption>? _checkedOptions;
     
-    public IList<ICascaderOption>? CheckedOptions
+    public IList<ICascaderOption>? SelectedOptions
     {
         get => _checkedOptions;
-        set => SetAndRaise(CheckedOptionsProperty, ref _checkedOptions, value);
+        set => SetAndRaise(SelectedOptionsProperty, ref _checkedOptions, value);
     }
     
     public IconTemplate? ExpandIcon
@@ -187,11 +187,11 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             o => o.IsMaxSelectReached,
             (o, v) => o.IsMaxSelectReached = v);
     
-    internal static readonly DirectProperty<Cascader, IList<ICascaderOption>?> EffectiveCheckedOptionsProperty =
+    internal static readonly DirectProperty<Cascader, IList<ICascaderOption>?> EffectiveSelectedOptionsProperty =
         AvaloniaProperty.RegisterDirect<Cascader, IList<ICascaderOption>?>(
-            nameof(EffectiveCheckedOptions),
-            o => o.EffectiveCheckedOptions,
-            (o, v) => o.EffectiveCheckedOptions = v);
+            nameof(EffectiveSelectedOptions),
+            o => o.EffectiveSelectedOptions,
+            (o, v) => o.EffectiveSelectedOptions = v);
     
     internal static readonly DirectProperty<Cascader, string?> SelectedOptionPathProperty =
         AvaloniaProperty.RegisterDirect<Cascader, string?>(
@@ -207,12 +207,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetAndRaise(IsMaxSelectReachedProperty, ref _isMaxSelectReached, value);
     }
     
-    private IList<ICascaderOption>? _effectiveCheckedOptions;
+    private IList<ICascaderOption>? _effectiveSelectedOptions;
 
-    internal IList<ICascaderOption>? EffectiveCheckedOptions
+    internal IList<ICascaderOption>? EffectiveSelectedOptions
     {
-        get => _effectiveCheckedOptions;
-        set => SetAndRaise(EffectiveCheckedOptionsProperty, ref _effectiveCheckedOptions, value);
+        get => _effectiveSelectedOptions;
+        set => SetAndRaise(EffectiveSelectedOptionsProperty, ref _effectiveSelectedOptions, value);
     }
     
     private string? _selectOptionPath;
@@ -231,7 +231,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     private readonly ItemCollection _options = new();
     private SelectFilterTextBox? _singleFilterInput;
     private CascaderView? _cascaderView;
-    private bool _needSkipSyncCheckedOptions;
+    private bool _needSkipSyncSelectedOptions;
 
     static Cascader()
     {
@@ -280,14 +280,14 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         SelectedOption     = null;
         SelectedOptionPath = null;
-        CheckedOptions     = null;
+        SelectedOptions     = null;
     }
     
     private void ConfigurePlaceholderVisible()
     {
         if (IsMultiple)
         {
-            SetCurrentValue(IsPlaceholderTextVisibleProperty, (CheckedOptions == null || CheckedOptions?.Count == 0) && 
+            SetCurrentValue(IsPlaceholderTextVisibleProperty, (SelectedOptions == null || SelectedOptions?.Count == 0) && 
                                                               string.IsNullOrWhiteSpace(ActivateFilterValue) &&
                                                               string.IsNullOrWhiteSpace(SelectedOptionPath));
         }
@@ -368,7 +368,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             ConfigurePopupMinWith(DesiredSize.Width);
         }
-        else if (change.Property == CheckedOptionsProperty ||
+        else if (change.Property == SelectedOptionsProperty ||
                  change.Property == SelectedOptionProperty ||
                  change.Property == SelectedOptionPathProperty ||
                  change.Property == IsMultipleProperty)
@@ -377,7 +377,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             ConfigureSelectionIsEmpty();
             if (IsMultiple)
             {
-                SetCurrentValue(SelectedCountProperty, CheckedOptions?.Count ?? 0);
+                SetCurrentValue(SelectedCountProperty, SelectedOptions?.Count ?? 0);
             }
             else
             {
@@ -385,21 +385,21 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             }
         }
         
-        if (change.Property == CheckedOptionsProperty ||
+        if (change.Property == SelectedOptionsProperty ||
             change.Property == IsMultipleProperty)
         {
-            SyncCheckedOptionsToCascaderView();
+            SyncSelectedOptionsToCascaderView();
         }
 
         if (change.Property == IsMultipleProperty ||
             change.Property == MaxCountProperty ||
-            change.Property == EffectiveCheckedOptionsProperty ||
+            change.Property == EffectiveSelectedOptionsProperty ||
             change.Property == IsMultipleProperty)
         {
             ConfigureMaxSelectReached();
         }
         
-        if (change.Property == CheckedOptionsProperty ||
+        if (change.Property == SelectedOptionsProperty ||
             change.Property == ShowCheckedStrategyProperty)
         {
             BuildEffectiveSelectedOptions();
@@ -423,7 +423,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         
         if (_cascaderView != null)
         {
-            _cascaderView.CheckedOptionsChanged -= HandleCascaderViewItemsCheckedChanged;
+            _cascaderView.SelectedOptionsChanged -= HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemDoubleClicked     -= HandleCascaderViewItemDoubleClicked;
             _cascaderView.ItemClicked           -= HandleCascaderViewItemClicked;
             _cascaderView.OptionSelected        -= HandleCascaderViewItemSelected;
@@ -436,7 +436,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         
         if (_cascaderView != null)
         {
-            _cascaderView.CheckedOptionsChanged += HandleCascaderViewItemsCheckedChanged;
+            _cascaderView.SelectedOptionsChanged += HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemDoubleClicked     += HandleCascaderViewItemDoubleClicked;
             _cascaderView.ItemClicked           += HandleCascaderViewItemClicked;
             _cascaderView.OptionSelected        += HandleCascaderViewItemSelected;
@@ -486,7 +486,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
 
-    private void HandleCascaderViewItemsCheckedChanged(object? sender, CascaderViewCheckedOptionsChangedEventArgs e)
+    private void HandleCascaderViewItemsCheckedChanged(object? sender, CascaderOptionsSelectedChangedEventArgs e)
     {
         if (_cascaderView == null)
         {
@@ -495,14 +495,14 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
 
         var                       needSync        = false;
         HashSet<ICascaderOption>? cascaderViewSet = null;
-        if (_checkedOptions == null || _checkedOptions?.Count != _cascaderView.CheckedOptions?.Count)
+        if (_checkedOptions == null || _checkedOptions?.Count != _cascaderView.SelectedOptions?.Count)
         {
             needSync = true;
         }
         else
         {
             var currentSet = _checkedOptions?.Cast<ICascaderOption>().ToHashSet() ?? new HashSet<ICascaderOption>();
-            cascaderViewSet = _cascaderView?.CheckedOptions?.Cast<ICascaderOption>().ToHashSet() ?? new HashSet<ICascaderOption>();
+            cascaderViewSet = _cascaderView?.SelectedOptions?.Cast<ICascaderOption>().ToHashSet() ?? new HashSet<ICascaderOption>();
             if (!currentSet.SetEquals(cascaderViewSet))
             {
                 needSync = true;
@@ -513,17 +513,17 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             try
             {
-                _needSkipSyncCheckedOptions =   true;
-                cascaderViewSet             ??= _cascaderView?.CheckedOptions?.Cast<ICascaderOption>().ToHashSet();
+                _needSkipSyncSelectedOptions =   true;
+                cascaderViewSet             ??= _cascaderView?.SelectedOptions?.Cast<ICascaderOption>().ToHashSet();
                 if (cascaderViewSet != null)
                 {
-                    CheckedOptions = cascaderViewSet.ToList();
+                    SelectedOptions = cascaderViewSet.ToList();
                 }
            
             }
             finally
             {
-                _needSkipSyncCheckedOptions = false;
+                _needSkipSyncSelectedOptions = false;
             }
         }
     }
@@ -540,7 +540,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         if (IsMultiple)
         {
-            SetCurrentValue(IsSelectionEmptyProperty, CheckedOptions == null || CheckedOptions?.Count == 0);
+            SetCurrentValue(IsSelectionEmptyProperty, SelectedOptions == null || SelectedOptions?.Count == 0);
         }
         else
         {
@@ -699,7 +699,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     {
         if (IsMultiple)
         {
-            IsMaxSelectReached = MaxCount <= CheckedOptions?.Count;
+            IsMaxSelectReached = MaxCount <= SelectedOptions?.Count;
         }
         else
         {
@@ -713,13 +713,13 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             try
             {
-                _needSkipSyncCheckedOptions  = true;
+                _needSkipSyncSelectedOptions  = true;
                 _cascaderView.SelectedOption = null;
-                _cascaderView.CheckedOptions = null;
+                _cascaderView.SelectedOptions = null;
             }
             finally
             {
-                _needSkipSyncCheckedOptions = false;
+                _needSkipSyncSelectedOptions = false;
             }
         }
     }
@@ -732,15 +732,15 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         }
         if (e.Source is SelectTag tag && tag.Item is ICascaderOption viewOption)
         {
-            if (CheckedOptions != null)
+            if (SelectedOptions != null)
             {
                 var checkedOptions = new List<ICascaderOption>();
-                foreach (var option in CheckedOptions)
+                foreach (var option in SelectedOptions)
                 {
                     checkedOptions.Add(option);
                 }
                 RemoveOptionRecursive(checkedOptions, viewOption);
-                CheckedOptions = checkedOptions;
+                SelectedOptions = checkedOptions;
             }
         }
         e.Handled = true;
@@ -755,46 +755,46 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         options.Remove(option);
     }
     
-    private void SyncCheckedOptionsToCascaderView()
+    private void SyncSelectedOptionsToCascaderView()
     {
-        if (!_needSkipSyncCheckedOptions)
+        if (!_needSkipSyncSelectedOptions)
         {
             if (_cascaderView != null)
             {
-                if (CheckedOptions != null && IsMultiple)
+                if (SelectedOptions != null && IsMultiple)
                 {
-                    if (_cascaderView.CheckedOptions == null)
+                    if (_cascaderView.SelectedOptions == null)
                     {
                         var checkedOptions = new List<ICascaderOption>();
-                        checkedOptions.AddRange(CheckedOptions);
-                        _cascaderView.CheckedOptions = checkedOptions;
+                        checkedOptions.AddRange(SelectedOptions);
+                        _cascaderView.SelectedOptions = checkedOptions;
                     }
                     else
                     {
-                        var cascaderViewSet = _cascaderView.CheckedOptions.ToHashSet();
-                        var currentSet      = CheckedOptions.ToHashSet();
+                        var cascaderViewSet = _cascaderView.SelectedOptions.ToHashSet();
+                        var currentSet      = SelectedOptions.ToHashSet();
                         var deletedOptions  = cascaderViewSet.Except(currentSet);
                         var addedOptions    = currentSet.Except(cascaderViewSet);
                         
-                        var currentCheckedOptions = new List<ICascaderOption>();
-                        currentCheckedOptions.AddRange(_cascaderView.CheckedOptions);
+                        var currentSelectedOptions = new List<ICascaderOption>();
+                        currentSelectedOptions.AddRange(_cascaderView.SelectedOptions);
                         
                         foreach (var option in deletedOptions)
                         {
-                            currentCheckedOptions.Remove(option);
+                            currentSelectedOptions.Remove(option);
                         }
         
                         foreach (var option in addedOptions)
                         {
-                            currentCheckedOptions.Add(option);
+                            currentSelectedOptions.Add(option);
                         }
-                        _cascaderView.CheckedOptions = currentCheckedOptions;
+                        _cascaderView.SelectedOptions = currentSelectedOptions;
                     }
                 }
                 else
                 {
                     _cascaderView.SelectedOption = null;
-                    _cascaderView.CheckedOptions = null;
+                    _cascaderView.SelectedOptions = null;
                 }
             }
         }
@@ -802,22 +802,22 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void BuildEffectiveSelectedOptions()
     {
-        if (CheckedOptions != null)
+        if (SelectedOptions != null)
         {
             if (ShowCheckedStrategy == TreeSelectCheckedStrategy.All)
             {
-                EffectiveCheckedOptions = CheckedOptions;
+                EffectiveSelectedOptions = SelectedOptions;
             }
             else
             {
                 var effectiveSelectedOptions = new List<ICascaderOption>();
                 if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowParent))
                 {
-                    var selectedSet = CheckedOptions.Cast<object>().ToHashSet();
-                    var fullySelectedParents = CheckedOptions
+                    var selectedSet = SelectedOptions.Cast<object>().ToHashSet();
+                    var fullySelectedParents = SelectedOptions
                                                .Where(node => node.Children.All(child => selectedSet.Contains(child)))
                                                .ToHashSet();
-                    foreach (var option in CheckedOptions)
+                    foreach (var option in SelectedOptions)
                     {
                         bool isDescendantOfFullySelectedParent = fullySelectedParents
                             .Any(parent => IsDescendantOf(option, parent));
@@ -830,7 +830,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                 }
                 if (ShowCheckedStrategy.HasFlag(TreeSelectCheckedStrategy.ShowChild))
                 {
-                    foreach (var option in CheckedOptions)
+                    foreach (var option in SelectedOptions)
                     {
                         if (option.Children.Count == 0)
                         {
@@ -838,12 +838,12 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
                         }
                     }
                 }
-                EffectiveCheckedOptions = effectiveSelectedOptions;
+                EffectiveSelectedOptions = effectiveSelectedOptions;
             }
         }
         else
         {
-            EffectiveCheckedOptions = null;
+            EffectiveSelectedOptions = null;
         }
     }
         
@@ -913,4 +913,40 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             }
         }
     }
+    
+    #region 实现 FormItem 接口
+    
+    // protected override void NotifySetFormValue(object? value)
+    // {
+    //     if (Mode == SelectMode.Single)
+    //     {
+    //         SelectedOption = value as ISelectOption;
+    //     }
+    //     else
+    //     {
+    //         SelectedOptions = value as IList<ISelectOption>;
+    //     }
+    // }
+    //
+    // protected override object? NotifyGetFormValue()
+    // {
+    //     if (Mode == SelectMode.Single)
+    //     {
+    //         return SelectedOption;
+    //     }
+    //     return SelectedOptions;
+    // }
+    //
+    // protected override void NotifyClearFormValue()
+    // {
+    //     if (Mode == SelectMode.Single)
+    //     {
+    //         SelectedOption = null;
+    //     }
+    //     else
+    //     {
+    //         SelectedOptions = null;
+    //     }
+    // }
+    #endregion
 }

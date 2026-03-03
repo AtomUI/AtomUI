@@ -97,11 +97,11 @@ public partial class CascaderView : TemplatedControl,
             o => o.SelectedOption,
             (o, v) => o.SelectedOption = v);
     
-    public static readonly DirectProperty<CascaderView, IList<ICascaderOption>?> CheckedOptionsProperty =
+    public static readonly DirectProperty<CascaderView, IList<ICascaderOption>?> SelectedOptionsProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, IList<ICascaderOption>?>(
-            nameof(CheckedOptions),
-            o => o.CheckedOptions,
-            (o, v) => o.CheckedOptions = v);
+            nameof(SelectedOptions),
+            o => o.SelectedOptions,
+            (o, v) => o.SelectedOptions = v);
     
     public IEnumerable<ICascaderOption>? OptionsSource
     {
@@ -234,10 +234,10 @@ public partial class CascaderView : TemplatedControl,
     
     private IList<ICascaderOption>? _checkedOptions;
     
-    public IList<ICascaderOption>? CheckedOptions
+    public IList<ICascaderOption>? SelectedOptions
     {
         get => _checkedOptions;
-        set => SetAndRaise(CheckedOptionsProperty, ref _checkedOptions, value);
+        set => SetAndRaise(SelectedOptionsProperty, ref _checkedOptions, value);
     }
     
     public OptionsSourceView OptionsView => _options;
@@ -249,7 +249,7 @@ public partial class CascaderView : TemplatedControl,
     
     #region 公共事件定义
     
-    public event EventHandler<CascaderViewCheckedOptionsChangedEventArgs>? CheckedOptionsChanged;
+    public event EventHandler<CascaderOptionsSelectedChangedEventArgs>? SelectedOptionsChanged;
     public event EventHandler<CascaderViewItemLoadedEventArgs>? ItemAsyncLoaded;
     public event EventHandler<CascaderItemExpandedEventArgs>? ItemExpanded;
     public event EventHandler<CascaderItemCollapsedEventArgs>? ItemCollapsed;
@@ -305,7 +305,7 @@ public partial class CascaderView : TemplatedControl,
     
     private readonly ItemCollection _options = new();
     private static readonly IList Empty = Array.Empty<object>();
-    private bool _ignoreSyncCheckedOptions;
+    private bool _ignoreSyncSelectedOptions;
     private StackPanel? _itemsPanel;
     private int _ignoreExpandAndCollapseLevel;
     private bool _defaultExpandPathApplied;

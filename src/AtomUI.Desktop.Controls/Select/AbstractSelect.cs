@@ -926,6 +926,18 @@ public class AbstractSelect : TemplatedControl,
 
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
+        }
     }
     #endregion
 }

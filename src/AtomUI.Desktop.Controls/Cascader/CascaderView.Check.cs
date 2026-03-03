@@ -8,7 +8,7 @@ public partial class CascaderView
 {
     private static void SetupChecked()
     {
-        CheckedOptionsProperty.Changed.AddClassHandler<CascaderView>((view, e) => view.HandleCheckedOptionsChanged(e));
+        SelectedOptionsProperty.Changed.AddClassHandler<CascaderView>((view, e) => view.HandleSelectedOptionsChanged(e));
         CascaderViewItem.CheckedEvent.AddClassHandler<CascaderView>((view, e) => view.HandleCascaderItemCheckedChanged(e));
     }
 
@@ -27,31 +27,31 @@ public partial class CascaderView
         }
     }
 
-    private void HandleCheckedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
+    private void HandleSelectedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        var oldCheckedOptions = args.OldValue as IList<ICascaderOption>;
-        var newCheckedOptions = args.NewValue as IList<ICascaderOption>;
-        CheckedOptionsChanged?.Invoke(this, new CascaderViewCheckedOptionsChangedEventArgs(
-            oldCheckedOptions,
-            newCheckedOptions));
+        var oldSelectedOptions = args.OldValue as IList<ICascaderOption>;
+        var newSelectedOptions = args.NewValue as IList<ICascaderOption>;
+        SelectedOptionsChanged?.Invoke(this, new CascaderOptionsSelectedChangedEventArgs(
+            oldSelectedOptions,
+            newSelectedOptions));
         
-        if (_ignoreSyncCheckedOptions)
+        if (_ignoreSyncSelectedOptions)
         {
-            _ignoreSyncCheckedOptions = false;
+            _ignoreSyncSelectedOptions = false;
             return;
         }
 
-        if (oldCheckedOptions != null)
+        if (oldSelectedOptions != null)
         {
-            foreach (var oldItem in oldCheckedOptions)
+            foreach (var oldItem in oldSelectedOptions)
             {
                 UnCheckedSubTree(oldItem);
             }
         }
 
-        if (newCheckedOptions != null)
+        if (newSelectedOptions != null)
         {
-            foreach (var newItem in newCheckedOptions)
+            foreach (var newItem in newSelectedOptions)
             {
                 CheckedSubTree(newItem);
             }
@@ -77,28 +77,28 @@ public partial class CascaderView
         }
 
         ISet<ICascaderOption> checkedOptions = DoCheckedSubTree(viewOption);
-        var originCheckedOptions = new HashSet<ICascaderOption>();
-        if (CheckedOptions != null)
+        var originSelectedOptions = new HashSet<ICascaderOption>();
+        if (SelectedOptions != null)
         {
-            foreach (var checkedItem in CheckedOptions)
+            foreach (var checkedItem in SelectedOptions)
             {
-                originCheckedOptions.Add(checkedItem);
+                originSelectedOptions.Add(checkedItem);
             }
         }
-        var newCheckedOptions = new HashSet<ICascaderOption>();
-        foreach (var checkedItem in originCheckedOptions)
+        var newSelectedOptions = new HashSet<ICascaderOption>();
+        foreach (var checkedItem in originSelectedOptions)
         {
-            newCheckedOptions.Add(checkedItem);
+            newSelectedOptions.Add(checkedItem);
         }
         foreach (var checkedItem in checkedOptions)
         {
-            newCheckedOptions.Add(checkedItem);
+            newSelectedOptions.Add(checkedItem);
         }
 
-        if (!newCheckedOptions.SetEquals(originCheckedOptions))
+        if (!newSelectedOptions.SetEquals(originSelectedOptions))
         {
-            _ignoreSyncCheckedOptions = true;
-            CheckedOptions            = newCheckedOptions.ToList();
+            _ignoreSyncSelectedOptions = true;
+            SelectedOptions            = newSelectedOptions.ToList();
         }
     }
     
@@ -113,8 +113,8 @@ public partial class CascaderView
             if ((container != null && container.IsEffectiveCheckable()) || 
                 (childItem.IsEnabled && childItem.IsCheckBoxEnabled))
             {
-                var childCheckedOptions = DoCheckedSubTree(childItem);
-                checkedOptions.UnionWith(childCheckedOptions);
+                var childSelectedOptions = DoCheckedSubTree(childItem);
+                checkedOptions.UnionWith(childSelectedOptions);
             }
         }
         
@@ -166,40 +166,40 @@ public partial class CascaderView
             return;
         }
         
-        ISet<ICascaderOption> unCheckedOptions = DoUnCheckedSubTree(viewOption);
+        ISet<ICascaderOption> unSelectedOptions = DoUnCheckedSubTree(viewOption);
             
-        var originCheckedOptions = new HashSet<ICascaderOption>();
-        if (CheckedOptions != null)
+        var originSelectedOptions = new HashSet<ICascaderOption>();
+        if (SelectedOptions != null)
         {
-            foreach (var checkedItem in CheckedOptions)
+            foreach (var checkedItem in SelectedOptions)
             {
-                originCheckedOptions.Add(checkedItem);
+                originSelectedOptions.Add(checkedItem);
             }
         }
-        var newCheckedOptions = new HashSet<ICascaderOption>();
-        foreach (var checkedItem in originCheckedOptions)
+        var newSelectedOptions = new HashSet<ICascaderOption>();
+        foreach (var checkedItem in originSelectedOptions)
         {
-            newCheckedOptions.Add(checkedItem);
+            newSelectedOptions.Add(checkedItem);
         }
         
-        foreach (var unCheckedItem in unCheckedOptions)
+        foreach (var unCheckedItem in unSelectedOptions)
         {
-            newCheckedOptions.Remove(unCheckedItem);
+            newSelectedOptions.Remove(unCheckedItem);
         }
 
-        if (!newCheckedOptions.SetEquals(originCheckedOptions))
+        if (!newSelectedOptions.SetEquals(originSelectedOptions))
         {
-            _ignoreSyncCheckedOptions = true;
-            CheckedOptions            = newCheckedOptions.ToList();
+            _ignoreSyncSelectedOptions = true;
+            SelectedOptions            = newSelectedOptions.ToList();
         }
     }
     
     public ISet<ICascaderOption> DoUnCheckedSubTree(ICascaderOption viewOption)
     {
-        var unCheckedOptions = new HashSet<ICascaderOption>();
+        var unSelectedOptions = new HashSet<ICascaderOption>();
         
         MarkViewOptionChecked(viewOption, false);
-        unCheckedOptions.Add(viewOption);
+        unSelectedOptions.Add(viewOption);
     
         foreach (var childItem in viewOption.Children)
         {
@@ -207,13 +207,13 @@ public partial class CascaderView
             if ((container != null && container.IsEffectiveCheckable()) || 
                 (childItem.IsEnabled && childItem.IsCheckBoxEnabled))
             {
-                var childCheckedOptions = DoUnCheckedSubTree(childItem);
-                unCheckedOptions.UnionWith(childCheckedOptions);
+                var childSelectedOptions = DoUnCheckedSubTree(childItem);
+                unSelectedOptions.UnionWith(childSelectedOptions);
             }
         }
         var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(viewOption);
-        unCheckedOptions.UnionWith(unCheckedParentItems);
-        return unCheckedOptions;
+        unSelectedOptions.UnionWith(unCheckedParentItems);
+        return unSelectedOptions;
     }
     
     private (ISet<ICascaderOption>, ISet<ICascaderOption>) SetupParentNodeCheckedStatus(ICascaderOption viewOption)
@@ -302,7 +302,7 @@ public partial class CascaderView
         {
             case NotifyCollectionChangedAction.Remove:
             case NotifyCollectionChangedAction.Replace:
-                if (CheckedOptions != null)
+                if (SelectedOptions != null)
                 {
                     if (e.OldItems != null)
                     {
@@ -315,7 +315,7 @@ public partial class CascaderView
                             }
                         }
                         var tobeRemoved = new List<ICascaderOption>();
-                        foreach (var checkedItem in CheckedOptions)
+                        foreach (var checkedItem in SelectedOptions)
                         {
                             if (removedItemsClosure.Contains(checkedItem))
                             {
@@ -325,13 +325,13 @@ public partial class CascaderView
 
                         foreach (var removedItem in tobeRemoved)
                         {
-                            CheckedOptions.Remove(removedItem);
+                            SelectedOptions.Remove(removedItem);
                         }
                     }
                 }
                 break;
             case NotifyCollectionChangedAction.Reset:
-                CheckedOptions = null;
+                SelectedOptions = null;
                 break;
         }
         FilterItems();

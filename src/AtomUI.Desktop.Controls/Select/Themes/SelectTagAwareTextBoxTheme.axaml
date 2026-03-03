@@ -26,5 +26,9 @@
         <Style Selector="^ /template/ atom|SelectMaxTagAwarePanel#PART_MaxCountAwarePanel">
             <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
         </Style>
+        
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

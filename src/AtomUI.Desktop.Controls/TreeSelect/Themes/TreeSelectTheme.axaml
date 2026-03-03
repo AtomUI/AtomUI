@@ -217,5 +217,12 @@
                     Value="{DynamicResource {x:Static atom:TreeSelectTokenKey.MinPopupWidth}}" />
         </Style>
 
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            <Style Selector="^ /template/ ContentPresenter#SingleSelectResultPresenter">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            </Style>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

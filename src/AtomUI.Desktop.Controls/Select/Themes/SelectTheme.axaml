@@ -215,6 +215,10 @@
                 <atom:TextBlock Text="{Binding Header}" />
             </DataTemplate>
         </Setter>
+        
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+        </Style>
 
     </ControlTheme>
 </ResourceDictionary>

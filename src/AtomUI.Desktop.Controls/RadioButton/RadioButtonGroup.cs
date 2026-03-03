@@ -13,7 +13,8 @@ namespace AtomUI.Desktop.Controls;
 
 public class RadioButtonGroup : ItemsControl,
                                 IMotionAwareControl,
-                                IControlSharedTokenResourcesHost
+                                IControlSharedTokenResourcesHost,
+                                IFormItemAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> CheckedItemProperty = 
@@ -212,6 +213,7 @@ public class RadioButtonGroup : ItemsControl,
     private void HandleCheckedItemChanged(AvaloniaPropertyChangedEventArgs args)
     {
         CheckedChanged?.Invoke(this, new RadioButtonGroupCheckedChangedEventArgs(args.OldValue, args.NewValue));
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
         if (_ignoreSyncChecked)
         {
             _ignoreSyncChecked = false;
@@ -231,4 +233,38 @@ public class RadioButtonGroup : ItemsControl,
             }
         }
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+        SetCurrentValue(CheckedItemProperty, value);
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return CheckedItem;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(CheckedItemProperty, null);
+    }
+    
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

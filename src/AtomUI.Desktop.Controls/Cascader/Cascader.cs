@@ -916,37 +916,37 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
     
     #region 实现 FormItem 接口
     
-    // protected override void NotifySetFormValue(object? value)
-    // {
-    //     if (Mode == SelectMode.Single)
-    //     {
-    //         SelectedOption = value as ISelectOption;
-    //     }
-    //     else
-    //     {
-    //         SelectedOptions = value as IList<ISelectOption>;
-    //     }
-    // }
-    //
-    // protected override object? NotifyGetFormValue()
-    // {
-    //     if (Mode == SelectMode.Single)
-    //     {
-    //         return SelectedOption;
-    //     }
-    //     return SelectedOptions;
-    // }
-    //
-    // protected override void NotifyClearFormValue()
-    // {
-    //     if (Mode == SelectMode.Single)
-    //     {
-    //         SelectedOption = null;
-    //     }
-    //     else
-    //     {
-    //         SelectedOptions = null;
-    //     }
-    // }
+    protected override void NotifySetFormValue(object? value)
+    {
+        if (!IsMultiple)
+        {
+            SelectedOption = value as ICascaderOption;
+        }
+        else
+        {
+            SelectedOptions = value as IList<ICascaderOption>;
+        }
+    }
+    
+    protected override object? NotifyGetFormValue()
+    {
+        if (!IsMultiple)
+        {
+            return SelectedOption;
+        }
+        return SelectedOptions;
+    }
+    
+    protected override void NotifyClearFormValue()
+    {
+        if (!IsMultiple)
+        {
+            SelectedOption = null;
+        }
+        else
+        {
+            SelectedOptions = null;
+        }
+    }
     #endregion
 }

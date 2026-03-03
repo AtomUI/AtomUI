@@ -220,5 +220,13 @@
                 <antdicons:LoadingOutlined LoadingAnimation="Spin" />
             </atom:IconTemplate>
         </Setter>
+        
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            <Style Selector="^ /template/ TextBlock#SingleSelectResultPresenter">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            </Style>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -34,7 +34,7 @@ public class ShowCaseItem : ContentControl
         AvaloniaProperty.Register<ShowCaseItem, string>(nameof(Description));
 
     public static readonly StyledProperty<bool> IsOccupyEntireRowProperty =
-        AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsOccupyEntireRow));
+        AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsOccupyEntireRow), true);
 
     internal static readonly StyledProperty<bool> IsFakeProperty =
         AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsFake), false);

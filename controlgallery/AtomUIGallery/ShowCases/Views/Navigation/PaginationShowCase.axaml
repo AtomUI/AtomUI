@@ -79,7 +79,7 @@
         <gallery:ShowCaseItem
             Title="Simple mode"
             Description="Simple mode."
-            IsOccupyEntireRow="False"
+            IsOccupyEntireRow="True"
             MinHeight="300">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <atom:SimplePagination Total="50" CurrentPage="1"/>

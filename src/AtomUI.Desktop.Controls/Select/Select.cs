@@ -1023,21 +1023,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         }
     }
     
-    protected override void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (status == FormValidateStatus.Error)
-        {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Error);
-        }
-        else if (status == FormValidateStatus.Warning)
-        {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Warning);
-        }
-        else
-        {
-            SetCurrentValue(StatusProperty, AddOnDecoratedStatus.Default);
-        }
-    }
+    #region 实现 FormItem 接口
     
     protected override void NotifySetFormValue(object? value)
     {
@@ -1071,4 +1057,5 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             SelectedOptions = null;
         }
     }
+    #endregion
 }

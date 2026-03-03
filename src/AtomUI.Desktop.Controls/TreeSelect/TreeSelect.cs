@@ -970,4 +970,41 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         }
         return false;
     }
+    
+     
+    #region 实现 FormItem 接口
+    
+    protected override void NotifySetFormValue(object? value)
+    {
+        if (!IsMultiple)
+        {
+           SelectedItem = value as ITreeItemNode;
+        }
+        else
+        {
+            SelectedItems = value as IList<ITreeItemNode>;
+        }
+    }
+
+    protected override object? NotifyGetFormValue()
+    {
+        if (!IsMultiple)
+        {
+            return SelectedItem;
+        }
+        return SelectedItems;
+    }
+
+    protected override void NotifyClearFormValue()
+    {
+        if (!IsMultiple)
+        {
+            SelectedItem = null;
+        }
+        else
+        {
+            SelectedItems = null;
+        }
+    }
+    #endregion
 }

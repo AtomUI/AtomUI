@@ -35,17 +35,6 @@ public class CheckBox : AvaloniaCheckBox,
 
     #endregion
     
-    #region 公共事件定义
-
-    private EventHandler? _formValueChanged;
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    #endregion
-    
     #region 内部属性定义
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -64,6 +53,12 @@ public class CheckBox : AvaloniaCheckBox,
     }
     
     #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
 
     void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue((bool?)value);
 

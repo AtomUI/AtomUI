@@ -18,7 +18,8 @@ namespace AtomUI.Desktop.Controls;
 
 public class CheckBoxGroup: TemplatedControl,
                             IMotionAwareControl,
-                            IControlSharedTokenResourcesHost
+                            IControlSharedTokenResourcesHost,
+                            IFormItemAware
 {
     #region 公共属性定义
     
@@ -86,7 +87,7 @@ public class CheckBoxGroup: TemplatedControl,
     public ItemCollection Items => _items;
     #endregion
 
-    #region 公共属性定义
+    #region 公共事件定义
 
     public static readonly RoutedEvent<CheckBoxGroupCheckedChangedEventArgs> CheckedChangedEvent =
         RoutedEvent.Register<CheckBoxGroup, CheckBoxGroupCheckedChangedEventArgs>(
@@ -183,6 +184,7 @@ public class CheckBoxGroup: TemplatedControl,
             CheckedItems              = checkedItems;
         }
         RaiseEvent(new CheckBoxGroupCheckedChangedEventArgs(CheckedChangedEvent, change.RemovedItems, change.AddedItems));
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void HandleCheckedItemsChanged(IList? oldValue, IList? newValue)
@@ -197,4 +199,38 @@ public class CheckBoxGroup: TemplatedControl,
             _itemsControl.CheckedItems = newValue;
         }
     }
+    
+    #region 实现 FormItem 接口
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue((IList?)value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifySetFormValue(IList? value)
+    {
+        SetCurrentValue(CheckedItemsProperty, value);
+    }
+
+    protected virtual IList? NotifyGetFormValue()
+    {
+        return CheckedItems;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(CheckedItemsProperty, null);
+    }
+    
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

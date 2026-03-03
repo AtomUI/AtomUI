@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Disposables;
 using AtomUI;
 using AtomWindow = AtomUI.Desktop.Controls.Window;
 using AtomButton = AtomUI.Desktop.Controls.Button;
@@ -342,52 +343,31 @@ public class ShowCaseItem : ContentControl
 
     private Control BuildCodeWindowContent(string code, out AxamlCodeBlock codeBlock)
     {
-        var copyButton = new AtomButton
-        {
-            Shape = ButtonShape.Circle,
-            ButtonType = ButtonType.Text,
-            SizeType = SizeType.Small,
-            Icon = new CopyOutlined(),
-            HorizontalAlignment = HorizontalAlignment.Right
-        };
-        AtomToolTip.SetTip(
-            copyButton,
-            LanguageResourceBinder.GetLangResource(ShowCaseItemLangResourceKey.ToolTipCopyCode) ?? "Copy Code");
-        copyButton.Click += async (_, args) =>
-        {
-            await CopyCodeToClipboardAsync(code, TopLevel.GetTopLevel(copyButton));
-            args.Handled = true;
-        };
-
-        var topBarPanel = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right
-        };
-        topBarPanel.Children.Add(copyButton);
-
-        var topBar = new Border
-        {
-            Padding = new Thickness(12, 10, 12, 0),
-            Child = topBarPanel
-        };
-
         codeBlock = new AxamlCodeBlock
         {
             Code = code,
             FontFamily = new FontFamily("Consolas,Menlo,Monaco,monospace"),
             FontSize = 14,
-            Margin = new Thickness(16)
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
         };
 
-        var container = new Grid
+        var scroller = new AtomUI.Desktop.Controls.ScrollViewer
         {
-            RowDefinitions = new RowDefinitions("Auto,*")
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Content = codeBlock
         };
-        container.Children.Add(topBar);
-        container.Children.Add(codeBlock);
-        Grid.SetRow(codeBlock, 1);
-        return container;
+
+        return new Border
+        {
+            Padding = new Thickness(12),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Child = scroller
+        };
     }
 
     private void OpenOrActivateCodeWindow(string code)
@@ -401,10 +381,14 @@ public class ShowCaseItem : ContentControl
         }
 
         var content = BuildCodeWindowContent(code, out var codeBlock);
-        var window = new AtomWindow
+        var window = new SourceCodeWindow(
+            CopyCodeFromSourceWindowAsync,
+            LanguageResourceBinder.GetLangResource(ShowCaseItemLangResourceKey.ToolTipCopyCode) ?? "Copy Code")
         {
             Title = $"{Title} - Source",
             CanResize = true,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            VerticalContentAlignment = VerticalAlignment.Stretch,
             IsPinCaptionButtonEnabled = true,
             IsFullScreenCaptionButtonEnabled = true,
             IsCloseCaptionButtonEnabled = true,
@@ -445,6 +429,19 @@ public class ShowCaseItem : ContentControl
         _sourceCodeBlock = null;
     }
 
+    private Task CopyCodeFromSourceWindowAsync(TopLevel? topLevel)
+    {
+        var code = _sourceCodeBlock?.Code;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            code = GetEffectiveAxamlSource();
+        }
+
+        return string.IsNullOrWhiteSpace(code)
+            ? Task.CompletedTask
+            : CopyCodeToClipboardAsync(code, topLevel ?? TopLevel.GetTopLevel(this));
+    }
+
     private async Task CopyCodeToClipboardAsync(string code, TopLevel? topLevel)
     {
         if (string.IsNullOrWhiteSpace(code))
@@ -460,5 +457,50 @@ public class ShowCaseItem : ContentControl
 
         await clipboard.SetTextAsync(code);
         ShowCopySuccessMessage(topLevel);
+    }
+
+    private sealed class SourceCodeWindow : AtomWindow
+    {
+        private readonly Func<TopLevel?, Task> _copyCodeAction;
+        private readonly string _copyToolTip;
+
+        public SourceCodeWindow(Func<TopLevel?, Task> copyCodeAction, string copyToolTip)
+        {
+            _copyCodeAction = copyCodeAction;
+            _copyToolTip = copyToolTip;
+        }
+
+        protected override void NotifyConfigureTitleBar(WindowTitleBar titleBar, CompositeDisposable disposables)
+        {
+            base.NotifyConfigureTitleBar(titleBar, disposables);
+
+            var captionButtonHeight = titleBar.MinHeight;
+            if (double.IsNaN(captionButtonHeight) || captionButtonHeight <= 0)
+            {
+                captionButtonHeight = 32;
+            }
+
+            var copyButton = new AtomButton
+            {
+                ButtonType = ButtonType.Text,
+                SizeType = SizeType.Middle,
+                Shape = ButtonShape.Circle,
+                Padding = new Thickness(8, 0),
+                Height = captionButtonHeight,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Icon = new CopyOutlined()
+            };
+            AtomToolTip.SetTip(copyButton, _copyToolTip);
+
+            async void HandleCopyCodeButtonClick(object? sender, RoutedEventArgs args)
+            {
+                await _copyCodeAction(TopLevel.GetTopLevel(this));
+                args.Handled = true;
+            }
+
+            copyButton.Click += HandleCopyCodeButtonClick;
+            disposables.Add(Disposable.Create(() => copyButton.Click -= HandleCopyCodeButtonClick));
+            titleBar.RightAddOn = copyButton;
+        }
     }
 }

@@ -6,48 +6,51 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Name="{x:Static atom:FormItemThemeConstants.RootLayoutPart}">
-                    <StackPanel Orientation="Horizontal"
-                                VerticalAlignment="Top"
-                                Name="PART_LabelLayout"
-                                HorizontalAlignment="Right"
-                                IsVisible="{TemplateBinding LabelText, Converter={x:Static ObjectConverters.IsNotNull}}">
-                        <ContentPresenter Name="CustomRequiredMarkPresenter"
-                                          Content="{TemplateBinding CustomRequireMark}"
-                                          ContentTemplate="{TemplateBinding CustomRequireMarkTemplate}"
-                                          IsVisible="False"
-                                          VerticalAlignment="Center"/>
-                        <ContentPresenter Name="CustomOptionalMarkPresenter"
-                                          Content="{TemplateBinding CustomOptionalMark}"
-                                          ContentTemplate="{TemplateBinding CustomOptionalMarkTemplate}"
-                                          IsVisible="False"
-                                          VerticalAlignment="Center"/>
-                        <TextBlock Text="*" Name="{x:Static atom:FormItemThemeConstants.DefaultRequireMarkPart}"
-                                   IsVisible="False"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Name="{x:Static atom:FormItemThemeConstants.LabelPart}"
-                                   Text="{TemplateBinding LabelText}"
-                                   VerticalAlignment="Center" />
-                        <atom:IconPresenter Name="TooltipIconPresenter"
-                                            Icon="{TemplateBinding TooltipIcon}"
-                                            VerticalAlignment="Center"
-                                            Cursor="Help"
-                                            atom:ToolTip.Tip="{TemplateBinding Tooltip}"
-                                            IsVisible="{TemplateBinding Tooltip, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <TextBlock Text="{DynamicResource {x:Static atom:CommonLangResourceKey.Optional}}"
-                                   Name="OptionalMark"
-                                   IsVisible="False"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text=":" Name="{x:Static atom:FormItemThemeConstants.ColonPart}"
-                                   IsVisible="{TemplateBinding IsColonVisible}"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
+                    <Panel Name="PART_LabelLayout" 
+                            VerticalAlignment="Top"
+                            IsVisible="{TemplateBinding LabelText, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <ContentPresenter Name="CustomRequiredMarkPresenter"
+                                              Content="{TemplateBinding CustomRequireMark}"
+                                              ContentTemplate="{TemplateBinding CustomRequireMarkTemplate}"
+                                              IsVisible="False"
+                                              VerticalAlignment="Center" />
+                            <ContentPresenter Name="CustomOptionalMarkPresenter"
+                                              Content="{TemplateBinding CustomOptionalMark}"
+                                              ContentTemplate="{TemplateBinding CustomOptionalMarkTemplate}"
+                                              IsVisible="False"
+                                              VerticalAlignment="Center" />
+                            <TextBlock Text="*" Name="{x:Static atom:FormItemThemeConstants.DefaultRequireMarkPart}"
+                                       IsVisible="False"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Name="{x:Static atom:FormItemThemeConstants.LabelPart}"
+                                       Text="{TemplateBinding LabelText}"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="{TemplateBinding LabelWrapping}" 
+                                       MaxWidth="{TemplateBinding LabelMaxWidth}"/>
+                            <atom:IconPresenter Name="TooltipIconPresenter"
+                                                Icon="{TemplateBinding TooltipIcon}"
+                                                VerticalAlignment="Center"
+                                                Cursor="Help"
+                                                atom:ToolTip.Tip="{TemplateBinding Tooltip}"
+                                                IsVisible="{TemplateBinding Tooltip, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <TextBlock Text="{DynamicResource {x:Static atom:CommonLangResourceKey.Optional}}"
+                                       Name="OptionalMark"
+                                       IsVisible="False"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=":" Name="{x:Static atom:FormItemThemeConstants.ColonPart}"
+                                       IsVisible="{TemplateBinding IsColonVisible}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Panel>
+                    
                     <Panel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}">
                         <Border Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}"
                                 MinHeight="{Binding #PART_LabelLayout.Bounds.Height}"
                                 Name="ContentFrame">
                             <ContentPresenter Name="ContentPresenter"
                                               Content="{TemplateBinding Content}"
-                                              MaxWidth="{Binding #ContentFrame.Bounds.Width}" 
+                                              MaxWidth="{Binding #ContentFrame.Bounds.Width}"
                                               VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
@@ -84,9 +87,9 @@
         <Style Selector="^ /template/ TextBlock#PART_DefaultRequireMark">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:FormTokenKey.LabelRequiredMarkColor}}" />
         </Style>
-
+        
         <Style Selector="^[Layout=Vertical]">
-            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
+            <Style Selector="^ /template/ Panel#PART_LabelLayout">
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="Margin" Value="{DynamicResource {x:Static atom:FormTokenKey.VerticalLabelMargin}}" />
             </Style>
@@ -97,7 +100,7 @@
             <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:FormTokenKey.LabelFontSize}}" />
         </Style>
         
-        <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
+        <Style Selector="^ /template/ Panel#PART_LabelLayout StackPanel">
             <Setter Property="Spacing"
                     Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
         </Style>
@@ -109,20 +112,20 @@
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
-                <Setter Property="Height"
+            <Style Selector="^ /template/ Panel#PART_LabelLayout">
+                <Setter Property="MinHeight"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightLG}}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
-                <Setter Property="Height"
+            <Style Selector="^ /template/ Panel#PART_LabelLayout">
+                <Setter Property="MinHeight"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ StackPanel#PART_LabelLayout">
-                <Setter Property="Height"
+            <Style Selector="^ /template/ Panel#PART_LabelLayout">
+                <Setter Property="MinHeight"
                         Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightSM}}" />
             </Style>
         </Style>

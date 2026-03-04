@@ -333,6 +333,12 @@ public class FormItem : TemplatedControl,
             o => o.HasCustomOptionalMark,
             (o, v) => o.HasCustomOptionalMark = v);
     
+    internal static readonly DirectProperty<FormItem, double> LabelMaxWidthProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, double>(
+            nameof(LabelMaxWidth),
+            o => o.LabelMaxWidth,
+            (o, v) => o.LabelMaxWidth = v);
+    
     internal bool IsShowColon
     {
         get => GetValue(IsShowColonProperty);
@@ -434,6 +440,14 @@ public class FormItem : TemplatedControl,
     {
         get => _hasCustomOptionalMark;
         set => SetAndRaise(HasCustomOptionalMarkProperty, ref _hasCustomOptionalMark, value);
+    }
+    
+    private double _labelMaxWidth = double.PositiveInfinity;
+    
+    internal double LabelMaxWidth
+    {
+        get => _labelMaxWidth;
+        set => SetAndRaise(LabelMaxWidthProperty, ref _labelMaxWidth, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -680,7 +694,9 @@ public class FormItem : TemplatedControl,
             ConfigureLabelColonVisible();
         }
         
-        if (change.Property == LayoutProperty)
+        if (change.Property == LayoutProperty ||
+            change.Property == LabelColInfoProperty ||
+            change.Property == WrapperColInfoProperty)
         {
             ConfigureLayout();
         }
@@ -708,10 +724,30 @@ public class FormItem : TemplatedControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _rootLayout        = e.NameScope.Find<Grid>(FormItemThemeConstants.RootLayoutPart);
-        _labelLayout       = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
-        _childrenLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.ChildrenLayoutPart);
+        if (_labelLayout != null)
+        {
+            _labelLayout.SizeChanged -= HandleLabelLayoutSizeChanged;
+        }
+        _rootLayout     = e.NameScope.Find<Grid>(FormItemThemeConstants.RootLayoutPart);
+        _labelLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
+        _childrenLayout = e.NameScope.Find<Panel>(FormItemThemeConstants.ChildrenLayoutPart);
+        if (_labelLayout != null)
+        {
+            _labelLayout.SizeChanged += HandleLabelLayoutSizeChanged;
+        }
         ConfigureLayout();
+    }
+
+    private void HandleLabelLayoutSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        if (Layout == FormItemLayout.Horizontal)
+        {
+            LabelMaxWidth = e.NewSize.Width;
+        }
+        else
+        {
+            LabelMaxWidth = double.PositiveInfinity;
+        }
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -759,6 +795,7 @@ public class FormItem : TemplatedControl,
         {
             _rootLayout.RowDefinitions.Clear();
             _rootLayout.ColumnDefinitions.Clear();
+            
             _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
                 LabelColInfo ?? new MediaBreakGridLength(new GridLength(1, GridUnitType.Star)))));
             _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
@@ -780,6 +817,18 @@ public class FormItem : TemplatedControl,
             Grid.SetRow(_childrenLayout, 1);
             Grid.SetColumn(_labelLayout, 0);
             Grid.SetColumn(_childrenLayout, 0);
+        }
+        
+        if (Layout == FormItemLayout.Horizontal)
+        {
+            if (_labelLayout != null)
+            {
+                LabelMaxWidth = _labelLayout.Bounds.Width;
+            }
+        }
+        else
+        {
+            LabelMaxWidth = double.PositiveInfinity;
         }
     }
     

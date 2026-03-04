@@ -438,121 +438,161 @@
         <!--     </StackPanel> -->
         <!-- </gallery:ShowCaseItem> -->
 
-        <gallery:ShowCaseItem
-            Title="Required style"
-            Description="Switch required or optional style with requiredMark."
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Required style" -->
+        <!--     Description="Switch required or optional style with requiredMark." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <StackPanel Orientation="Vertical" Spacing="20"> -->
+        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
+        <!--             <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock> -->
+        <!--             <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormRequiredMarkChanged"> -->
+        <!--                 <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormRequiredMark.Default}">Default</atom:OptionButton> -->
+        <!--                 <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Optional}">Optional</atom:OptionButton> -->
+        <!--                 <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Hidden}">Hidden</atom:OptionButton> -->
+        <!--                 <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Customize}">Customize</atom:OptionButton> -->
+        <!--             </atom:OptionButtonGroup> -->
+        <!--         </StackPanel> -->
+        <!-- -->
+        <!--         <atom:Form LabelColInfo="8*" -->
+        <!--                    WrapperColInfo="16*" -->
+        <!--                    HorizontalAlignment="Left" -->
+        <!--                    MinWidth="600" -->
+        <!--                    FormLayout="Horizontal" -->
+        <!--                    RequiredMark="{Binding FormRequiredMark}"> -->
+        <!--             <atom:Form.CustomRequireMark> -->
+        <!--                 <atom:Tag TagColor="Error">required</atom:Tag> -->
+        <!--             </atom:Form.CustomRequireMark> -->
+        <!--             <atom:Form.CustomOptionalMark> -->
+        <!--                 <atom:Tag TagColor="Warning">optional</atom:Tag> -->
+        <!--             </atom:Form.CustomOptionalMark> -->
+        <!--             <atom:FormItem IsRequired="True" LabelText="Field A" FieldName="FieldA" Tooltip="This is a required field"> -->
+        <!--                 <atom:LineEdit PlaceholderText="input placeholder"/> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem LabelText="Field B" FieldName="Field B" Tooltip="Tooltip with customize icon" -->
+        <!--                            TooltipIcon="{antdicons:AntDesignIconProvider InfoCircleOutlined}"> -->
+        <!--                 <atom:LineEdit PlaceholderText="input placeholder"/> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem> -->
+        <!--                 <atom:SubmitButton/> -->
+        <!--             </atom:FormItem> -->
+        <!--         </atom:Form> -->
+        <!--     </StackPanel> -->
+        <!-- -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Required style" -->
+        <!--     Description="Switch required or optional style with requiredMark." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <StackPanel Orientation="Vertical" Spacing="20"> -->
+        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
+        <!--             <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock> -->
+        <!--             <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormSizeTypeChanged"> -->
+        <!--                 <atom:OptionButton Tag="{x:Static atom:SizeType.Small}">Small</atom:OptionButton> -->
+        <!--                 <atom:OptionButton Tag="{x:Static atom:SizeType.Middle}" IsChecked="True">Middle</atom:OptionButton> -->
+        <!--                 <atom:OptionButton Tag="{x:Static atom:SizeType.Large}">Large</atom:OptionButton> -->
+        <!--             </atom:OptionButtonGroup> -->
+        <!--         </StackPanel> -->
+        <!-- -->
+        <!--         <atom:Form LabelColInfo="8*" -->
+        <!--                    WrapperColInfo="16*" -->
+        <!--                    MinWidth="600" -->
+        <!--                    HorizontalAlignment="Left" -->
+        <!--                    SizeType="{Binding FormSizeType}"> -->
+        <!--             <atom:FormItem LabelText="Input" -->
+        <!--                            FieldName="input"> -->
+        <!--                 <atom:LineEdit /> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem LabelText="InputNumber" -->
+        <!--                            FieldName="inputNumber"> -->
+        <!--                 <atom:NumericUpDown Width="200" /> -->
+        <!--             </atom:FormItem> -->
+        <!--             <atom:FormItem LabelText="Switch" -->
+        <!--                            FieldName="switch"> -->
+        <!--                 <atom:ToggleSwitch /> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem LabelText="Mentions" -->
+        <!--                            FieldName="mentions"> -->
+        <!--                 <atom:Mentions /> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem LabelText="Select" -->
+        <!--                            FieldName="select"> -->
+        <!--                 <atom:Select HorizontalAlignment="Stretch" Mode="Multiple"> -->
+        <!--                     <atom:SelectOption Header="BBB"/> -->
+        <!--                     <atom:SelectOption Header="AAA"/> -->
+        <!--                 </atom:Select> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem LabelText="Cascader" -->
+        <!--                            FieldName="cascader"> -->
+        <!--                 <atom:Cascader HorizontalAlignment="Stretch" /> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem LabelText="TreeSelect" -->
+        <!--                            FieldName="treeSelect"> -->
+        <!--                 <atom:TreeSelect HorizontalAlignment="Stretch" /> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem LabelText="DatePicker" -->
+        <!--                            FieldName="datePicker"> -->
+        <!--                 <atom:DatePicker PlaceholderText="Please select" /> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem LabelText="RangePicker" -->
+        <!--                            FieldName="rangePicker"> -->
+        <!--                 <atom:RangeDatePicker PlaceholderText="Start date" -->
+        <!--                                       SecondaryPlaceholderText="End date" /> -->
+        <!--             </atom:FormItem> -->
+        <!-- -->
+        <!--             <atom:FormItem> -->
+        <!--                 <atom:SubmitButton /> -->
+        <!--             </atom:FormItem> -->
+        <!--         </atom:Form> -->
+        <!--     </StackPanel> -->
+        <!-- -->
+        <!-- </gallery:ShowCaseItem> -->
+
+         <gallery:ShowCaseItem
+            Title="label can wrap"
+            Description="Turn on labelWrap to wrap label if text is long."
             IsOccupyEntireRow="True">
-            <StackPanel Orientation="Vertical" Spacing="20">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock>
-                    <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormRequiredMarkChanged">
-                        <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormRequiredMark.Default}">Default</atom:OptionButton>
-                        <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Optional}">Optional</atom:OptionButton>
-                        <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Hidden}">Hidden</atom:OptionButton>
-                        <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Customize}">Customize</atom:OptionButton>
-                    </atom:OptionButtonGroup>
-                </StackPanel>
-
-                <atom:Form LabelColInfo="8*"
-                           WrapperColInfo="16*"
-                           HorizontalAlignment="Left"
-                           MinWidth="600"
-                           FormLayout="Horizontal"
-                           RequiredMark="{Binding FormRequiredMark}">
-                    <atom:Form.CustomRequireMark>
-                        <atom:Tag TagColor="Error">required</atom:Tag>
-                    </atom:Form.CustomRequireMark>
-                    <atom:Form.CustomOptionalMark>
-                        <atom:Tag TagColor="Warning">optional</atom:Tag>
-                    </atom:Form.CustomOptionalMark>
-                    <atom:FormItem IsRequired="True" LabelText="Field A" FieldName="FieldA" Tooltip="This is a required field">
-                        <atom:LineEdit PlaceholderText="input placeholder"/>
-                    </atom:FormItem>
-                    <atom:FormItem LabelText="Field B" FieldName="Field B" Tooltip="Tooltip with customize icon"
-                                   TooltipIcon="{antdicons:AntDesignIconProvider InfoCircleOutlined}">
-                        <atom:LineEdit PlaceholderText="input placeholder"/>
-                    </atom:FormItem>
-                    <atom:FormItem>
-                        <atom:SubmitButton/>
-                    </atom:FormItem>
-                </atom:Form>
-            </StackPanel>
-
+            <atom:Form LabelColInfo="4*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       LabelWrapping="Wrap">
+                <atom:FormItem LabelText="Normal label"
+                               FieldName="username"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="A super long label text"
+                               FieldName="password"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="A super long label text"
+                               FieldName="password1">
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormItem>
+                    <atom:SubmitButton />
+                </atom:FormItem>
+            </atom:Form>
         </gallery:ShowCaseItem>
         
-        <gallery:ShowCaseItem
-            Title="Required style"
-            Description="Switch required or optional style with requiredMark."
-            IsOccupyEntireRow="True">
-            <StackPanel Orientation="Vertical" Spacing="20">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock>
-                    <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormSizeTypeChanged">
-                        <atom:OptionButton Tag="{x:Static atom:SizeType.Small}">Small</atom:OptionButton>
-                        <atom:OptionButton Tag="{x:Static atom:SizeType.Middle}" IsChecked="True">Middle</atom:OptionButton>
-                        <atom:OptionButton Tag="{x:Static atom:SizeType.Large}">Large</atom:OptionButton>
-                    </atom:OptionButtonGroup>
-                </StackPanel>
-
-                <atom:Form LabelColInfo="8*"
-                           WrapperColInfo="16*"
-                           MinWidth="600"
-                           HorizontalAlignment="Left"
-                           SizeType="{Binding FormSizeType}">
-                    <atom:FormItem LabelText="Input"
-                                   FieldName="input">
-                        <atom:LineEdit />
-                    </atom:FormItem>
-                    <atom:FormItem LabelText="InputNumber"
-                                   FieldName="inputNumber">
-                        <atom:NumericUpDown Width="200" />
-                    </atom:FormItem>
-                    <atom:FormItem LabelText="Switch"
-                                   FieldName="switch">
-                        <atom:ToggleSwitch />
-                    </atom:FormItem>
-
-                    <atom:FormItem LabelText="Mentions"
-                                   FieldName="mentions">
-                        <atom:Mentions />
-                    </atom:FormItem>
-
-                    <atom:FormItem LabelText="Select"
-                                   FieldName="select">
-                        <atom:Select HorizontalAlignment="Stretch" Mode="Multiple">
-                            <atom:SelectOption Header="BBB"/>
-                            <atom:SelectOption Header="AAA"/>
-                        </atom:Select>
-                    </atom:FormItem>
-
-                    <atom:FormItem LabelText="Cascader"
-                                   FieldName="cascader">
-                        <atom:Cascader HorizontalAlignment="Stretch" />
-                    </atom:FormItem>
-
-                    <atom:FormItem LabelText="TreeSelect"
-                                   FieldName="treeSelect">
-                        <atom:TreeSelect HorizontalAlignment="Stretch" />
-                    </atom:FormItem>
-
-                    <atom:FormItem LabelText="DatePicker"
-                                   FieldName="datePicker">
-                        <atom:DatePicker PlaceholderText="Please select" />
-                    </atom:FormItem>
-
-                    <atom:FormItem LabelText="RangePicker"
-                                   FieldName="rangePicker">
-                        <atom:RangeDatePicker PlaceholderText="Start date"
-                                              SecondaryPlaceholderText="End date" />
-                    </atom:FormItem>
-
-                    <atom:FormItem>
-                        <atom:SubmitButton />
-                    </atom:FormItem>
-                </atom:Form>
-            </StackPanel>
-
-        </gallery:ShowCaseItem>
-
     </gallery:ShowCasePanel>
 </UserControl>

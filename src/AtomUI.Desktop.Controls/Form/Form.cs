@@ -362,12 +362,15 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, formItem, FormItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowColonProperty, formItem, FormItem.IsShowColonProperty));
             disposables.Add(BindUtils.RelayBind(this, RequiredMarkProperty, formItem, FormItem.RequiredMarkProperty));
+            disposables.Add(BindUtils.RelayBind(this, LabelWrappingProperty, formItem, FormItem.LabelWrappingProperty));
             disposables.Add(BindUtils.RelayBind(this, ValidateTriggerProperty, formItem, FormItem.ValidateTriggerProperty));
             disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, formItem, FormItem.StyleVariantProperty));
             disposables.Add(BindUtils.RelayBind(this, CustomRequireMarkProperty, formItem, FormItem.CustomRequireMarkProperty));
             disposables.Add(BindUtils.RelayBind(this, CustomRequireMarkTemplateProperty, formItem, FormItem.CustomRequireMarkTemplateProperty));
             disposables.Add(BindUtils.RelayBind(this, CustomOptionalMarkProperty, formItem, FormItem.CustomOptionalMarkProperty));
             disposables.Add(BindUtils.RelayBind(this, CustomOptionalMarkTemplateProperty, formItem, FormItem.CustomOptionalMarkTemplateProperty));
+            disposables.Add(BindUtils.RelayBind(this, LabelColInfoProperty, formItem, FormItem.LabelColInfoProperty));
+            disposables.Add(BindUtils.RelayBind(this, WrapperColInfoProperty, formItem, FormItem.WrapperColInfoProperty));
             PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))
@@ -502,7 +505,6 @@ public class Form : ItemsControl,
     {
         base.OnPropertyChanged(change);
         if (change.Property == LabelAlignProperty ||
-            change.Property == LabelWrappingProperty ||
             change.Property == FormLayoutProperty)
         {
             SyncConfigToItems();
@@ -528,10 +530,6 @@ public class Form : ItemsControl,
 
     private void SyncConfigToItem(FormItem formItem)
     {
-        if (!formItem.IsSet(FormItem.LabelWrappingProperty))
-        {
-            formItem.SetCurrentValue(FormItem.LabelWrappingProperty, LabelWrapping);
-        }
 
         if (!formItem.IsSet(FormItem.LabelAlignProperty))
         {

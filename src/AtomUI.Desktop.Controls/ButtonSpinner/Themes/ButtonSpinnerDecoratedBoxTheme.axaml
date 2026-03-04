@@ -20,6 +20,7 @@
                         DockPanel.Dock="Left"
                         Content="{TemplateBinding LeftAddOn}"
                         ContentTemplate="{TemplateBinding LeftAddOnTemplate}"
+                        BackgroundSizing="InnerBorderEdge"
                         BorderThickness="{TemplateBinding LeftAddOnBorderThickness}"
                         CornerRadius="{TemplateBinding LeftAddOnCornerRadius}"
                         IsVisible="{TemplateBinding LeftAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -32,15 +33,17 @@
                         Content="{TemplateBinding RightAddOn}"
                         ContentTemplate="{TemplateBinding RightAddOnTemplate}"
                         BorderThickness="{TemplateBinding RightAddOnBorderThickness}"
+                        BackgroundSizing="InnerBorderEdge"
                         CornerRadius="{TemplateBinding RightAddOnCornerRadius}"
                         IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                     <Panel>
                         <Border Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentFramePart}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
                                 CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                Background="{TemplateBinding Background}">
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="InnerBorderEdge">
                             <atom:ButtonSpinnerContentPanel Name="ContentLayout"
                                                             LastChildFill="True"
                                                             HandleLocation="{TemplateBinding ButtonSpinnerLocation}"

@@ -239,7 +239,6 @@ public class ButtonSpinner : Spinner,
     public ButtonSpinner()
     {
         this.RegisterResources();
-        // RenderTransform = new TranslateTransform(-1, 0);
     }
     
     private IconButton? _decreaseButton;

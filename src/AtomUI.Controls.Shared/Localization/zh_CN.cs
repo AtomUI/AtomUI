@@ -14,4 +14,5 @@ internal class zh_CN : LanguageProvider
     public const string Save = "保存";
     public const string NoData = "暂无数据";
     public const string Loading = "正在加载数据";
+    public const string Optional = "(可选)";
 }

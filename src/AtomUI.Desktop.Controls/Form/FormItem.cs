@@ -4,6 +4,7 @@ using System.Text;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -92,6 +93,9 @@ public class FormItem : TemplatedControl,
     
     public static readonly StyledProperty<string?> TooltipProperty =
         AvaloniaProperty.Register<FormItem, string?>(nameof(Tooltip));
+    
+    public static readonly StyledProperty<PathIcon?> TooltipIconProperty =
+        AvaloniaProperty.Register<FormItem, PathIcon?>(nameof(TooltipIcon));
     
     public static readonly StyledProperty<TimeSpan?> ValidateDebounceProperty =
         AvaloniaProperty.Register<FormItem, TimeSpan?>(nameof(ValidateDebounce));
@@ -215,6 +219,12 @@ public class FormItem : TemplatedControl,
         set => SetValue(TooltipProperty, value);
     }
     
+    public PathIcon? TooltipIcon
+    {
+        get => GetValue(TooltipIconProperty);
+        set => SetValue(TooltipIconProperty, value);
+    }
+    
     public TimeSpan? ValidateDebounce
     {
         get => GetValue(ValidateDebounceProperty);
@@ -229,7 +239,7 @@ public class FormItem : TemplatedControl,
     
     private FormValidateStatus _validateStatus = FormValidateStatus.Default;
 
-    internal FormValidateStatus ValidateStatus
+    public FormValidateStatus ValidateStatus
     {
         get => _validateStatus;
         set => SetAndRaise(ValidateStatusProperty, ref _validateStatus, value);
@@ -237,10 +247,10 @@ public class FormItem : TemplatedControl,
     
     private FormValidateResult _validateResult = FormValidateResult.Success;
 
-    internal FormValidateResult ValidateResult
+    public FormValidateResult ValidateResult
     {
         get => _validateResult;
-        set => SetAndRaise(ValidateResultProperty, ref _validateResult, value);
+        private set => SetAndRaise(ValidateResultProperty, ref _validateResult, value);
     }
     
     public FormItemLayout Layout
@@ -279,11 +289,10 @@ public class FormItem : TemplatedControl,
             o => o.IsColonVisible,
             (o, v) => o.IsColonVisible = v);
     
-    internal static readonly DirectProperty<FormItem, bool> IsRequireMarkVisibleProperty =
+    internal static readonly DirectProperty<FormItem, bool> IsValueItemProperty =
         AvaloniaProperty.RegisterDirect<FormItem, bool>(
-            nameof(IsRequireMarkVisible),
-            o => o.IsRequireMarkVisible,
-            (o, v) => o.IsRequireMarkVisible = v);
+            nameof(IsValueItem),
+            o => o.IsValueItem);
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<FormItem>();
@@ -299,6 +308,30 @@ public class FormItem : TemplatedControl,
             nameof(ValidateMsg),
             o => o.ValidateMsg,
             (o, v) => o.ValidateMsg = v);
+    
+    internal static readonly StyledProperty<object?> CustomRequireMarkProperty =
+        Form.CustomRequireMarkProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<IDataTemplate?> CustomRequireMarkTemplateProperty =
+        Form.CustomRequireMarkTemplateProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<object?> CustomOptionalMarkProperty =
+        Form.CustomOptionalMarkProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<IDataTemplate?> CustomOptionalMarkTemplateProperty =
+        Form.CustomOptionalMarkTemplateProperty.AddOwner<FormItem>();
+    
+    internal static readonly DirectProperty<FormItem, bool> HasCustomRequireMarkProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(HasCustomRequireMark),
+            o => o.HasCustomRequireMark,
+            (o, v) => o.HasCustomRequireMark = v);
+    
+    internal static readonly DirectProperty<FormItem, bool> HasCustomOptionalMarkProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(HasCustomOptionalMark),
+            o => o.HasCustomOptionalMark,
+            (o, v) => o.HasCustomOptionalMark = v);
     
     internal bool IsShowColon
     {
@@ -332,12 +365,13 @@ public class FormItem : TemplatedControl,
         set => SetAndRaise(IsColonVisibleProperty, ref _isColonVisible, value);
     }
     
-    private bool _isRequireMarkVisible;
-
-    internal bool IsRequireMarkVisible
+    private bool _isValueItem;
+    
+    // 如果这个 FormItem 设置了 Label 和 FieldName 那么就是一个 ValueItem
+    internal bool IsValueItem
     {
-        get => _isRequireMarkVisible;
-        set => SetAndRaise(IsRequireMarkVisibleProperty, ref _isRequireMarkVisible, value);
+        get => _isValueItem;
+        set => SetAndRaise(IsValueItemProperty, ref _isValueItem, value);
     }
     
     internal FormRequiredMark RequiredMark
@@ -358,6 +392,48 @@ public class FormItem : TemplatedControl,
     {
         get => _validateMsg;
         set => SetAndRaise(ValidateMsgProperty, ref _validateMsg, value);
+    }
+    
+    [DependsOn(nameof(CustomRequireMarkTemplate))]
+    internal object? CustomRequireMark
+    {
+        get => GetValue(CustomRequireMarkProperty);
+        set => SetValue(CustomRequireMarkProperty, value);
+    }
+    
+    internal IDataTemplate? CustomRequireMarkTemplate
+    {
+        get => GetValue(CustomRequireMarkTemplateProperty);
+        set => SetValue(CustomRequireMarkTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(CustomOptionalMarkTemplate))]
+    internal object? CustomOptionalMark
+    {
+        get => GetValue(CustomOptionalMarkProperty);
+        set => SetValue(CustomOptionalMarkProperty, value);
+    }
+    
+    internal IDataTemplate? CustomOptionalMarkTemplate
+    {
+        get => GetValue(CustomOptionalMarkTemplateProperty);
+        set => SetValue(CustomOptionalMarkTemplateProperty, value);
+    }
+    
+    private bool _hasCustomRequireMark;
+    
+    internal bool HasCustomRequireMark
+    {
+        get => _hasCustomRequireMark;
+        set => SetAndRaise(HasCustomRequireMarkProperty, ref _hasCustomRequireMark, value);
+    }
+    
+    private bool _hasCustomOptionalMark;
+    
+    internal bool HasCustomOptionalMark
+    {
+        get => _hasCustomOptionalMark;
+        set => SetAndRaise(HasCustomOptionalMarkProperty, ref _hasCustomOptionalMark, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -395,6 +471,15 @@ public class FormItem : TemplatedControl,
     public FormItem()
     {
         this.RegisterResources();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (TooltipIcon == null)
+        {
+            SetCurrentValue(TooltipIconProperty, new QuestionCircleOutlined());
+        }
     }
 
     protected virtual void NotifyContentAdded(AvaloniaPropertyChangedEventArgs change)
@@ -599,15 +684,24 @@ public class FormItem : TemplatedControl,
         {
             ConfigureLayout();
         }
-        else if (change.Property == RequiredMarkProperty ||
-                 change.Property == IsRequiredProperty)
-        {
-            ConfigureRequireMarkVisible();
-        }
 
         if (change.Property == ContentProperty)
         {
             NotifyContentAdded(change);
+        }
+        else if (change.Property == FieldNameProperty ||
+                 change.Property == LabelTextProperty)
+        {
+            IsValueItem = !string.IsNullOrWhiteSpace(FieldName) && !string.IsNullOrWhiteSpace(LabelText);
+        }
+
+        if (change.Property == CustomRequireMarkProperty)
+        {
+            HasCustomRequireMark = CustomRequireMark != null;
+        }
+        else if (change.Property == CustomOptionalMarkProperty)
+        {
+            HasCustomOptionalMark = CustomOptionalMark != null;
         }
     }
 
@@ -618,7 +712,6 @@ public class FormItem : TemplatedControl,
         _labelLayout       = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
         _childrenLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.ChildrenLayoutPart);
         ConfigureLayout();
-        ConfigureRequireMarkVisible();
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -720,19 +813,7 @@ public class FormItem : TemplatedControl,
 
         return gridLength;
     }
-
-    private void ConfigureRequireMarkVisible()
-    {
-        if (RequiredMark == FormRequiredMark.Default)
-        {
-            IsRequireMarkVisible = IsRequired;
-        }
-        else
-        {
-            IsRequireMarkVisible = false;
-        }
-    }
-
+    
     internal virtual bool IsSkipValidate()
     {
         return !IsVisible;

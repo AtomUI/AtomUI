@@ -36,6 +36,14 @@ public class FormViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _formStyleVariant, value);
     }
     
+    private FormRequiredMark _formRequiredMark = FormRequiredMark.Default;
+
+    public FormRequiredMark FormRequiredMark
+    {
+        get => _formRequiredMark;
+        set => this.RaiseAndSetIfChanged(ref _formRequiredMark, value);
+    }
+    
     public FormViewModel(IScreen screen)
     {
         HostScreen = screen;

@@ -11,6 +11,7 @@ namespace AtomUI.Controls.Localization
         public static readonly LanguageResourceKey Loading = new LanguageResourceKey("Common.Loading", "AtomUI.Lang");
         public static readonly LanguageResourceKey NoData = new LanguageResourceKey("Common.NoData", "AtomUI.Lang");
         public static readonly LanguageResourceKey Ok = new LanguageResourceKey("Common.Ok", "AtomUI.Lang");
+        public static readonly LanguageResourceKey Optional = new LanguageResourceKey("Common.Optional", "AtomUI.Lang");
         public static readonly LanguageResourceKey Reset = new LanguageResourceKey("Common.Reset", "AtomUI.Lang");
         public static readonly LanguageResourceKey Save = new LanguageResourceKey("Common.Save", "AtomUI.Lang");
         public static readonly LanguageResourceKey Submit = new LanguageResourceKey("Common.Submit", "AtomUI.Lang");

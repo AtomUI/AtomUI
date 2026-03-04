@@ -92,7 +92,10 @@
                                 ShouldUseOverlayLayer="True"
                                 IsMotionAwareOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}">
-                        <Border Name="PopupFrame">
+                        <Border Name="PopupFrame"
+                                MaxHeight="{TemplateBinding MaxPopupHeight}"
+                                MinWidth="{TemplateBinding EffectivePopupWidth}"
+                                Padding="{TemplateBinding PopupContentPadding}">
                             <atom:CascaderView Name="{x:Static atom:CascaderThemeConstants.CascaderViewPart}"
                                                HorizontalAlignment="Stretch"
                                                VerticalAlignment="Stretch"

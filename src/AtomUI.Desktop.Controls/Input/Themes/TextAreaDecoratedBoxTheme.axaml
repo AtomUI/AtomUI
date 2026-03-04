@@ -16,7 +16,7 @@
                         CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
-                        BackgroundSizing="OuterBorderEdge">
+                        BackgroundSizing="InnerBorderEdge">
                     <Border Name="TextAreaContentFrame"
                             Padding="{TemplateBinding TextAreaFramePadding, Converter={StaticResource TextAreaFramePaddingConverter}}">
                         <DockPanel Name="ContentLayout" LastChildFill="True">

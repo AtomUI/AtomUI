@@ -13,6 +13,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
@@ -84,11 +85,17 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<FormLayout> FormLayoutProperty =
         AvaloniaProperty.Register<Form, FormLayout>(nameof(FormLayout));
     
-    public static readonly StyledProperty<IControlTemplate?> CustomRequireMarkProperty =
-        AvaloniaProperty.Register<Form, IControlTemplate?>(nameof(CustomRequireMark));
+    public static readonly StyledProperty<object?> CustomRequireMarkProperty =
+        AvaloniaProperty.Register<Form, object?>(nameof(CustomRequireMark));
     
-    public static readonly StyledProperty<IControlTemplate?> CustomOptionalMarkProperty =
-        AvaloniaProperty.Register<Form, IControlTemplate?>(nameof(CustomOptionalMark));
+    public static readonly StyledProperty<IDataTemplate?> CustomRequireMarkTemplateProperty =
+        AvaloniaProperty.Register<Form, IDataTemplate?>(nameof(CustomRequireMarkTemplate));
+    
+    public static readonly StyledProperty<object?> CustomOptionalMarkProperty =
+        AvaloniaProperty.Register<Form, object?>(nameof(CustomOptionalMark));
+    
+    public static readonly StyledProperty<IDataTemplate?> CustomOptionalMarkTemplateProperty =
+        AvaloniaProperty.Register<Form, IDataTemplate?>(nameof(CustomOptionalMarkTemplate));
     
     public static readonly StyledProperty<bool> ScrollToFirstErrorProperty =
         AvaloniaProperty.Register<Form, bool>(nameof(ScrollToFirstError));
@@ -173,16 +180,30 @@ public class Form : ItemsControl,
         set => SetValue(FormLayoutProperty, value);
     }
     
-    public IControlTemplate? CustomRequireMark
+    [DependsOn(nameof(CustomRequireMarkTemplate))]
+    public object? CustomRequireMark
     {
         get => GetValue(CustomRequireMarkProperty);
         set => SetValue(CustomRequireMarkProperty, value);
     }
     
-    public IControlTemplate? CustomOptionalMark
+    public IDataTemplate? CustomRequireMarkTemplate
+    {
+        get => GetValue(CustomRequireMarkTemplateProperty);
+        set => SetValue(CustomRequireMarkTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(CustomOptionalMarkTemplate))]
+    public object? CustomOptionalMark
     {
         get => GetValue(CustomOptionalMarkProperty);
         set => SetValue(CustomOptionalMarkProperty, value);
+    }
+    
+    public IDataTemplate? CustomOptionalMarkTemplate
+    {
+        get => GetValue(CustomOptionalMarkTemplateProperty);
+        set => SetValue(CustomOptionalMarkTemplateProperty, value);
     }
     
     public bool ScrollToFirstError
@@ -343,6 +364,10 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, RequiredMarkProperty, formItem, FormItem.RequiredMarkProperty));
             disposables.Add(BindUtils.RelayBind(this, ValidateTriggerProperty, formItem, FormItem.ValidateTriggerProperty));
             disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, formItem, FormItem.StyleVariantProperty));
+            disposables.Add(BindUtils.RelayBind(this, CustomRequireMarkProperty, formItem, FormItem.CustomRequireMarkProperty));
+            disposables.Add(BindUtils.RelayBind(this, CustomRequireMarkTemplateProperty, formItem, FormItem.CustomRequireMarkTemplateProperty));
+            disposables.Add(BindUtils.RelayBind(this, CustomOptionalMarkProperty, formItem, FormItem.CustomOptionalMarkProperty));
+            disposables.Add(BindUtils.RelayBind(this, CustomOptionalMarkTemplateProperty, formItem, FormItem.CustomOptionalMarkTemplateProperty));
             PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))

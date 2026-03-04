@@ -47,7 +47,8 @@
                                 Name="ContentFrame">
                             <ContentPresenter Name="ContentPresenter"
                                               Content="{TemplateBinding Content}"
-                                              MaxWidth="{Binding #ContentFrame.Bounds.Width}" />
+                                              MaxWidth="{Binding #ContentFrame.Bounds.Width}" 
+                                              VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
                                    VerticalAlignment="Bottom"

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
@@ -72,6 +73,28 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
                 {
                     vm.FormStyleVariant = styleVariant.Value;
                 }
+            }
+        }
+    }
+    
+    private void HandleFormRequiredMarkChanged(object? sender, OptionCheckedChangedEventArgs args)
+    {
+        if (DataContext is FormViewModel vm)
+        {
+            if (args.CheckedOption.Tag is FormRequiredMark requiredMark)
+            {
+                vm.FormRequiredMark = requiredMark;
+            }
+        }
+    }
+    
+    private void HandleFormSizeTypeChanged(object? sender, OptionCheckedChangedEventArgs args)
+    {
+        if (DataContext is FormViewModel vm)
+        {
+            if (args.CheckedOption.Tag is SizeType sizeType)
+            {
+                vm.FormSizeType = sizeType;
             }
         }
     }

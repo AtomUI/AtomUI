@@ -164,9 +164,10 @@
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
                 <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
+                <Setter Property="Margin" Value="{DynamicResource {x:Static atom:AddOnDecoratedBoxTokenKey.ContentMargin}}" />
             </Style>
         </Style>
-
+        
         <!-- status 不同的时候左右附加区域的主体色设置 -->
         <Style Selector="^[Status=Error]">
             <Style Selector="^ /template/ ContentPresenter#PART_LeftAddOn">

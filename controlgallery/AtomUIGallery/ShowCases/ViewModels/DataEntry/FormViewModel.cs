@@ -1,4 +1,5 @@
-﻿using AtomUI.Controls;
+﻿using AtomUI;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using ReactiveUI;
 
@@ -42,6 +43,14 @@ public class FormViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _formRequiredMark;
         set => this.RaiseAndSetIfChanged(ref _formRequiredMark, value);
+    }
+    
+    private SizeType _formSizeType = SizeType.Middle;
+
+    public SizeType FormSizeType
+    {
+        get => _formSizeType;
+        set => this.RaiseAndSetIfChanged(ref _formSizeType, value);
     }
     
     public FormViewModel(IScreen screen)

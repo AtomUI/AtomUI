@@ -93,6 +93,11 @@ internal class AddOnDecoratedBoxToken : AbstractControlDesignToken
     /// 右边内部小组件的边距
     /// </summary>
     public Thickness RightInnerAddOnMargin { get; set; }
+    
+    /// <summary>
+    /// 内容显示外边距
+    /// </summary>
+    public Thickness ContentMargin { get; set; }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -109,6 +114,7 @@ internal class AddOnDecoratedBoxToken : AbstractControlDesignToken
         PaddingLG = new Thickness(SharedToken.ControlPaddingHorizontal - lineWidth,
             Math.Ceiling((SharedToken.ControlHeightLG - fontSizeLG * lineHeightLG) / 2 * 10) / 10 -
             lineWidth);
+        ContentMargin  = new Thickness(lineWidth);
         AddOnPadding   = new Thickness(SharedToken.UniformlyPaddingSM, 0);
         AddOnPaddingSM = new Thickness(SharedToken.ControlPaddingHorizontalSM, 0);
         AddOnPaddingLG = new Thickness(SharedToken.ControlPaddingHorizontal, 0);

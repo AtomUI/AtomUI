@@ -26,6 +26,7 @@
                                           TriggerPrefix="{TemplateBinding TriggerPrefix}"
                                           IsReadOnly="{TemplateBinding IsReadOnly}"
                                           ClearIcon="{TemplateBinding ClearIcon}"
+                                          SizeType="{TemplateBinding SizeType}"
                                           Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                           FilterValue="{TemplateBinding OptionFilterValue, Mode=TwoWay}"/>
                     <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"

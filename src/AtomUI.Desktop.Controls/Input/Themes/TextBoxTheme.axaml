@@ -125,9 +125,6 @@
         <Style Selector="^[SizeType=Small]">
             <Setter Property="LineHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontHeightSM}}" />
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
-            <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
-                <Setter Property="Margin" Value="0, 1, 0, 1" />
-            </Style>
         </Style>
     
         <Style Selector="^[IsCustomFontSize=False]">

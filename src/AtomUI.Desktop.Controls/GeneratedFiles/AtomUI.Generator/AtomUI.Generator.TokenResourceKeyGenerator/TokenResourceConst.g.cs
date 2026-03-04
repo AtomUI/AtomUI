@@ -732,6 +732,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey AddOnPadding = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.AddOnPadding");
         public static readonly TokenResourceKey AddOnPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.AddOnPaddingLG");
         public static readonly TokenResourceKey AddOnPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.AddOnPaddingSM");
+        public static readonly TokenResourceKey ContentMargin = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.ContentMargin");
         public static readonly TokenResourceKey ErrorActiveShadow = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.ErrorActiveShadow");
         public static readonly TokenResourceKey HoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.HoverBg");
         public static readonly TokenResourceKey HoverBorderColor = new TokenResourceKey("AtomUI.Desktop.Controls.AddOnDecoratedBox.HoverBorderColor");

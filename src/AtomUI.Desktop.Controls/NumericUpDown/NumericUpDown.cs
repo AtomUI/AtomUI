@@ -25,7 +25,8 @@ public class NumericUpDown : AvaloniaNumericUpDown,
                              ICompactSpaceAware,
                              IFormItemAware,
                              IInputControlStatusAware,
-                             IInputControlStyleVariantAware
+                             IInputControlStyleVariantAware,
+                             ISizeTypeAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =

@@ -42,6 +42,13 @@
                             IsChecked="{Binding RevealPassword, RelativeSource={RelativeSource AncestorType=atom:LineEdit}, Mode=TwoWay}"
                             IsVisible="{Binding IsEnableRevealButton, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}" />
                         <ContentPresenter
+                            Name="FormFeedBack"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Right"
+                            IsVisible="{TemplateBinding FormFeedback, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Content="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"/>
+                        <ContentPresenter
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"
                             HorizontalAlignment="Right"

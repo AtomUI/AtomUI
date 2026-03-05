@@ -46,6 +46,22 @@ public enum FormValidateTrigger
     OnSubmit
 }
 
+public enum FormValidateStrategy
+{
+    StopWhenFirstFailed,
+    Sequential,
+    Parallel
+}
+
+public enum FormValidateStatus
+{
+    Default,
+    Success,
+    Warning,
+    Error,
+    Validating
+}
+
 public class Form : ItemsControl,
                     ISizeTypeAware,
                     IMotionAwareControl,
@@ -70,11 +86,36 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
         AvaloniaProperty.Register<Form, FormRequiredMark>(nameof(RequiredMark), FormRequiredMark.Default);
     
-    public static readonly StyledProperty<IconTemplate?> ErrorFeedbackIconProperty =
-        AvaloniaProperty.Register<Form, IconTemplate?>(nameof(ErrorFeedbackIcon));
+    public static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
+        AvaloniaProperty.Register<Form, bool>(
+            nameof(IsValidateFeedbackEnabled), false);
     
-    public static readonly StyledProperty<IconTemplate?> WarningFeedbackIconProperty =
-        AvaloniaProperty.Register<Form, IconTemplate?>(nameof(WarningFeedbackIcon));
+    public static readonly StyledProperty<object?> SuccessFeedbackProperty =
+        FormValidateFeedback.SuccessFeedbackProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<IDataTemplate?> SuccessFeedbackTemplateProperty =
+        FormValidateFeedback.SuccessFeedbackTemplateProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<object?> WarningFeedbackProperty =
+        FormValidateFeedback.WarningFeedbackProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<IDataTemplate?> WarningFeedbackTemplateProperty =
+        FormValidateFeedback.WarningFeedbackTemplateProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<object?> ErrorFeedbackProperty =
+        FormValidateFeedback.ErrorFeedbackProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<IDataTemplate?> ErrorFeedbackTemplateProperty =
+        FormValidateFeedback.ErrorFeedbackTemplateProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<object?> ValidatingFeedbackProperty =
+        FormValidateFeedback.ValidatingFeedbackProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<IDataTemplate?> ValidatingFeedbackTemplateProperty =
+        FormValidateFeedback.ValidatingFeedbackTemplateProperty.AddOwner<Form>();
+    
+    public static readonly StyledProperty<IDataTemplate?> FeedbackTemplateProperty =
+        AvaloniaProperty.Register<Form, IDataTemplate?>(nameof(FeedbackTemplate));
     
     public static readonly StyledProperty<FormLabelAlign> LabelAlignProperty =
         AvaloniaProperty.Register<Form, FormLabelAlign>(nameof(LabelAlign), FormLabelAlign.Right);
@@ -120,6 +161,17 @@ public class Form : ItemsControl,
             o => o.InitialValues,
             (o, v) => o.InitialValues = v);
     
+    public static readonly DirectProperty<Form, bool?> IsFormValidProperty =
+        AvaloniaProperty.RegisterDirect<Form, bool?>(
+            nameof(IsFormValid),
+            o => o.IsFormValid);
+    
+    public static readonly StyledProperty<IBrush?> ErrorMessageForegroundProperty =
+        AvaloniaProperty.Register<Form, IBrush?>(nameof(ErrorMessageForeground));
+    
+    public static readonly StyledProperty<IBrush?> WarningMessageForegroundProperty =
+        AvaloniaProperty.Register<Form, IBrush?>(nameof(WarningMessageForeground));
+    
     public bool IsShowColon
     {
         get => GetValue(IsShowColonProperty);
@@ -150,16 +202,68 @@ public class Form : ItemsControl,
         set => SetValue(RequiredMarkProperty, value);
     }
     
-    public IconTemplate? ErrorFeedbackIcon
+    public bool IsValidateFeedbackEnabled
     {
-        get => GetValue(ErrorFeedbackIconProperty);
-        set => SetValue(ErrorFeedbackIconProperty, value);
+        get => GetValue(IsValidateFeedbackEnabledProperty);
+        set => SetValue(IsValidateFeedbackEnabledProperty, value);
     }
     
-    public IconTemplate? WarningFeedbackIcon
+    [DependsOn(nameof(SuccessFeedbackTemplate))]
+    public object? SuccessFeedback
     {
-        get => GetValue(WarningFeedbackIconProperty);
-        set => SetValue(WarningFeedbackIconProperty, value);
+        get => GetValue(SuccessFeedbackProperty);
+        set => SetValue(SuccessFeedbackProperty, value);
+    }
+    
+    public IDataTemplate? SuccessFeedbackTemplate
+    {
+        get => GetValue(SuccessFeedbackTemplateProperty);
+        set => SetValue(SuccessFeedbackTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(WarningFeedbackTemplate))]
+    public object? WarningFeedback
+    {
+        get => GetValue(WarningFeedbackProperty);
+        set => SetValue(WarningFeedbackProperty, value);
+    }
+    
+    public IDataTemplate? WarningFeedbackTemplate
+    {
+        get => GetValue(WarningFeedbackTemplateProperty);
+        set => SetValue(WarningFeedbackTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(ErrorFeedbackTemplate))]
+    public object? ErrorFeedback
+    {
+        get => GetValue(ErrorFeedbackProperty);
+        set => SetValue(ErrorFeedbackProperty, value);
+    }
+
+    public IDataTemplate? ErrorFeedbackTemplate
+    {
+        get => GetValue(ErrorFeedbackTemplateProperty);
+        set => SetValue(ErrorFeedbackTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(ValidatingFeedbackTemplate))]
+    public object? ValidatingFeedback
+    {
+        get => GetValue(ValidatingFeedbackProperty);
+        set => SetValue(ValidatingFeedbackProperty, value);
+    }
+
+    public IDataTemplate? ValidatingFeedbackTemplate
+    {
+        get => GetValue(ValidatingFeedbackTemplateProperty);
+        set => SetValue(ValidatingFeedbackTemplateProperty, value);
+    }
+    
+    public IDataTemplate? FeedbackTemplate
+    {
+        get => GetValue(FeedbackTemplateProperty);
+        set => SetValue(FeedbackTemplateProperty, value);
     }
     
     public FormLabelAlign LabelAlign
@@ -258,6 +362,26 @@ public class Form : ItemsControl,
         set => SetAndRaise(InitialValuesProperty, ref _initialValues, value);
     }
     
+    private bool? _isFormValid;
+
+    public bool? IsFormValid
+    {
+        get => _isFormValid;
+        private set => SetAndRaise(IsFormValidProperty, ref _isFormValid, value);
+    }
+    
+    public IBrush? ErrorMessageForeground
+    {
+        get => GetValue(ErrorMessageForegroundProperty);
+        set => SetValue(ErrorMessageForegroundProperty, value);
+    }
+    
+    public IBrush? WarningMessageForeground
+    {
+        get => GetValue(WarningMessageForegroundProperty);
+        set => SetValue(WarningMessageForegroundProperty, value);
+    }
+    
     #endregion
 
     #region 公共事件定义
@@ -301,6 +425,7 @@ public class Form : ItemsControl,
 
     private bool _initValueApplied;
     internal bool IsResetting;
+    private CancellationTokenSource? _validationTokenSource;
     
     static Form()
     {
@@ -308,6 +433,7 @@ public class Form : ItemsControl,
         SubmitButton.SubmitEvent.AddClassHandler<Form>((form, args) => form.HandleSubmitButtonClick(args));
         ResetButton.ResetEvent.AddClassHandler<Form>((form, args) => form.HandleResetButtonClick(args));
         FormItem.ValueChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValueChanged(args));
+        FormItem.ValidateChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValidateChanged(args));
     }
     
     public Form()
@@ -339,7 +465,7 @@ public class Form : ItemsControl,
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new FormItem()
+        return new FormItem
         {
             OwnerForm = this
         };
@@ -356,14 +482,15 @@ public class Form : ItemsControl,
         if (container is FormItem formItem)
         {
             formItem.OwnerForm = this;
-            var disposables = new CompositeDisposable(2);
+            var disposables = new CompositeDisposable(16);
             
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, formItem, FormItem.SizeTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, formItem, FormItem.IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(this, ErrorMessageForegroundProperty, formItem, FormItem.ErrorMessageForegroundProperty));
+            disposables.Add(BindUtils.RelayBind(this, WarningMessageForegroundProperty, formItem, FormItem.WarningMessageForegroundProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowColonProperty, formItem, FormItem.IsShowColonProperty));
             disposables.Add(BindUtils.RelayBind(this, RequiredMarkProperty, formItem, FormItem.RequiredMarkProperty));
             disposables.Add(BindUtils.RelayBind(this, LabelWrappingProperty, formItem, FormItem.LabelWrappingProperty));
-            disposables.Add(BindUtils.RelayBind(this, ValidateTriggerProperty, formItem, FormItem.ValidateTriggerProperty));
             disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, formItem, FormItem.StyleVariantProperty));
             disposables.Add(BindUtils.RelayBind(this, CustomRequireMarkProperty, formItem, FormItem.CustomRequireMarkProperty));
             disposables.Add(BindUtils.RelayBind(this, CustomRequireMarkTemplateProperty, formItem, FormItem.CustomRequireMarkTemplateProperty));
@@ -371,6 +498,7 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, CustomOptionalMarkTemplateProperty, formItem, FormItem.CustomOptionalMarkTemplateProperty));
             disposables.Add(BindUtils.RelayBind(this, LabelColInfoProperty, formItem, FormItem.LabelColInfoProperty));
             disposables.Add(BindUtils.RelayBind(this, WrapperColInfoProperty, formItem, FormItem.WrapperColInfoProperty));
+            disposables.Add(BindUtils.RelayBind(this, FeedbackTemplateProperty, formItem, FormItem.FeedbackTemplateProperty));
             PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))
@@ -392,10 +520,13 @@ public class Form : ItemsControl,
     
     public void Validate()
     {
-        Dispatcher.UIThread.InvokeAsync(async () => ValidateAsync());
+        _validationTokenSource?.Cancel();
+        _validationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _validationTokenSource.Token;
+        Dispatcher.UIThread.InvokeAsync(() => ValidateAsync(cancellationToken));
     }
 
-    public async Task<FormValidateResult> ValidateAsync()
+    public async Task<FormValidateResult> ValidateAsync(CancellationToken cancellationToken)
     {
         AboutToValidate?.Invoke(this, EventArgs.Empty);
         var tasks = new List<Task>();
@@ -403,7 +534,7 @@ public class Form : ItemsControl,
         {
             if (item is FormItem formItem && !formItem.IsSkipValidate())
             {
-                tasks.Add(formItem.ValidateValueAsync());
+                tasks.Add(formItem.ValidateValueAsync(cancellationToken));
             }
         }
         await Task.WhenAll(tasks);
@@ -414,10 +545,22 @@ public class Form : ItemsControl,
             if (item is FormItem formItem && !formItem.IsSkipValidate())
             {
                 results.Add(formItem.ValidateResult);
-                if (formItem.ValidateResult == FormValidateResult.Error ||
-                    formItem.ValidateResult == FormValidateResult.Warning)
+                if (formItem.ValidateResult != FormValidateResult.Success)
                 {
-                    validateMessages.Add(new FormValidateMessage(formItem.FieldName ?? string.Empty, formItem.ValidateMsg ?? string.Empty));
+                    if (formItem.ValidateErrorMessages != null)
+                    {
+                        foreach (var errorMessage in formItem.ValidateErrorMessages)
+                        {
+                            validateMessages.Add(new FormValidateMessage(formItem.FieldName ?? string.Empty, errorMessage, FormValidateResult.Error));
+                        }
+                    }
+                    if (formItem.ValidateWarningMessages != null)
+                    {
+                        foreach (var warningMessage in formItem.ValidateWarningMessages)
+                        {
+                            validateMessages.Add(new FormValidateMessage(formItem.FieldName ?? string.Empty, warningMessage, FormValidateResult.Warning));
+                        }
+                    }
                 }
             }
         }
@@ -427,28 +570,45 @@ public class Form : ItemsControl,
         {
             validateResult = FormValidateResult.Error;
         }
-
-        else if (results.Any(item => item == FormValidateResult.Warning))
-        {
-            validateResult = FormValidateResult.Warning;
-        }
         else
         {
             validateResult = FormValidateResult.Success;
         }
 
-        if (validateResult == FormValidateResult.Error || validateResult == FormValidateResult.Warning)
+        if (validateResult == FormValidateResult.Error)
         {
             Validated?.Invoke(this, new FormValidatedEventArgs(validateResult, null, validateMessages));
+            return FormValidateResult.Error;
         }
         return FormValidateResult.Success;
     }
 
+    public void SetFormValues(FormValues formValues)
+    {
+        foreach (var item in Items)
+        {
+            if (item is FormItem formItem && formItem.IsValueItem)
+            {
+                var fieldName = formItem.FieldName;
+                if (!string.IsNullOrEmpty(fieldName))
+                {
+                    if (formValues.TryGetValue(fieldName, out var value))
+                    {
+                        formItem.SetItemValue(value);
+                    }
+                }
+            }
+        }
+    }
+
     public void Submit()
     {
+        _validationTokenSource?.Cancel();
+        _validationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _validationTokenSource.Token;
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            var result = await ValidateAsync();
+            var result = await ValidateAsync(cancellationToken);
             if (result == FormValidateResult.Success)
             {
                 var values = new FormValues();
@@ -477,8 +637,9 @@ public class Form : ItemsControl,
                     formItem.ResetItemValue();
                 }
             }
-
+            
             NotifyReset();
+            IsFormValid = false;
             ResetCompleted?.Invoke(this, EventArgs.Empty);
         }
         finally
@@ -505,7 +666,8 @@ public class Form : ItemsControl,
     {
         base.OnPropertyChanged(change);
         if (change.Property == LabelAlignProperty ||
-            change.Property == FormLayoutProperty)
+            change.Property == FormLayoutProperty ||
+            change.Property == ValidateTriggerProperty)
         {
             SyncConfigToItems();
         }
@@ -514,7 +676,6 @@ public class Form : ItemsControl,
         {
             ConfigureFormLayoutOrientation();
         }
-        
     }
 
     private void SyncConfigToItems()
@@ -530,10 +691,19 @@ public class Form : ItemsControl,
 
     private void SyncConfigToItem(FormItem formItem)
     {
-
         if (!formItem.IsSet(FormItem.LabelAlignProperty))
         {
             formItem.SetCurrentValue(FormItem.LabelAlignProperty, LabelAlign);
+        }
+        
+        if (!formItem.IsSet(FormItem.IsValidateFeedbackEnabledProperty))
+        {
+            formItem.SetCurrentValue(FormItem.IsValidateFeedbackEnabledProperty, IsValidateFeedbackEnabled);
+        }
+        
+        if (!formItem.IsSet(FormItem.ValidateTriggerProperty))
+        {
+            formItem.SetCurrentValue(FormItem.ValidateTriggerProperty, ValidateTrigger);
         }
         
         if (FormLayout == FormLayout.Horizontal || FormLayout == FormLayout.Inline)
@@ -582,6 +752,33 @@ public class Form : ItemsControl,
                 childFormItem.NotifyFormItemChanged(formItem);
             }
         }
+    }
+    
+    private void HandleFormItemValidateChanged(FormItemValidateChangedEventArgs args)
+    {
+        var formItem = args.Source as IFormItem;
+        Debug.Assert(formItem != null);
+        if (args.Status == FormValidateStatus.Error)
+        {
+            IsFormValid = false;
+            return;
+        }
+
+        var isValid = true;
+        foreach (var item in Items)
+        {
+            if (item is FormItem childFormItem && childFormItem.IsValueItem)
+            {
+                if (childFormItem.ValidateStatus == FormValidateStatus.Error ||
+                    childFormItem.ValidateStatus == FormValidateStatus.Validating ||
+                    childFormItem.ValidateStatus == FormValidateStatus.Default)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+        IsFormValid = isValid;
     }
 
     private void CollectValues(FormValues formValues)

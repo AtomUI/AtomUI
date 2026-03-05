@@ -132,7 +132,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-
+        <Setter Property="BackgroundSizing" Value="CenterBorder" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="IsWaveSpiritEnabled"
@@ -544,7 +544,8 @@
             <Style Selector="^:not(:disabled)">
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ButtonTokenKey.PrimaryColor}}" />
                 <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
-
+                <Setter Property="BorderBrush" Value="{Binding Background, RelativeSource={RelativeSource Self}}" />
+                
                 <Style Selector="^:pointerover">
                     <Setter Property="Background"
                             Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
@@ -557,15 +558,16 @@
 
                 <Style Selector="^:danger">
                     <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
-
                     <Style Selector="^:pointerover">
                         <Setter Property="Background"
                                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorHover}}" />
                     </Style>
 
                     <Style Selector="^:pressed">
                         <Setter Property="Background"
                                 Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorActive}}" />
                     </Style>
                 </Style>
 

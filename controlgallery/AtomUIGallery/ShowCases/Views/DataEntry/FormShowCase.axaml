@@ -554,45 +554,169 @@
         <!-- -->
         <!-- </gallery:ShowCaseItem> -->
 
-         <gallery:ShowCaseItem
-            Title="label can wrap"
-            Description="Turn on labelWrap to wrap label if text is long."
+        <!--  <gallery:ShowCaseItem -->
+        <!--     Title="label can wrap" -->
+        <!--     Description="Turn on labelWrap to wrap label if text is long." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Form LabelColInfo="4*" -->
+        <!--                WrapperColInfo="16*" -->
+        <!--                MinWidth="600" -->
+        <!--                HorizontalAlignment="Left" -->
+        <!--                LabelWrapping="Wrap"> -->
+        <!--         <atom:FormItem LabelText="Normal label" -->
+        <!--                        FieldName="username" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit /> -->
+        <!--         </atom:FormItem> -->
+        <!--         <atom:FormItem LabelText="A super long label text" -->
+        <!--                        FieldName="password" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit /> -->
+        <!--         </atom:FormItem> -->
+        <!--         <atom:FormItem LabelText="A super long label text" -->
+        <!--                        FieldName="password1"> -->
+        <!--             <atom:LineEdit /> -->
+        <!--         </atom:FormItem> -->
+        <!-- -->
+        <!--         <atom:FormItem> -->
+        <!--             <atom:SubmitButton /> -->
+        <!--         </atom:FormItem> -->
+        <!--     </atom:Form> -->
+        <!-- </gallery:ShowCaseItem> -->
+
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="No block rule" -->
+        <!--     Description="rule with warningOnly will not block form submit." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Form LabelColInfo="8*" -->
+        <!--                WrapperColInfo="16*" -->
+        <!--                MinWidth="600" -->
+        <!--                HorizontalAlignment="Left" -->
+        <!--                Name="NoBlockRuleForm" -->
+        <!--                Submitted="HandleNoBlockFormSubmitted" -->
+        <!--                Validated="HandleNoBlockFormValidated"> -->
+        <!--         <atom:FormItem LabelText="Url" -->
+        <!--                        FieldName="url" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please enter URL!" /> -->
+        <!--                     <atom:FormUrlValidator Message="URL is not a valid url!" WarningOnly="True" /> -->
+        <!--                     <atom:FormStringLengthValidator Message="URL must be at least 6 characters!" -->
+        <!--                                                     MinimumLength="6"/> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit /> -->
+        <!--         </atom:FormItem> -->
+        <!-- -->
+        <!--         <atom:FormItem IsValidateContentType="False"> -->
+        <!--            <StackPanel Orientation="Horizontal" Spacing="10"> -->
+        <!--                <atom:SubmitButton /> -->
+        <!--                <atom:Button ButtonType="Default" Click="HandleFillClicked">Fill</atom:Button> -->
+        <!--            </StackPanel> -->
+        <!--         </atom:FormItem> -->
+        <!--     </atom:Form> -->
+        <!-- </gallery:ShowCaseItem> -->
+
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Validate Trigger" -->
+        <!--     Description="For the async validation scenario, high frequency of verification will cause backend pressure. You can change the verification timing through validateTrigger, or change the verification frequency through validateDebounce, or set the verification short circuit through validateFirst." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Form LabelColInfo="8*" -->
+        <!--                WrapperColInfo="16*" -->
+        <!--                MinWidth="600" -->
+        <!--                HorizontalAlignment="Left" -->
+        <!--                IsValidateFeedbackEnabled="True"> -->
+        <!--         <atom:FormItem LabelText="Field A" -->
+        <!--                        FieldName="fieldA" -->
+        <!--                        ValidateTrigger="OnBlur"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringLengthValidator Message="Field A must be up to 3 characters!" -->
+        <!--                                                     MaximumLength="3"/> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit PlaceholderText="Validate required onBlur"/> -->
+        <!--         </atom:FormItem> -->
+        <!-- -->
+        <!--         <atom:FormItem LabelText="FieldB" -->
+        <!--                        FieldName="fieldB" -->
+        <!--                        ValidateDebounce="00:00:01"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringLengthValidator Message="Field A must be up to 3 characters!" -->
+        <!--                                                     MaximumLength="3"/> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit PlaceholderText="Validate required debounce after 1s"/> -->
+        <!--         </atom:FormItem> -->
+        <!-- -->
+        <!--         <atom:FormItem LabelText="FieldC" -->
+        <!--                        FieldName="fieldC" -->
+        <!--                        ValidateStrategy="StopWhenFirstFailed"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringLengthValidator Message="Field A must be up to 6 characters!" -->
+        <!--                                                     MaximumLength="6"/> -->
+        <!--                     <atom:FormStringLengthValidator Message="Continue input to exceed 6 chars!" -->
+        <!--                                                     MaximumLength="3"/> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit PlaceholderText="Validate one by one"/> -->
+        <!--         </atom:FormItem> -->
+        <!--     </atom:Form> -->
+        <!-- </gallery:ShowCaseItem> -->
+
+        <gallery:ShowCaseItem
+            Title="Validate Only"
+            Description="Dynamic adjust submit button's disabled status by validateOnly of validateFields."
             IsOccupyEntireRow="True">
-            <atom:Form LabelColInfo="4*"
+            <atom:Form LabelColInfo="8*"
                        WrapperColInfo="16*"
                        MinWidth="600"
                        HorizontalAlignment="Left"
-                       LabelWrapping="Wrap">
-                <atom:FormItem LabelText="Normal label"
-                               FieldName="username"
+                       IsValidateFeedbackEnabled="True"
+                       FormLayout="Vertical">
+                <atom:FormItem LabelText="Name"
+                               FieldName="name"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                            <atom:FormStringNotEmptyValidator Message="Please enter Name!"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
                     <atom:LineEdit />
                 </atom:FormItem>
-                <atom:FormItem LabelText="A super long label text"
-                               FieldName="password"
+
+                <atom:FormItem LabelText="Age"
+                               FieldName="age"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                            <atom:FormStringNotEmptyValidator Message="Please enter Age!"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
                     <atom:LineEdit />
                 </atom:FormItem>
-                <atom:FormItem LabelText="A super long label text"
-                               FieldName="password1">
-                    <atom:LineEdit />
-                </atom:FormItem>
-        
-                <atom:FormItem>
-                    <atom:SubmitButton />
+                
+                <atom:FormItem IsValidateContentType="False">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <atom:SubmitButton IsWatchValidateResult="True"/>
+                        <atom:ResetButton />
+                    </StackPanel>
                 </atom:FormItem>
             </atom:Form>
         </gallery:ShowCaseItem>
-        
+
     </gallery:ShowCasePanel>
 </UserControl>

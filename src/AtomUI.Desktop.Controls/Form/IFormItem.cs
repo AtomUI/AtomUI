@@ -9,5 +9,5 @@ public interface IFormItem
     object? GetItemValue();
     void SetItemValue(object? value);
     void ResetItemValue();
-    Task ValidateValueAsync();
+    Task ValidateValueAsync(CancellationToken cancellationToken);
 }

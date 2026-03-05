@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:Form}" TargetType="atom:Form">
         <Setter Property="Template">
@@ -24,6 +25,51 @@
         <Style Selector="^[FormLayout=Inline]">
             <Setter Property="FormLayoutSpacing" Value="{DynamicResource {x:Static atom:FormTokenKey.InlineItemSpacing}}" />
         </Style>
+        <Setter Property="ErrorMessageForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorText}}" />
+        <Setter Property="WarningMessageForeground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningText}}" />
         
+        <Setter Property="FeedbackTemplate">
+            <DataTemplate DataType="atom:Form">
+                <atom:FormValidateFeedback SuccessFeedback="{Binding SuccessFeedback}"
+                                           SuccessFeedbackTemplate="{Binding SuccessFeedbackTemplate}"
+                                           ErrorFeedback="{Binding ErrorFeedback}"
+                                           ErrorFeedbackTemplate="{Binding ErrorFeedbackTemplate}"
+                                           WarningFeedback="{Binding WarningFeedback}"
+                                           WarningFeedbackTemplate="{Binding WarningFeedbackTemplate}"
+                                           ValidatingFeedback="{Binding WarningFeedback}"
+                                           ValidatingFeedbackTemplate="{Binding ValidatingFeedbackTemplate}"/>
+            </DataTemplate>
+        </Setter>
+        
+        <Setter Property="SuccessFeedbackTemplate">
+            <DataTemplate>
+                <antdicons:CheckCircleFilled
+                    FillBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorSuccess}}"
+                    Width="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"
+                    Height="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"/>
+            </DataTemplate>
+        </Setter>
+        <Setter Property="ErrorFeedbackTemplate">
+            <DataTemplate>
+                <antdicons:CloseCircleFilled
+                    FillBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}"
+                    Width="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"
+                    Height="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}"/>
+            </DataTemplate>
+        </Setter>
+        <Setter Property="WarningFeedbackTemplate">
+            <DataTemplate>
+                <antdicons:ExclamationCircleFilled
+                    FillBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}"
+                    />
+            </DataTemplate>
+        </Setter>
+        <Setter Property="ValidatingFeedbackTemplate">
+            <DataTemplate>
+                <antdicons:LoadingOutlined
+                    LoadingAnimation="Spin"
+                    StrokeBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}"/>
+            </DataTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

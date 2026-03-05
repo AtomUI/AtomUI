@@ -1,0 +1,46 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net">
+    <ControlTheme x:Key="{x:Type atom:FormValidateFeedback}" TargetType="atom:FormValidateFeedback">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="Content"/>
+            </ControlTemplate>
+        </Setter>
+        
+        <Style Selector="^[ValidateStatus=Default]">
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[ValidateStatus=Success]">
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Content" Value="{Binding SuccessFeedback, RelativeSource={RelativeSource TemplatedParent}}"/>
+                <Setter Property="ContentTemplate" Value="{Binding SuccessFeedbackTemplate, RelativeSource={RelativeSource TemplatedParent}}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[ValidateStatus=Warning]">
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Content" Value="{Binding WarningFeedback, RelativeSource={RelativeSource TemplatedParent}}"/>
+                <Setter Property="ContentTemplate" Value="{Binding WarningFeedbackTemplate, RelativeSource={RelativeSource TemplatedParent}}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[ValidateStatus=Error]">
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Content" Value="{Binding ErrorFeedback, RelativeSource={RelativeSource TemplatedParent}}"/>
+                <Setter Property="ContentTemplate" Value="{Binding ErrorFeedbackTemplate, RelativeSource={RelativeSource TemplatedParent}}"/>
+            </Style>
+        </Style>
+        
+        <Style Selector="^[ValidateStatus=Validating]">
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Content" Value="{Binding ValidatingFeedback, RelativeSource={RelativeSource TemplatedParent}}"/>
+                <Setter Property="ContentTemplate" Value="{Binding ValidatingFeedbackTemplate, RelativeSource={RelativeSource TemplatedParent}}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

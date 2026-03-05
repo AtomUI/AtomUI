@@ -45,6 +45,13 @@
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                             VerticalAlignment="Center"/>
                         <ContentPresenter
+                            Name="FormFeedBack"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Right"
+                            IsVisible="{TemplateBinding FormFeedback, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Content="{TemplateBinding FormFeedback}"/>
+                        <ContentPresenter
                             Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.RightAddOnPart}"
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"

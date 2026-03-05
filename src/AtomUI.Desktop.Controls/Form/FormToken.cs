@@ -40,9 +40,9 @@ internal class FormToken : AbstractControlDesignToken
     
     /// <summary>
     /// 表单项间距
-    /// Form item margin bottom
+    /// Form item spacing
     /// </summary>
-    public Thickness ItemMarginBottom { get; set; }
+    public double FormItemSpacing { get; set; }
     
     /// <summary>
     /// 行内布局表单项间距
@@ -69,9 +69,9 @@ internal class FormToken : AbstractControlDesignToken
         LabelColor             = SharedToken.ColorTextHeading;
         LabelFontSize          = SharedToken.FontSize;
         LabelColonMargin       = new Thickness(SharedToken.UniformlyMarginXXS / 2, 0, SharedToken.UniformlyMarginXS, 0);
-        ItemMarginBottom       = new Thickness(0, 0, 0, SharedToken.UniformlyMarginLG);
+        FormItemSpacing        = SharedToken.SpacingLG;
         VerticalLabelPadding   = new Thickness(0, 0, 0, SharedToken.UniformlyPaddingXS);
-        InlineItemSpacing = SharedToken.Spacing;
+        InlineItemSpacing      = SharedToken.Spacing;
         VerticalLabelMargin    = default;
     }
 }

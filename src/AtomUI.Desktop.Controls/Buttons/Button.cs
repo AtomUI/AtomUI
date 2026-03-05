@@ -167,7 +167,7 @@ public class Button : AvaloniaButton,
     
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<Button>();
-
+    
     internal bool IsIconVisible
     {
         get => GetValue(IsIconVisibleProperty);
@@ -423,21 +423,22 @@ public class Button : AvaloniaButton,
     private void ConfigureEffectiveBorderThickness()
     {
         if (ButtonType == ButtonType.Default ||
-            ButtonType == ButtonType.Dashed)
+            ButtonType == ButtonType.Dashed ||
+            ButtonType == ButtonType.Primary)
         {
             EffectiveBorderThickness = BorderThickness;
         }
-        else if (ButtonType == ButtonType.Primary)
-        {
-            if (IsGhost || !IsEnabled)
-            {
-                EffectiveBorderThickness = BorderThickness;
-            }
-            else
-            {
-                EffectiveBorderThickness = new Thickness(0);
-            }
-        }
+        // else if (ButtonType == ButtonType.Primary)
+        // {
+        //     if (IsGhost || !IsEnabled)
+        //     {
+        //         EffectiveBorderThickness = BorderThickness;
+        //     }
+        //     else
+        //     {
+        //         EffectiveBorderThickness = new Thickness(0);
+        //     }
+        // }
         else
         {
             EffectiveBorderThickness = new Thickness(0);

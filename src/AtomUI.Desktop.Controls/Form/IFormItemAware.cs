@@ -8,3 +8,8 @@ public interface IFormItemAware
     void ClearFormValue();
     void NotifyValidateStatus(FormValidateStatus status);
 }
+
+public interface IFormItemFeedbackAware
+{
+    void SetFeedbackControl(FormValidateFeedback? value);
+}

@@ -20,7 +20,8 @@ public class TextBox : AvaloniaTextBox,
                        IMotionAwareControl,
                        ISizeTypeAware,
                        ICompactSpaceAware,
-                       IFormItemAware
+                       IFormItemAware,
+                       IFormItemFeedbackAware
 {
     #region 公共属性定义
 
@@ -131,6 +132,11 @@ public class TextBox : AvaloniaTextBox,
     
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<TextBlock>();
+    
+    internal static readonly DirectProperty<TextBox, FormValidateFeedback?> FormFeedbackProperty =
+        AvaloniaProperty.RegisterDirect<TextBox, FormValidateFeedback?>(nameof(FormFeedback),
+            o => o.FormFeedback,
+            (o, v) => o.FormFeedback = v);
 
     private bool _isEffectiveShowClearButton;
 
@@ -172,6 +178,14 @@ public class TextBox : AvaloniaTextBox,
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
         set => SetValue(IsUsedInCompactSpaceProperty, value);
+    }
+    
+    private FormValidateFeedback? _formFeedback;
+
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => _formFeedback;
+        set => SetAndRaise(FormFeedbackProperty, ref _formFeedback, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -318,6 +332,7 @@ public class TextBox : AvaloniaTextBox,
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
     
     private void HandleTextChanged()
     {
@@ -341,6 +356,11 @@ public class TextBox : AvaloniaTextBox,
 
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
+    }
+
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
     }
     #endregion
 }

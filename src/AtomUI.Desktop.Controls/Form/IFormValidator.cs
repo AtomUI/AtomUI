@@ -10,5 +10,6 @@ public enum FormValidateResult
 public interface IFormValidator
 {
     string? Message { get; }
-    Task<FormValidateResult> ValidateAsync(string fieldName, object? value);
+    bool WarningOnly { get; }
+    Task<FormValidateResult> ValidateAsync(string fieldName, object? value, CancellationToken cancellationToken);
 }

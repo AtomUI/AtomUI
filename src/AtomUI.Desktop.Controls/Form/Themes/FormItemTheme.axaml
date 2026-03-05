@@ -44,9 +44,9 @@
                         </StackPanel>
                     </Panel>
                     
-                    <Panel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}">
-                        <Border Margin="{DynamicResource {x:Static atom:FormTokenKey.ItemMarginBottom}}"
-                                MinHeight="{Binding #PART_LabelLayout.Bounds.Height}"
+                    <StackPanel Name="{x:Static atom:FormItemThemeConstants.ChildrenLayoutPart}"
+                                Orientation="Vertical">
+                        <Border MinHeight="{Binding #PART_LabelLayout.Bounds.Height}"
                                 Name="ContentFrame">
                             <ContentPresenter Name="ContentPresenter"
                                               Content="{TemplateBinding Content}"
@@ -54,28 +54,22 @@
                                               VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
-                                   VerticalAlignment="Bottom"
-                                   Text="{TemplateBinding ValidateMsg}" />
-                    </Panel>
+                                   Inlines="{TemplateBinding ErrorMessageInlines}"/>
+                    </StackPanel>
                 </Grid>
             </ControlTemplate>
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
 
         <Style Selector="^[ValidateStatus=Error]">
             <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
-                <Setter Property="IsVisible" Value="True" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorText}}" />
             </Style>
         </Style>
 
         <Style Selector="^[ValidateStatus=Warning]">
             <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
-                <Setter Property="IsVisible" Value="True" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningText}}" />
             </Style>
         </Style>
@@ -152,6 +146,23 @@
             <Style Selector="^ /template/ ContentPresenter#CustomOptionalMarkPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
+        </Style>
+        
+        <Style Selector="^[HasErrorOrWarningMsg=False]">
+            <Style Selector="^ /template/ StackPanel#PART_ChildrenLayout">
+                <Setter Property="Spacing"
+                        Value="{DynamicResource {x:Static atom:FormTokenKey.FormItemSpacing}}" />
+            </Style>
+            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+                <Setter Property="MaxHeight" Value="0" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^[HasErrorOrWarningMsg=True]">
+            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+                <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:FormTokenKey.FormItemSpacing}}" />
+            </Style>
+            
         </Style>
 
     </ControlTheme>

@@ -3,11 +3,13 @@ namespace AtomUI.Desktop.Controls;
 public class FormValidateMessage
 {
     public string FieldName { get; }
-    public string Messages { get; }
+    public string Message { get; }
+    public FormValidateResult Type { get; }
 
-    public FormValidateMessage(string fieldName, string messages)
+    public FormValidateMessage(string fieldName, string message, FormValidateResult type)
     {
         FieldName = fieldName;
-        Messages = messages;
+        Message   = message;
+        Type      = type;
     }
 }

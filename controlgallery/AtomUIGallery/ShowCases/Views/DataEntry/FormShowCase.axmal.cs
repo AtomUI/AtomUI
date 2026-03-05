@@ -3,7 +3,9 @@ using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -12,6 +14,7 @@ namespace AtomUIGallery.ShowCases.Views;
 
 public partial class FormShowCase : ReactiveUserControl<FormViewModel>
 {
+    private WindowMessageManager? _messageManager;
     public FormShowCase()
     {
         this.WhenActivated(disposables => { });
@@ -96,6 +99,48 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
             {
                 vm.FormSizeType = sizeType;
             }
+        }
+    }
+    
+    // private void HandleFillClicked(object? sender, RoutedEventArgs args)
+    // {
+    //     var formValues = new FormValues();
+    //     formValues.Add("url", "https://taobao.com/");
+    //     NoBlockRuleForm.SetFormValues(formValues);
+    // }
+    
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        var topLevel = TopLevel.GetTopLevel(this);
+        _messageManager = new WindowMessageManager(topLevel)
+        {
+            MaxItems = 10
+        };
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _messageManager = null;
+    }
+
+    private void HandleNoBlockFormSubmitted(object? sender, FormSubmittedEventArgs args)
+    {
+        _messageManager?.Show(new Message(
+            type: MessageType.Success,
+            content: "Submit success!"
+        ));
+    }
+    
+    private void HandleNoBlockFormValidated(object? sender, FormValidatedEventArgs args)
+    {
+        if (args.Result == FormValidateResult.Error)
+        {
+            _messageManager?.Show(new Message(
+                type: MessageType.Error,
+                content: "Submit failed!"
+            ));
         }
     }
 }

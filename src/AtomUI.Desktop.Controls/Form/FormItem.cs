@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
-using System.Text;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -9,6 +8,7 @@ using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
@@ -17,22 +17,6 @@ using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
-
-public enum FormValidateStrategy
-{
-    StopWhenFirstFailed,
-    Sequential,
-    Parallel
-}
-
-public enum FormValidateStatus
-{
-    Default,
-    Success,
-    Warning,
-    Error,
-    Validating
-}
 
 public enum FormItemLayout
 {
@@ -55,14 +39,8 @@ public class FormItem : TemplatedControl,
     public static readonly StyledProperty<string?> HelpProperty =
         AvaloniaProperty.Register<FormItem, string?>(nameof(Help));
     
-    public static readonly StyledProperty<bool> HasFeedbackProperty =
-        AvaloniaProperty.Register<FormItem, bool>(nameof(HasFeedback));
-    
-    public static readonly StyledProperty<IconTemplate?> ErrorFeedbackIconProperty =
-        Form.ErrorFeedbackIconProperty.AddOwner<FormItem>();
-    
-    public static readonly StyledProperty<IconTemplate?> WarningFeedbackIconProperty =
-        Form.WarningFeedbackIconProperty.AddOwner<FormItem>();
+    public static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
+        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValidateFeedbackEnabled));
     
     public static readonly StyledProperty<object?> InitialValueProperty =
         AvaloniaProperty.Register<FormItem, object?>(nameof(InitialValue));
@@ -97,11 +75,14 @@ public class FormItem : TemplatedControl,
     public static readonly StyledProperty<PathIcon?> TooltipIconProperty =
         AvaloniaProperty.Register<FormItem, PathIcon?>(nameof(TooltipIcon));
     
-    public static readonly StyledProperty<TimeSpan?> ValidateDebounceProperty =
-        AvaloniaProperty.Register<FormItem, TimeSpan?>(nameof(ValidateDebounce));
+    public static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
+        Form.ValidateTriggerProperty.AddOwner<FormItem>();
+    
+    public static readonly StyledProperty<TimeSpan> ValidateDebounceProperty =
+        AvaloniaProperty.Register<FormItem, TimeSpan>(nameof(ValidateDebounce), TimeSpan.Zero);
     
     public static readonly StyledProperty<FormValidateStrategy> ValidateStrategyProperty =
-        AvaloniaProperty.Register<FormItem, FormValidateStrategy>(nameof(ValidateStrategy), FormValidateStrategy.Sequential);
+        AvaloniaProperty.Register<FormItem, FormValidateStrategy>(nameof(ValidateStrategy), FormValidateStrategy.StopWhenFirstFailed);
     
     public static readonly DirectProperty<FormItem, FormValidateStatus> ValidateStatusProperty =
         AvaloniaProperty.RegisterDirect<FormItem, FormValidateStatus>(
@@ -122,6 +103,12 @@ public class FormItem : TemplatedControl,
     public static readonly StyledProperty<Control?> ContentProperty =
         AvaloniaProperty.Register<FormItem, Control?>(nameof(Content));
     
+    public static readonly DirectProperty<FormItem, bool> IsValidateContentTypeProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(IsValidateContentType),
+            o => o.IsValidateContentType,
+            (o, v) => o.IsValidateContentType = v);
+    
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
     {
@@ -141,22 +128,10 @@ public class FormItem : TemplatedControl,
         set => SetValue(HelpProperty, value);
     }
     
-    public bool HasFeedback
+    public bool IsValidateFeedbackEnabled
     {
-        get => GetValue(HasFeedbackProperty);
-        set => SetValue(HasFeedbackProperty, value);
-    }
-    
-    public IconTemplate? ErrorFeedbackIcon
-    {
-        get => GetValue(ErrorFeedbackIconProperty);
-        set => SetValue(ErrorFeedbackIconProperty, value);
-    }
-    
-    public IconTemplate? WarningFeedbackIcon
-    {
-        get => GetValue(WarningFeedbackIconProperty);
-        set => SetValue(WarningFeedbackIconProperty, value);
+        get => GetValue(IsValidateFeedbackEnabledProperty);
+        set => SetValue(IsValidateFeedbackEnabledProperty, value);
     }
     
     public object? InitialValue
@@ -225,7 +200,13 @@ public class FormItem : TemplatedControl,
         set => SetValue(TooltipIconProperty, value);
     }
     
-    public TimeSpan? ValidateDebounce
+    public FormValidateTrigger ValidateTrigger
+    {
+        get => GetValue(ValidateTriggerProperty);
+        set => SetValue(ValidateTriggerProperty, value);
+    }
+    
+    public TimeSpan ValidateDebounce
     {
         get => GetValue(ValidateDebounceProperty);
         set => SetValue(ValidateDebounceProperty, value);
@@ -271,6 +252,27 @@ public class FormItem : TemplatedControl,
         get => GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }
+
+    private bool _isValidateContentType = true;
+
+    public bool IsValidateContentType
+    {
+        get => _isValidateContentType;
+        set => SetAndRaise(IsValidateContentTypeProperty, ref _isValidateContentType, value);
+    }
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<FormItemValidateChangedEventArgs> ValidateChangedEvent =
+        RoutedEvent.Register<Button, FormItemValidateChangedEventArgs>(nameof(ValidateChanged), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+    
+    public event EventHandler<FormItemValidateChangedEventArgs>? ValidateChanged
+    {
+        add => AddHandler(ValidateChangedEvent, value);
+        remove => RemoveHandler(ValidateChangedEvent, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -300,14 +302,17 @@ public class FormItem : TemplatedControl,
     internal static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
         Form.RequiredMarkProperty.AddOwner<FormItem>();
     
-    internal static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
-        Form.ValidateTriggerProperty.AddOwner<FormItem>();
+    internal static readonly DirectProperty<FormItem, IList<string>?> ValidateErrorMessagesProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, IList<string>?>(
+            nameof(ValidateErrorMessages),
+            o => o.ValidateErrorMessages,
+            (o, v) => o.ValidateErrorMessages = v);
     
-    internal static readonly DirectProperty<FormItem, string?> ValidateMsgProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, string?>(
-            nameof(ValidateMsg),
-            o => o.ValidateMsg,
-            (o, v) => o.ValidateMsg = v);
+    internal static readonly DirectProperty<FormItem, IList<string>?> ValidateWarningMessagesProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, IList<string>?>(
+            nameof(ValidateWarningMessages),
+            o => o.ValidateWarningMessages,
+            (o, v) => o.ValidateWarningMessages = v);
     
     internal static readonly StyledProperty<object?> CustomRequireMarkProperty =
         Form.CustomRequireMarkProperty.AddOwner<FormItem>();
@@ -338,6 +343,26 @@ public class FormItem : TemplatedControl,
             nameof(LabelMaxWidth),
             o => o.LabelMaxWidth,
             (o, v) => o.LabelMaxWidth = v);
+    
+    internal static readonly DirectProperty<FormItem, bool> HasErrorOrWarningMsgProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(HasErrorOrWarningMsg),
+            o => o.HasErrorOrWarningMsg,
+            (o, v) => o.HasErrorOrWarningMsg = v);
+    
+    internal static readonly DirectProperty<FormItem, InlineCollection?> ErrorMessageInlinesProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, InlineCollection?>(
+            nameof(ErrorMessageInlines), t => t.ErrorMessageInlines, 
+            (t, v) => t.ErrorMessageInlines = v);
+    
+    internal static readonly StyledProperty<IBrush?> ErrorMessageForegroundProperty =
+        Form.ErrorMessageForegroundProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<IBrush?> WarningMessageForegroundProperty =
+        Form.WarningMessageForegroundProperty.AddOwner<FormItem>();
+    
+    internal static readonly StyledProperty<IDataTemplate?> FeedbackTemplateProperty =
+        Form.FeedbackTemplateProperty.AddOwner<FormItem>();
     
     internal bool IsShowColon
     {
@@ -386,18 +411,20 @@ public class FormItem : TemplatedControl,
         set => SetValue(RequiredMarkProperty, value);
     }
     
-    internal FormValidateTrigger ValidateTrigger
+    private IList<string>? _validateErrorMessages;
+
+    internal IList<string>? ValidateErrorMessages
     {
-        get => GetValue(ValidateTriggerProperty);
-        set => SetValue(ValidateTriggerProperty, value);
+        get => _validateErrorMessages;
+        set => SetAndRaise(ValidateErrorMessagesProperty, ref _validateErrorMessages, value);
     }
     
-    private string? _validateMsg;
+    private IList<string>? _validateWarningMessages;
 
-    internal string? ValidateMsg
+    internal IList<string>? ValidateWarningMessages
     {
-        get => _validateMsg;
-        set => SetAndRaise(ValidateMsgProperty, ref _validateMsg, value);
+        get => _validateWarningMessages;
+        set => SetAndRaise(ValidateWarningMessagesProperty, ref _validateWarningMessages, value);
     }
     
     [DependsOn(nameof(CustomRequireMarkTemplate))]
@@ -449,6 +476,40 @@ public class FormItem : TemplatedControl,
         get => _labelMaxWidth;
         set => SetAndRaise(LabelMaxWidthProperty, ref _labelMaxWidth, value);
     }
+
+    private bool _hasErrorOrWarningMsg;
+    
+    internal bool HasErrorOrWarningMsg
+    {
+        get => _hasErrorOrWarningMsg;
+        set => SetAndRaise(HasErrorOrWarningMsgProperty, ref _hasErrorOrWarningMsg, value);
+    }
+    
+    private InlineCollection? _errorMessageInlines;
+    
+    internal InlineCollection? ErrorMessageInlines
+    {
+        get => _errorMessageInlines;
+        set => SetAndRaise(ErrorMessageInlinesProperty, ref _errorMessageInlines, value);
+    }
+    
+    internal IBrush? ErrorMessageForeground
+    {
+        get => GetValue(ErrorMessageForegroundProperty);
+        set => SetValue(ErrorMessageForegroundProperty, value);
+    }
+    
+    internal IBrush? WarningMessageForeground
+    {
+        get => GetValue(WarningMessageForegroundProperty);
+        set => SetValue(WarningMessageForegroundProperty, value);
+    }
+    
+    internal IDataTemplate? FeedbackTemplate
+    {
+        get => GetValue(FeedbackTemplateProperty);
+        set => SetValue(FeedbackTemplateProperty, value);
+    }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
@@ -474,6 +535,9 @@ public class FormItem : TemplatedControl,
     private Panel? _labelLayout;
     private MediaBreakPoint? _breakPoint;
     private CompositeDisposable? _disposables;
+    private FormValidateFeedback? _feedback;
+    private IDisposable? _feedbackDisposable;
+    private CancellationTokenSource? _validationTokenSource;
 
     internal Form? OwnerForm;
     
@@ -507,7 +571,7 @@ public class FormItem : TemplatedControl,
         {
             newFormItemAware.ValueChanged += HandleContentValueChanged;
         }
-        else
+        else if (IsValidateContentType)
         {
             throw new Exception($"Form item content: {change.NewValue?.GetType().FullName} not implement IFormItemAware interface");
         }
@@ -523,6 +587,22 @@ public class FormItem : TemplatedControl,
         {
             _disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, Content, StyleVariantProperty));
         }
+        
+        if (change.NewValue is IFormItemFeedbackAware newFormItemFeedbackAware)
+        {
+            BuildFeedback(false);
+            newFormItemFeedbackAware.SetFeedbackControl(_feedback);
+        }
+    }
+
+    protected override void OnLostFocus(RoutedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        Debug.Assert(OwnerForm != null);
+        if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnBlur)
+        {
+            ValidateValueDefer();
+        }
     }
 
     private void HandleContentValueChanged(object? sender, EventArgs e)
@@ -530,12 +610,30 @@ public class FormItem : TemplatedControl,
         Debug.Assert(OwnerForm != null);
         if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnChanged)
         {
-            Dispatcher.UIThread.InvokeAsync(async () => ValidateValueAsync());
+            ValidateValueDefer();
         }
         RaiseEvent(new RoutedEventArgs(ValueChangedEvent, this));
     }
 
-    public async Task ValidateValueAsync()
+    private void ValidateValueDefer()
+    {
+        _validationTokenSource?.Cancel();
+        _validationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _validationTokenSource.Token;
+        if (ValidateDebounce != TimeSpan.Zero)
+        {
+            DispatcherTimer.RunOnce(() =>
+            {
+                Dispatcher.UIThread.InvokeAsync(() => ValidateValueAsync(cancellationToken));
+            }, ValidateDebounce);
+        }
+        else
+        {
+            Dispatcher.UIThread.InvokeAsync(() => ValidateValueAsync(cancellationToken));
+        }
+    }
+
+    public async Task ValidateValueAsync(CancellationToken cancellationToken)
     {
         if (Content == null || Validators == null || Validators.Count == 0)
         {
@@ -544,20 +642,21 @@ public class FormItem : TemplatedControl,
         ValidateStatus = FormValidateStatus.Validating;
         var formItemAware     = Content as IFormItemAware;
         Debug.Assert(formItemAware != null);
-        var value             = formItemAware.GetFormValue();
-        var warningMsgBuilder = new StringBuilder();
-        var hasWarning        = false;
-        
+        var value           = formItemAware.GetFormValue();
+        var warningMessages = new List<string>();
+        var hasWarning      = false;
+        var hasError        = false;
+        ValidateErrorMessages   = null;
+        ValidateWarningMessages = null;
         if (ValidateStrategy == FormValidateStrategy.Parallel || ValidateStrategy == FormValidateStrategy.Sequential)
         {
-            var hasError        = false;
             var tasks           = new Dictionary<Task<FormValidateResult>, IFormValidator>();
-            var errorMsgBuilder = new StringBuilder();
+            var errorMessages = new List<string>();
             if (ValidateStrategy == FormValidateStrategy.Parallel)
             {
                 foreach (var validator in Validators)
                 {
-                    var task = validator.ValidateAsync(FieldName ?? string.Empty, value);
+                    var task = validator.ValidateAsync(FieldName ?? string.Empty, value, cancellationToken);
                     tasks.Add(task, validator);
                 }
                 await Task.WhenAll(tasks.Keys);
@@ -568,12 +667,12 @@ public class FormItem : TemplatedControl,
                     if (result == FormValidateResult.Error)
                     {
                         hasError = true;
-                        errorMsgBuilder.Append(validator.Message);
+                        errorMessages.Add(validator.Message ?? string.Empty);
                     }
                     else if (result == FormValidateResult.Warning)
                     {
                         hasWarning = true;
-                        warningMsgBuilder.Append(validator.Message);
+                        warningMessages.Add(validator.Message ?? string.Empty);
                     }
                 }
             }
@@ -581,63 +680,71 @@ public class FormItem : TemplatedControl,
             {
                 foreach (var validator in Validators)
                 {
-                    var result = await validator.ValidateAsync(FieldName ?? string.Empty, value);
+                    var result = await validator.ValidateAsync(FieldName ?? string.Empty, value, cancellationToken);
                     if (result == FormValidateResult.Error)
                     {
                         hasError = true;
-                        errorMsgBuilder.Append(validator.Message);
+                        errorMessages.Add(validator.Message ?? string.Empty);
                     }
                     else if (result == FormValidateResult.Warning)
                     {
                         hasWarning = true;
-                        warningMsgBuilder.Append(validator.Message);
+                        warningMessages.Add(validator.Message ?? string.Empty);
                     }
                 }
             }
             
+            if (hasWarning)
+            {
+                ValidateWarningMessages = warningMessages;
+                ValidateStatus          = FormValidateStatus.Warning;
+            }
+            
             if (hasError)
             {
-                ValidateMsg = errorMsgBuilder.ToString();
+                ValidateErrorMessages = errorMessages;
                 ValidateStatus = FormValidateStatus.Error;
             }
-            else if (hasWarning)
+            
+            if (!hasError && !hasWarning)
             {
-                ValidateMsg = warningMsgBuilder.ToString();
-                ValidateStatus = FormValidateStatus.Warning;
-            }
-            else
-            {
-                ValidateMsg    = null;
-                ValidateStatus = FormValidateStatus.Success;
+                ValidateStatus          = FormValidateStatus.Success;
             }
         }
         else
         {
             foreach (var validator in Validators)
             {
-                var result = await validator.ValidateAsync(FieldName ?? string.Empty, value);
+                var result = await validator.ValidateAsync(FieldName ?? string.Empty, value, cancellationToken);
                 if (result == FormValidateResult.Error)
                 {
+                    hasError = true;
                     ValidateStatus = FormValidateStatus.Error;
-                    ValidateMsg    = validator.Message;
-                    return;
+                    ValidateErrorMessages = new List<string>
+                    {
+                        validator.Message ?? string.Empty
+                    };
+                    break;
                 }
                 if (result == FormValidateResult.Warning)
                 {
                     hasWarning = true;
-                    warningMsgBuilder.Append(validator.Message);
+                    warningMessages.Add(validator.Message ?? string.Empty);
                 }
             }
             
             if  (hasWarning)
             {
-                ValidateMsg = warningMsgBuilder.ToString();
-                ValidateStatus = FormValidateStatus.Warning;
+                ValidateWarningMessages = warningMessages;
+                if (!hasError)
+                {
+                    ValidateStatus = FormValidateStatus.Warning;
+                }
             }
-            else
+            
+            if (!hasError && !hasWarning)
             {
-                ValidateMsg    = null;
-                ValidateStatus = FormValidateStatus.Success;
+                ValidateStatus          = FormValidateStatus.Success;
             }
         }
 
@@ -655,6 +762,62 @@ public class FormItem : TemplatedControl,
         }
 
         formItemAware.NotifyValidateStatus(ValidateStatus);
+        HasErrorOrWarningMsg = ValidateErrorMessages?.Count > 0 || ValidateWarningMessages?.Count > 0;
+        BuildErrorMessageInlines();
+        RaiseEvent(new FormItemValidateChangedEventArgs(ValidateStatus)
+        {
+            RoutedEvent = ValidateChangedEvent,
+            Source = this,
+        });
+    }
+
+    private void BuildErrorMessageInlines()
+    {
+        if (ValidateResult == FormValidateResult.Success)
+        {
+            ErrorMessageInlines = null;
+        }
+        else
+        {
+            var inlines = new InlineCollection();
+            if (ValidateErrorMessages != null)
+            {
+                for (var i = 0; i < ValidateErrorMessages.Count; i++)
+                {
+                    var message = ValidateErrorMessages[i];
+                    inlines.Add(new Run(message)
+                    {
+                        Foreground = ErrorMessageForeground,
+                    });
+                    if (i != ValidateErrorMessages.Count - 1)
+                    {
+                        inlines.Add(new LineBreak());
+                    }
+                }
+            }
+
+            if (ValidateWarningMessages != null)
+            {
+                for (int i = 0; i < ValidateWarningMessages.Count; i++)
+                {
+                    if (inlines.Count > 0 && inlines.Last() is not LineBreak)
+                    {
+                        inlines.Add(new LineBreak());
+                    }
+                    var message = ValidateWarningMessages[i];
+                    inlines.Add(new Run(message)
+                    {
+                        Foreground = WarningMessageForeground,
+                    });
+         
+                    if (i != ValidateWarningMessages.Count - 1)
+                    {
+                        inlines.Add(new LineBreak());
+                    }
+                }
+            }
+            ErrorMessageInlines = inlines;
+        }
     }
 
     public object? GetItemValue()
@@ -719,6 +882,34 @@ public class FormItem : TemplatedControl,
         {
             HasCustomOptionalMark = CustomOptionalMark != null;
         }
+        else if (change.Property == ErrorMessageForegroundProperty ||
+                 change.Property == WarningMessageForegroundProperty)
+        {
+            BuildErrorMessageInlines();
+        }
+
+        if (change.Property == FeedbackTemplateProperty)
+        {
+            HandleFeedbackTemplateChanged();
+        }
+    }
+
+    private Control? BuildFeedback(bool force = false)
+    {
+        if (OwnerForm == null)
+        {
+            return null;
+        }
+        if (_feedback == null || force)
+        {
+            _feedback = FeedbackTemplate?.Build(OwnerForm) as FormValidateFeedback;
+            if (_feedback != null)
+            {
+                _feedback.DataContext = OwnerForm;
+                _feedbackDisposable = BindUtils.RelayBind(this, ValidateStatusProperty, _feedback, FormValidateFeedback.ValidateStatusProperty);
+            }
+        }
+        return _feedback;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -736,6 +927,12 @@ public class FormItem : TemplatedControl,
             _labelLayout.SizeChanged += HandleLabelLayoutSizeChanged;
         }
         ConfigureLayout();
+        Debug.Assert(OwnerForm != null);
+        if (Content is IFormItemFeedbackAware feedbackAware)
+        {
+            BuildFeedback(false);
+            feedbackAware.SetFeedbackControl(_feedback);
+        }
     }
 
     private void HandleLabelLayoutSizeChanged(object? sender, SizeChangedEventArgs e)
@@ -870,5 +1067,17 @@ public class FormItem : TemplatedControl,
 
     protected internal virtual void NotifyFormItemChanged(IFormItem formItem)
     {
+    }
+
+    private void HandleFeedbackTemplateChanged()
+    {
+        _feedback = null;
+        _feedbackDisposable?.Dispose();
+        _feedbackDisposable = null;
+        if (Content is IFormItemFeedbackAware itemFeedbackAware)
+        {
+            BuildFeedback(true);
+            itemFeedbackAware.SetFeedbackControl(_feedback);
+        }
     }
 }

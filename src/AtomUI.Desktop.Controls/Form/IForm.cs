@@ -5,4 +5,5 @@ public interface IForm
     void Validate();
     void Submit();
     void Reset();
+    void SetFormValues(FormValues formValues);
 }

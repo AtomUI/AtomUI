@@ -1,15 +1,9 @@
 namespace AtomUI.Desktop.Controls;
 
-public class FormNotNullValidator : IFormValidator
+public class FormNotNullValidator : AbstractFormValidator
 {
-    public string? Message { get; set; }
-
-    public async Task<FormValidateResult> ValidateAsync(string fieldName, object? value)
+    protected override async Task<bool> NotifyValidateAsync(string fieldName, object? value, CancellationToken cancellationToken)
     {
-        if (value == null)
-        {
-            return await Task.FromResult(FormValidateResult.Error);
-        }
-        return await Task.FromResult(FormValidateResult.Success);
+        return await Task.FromResult(value != null);
     }
 }

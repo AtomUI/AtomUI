@@ -19,39 +19,39 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
     {
         this.WhenActivated(disposables => { });
         InitializeComponent();
-        // ConfigureBasicForm();
-        // ConfigureLayoutForm();
+        ConfigureBasicForm();
+        ConfigureLayoutForm();
     }
 
-    // private void ConfigureBasicForm()
-    // {
-    //     var values = new FormValues();
-    //     values.Add("remember", true);
-    //     BasicForm.InitialValues = values;
-    // }
-    //
-    // private void ConfigureLayoutForm()
-    // {
-    //     LayoutCaseForm.PropertyChanged += (sender, args) =>
-    //     {
-    //         if (args.Property == Form.FormLayoutProperty)
-    //         {
-    //             if (args.NewValue is FormLayout layout)
-    //             {
-    //                 if (layout == FormLayout.Inline)
-    //                 {
-    //                     LayoutCaseForm.MinWidth            = 0;
-    //                     LayoutCaseForm.HorizontalAlignment = HorizontalAlignment.Stretch;
-    //                 }
-    //                 else
-    //                 {
-    //                     LayoutCaseForm.MinWidth            = 600;
-    //                     LayoutCaseForm.HorizontalAlignment = HorizontalAlignment.Left;
-    //                 }
-    //             }
-    //         }
-    //     };
-    // }
+    private void ConfigureBasicForm()
+    {
+        var values = new FormValues();
+        values.Add("remember", true);
+        BasicForm.InitialValues = values;
+    }
+    
+    private void ConfigureLayoutForm()
+    {
+        LayoutCaseForm.PropertyChanged += (sender, args) =>
+        {
+            if (args.Property == Form.FormLayoutProperty)
+            {
+                if (args.NewValue is FormLayout layout)
+                {
+                    if (layout == FormLayout.Inline)
+                    {
+                        LayoutCaseForm.MinWidth            = 0;
+                        LayoutCaseForm.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    }
+                    else
+                    {
+                        LayoutCaseForm.MinWidth            = 600;
+                        LayoutCaseForm.HorizontalAlignment = HorizontalAlignment.Left;
+                    }
+                }
+            }
+        };
+    }
     
     public void HandleFormLayoutOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)
     {
@@ -102,12 +102,12 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
         }
     }
     
-    // private void HandleFillClicked(object? sender, RoutedEventArgs args)
-    // {
-    //     var formValues = new FormValues();
-    //     formValues.Add("url", "https://taobao.com/");
-    //     NoBlockRuleForm.SetFormValues(formValues);
-    // }
+    private void HandleFillClicked(object? sender, RoutedEventArgs args)
+    {
+        var formValues = new FormValues();
+        formValues.Add("url", "https://taobao.com/");
+        NoBlockRuleForm.SetFormValues(formValues);
+    }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -142,6 +142,55 @@ public partial class FormShowCase : ReactiveUserControl<FormViewModel>
                 content: "Submit failed!"
             ));
         }
+    }
+
+    private static int Form_GID = 3;
+    
+    private void HandleAddFormItem(object? sender, RoutedEventArgs args)
+    {
+        var id       = Form_GID++;
+        var formItem = new FormItem();
+        formItem.FieldName  = $"Passengers_{id}";
+        formItem.LabelText  = $"passengers_{id}";
+        formItem.Content    = new LineEdit();
+        formItem.Validators = new List<IFormValidator>()
+        {
+            new FormStringNotEmptyValidator()
+            {
+                Message = "Please input passenger's name or delete this field!",
+            }
+        };
+        var insertIndex = 0;
+        for (var i = 0; i < DynamicForm.Items.Count; ++i)
+        {
+            var item = DynamicForm.Items[i];
+            if (item is FormActionsItem)
+            {
+                insertIndex = i;
+                break;
+            }
+        }
+        
+        insertIndex = Math.Max(0, insertIndex);
+        DynamicForm.Items.Insert(insertIndex, formItem);
+    }
+    
+    private void HandleAddFormItemAtHead(object? sender, RoutedEventArgs args)
+    {
+        var id       = Form_GID++;
+        var formItem = new FormItem();
+        formItem.FieldName = $"Passengers_{id}";
+        formItem.LabelText = $"passengers_{id}";
+        formItem.Content   = new LineEdit();
+        formItem.Validators = new List<IFormValidator>()
+        {
+            new FormStringNotEmptyValidator()
+            {
+                Message = "Please input passenger's name or delete this field!",
+            }
+        };
+        
+        DynamicForm.Items.Insert(0, formItem);
     }
 }
 
@@ -181,5 +230,14 @@ public class CustomizeGenderFormItem : FormItem
                 }
             }
         }
+    }
+}
+
+public class PriceValidator : AbstractFormValidator
+{
+    protected override async Task<bool> NotifyValidateAsync(string fieldName, object? value, CancellationToken cancellationToken)
+    {
+        var price = value as int?;
+        return await Task.FromResult(price.HasValue && price.Value > 0);
     }
 }

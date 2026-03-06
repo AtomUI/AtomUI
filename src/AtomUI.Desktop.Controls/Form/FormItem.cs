@@ -40,7 +40,7 @@ public class FormItem : TemplatedControl,
         AvaloniaProperty.Register<FormItem, string?>(nameof(Help));
     
     public static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
-        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValidateFeedbackEnabled));
+        Form.IsValidateFeedbackEnabledProperty.AddOwner<FormItem>();
     
     public static readonly StyledProperty<object?> InitialValueProperty =
         AvaloniaProperty.Register<FormItem, object?>(nameof(InitialValue));
@@ -103,11 +103,8 @@ public class FormItem : TemplatedControl,
     public static readonly StyledProperty<Control?> ContentProperty =
         AvaloniaProperty.Register<FormItem, Control?>(nameof(Content));
     
-    public static readonly DirectProperty<FormItem, bool> IsValidateContentTypeProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, bool>(
-            nameof(IsValidateContentType),
-            o => o.IsValidateContentType,
-            (o, v) => o.IsValidateContentType = v);
+    public static readonly StyledProperty<bool> IsValidateContentTypeProperty =
+        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValidateContentType));
     
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
@@ -252,13 +249,11 @@ public class FormItem : TemplatedControl,
         get => GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }
-
-    private bool _isValidateContentType = true;
-
+    
     public bool IsValidateContentType
     {
-        get => _isValidateContentType;
-        set => SetAndRaise(IsValidateContentTypeProperty, ref _isValidateContentType, value);
+        get => GetValue(IsValidateContentTypeProperty);
+        set => SetValue(IsValidateContentTypeProperty, value);
     }
     #endregion
 
@@ -344,6 +339,12 @@ public class FormItem : TemplatedControl,
             o => o.LabelMaxWidth,
             (o, v) => o.LabelMaxWidth = v);
     
+    internal static readonly DirectProperty<FormItem, double> ContentPresenterMaxWidthProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, double>(
+            nameof(ContentPresenterMaxWidth),
+            o => o.ContentPresenterMaxWidth,
+            (o, v) => o.ContentPresenterMaxWidth = v);
+    
     internal static readonly DirectProperty<FormItem, bool> HasErrorOrWarningMsgProperty =
         AvaloniaProperty.RegisterDirect<FormItem, bool>(
             nameof(HasErrorOrWarningMsg),
@@ -363,6 +364,30 @@ public class FormItem : TemplatedControl,
     
     internal static readonly StyledProperty<IDataTemplate?> FeedbackTemplateProperty =
         Form.FeedbackTemplateProperty.AddOwner<FormItem>();
+    
+    internal static readonly DirectProperty<FormItem, bool> IsShowItemDeleteButtonProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(IsShowItemDeleteButton),
+            o => o.IsShowItemDeleteButton,
+            (o, v) => o.IsShowItemDeleteButton = v);
+    
+    internal static readonly DirectProperty<FormItem, bool> IsEffectiveShowItemDeleteButtonProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(IsEffectiveShowItemDeleteButton),
+            o => o.IsEffectiveShowItemDeleteButton,
+            (o, v) => o.IsEffectiveShowItemDeleteButton = v);
+    
+    internal static readonly DirectProperty<FormItem, PathIcon?> ItemDeleteButtonIconProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, PathIcon?>(
+            nameof(ItemDeleteButtonIcon),
+            o => o.ItemDeleteButtonIcon,
+            (o, v) => o.ItemDeleteButtonIcon = v);
+    
+    internal static readonly DirectProperty<FormItem, IIconTemplate?> ItemDeleteButtonIconTemplateProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, IIconTemplate?>(
+            nameof(ItemDeleteButtonIconTemplate),
+            o => o.ItemDeleteButtonIconTemplate,
+            (o, v) => o.ItemDeleteButtonIconTemplate = v);
     
     internal bool IsShowColon
     {
@@ -476,6 +501,14 @@ public class FormItem : TemplatedControl,
         get => _labelMaxWidth;
         set => SetAndRaise(LabelMaxWidthProperty, ref _labelMaxWidth, value);
     }
+    
+    private double _contentPresenterMaxWidth = double.PositiveInfinity;
+    
+    internal double ContentPresenterMaxWidth
+    {
+        get => _contentPresenterMaxWidth;
+        set => SetAndRaise(ContentPresenterMaxWidthProperty, ref _contentPresenterMaxWidth, value);
+    }
 
     private bool _hasErrorOrWarningMsg;
     
@@ -511,6 +544,38 @@ public class FormItem : TemplatedControl,
         set => SetValue(FeedbackTemplateProperty, value);
     }
     
+    private bool _isShowItemDeleteButton;
+
+    internal bool IsShowItemDeleteButton
+    {
+        get => _isShowItemDeleteButton;
+        set => SetAndRaise(IsShowItemDeleteButtonProperty, ref _isShowItemDeleteButton, value);
+    }
+    
+    private bool _isEffectiveShowItemDeleteButton;
+
+    internal bool IsEffectiveShowItemDeleteButton
+    {
+        get => _isEffectiveShowItemDeleteButton;
+        set => SetAndRaise(IsEffectiveShowItemDeleteButtonProperty, ref _isEffectiveShowItemDeleteButton, value);
+    }
+    
+    private PathIcon? _itemDeleteButtonIcon;
+
+    internal PathIcon? ItemDeleteButtonIcon
+    {
+        get => _itemDeleteButtonIcon;
+        set => SetAndRaise(ItemDeleteButtonIconProperty, ref _itemDeleteButtonIcon, value);
+    }
+    
+    private IIconTemplate? _itemDeleteButtonIconTemplate;
+
+    internal IIconTemplate? ItemDeleteButtonIconTemplate
+    {
+        get => _itemDeleteButtonIconTemplate;
+        set => SetAndRaise(ItemDeleteButtonIconTemplateProperty, ref _itemDeleteButtonIconTemplate, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
     #endregion
@@ -520,35 +585,45 @@ public class FormItem : TemplatedControl,
     internal static readonly RoutedEvent<RoutedEventArgs> ValueChangedEvent =
         RoutedEvent.Register<FormItem, RoutedEventArgs>(nameof(ValueChanged), RoutingStrategies.Bubble);
     
+    internal static readonly RoutedEvent<RoutedEventArgs> DeleteRequestEvent =
+        RoutedEvent.Register<FormItem, RoutedEventArgs>(nameof(DeleteRequest), RoutingStrategies.Bubble);
+    
     internal event EventHandler<RoutedEventArgs>? ValueChanged
     {
         add => AddHandler(ValueChangedEvent, value);
         remove => RemoveHandler(ValueChangedEvent, value);
+    }
+    
+    internal event EventHandler<RoutedEventArgs>? DeleteRequest
+    {
+        add => AddHandler(DeleteRequestEvent, value);
+        remove => RemoveHandler(DeleteRequestEvent, value);
     }
 
     #endregion
     
     protected override Type StyleKeyOverride => typeof(FormItem);
 
-    private Grid? _rootLayout;
-    private Panel? _childrenLayout;
+    private Grid? _bodyLayout;
+    private Panel? _contentLayout;
     private Panel? _labelLayout;
     private MediaBreakPoint? _breakPoint;
     private CompositeDisposable? _disposables;
     private FormValidateFeedback? _feedback;
     private IDisposable? _feedbackDisposable;
     private CancellationTokenSource? _validationTokenSource;
-
     internal Form? OwnerForm;
     
     static FormItem()
     {
         AffectsMeasure<FormItem>(SizeTypeProperty);
+        IconButton.ClickEvent.AddClassHandler<FormItem>((formItem, args) => formItem.HandleDeleteButtonClicked(args));
     }
     
     public FormItem()
     {
         this.RegisterResources();
+        LayoutUpdated += HandleLayoutUpdated;
     }
 
     protected override void OnInitialized()
@@ -557,6 +632,15 @@ public class FormItem : TemplatedControl,
         if (TooltipIcon == null)
         {
             SetCurrentValue(TooltipIconProperty, new QuestionCircleOutlined());
+        }
+    }
+
+    private void HandleDeleteButtonClicked(RoutedEventArgs args)
+    {
+        if (args.Source is ItemDeleteButton)
+        {
+            RaiseEvent(new RoutedEventArgs(DeleteRequestEvent, this));
+            args.Handled = true;
         }
     }
 
@@ -888,9 +972,21 @@ public class FormItem : TemplatedControl,
             BuildErrorMessageInlines();
         }
 
-        if (change.Property == FeedbackTemplateProperty)
+        if (change.Property == FeedbackTemplateProperty ||
+            change.Property == IsValidateFeedbackEnabledProperty)
         {
             HandleFeedbackTemplateChanged();
+        }
+        else if (change.Property == ItemDeleteButtonIconTemplateProperty)
+        {
+            if (ItemDeleteButtonIconTemplate == null)
+            {
+                ItemDeleteButtonIcon = null;
+            }
+            else
+            {
+                ItemDeleteButtonIcon = ItemDeleteButtonIconTemplate.Build();
+            }
         }
     }
 
@@ -911,39 +1007,42 @@ public class FormItem : TemplatedControl,
         }
         return _feedback;
     }
-
+    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        if (_labelLayout != null)
-        {
-            _labelLayout.SizeChanged -= HandleLabelLayoutSizeChanged;
-        }
-        _rootLayout     = e.NameScope.Find<Grid>(FormItemThemeConstants.RootLayoutPart);
+        _bodyLayout     = e.NameScope.Find<Grid>(FormItemThemeConstants.BodyLayoutPart);
         _labelLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
-        _childrenLayout = e.NameScope.Find<Panel>(FormItemThemeConstants.ChildrenLayoutPart);
-        if (_labelLayout != null)
-        {
-            _labelLayout.SizeChanged += HandleLabelLayoutSizeChanged;
-        }
+        _contentLayout = e.NameScope.Find<Panel>(FormItemThemeConstants.ContentLayoutPart);
         ConfigureLayout();
         Debug.Assert(OwnerForm != null);
-        if (Content is IFormItemFeedbackAware feedbackAware)
+        if (IsValidateFeedbackEnabled)
         {
-            BuildFeedback(false);
-            feedbackAware.SetFeedbackControl(_feedback);
+            if (Content is IFormItemFeedbackAware feedbackAware)
+            {
+                BuildFeedback(false);
+                feedbackAware.SetFeedbackControl(_feedback);
+            }
         }
     }
 
-    private void HandleLabelLayoutSizeChanged(object? sender, SizeChangedEventArgs e)
+    private void HandleLayoutUpdated(object? sender, EventArgs e)
     {
-        if (Layout == FormItemLayout.Horizontal)
+        if (_contentLayout != null)
         {
-            LabelMaxWidth = e.NewSize.Width;
+            ContentPresenterMaxWidth = _contentLayout.Bounds.Width;
         }
-        else
+
+        if (_labelLayout != null)
         {
-            LabelMaxWidth = double.PositiveInfinity;
+            if (Layout == FormItemLayout.Horizontal)
+            {
+                LabelMaxWidth = _labelLayout.Bounds.Width;
+            }
+            else
+            {
+                LabelMaxWidth = double.PositiveInfinity;
+            }
         }
     }
     
@@ -984,48 +1083,36 @@ public class FormItem : TemplatedControl,
 
     private void ConfigureLayout()
     {
-        if (_rootLayout == null || _labelLayout == null || _childrenLayout == null)
+        if (_bodyLayout == null || _labelLayout == null || _contentLayout == null)
         {
             return;
         }
         if (Layout == FormItemLayout.Horizontal)
         {
-            _rootLayout.RowDefinitions.Clear();
-            _rootLayout.ColumnDefinitions.Clear();
+            _bodyLayout.RowDefinitions.Clear();
+            _bodyLayout.ColumnDefinitions.Clear();
             
-            _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
+            _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
                 LabelColInfo ?? new MediaBreakGridLength(new GridLength(1, GridUnitType.Star)))));
-            _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
+            _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
                 WrapperColInfo ?? new MediaBreakGridLength(new GridLength(3, GridUnitType.Star)))));
-            _rootLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             Grid.SetRow(_labelLayout, 0);
-            Grid.SetRow(_childrenLayout, 0);
+            Grid.SetRow(_contentLayout, 0);
             Grid.SetColumn(_labelLayout, 0);
-            Grid.SetColumn(_childrenLayout, 1);
+            Grid.SetColumn(_contentLayout, 1);
         }
         else if (Layout == FormItemLayout.Vertical)
         {
-            _rootLayout.RowDefinitions.Clear();
-            _rootLayout.ColumnDefinitions.Clear();
-            _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            _rootLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-            _rootLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            _bodyLayout.RowDefinitions.Clear();
+            _bodyLayout.ColumnDefinitions.Clear();
+            _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
             Grid.SetRow(_labelLayout, 0);
-            Grid.SetRow(_childrenLayout, 1);
+            Grid.SetRow(_contentLayout, 1);
             Grid.SetColumn(_labelLayout, 0);
-            Grid.SetColumn(_childrenLayout, 0);
-        }
-        
-        if (Layout == FormItemLayout.Horizontal)
-        {
-            if (_labelLayout != null)
-            {
-                LabelMaxWidth = _labelLayout.Bounds.Width;
-            }
-        }
-        else
-        {
-            LabelMaxWidth = double.PositiveInfinity;
+            Grid.SetColumn(_contentLayout, 0);
         }
     }
     
@@ -1074,10 +1161,29 @@ public class FormItem : TemplatedControl,
         _feedback = null;
         _feedbackDisposable?.Dispose();
         _feedbackDisposable = null;
-        if (Content is IFormItemFeedbackAware itemFeedbackAware)
+        if (IsValidateFeedbackEnabled)
         {
-            BuildFeedback(true);
-            itemFeedbackAware.SetFeedbackControl(_feedback);
+            if (Content is IFormItemFeedbackAware itemFeedbackAware)
+            {
+                BuildFeedback(true);
+                itemFeedbackAware.SetFeedbackControl(_feedback);
+            }
         }
+    }
+}
+
+public class FormActionsItem : FormItem
+{
+    private new bool IsValidateContentType
+    {
+        get => GetValue(IsValidateContentTypeProperty);
+        set => SetValue(IsValidateContentTypeProperty, value);
+    }
+    
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        IsValidateContentType = false;
+        IsValueItem           = false;
     }
 }

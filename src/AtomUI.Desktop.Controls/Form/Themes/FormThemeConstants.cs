@@ -12,6 +12,7 @@ internal class FormItemThemeConstants
     public const string ColonPart = "PART_Colon";
     public const string DefaultRequireMarkPart = "PART_DefaultRequireMark";
     public const string RootLayoutPart = "PART_RootLayout";
-    public const string ChildrenLayoutPart = "PART_ChildrenLayout";
+    public const string BodyLayoutPart = "PART_BodyLayout";
+    public const string ContentLayoutPart = "PART_ContentLayout";
     public const string ErrorMsgPart = "PART_ErrorMsg";
 }

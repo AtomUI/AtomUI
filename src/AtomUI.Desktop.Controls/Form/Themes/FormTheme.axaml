@@ -71,5 +71,11 @@
                     StrokeBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorIcon}}"/>
             </DataTemplate>
         </Setter>
+        
+        <Setter Property="ItemDeleteButtonIcon">
+            <atom:IconTemplate>
+                <antdicons:MinusCircleOutlined/>
+            </atom:IconTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -171,6 +172,18 @@ public class Form : ItemsControl,
     
     public static readonly StyledProperty<IBrush?> WarningMessageForegroundProperty =
         AvaloniaProperty.Register<Form, IBrush?>(nameof(WarningMessageForeground));
+    
+    public static readonly StyledProperty<int> MinItemCountProperty =
+        AvaloniaProperty.Register<Form, int>(nameof(MinItemCount), 1);
+    
+    public static readonly StyledProperty<IIconTemplate?> ItemDeleteButtonIconProperty =
+        AvaloniaProperty.Register<Form, IIconTemplate?>(nameof(ItemDeleteButtonIcon));
+    
+    public static readonly DirectProperty<Form, bool> IsShowItemDeleteButtonProperty =
+        AvaloniaProperty.RegisterDirect<Form, bool>(
+            nameof(IsShowItemDeleteButton),
+            o => o.IsShowItemDeleteButton,
+            (o, v) => o.IsShowItemDeleteButton = v);
     
     public bool IsShowColon
     {
@@ -382,6 +395,28 @@ public class Form : ItemsControl,
         set => SetValue(WarningMessageForegroundProperty, value);
     }
     
+    /// <summary>
+    /// 表单中最少的数据 Item 的数量，用于控制是否显示删除 Item 的按钮
+    /// </summary>
+    public int MinItemCount
+    {
+        get => GetValue(MinItemCountProperty);
+        set => SetValue(MinItemCountProperty, value);
+    }
+    
+    public IIconTemplate? ItemDeleteButtonIcon
+    {
+        get => GetValue(ItemDeleteButtonIconProperty);
+        set => SetValue(ItemDeleteButtonIconProperty, value);
+    }
+    
+    private bool _isShowItemDeleteButton;
+
+    public bool IsShowItemDeleteButton
+    {
+        get => _isShowItemDeleteButton;
+        set => SetAndRaise(IsShowItemDeleteButtonProperty, ref _isShowItemDeleteButton, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -400,6 +435,12 @@ public class Form : ItemsControl,
             nameof(FormLayoutOrientation),
             o => o.FormLayoutOrientation);
     
+    internal static readonly DirectProperty<Form, bool> IsEffectiveShowItemDeleteButtonProperty =
+        AvaloniaProperty.RegisterDirect<Form, bool>(
+            nameof(IsEffectiveShowItemDeleteButton),
+            o => o.IsEffectiveShowItemDeleteButton,
+            (o, v) => o.IsEffectiveShowItemDeleteButton = v);
+    
     internal static readonly StyledProperty<double> FormLayoutSpacingProperty =
         AvaloniaProperty.Register<Form, double>(nameof(FormLayoutSpacing));
     
@@ -409,6 +450,14 @@ public class Form : ItemsControl,
     {
         get => _formLayoutOrientation;
         set => SetAndRaise(FormLayoutOrientationProperty, ref _formLayoutOrientation, value);
+    }
+    
+    private bool _isEffectiveShowItemDeleteButton;
+
+    internal bool IsEffectiveShowItemDeleteButton
+    {
+        get => _isEffectiveShowItemDeleteButton;
+        set => SetAndRaise(IsEffectiveShowItemDeleteButtonProperty, ref _isEffectiveShowItemDeleteButton, value);
     }
     
     internal double FormLayoutSpacing
@@ -430,16 +479,22 @@ public class Form : ItemsControl,
     static Form()
     {
         AffectsMeasure<Form>(SizeTypeProperty);
+        AffectsMeasure<Form>(FormLayoutOrientationProperty);
         SubmitButton.SubmitEvent.AddClassHandler<Form>((form, args) => form.HandleSubmitButtonClick(args));
         ResetButton.ResetEvent.AddClassHandler<Form>((form, args) => form.HandleResetButtonClick(args));
         FormItem.ValueChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValueChanged(args));
         FormItem.ValidateChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValidateChanged(args));
+        FormItem.DeleteRequestEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemDelete(args));
     }
     
     public Form()
     {
         this.RegisterResources();
         LogicalChildren.CollectionChanged += HandleCollectionChanged;
+        Items.CollectionChanged += (sender, args) =>
+        {
+            InvalidateMeasure();
+        };
     }
     
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -461,6 +516,8 @@ public class Form : ItemsControl,
                 }
             }
         }
+
+        ConfigureShowItemDeleteButton();
     }
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -483,7 +540,6 @@ public class Form : ItemsControl,
         {
             formItem.OwnerForm = this;
             var disposables = new CompositeDisposable(16);
-            
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, formItem, FormItem.SizeTypeProperty));
             disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, formItem, FormItem.IsMotionEnabledProperty));
             disposables.Add(BindUtils.RelayBind(this, ErrorMessageForegroundProperty, formItem, FormItem.ErrorMessageForegroundProperty));
@@ -499,6 +555,9 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, LabelColInfoProperty, formItem, FormItem.LabelColInfoProperty));
             disposables.Add(BindUtils.RelayBind(this, WrapperColInfoProperty, formItem, FormItem.WrapperColInfoProperty));
             disposables.Add(BindUtils.RelayBind(this, FeedbackTemplateProperty, formItem, FormItem.FeedbackTemplateProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsShowItemDeleteButtonProperty, formItem, FormItem.IsShowItemDeleteButtonProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsEffectiveShowItemDeleteButtonProperty, formItem, FormItem.IsEffectiveShowItemDeleteButtonProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemDeleteButtonIconProperty, formItem, FormItem.ItemDeleteButtonIconTemplateProperty));
             PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))
@@ -676,6 +735,10 @@ public class Form : ItemsControl,
         {
             ConfigureFormLayoutOrientation();
         }
+        else if (change.Property == IsShowItemDeleteButtonProperty)
+        {
+            ConfigureShowItemDeleteButton();
+        }
     }
 
     private void SyncConfigToItems()
@@ -691,34 +754,17 @@ public class Form : ItemsControl,
 
     private void SyncConfigToItem(FormItem formItem)
     {
-        if (!formItem.IsSet(FormItem.LabelAlignProperty))
-        {
-            formItem.SetCurrentValue(FormItem.LabelAlignProperty, LabelAlign);
-        }
-        
-        if (!formItem.IsSet(FormItem.IsValidateFeedbackEnabledProperty))
-        {
-            formItem.SetCurrentValue(FormItem.IsValidateFeedbackEnabledProperty, IsValidateFeedbackEnabled);
-        }
-        
-        if (!formItem.IsSet(FormItem.ValidateTriggerProperty))
-        {
-            formItem.SetCurrentValue(FormItem.ValidateTriggerProperty, ValidateTrigger);
-        }
+        formItem.SetValue(FormItem.LabelAlignProperty, LabelAlign, BindingPriority.Style);
+        formItem.SetValue(FormItem.IsValidateFeedbackEnabledProperty, IsValidateFeedbackEnabled, BindingPriority.Style);
+        formItem.SetValue(FormItem.ValidateTriggerProperty, ValidateTrigger, BindingPriority.Style);
         
         if (FormLayout == FormLayout.Horizontal || FormLayout == FormLayout.Inline)
         {
-            if (!formItem.IsSet(FormItem.LayoutProperty))
-            {
-                formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Horizontal);
-            }
+            formItem.SetValue(FormItem.LayoutProperty, FormItemLayout.Horizontal, BindingPriority.Style);
         }
         else
         {
-            if (!formItem.IsSet(FormItem.LayoutProperty))
-            {
-                formItem.SetCurrentValue(FormItem.LayoutProperty, FormItemLayout.Vertical);
-            }
+            formItem.SetValue(FormItem.LayoutProperty, FormItemLayout.Vertical, BindingPriority.Style);
         }
     }
 
@@ -824,5 +870,31 @@ public class Form : ItemsControl,
             }
             _initValueApplied = true;
         }
+    }
+
+    public void DeleteFormItem(FormItem formItem)
+    {
+        Items.Remove(formItem);
+    }
+
+    private void HandleFormItemDelete(RoutedEventArgs args)
+    {
+        if (args.Source is FormItem formItem)
+        {
+            DeleteFormItem(formItem);
+        }
+    }
+
+    private void ConfigureShowItemDeleteButton()
+    {
+        var count = 0;
+        foreach (var item in LogicalChildren)
+        {
+            if (item is FormItem formItem && formItem.IsValueItem)
+            {
+                count++;
+            }
+        }
+        IsEffectiveShowItemDeleteButton = IsShowItemDeleteButton && count > MinItemCount;
     }
 }

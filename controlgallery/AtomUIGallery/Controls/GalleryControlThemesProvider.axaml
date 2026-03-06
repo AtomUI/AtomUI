@@ -4,11 +4,11 @@
                             x:Class="AtomUIGallery.Controls.GalleryControlThemesProvider"
                             Id="AtomUIGallery.Controls">
     <atom:ControlThemesProvider.ControlThemes>
-        <ResourceInclude Source="ShowCaseItem.axaml" />
-        <ResourceInclude Source="ShowCasePanel.axaml" />
-        <ResourceInclude Source="ColorItemControl.axaml" />
-        <ResourceInclude Source="ColorListControl.axaml" />
-        <ResourceInclude Source="IconGallery.axaml" />
-        <ResourceInclude Source="IconInfoItem.axaml" />
+        <ResourceInclude Source="ShowCaseItemTheme.axaml" />
+        <ResourceInclude Source="ShowCasePanelTheme.axaml" />
+        <ResourceInclude Source="ColorItemControlTheme.axaml" />
+        <ResourceInclude Source="ColorListControlTheme.axaml" />
+        <ResourceInclude Source="IconGalleryTheme.axaml" />
+        <ResourceInclude Source="IconInfoItemTheme.axaml" />
     </atom:ControlThemesProvider.ControlThemes>
 </atom:ControlThemesProvider>

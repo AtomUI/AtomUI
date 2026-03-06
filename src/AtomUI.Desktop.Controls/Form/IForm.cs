@@ -6,4 +6,5 @@ public interface IForm
     void Submit();
     void Reset();
     void SetFormValues(FormValues formValues);
+    void DeleteFormItem(FormItem formItem);
 }

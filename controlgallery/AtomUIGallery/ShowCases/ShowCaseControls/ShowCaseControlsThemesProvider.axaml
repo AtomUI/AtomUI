@@ -1,0 +1,9 @@
+<atom:ControlThemesProvider xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:atom="https://atomui.net"
+                            x:Class="AtomUIGallery.ShowCases.ShowCaseControls.ShowCaseControlsThemesProvider"
+                            Id="AtomUIGallery.ShowCases.ShowCaseControls">
+    <atom:ControlThemesProvider.ControlThemes>
+        <ResourceInclude Source="Form/FormThemes.axaml"/>
+    </atom:ControlThemesProvider.ControlThemes>
+</atom:ControlThemesProvider>

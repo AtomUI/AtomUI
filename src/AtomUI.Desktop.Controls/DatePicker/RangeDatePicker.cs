@@ -516,6 +516,10 @@ public class RangeDatePicker : RangeInfoPickerInput,
 
     protected override object? NotifyGetFormValue()
     {
+        if (RangeStartSelectedDate == null || RangeEndSelectedDate == null)
+        {
+            return null;
+        }
         return (RangeStartSelectedDate, RangeEndSelectedDate);
     }
 

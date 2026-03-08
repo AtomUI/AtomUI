@@ -375,7 +375,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     {
         if (hostProvider.PopupHost != args.Root)
         {
-            if (!IsPointerInInfoInputBox(args.Position) || ClickInClearUpButtonWithClearMode(args.Position))
+            if (!IsPointerInInfoInputBox(args.Position) || ClickInClearUpButtonWithClearMode(args))
             {
                 return true;
             }
@@ -384,46 +384,22 @@ public abstract class InfoPickerInput : TemplatedControl,
         return false;
     }
 
-    protected virtual bool FlyoutOpenPredicate(Point position)
+    protected virtual bool FlyoutOpenPredicate(RawPointerEventArgs args)
     {
         if (!IsEnabled)
         {
             return false;
         }
         
-        return IsPointerInInfoInputBox(position) && !ClickInClearUpButtonWithClearMode(position);
-    }
-
-    protected bool ClickInClearUpButtonWithNormalMode(Point position)
-    {
-        if (PickerClearUpButton != null)
-        {
-            var pos = PickerClearUpButton.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!);
-            if (pos.HasValue)
-            {
-                var clearUpButtonBounds = new Rect(pos.Value, PickerClearUpButton.Bounds.Size);
-                if (clearUpButtonBounds.Contains(position) && !PickerClearUpButton.IsInClearMode)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return IsPointerInInfoInputBox(args.Position) && !ClickInClearUpButtonWithClearMode(args);
     }
     
-    protected bool ClickInClearUpButtonWithClearMode(Point position)
+    protected bool ClickInClearUpButtonWithClearMode(RawPointerEventArgs args)
     {
         if (PickerClearUpButton != null)
         {
-            var pos = PickerClearUpButton.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!);
-            if (pos.HasValue)
-            {
-                var clearUpButtonBounds = new Rect(pos.Value, PickerClearUpButton.Bounds.Size);
-                if (clearUpButtonBounds.Contains(position) && PickerClearUpButton.IsInClearMode)
-                {
-                    return true;
-                }
-            }
+            var sourceControl = args.GetInputHitTestResult().element as Control;
+            return sourceControl.FindLogicalAncestorOfType<InputClearIconButton>() is not null;
         }
         return false;
     }

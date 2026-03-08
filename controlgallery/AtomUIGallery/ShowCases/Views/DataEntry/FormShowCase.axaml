@@ -762,7 +762,7 @@
         <!--         </atom:FormActionsItem> -->
         <!--     </atom:Form> -->
         <!-- </gallery:ShowCaseItem> -->
-        
+
         <!-- <gallery:ShowCaseItem -->
         <!--     Title="Customized Form Controls" -->
         <!--     Description="Customized or third-party form controls can be used in Form, too. Controls must implement IFormItemAware:" -->
@@ -787,7 +787,7 @@
         <!--         </atom:FormActionsItem> -->
         <!--     </atom:Form> -->
         <!-- </gallery:ShowCaseItem> -->
-        
+
         <!-- <gallery:ShowCaseItem -->
         <!--     Title="Inline Login Form" -->
         <!--     Description="Inline login form is often used in navigation bar." -->
@@ -869,171 +869,242 @@
         <!--         </atom:FormActionsItem> -->
         <!--     </atom:Form> -->
         <!-- </gallery:ShowCaseItem> -->
-        
+
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Registration" -->
+        <!--     Description="Fill in this form to create a new account for you." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Form LabelColInfo="8*" -->
+        <!--                WrapperColInfo="16*" -->
+        <!--                MinWidth="600" -->
+        <!--                HorizontalAlignment="Left"> -->
+        <!--         <atom:FormItem LabelText="Email" -->
+        <!--                        FieldName="email" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your E-mail!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit /> -->
+        <!--         </atom:FormItem> -->
+        <!--         <atom:FormItem LabelText="Password" -->
+        <!--                        FieldName="password" -->
+        <!--                        IsRequired="True" -->
+        <!--                        IsValidateFeedbackEnabled="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your password!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit RevealPassword="False" -->
+        <!--                            PasswordChar="•" -->
+        <!--                            IsEnableRevealButton="True" /> -->
+        <!--         </atom:FormItem> -->
+        <!--         <atom:FormItem LabelText="Confirm Password" -->
+        <!--                        FieldName="confirm" -->
+        <!--                        IsRequired="True" -->
+        <!--                        IsValidateFeedbackEnabled="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please confirm your password!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit RevealPassword="False" -->
+        <!--                            PasswordChar="•" -->
+        <!--                            IsEnableRevealButton="True" /> -->
+        <!--         </atom:FormItem> -->
+        <!--         <atom:FormItem LabelText="Nickname" -->
+        <!--                        FieldName="nickname" -->
+        <!--                        IsRequired="True" -->
+        <!--                        Tooltip="What do you want others to call you?"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your nickname!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit /> -->
+        <!--         </atom:FormItem> -->
+        <!-- -->
+        <!--         <atom:FormItem LabelText="Habitual Residence"  -->
+        <!--                        FieldName="residence" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select your habitual residence!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:Cascader HorizontalAlignment="Stretch" IsAllowClear="True"> -->
+        <!--                 <atom:CascaderOption Header="Zhejiang" Value="zhejiang"> -->
+        <!--                     <atom:CascaderOption Header="Hangzhou" Value="hangzhou"> -->
+        <!--                         <atom:CascaderOption Header="West Lake" Value="xihu" /> -->
+        <!--                     </atom:CascaderOption> -->
+        <!--                 </atom:CascaderOption> -->
+        <!--                 <atom:CascaderOption Header="Jiangsu" Value="jiangsu"> -->
+        <!--                     <atom:CascaderOption Header="Nanjing" Value="nanjing"> -->
+        <!--                         <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" /> -->
+        <!--                     </atom:CascaderOption> -->
+        <!--                 </atom:CascaderOption> -->
+        <!--             </atom:Cascader> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="Phone Number"  -->
+        <!--                        FieldName="phone" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your phone number!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <gallery:PhoneNumber/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="Donation"  -->
+        <!--                        FieldName="donation" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please input donation amount!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <gallery:Donation/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="Website"  -->
+        <!--                        FieldName="website" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input website!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:LineEdit PlaceholderText="website"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="Intro"  -->
+        <!--                        FieldName="intro" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input Intro!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:TextArea IsShowCount="True" MaxLength="100"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="Gender"  -->
+        <!--                        FieldName="gender" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select gender!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:Select DefaultValues="male" HorizontalAlignment="Stretch"> -->
+        <!--                 <atom:SelectOption Header="Male" Value="male"/> -->
+        <!--                 <atom:SelectOption Header="Female" Value="female"/> -->
+        <!--                 <atom:SelectOption Header="Other" Value="other"/> -->
+        <!--             </atom:Select> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="Captcha"  -->
+        <!--                        FieldName="captcha" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormStringNotEmptyValidator Message="Please input the captcha you got!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <gallery:Captcha/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem FieldName="agreement" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:CheckBox IsChecked="True"> -->
+        <!--                <StackPanel Orientation="Horizontal" Spacing="5"> -->
+        <!--                    <TextBlock> -->
+        <!--                        I have read the -->
+        <!--                    </TextBlock> -->
+        <!--                    <atom:HyperLinkTextBlock>agreement</atom:HyperLinkTextBlock> -->
+        <!--                </StackPanel> -->
+        <!--             </atom:CheckBox> -->
+        <!--         </atom:FormItem> -->
+        <!--         <atom:FormActionsItem> -->
+        <!--             <atom:SubmitButton Content="Register"/> -->
+        <!--         </atom:FormActionsItem> -->
+        <!--     </atom:Form> -->
+        <!-- </gallery:ShowCaseItem> -->
+
         <gallery:ShowCaseItem
-            Title="Registration"
-            Description="Fill in this form to create a new account for you."
+            Title="Time-related Controls"
+            Description="The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server."
             IsOccupyEntireRow="True">
-            <atom:Form LabelColInfo="8*"
+            <atom:Form LabelColInfo="200"
                        WrapperColInfo="16*"
                        MinWidth="600"
                        HorizontalAlignment="Left">
-                <atom:FormItem LabelText="Email"
-                               FieldName="email"
+                <atom:FormItem LabelText="DatePicker"
+                               FieldName="datePicker"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your E-mail!" />
+                            <atom:FormNotNullValidator Message="Please select time!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:LineEdit />
-                </atom:FormItem>
-                <atom:FormItem LabelText="Password"
-                               FieldName="password"
-                               IsRequired="True"
-                               IsValidateFeedbackEnabled="True">
-                    <atom:FormItem.Validators>
-                        <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your password!" />
-                        </atom:FormValidatorProvider>
-                    </atom:FormItem.Validators>
-                    <atom:LineEdit RevealPassword="False"
-                                   PasswordChar="•"
-                                   IsEnableRevealButton="True" />
-                </atom:FormItem>
-                <atom:FormItem LabelText="Confirm Password"
-                               FieldName="confirm"
-                               IsRequired="True"
-                               IsValidateFeedbackEnabled="True">
-                    <atom:FormItem.Validators>
-                        <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please confirm your password!" />
-                        </atom:FormValidatorProvider>
-                    </atom:FormItem.Validators>
-                    <atom:LineEdit RevealPassword="False"
-                                   PasswordChar="•"
-                                   IsEnableRevealButton="True" />
-                </atom:FormItem>
-                <atom:FormItem LabelText="Nickname"
-                               FieldName="nickname"
-                               IsRequired="True"
-                               Tooltip="What do you want others to call you?">
-                    <atom:FormItem.Validators>
-                        <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your nickname!" />
-                        </atom:FormValidatorProvider>
-                    </atom:FormItem.Validators>
-                    <atom:LineEdit />
-                </atom:FormItem>
-
-                <atom:FormItem LabelText="Habitual Residence" 
-                               FieldName="residence"
-                               IsRequired="True">
-                    <atom:FormItem.Validators>
-                        <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select your habitual residence!" />
-                        </atom:FormValidatorProvider>
-                    </atom:FormItem.Validators>
-                    <atom:Cascader HorizontalAlignment="Stretch" IsAllowClear="True">
-                        <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
-                            <atom:CascaderOption Header="Hangzhou" Value="hangzhou">
-                                <atom:CascaderOption Header="West Lake" Value="xihu" />
-                            </atom:CascaderOption>
-                        </atom:CascaderOption>
-                        <atom:CascaderOption Header="Jiangsu" Value="jiangsu">
-                            <atom:CascaderOption Header="Nanjing" Value="nanjing">
-                                <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" />
-                            </atom:CascaderOption>
-                        </atom:CascaderOption>
-                    </atom:Cascader>
+                    <atom:DatePicker PlaceholderText="Select date!"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="Phone Number" 
-                               FieldName="phone"
+                <atom:FormItem LabelText="DatePicker[showTime]"
+                               FieldName="datePickerShowTime"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input your phone number!" />
+                            <atom:FormNotNullValidator Message="Please select time!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <gallery:PhoneNumber/>
+                    <atom:DatePicker PlaceholderText="Select date!" IsShowTime="True"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="Donation" 
-                               FieldName="donation"
+                <atom:FormItem LabelText="RangePicker"
+                               FieldName="rangePicker"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please input donation amount!" />
+                            <atom:FormNotNullValidator Message="Please select time!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <gallery:Donation/>
+                    <atom:RangeDatePicker PlaceholderText="Start date"
+                                          SecondaryPlaceholderText="End date"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="Website" 
-                               FieldName="website"
+                <atom:FormItem LabelText="RangePicker[showTime]"
+                               FieldName="rangePickerShowTime"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input website!" />
+                            <atom:FormNotNullValidator Message="Please select time!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:LineEdit PlaceholderText="website"/>
+                    <atom:RangeDatePicker PlaceholderText="Start date"
+                                          SecondaryPlaceholderText="End date"
+                                          IsShowTime="True"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="Intro" 
-                               FieldName="intro"
+                <atom:FormItem LabelText="TimePicker"
+                               FieldName="timePicker"
                                IsRequired="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input Intro!" />
+                            <atom:FormNotNullValidator Message="Please select time!" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:TextArea IsShowCount="True" MaxLength="100"/>
+                    <atom:TimePicker PlaceholderText="Start time"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="Gender" 
-                               FieldName="gender"
-                               IsRequired="True">
-                    <atom:FormItem.Validators>
-                        <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select gender!" />
-                        </atom:FormValidatorProvider>
-                    </atom:FormItem.Validators>
-                    <atom:Select DefaultValues="male" HorizontalAlignment="Stretch">
-                        <atom:SelectOption Header="Male" Value="male"/>
-                        <atom:SelectOption Header="Female" Value="female"/>
-                        <atom:SelectOption Header="Other" Value="other"/>
-                    </atom:Select>
-                </atom:FormItem>
-                
-                <atom:FormItem LabelText="Captcha" 
-                               FieldName="captcha"
-                               IsRequired="True">
-                    <atom:FormItem.Validators>
-                        <atom:FormValidatorProvider>
-                            <atom:FormStringNotEmptyValidator Message="Please input the captcha you got!" />
-                        </atom:FormValidatorProvider>
-                    </atom:FormItem.Validators>
-                    <gallery:Captcha/>
-                </atom:FormItem>
-                
-                <atom:FormItem FieldName="agreement"
-                               IsRequired="True">
-                    <atom:CheckBox IsChecked="True">
-                       <StackPanel Orientation="Horizontal" Spacing="5">
-                           <TextBlock>
-                               I have read the
-                           </TextBlock>
-                           <atom:HyperLinkTextBlock>agreement</atom:HyperLinkTextBlock>
-                       </StackPanel>
-                    </atom:CheckBox>
-                </atom:FormItem>
                 <atom:FormActionsItem>
-                    <atom:SubmitButton Content="Register"/>
+                    <atom:SubmitButton/>
                 </atom:FormActionsItem>
             </atom:Form>
         </gallery:ShowCaseItem>
-
     </gallery:ShowCasePanel>
 </UserControl>

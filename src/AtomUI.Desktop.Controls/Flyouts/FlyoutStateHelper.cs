@@ -66,7 +66,7 @@ internal class FlyoutStateHelper : AvaloniaObject
     public event EventHandler<EventArgs>? FlyoutAboutToShow;
     public event EventHandler<EventArgs>? FlyoutOpened;
 
-    public Func<Point, bool>? OpenFlyoutPredicate;
+    public Func<RawPointerEventArgs, bool>? OpenFlyoutPredicate;
     public Func<IPopupHostProvider, RawPointerEventArgs, bool>? ClickHideFlyoutPredicate;
 
     private DispatcherTimer? _mouseEnterDelayTimer;
@@ -319,7 +319,7 @@ internal class FlyoutStateHelper : AvaloniaObject
                     {
                         if (OpenFlyoutPredicate is not null)
                         {
-                            if (OpenFlyoutPredicate(pointerEventArgs.Position))
+                            if (OpenFlyoutPredicate(pointerEventArgs))
                             {
                                 ShowFlyout();
                             }

@@ -140,20 +140,21 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         Transitions = null;
     }
 
-    protected override bool FlyoutOpenPredicate(Point position)
+    protected override bool FlyoutOpenPredicate(RawPointerEventArgs args)
     {
         if (!IsEnabled)
         {
             return false;
         }
 
+        var position = args.Position;
         if (IsPointerInInfoInputBox(position))
         {
             RangeActivatedPart = RangeActivatedPart.Start;
             return true;
         }
         
-        if (IsPointerInSecondaryTextBox(position) || ClickInClearUpButtonWithNormalMode(position))
+        if (IsPointerInSecondaryTextBox(position) || !ClickInClearUpButtonWithClearMode(args))
         {
             RangeActivatedPart = RangeActivatedPart.End;
             return true;
@@ -253,7 +254,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
                 RangeActivatedPart = RangeActivatedPart.End;
             }
 
-            if ((!inRangeStart && !inRangeEnd) || ClickInClearUpButtonWithClearMode(args.Position))
+            if ((!inRangeStart && !inRangeEnd) || ClickInClearUpButtonWithClearMode(args))
             {
                 return true;
             }

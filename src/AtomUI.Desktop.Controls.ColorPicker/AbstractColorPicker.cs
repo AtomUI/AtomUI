@@ -459,7 +459,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         _flyoutStateHelper.HideFlyout(true);
     }
     
-    protected virtual bool FlyoutOpenPredicate(Point position)
+    protected virtual bool FlyoutOpenPredicate(RawPointerEventArgs args)
     {
         if (!IsEnabled)
         {
@@ -472,7 +472,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         }
 
         var region = new Rect(pos.Value, Bounds.Size);
-        return region.Contains(position);
+        return region.Contains(args.Position);
     }
     
     protected virtual bool ClickHideFlyoutPredicate(IPopupHostProvider hostProvider, RawPointerEventArgs args)

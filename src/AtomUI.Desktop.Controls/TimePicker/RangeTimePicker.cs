@@ -527,6 +527,10 @@ public class RangeTimePicker : RangeInfoPickerInput,
 
     protected override object? NotifyGetFormValue()
     {
+        if (RangeStartSelectedTime is null || RangeEndSelectedTime is null)
+        {
+            return null;
+        }
         return (RangeStartSelectedTime, RangeEndSelectedTime);
     }
 

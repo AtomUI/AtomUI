@@ -21,6 +21,7 @@
             </ControlTemplate>
         </Setter>
         
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}"/>
         <Setter Property="ClipToBounds" Value="False"/>
         <Style Selector="^[FormLayout=Inline]">
             <Setter Property="FormLayoutSpacing" Value="{DynamicResource {x:Static atom:FormTokenKey.InlineItemSpacing}}" />

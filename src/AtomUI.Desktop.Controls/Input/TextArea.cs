@@ -358,12 +358,6 @@ public class TextArea : AvaloniaTextBox,
         Clear();
     }
     
-    protected override void OnTextInput(TextInputEventArgs e)
-    {
-        base.OnTextInput(e);
-        HandleInputChanged(Text);
-    }
-    
     private void HandleInputChanged(string? text)
     {
         if (IsShowCount)
@@ -424,6 +418,7 @@ public class TextArea : AvaloniaTextBox,
     
     private void HandleTextChanged()
     {
+        HandleInputChanged(Text);
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 

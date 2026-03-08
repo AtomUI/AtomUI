@@ -10,13 +10,19 @@
                     <atom:NumericUpDown SizeType="{TemplateBinding SizeType}"
                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                         Status="{TemplateBinding Status}"
-                                        StyleVariant="{TemplateBinding StyleVariant}"/>
+                                        StyleVariant="{TemplateBinding StyleVariant}"
+                                        Width="120"
+                                        Value="0"
+                                        Name="NumberInput"
+                                        Minimum="0"/>
                     <atom:Select SizeType="{TemplateBinding SizeType}"
                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                  Status="{TemplateBinding Status}"
-                                 StyleVariant="{TemplateBinding StyleVariant}">
-                        <atom:SelectOption Header="RMB" />
-                        <atom:SelectOption Header="Dollar" />
+                                 StyleVariant="{TemplateBinding StyleVariant}"
+                                 DefaultValues="RMB"
+                                 Name="UnitInput">
+                        <atom:SelectOption Header="RMB" Value="RMB"/>
+                        <atom:SelectOption Header="Dollar" Value="Dollar"/>
                     </atom:Select>
                 </StackPanel>
             </ControlTemplate>

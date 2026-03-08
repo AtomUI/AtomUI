@@ -203,6 +203,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     public event EventHandler<SelectOptionsLoadingEventArgs>? OptionsLoading;
     public event EventHandler<SelectOptionsLoadedEventArgs>? OptionsLoaded;
+    public event EventHandler<SelectSelectionChangedEventArgs>? SelectionChanged;
 
     #endregion
 
@@ -313,6 +314,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleSelectedOptionsChanged(AvaloniaPropertyChangedEventArgs args)
     {
         NotifyFormValueChanged(args.NewValue);
+        SelectionChanged?.Invoke(this, new SelectSelectionChangedEventArgs(Mode, args.OldValue, args.NewValue));
         if (_ignoreSyncSelection)
         {
             _ignoreSyncSelection = false;
@@ -327,6 +329,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     private void HandleSelectedOptionChanged(AvaloniaPropertyChangedEventArgs args)
     {
         NotifyFormValueChanged(args.NewValue);
+        SelectionChanged?.Invoke(this, new SelectSelectionChangedEventArgs(Mode, args.OldValue, args.NewValue));
         if (_ignoreSyncSelection)
         {
             _ignoreSyncSelection = false;

@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Reflection;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -101,6 +102,7 @@ public class CompactSpace : TemplatedControl,
     static CompactSpace()
     {
         OrientationProperty.Changed.AddClassHandler<CompactSpace>((space, _) => space.ConfigureSizeDefinitions());
+        TemplatedParentProperty.Changed.AddClassHandler<CompactSpace>((space, args) => space.HandleTemplatedParentChanged());
     }
     
     public CompactSpace()
@@ -222,6 +224,7 @@ public class CompactSpace : TemplatedControl,
                 disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, target, SizeTypeProperty));
                 _itemsBindingDisposables.Add(target, disposables);
             }
+            target.SetTemplatedParent(TemplatedParent);
         }
     }
     
@@ -250,6 +253,7 @@ public class CompactSpace : TemplatedControl,
                 disposables.Dispose();
                 _itemsBindingDisposables.Remove(target);
             }
+            target.SetTemplatedParent(null);
         }
         
     }
@@ -596,5 +600,13 @@ public class CompactSpace : TemplatedControl,
             }
         }
         return new CornerRadius(topLeft, topRight, bottomRight, bottomLeft);
+    }
+
+    private void HandleTemplatedParentChanged()
+    {
+        foreach (var child in Children)
+        {
+            child.SetTemplatedParent(TemplatedParent);
+        }
     }
 }

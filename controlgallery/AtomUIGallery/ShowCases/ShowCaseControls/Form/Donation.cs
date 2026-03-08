@@ -9,40 +9,40 @@ using NumericUpDown = AtomUI.Desktop.Controls.NumericUpDown;
 
 namespace AtomUIGallery.ShowCases.ShowCaseControls;
 
-public record PriceInfo
+public record DonationInfo
 {
-    public decimal Value { get; init; }
+    public string Value { get; init; }
     public string Unit {  get; init; }
 
-    public PriceInfo(decimal value, string unit)
+    public DonationInfo(string value, string unit)
     {
         Value = value;
-        Unit = unit;
+        Unit  = unit;
     }
 }
 
-public class PriceInput : TemplatedControl,
-                          IMotionAwareControl,
-                          ISizeTypeAware,
-                          IFormItemAware,
-                          IInputControlStatusAware,
-                          IInputControlStyleVariantAware
+public class Donation: TemplatedControl,
+                       IMotionAwareControl,
+                       ISizeTypeAware,
+                       IFormItemAware,
+                       IInputControlStatusAware,
+                       IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<PriceInput>();
+        SizeTypeControlProperty.SizeTypeProperty.AddOwner<Donation>();
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<PriceInput>();
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Donation>();
     
-    public static readonly StyledProperty<PriceInfo?> ValueProperty =
-        AvaloniaProperty.Register<PriceInput, PriceInfo?>(nameof(Value));
+    public static readonly StyledProperty<DonationInfo?> ValueProperty =
+        AvaloniaProperty.Register<Donation, DonationInfo?>(nameof(Value));
     
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
-        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<PriceInput>();
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<Donation>();
 
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
-        InputControlStatusProperty.StatusProperty.AddOwner<PriceInput>();
+        InputControlStatusProperty.StatusProperty.AddOwner<Donation>();
     
     public SizeType SizeType
     {
@@ -56,7 +56,7 @@ public class PriceInput : TemplatedControl,
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public PriceInfo? Value
+    public DonationInfo? Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
@@ -75,26 +75,26 @@ public class PriceInput : TemplatedControl,
     }
     #endregion
 
-    private NumericUpDown? _numberInput;
+    private LineEdit? _valueInput;
     private Select? _unitInput;
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        if (_numberInput != null)
+        if (_valueInput != null)
         {
-            _numberInput.ValueChanged -= HandleNumberInputValueChanged;
+            _valueInput.TextChanged -= HandleInputValueChanged;
         }
         if (_unitInput != null)
         {
             _unitInput.SelectionChanged -= HandleUnitSelectionChanged;
         }
-        _numberInput = e.NameScope.Find<NumericUpDown>("NumberInput");
+        _valueInput = e.NameScope.Find<LineEdit>("ValueInput");
         _unitInput   = e.NameScope.Find<Select>("UnitInput");
 
-        if (_numberInput != null)
+        if (_valueInput != null)
         {
-            _numberInput.ValueChanged += HandleNumberInputValueChanged;
+            _valueInput.TextChanged += HandleInputValueChanged;
         }
 
         if (_unitInput != null)
@@ -103,23 +103,37 @@ public class PriceInput : TemplatedControl,
         }
     }
 
-    private void HandleNumberInputValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    private void HandleInputValueChanged(object? sender, TextChangedEventArgs e)
     {
-        Debug.Assert(_numberInput != null);
+        Debug.Assert(_valueInput != null);
         Debug.Assert(_unitInput != null);
-        var value = _numberInput.Value ?? decimal.Zero;
-        var unit = _unitInput.SelectedOption?.Value?.ToString() ?? "RMB";
-        Value = new PriceInfo(value, unit);
+        var value = _valueInput?.Text;
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            var unit  = _unitInput.SelectedOption?.Value?.ToString() ?? "CNY";
+            Value = new DonationInfo(value, unit);
+        }
+        else 
+        {
+            Value = null;
+        }
         HandleValueChanged();
     }
 
     private void HandleUnitSelectionChanged(object? sender, SelectSelectionChangedEventArgs e)
     {
-        Debug.Assert(_numberInput != null);
+        Debug.Assert(_valueInput != null);
         Debug.Assert(_unitInput != null);
-        var value = _numberInput.Value ?? decimal.Zero;
-        var unit  = _unitInput.SelectedOption?.Value?.ToString() ?? "RMB";
-        Value = new PriceInfo(value, unit);
+        var value = _valueInput?.Text;
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            var unit  = _unitInput.SelectedOption?.Value?.ToString() ?? "CNY";
+            Value = new DonationInfo(value, unit);
+        }
+        else 
+        {
+            Value = null;
+        }
         HandleValueChanged();
     }
 
@@ -131,7 +145,7 @@ public class PriceInput : TemplatedControl,
         remove => _formValueChanged -= value;
     }
 
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as PriceInfo);
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as DonationInfo);
 
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
@@ -142,12 +156,12 @@ public class PriceInput : TemplatedControl,
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    protected virtual void NotifySetFormValue(PriceInfo? value)
+    protected virtual void NotifySetFormValue(DonationInfo? value)
     {
         SetCurrentValue(ValueProperty, value);
     }
 
-    protected virtual PriceInfo? NotifyGetFormValue()
+    protected virtual DonationInfo? NotifyGetFormValue()
     {
         return Value;
     }

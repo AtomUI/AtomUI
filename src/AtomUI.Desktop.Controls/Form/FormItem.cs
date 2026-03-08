@@ -389,6 +389,15 @@ public class FormItem : TemplatedControl,
             o => o.ItemDeleteButtonIconTemplate,
             (o, v) => o.ItemDeleteButtonIconTemplate = v);
     
+    internal static readonly StyledProperty<FormLayout> FormLayoutProperty =
+        AvaloniaProperty.Register<FormItem, FormLayout>(nameof(FormLayout));
+    
+    public static readonly DirectProperty<FormItem, bool> IsHideItemLabelProperty =
+        AvaloniaProperty.RegisterDirect<FormItem, bool>(
+            nameof(IsHideItemLabel),
+            o => o.IsHideItemLabel,
+            (o, v) => o.IsHideItemLabel = v);
+    
     internal bool IsShowColon
     {
         get => GetValue(IsShowColonProperty);
@@ -576,6 +585,20 @@ public class FormItem : TemplatedControl,
         set => SetAndRaise(ItemDeleteButtonIconTemplateProperty, ref _itemDeleteButtonIconTemplate, value);
     }
     
+    public FormLayout FormLayout
+    {
+        get => GetValue(FormLayoutProperty);
+        set => SetValue(FormLayoutProperty, value);
+    }
+    
+    private bool _isHideItemLabel;
+
+    public bool IsHideItemLabel
+    {
+        get => _isHideItemLabel;
+        set => SetAndRaise(IsHideItemLabelProperty, ref _isHideItemLabel, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => FormToken.ID;
     #endregion
@@ -666,7 +689,10 @@ public class FormItem : TemplatedControl,
         {
             _disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, Content, SizeTypeProperty));
         }
-
+        if (Content is IMotionAwareControl)
+        {
+            _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, Content, IsMotionEnabledProperty));
+        }
         if (Content is IInputControlStyleVariantAware)
         {
             _disposables.Add(BindUtils.RelayBind(this, StyleVariantProperty, Content, StyleVariantProperty));
@@ -691,12 +717,14 @@ public class FormItem : TemplatedControl,
 
     private void HandleContentValueChanged(object? sender, EventArgs e)
     {
-        Debug.Assert(OwnerForm != null);
-        if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnChanged)
+        if (OwnerForm != null)
         {
-            ValidateValueDefer();
+            if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnChanged)
+            {
+                ValidateValueDefer();
+            }
+            RaiseEvent(new RoutedEventArgs(ValueChangedEvent, this));
         }
-        RaiseEvent(new RoutedEventArgs(ValueChangedEvent, this));
     }
 
     private void ValidateValueDefer()
@@ -734,7 +762,7 @@ public class FormItem : TemplatedControl,
         ValidateWarningMessages = null;
         if (ValidateStrategy == FormValidateStrategy.Parallel || ValidateStrategy == FormValidateStrategy.Sequential)
         {
-            var tasks           = new Dictionary<Task<FormValidateResult>, IFormValidator>();
+            var tasks         = new Dictionary<Task<FormValidateResult>, IFormValidator>();
             var errorMessages = new List<string>();
             if (ValidateStrategy == FormValidateStrategy.Parallel)
             {
@@ -787,7 +815,7 @@ public class FormItem : TemplatedControl,
             if (hasError)
             {
                 ValidateErrorMessages = errorMessages;
-                ValidateStatus = FormValidateStatus.Error;
+                ValidateStatus        = FormValidateStatus.Error;
             }
             
             if (!hasError && !hasWarning)
@@ -802,7 +830,7 @@ public class FormItem : TemplatedControl,
                 var result = await validator.ValidateAsync(FieldName ?? string.Empty, value, cancellationToken);
                 if (result == FormValidateResult.Error)
                 {
-                    hasError = true;
+                    hasError       = true;
                     ValidateStatus = FormValidateStatus.Error;
                     ValidateErrorMessages = new List<string>
                     {
@@ -851,7 +879,7 @@ public class FormItem : TemplatedControl,
         RaiseEvent(new FormItemValidateChangedEventArgs(ValidateStatus)
         {
             RoutedEvent = ValidateChangedEvent,
-            Source = this,
+            Source      = this,
         });
     }
 
@@ -943,7 +971,8 @@ public class FormItem : TemplatedControl,
         
         if (change.Property == LayoutProperty ||
             change.Property == LabelColInfoProperty ||
-            change.Property == WrapperColInfoProperty)
+            change.Property == WrapperColInfoProperty ||
+            change.Property == IsHideItemLabelProperty)
         {
             ConfigureLayout();
         }
@@ -1011,8 +1040,8 @@ public class FormItem : TemplatedControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _bodyLayout     = e.NameScope.Find<Grid>(FormItemThemeConstants.BodyLayoutPart);
-        _labelLayout    = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
+        _bodyLayout    = e.NameScope.Find<Grid>(FormItemThemeConstants.BodyLayoutPart);
+        _labelLayout   = e.NameScope.Find<Panel>(FormItemThemeConstants.LabelLayoutPart);
         _contentLayout = e.NameScope.Find<Panel>(FormItemThemeConstants.ContentLayoutPart);
         ConfigureLayout();
         Debug.Assert(OwnerForm != null);
@@ -1030,9 +1059,17 @@ public class FormItem : TemplatedControl,
     {
         if (_contentLayout != null)
         {
-            ContentPresenterMaxWidth = _contentLayout.Bounds.Width;
-        }
+            if (FormLayout != FormLayout.Inline)
+            {
+                ContentPresenterMaxWidth = _contentLayout.Bounds.Width;
+            }
+            else
+            {
+                ContentPresenterMaxWidth = double.PositiveInfinity;
+            }
 
+        }
+        
         if (_labelLayout != null)
         {
             if (Layout == FormItemLayout.Horizontal)
@@ -1087,33 +1124,42 @@ public class FormItem : TemplatedControl,
         {
             return;
         }
-        if (Layout == FormItemLayout.Horizontal)
+
+        _bodyLayout.RowDefinitions.Clear();
+        _bodyLayout.ColumnDefinitions.Clear();
+        if (!IsHideItemLabel)
         {
-            _bodyLayout.RowDefinitions.Clear();
-            _bodyLayout.ColumnDefinitions.Clear();
-            
-            _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
-                LabelColInfo ?? new MediaBreakGridLength(new GridLength(1, GridUnitType.Star)))));
-            _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
-                WrapperColInfo ?? new MediaBreakGridLength(new GridLength(3, GridUnitType.Star)))));
-            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            Grid.SetRow(_labelLayout, 0);
-            Grid.SetRow(_contentLayout, 0);
-            Grid.SetColumn(_labelLayout, 0);
-            Grid.SetColumn(_contentLayout, 1);
+            if (Layout == FormItemLayout.Horizontal)
+            {
+                _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large, 
+                    LabelColInfo ?? new MediaBreakGridLength(new GridLength(1, GridUnitType.Star)))));
+                _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GetGridLengthForMediaBreak(_breakPoint ?? MediaBreakPoint.Large,
+                    WrapperColInfo ?? new MediaBreakGridLength(new GridLength(3, GridUnitType.Star)))));
+                _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                Grid.SetRow(_labelLayout, 0);
+                Grid.SetRow(_contentLayout, 0);
+                Grid.SetColumn(_labelLayout, 0);
+                Grid.SetColumn(_contentLayout, 1);
+            }
+            else if (Layout == FormItemLayout.Vertical)
+            {
+                _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                Grid.SetRow(_labelLayout, 0);
+                Grid.SetRow(_contentLayout, 1);
+                Grid.SetColumn(_labelLayout, 0);
+                Grid.SetColumn(_contentLayout, 0);
+            }
         }
-        else if (Layout == FormItemLayout.Vertical)
+        else
         {
-            _bodyLayout.RowDefinitions.Clear();
-            _bodyLayout.ColumnDefinitions.Clear();
             _bodyLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-            Grid.SetRow(_labelLayout, 0);
-            Grid.SetRow(_contentLayout, 1);
-            Grid.SetColumn(_labelLayout, 0);
+            _bodyLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            Grid.SetRow(_contentLayout, 0);
             Grid.SetColumn(_contentLayout, 0);
         }
+        
     }
     
     private GridLength GetGridLengthForMediaBreak(MediaBreakPoint breakPoint, MediaBreakGridLength info)

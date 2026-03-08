@@ -43,4 +43,10 @@
     <ItemGroup>
       <ProjectReference Include="../AtomUIGallery.Icons.Desktop/AtomUIGallery.Icons.Desktop.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Reference Include="Avalonia.Controls">
+        <HintPath>..\..\output\bin\Debug\net10.0\Avalonia.Controls.dll</HintPath>
+      </Reference>
+    </ItemGroup>
 </Project>

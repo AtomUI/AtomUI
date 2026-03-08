@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:gallery="https://atomui.net/oss-controls/gallery"
+                    xmlns:atom="https://atomui.net"
+                    x:CompileBindings="True">
+    <ControlTheme x:Key="{x:Type gallery:PhoneNumber}" TargetType="gallery:PhoneNumber">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <atom:CompactSpace>
+                    <atom:Select DefaultValues="+86"
+                                 SizeType="{TemplateBinding SizeType}"
+                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                 Status="{TemplateBinding Status}"
+                                 StyleVariant="{TemplateBinding StyleVariant}"
+                                 Name="CountryCode">
+                        <atom:SelectOption Header="+86" Value="+86"/>
+                        <atom:SelectOption Header="+87" Value="+87"/>
+                    </atom:Select>
+                    <atom:LineEdit Name="PhoneNumber" atom:CompactSpace.ItemSize="*"
+                                   SizeType="{TemplateBinding SizeType}"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                   Status="{TemplateBinding Status}"
+                                   StyleVariant="{TemplateBinding StyleVariant}"
+                                   Text="{TemplateBinding Value, Mode=TwoWay}"/>
+                </atom:CompactSpace>
+            </ControlTemplate>
+        </Setter>
+        
+    </ControlTheme>
+</ResourceDictionary>

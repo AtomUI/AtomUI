@@ -185,6 +185,12 @@ public class Form : ItemsControl,
             o => o.IsShowItemDeleteButton,
             (o, v) => o.IsShowItemDeleteButton = v);
     
+    public static readonly DirectProperty<Form, bool> IsHideItemLabelProperty =
+        AvaloniaProperty.RegisterDirect<Form, bool>(
+            nameof(IsHideItemLabel),
+            o => o.IsHideItemLabel,
+            (o, v) => o.IsHideItemLabel = v);
+    
     public bool IsShowColon
     {
         get => GetValue(IsShowColonProperty);
@@ -417,6 +423,14 @@ public class Form : ItemsControl,
         get => _isShowItemDeleteButton;
         set => SetAndRaise(IsShowItemDeleteButtonProperty, ref _isShowItemDeleteButton, value);
     }
+    
+    private bool _isHideItemLabel;
+
+    public bool IsHideItemLabel
+    {
+        get => _isHideItemLabel;
+        set => SetAndRaise(IsHideItemLabelProperty, ref _isHideItemLabel, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -558,6 +572,8 @@ public class Form : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, IsShowItemDeleteButtonProperty, formItem, FormItem.IsShowItemDeleteButtonProperty));
             disposables.Add(BindUtils.RelayBind(this, IsEffectiveShowItemDeleteButtonProperty, formItem, FormItem.IsEffectiveShowItemDeleteButtonProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemDeleteButtonIconProperty, formItem, FormItem.ItemDeleteButtonIconTemplateProperty));
+            disposables.Add(BindUtils.RelayBind(this, FormLayoutProperty, formItem, FormItem.FormLayoutProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsHideItemLabelProperty, formItem, FormItem.IsHideItemLabelProperty));
             PrepareFormItem(formItem, item, index, disposables);
             
             if (_itemsBindingDisposables.TryGetValue(formItem, out var oldDisposables))

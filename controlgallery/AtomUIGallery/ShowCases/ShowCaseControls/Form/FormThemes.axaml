@@ -3,5 +3,8 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="PriceInputTheme.axaml"/>
+        <ResourceInclude Source="PhoneNumberTheme.axaml"/>
+        <ResourceInclude Source="DonationTheme.axaml"/>
+        <ResourceInclude Source="CaptchaTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

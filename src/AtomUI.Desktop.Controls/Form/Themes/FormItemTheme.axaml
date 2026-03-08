@@ -42,7 +42,7 @@
                                 <atom:IconPresenter Name="TooltipIconPresenter"
                                                     Icon="{TemplateBinding TooltipIcon}"
                                                     VerticalAlignment="Center"
-                                                    Cursor="Help"
+                                                    Cursor="Hand"
                                                     atom:ToolTip.Tip="{TemplateBinding Tooltip}"
                                                     IsVisible="{TemplateBinding Tooltip, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                 <TextBlock Text="{DynamicResource {x:Static atom:CommonLangResourceKey.Optional}}"
@@ -59,10 +59,15 @@
                                     Orientation="Vertical">
                             <Border MinHeight="{Binding #PART_LabelLayout.Bounds.Height}"
                                     Name="ContentFrame">
-                                <ContentPresenter Name="ContentPresenter"
-                                                  Content="{TemplateBinding Content}"
-                                                  VerticalAlignment="Center"
-                                                  MaxWidth="{TemplateBinding ContentPresenterMaxWidth}"/>
+                                <DockPanel LastChildFill="True">
+                                    <ContentPresenter Name="ExtraPresenter" DockPanel.Dock="Right"
+                                                      Content="{TemplateBinding Extra}"
+                                                      ContentTemplate="{TemplateBinding ExtraTemplate}"/>
+                                    <ContentPresenter Name="ContentPresenter"
+                                                      Content="{TemplateBinding Content}"
+                                                      VerticalAlignment="Center"
+                                                      MaxWidth="{TemplateBinding ContentPresenterMaxWidth}"/>
+                                </DockPanel>
                             </Border>
                             <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
                                        Inlines="{TemplateBinding ErrorMessageInlines}" />

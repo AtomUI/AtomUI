@@ -1,0 +1,29 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:gallery="https://atomui.net/oss-controls/gallery"
+                    xmlns:atom="https://atomui.net"
+                    x:CompileBindings="True">
+    <ControlTheme x:Key="{x:Type gallery:Donation}" TargetType="gallery:Donation">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <atom:CompactSpace>
+                    <atom:LineEdit Name="ValueInput" atom:CompactSpace.ItemSize="*"
+                                   SizeType="{TemplateBinding SizeType}"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                   Status="{TemplateBinding Status}"
+                                   StyleVariant="{TemplateBinding StyleVariant}" />
+                    <atom:Select DefaultValues="CNY"
+                                 SizeType="{TemplateBinding SizeType}"
+                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                 Status="{TemplateBinding Status}"
+                                 StyleVariant="{TemplateBinding StyleVariant}"
+                                 Name="UnitInput">
+                        <atom:SelectOption Header="$" Value="USD" />
+                        <atom:SelectOption Header="¥" Value="CNY" />
+                    </atom:Select>
+                </atom:CompactSpace>
+            </ControlTemplate>
+        </Setter>
+
+    </ControlTheme>
+</ResourceDictionary>

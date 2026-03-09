@@ -13,6 +13,7 @@
                     <atom:CheckBoxItemsControl Name="{x:Static atom:CheckBoxGroupThemeConstants.CheckBoxItemsPart}"
                                                ItemTemplate="{TemplateBinding ItemTemplate}"
                                                ItemSpacing="{TemplateBinding ItemSpacing}"
+                                               LineSpacing="{TemplateBinding LineSpacing}"
                                                Orientation="{TemplateBinding Orientation}"
                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
                 </Border>
@@ -27,6 +28,7 @@
             </DataTemplate>
         </Setter>
         <Setter Property="ItemSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        <Setter Property="LineSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
         
     </ControlTheme>
 </ResourceDictionary>

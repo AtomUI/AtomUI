@@ -666,7 +666,7 @@ public class ToggleSwitch : ToggleButton,
 
     protected virtual void NotifySetFormValue(bool? value)
     {
-        IsChecked = value;
+        SetCurrentValue(IsCheckedProperty, value);
     }
 
     protected virtual object? NotifyGetFormValue()
@@ -676,7 +676,7 @@ public class ToggleSwitch : ToggleButton,
 
     protected virtual void NotifyClearFormValue()
     {
-        IsChecked = null;
+        SetCurrentValue(IsCheckedProperty, null);
     }
 
     protected virtual void NotifyValidateStatus(FormValidateStatus status)

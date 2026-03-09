@@ -21,12 +21,14 @@
         
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <StackPanel Orientation="{Binding (atom:RadioButtonGroup).Orientation, RelativeSource={RelativeSource TemplatedParent}}"
-                            Spacing="{Binding (atom:RadioButtonGroup).ItemSpacing, RelativeSource={RelativeSource TemplatedParent}}"/>
+                <WrapPanel Orientation="{Binding (atom:RadioButtonGroup).Orientation, RelativeSource={RelativeSource TemplatedParent}}"
+                            ItemSpacing="{Binding (atom:RadioButtonGroup).ItemSpacing, RelativeSource={RelativeSource TemplatedParent}}"
+                            LineSpacing="{Binding (atom:RadioButtonGroup).LineSpacing, RelativeSource={RelativeSource TemplatedParent}}"/>
             </ItemsPanelTemplate>
         </Setter>
         
         <Setter Property="ItemSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        <Setter Property="LineSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
         
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:IRadioButtonOption">

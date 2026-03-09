@@ -34,7 +34,8 @@ public class OptionCheckedChangedEventArgs : RoutedEventArgs
 public class OptionButtonGroup : SelectingItemsControl,
                                  ISizeTypeAware,
                                  IWaveSpiritAwareControl,
-                                 IControlSharedTokenResourcesHost
+                                 IControlSharedTokenResourcesHost,
+                                 IFormItemAware
 {
     #region 公共属性定义
 
@@ -137,6 +138,7 @@ public class OptionButtonGroup : SelectingItemsControl,
         AffectsMeasure<OptionButtonGroup>(SizeTypeProperty);
         AffectsRender<OptionButtonGroup>(SelectedOptionBorderColorProperty,
             ButtonStyleProperty, SelectedItemProperty);
+        SelectedItemProperty.Changed.AddClassHandler<OptionButtonGroup>((group, args) => group.NotifyFormValueChanged(args.NewValue));
     }
 
     public OptionButtonGroup()
@@ -403,4 +405,44 @@ public class OptionButtonGroup : SelectingItemsControl,
             }
         }
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+        SetCurrentValue(SelectedItemProperty, value);
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return SelectedItem;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(SelectedItemProperty, false);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
 }

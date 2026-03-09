@@ -23,6 +23,16 @@
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimaryHover}}" />
         </Style>
 
+        <Style Selector="^[Status=Error]">
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+        </Style>
+        
+        <Style Selector="^[Status=Warning]">
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+        </Style>
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
             <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeLG}}" />

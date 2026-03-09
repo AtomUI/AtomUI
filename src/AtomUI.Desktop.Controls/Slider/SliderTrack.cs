@@ -1,11 +1,9 @@
 ﻿using System.Globalization;
 using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Controls.Utils;
 using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
@@ -67,8 +65,8 @@ public class SliderTrack : TemplatedControl
     public static readonly StyledProperty<IBrush?> TrackGrooveBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(TrackGrooveBrush));
 
-    public static readonly StyledProperty<AvaloniaList<SliderMark>?> MarksProperty =
-        AvaloniaProperty.Register<SliderTrack, AvaloniaList<SliderMark>?>(nameof(Marks));
+    public static readonly StyledProperty<List<SliderMark>?> MarksProperty =
+        AvaloniaProperty.Register<SliderTrack, List<SliderMark>?>(nameof(Marks));
 
     public static readonly StyledProperty<double> MarkLabelFontSizeProperty =
         TextElement.FontSizeProperty.AddOwner<SliderTrack>();
@@ -163,7 +161,7 @@ public class SliderTrack : TemplatedControl
         set => SetValue(TrackGrooveBrushProperty, value);
     }
 
-    public AvaloniaList<SliderMark>? Marks
+    public List<SliderMark>? Marks
     {
         get => GetValue(MarksProperty);
         set => SetValue(MarksProperty, value);
@@ -292,6 +290,7 @@ public class SliderTrack : TemplatedControl
     {
         StartSliderThumbProperty.Changed.AddClassHandler<SliderTrack>((x, e) => x.ThumbChanged(e));
         EndSliderThumbProperty.Changed.AddClassHandler<SliderTrack>((x, e) => x.ThumbChanged(e));
+        AffectsMeasure<SliderTrack>(MarksProperty);
         AffectsArrange<SliderTrack>(IsDirectionReversedProperty,
             MinimumProperty,
             MaximumProperty,
@@ -633,19 +632,15 @@ public class SliderTrack : TemplatedControl
             HandleRangeModeChanged();
         }
 
-        if (this.IsAttachedToLogicalTree())
+        if (change.Property == IsEnabledProperty)
         {
-            if (change.Property == IsEnabledProperty)
-            {
-                CalculateMaxMarkSize(true);
-            }
-            else if (change.Property == MarksProperty)
-            {
-                CalculateMaxMarkSize();
-            }
-           
+            CalculateMaxMarkSize(true);
         }
-
+        else if (change.Property == MarksProperty)
+        {
+            CalculateMaxMarkSize();
+        }
+        
         if (IsLoaded)
         {
             if (change.Property == IsMotionEnabledProperty)
@@ -944,18 +939,17 @@ public class SliderTrack : TemplatedControl
                             Orientation == Orientation.Vertical, mark.Value);
                         var offsetY = railCenterY;
                         // 将圆心放到合适的坐标
-                        offsetX -= SliderMarkSize / 2;
-                        offsetY -= SliderMarkSize / 2;
+                        var markOffsetX = offsetX - SliderMarkSize / 2;
+                        var markOffsetY = offsetY - SliderMarkSize / 2;
 
-                        var markRect = new Rect(new Point(offsetX, offsetY), new Size(SliderMarkSize, SliderMarkSize));
+                        var markRect = new Rect(new Point(markOffsetX, markOffsetY), new Size(SliderMarkSize, SliderMarkSize));
                         _renderContextData.MarkRects.Add((markRect, i, markIncluded));
-
-                        var textOffsetX = offsetX - mark.LabelSize.Width / 3;
-                        var textOffsetY = railCenterY + thumbSize / 2;
-
-                        if (i == Marks.Count - 1)
+                        var textOffsetX = offsetX - mark.LabelSize.Width / 2;
+                        var textOffsetY = railCenterY + thumbSize / 4;
+                        
+                        if (textOffsetX + mark.LabelSize.Width > Bounds.Width)
                         {
-                            textOffsetX -= Padding.Right; // 不知道为啥会出去一点点
+                            textOffsetX = Bounds.Width - mark.LabelSize.Width;
                         }
 
                         var textRect = new Rect(new Point(textOffsetX, textOffsetY), mark.LabelSize);

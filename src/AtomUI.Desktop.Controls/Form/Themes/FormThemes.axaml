@@ -7,5 +7,6 @@
         <ResourceInclude Source="ResetButtonTheme.axaml"/>
         <ResourceInclude Source="SubmitButtonTheme.axaml"/>
         <ResourceInclude Source="FormValidateFeedbackTheme.axaml"/>
+        <ResourceInclude Source="FormItemDecoratorTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

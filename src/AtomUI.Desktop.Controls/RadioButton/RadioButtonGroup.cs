@@ -23,6 +23,9 @@ public class RadioButtonGroup : ItemsControl,
     public static readonly StyledProperty<double> ItemSpacingProperty = 
         AvaloniaProperty.Register<RadioButtonGroup, double>(nameof (ItemSpacing));
     
+    public static readonly StyledProperty<double> LineSpacingProperty = 
+        AvaloniaProperty.Register<RadioButtonGroup, double>(nameof (LineSpacing));
+    
     public static readonly StyledProperty<Orientation> OrientationProperty = 
         StackPanel.OrientationProperty.AddOwner<RadioButtonGroup>();
 
@@ -39,6 +42,12 @@ public class RadioButtonGroup : ItemsControl,
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
+    }
+    
+    public double LineSpacing
+    {
+        get => GetValue(LineSpacingProperty);
+        set => SetValue(LineSpacingProperty, value);
     }
     
     public Orientation Orientation

@@ -11,14 +11,18 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="ClipToBounds" Value="False" />
-        
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <StackPanel Orientation="{Binding (atom:CheckBoxItemsControl).Orientation, RelativeSource={RelativeSource TemplatedParent}}"
-                            Spacing="{Binding (atom:CheckBoxItemsControl).ItemSpacing, RelativeSource={RelativeSource TemplatedParent}}"/>
+                <WrapPanel
+                    Orientation="{Binding (atom:CheckBoxItemsControl).Orientation, RelativeSource={RelativeSource TemplatedParent}}"
+                    ItemSpacing="{Binding (atom:CheckBoxItemsControl).ItemSpacing, RelativeSource={RelativeSource TemplatedParent}}"
+                    LineSpacing="{Binding (atom:CheckBoxItemsControl).LineSpacing, RelativeSource={RelativeSource TemplatedParent}}"/>
             </ItemsPanelTemplate>
         </Setter>
+
+        <Setter Property="ItemSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        <Setter Property="LineSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        <Setter Property="ClipToBounds" Value="False" />
         
     </ControlTheme>
 </ResourceDictionary>

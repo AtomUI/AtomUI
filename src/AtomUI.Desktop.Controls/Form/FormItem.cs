@@ -104,7 +104,7 @@ public class FormItem : TemplatedControl,
         AvaloniaProperty.Register<FormItem, Control?>(nameof(Content));
     
     public static readonly StyledProperty<bool> IsValidateContentTypeProperty =
-        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValidateContentType));
+        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValidateContentType), true);
     
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
@@ -286,10 +286,8 @@ public class FormItem : TemplatedControl,
             o => o.IsColonVisible,
             (o, v) => o.IsColonVisible = v);
     
-    internal static readonly DirectProperty<FormItem, bool> IsValueItemProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, bool>(
-            nameof(IsValueItem),
-            o => o.IsValueItem);
+    internal static readonly StyledProperty<bool> IsValueItemProperty =
+        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValueItem), true);
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<FormItem>();
@@ -430,13 +428,11 @@ public class FormItem : TemplatedControl,
         set => SetAndRaise(IsColonVisibleProperty, ref _isColonVisible, value);
     }
     
-    private bool _isValueItem;
-    
     // 如果这个 FormItem 设置了 Label 和 FieldName 那么就是一个 ValueItem
     internal bool IsValueItem
     {
-        get => _isValueItem;
-        set => SetAndRaise(IsValueItemProperty, ref _isValueItem, value);
+        get => GetValue(IsValueItemProperty);
+        set => SetValue(IsValueItemProperty, value);
     }
     
     internal FormRequiredMark RequiredMark
@@ -1251,16 +1247,15 @@ public class FormItem : TemplatedControl,
 
 public class FormActionsItem : FormItem
 {
+    static FormActionsItem()
+    {
+        IsValidateContentTypeProperty.OverrideDefaultValue<FormActionsItem>(false);
+        IsValueItemProperty.OverrideDefaultValue<FormActionsItem>(false);
+    }
+    
     private new bool IsValidateContentType
     {
         get => GetValue(IsValidateContentTypeProperty);
         set => SetValue(IsValidateContentTypeProperty, value);
-    }
-    
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        IsValidateContentType = false;
-        IsValueItem           = false;
     }
 }

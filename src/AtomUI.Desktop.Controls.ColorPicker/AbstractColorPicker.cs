@@ -34,7 +34,9 @@ public abstract class AbstractColorPicker : AvaloniaButton,
                                             IMotionAwareControl,
                                             IControlSharedTokenResourcesHost,
                                             ICompactSpaceAware,
-                                            IFormItemAware
+                                            IFormItemAware,
+                                            IInputControlStatusAware,
+                                            IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<ColorFormat> FormatProperty =
@@ -90,6 +92,12 @@ public abstract class AbstractColorPicker : AvaloniaButton,
 
     public static readonly StyledProperty<List<ColorPickerPalette>?> PaletteGroupProperty =
         ColorPickerPaletteGroup.PaletteGroupProperty.AddOwner<AbstractColorPicker>();
+    
+    public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
+        InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<AbstractColorPicker>();
+
+    public static readonly StyledProperty<InputControlStatus> StatusProperty =
+        InputControlStatusProperty.StatusProperty.AddOwner<AbstractColorPicker>();
 
     public ColorFormat Format
     {
@@ -197,6 +205,18 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     {
         get => GetValue(PaletteGroupProperty);
         set => SetValue(PaletteGroupProperty, value);
+    }
+    
+    public InputControlStyleVariant StyleVariant
+    {
+        get => GetValue(StyleVariantProperty);
+        set => SetValue(StyleVariantProperty, value);
+    }
+
+    public InputControlStatus Status
+    {
+        get => GetValue(StatusProperty);
+        set => SetValue(StatusProperty, value);
     }
     
     #endregion
@@ -582,6 +602,18 @@ public abstract class AbstractColorPicker : AvaloniaButton,
 
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
+        }
     }
     #endregion
 }

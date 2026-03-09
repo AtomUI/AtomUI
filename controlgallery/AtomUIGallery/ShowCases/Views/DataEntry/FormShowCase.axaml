@@ -5,1109 +5,1108 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Basic usage" -->
-        <!--     Description="Basic Form data control. Includes layout, initial values, validation and submit." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                Name="BasicForm"> -->
-        <!--         <atom:FormItem LabelText="Username" -->
-        <!--                        FieldName="username" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="Password" -->
-        <!--                        FieldName="password" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your password!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit RevealPassword="False" -->
-        <!--                            PasswordChar="•" -->
-        <!--                            IsEnableRevealButton="True" /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem FieldName="remember"> -->
-        <!--             <atom:CheckBox>Remember me</atom:CheckBox> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem> -->
-        <!--             <atom:SubmitButton /> -->
-        <!--         </atom:FormItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Form methods" -->
-        <!--     Description="Call form method with Form." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left"> -->
-        <!--         <gallery:NoteFormItem LabelText="Note" -->
-        <!--                               FieldName="note" -->
-        <!--                               IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please enter Note" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </gallery:NoteFormItem> -->
-        <!--         <atom:FormItem LabelText="Gender" -->
-        <!--                        FieldName="gender" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please enter Gender" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:Select IsAllowClear="True" -->
-        <!--                          PlaceholderText="Select a option and change input text above" -->
-        <!--                          HorizontalAlignment="Stretch"> -->
-        <!--                 <atom:SelectOption Header="male" Value="male" /> -->
-        <!--                 <atom:SelectOption Header="female" Value="female" /> -->
-        <!--                 <atom:SelectOption Header="other" Value="other" /> -->
-        <!--             </atom:Select> -->
-        <!--         </atom:FormItem> -->
-        <!--         <gallery:CustomizeGenderFormItem LabelText="Customize Gender" -->
-        <!--                                          FieldName="customizeGender" -->
-        <!--                                          IsRequired="True" -->
-        <!--                                          IsVisible="False"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please enter Customize Gender" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </gallery:CustomizeGenderFormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem> -->
-        <!--             <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--                 <atom:SubmitButton /> -->
-        <!--                 <atom:ResetButton /> -->
-        <!--             </StackPanel> -->
-        <!--         </atom:FormItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Form Layout" -->
-        <!--     Description="There are three layout for form: horizontal, vertical, inline." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="20"> -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <atom:TextBlock VerticalAlignment="Center">Form Layout :</atom:TextBlock> -->
-        <!--             <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormLayoutOptionCheckedChanged"> -->
-        <!--                 <atom:OptionButton  Tag="{x:Static atom:FormLayout.Horizontal}">Horizontal</atom:OptionButton> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:FormLayout.Vertical}">Vertical</atom:OptionButton> -->
-        <!--                 <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormLayout.Inline}">Inline</atom:OptionButton> -->
-        <!--             </atom:OptionButtonGroup> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <atom:Form LabelColInfo="8*" -->
-        <!--                    WrapperColInfo="16*" -->
-        <!--                    Name="LayoutCaseForm" -->
-        <!--                    FormLayout="{Binding FormLayout}" -->
-        <!--                    HorizontalAlignment="Left" -->
-        <!--                    MinWidth="600"> -->
-        <!--             <atom:FormItem LabelText="Field A" FieldName="FieldA"> -->
-        <!--                 <atom:LineEdit MinWidth="160"/> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="Field B" FieldName="Field B"> -->
-        <!--                 <atom:LineEdit MinWidth="160"/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem> -->
-        <!--                 <atom:SubmitButton /> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!--     </StackPanel> -->
-        <!-- -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Form Layout" -->
-        <!--     Description="There are three layout for form: horizontal, vertical, inline." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="20"> -->
-        <!--         <atom:Form FormLayout="Horizontal"> -->
-        <!--             <atom:FormItem LabelText="horizontal" FieldName="horizontal" -->
-        <!--                            LabelColInfo="4*" -->
-        <!--                            WrapperColInfo="20*" -->
-        <!--                            IsRequired="True" -->
-        <!--                            Layout="Horizontal"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="vertical" -->
-        <!--                            FieldName="vertical" -->
-        <!--                            IsRequired="True" -->
-        <!--                            Layout="Vertical"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="vertical2" -->
-        <!--                            FieldName="vertical2" -->
-        <!--                            IsRequired="True" -->
-        <!--                            Layout="Vertical"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!-- -->
-        <!--         <atom:Separator/> -->
-        <!-- -->
-        <!--         <atom:Form FormLayout="Vertical"> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="vertical" -->
-        <!--                            FieldName="vertical" -->
-        <!--                            IsRequired="True" -->
-        <!--                            Layout="Vertical"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="vertical2" -->
-        <!--                            FieldName="vertical2" -->
-        <!--                            IsRequired="True" -->
-        <!--                            Layout="Vertical"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="horizontal" FieldName="horizontal" -->
-        <!--                            LabelColInfo="4*" -->
-        <!--                            WrapperColInfo="20*" -->
-        <!--                            IsRequired="True" -->
-        <!--                            Layout="Horizontal"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!--     </StackPanel> -->
-        <!-- -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Form Layout" -->
-        <!--     Description="There are three layout for form: horizontal, vertical, inline." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="5"> -->
-        <!--         <atom:CheckBox IsChecked="{Binding IsFormDisabled, Mode=TwoWay}">Form disabled</atom:CheckBox> -->
-        <!--         <atom:Form LabelColInfo="8*" -->
-        <!--                    WrapperColInfo="16*" -->
-        <!--                    MinWidth="600" -->
-        <!--                    HorizontalAlignment="Left" -->
-        <!--                    IsEnabled="{Binding IsFormDisabled, Converter={x:Static BoolConverters.Not}}"> -->
-        <!--             <atom:FormItem LabelText="Checkbox" FieldName="checkbox"> -->
-        <!--                 <atom:CheckBox>Checkbox</atom:CheckBox> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="Radio" FieldName="radio"> -->
-        <!--                 <atom:RadioButtonGroup> -->
-        <!--                     <atom:RadioButton>Apple</atom:RadioButton> -->
-        <!--                     <atom:RadioButton>Pear</atom:RadioButton> -->
-        <!--                 </atom:RadioButtonGroup> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="Input" FieldName="input"> -->
-        <!--                 <atom:LineEdit/> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="Select" FieldName="select"> -->
-        <!--                 <atom:Select HorizontalAlignment="Stretch"> -->
-        <!--                     <atom:SelectOption Header="Demo" Value="demo"/> -->
-        <!--                 </atom:Select> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="TreeSelect" FieldName="treeSelect"> -->
-        <!--                 <atom:TreeSelect HorizontalAlignment="Stretch"> -->
-        <!--                     <atom:TreeItemNode Header="Light" Value="light"> -->
-        <!--                         <atom:TreeItemNode Header="Bamboo" Value="bamboo"/> -->
-        <!--                     </atom:TreeItemNode> -->
-        <!--                 </atom:TreeSelect> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Cascader" FieldName="cascader"> -->
-        <!--                 <atom:Cascader HorizontalAlignment="Stretch"> -->
-        <!--                     <atom:CascaderOption Header="Zhejiang" Value="zhejiang"> -->
-        <!--                         <atom:CascaderOption Header="Hangzhou" Value="hangzhou"/> -->
-        <!--                     </atom:CascaderOption> -->
-        <!--                 </atom:Cascader> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="DatePicker" FieldName="datePicker"> -->
-        <!--                 <atom:DatePicker PlaceholderText="Select date"/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="RangePicker" FieldName="rangePicker"> -->
-        <!--                 <atom:RangeDatePicker PlaceholderText="Start date" -->
-        <!--                                       SecondaryPlaceholderText="End date"/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="InputNumber" FieldName="inputNumber"> -->
-        <!--                 <atom:NumericUpDown Width="80"/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="TextArea" FieldName="textArea"> -->
-        <!--                 <atom:TextArea Lines="4"/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Switch" FieldName="switch"> -->
-        <!--                 <atom:ToggleSwitch/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Upload" FieldName="upload"> -->
-        <!--                 <atom:Upload Name="AvatarDemoPictureCardUpload" ListType="PictureCard"> -->
-        <!--                     <StackPanel Orientation="Vertical"> -->
-        <!--                         <Panel> -->
-        <!--                             <antdicons:PlusOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}, Converter={x:Static BoolConverters.Not}}" -->
-        <!--                                                     StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"/> -->
-        <!--                             <antdicons:LoadingOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}}" -->
-        <!--                                                        StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}" -->
-        <!--                                                        LoadingAnimation="Spin"/> -->
-        <!--                         </Panel> -->
-        <!--                         <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock> -->
-        <!--                     </StackPanel> -->
-        <!--                 </atom:Upload> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Button" FieldName="button"> -->
-        <!--                 <atom:Button>Button</atom:Button> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Slider" FieldName="slider"> -->
-        <!--                 <atom:Slider/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="ColorPicker" FieldName="colorPicker"> -->
-        <!--                 <atom:ColorPicker/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Rate" FieldName="rate"> -->
-        <!--                 <atom:Rate/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Mentions" FieldName="mentions"> -->
-        <!--                 <atom:Mentions DefaultValue="@afc163"/> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Tree" FieldName="tree"> -->
-        <!--                 <atom:TreeView> -->
-        <!--                     <atom:TreeItem Header="Parent 1" ItemKey="0-0"> -->
-        <!--                         <atom:TreeItem Header="Child 1-1" ItemKey="0-0-0"> -->
-        <!--                             <atom:TreeItem Header="Grandchild 1-1-1" ItemKey="0-0-0-0"/> -->
-        <!--                         </atom:TreeItem> -->
-        <!--                         <atom:TreeItem Header="Child 1-2" ItemKey="0-0-1"/> -->
-        <!--                     </atom:TreeItem> -->
-        <!--                     <atom:TreeItem Header="Parent 2" ItemKey="0-1"> -->
-        <!--                         <atom:TreeItem Header="Child 2-1" ItemKey="0-1-0"/> -->
-        <!--                     </atom:TreeItem> -->
-        <!--                 </atom:TreeView> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!--     </StackPanel> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Form variants" -->
-        <!--     Description="Change the variant of all components in the form, options include: outlined filled borderless and underlined." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="10"> -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <atom:TextBlock VerticalAlignment="Center">Form variant:</atom:TextBlock> -->
-        <!--             <atom:Segmented SelectionChanged="HandleFormStyleVariantChanged"> -->
-        <!--                 <atom:SegmentedItem IsSelected="True" Tag="{x:Static atom:InputControlStyleVariant.Outline}">outlined</atom:SegmentedItem> -->
-        <!--                 <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Filled}">filled</atom:SegmentedItem> -->
-        <!--                 <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Borderless}">borderless</atom:SegmentedItem> -->
-        <!--                 <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Underlined}">underlined</atom:SegmentedItem> -->
-        <!--             </atom:Segmented> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <atom:Form LabelColInfo="8*" -->
-        <!--                    WrapperColInfo="16*" -->
-        <!--                    MinWidth="600" -->
-        <!--                    HorizontalAlignment="Left" -->
-        <!--                    StyleVariant="{Binding FormStyleVariant}"> -->
-        <!--             <atom:FormItem LabelText="Input" -->
-        <!--                            FieldName="input" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:LineEdit /> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="InputNumber" -->
-        <!--                            FieldName="inputNumber" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:NumericUpDown Width="200" /> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="TextArea" -->
-        <!--                            FieldName="textArea" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:TextArea Lines="4" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Mentions" -->
-        <!--                            FieldName="mentions" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:Mentions /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Select" -->
-        <!--                            FieldName="select" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:Select HorizontalAlignment="Stretch" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Cascader" -->
-        <!--                            FieldName="cascader" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:Cascader HorizontalAlignment="Stretch" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="TreeSelect" -->
-        <!--                            FieldName="treeSelect" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:TreeSelect HorizontalAlignment="Stretch" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="DatePicker" -->
-        <!--                            FieldName="datePicker" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:DatePicker PlaceholderText="Please select" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="RangePicker" -->
-        <!--                            FieldName="rangePicker" -->
-        <!--                            IsRequired="True"> -->
-        <!--                 <atom:FormItem.Validators> -->
-        <!--                     <atom:FormValidatorProvider> -->
-        <!--                         <atom:FormStringNotEmptyValidator Message="Please input!" /> -->
-        <!--                     </atom:FormValidatorProvider> -->
-        <!--                 </atom:FormItem.Validators> -->
-        <!--                 <atom:RangeDatePicker PlaceholderText="Start date" -->
-        <!--                                       SecondaryPlaceholderText="End date" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem> -->
-        <!--                 <atom:SubmitButton /> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!--     </StackPanel> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Required style" -->
-        <!--     Description="Switch required or optional style with requiredMark." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="20"> -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock> -->
-        <!--             <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormRequiredMarkChanged"> -->
-        <!--                 <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormRequiredMark.Default}">Default</atom:OptionButton> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Optional}">Optional</atom:OptionButton> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Hidden}">Hidden</atom:OptionButton> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Customize}">Customize</atom:OptionButton> -->
-        <!--             </atom:OptionButtonGroup> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <atom:Form LabelColInfo="8*" -->
-        <!--                    WrapperColInfo="16*" -->
-        <!--                    HorizontalAlignment="Left" -->
-        <!--                    MinWidth="600" -->
-        <!--                    FormLayout="Horizontal" -->
-        <!--                    RequiredMark="{Binding FormRequiredMark}"> -->
-        <!--             <atom:Form.CustomRequireMark> -->
-        <!--                 <atom:Tag TagColor="Error">required</atom:Tag> -->
-        <!--             </atom:Form.CustomRequireMark> -->
-        <!--             <atom:Form.CustomOptionalMark> -->
-        <!--                 <atom:Tag TagColor="Warning">optional</atom:Tag> -->
-        <!--             </atom:Form.CustomOptionalMark> -->
-        <!--             <atom:FormItem IsRequired="True" LabelText="Field A" FieldName="FieldA" Tooltip="This is a required field"> -->
-        <!--                 <atom:LineEdit PlaceholderText="input placeholder"/> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="Field B" FieldName="Field B" Tooltip="Tooltip with customize icon" -->
-        <!--                            TooltipIcon="{antdicons:AntDesignIconProvider InfoCircleOutlined}"> -->
-        <!--                 <atom:LineEdit PlaceholderText="input placeholder"/> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem> -->
-        <!--                 <atom:SubmitButton/> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!--     </StackPanel> -->
-        <!-- -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Required style" -->
-        <!--     Description="Switch required or optional style with requiredMark." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <StackPanel Orientation="Vertical" Spacing="20"> -->
-        <!--         <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--             <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock> -->
-        <!--             <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormSizeTypeChanged"> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:SizeType.Small}">Small</atom:OptionButton> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:SizeType.Middle}" IsChecked="True">Middle</atom:OptionButton> -->
-        <!--                 <atom:OptionButton Tag="{x:Static atom:SizeType.Large}">Large</atom:OptionButton> -->
-        <!--             </atom:OptionButtonGroup> -->
-        <!--         </StackPanel> -->
-        <!-- -->
-        <!--         <atom:Form LabelColInfo="8*" -->
-        <!--                    WrapperColInfo="16*" -->
-        <!--                    MinWidth="600" -->
-        <!--                    HorizontalAlignment="Left" -->
-        <!--                    SizeType="{Binding FormSizeType}"> -->
-        <!--             <atom:FormItem LabelText="Input" -->
-        <!--                            FieldName="input"> -->
-        <!--                 <atom:LineEdit /> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="InputNumber" -->
-        <!--                            FieldName="inputNumber"> -->
-        <!--                 <atom:NumericUpDown Width="200" /> -->
-        <!--             </atom:FormItem> -->
-        <!--             <atom:FormItem LabelText="Switch" -->
-        <!--                            FieldName="switch"> -->
-        <!--                 <atom:ToggleSwitch /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Mentions" -->
-        <!--                            FieldName="mentions"> -->
-        <!--                 <atom:Mentions /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Select" -->
-        <!--                            FieldName="select"> -->
-        <!--                 <atom:Select HorizontalAlignment="Stretch" Mode="Multiple"> -->
-        <!--                     <atom:SelectOption Header="BBB"/> -->
-        <!--                     <atom:SelectOption Header="AAA"/> -->
-        <!--                 </atom:Select> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="Cascader" -->
-        <!--                            FieldName="cascader"> -->
-        <!--                 <atom:Cascader HorizontalAlignment="Stretch" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="TreeSelect" -->
-        <!--                            FieldName="treeSelect"> -->
-        <!--                 <atom:TreeSelect HorizontalAlignment="Stretch" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="DatePicker" -->
-        <!--                            FieldName="datePicker"> -->
-        <!--                 <atom:DatePicker PlaceholderText="Please select" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem LabelText="RangePicker" -->
-        <!--                            FieldName="rangePicker"> -->
-        <!--                 <atom:RangeDatePicker PlaceholderText="Start date" -->
-        <!--                                       SecondaryPlaceholderText="End date" /> -->
-        <!--             </atom:FormItem> -->
-        <!-- -->
-        <!--             <atom:FormItem> -->
-        <!--                 <atom:SubmitButton /> -->
-        <!--             </atom:FormItem> -->
-        <!--         </atom:Form> -->
-        <!--     </StackPanel> -->
-        <!-- -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!--  <gallery:ShowCaseItem -->
-        <!--     Title="label can wrap" -->
-        <!--     Description="Turn on labelWrap to wrap label if text is long." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="120" -->
-        <!--                WrapperColInfo="*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                LabelWrapping="Wrap"> -->
-        <!--         <atom:FormItem LabelText="Normal label" -->
-        <!--                        FieldName="username" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="A super long label text" -->
-        <!--                        FieldName="password" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="A super long label text" -->
-        <!--                        FieldName="password1"> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem> -->
-        <!--             <atom:SubmitButton /> -->
-        <!--         </atom:FormItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="No block rule" -->
-        <!--     Description="rule with warningOnly will not block form submit." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                Name="NoBlockRuleForm" -->
-        <!--                Submitted="HandleNoBlockFormSubmitted" -->
-        <!--                Validated="HandleNoBlockFormValidated"> -->
-        <!--         <atom:FormItem LabelText="Url" -->
-        <!--                        FieldName="url" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please enter URL!" /> -->
-        <!--                     <atom:FormUrlValidator Message="URL is not a valid url!" WarningOnly="True" /> -->
-        <!--                     <atom:FormStringLengthValidator Message="URL must be at least 6 characters!" -->
-        <!--                                                     MinimumLength="6"/> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem IsValidateContentType="False"> -->
-        <!--            <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--                <atom:SubmitButton /> -->
-        <!--                <atom:Button ButtonType="Default" Click="HandleFillClicked">Fill</atom:Button> -->
-        <!--            </StackPanel> -->
-        <!--         </atom:FormItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Validate Trigger" -->
-        <!--     Description="For the async validation scenario, high frequency of verification will cause backend pressure. You can change the verification timing through validateTrigger, or change the verification frequency through validateDebounce, or set the verification short circuit through validateFirst." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                IsValidateFeedbackEnabled="True"> -->
-        <!--         <atom:FormItem LabelText="Field A" -->
-        <!--                        FieldName="fieldA" -->
-        <!--                        ValidateTrigger="OnBlur"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringLengthValidator Message="Field A must be up to 3 characters!" -->
-        <!--                                                     MaximumLength="3"/> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit PlaceholderText="Validate required onBlur"/> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem LabelText="FieldB" -->
-        <!--                        FieldName="fieldB" -->
-        <!--                        ValidateDebounce="00:00:01"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringLengthValidator Message="Field A must be up to 3 characters!" -->
-        <!--                                                     MaximumLength="3"/> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit PlaceholderText="Validate required debounce after 1s"/> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem LabelText="FieldC" -->
-        <!--                        FieldName="fieldC" -->
-        <!--                        ValidateStrategy="StopWhenFirstFailed"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringLengthValidator Message="Field A must be up to 6 characters!" -->
-        <!--                                                     MaximumLength="6"/> -->
-        <!--                     <atom:FormStringLengthValidator Message="Continue input to exceed 6 chars!" -->
-        <!--                                                     MaximumLength="3"/> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit PlaceholderText="Validate one by one"/> -->
-        <!--         </atom:FormItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Validate Only" -->
-        <!--     Description="Dynamic adjust submit button's disabled status by validateOnly of validateFields." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                FormLayout="Vertical"> -->
-        <!--         <atom:FormItem LabelText="Name" -->
-        <!--                        FieldName="name" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please enter Name!"/> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem LabelText="Age" -->
-        <!--                        FieldName="age" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please enter Age!"/> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem IsValidateContentType="False"> -->
-        <!--             <StackPanel Orientation="Horizontal" Spacing="10"> -->
-        <!--                 <atom:SubmitButton IsWatchValidateResult="True"/> -->
-        <!--                 <atom:ResetButton /> -->
-        <!--             </StackPanel> -->
-        <!--         </atom:FormItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Dynamic Form Item" -->
-        <!--     Description="Add or remove form items dynamically. add function support config initial value." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                Name="DynamicForm"> -->
-        <!--         <atom:FormItem LabelText="Passengers" -->
-        <!--                        FieldName="passengers"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input passenger's name or delete this field!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="Passengers1" -->
-        <!--                        FieldName="passengers1"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input passenger's name or delete this field!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:Button ButtonType="Dashed" HorizontalAlignment="Stretch" Icon="{antdicons:AntDesignIconProvider PlusOutlined}" -->
-        <!--                          Click="HandleAddFormItem"> -->
-        <!--                 Add field -->
-        <!--             </atom:Button> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:Button ButtonType="Dashed" HorizontalAlignment="Stretch" Icon="{antdicons:AntDesignIconProvider PlusOutlined}" -->
-        <!--                          Click="HandleAddFormItemAtHead"> -->
-        <!--                 Add field at head -->
-        <!--             </atom:Button> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:SubmitButton /> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Customized Form Controls" -->
-        <!--     Description="Customized or third-party form controls can be used in Form, too. Controls must implement IFormItemAware:" -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                FormLayout="Inline"> -->
-        <!--         <atom:FormItem LabelText="Price" -->
-        <!--                        FieldName="price" -->
-        <!--                        Width="350"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <gallery:PriceValidator Message="Price must be greater than zero!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <gallery:PriceInput /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:SubmitButton /> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Inline Login Form" -->
-        <!--     Description="Inline login form is often used in navigation bar." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                FormLayout="Inline"> -->
-        <!--         <atom:FormItem LabelText="Username" -->
-        <!--                        FieldName="username"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider UserOutlined}"  -->
-        <!--                            PlaceholderText="Username" -->
-        <!--                            Width="200"/> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="Password" -->
-        <!--                        FieldName="password"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your password!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider LockOutlined}" -->
-        <!--                            PlaceholderText="Password" -->
-        <!--                            Width="200"/> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:SubmitButton IsWatchValidateResult="True" Content="Log in"/> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-        <!-- -->
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Login Form" -->
-        <!--     Description="Normal login form which can contain more elements." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="400" -->
-        <!--                HorizontalAlignment="Left" -->
-        <!--                IsHideItemLabel="True"> -->
-        <!--         <atom:FormItem FieldName="username"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your username!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider UserOutlined}"  -->
-        <!--                            PlaceholderText="Username"/> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem FieldName="password"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your password!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider LockOutlined}" -->
-        <!--                            PlaceholderText="Password"/> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem FieldName="remember"> -->
-        <!--             <atom:CheckBox IsChecked="True">Remember me</atom:CheckBox> -->
-        <!--             <atom:FormItem.Extra> -->
-        <!--                 <atom:HyperLinkButton>Forgot password</atom:HyperLinkButton> -->
-        <!--             </atom:FormItem.Extra> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <StackPanel> -->
-        <!--                 <atom:SubmitButton Content="Log in" HorizontalAlignment="Stretch"/> -->
-        <!--                 <StackPanel Orientation="Horizontal" Spacing="5"> -->
-        <!--                     <TextBlock>Or</TextBlock> -->
-        <!--                     <atom:HyperLinkTextBlock>Register now!</atom:HyperLinkTextBlock> -->
-        <!--                 </StackPanel> -->
-        <!--             </StackPanel> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Registration" -->
-        <!--     Description="Fill in this form to create a new account for you." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="8*" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left"> -->
-        <!--         <atom:FormItem LabelText="Email" -->
-        <!--                        FieldName="email" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your E-mail!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="Password" -->
-        <!--                        FieldName="password" -->
-        <!--                        IsRequired="True" -->
-        <!--                        IsValidateFeedbackEnabled="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your password!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit RevealPassword="False" -->
-        <!--                            PasswordChar="•" -->
-        <!--                            IsEnableRevealButton="True" /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="Confirm Password" -->
-        <!--                        FieldName="confirm" -->
-        <!--                        IsRequired="True" -->
-        <!--                        IsValidateFeedbackEnabled="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please confirm your password!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit RevealPassword="False" -->
-        <!--                            PasswordChar="•" -->
-        <!--                            IsEnableRevealButton="True" /> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormItem LabelText="Nickname" -->
-        <!--                        FieldName="nickname" -->
-        <!--                        IsRequired="True" -->
-        <!--                        Tooltip="What do you want others to call you?"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your nickname!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit /> -->
-        <!--         </atom:FormItem> -->
-        <!-- -->
-        <!--         <atom:FormItem LabelText="Habitual Residence"  -->
-        <!--                        FieldName="residence" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select your habitual residence!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:Cascader HorizontalAlignment="Stretch" IsAllowClear="True"> -->
-        <!--                 <atom:CascaderOption Header="Zhejiang" Value="zhejiang"> -->
-        <!--                     <atom:CascaderOption Header="Hangzhou" Value="hangzhou"> -->
-        <!--                         <atom:CascaderOption Header="West Lake" Value="xihu" /> -->
-        <!--                     </atom:CascaderOption> -->
-        <!--                 </atom:CascaderOption> -->
-        <!--                 <atom:CascaderOption Header="Jiangsu" Value="jiangsu"> -->
-        <!--                     <atom:CascaderOption Header="Nanjing" Value="nanjing"> -->
-        <!--                         <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" /> -->
-        <!--                     </atom:CascaderOption> -->
-        <!--                 </atom:CascaderOption> -->
-        <!--             </atom:Cascader> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="Phone Number"  -->
-        <!--                        FieldName="phone" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input your phone number!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <gallery:PhoneNumber/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="Donation"  -->
-        <!--                        FieldName="donation" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please input donation amount!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <gallery:Donation/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="Website"  -->
-        <!--                        FieldName="website" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input website!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:LineEdit PlaceholderText="website"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="Intro"  -->
-        <!--                        FieldName="intro" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input Intro!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:TextArea IsShowCount="True" MaxLength="100"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="Gender"  -->
-        <!--                        FieldName="gender" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select gender!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:Select DefaultValues="male" HorizontalAlignment="Stretch"> -->
-        <!--                 <atom:SelectOption Header="Male" Value="male"/> -->
-        <!--                 <atom:SelectOption Header="Female" Value="female"/> -->
-        <!--                 <atom:SelectOption Header="Other" Value="other"/> -->
-        <!--             </atom:Select> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="Captcha"  -->
-        <!--                        FieldName="captcha" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormStringNotEmptyValidator Message="Please input the captcha you got!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <gallery:Captcha/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem FieldName="agreement" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:CheckBox IsChecked="True"> -->
-        <!--                <StackPanel Orientation="Horizontal" Spacing="5"> -->
-        <!--                    <TextBlock> -->
-        <!--                        I have read the -->
-        <!--                    </TextBlock> -->
-        <!--                    <atom:HyperLinkTextBlock>agreement</atom:HyperLinkTextBlock> -->
-        <!--                </StackPanel> -->
-        <!--             </atom:CheckBox> -->
-        <!--         </atom:FormItem> -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:SubmitButton Content="Register"/> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--     </atom:Form> -->
-        <!-- </gallery:ShowCaseItem> -->
-
-        <!-- <gallery:ShowCaseItem -->
-        <!--     Title="Time-related Controls" -->
-        <!--     Description="The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server." -->
-        <!--     IsOccupyEntireRow="True"> -->
-        <!--     <atom:Form LabelColInfo="200" -->
-        <!--                WrapperColInfo="16*" -->
-        <!--                MinWidth="600" -->
-        <!--                HorizontalAlignment="Left"> -->
-        <!--         <atom:FormItem LabelText="DatePicker" -->
-        <!--                        FieldName="datePicker" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:DatePicker PlaceholderText="Select date!"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="DatePicker[showTime]" -->
-        <!--                        FieldName="datePickerShowTime" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:DatePicker PlaceholderText="Select date!" IsShowTime="True"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="RangePicker" -->
-        <!--                        FieldName="rangePicker" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:RangeDatePicker PlaceholderText="Start date" -->
-        <!--                                   SecondaryPlaceholderText="End date"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="RangePicker[showTime]" -->
-        <!--                        FieldName="rangePickerShowTime" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:RangeDatePicker PlaceholderText="Start date" -->
-        <!--                                   SecondaryPlaceholderText="End date" -->
-        <!--                                   IsShowTime="True"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormItem LabelText="TimePicker" -->
-        <!--                        FieldName="timePicker" -->
-        <!--                        IsRequired="True"> -->
-        <!--             <atom:FormItem.Validators> -->
-        <!--                 <atom:FormValidatorProvider> -->
-        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
-        <!--                 </atom:FormValidatorProvider> -->
-        <!--             </atom:FormItem.Validators> -->
-        <!--             <atom:TimePicker PlaceholderText="Start time"/> -->
-        <!--         </atom:FormItem> -->
-        <!--          -->
-        <!--         <atom:FormActionsItem> -->
-        <!--             <atom:SubmitButton/> -->
-        <!--         </atom:FormActionsItem> -->
-        <!--     </atom:Form> -->
-        <!--      -->
-        <!-- </gallery:ShowCaseItem> -->
+        <gallery:ShowCaseItem
+            Title="Basic usage"
+            Description="Basic Form data control. Includes layout, initial values, validation and submit."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       Name="BasicForm">
+                <atom:FormItem LabelText="Username"
+                               FieldName="username"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="Password"
+                               FieldName="password"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your password!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit RevealPassword="False"
+                                   PasswordChar="•"
+                                   IsEnableRevealButton="True" />
+                </atom:FormItem>
+                <atom:FormItem FieldName="remember">
+                    <atom:CheckBox>Remember me</atom:CheckBox>
+                </atom:FormItem>
         
+                <atom:FormActionsItem>
+                    <atom:SubmitButton />
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form methods"
+            Description="Call form method with Form."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left">
+                <gallery:NoteFormItem LabelText="Note"
+                                      FieldName="note"
+                                      IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter Note" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </gallery:NoteFormItem>
+                <atom:FormItem LabelText="Gender"
+                               FieldName="gender"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please enter Gender" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Select IsAllowClear="True"
+                                 PlaceholderText="Select a option and change input text above"
+                                 HorizontalAlignment="Stretch">
+                        <atom:SelectOption Header="male" Value="male" />
+                        <atom:SelectOption Header="female" Value="female" />
+                        <atom:SelectOption Header="other" Value="other" />
+                    </atom:Select>
+                </atom:FormItem>
+                <gallery:CustomizeGenderFormItem LabelText="Customize Gender"
+                                                 FieldName="customizeGender"
+                                                 IsRequired="True"
+                                                 IsVisible="False">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter Customize Gender" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </gallery:CustomizeGenderFormItem>
+        
+                <atom:FormActionsItem>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <atom:SubmitButton />
+                        <atom:ResetButton />
+                    </StackPanel>
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form Layout"
+            Description="There are three layout for form: horizontal, vertical, inline."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:TextBlock VerticalAlignment="Center">Form Layout :</atom:TextBlock>
+                    <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormLayoutOptionCheckedChanged">
+                        <atom:OptionButton  Tag="{x:Static atom:FormLayout.Horizontal}">Horizontal</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:FormLayout.Vertical}">Vertical</atom:OptionButton>
+                        <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormLayout.Inline}">Inline</atom:OptionButton>
+                    </atom:OptionButtonGroup>
+                </StackPanel>
+        
+                <atom:Form LabelColInfo="8*"
+                           WrapperColInfo="16*"
+                           Name="LayoutCaseForm"
+                           FormLayout="{Binding FormLayout}"
+                           HorizontalAlignment="Left"
+                           MinWidth="600">
+                    <atom:FormItem LabelText="Field A" FieldName="FieldA">
+                        <atom:LineEdit MinWidth="160"/>
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Field B" FieldName="Field B">
+                        <atom:LineEdit MinWidth="160"/>
+                    </atom:FormItem>
+        
+                    <atom:FormActionsItem>
+                        <atom:SubmitButton />
+                    </atom:FormActionsItem>
+                </atom:Form>
+            </StackPanel>
+        
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form Layout"
+            Description="There are three layout for form: horizontal, vertical, inline."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <atom:Form FormLayout="Horizontal">
+                    <atom:FormItem LabelText="horizontal" FieldName="horizontal"
+                                   LabelColInfo="4*"
+                                   WrapperColInfo="20*"
+                                   IsRequired="True"
+                                   Layout="Horizontal">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="vertical"
+                                   FieldName="vertical"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="vertical2"
+                                   FieldName="vertical2"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                </atom:Form>
+        
+                <atom:Separator/>
+        
+                <atom:Form FormLayout="Vertical">
+        
+                    <atom:FormItem LabelText="vertical"
+                                   FieldName="vertical"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="vertical2"
+                                   FieldName="vertical2"
+                                   IsRequired="True"
+                                   Layout="Vertical">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="horizontal" FieldName="horizontal"
+                                   LabelColInfo="4*"
+                                   WrapperColInfo="20*"
+                                   IsRequired="True"
+                                   Layout="Horizontal">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                </atom:Form>
+            </StackPanel>
+        
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form Layout"
+            Description="There are three layout for form: horizontal, vertical, inline."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="5">
+                <atom:CheckBox IsChecked="{Binding IsFormDisabled, Mode=TwoWay}">Form disabled</atom:CheckBox>
+                <atom:Form LabelColInfo="8*"
+                           WrapperColInfo="16*"
+                           MinWidth="600"
+                           HorizontalAlignment="Left"
+                           IsEnabled="{Binding IsFormDisabled, Converter={x:Static BoolConverters.Not}}">
+                    <atom:FormItem LabelText="Checkbox" FieldName="checkbox">
+                        <atom:CheckBox>Checkbox</atom:CheckBox>
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Radio" FieldName="radio">
+                        <atom:RadioButtonGroup>
+                            <atom:RadioButton>Apple</atom:RadioButton>
+                            <atom:RadioButton>Pear</atom:RadioButton>
+                        </atom:RadioButtonGroup>
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Input" FieldName="input">
+                        <atom:LineEdit/>
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Select" FieldName="select">
+                        <atom:Select HorizontalAlignment="Stretch">
+                            <atom:SelectOption Header="Demo" Value="demo"/>
+                        </atom:Select>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="TreeSelect" FieldName="treeSelect">
+                        <atom:TreeSelect HorizontalAlignment="Stretch">
+                            <atom:TreeItemNode Header="Light" Value="light">
+                                <atom:TreeItemNode Header="Bamboo" Value="bamboo"/>
+                            </atom:TreeItemNode>
+                        </atom:TreeSelect>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Cascader" FieldName="cascader">
+                        <atom:Cascader HorizontalAlignment="Stretch">
+                            <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
+                                <atom:CascaderOption Header="Hangzhou" Value="hangzhou"/>
+                            </atom:CascaderOption>
+                        </atom:Cascader>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="DatePicker" FieldName="datePicker">
+                        <atom:DatePicker PlaceholderText="Select date"/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="RangePicker" FieldName="rangePicker">
+                        <atom:RangeDatePicker PlaceholderText="Start date"
+                                              SecondaryPlaceholderText="End date"/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="InputNumber" FieldName="inputNumber">
+                        <atom:NumericUpDown Width="80"/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="TextArea" FieldName="textArea">
+                        <atom:TextArea Lines="4"/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Switch" FieldName="switch">
+                        <atom:ToggleSwitch/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Upload" FieldName="upload">
+                        <atom:Upload Name="AvatarDemoPictureCardUpload" ListType="PictureCard">
+                            <StackPanel Orientation="Vertical">
+                                <Panel>
+                                    <antdicons:PlusOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}, Converter={x:Static BoolConverters.Not}}"
+                                                            StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"/>
+                                    <antdicons:LoadingOutlined IsVisible="{Binding IsTaskRunning ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"
+                                                               StrokeBrush="{Binding Foreground ,RelativeSource={RelativeSource AncestorType=atom:Upload}}"
+                                                               LoadingAnimation="Spin"/>
+                                </Panel>
+                                <TextBlock Margin="0, 8, 0, 0">Upload</TextBlock>
+                            </StackPanel>
+                        </atom:Upload>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Button" FieldName="button">
+                        <atom:Button>Button</atom:Button>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Slider" FieldName="slider">
+                        <atom:Slider/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="ColorPicker" FieldName="colorPicker">
+                        <atom:ColorPicker/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Rate" FieldName="rate">
+                        <atom:Rate/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Mentions" FieldName="mentions">
+                        <atom:Mentions DefaultValue="@afc163"/>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Tree" FieldName="tree">
+                        <atom:TreeView>
+                            <atom:TreeItem Header="Parent 1" ItemKey="0-0">
+                                <atom:TreeItem Header="Child 1-1" ItemKey="0-0-0">
+                                    <atom:TreeItem Header="Grandchild 1-1-1" ItemKey="0-0-0-0"/>
+                                </atom:TreeItem>
+                                <atom:TreeItem Header="Child 1-2" ItemKey="0-0-1"/>
+                            </atom:TreeItem>
+                            <atom:TreeItem Header="Parent 2" ItemKey="0-1">
+                                <atom:TreeItem Header="Child 2-1" ItemKey="0-1-0"/>
+                            </atom:TreeItem>
+                        </atom:TreeView>
+                    </atom:FormItem>
+                </atom:Form>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Form variants"
+            Description="Change the variant of all components in the form, options include: outlined filled borderless and underlined."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:TextBlock VerticalAlignment="Center">Form variant:</atom:TextBlock>
+                    <atom:Segmented SelectionChanged="HandleFormStyleVariantChanged">
+                        <atom:SegmentedItem IsSelected="True" Tag="{x:Static atom:InputControlStyleVariant.Outline}">outlined</atom:SegmentedItem>
+                        <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Filled}">filled</atom:SegmentedItem>
+                        <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Borderless}">borderless</atom:SegmentedItem>
+                        <atom:SegmentedItem Tag="{x:Static atom:InputControlStyleVariant.Underlined}">underlined</atom:SegmentedItem>
+                    </atom:Segmented>
+                </StackPanel>
+        
+                <atom:Form LabelColInfo="8*"
+                           WrapperColInfo="16*"
+                           MinWidth="600"
+                           HorizontalAlignment="Left"
+                           StyleVariant="{Binding FormStyleVariant}">
+                    <atom:FormItem LabelText="Input"
+                                   FieldName="input"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:LineEdit />
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="InputNumber"
+                                   FieldName="inputNumber"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:NumericUpDown Width="200" />
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="TextArea"
+                                   FieldName="textArea"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:TextArea Lines="4" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Mentions"
+                                   FieldName="mentions"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:Mentions />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Select"
+                                   FieldName="select"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:Select HorizontalAlignment="Stretch" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Cascader"
+                                   FieldName="cascader"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:Cascader HorizontalAlignment="Stretch" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="TreeSelect"
+                                   FieldName="treeSelect"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:TreeSelect HorizontalAlignment="Stretch" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="DatePicker"
+                                   FieldName="datePicker"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:DatePicker PlaceholderText="Please select" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="RangePicker"
+                                   FieldName="rangePicker"
+                                   IsRequired="True">
+                        <atom:FormItem.Validators>
+                            <atom:FormValidatorProvider>
+                                <atom:FormStringNotEmptyValidator Message="Please input!" />
+                            </atom:FormValidatorProvider>
+                        </atom:FormItem.Validators>
+                        <atom:RangeDatePicker PlaceholderText="Start date"
+                                              SecondaryPlaceholderText="End date" />
+                    </atom:FormItem>
+        
+                    <atom:FormActionsItem>
+                        <atom:SubmitButton />
+                    </atom:FormActionsItem>
+                </atom:Form>
+            </StackPanel>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Required style"
+            Description="Switch required or optional style with requiredMark."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock>
+                    <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormRequiredMarkChanged">
+                        <atom:OptionButton IsChecked="True" Tag="{x:Static atom:FormRequiredMark.Default}">Default</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Optional}">Optional</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Hidden}">Hidden</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:FormRequiredMark.Customize}">Customize</atom:OptionButton>
+                    </atom:OptionButtonGroup>
+                </StackPanel>
+        
+                <atom:Form LabelColInfo="8*"
+                           WrapperColInfo="16*"
+                           HorizontalAlignment="Left"
+                           MinWidth="600"
+                           FormLayout="Horizontal"
+                           RequiredMark="{Binding FormRequiredMark}">
+                    <atom:Form.CustomRequireMark>
+                        <atom:Tag TagColor="Error">required</atom:Tag>
+                    </atom:Form.CustomRequireMark>
+                    <atom:Form.CustomOptionalMark>
+                        <atom:Tag TagColor="Warning">optional</atom:Tag>
+                    </atom:Form.CustomOptionalMark>
+                    <atom:FormItem IsRequired="True" LabelText="Field A" FieldName="FieldA" Tooltip="This is a required field">
+                        <atom:LineEdit PlaceholderText="input placeholder"/>
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Field B" FieldName="Field B" Tooltip="Tooltip with customize icon"
+                                   TooltipIcon="{antdicons:AntDesignIconProvider InfoCircleOutlined}">
+                        <atom:LineEdit PlaceholderText="input placeholder"/>
+                    </atom:FormItem>
+                    <atom:FormActionsItem>
+                        <atom:SubmitButton/>
+                    </atom:FormActionsItem>
+                </atom:Form>
+            </StackPanel>
+        
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Required style"
+            Description="Switch required or optional style with requiredMark."
+            IsOccupyEntireRow="True">
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <atom:TextBlock VerticalAlignment="Center">Required Mark :</atom:TextBlock>
+                    <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleFormSizeTypeChanged">
+                        <atom:OptionButton Tag="{x:Static atom:SizeType.Small}">Small</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:SizeType.Middle}" IsChecked="True">Middle</atom:OptionButton>
+                        <atom:OptionButton Tag="{x:Static atom:SizeType.Large}">Large</atom:OptionButton>
+                    </atom:OptionButtonGroup>
+                </StackPanel>
+        
+                <atom:Form LabelColInfo="8*"
+                           WrapperColInfo="16*"
+                           MinWidth="600"
+                           HorizontalAlignment="Left"
+                           SizeType="{Binding FormSizeType}">
+                    <atom:FormItem LabelText="Input"
+                                   FieldName="input">
+                        <atom:LineEdit />
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="InputNumber"
+                                   FieldName="inputNumber">
+                        <atom:NumericUpDown Width="200" />
+                    </atom:FormItem>
+                    <atom:FormItem LabelText="Switch"
+                                   FieldName="switch">
+                        <atom:ToggleSwitch />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Mentions"
+                                   FieldName="mentions">
+                        <atom:Mentions />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Select"
+                                   FieldName="select">
+                        <atom:Select HorizontalAlignment="Stretch" Mode="Multiple">
+                            <atom:SelectOption Header="BBB"/>
+                            <atom:SelectOption Header="AAA"/>
+                        </atom:Select>
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="Cascader"
+                                   FieldName="cascader">
+                        <atom:Cascader HorizontalAlignment="Stretch" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="TreeSelect"
+                                   FieldName="treeSelect">
+                        <atom:TreeSelect HorizontalAlignment="Stretch" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="DatePicker"
+                                   FieldName="datePicker">
+                        <atom:DatePicker PlaceholderText="Please select" />
+                    </atom:FormItem>
+        
+                    <atom:FormItem LabelText="RangePicker"
+                                   FieldName="rangePicker">
+                        <atom:RangeDatePicker PlaceholderText="Start date"
+                                              SecondaryPlaceholderText="End date" />
+                    </atom:FormItem>
+        
+                    <atom:FormActionsItem>
+                        <atom:SubmitButton />
+                    </atom:FormActionsItem>
+                </atom:Form>
+            </StackPanel>
+        
+        </gallery:ShowCaseItem>
+        
+         <gallery:ShowCaseItem
+            Title="label can wrap"
+            Description="Turn on labelWrap to wrap label if text is long."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="120"
+                       WrapperColInfo="*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       LabelWrapping="Wrap">
+                <atom:FormItem LabelText="Normal label"
+                               FieldName="username"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="A super long label text"
+                               FieldName="password"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="A super long label text"
+                               FieldName="password1">
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormActionsItem>
+                    <atom:SubmitButton />
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="No block rule"
+            Description="rule with warningOnly will not block form submit."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       Name="NoBlockRuleForm"
+                       Submitted="HandleNoBlockFormSubmitted"
+                       Validated="HandleNoBlockFormValidated">
+                <atom:FormItem LabelText="Url"
+                               FieldName="url"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter URL!" />
+                            <atom:FormUrlValidator Message="URL is not a valid url!" WarningOnly="True" />
+                            <atom:FormStringLengthValidator Message="URL must be at least 6 characters!"
+                                                            MinimumLength="6"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormActionsItem>
+                   <StackPanel Orientation="Horizontal" Spacing="10">
+                       <atom:SubmitButton />
+                       <atom:Button ButtonType="Default" Click="HandleFillClicked">Fill</atom:Button>
+                   </StackPanel>
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Validate Trigger"
+            Description="For the async validation scenario, high frequency of verification will cause backend pressure. You can change the verification timing through validateTrigger, or change the verification frequency through validateDebounce, or set the verification short circuit through validateFirst."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       IsValidateFeedbackEnabled="True">
+                <atom:FormItem LabelText="Field A"
+                               FieldName="fieldA"
+                               ValidateTrigger="OnBlur">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringLengthValidator Message="Field A must be up to 3 characters!"
+                                                            MaximumLength="3"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="Validate required onBlur"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="FieldB"
+                               FieldName="fieldB"
+                               ValidateDebounce="00:00:01">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringLengthValidator Message="Field A must be up to 3 characters!"
+                                                            MaximumLength="3"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="Validate required debounce after 1s"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="FieldC"
+                               FieldName="fieldC"
+                               ValidateStrategy="StopWhenFirstFailed">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringLengthValidator Message="Field A must be up to 6 characters!"
+                                                            MaximumLength="6"/>
+                            <atom:FormStringLengthValidator Message="Continue input to exceed 6 chars!"
+                                                            MaximumLength="3"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="Validate one by one"/>
+                </atom:FormItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Validate Only"
+            Description="Dynamic adjust submit button's disabled status by validateOnly of validateFields."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       FormLayout="Vertical">
+                <atom:FormItem LabelText="Name"
+                               FieldName="name"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter Name!"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Age"
+                               FieldName="age"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please enter Age!"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormActionsItem>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <atom:SubmitButton IsWatchValidateResult="True"/>
+                        <atom:ResetButton />
+                    </StackPanel>
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Dynamic Form Item"
+            Description="Add or remove form items dynamically. add function support config initial value."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       Name="DynamicForm">
+                <atom:FormItem LabelText="Passengers"
+                               FieldName="passengers">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input passenger's name or delete this field!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="Passengers1"
+                               FieldName="passengers1">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input passenger's name or delete this field!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormActionsItem>
+                    <atom:Button ButtonType="Dashed" HorizontalAlignment="Stretch" Icon="{antdicons:AntDesignIconProvider PlusOutlined}"
+                                 Click="HandleAddFormItem">
+                        Add field
+                    </atom:Button>
+                </atom:FormActionsItem>
+                <atom:FormActionsItem>
+                    <atom:Button ButtonType="Dashed" HorizontalAlignment="Stretch" Icon="{antdicons:AntDesignIconProvider PlusOutlined}"
+                                 Click="HandleAddFormItemAtHead">
+                        Add field at head
+                    </atom:Button>
+                </atom:FormActionsItem>
+                <atom:FormActionsItem>
+                    <atom:SubmitButton />
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Customized Form Controls"
+            Description="Customized or third-party form controls can be used in Form, too. Controls must implement IFormItemAware:"
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       FormLayout="Inline">
+                <atom:FormItem LabelText="Price"
+                               FieldName="price"
+                               Width="350">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <gallery:PriceValidator Message="Price must be greater than zero!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <gallery:PriceInput />
+                </atom:FormItem>
+                <atom:FormActionsItem>
+                    <atom:SubmitButton />
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Inline Login Form"
+            Description="Inline login form is often used in navigation bar."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left"
+                       FormLayout="Inline">
+                <atom:FormItem LabelText="Username"
+                               FieldName="username">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider UserOutlined}"
+                                   PlaceholderText="Username"
+                                   Width="200"/>
+                </atom:FormItem>
+                <atom:FormItem LabelText="Password"
+                               FieldName="password">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your password!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider LockOutlined}"
+                                   PlaceholderText="Password"
+                                   Width="200"/>
+                </atom:FormItem>
+                <atom:FormActionsItem>
+                    <atom:SubmitButton IsWatchValidateResult="True" Content="Log in"/>
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Login Form"
+            Description="Normal login form which can contain more elements."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="400"
+                       HorizontalAlignment="Left"
+                       IsHideItemLabel="True">
+                <atom:FormItem FieldName="username">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your username!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider UserOutlined}"
+                                   PlaceholderText="Username"/>
+                </atom:FormItem>
+                <atom:FormItem FieldName="password">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your password!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit InnerLeftContent="{antdicons:AntDesignIconProvider LockOutlined}"
+                                   PlaceholderText="Password"/>
+                </atom:FormItem>
+                <atom:FormItem FieldName="remember">
+                    <atom:CheckBox IsChecked="True">Remember me</atom:CheckBox>
+                    <atom:FormItem.Extra>
+                        <atom:HyperLinkButton>Forgot password</atom:HyperLinkButton>
+                    </atom:FormItem.Extra>
+                </atom:FormItem>
+                <atom:FormActionsItem>
+                    <StackPanel>
+                        <atom:SubmitButton Content="Log in" HorizontalAlignment="Stretch"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock>Or</TextBlock>
+                            <atom:HyperLinkTextBlock>Register now!</atom:HyperLinkTextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Registration"
+            Description="Fill in this form to create a new account for you."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="8*"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left">
+                <atom:FormItem LabelText="Email"
+                               FieldName="email"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your E-mail!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+                <atom:FormItem LabelText="Password"
+                               FieldName="password"
+                               IsRequired="True"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your password!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit RevealPassword="False"
+                                   PasswordChar="•"
+                                   IsEnableRevealButton="True" />
+                </atom:FormItem>
+                <atom:FormItem LabelText="Confirm Password"
+                               FieldName="confirm"
+                               IsRequired="True"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please confirm your password!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit RevealPassword="False"
+                                   PasswordChar="•"
+                                   IsEnableRevealButton="True" />
+                </atom:FormItem>
+                <atom:FormItem LabelText="Nickname"
+                               FieldName="nickname"
+                               IsRequired="True"
+                               Tooltip="What do you want others to call you?">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your nickname!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit />
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Habitual Residence"
+                               FieldName="residence"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select your habitual residence!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Cascader HorizontalAlignment="Stretch" IsAllowClear="True">
+                        <atom:CascaderOption Header="Zhejiang" Value="zhejiang">
+                            <atom:CascaderOption Header="Hangzhou" Value="hangzhou">
+                                <atom:CascaderOption Header="West Lake" Value="xihu" />
+                            </atom:CascaderOption>
+                        </atom:CascaderOption>
+                        <atom:CascaderOption Header="Jiangsu" Value="jiangsu">
+                            <atom:CascaderOption Header="Nanjing" Value="nanjing">
+                                <atom:CascaderOption Header="Zhong Hua Men" Value="zhonghuamen" />
+                            </atom:CascaderOption>
+                        </atom:CascaderOption>
+                    </atom:Cascader>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Phone Number"
+                               FieldName="phone"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input your phone number!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <gallery:PhoneNumber/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Donation"
+                               FieldName="donation"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please input donation amount!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <gallery:Donation/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Website"
+                               FieldName="website"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input website!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="website"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Intro"
+                               FieldName="intro"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input Intro!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TextArea IsShowCount="True" MaxLength="100"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Gender"
+                               FieldName="gender"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select gender!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Select DefaultValues="male" HorizontalAlignment="Stretch">
+                        <atom:SelectOption Header="Male" Value="male"/>
+                        <atom:SelectOption Header="Female" Value="female"/>
+                        <atom:SelectOption Header="Other" Value="other"/>
+                    </atom:Select>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="Captcha"
+                               FieldName="captcha"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormStringNotEmptyValidator Message="Please input the captcha you got!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <gallery:Captcha/>
+                </atom:FormItem>
+        
+                <atom:FormItem FieldName="agreement"
+                               IsRequired="True">
+                    <atom:CheckBox IsChecked="True">
+                       <StackPanel Orientation="Horizontal" Spacing="5">
+                           <TextBlock>
+                               I have read the
+                           </TextBlock>
+                           <atom:HyperLinkTextBlock>agreement</atom:HyperLinkTextBlock>
+                       </StackPanel>
+                    </atom:CheckBox>
+                </atom:FormItem>
+                <atom:FormActionsItem>
+                    <atom:SubmitButton Content="Register"/>
+                </atom:FormActionsItem>
+            </atom:Form>
+        </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Time-related Controls"
+            Description="The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="200"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left">
+                <atom:FormItem LabelText="DatePicker"
+                               FieldName="datePicker"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select time!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:DatePicker PlaceholderText="Select date!"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="DatePicker[showTime]"
+                               FieldName="datePickerShowTime"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select time!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:DatePicker PlaceholderText="Select date!" IsShowTime="True"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="RangePicker"
+                               FieldName="rangePicker"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select time!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:RangeDatePicker PlaceholderText="Start date"
+                                          SecondaryPlaceholderText="End date"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="RangePicker[showTime]"
+                               FieldName="rangePickerShowTime"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select time!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:RangeDatePicker PlaceholderText="Start date"
+                                          SecondaryPlaceholderText="End date"
+                                          IsShowTime="True"/>
+                </atom:FormItem>
+        
+                <atom:FormItem LabelText="TimePicker"
+                               FieldName="timePicker"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select time!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TimePicker PlaceholderText="Start time"/>
+                </atom:FormItem>
+        
+                <atom:FormActionsItem>
+                    <atom:SubmitButton/>
+                </atom:FormActionsItem>
+            </atom:Form>
+        
+        </gallery:ShowCaseItem>
         
         <gallery:ShowCaseItem
             Title="Customized Validation"
@@ -1127,7 +1126,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="unavailable choice"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Warning"
                                FieldName="warning">
                     <atom:FormItem.Validators>
@@ -1137,7 +1136,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="warning" InnerLeftContent="{antdicons:AntDesignIconProvider SmileOutlined}"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Validating"
                                FieldName="validating"
                                Help="The information is being validated"
@@ -1149,7 +1148,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="I'm the content is being validated"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Success"
                                FieldName="success"
                                IsValidateFeedbackEnabled="True">
@@ -1160,7 +1159,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="I'm the content"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Warning"
                                FieldName="warning"
                                IsValidateFeedbackEnabled="True">
@@ -1171,7 +1170,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="I'm the content"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Fail"
                                FieldName="fail"
                                IsValidateFeedbackEnabled="True"
@@ -1183,7 +1182,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="unavailable choice"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Success"
                                FieldName="success"
                                IsValidateFeedbackEnabled="True">
@@ -1194,7 +1193,7 @@
                     </atom:FormItem.Validators>
                     <atom:DatePicker PlaceholderText="Select date" HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Warning"
                                FieldName="warning"
                                IsValidateFeedbackEnabled="True">
@@ -1205,7 +1204,7 @@
                     </atom:FormItem.Validators>
                     <atom:TimePicker PlaceholderText="Select time" HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Fail"
                                FieldName="fail"
                                IsValidateFeedbackEnabled="True"
@@ -1217,7 +1216,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit PlaceholderText="unavailable choice"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Success"
                                FieldName="success"
                                IsValidateFeedbackEnabled="True">
@@ -1228,7 +1227,7 @@
                     </atom:FormItem.Validators>
                     <atom:DatePicker PlaceholderText="Select date" HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Warning"
                                FieldName="Warning"
                                IsValidateFeedbackEnabled="True">
@@ -1239,7 +1238,7 @@
                     </atom:FormItem.Validators>
                     <atom:TimePicker PlaceholderText="Select time" HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Error"
                                FieldName="error"
                                IsValidateFeedbackEnabled="True">
@@ -1248,11 +1247,11 @@
                             <atom:FormAssertValidator AssertResult="False"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:RangeDatePicker PlaceholderText="Start date" 
+                    <atom:RangeDatePicker PlaceholderText="Start date"
                                           SecondaryPlaceholderText="End date"
                                           HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Error"
                                FieldName="error"
                                IsValidateFeedbackEnabled="True">
@@ -1267,7 +1266,7 @@
                         <atom:SelectOption Header="Option 3" Value="3"/>
                     </atom:Select>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Validating"
                                FieldName="validating"
                                IsValidateFeedbackEnabled="True"
@@ -1282,7 +1281,7 @@
                         <atom:CascaderOption Header="xx" Value="xx"/>
                     </atom:Cascader>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Warning"
                                FieldName="warning"
                                IsValidateFeedbackEnabled="True"
@@ -1297,7 +1296,7 @@
                         <atom:TreeItemNode Header="xx" Value="xx"/>
                     </atom:TreeSelect>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Success"
                                FieldName="success"
                                IsValidateFeedbackEnabled="True">
@@ -1308,7 +1307,7 @@
                     </atom:FormItem.Validators>
                     <atom:NumericUpDown IsAllowClear="True" HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Success"
                                FieldName="success"
                                IsValidateFeedbackEnabled="True">
@@ -1319,7 +1318,7 @@
                     </atom:FormItem.Validators>
                     <atom:LineEdit IsAllowClear="True" PlaceholderText="with allowClear"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Warning"
                                FieldName="warning"
                                IsValidateFeedbackEnabled="True">
@@ -1333,7 +1332,7 @@
                                    IsEnableRevealButton="True"
                                    PlaceholderText="with input password"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Error"
                                FieldName="error"
                                IsValidateFeedbackEnabled="True">
@@ -1348,7 +1347,7 @@
                                    IsEnableRevealButton="True"
                                    PlaceholderText="with input password and allowClear"/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Fail"
                                FieldName="fail"
                                IsValidateFeedbackEnabled="True">
@@ -1359,7 +1358,7 @@
                     </atom:FormItem.Validators>
                     <atom:Mentions/>
                 </atom:FormItem>
-                
+        
                 <atom:FormItem LabelText="Fail"
                                FieldName="fail"
                                Help="Should have something"
@@ -1371,6 +1370,135 @@
                     </atom:FormItem.Validators>
                     <atom:TextArea IsShowCount="True"
                                    IsAllowClear="True"/>
+                </atom:FormItem>
+        
+                <atom:FormActionsItem>
+                    <atom:SubmitButton/>
+                </atom:FormActionsItem>
+            </atom:Form>
+        
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Other Form Controls"
+            Description="Demonstration of validation configuration for form controls which are not shown in the demos above."
+            IsOccupyEntireRow="True">
+            <atom:Form LabelColInfo="200"
+                       WrapperColInfo="16*"
+                       MinWidth="600"
+                       HorizontalAlignment="Left">
+                <atom:FormItem LabelText="Plain Text"
+                               FieldName="plainText">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TextBlock Text="China"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Select"
+                               FieldName="select"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select your country!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Select PlaceholderText="Please select a country" HorizontalAlignment="Stretch">
+                        <atom:SelectOption Header="China" Value="china"/>
+                        <atom:SelectOption Header="U.S.A" Value="usa"/>
+                    </atom:Select>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Select[multiple]"
+                               FieldName="select-multiple"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="Please select your favourite colors!" />
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Select PlaceholderText="Please select favourite colors" 
+                                 HorizontalAlignment="Stretch"
+                                 Mode="Multiple"
+                                 IsAllowClear="True">
+                        <atom:SelectOption Header="Red" Value="red"/>
+                        <atom:SelectOption Header="Green" Value="green"/>
+                        <atom:SelectOption Header="Blue" Value="blue"/>
+                    </atom:Select>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="InputNumber" FieldName="inputNumber">
+                   <atom:FormItemDecorator>
+                       <atom:NumericUpDown Minimum="1" Maximum="10" Width="120"/>
+                       <atom:FormItemDecorator.Extra>
+                           machines
+                       </atom:FormItemDecorator.Extra>
+                   </atom:FormItemDecorator>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Switch" FieldName="switch">
+                    <atom:ToggleSwitch/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Slider" FieldName="slider">
+                    <atom:Slider Minimum="0" Maximum="100"
+                                 Marks="{Binding SliderMarks}"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="radio-group" FieldName="radioGroup">
+                    <atom:RadioButtonGroup>
+                        <atom:RadioButton Tag="a">item 1</atom:RadioButton>
+                        <atom:RadioButton Tag="b">item 2</atom:RadioButton>
+                        <atom:RadioButton Tag="c">item 3</atom:RadioButton>
+                    </atom:RadioButtonGroup>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="option-button-group" FieldName="optionButtonGroup">
+                    <atom:OptionButtonGroup>
+                        <atom:OptionButton Tag="a">item 1</atom:OptionButton>
+                        <atom:OptionButton Tag="b">item 2</atom:OptionButton>
+                        <atom:OptionButton Tag="c">item 3</atom:OptionButton>
+                    </atom:OptionButtonGroup>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Checkbox.Group" FieldName="checkboxGroup">
+                    <atom:CheckBoxGroup Width="150" HorizontalAlignment="Left">
+                        <atom:CheckBox Tag="a">A</atom:CheckBox>
+                        <atom:CheckBox Tag="b" IsChecked="True" IsEnabled="False">B</atom:CheckBox>
+                        <atom:CheckBox Tag="c">C</atom:CheckBox>
+                        <atom:CheckBox Tag="d">D</atom:CheckBox>
+                        <atom:CheckBox Tag="e">E</atom:CheckBox>
+                        <atom:CheckBox Tag="f">F</atom:CheckBox>
+                    </atom:CheckBoxGroup>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Rate" FieldName="rate">
+                    <atom:Rate/>
+                </atom:FormItem>
+
+                <atom:FormItem LabelText="Upload" FieldName="upload"
+                               Help="longgggggggggggggggggggggggggggggggggg">
+                    <atom:Upload>
+                        <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}">Click to Upload</atom:Button>
+                    </atom:Upload>
+                </atom:FormItem>
+                <atom:FormItem LabelText="Dragger" FieldName="dragger"
+                               Margin="0, 10, 0, 0">
+                    <atom:Upload Name="DragAndDropUpload">
+                        <atom:UploadDefaultDropArea/>
+                    </atom:Upload>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="ColorPicker" FieldName="colorPicker"
+                               IsRequired="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormNotNullValidator Message="color is required!"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:ColorPicker/>
                 </atom:FormItem>
                 
                 <atom:FormActionsItem>

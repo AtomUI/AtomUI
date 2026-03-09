@@ -1,0 +1,31 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net">
+    <ControlTheme x:Key="{x:Type atom:FormItemDecorator}" TargetType="atom:FormItemDecorator">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Margin="{TemplateBinding Margin}"
+                        Padding="{TemplateBinding Padding}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{TemplateBinding ItemSpacing}">
+                        <ContentPresenter Name="Content"
+                                          Content="{TemplateBinding Child}"/>
+                        <ContentPresenter Name="Extra"
+                                          Content="{TemplateBinding Extra}"
+                                          ContentTemplate="{TemplateBinding ExtraTemplate}"
+                                          VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                </Border>        
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="ItemSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        
+    </ControlTheme>
+</ResourceDictionary>

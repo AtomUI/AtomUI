@@ -1,6 +1,7 @@
 ﻿using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using Avalonia.Collections;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.ViewModels;
@@ -51,6 +52,14 @@ public class FormViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _formSizeType;
         set => this.RaiseAndSetIfChanged(ref _formSizeType, value);
+    }
+    
+    private List<SliderMark>? _sliderMarks;
+
+    public List<SliderMark>? SliderMarks
+    {
+        get => _sliderMarks;
+        set => this.RaiseAndSetIfChanged(ref _sliderMarks, value);
     }
     
     public FormViewModel(IScreen screen)

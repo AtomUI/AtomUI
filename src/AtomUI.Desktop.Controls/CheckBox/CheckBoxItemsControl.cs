@@ -16,6 +16,9 @@ internal class CheckBoxItemsControl : SelectingItemsControl
     public static readonly StyledProperty<double> ItemSpacingProperty = 
         CheckBoxGroup.ItemSpacingProperty.AddOwner<CheckBoxItemsControl>();
     
+    public static readonly StyledProperty<double> LineSpacingProperty = 
+        CheckBoxGroup.LineSpacingProperty.AddOwner<CheckBoxItemsControl>();
+    
     public static readonly StyledProperty<Orientation> OrientationProperty = 
         StackPanel.OrientationProperty.AddOwner<CheckBoxGroup>();
 
@@ -26,6 +29,12 @@ internal class CheckBoxItemsControl : SelectingItemsControl
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
+    }
+    
+    public double LineSpacing
+    {
+        get => GetValue(LineSpacingProperty);
+        set => SetValue(LineSpacingProperty, value);
     }
     
     public Orientation Orientation

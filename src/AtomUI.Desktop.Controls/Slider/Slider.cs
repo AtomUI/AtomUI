@@ -8,7 +8,6 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -111,7 +110,7 @@ public class Slider : RangeBase,
     public static readonly StyledProperty<bool> IsRangeModeProperty =
         SliderTrack.IsRangeModeProperty.AddOwner<Slider>();
 
-    public static readonly StyledProperty<AvaloniaList<SliderMark>?> MarksProperty =
+    public static readonly StyledProperty<List<SliderMark>?> MarksProperty =
         SliderTrack.MarksProperty.AddOwner<Slider>();
 
     public static readonly StyledProperty<string> ValueFormatTemplateProperty =
@@ -165,7 +164,7 @@ public class Slider : RangeBase,
         set => SetValue(IsRangeModeProperty, value);
     }
 
-    public AvaloniaList<SliderMark>? Marks
+    public List<SliderMark>? Marks
     {
         get => GetValue(MarksProperty);
         set => SetValue(MarksProperty, value);

@@ -779,12 +779,18 @@ public class FormItem : TemplatedControl,
                     if (result == FormValidateResult.Error)
                     {
                         hasError = true;
-                        errorMessages.Add(validator.Message ?? string.Empty);
+                        if (!string.IsNullOrWhiteSpace(validator.Message))
+                        {
+                            errorMessages.Add(validator.Message);
+                        }
                     }
                     else if (result == FormValidateResult.Warning)
                     {
                         hasWarning = true;
-                        warningMessages.Add(validator.Message ?? string.Empty);
+                        if (!string.IsNullOrWhiteSpace(validator.Message))
+                        {
+                            warningMessages.Add(validator.Message);
+                        }
                     }
                 }
             }
@@ -796,12 +802,18 @@ public class FormItem : TemplatedControl,
                     if (result == FormValidateResult.Error)
                     {
                         hasError = true;
-                        errorMessages.Add(validator.Message ?? string.Empty);
+                        if (!string.IsNullOrWhiteSpace(validator.Message))
+                        {
+                            errorMessages.Add(validator.Message);
+                        }
                     }
                     else if (result == FormValidateResult.Warning)
                     {
                         hasWarning = true;
-                        warningMessages.Add(validator.Message ?? string.Empty);
+                        if (!string.IsNullOrWhiteSpace(validator.Message))
+                        {
+                            warningMessages.Add(validator.Message);
+                        }
                     }
                 }
             }
@@ -832,16 +844,23 @@ public class FormItem : TemplatedControl,
                 {
                     hasError       = true;
                     ValidateStatus = FormValidateStatus.Error;
-                    ValidateErrorMessages = new List<string>
+                    if (!string.IsNullOrWhiteSpace(validator.Message))
                     {
-                        validator.Message ?? string.Empty
-                    };
+                        ValidateErrorMessages = new List<string>
+                        {
+                            validator.Message
+                        };
+                    }
+                    
                     break;
                 }
                 if (result == FormValidateResult.Warning)
                 {
                     hasWarning = true;
-                    warningMessages.Add(validator.Message ?? string.Empty);
+                    if (!string.IsNullOrWhiteSpace(validator.Message))
+                    {
+                        warningMessages.Add(validator.Message);
+                    }
                 }
             }
             
@@ -856,7 +875,7 @@ public class FormItem : TemplatedControl,
             
             if (!hasError && !hasWarning)
             {
-                ValidateStatus          = FormValidateStatus.Success;
+                ValidateStatus = FormValidateStatus.Success;
             }
         }
 
@@ -874,7 +893,7 @@ public class FormItem : TemplatedControl,
         }
 
         formItemAware.NotifyValidateStatus(ValidateStatus);
-        HasErrorOrWarningMsg = ValidateErrorMessages?.Count > 0 || ValidateWarningMessages?.Count > 0;
+        HasErrorOrWarningMsg = ValidateErrorMessages?.Count > 0 || ValidateWarningMessages?.Count > 0 || !string.IsNullOrWhiteSpace(Help);
         BuildErrorMessageInlines();
         RaiseEvent(new FormItemValidateChangedEventArgs(ValidateStatus)
         {
@@ -928,7 +947,15 @@ public class FormItem : TemplatedControl,
                     }
                 }
             }
-            ErrorMessageInlines = inlines;
+
+            if (inlines.Count > 0)
+            {
+                ErrorMessageInlines = inlines;
+            }
+            else
+            {
+                ErrorMessageInlines = null;
+            }
         }
     }
 
@@ -1016,6 +1043,10 @@ public class FormItem : TemplatedControl,
             {
                 ItemDeleteButtonIcon = ItemDeleteButtonIconTemplate.Build();
             }
+        }
+        else if (change.Property == HelpProperty)
+        {
+            HasErrorOrWarningMsg = ValidateErrorMessages?.Count > 0 || ValidateWarningMessages?.Count > 0 || !string.IsNullOrWhiteSpace(Help);
         }
     }
 

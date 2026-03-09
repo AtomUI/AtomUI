@@ -39,6 +39,9 @@ internal class SelectHandle : TemplatedControl
     public static readonly StyledProperty<PathIcon?> LoadingIconProperty = 
         AvaloniaProperty.Register<SelectHandle, PathIcon?>(nameof (LoadingIcon));
     
+    public static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
+        AvaloniaProperty.Register<SelectHandle, FormValidateFeedback?>(nameof (FormFeedback));
+    
     public bool IsInputHover
     {
         get => GetValue(IsInputHoverProperty);
@@ -99,6 +102,12 @@ internal class SelectHandle : TemplatedControl
         set => SetValue(LoadingIconProperty, value);
     }
     
+    public FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
+    }
+    
     public static readonly RoutedEvent<RoutedEventArgs> ClearRequestedEvent = 
         RoutedEvent.Register<Button, RoutedEventArgs>(nameof(ClearRequested), RoutingStrategies.Bubble);
     
@@ -107,7 +116,7 @@ internal class SelectHandle : TemplatedControl
         add => AddHandler(ClearRequestedEvent, value);
         remove => RemoveHandler(ClearRequestedEvent, value);
     }
-
+    
     private IconButton? _clearButton;
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

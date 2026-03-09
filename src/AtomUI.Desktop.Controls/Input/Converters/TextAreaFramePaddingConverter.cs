@@ -10,7 +10,7 @@ internal class TextAreaFramePaddingConverter : IValueConverter
     {
         if (value is Thickness padding)
         {
-            return  new Thickness(padding.Left, padding.Top, padding.Right / 3, padding.Bottom);
+            return  new Thickness(padding.Left, padding.Top, padding.Right / 4, padding.Bottom);
         }
         return value;
     }

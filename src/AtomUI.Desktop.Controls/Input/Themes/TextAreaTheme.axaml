@@ -32,7 +32,7 @@
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                         IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
                         <atom:TextAreaDecoratedBox.ContentRightAddOn>
-                            <StackPanel Orientation="Horizontal"
+                            <StackPanel Orientation="Vertical"
                                         Spacing="{DynamicResource {x:Static atom:SharedTokenKey.UniformlyPaddingXXS}}">
                                 <atom:InputClearIconButton
                                     Name="{x:Static atom:TextAreaThemeConstants.ClearButtonPart}"
@@ -41,12 +41,19 @@
                                     VerticalAlignment="Center"
                                     Icon="{Binding ClearIcon, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"/>
                                 <ContentPresenter
+                                    Name="FormFeedBack"
                                     VerticalAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    IsVisible="{Binding FormFeedback, Converter={x:Static ObjectConverters.IsNotNull}, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
+                                    Content="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"/>
+                                <ContentPresenter
+                                    VerticalAlignment="Center"
                                     VerticalContentAlignment="Center"
                                     HorizontalAlignment="Right"
                                     Focusable="False"
                                     Content="{Binding InnerRightContent, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
-                                    IsVisible="{Binding InnerRightContent, RelativeSource={RelativeSource AncestorType=atom:TextArea}, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                    IsVisible="False" />
                             </StackPanel>
                         </atom:TextAreaDecoratedBox.ContentRightAddOn>
 

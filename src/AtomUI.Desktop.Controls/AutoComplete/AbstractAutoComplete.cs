@@ -46,7 +46,8 @@ public class AbstractAutoComplete : TemplatedControl,
                                     IMotionAwareControl,
                                     IFormItemAware,
                                     IInputControlStatusAware,
-                                    IInputControlStyleVariantAware
+                                    IInputControlStyleVariantAware,
+                                    IFormItemFeedbackAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -495,6 +496,9 @@ public class AbstractAutoComplete : TemplatedControl,
             o => o.EffectiveFilter,
             (o, v) => o.EffectiveFilter = v);
     
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+        AvaloniaProperty.Register<AbstractAutoComplete, FormValidateFeedback?>(nameof(FormFeedback));
+    
     private double _itemHeight;
 
     internal double ItemHeight
@@ -549,6 +553,12 @@ public class AbstractAutoComplete : TemplatedControl,
     {
         get => _effectiveFilter;
         set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
+    }
+    
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
     }
     
     protected AvaloniaTextBox? TextInputBox
@@ -1830,6 +1840,7 @@ public class AbstractAutoComplete : TemplatedControl,
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
 
     protected virtual void NotifySetFormValue(string? value)
     {
@@ -1860,6 +1871,11 @@ public class AbstractAutoComplete : TemplatedControl,
         {
             SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
+    }
+    
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
     }
     #endregion
 }

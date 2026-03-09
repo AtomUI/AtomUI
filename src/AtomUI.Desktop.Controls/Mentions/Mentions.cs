@@ -39,7 +39,8 @@ public class Mentions : TemplatedControl,
                         IFormItemAware,
                         IInputControlStatusAware,
                         IInputControlStyleVariantAware,
-                        ISizeTypeAware
+                        ISizeTypeAware,
+                        IFormItemFeedbackAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -426,6 +427,9 @@ public class Mentions : TemplatedControl,
             o => o.PopupPlacement,
             (o, v) => o.PopupPlacement = v);
     
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+        AvaloniaProperty.Register<Mentions, FormValidateFeedback?>(nameof(FormFeedback));
+    
     private string? _optionFilterValue;
     
     internal string? OptionFilterValue
@@ -495,6 +499,12 @@ public class Mentions : TemplatedControl,
                 _candidateList.ItemsSource =  _view;
             }
         }
+    }
+    
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -1329,7 +1339,7 @@ public class Mentions : TemplatedControl,
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-    
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
     private void HandleValueChanged()
     {
         _formValueChanged?.Invoke(this, EventArgs.Empty);
@@ -1364,6 +1374,11 @@ public class Mentions : TemplatedControl,
         {
             SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
+    }
+    
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
     }
     #endregion
 }

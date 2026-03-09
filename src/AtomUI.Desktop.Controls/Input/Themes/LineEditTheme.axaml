@@ -46,7 +46,7 @@
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"
                             HorizontalAlignment="Right"
-                            IsVisible="{TemplateBinding FormFeedback, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            IsVisible="{Binding FormFeedback, Converter={x:Static ObjectConverters.IsNotNull}, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"
                             Content="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:LineEdit}}"/>
                         <ContentPresenter
                             VerticalAlignment="Stretch"

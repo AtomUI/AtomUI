@@ -14,6 +14,9 @@ internal class PickerClearUpButton : TemplatedControl
     
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<PickerClearUpButton, PathIcon?>(nameof(Icon));
+    
+    public static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
+        AvaloniaProperty.Register<SelectHandle, FormValidateFeedback?>(nameof (FormFeedback));
 
     public bool IsInClearMode
     {
@@ -25,6 +28,12 @@ internal class PickerClearUpButton : TemplatedControl
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
+    }
+    
+    public FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
     }
 
     private IconButton? _clearButton;

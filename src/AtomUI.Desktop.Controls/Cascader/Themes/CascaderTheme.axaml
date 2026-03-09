@@ -40,6 +40,7 @@
                                     ContentTemplate="{Binding ContentLeftAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:Cascader}}"
                                     IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:Cascader}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                 <atom:SelectHandle
+                                    FormFeedback="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:Cascader}}"
                                     LoadingIcon="{Binding SuffixLoadingIcon, RelativeSource={RelativeSource AncestorType=atom:Cascader}}"
                                     OpenIndicator="{Binding SuffixIcon, RelativeSource={RelativeSource AncestorType=atom:Cascader}}"
                                     IsFilterEnabled="{Binding IsFilterEnabled, RelativeSource={RelativeSource AncestorType=atom:Cascader}}"

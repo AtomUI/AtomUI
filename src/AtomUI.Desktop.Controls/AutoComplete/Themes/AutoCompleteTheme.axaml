@@ -12,7 +12,7 @@
                 <Panel>
                     <atom:AutoCompleteLineEditBox Name="{x:Static atom:AutoCompleteThemeConstants.TextBoxPart}"
                                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                  IsEnableClearButton="{TemplateBinding IsAllowClear}"
+                                                  IsAllowClear="{TemplateBinding IsAllowClear}"
                                                   StyleVariant="{TemplateBinding StyleVariant}"
                                                   SizeType="{TemplateBinding SizeType}"
                                                   Status="{TemplateBinding Status}"
@@ -28,6 +28,7 @@
                                                   CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                                                   CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                                                   IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                                                  FormFeedback="{TemplateBinding FormFeedback}"
                                                   />
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"

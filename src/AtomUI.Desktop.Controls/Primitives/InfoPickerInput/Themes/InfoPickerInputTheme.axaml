@@ -30,6 +30,7 @@
                             <atom:PickerClearUpButton
                                 IsInClearMode="{Binding IsClearButtonVisible, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                 Icon="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
+                                FormFeedback="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                 IsVisible="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             <ContentPresenter Content="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                               ContentTemplate="{Binding ContentRightAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
@@ -45,7 +46,7 @@
                                   TextWrapping="NoWrap"
                                   AcceptsReturn="False"
                                   Width="{TemplateBinding PreferredInputWidth}"
-                                  IsEnableClearButton="False"
+                                  IsAllowClear="False"
                                   IsEnableRevealButton="False"
                                   Text="{TemplateBinding Text}"
                                   PlaceholderText="{TemplateBinding PlaceholderText}"

@@ -7,7 +7,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -22,7 +21,8 @@ public class TextArea : AvaloniaTextBox,
                         ISizeTypeAware,
                         IFormItemAware,
                         IInputControlStatusAware,
-                        IInputControlStyleVariantAware
+                        IInputControlStyleVariantAware,
+                        IFormItemFeedbackAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -49,8 +49,8 @@ public class TextArea : AvaloniaTextBox,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<TextArea>();
 
-    public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
-        AvaloniaProperty.Register<TextArea, bool>(nameof(IsEnableClearButton));
+    public static readonly StyledProperty<bool> IsAllowClearProperty =
+        AvaloniaProperty.Register<TextArea, bool>(nameof(IsAllowClear));
 
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         AvaloniaProperty.Register<TextArea, string?>(nameof(PlaceholderText));
@@ -119,10 +119,10 @@ public class TextArea : AvaloniaTextBox,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public bool IsEnableClearButton
+    public bool IsAllowClear
     {
-        get => GetValue(IsEnableClearButtonProperty);
-        set => SetValue(IsEnableClearButtonProperty, value);
+        get => GetValue(IsAllowClearProperty);
+        set => SetValue(IsAllowClearProperty, value);
     }
 
     public string? PlaceholderText
@@ -168,6 +168,9 @@ public class TextArea : AvaloniaTextBox,
         AvaloniaProperty.RegisterDirect<TextArea, string?>(nameof(CountText),
             o => o.CountText,
             (o, v) => o.CountText = v);
+    
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+        AvaloniaProperty.Register<TextArea, FormValidateFeedback?>(nameof(FormFeedback));
 
     private bool _isEffectiveShowClearButton;
 
@@ -185,6 +188,12 @@ public class TextArea : AvaloniaTextBox,
         set => SetAndRaise(CountTextProperty, ref _countText, value);
     }
     
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
+    }
+
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => LineEditToken.ID;
 
@@ -227,7 +236,7 @@ public class TextArea : AvaloniaTextBox,
         if (change.Property == AcceptsReturnProperty ||
             change.Property == IsReadOnlyProperty ||
             change.Property == TextProperty ||
-            change.Property == IsEnableClearButtonProperty)
+            change.Property == IsAllowClearProperty)
         {
             ConfigureEffectiveShowClearButton();
         }
@@ -325,7 +334,7 @@ public class TextArea : AvaloniaTextBox,
     
     private void ConfigureEffectiveShowClearButton()
     {
-        if (!IsEnableClearButton)
+        if (!IsAllowClear)
         {
             IsEffectiveShowClearButton = false;
             return;
@@ -415,6 +424,7 @@ public class TextArea : AvaloniaTextBox,
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
     
     private void HandleTextChanged()
     {
@@ -451,6 +461,11 @@ public class TextArea : AvaloniaTextBox,
         {
             SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
+    }
+    
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
     }
     #endregion
 }

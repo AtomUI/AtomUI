@@ -10,7 +10,7 @@
                     <atom:MentionTextArea Name="{x:Static atom:MentionsThemeConstants.TextAreaPart}"
                                           IsAutoSize="{TemplateBinding IsAutoSize}"
                                           IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                          IsEnableClearButton="{TemplateBinding IsAllowClear}"
+                                          IsAllowClear="{TemplateBinding IsAllowClear}"
                                           StyleVariant="{TemplateBinding StyleVariant}"
                                           Status="{TemplateBinding Status}"
                                           InnerLeftContent="{TemplateBinding ContentLeftAddOn}"
@@ -28,7 +28,8 @@
                                           ClearIcon="{TemplateBinding ClearIcon}"
                                           SizeType="{TemplateBinding SizeType}"
                                           Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
-                                          FilterValue="{TemplateBinding OptionFilterValue, Mode=TwoWay}"/>
+                                          FilterValue="{TemplateBinding OptionFilterValue, Mode=TwoWay}"
+                                          FormFeedback="{TemplateBinding FormFeedback}"/>
                     <atom:Popup Name="{x:Static atom:MentionsThemeConstants.PopupPart}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"

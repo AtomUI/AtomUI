@@ -26,7 +26,8 @@ public abstract class InfoPickerInput : TemplatedControl,
                                         IFormItemAware,
                                         IInputControlStatusAware,
                                         IInputControlStyleVariantAware,
-                                        ISizeTypeAware
+                                        ISizeTypeAware,
+                                        IFormItemFeedbackAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> LeftAddOnProperty =
@@ -246,6 +247,9 @@ public abstract class InfoPickerInput : TemplatedControl,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<InfoPickerInput>();
     
+    public static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
+        AvaloniaProperty.Register<InfoPickerInput, FormValidateFeedback?>(nameof (FormFeedback));
+    
     protected string? Text
     {
         get => GetValue(TextProperty);
@@ -285,6 +289,13 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(IsUsedInCompactSpaceProperty);
         set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
+    
+    public FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => InfoPickerInputToken.ID;
 
@@ -627,6 +638,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
     
     protected virtual void NotifyFormValueChanged(object? value)
     {
@@ -660,6 +672,11 @@ public abstract class InfoPickerInput : TemplatedControl,
         {
             SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
+    }
+    
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
     }
     #endregion
 }

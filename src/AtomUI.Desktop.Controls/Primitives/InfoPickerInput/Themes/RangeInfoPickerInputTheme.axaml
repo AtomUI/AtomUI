@@ -37,6 +37,7 @@
                                 IsInClearMode="{Binding IsClearButtonVisible, RelativeSource={RelativeSource AncestorType=atom:InfoPickerInput}}"
                                 Name="{x:Static atom:InfoPickerInputThemeConstants.ClearUpButtonPart}"
                                 Icon="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}"
+                                FormFeedback="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}"
                                 IsVisible="{Binding InfoIcon, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <ContentPresenter
                                 Content="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:RangeInfoPickerInput}}"
@@ -54,7 +55,7 @@
                                       BorderThickness="0"
                                       TextWrapping="NoWrap"
                                       AcceptsReturn="False"
-                                      IsEnableClearButton="False"
+                                      IsAllowClear="False"
                                       IsEnableRevealButton="False"
                                       Width="{TemplateBinding PreferredInputWidth}"
                                       DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
@@ -75,7 +76,7 @@
                             BorderThickness="0"
                             TextWrapping="NoWrap"
                             AcceptsReturn="False"
-                            IsEnableClearButton="False"
+                            IsAllowClear="False"
                             IsEnableRevealButton="False"
                             Width="{TemplateBinding PreferredInputWidth}"
                             DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"

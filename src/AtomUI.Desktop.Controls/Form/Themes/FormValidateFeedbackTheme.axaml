@@ -10,9 +10,7 @@
         </Setter>
         
         <Style Selector="^[ValidateStatus=Default]">
-            <Style Selector="^ /template/ ContentPresenter#Content">
-                <Setter Property="IsVisible" Value="False"/>
-            </Style>
+            <Setter Property="IsVisible" Value="False"/>
         </Style>
         
         <Style Selector="^[ValidateStatus=Success]">

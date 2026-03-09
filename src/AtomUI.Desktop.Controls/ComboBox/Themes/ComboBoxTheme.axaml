@@ -27,10 +27,17 @@
                                  <ContentPresenter Content="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:ComboBox}}"
                                                    ContentTemplate="{Binding ContentLeftAddOnTemplate, RelativeSource={RelativeSource AncestorType=atom:ComboBox}}"
                                                    IsVisible="{Binding ContentRightAddOn, RelativeSource={RelativeSource AncestorType=atom:ComboBox}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                 <ContentPresenter
+                                     Name="FormFeedBack"
+                                     VerticalAlignment="Stretch"
+                                     VerticalContentAlignment="Center"
+                                     HorizontalAlignment="Right"
+                                     IsVisible="{Binding FormFeedback, Converter={x:Static ObjectConverters.IsNotNull}, RelativeSource={RelativeSource AncestorType=atom:ComboBox}}"
+                                     Content="{Binding FormFeedback, RelativeSource={RelativeSource AncestorType=atom:ComboBox}}"/>
                                  <atom:ComboBoxHandle
                                      IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=atom:ComboBox}}"
                                      IsMotionEnabled="{Binding IsMotionEnabled, RelativeSource={RelativeSource AncestorType=atom:ComboBox}}"
-                                     />
+                                 />
                              </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Panel>

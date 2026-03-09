@@ -128,7 +128,7 @@
             Title="With clear icon"
             Description="Input box with the remove icon, click the icon to delete everything.">
             <atom:NumericUpDown PlaceholderText="input with clear icon" Width="400" HorizontalAlignment="Left"
-                                IsEnableClearButton="True" />
+                                IsAllowClear="True" />
         </gallery:ShowCaseItem>
 
         <gallery:ShowCaseItem

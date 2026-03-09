@@ -23,7 +23,9 @@ public class ComboBox : AvaloniaComboBox,
                         IControlSharedTokenResourcesHost,
                         ISizeTypeAware,
                         IInputControlStatusAware,
-                        IInputControlStyleVariantAware
+                        IInputControlStyleVariantAware,
+                        IFormItemAware,
+                        IFormItemFeedbackAware
 {
     #region 公共属性定义
 
@@ -60,8 +62,8 @@ public class ComboBox : AvaloniaComboBox,
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<ComboBox>();
 
-    public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
-        TextBox.IsEnableClearButtonProperty.AddOwner<ComboBox>();
+    public static readonly StyledProperty<bool> IsAllowClearProperty =
+        TextBox.IsAllowClearProperty.AddOwner<ComboBox>();
     
     public static readonly StyledProperty<double> OptionFontSizeProperty =
         AvaloniaProperty.Register<ComboBox, double>(nameof(OptionFontSize));
@@ -138,10 +140,10 @@ public class ComboBox : AvaloniaComboBox,
         set => SetValue(StatusProperty, value);
     }
 
-    public bool IsEnableClearButton
+    public bool IsAllowClear
     {
-        get => GetValue(IsEnableClearButtonProperty);
-        set => SetValue(IsEnableClearButtonProperty, value);
+        get => GetValue(IsAllowClearProperty);
+        set => SetValue(IsAllowClearProperty, value);
     }
     
     public double OptionFontSize
@@ -178,6 +180,9 @@ public class ComboBox : AvaloniaComboBox,
     internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
         AvaloniaProperty.Register<ComboBox, Thickness>(nameof(PopupContentPadding));
     
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+        AvaloniaProperty.Register<ComboBox, FormValidateFeedback?>(nameof(FormFeedback));
+    
     private double _effectivePopupWidth;
 
     internal double EffectivePopupWidth
@@ -198,6 +203,12 @@ public class ComboBox : AvaloniaComboBox,
         set => SetValue(PopupContentPaddingProperty, value);
     }
     
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ComboBoxToken.ID;
 
@@ -210,6 +221,7 @@ public class ComboBox : AvaloniaComboBox,
     {
         this.RegisterResources();
         LogicalChildren.CollectionChanged += HandleCollectionChanged;
+        SelectionBoxItemProperty.Changed.AddClassHandler<ComboBox>((box, args) => box.NotifyFormValueChanged(args.NewValue));
     }
     
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -464,4 +476,60 @@ public class ComboBox : AvaloniaComboBox,
             item = item.Parent;
         }
     }
+    
+    #region 实现 FormItem 接口
+    
+    private EventHandler? _formValueChanged;
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
+    
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return null;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
+        }
+    }
+    
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
+    }
+    #endregion
 }

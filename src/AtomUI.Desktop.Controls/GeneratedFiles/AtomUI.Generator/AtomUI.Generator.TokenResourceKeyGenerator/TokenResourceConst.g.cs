@@ -463,6 +463,9 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey FontSizeSM = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.FontSizeSM");
         public static readonly TokenResourceKey ResizeHandleSize = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.ResizeHandleSize");
         public static readonly TokenResourceKey ResizeIndicatorLineColor = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.ResizeIndicatorLineColor");
+        public static readonly TokenResourceKey RightAddOnPadding = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.RightAddOnPadding");
+        public static readonly TokenResourceKey RightAddOnPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.RightAddOnPaddingLG");
+        public static readonly TokenResourceKey RightAddOnPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.RightAddOnPaddingSM");
     }
 
     public static class ListTokenKey

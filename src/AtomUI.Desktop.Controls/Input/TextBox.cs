@@ -28,8 +28,8 @@ public class TextBox : AvaloniaTextBox,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<TextBox>();
 
-    public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
-        AvaloniaProperty.Register<TextBox, bool>(nameof(IsEnableClearButton));
+    public static readonly StyledProperty<bool> IsAllowClearProperty =
+        AvaloniaProperty.Register<TextBox, bool>(nameof(IsAllowClear));
 
     public static readonly StyledProperty<bool> IsEnableRevealButtonProperty =
         AvaloniaProperty.Register<TextBox, bool>(nameof(IsEnableRevealButton));
@@ -58,10 +58,10 @@ public class TextBox : AvaloniaTextBox,
         set => SetValue(SizeTypeProperty, value);
     }
     
-    public bool IsEnableClearButton
+    public bool IsAllowClear
     {
-        get => GetValue(IsEnableClearButtonProperty);
-        set => SetValue(IsEnableClearButtonProperty, value);
+        get => GetValue(IsAllowClearProperty);
+        set => SetValue(IsAllowClearProperty, value);
     }
 
     public bool IsEnableRevealButton
@@ -133,10 +133,8 @@ public class TextBox : AvaloniaTextBox,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<TextBlock>();
     
-    internal static readonly DirectProperty<TextBox, FormValidateFeedback?> FormFeedbackProperty =
-        AvaloniaProperty.RegisterDirect<TextBox, FormValidateFeedback?>(nameof(FormFeedback),
-            o => o.FormFeedback,
-            (o, v) => o.FormFeedback = v);
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+        AvaloniaProperty.Register<TextBox, FormValidateFeedback?>(nameof(FormFeedback));
 
     private bool _isEffectiveShowClearButton;
 
@@ -180,12 +178,10 @@ public class TextBox : AvaloniaTextBox,
         set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
     
-    private FormValidateFeedback? _formFeedback;
-
     internal FormValidateFeedback? FormFeedback
     {
-        get => _formFeedback;
-        set => SetAndRaise(FormFeedbackProperty, ref _formFeedback, value);
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -222,7 +218,7 @@ public class TextBox : AvaloniaTextBox,
         if (change.Property == AcceptsReturnProperty ||
             change.Property == IsReadOnlyProperty ||
             change.Property == TextProperty ||
-            change.Property == IsEnableClearButtonProperty)
+            change.Property == IsAllowClearProperty)
         {
             ConfigureEffectiveShowClearButton();
         }
@@ -250,7 +246,7 @@ public class TextBox : AvaloniaTextBox,
 
     private void ConfigureEffectiveShowClearButton()
     {
-        if (!IsEnableClearButton)
+        if (!IsAllowClear)
         {
             SetCurrentValue(IsEffectiveShowClearButtonProperty, false);
             return;

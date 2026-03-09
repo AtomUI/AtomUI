@@ -37,8 +37,8 @@
                                 <TextBlock Name="{x:Static atom:FormItemThemeConstants.LabelPart}"
                                            Text="{TemplateBinding LabelText}"
                                            VerticalAlignment="Center"
-                                           TextWrapping="{TemplateBinding LabelWrapping}" 
-                                           MaxWidth="{TemplateBinding LabelMaxWidth}"/>
+                                           TextWrapping="{TemplateBinding LabelWrapping}"
+                                           MaxWidth="{TemplateBinding LabelMaxWidth}" />
                                 <atom:IconPresenter Name="TooltipIconPresenter"
                                                     Icon="{TemplateBinding TooltipIcon}"
                                                     VerticalAlignment="Center"
@@ -62,15 +62,20 @@
                                 <DockPanel LastChildFill="True">
                                     <ContentPresenter Name="ExtraPresenter" DockPanel.Dock="Right"
                                                       Content="{TemplateBinding Extra}"
-                                                      ContentTemplate="{TemplateBinding ExtraTemplate}"/>
+                                                      ContentTemplate="{TemplateBinding ExtraTemplate}" />
                                     <ContentPresenter Name="ContentPresenter"
                                                       Content="{TemplateBinding Content}"
                                                       VerticalAlignment="Center"
-                                                      MaxWidth="{TemplateBinding ContentPresenterMaxWidth}"/>
+                                                      MaxWidth="{TemplateBinding ContentPresenterMaxWidth}" />
                                 </DockPanel>
                             </Border>
-                            <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
-                                       Inlines="{TemplateBinding ErrorMessageInlines}" />
+                            <StackPanel Name="ExtraInfoLayout" Orientation="Vertical">
+                                <TextBlock Name="{x:Static atom:FormItemThemeConstants.ErrorMsgPart}"
+                                           Inlines="{TemplateBinding ErrorMessageInlines}"
+                                           IsVisible="{TemplateBinding ErrorMessageInlines, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <TextBlock Name="HelpText" Text="{TemplateBinding Help}"
+                                           IsVisible="{TemplateBinding Help, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </DockPanel>
@@ -137,7 +142,7 @@
                         Value="True" />
             </Style>
         </Style>
-        
+
         <Style Selector="^[IsShowItemDeleteButton=True]">
             <Style Selector="^ /template/ Panel#ItemDeleteButtonLayout">
                 <Setter Property="IsVisible"
@@ -211,16 +216,35 @@
                 <Setter Property="Spacing"
                         Value="{DynamicResource {x:Static atom:FormTokenKey.FormItemSpacing}}" />
             </Style>
-            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+            <Style Selector="^ /template/ StackPanel#ExtraInfoLayout">
                 <Setter Property="MaxHeight" Value="0" />
             </Style>
         </Style>
 
         <Style Selector="^[HasErrorOrWarningMsg=True]">
-            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
+            <Style Selector="^ /template/ StackPanel#ExtraInfoLayout">
                 <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:FormTokenKey.FormItemSpacing}}" />
             </Style>
 
+        </Style>
+
+        <Style Selector="^[ValidateStatus=Default],^[ValidateStatus=Success],^[ValidateStatus=Validating]">
+            <Style Selector="^ /template/ TextBlock#HelpText">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[ValidateStatus=Warning]">
+            <Style Selector="^ /template/ TextBlock#HelpText">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarningText}}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[ValidateStatus=Error]">
+            <Style Selector="^ /template/ TextBlock#HelpText">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorErrorText}}" />
+            </Style>
         </Style>
 
     </ControlTheme>

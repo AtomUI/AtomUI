@@ -8,20 +8,31 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:IconPresenter Name="OpenIndicator" IsVisible="True"
-                                        Icon="{TemplateBinding OpenIndicator}"
-                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                    <atom:IconPresenter Name="LoadingIndicator"
-                                        Icon="{TemplateBinding LoadingIcon}"
-                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                        IsVisible="False"/>
-                    <antdicons:SearchOutlined Name="SearchIndicator"
-                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                              IsVisible="False" />
-                    <atom:InputClearIconButton
-                        Name="{x:Static atom:SelectHandleThemeConstants.ClearButtonPart}"
-                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                        IsVisible="False" />
+                    <StackPanel Name="IconLayout" Orientation="Horizontal">
+                        <Panel>
+                            <atom:IconPresenter Name="OpenIndicator" IsVisible="True"
+                                                Icon="{TemplateBinding OpenIndicator}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                            <atom:IconPresenter Name="LoadingIndicator"
+                                                Icon="{TemplateBinding LoadingIcon}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                IsVisible="False"/>
+                            <antdicons:SearchOutlined Name="SearchIndicator"
+                                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                      IsVisible="False" />
+                            <atom:InputClearIconButton
+                                Name="{x:Static atom:SelectHandleThemeConstants.ClearButtonPart}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                IsVisible="False" />
+                        </Panel>
+                        <ContentPresenter
+                            Name="FormFeedBack"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding FormFeedback.IsVisible, FallbackValue=false, RelativeSource={RelativeSource TemplatedParent}}"
+                            Content="{TemplateBinding FormFeedback}" />
+                    </StackPanel>
                 </Panel>
             </ControlTemplate>
         </Setter>
@@ -73,6 +84,9 @@
                 </Style>
             </Style>
         </Style>
-
+        
+        <Style Selector="^ /template/ StackPanel#IconLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

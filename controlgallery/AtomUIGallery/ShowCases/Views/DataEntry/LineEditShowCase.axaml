@@ -86,8 +86,8 @@
             Title="With clear icon"
             Description="Input box with the remove icon, click the icon to delete everything.">
             <StackPanel Orientation="Vertical" Spacing="10">
-                <atom:LineEdit PlaceholderText="input with clear icon" IsEnableClearButton="True" />
-                <atom:TextArea PlaceholderText="textarea with clear icon" IsEnableClearButton="True" />
+                <atom:LineEdit PlaceholderText="input with clear icon" IsAllowClear="True" />
+                <atom:TextArea PlaceholderText="textarea with clear icon" IsAllowClear="True" />
             </StackPanel>
         </gallery:ShowCaseItem>
         
@@ -108,7 +108,7 @@
                                HorizontalAlignment="Left"
                                PasswordChar="•"
                                IsEnableRevealButton="True"
-                               IsEnableClearButton="True" />
+                               IsAllowClear="True" />
             </StackPanel>
         </gallery:ShowCaseItem>
         
@@ -223,13 +223,13 @@
                                  HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search"
-                                 IsEnableClearButton="True" />
+                                 IsAllowClear="True" />
                 <atom:SearchEdit PlaceholderText="input search text"
                                  HorizontalAlignment="Stretch"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="搜索一下"
                                  InnerRightContent="{antdicons:AntDesignIconProvider Kind=AudioOutlined, StrokeBrush=#1677ff, Width=16, Height=16}"
-                                 IsEnableClearButton="True"
+                                 IsAllowClear="True"
                                  SizeType="Large" />
                 <atom:Separator Title="Filled" />
                 <atom:SearchEdit PlaceholderText="input search text" HorizontalAlignment="Stretch"
@@ -277,13 +277,13 @@
                                  HorizontalAlignment="Left"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="Search"
-                                 IsEnableClearButton="True" IsEnabled="False" />
+                                 IsAllowClear="True" IsEnabled="False" />
                 <atom:SearchEdit PlaceholderText="input search text"
                                  Width="400"
                                  HorizontalAlignment="Left"
                                  SearchButtonStyle="Primary"
                                  SearchButtonText="搜索一下"
-                                 IsEnableClearButton="True"
+                                 IsAllowClear="True"
                                  SizeType="Large" IsEnabled="False">
                     <atom:SearchEdit.InnerRightContent>
                         <antdicons:AudioOutlined Width="16" Height="16" Name="AudioOutlined">

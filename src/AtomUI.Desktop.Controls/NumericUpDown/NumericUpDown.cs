@@ -59,8 +59,8 @@ public class NumericUpDown : AvaloniaNumericUpDown,
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<NumericUpDown>();
 
-    public static readonly StyledProperty<bool> IsEnableClearButtonProperty =
-        TextBox.IsEnableClearButtonProperty.AddOwner<NumericUpDown>();
+    public static readonly StyledProperty<bool> IsAllowClearProperty =
+        TextBox.IsAllowClearProperty.AddOwner<NumericUpDown>();
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NumericUpDown>();
@@ -145,10 +145,10 @@ public class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(StatusProperty, value);
     }
 
-    public bool IsEnableClearButton
+    public bool IsAllowClear
     {
-        get => GetValue(IsEnableClearButtonProperty);
-        set => SetValue(IsEnableClearButtonProperty, value);
+        get => GetValue(IsAllowClearProperty);
+        set => SetValue(IsAllowClearProperty, value);
     }
     
     public bool IsMotionEnabled
@@ -315,7 +315,7 @@ public class NumericUpDown : AvaloniaNumericUpDown,
         base.OnPropertyChanged(change);
         if (change.Property == IsReadOnlyProperty ||
             change.Property == TextProperty ||
-            change.Property == IsEnableClearButtonProperty)
+            change.Property == IsAllowClearProperty)
         {
             ConfigureEffectiveShowClearButton();
         }
@@ -440,7 +440,7 @@ public class NumericUpDown : AvaloniaNumericUpDown,
 
     private void ConfigureEffectiveShowClearButton()
     {
-        if (!IsEnableClearButton)
+        if (!IsAllowClear)
         {
             SetCurrentValue(IsEffectiveShowClearButtonProperty, false);
             return;

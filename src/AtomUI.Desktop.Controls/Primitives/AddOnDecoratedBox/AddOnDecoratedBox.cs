@@ -643,13 +643,13 @@ internal class AddOnDecoratedBox : ContentControl,
             
             var iconStyle = new Style(x => Selectors.Or(
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
-                 .OfType<PathIcon>(),
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart).Descendant()
-                 .OfType<PathIcon>()));
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status"))));
             
             iconStyle.Add(Icon.FillBrushProperty, SharedTokenKey.ColorWarning);
             iconStyle.Add(Icon.StrokeBrushProperty, SharedTokenKey.ColorWarning);
@@ -663,13 +663,13 @@ internal class AddOnDecoratedBox : ContentControl,
                
             var iconStyle = new Style(x => Selectors.Or(
                 x.Nesting().Descendant().OfType<ContentPresenter>().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
-                 .OfType<PathIcon>(),
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart).Descendant()
-                 .OfType<PathIcon>()));
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status"))));
             
             iconStyle.Add(Icon.FillBrushProperty, SharedTokenKey.ColorError);
             iconStyle.Add(Icon.StrokeBrushProperty, SharedTokenKey.ColorError);
@@ -683,19 +683,19 @@ internal class AddOnDecoratedBox : ContentControl,
                 x.Nesting().Descendant().OfType<ContentPresenter>().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
                  .OfType<Icon>(),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart).Descendant()
-                 .OfType<PathIcon>(),
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart).Descendant()
-                 .OfType<PathIcon>(),
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.LeftAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.LeftAddOnPart).Descendant()
-                 .OfType<PathIcon>(),
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.RightAddOnPart).Descendant()
-                 .OfType<Icon>(),
+                 .OfType<Icon>().Not(p => p.Class("skip-status")),
                 x.Nesting().Descendant().Name(AddOnDecoratedBoxThemeConstants.RightAddOnPart).Descendant()
-                 .OfType<PathIcon>()));
+                 .OfType<PathIcon>().Not(p => p.Class("skip-status"))));
       
             iconStyle.Add(Icon.FillBrushProperty, SharedTokenKey.ColorTextDisabled);
             iconStyle.Add(Icon.StrokeBrushProperty, SharedTokenKey.ColorTextDisabled);

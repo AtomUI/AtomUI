@@ -13,7 +13,7 @@
                 <Panel>
                     <atom:AutoCompleteSearchEditBox Name="{x:Static atom:AutoCompleteThemeConstants.TextBoxPart}"
                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                    IsEnableClearButton="{TemplateBinding IsAllowClear}"
+                                                    IsAllowClear="{TemplateBinding IsAllowClear}"
                                                     StyleVariant="{TemplateBinding StyleVariant}"
                                                     Status="{TemplateBinding Status}"
                                                     CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"

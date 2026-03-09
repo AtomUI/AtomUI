@@ -22,9 +22,10 @@ public class AbstractSelect : TemplatedControl,
                               IMotionAwareControl, 
                               ISizeTypeAware,
                               ICompactSpaceAware,
-                              IFormItemAware,
                               IInputControlStatusAware,
-                              IInputControlStyleVariantAware
+                              IInputControlStyleVariantAware,
+                              IFormItemAware,
+                              IFormItemFeedbackAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsAllowClearProperty =
@@ -444,6 +445,9 @@ public class AbstractSelect : TemplatedControl,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<AbstractSelect>();
     
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+        AvaloniaProperty.Register<AbstractSelect, FormValidateFeedback?>(nameof(FormFeedback));
+    
     private double _itemHeight;
 
     internal double ItemHeight
@@ -550,6 +554,11 @@ public class AbstractSelect : TemplatedControl,
         set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
     
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
+    }
     #endregion
     
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
@@ -898,11 +907,12 @@ public class AbstractSelect : TemplatedControl,
         remove => _formValueChanged -= value;
     }
 
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
 
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
     
     protected virtual void NotifyFormValueChanged(object? value)
     {
@@ -936,6 +946,11 @@ public class AbstractSelect : TemplatedControl,
         {
             SetCurrentValue(StatusProperty, InputControlStatus.Default);
         }
+    }
+    
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
     }
     #endregion
 }

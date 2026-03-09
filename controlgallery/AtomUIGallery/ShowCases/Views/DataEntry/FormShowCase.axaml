@@ -1035,76 +1035,349 @@
         <!--     </atom:Form> -->
         <!-- </gallery:ShowCaseItem> -->
 
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Time-related Controls" -->
+        <!--     Description="The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server." -->
+        <!--     IsOccupyEntireRow="True"> -->
+        <!--     <atom:Form LabelColInfo="200" -->
+        <!--                WrapperColInfo="16*" -->
+        <!--                MinWidth="600" -->
+        <!--                HorizontalAlignment="Left"> -->
+        <!--         <atom:FormItem LabelText="DatePicker" -->
+        <!--                        FieldName="datePicker" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:DatePicker PlaceholderText="Select date!"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="DatePicker[showTime]" -->
+        <!--                        FieldName="datePickerShowTime" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:DatePicker PlaceholderText="Select date!" IsShowTime="True"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="RangePicker" -->
+        <!--                        FieldName="rangePicker" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:RangeDatePicker PlaceholderText="Start date" -->
+        <!--                                   SecondaryPlaceholderText="End date"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="RangePicker[showTime]" -->
+        <!--                        FieldName="rangePickerShowTime" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:RangeDatePicker PlaceholderText="Start date" -->
+        <!--                                   SecondaryPlaceholderText="End date" -->
+        <!--                                   IsShowTime="True"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormItem LabelText="TimePicker" -->
+        <!--                        FieldName="timePicker" -->
+        <!--                        IsRequired="True"> -->
+        <!--             <atom:FormItem.Validators> -->
+        <!--                 <atom:FormValidatorProvider> -->
+        <!--                     <atom:FormNotNullValidator Message="Please select time!" /> -->
+        <!--                 </atom:FormValidatorProvider> -->
+        <!--             </atom:FormItem.Validators> -->
+        <!--             <atom:TimePicker PlaceholderText="Start time"/> -->
+        <!--         </atom:FormItem> -->
+        <!--          -->
+        <!--         <atom:FormActionsItem> -->
+        <!--             <atom:SubmitButton/> -->
+        <!--         </atom:FormActionsItem> -->
+        <!--     </atom:Form> -->
+        <!--      -->
+        <!-- </gallery:ShowCaseItem> -->
+        
+        
         <gallery:ShowCaseItem
-            Title="Time-related Controls"
-            Description="The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server."
+            Title="Customized Validation"
+            Description="We provide properties like validateStatus help hasFeedback to customize your own validate status and message, without using Form."
             IsOccupyEntireRow="True">
             <atom:Form LabelColInfo="200"
                        WrapperColInfo="16*"
                        MinWidth="600"
                        HorizontalAlignment="Left">
-                <atom:FormItem LabelText="DatePicker"
-                               FieldName="datePicker"
-                               IsRequired="True">
+                <atom:FormItem LabelText="Fail"
+                               FieldName="fail"
+                               Help="Should be combination of numbers and alphabets">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select time!" />
+                            <atom:FormAssertValidator AssertResult="False" />
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:DatePicker PlaceholderText="Select date!"/>
+                    <atom:LineEdit PlaceholderText="unavailable choice"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="DatePicker[showTime]"
-                               FieldName="datePickerShowTime"
-                               IsRequired="True">
+                <atom:FormItem LabelText="Warning"
+                               FieldName="warning">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select time!" />
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:DatePicker PlaceholderText="Select date!" IsShowTime="True"/>
+                    <atom:LineEdit PlaceholderText="warning" InnerLeftContent="{antdicons:AntDesignIconProvider SmileOutlined}"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="RangePicker"
-                               FieldName="rangePicker"
-                               IsRequired="True">
+                <atom:FormItem LabelText="Validating"
+                               FieldName="validating"
+                               Help="The information is being validated"
+                               IsValidateFeedbackEnabled="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select time!" />
+                            <atom:FormAssertValidator AssertResult="True" Delay="00:01:00"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:RangeDatePicker PlaceholderText="Start date"
-                                          SecondaryPlaceholderText="End date"/>
+                    <atom:LineEdit PlaceholderText="I'm the content is being validated"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="RangePicker[showTime]"
-                               FieldName="rangePickerShowTime"
-                               IsRequired="True">
+                <atom:FormItem LabelText="Success"
+                               FieldName="success"
+                               IsValidateFeedbackEnabled="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select time!" />
+                            <atom:FormAssertValidator AssertResult="True"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:RangeDatePicker PlaceholderText="Start date"
+                    <atom:LineEdit PlaceholderText="I'm the content"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Warning"
+                               FieldName="warning"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="I'm the content"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Fail"
+                               FieldName="fail"
+                               IsValidateFeedbackEnabled="True"
+                               Help="Should be combination of numbers and alphabets">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="unavailable choice"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Success"
+                               FieldName="success"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:DatePicker PlaceholderText="Select date" HorizontalAlignment="Stretch"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Warning"
+                               FieldName="warning"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TimePicker PlaceholderText="Select time" HorizontalAlignment="Stretch"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Fail"
+                               FieldName="fail"
+                               IsValidateFeedbackEnabled="True"
+                               Help="Should be combination of numbers and alphabets">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit PlaceholderText="unavailable choice"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Success"
+                               FieldName="success"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:DatePicker PlaceholderText="Select date" HorizontalAlignment="Stretch"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Warning"
+                               FieldName="Warning"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TimePicker PlaceholderText="Select time" HorizontalAlignment="Stretch"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Error"
+                               FieldName="error"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:RangeDatePicker PlaceholderText="Start date" 
                                           SecondaryPlaceholderText="End date"
-                                          IsShowTime="True"/>
+                                          HorizontalAlignment="Stretch"/>
                 </atom:FormItem>
                 
-                <atom:FormItem LabelText="TimePicker"
-                               FieldName="timePicker"
-                               IsRequired="True">
+                <atom:FormItem LabelText="Error"
+                               FieldName="error"
+                               IsValidateFeedbackEnabled="True">
                     <atom:FormItem.Validators>
                         <atom:FormValidatorProvider>
-                            <atom:FormNotNullValidator Message="Please select time!" />
+                            <atom:FormAssertValidator AssertResult="False"/>
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
-                    <atom:TimePicker PlaceholderText="Start time"/>
+                    <atom:Select IsAllowClear="True" PlaceholderText="I'm Select" DefaultValues="1" HorizontalAlignment="Stretch">
+                        <atom:SelectOption Header="Option 1" Value="1"/>
+                        <atom:SelectOption Header="Option 2" Value="2"/>
+                        <atom:SelectOption Header="Option 3" Value="3"/>
+                    </atom:Select>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Validating"
+                               FieldName="validating"
+                               IsValidateFeedbackEnabled="True"
+                               Help="Something breaks the rule.">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Cascader IsAllowClear="True" PlaceholderText="I'm Select" HorizontalAlignment="Stretch"
+                                   IsPopupMatchSelectWidth="False">
+                        <atom:CascaderOption Header="xx" Value="xx"/>
+                    </atom:Cascader>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Warning"
+                               FieldName="warning"
+                               IsValidateFeedbackEnabled="True"
+                               Help="Need to be checked.">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TreeSelect IsAllowClear="True" PlaceholderText="I'm TreeSelect" HorizontalAlignment="Stretch"
+                                   IsPopupMatchSelectWidth="False">
+                        <atom:TreeItemNode Header="xx" Value="xx"/>
+                    </atom:TreeSelect>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Success"
+                               FieldName="success"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:NumericUpDown IsAllowClear="True" HorizontalAlignment="Stretch"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Success"
+                               FieldName="success"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit IsAllowClear="True" PlaceholderText="with allowClear"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Warning"
+                               FieldName="warning"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False" WarningOnly="True"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit RevealPassword="False"
+                                   PasswordChar="•"
+                                   IsEnableRevealButton="True"
+                                   PlaceholderText="with input password"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Error"
+                               FieldName="error"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:LineEdit RevealPassword="False"
+                                   PasswordChar="•"
+                                   IsAllowClear="True"
+                                   IsEnableRevealButton="True"
+                                   PlaceholderText="with input password and allowClear"/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Fail"
+                               FieldName="fail"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:Mentions/>
+                </atom:FormItem>
+                
+                <atom:FormItem LabelText="Fail"
+                               FieldName="fail"
+                               Help="Should have something"
+                               IsValidateFeedbackEnabled="True">
+                    <atom:FormItem.Validators>
+                        <atom:FormValidatorProvider>
+                            <atom:FormAssertValidator AssertResult="False"/>
+                        </atom:FormValidatorProvider>
+                    </atom:FormItem.Validators>
+                    <atom:TextArea IsShowCount="True"
+                                   IsAllowClear="True"/>
                 </atom:FormItem>
                 
                 <atom:FormActionsItem>
                     <atom:SubmitButton/>
                 </atom:FormActionsItem>
             </atom:Form>
+            
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

@@ -80,6 +80,61 @@
                 </atom:GroupBox>
             </StackPanel>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Header title template"
+            Description="GroupBox Header supports customizing title content via HeaderTitleTemplate.">
+            <atom:GroupBox HeaderTitle="Build Status"
+                     >
+                <atom:GroupBox.HeaderTitleTemplate>
+                    <DataTemplate >
+                                   
+                        <atom:FlexPanel Background="#EAF2FF"  AlignItems="Center"    Direction="Row"  ColumnSpacing="6">
+                            <Border Width="8"
+                                    Height="8"
+                                    Background="#52C41A"
+                                    CornerRadius="4"
+                                    VerticalAlignment="Center" />
+                            <atom:TextBlock Text="{Binding}"
+                                            FontWeight="SemiBold"
+                                            VerticalAlignment="Center" />
+                        </atom:FlexPanel>
+                    </DataTemplate>
+                </atom:GroupBox.HeaderTitleTemplate>
+                <Panel Height="70">
+                    <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+                        Content of group box
+                    </atom:TextBlock>
+                </Panel>
+            </atom:GroupBox>
+        </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="Header title selector"
+            Description="GroupBox Header title surface can also be customized through template part selectors.">
+            <gallery:ShowCaseItem.Styles>
+                <Style Selector="atom|GroupBox.selector-title-demo">
+                    <Style Selector="^ /template/ Border#PART_HeaderDecorator">
+                        <Setter Property="Background" Value="#FFF1B8" />
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+                    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+                        <Setter Property="Foreground" Value="#AD6800" />
+                    </Style>
+                    <Style Selector="^ /template/ atom|TextBlock#PART_HeaderTextPresenter">
+                        <Setter Property="Foreground" Value="#AD6800" />
+                    </Style>
+                </Style>
+            </gallery:ShowCaseItem.Styles>
+            <atom:GroupBox Classes="selector-title-demo"
+                           HeaderTitle="Warning Zone">
+                <Panel Height="70">
+                    <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+                        Content of group box
+                    </atom:TextBlock>
+                </Panel>
+            </atom:GroupBox>
+        </gallery:ShowCaseItem>
 
         <gallery:ShowCaseItem
             Title="Header Icon"

@@ -84,11 +84,9 @@
         <gallery:ShowCaseItem
             Title="Header title template"
             Description="GroupBox Header supports customizing title content via HeaderTitleTemplate.">
-            <atom:GroupBox HeaderTitle="Build Status"
-                     >
+            <atom:GroupBox HeaderTitle="Build Status">
                 <atom:GroupBox.HeaderTitleTemplate>
                     <DataTemplate >
-                                   
                         <atom:FlexPanel Background="#EAF2FF"  AlignItems="Center"    Direction="Row"  ColumnSpacing="6">
                             <Border Width="8"
                                     Height="8"

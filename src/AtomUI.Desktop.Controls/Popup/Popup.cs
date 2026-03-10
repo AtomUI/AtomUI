@@ -164,6 +164,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private IManagedPopupPositionerPopup? _managedPopupPositioner;
     private bool _ignoreIsOpenChanged;
     private CompositeDisposable? _hostDecoratorDisposable;
+    private CompositeDisposable? _scrollViewerSubscriptions;
 
     // 在翻转之后或者恢复正常，会有属性的变动，在变动之后捕捉动画需要等一个事件循环，保证布局已经生效
     private bool _openAnimating;
@@ -245,6 +246,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private void HandleClosed(object? sender, EventArgs? args)
     {
         _selfLightDismissDisposable?.Dispose();
+        _scrollViewerSubscriptions?.Dispose();
+        _scrollViewerSubscriptions = null;
         if (IgnoreFirstDetected)
         {
             _firstDetected = true;
@@ -254,7 +257,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         {
             if (TopLevel.GetTopLevel(placementTarget) is Window window)
             {
-                window.ScrollOccurred -= HandlePlacementTargetScrolled; 
+                window.ScrollOccurred -= HandlePlacementTargetScrolled;
             }
             if (Host is PopupRoot popupRoot)
             {
@@ -313,8 +316,28 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
             if (TopLevel.GetTopLevel(placementTarget) is Window window)
             {
-                window.ScrollOccurred += HandlePlacementTargetScrolled; 
+                window.ScrollOccurred += HandlePlacementTargetScrolled;
             }
+
+            SubscribeToAncestorScrollViewers(placementTarget);
+        }
+    }
+
+    private void SubscribeToAncestorScrollViewers(Control placementTarget)
+    {
+        _scrollViewerSubscriptions?.Dispose();
+        _scrollViewerSubscriptions = new CompositeDisposable();
+        Visual? ancestor = placementTarget.GetVisualParent();
+        while (ancestor != null)
+        {
+            if (ancestor is ScrollViewer scrollViewer)
+            {
+                var sv = scrollViewer;
+                _scrollViewerSubscriptions.Add(
+                    sv.GetObservable(ScrollViewer.OffsetProperty)
+                      .Subscribe(_ => HandleAncestorScrollChanged()));
+            }
+            ancestor = ancestor.GetVisualParent();
         }
     }
 
@@ -343,11 +366,69 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private void HandlePlacementTargetScrolled(object? sender, EventArgs args)
     {
+        UpdatePopupVisibilityOnScroll();
+    }
+
+    private void HandleAncestorScrollChanged()
+    {
+        UpdatePopupVisibilityOnScroll();
+    }
+
+    private void UpdatePopupVisibilityOnScroll()
+    {
         var placementTarget = GetEffectivePlacementTarget();
-        if (placementTarget != null && Host != null)
+        if (placementTarget == null || Host == null)
         {
+            return;
+        }
+
+        if (IsPlacementTargetOutOfView(placementTarget))
+        {
+            SetPopupHostVisible(false);
+        }
+        else
+        {
+            SetPopupHostVisible(true);
             this.UpdateHostPosition(Host, placementTarget);
         }
+    }
+
+    private void SetPopupHostVisible(bool visible)
+    {
+        if (Host is PopupRoot popupRoot)
+        {
+            popupRoot.IsVisible = visible;
+        }
+        else if (Host is OverlayPopupHost overlayPopupHost)
+        {
+            overlayPopupHost.IsVisible = visible;
+        }
+    }
+
+    private static bool IsPlacementTargetOutOfView(Control placementTarget)
+    {
+        Visual? ancestor = placementTarget.GetVisualParent();
+        while (ancestor != null)
+        {
+            if (ancestor is ScrollViewer scrollViewer)
+            {
+                var transform = placementTarget.TranslatePoint(new Point(0, 0), scrollViewer);
+                if (transform == null)
+                {
+                    return true;
+                }
+
+                var viewport   = new Rect(0, 0, scrollViewer.Viewport.Width, scrollViewer.Viewport.Height);
+                var targetRect = new Rect(transform.Value, placementTarget.Bounds.Size);
+
+                if (!viewport.Intersects(targetRect))
+                {
+                    return true;
+                }
+            }
+            ancestor = ancestor.GetVisualParent();
+        }
+        return false;
     }
 
     private void HandleOverlayPopupHostPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)

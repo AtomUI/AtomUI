@@ -5,8 +5,10 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -26,6 +28,12 @@ public class GroupBox : ContentControl, IControlSharedTokenResourcesHost
 
     public static readonly StyledProperty<IBrush?> HeaderTitleColorProperty =
         AvaloniaProperty.Register<GroupBox, IBrush?>(nameof(HeaderTitleColor));
+    
+    public static readonly StyledProperty<IBrush?> HeaderBackgroundProperty =
+        AvaloniaProperty.Register<GroupBox, IBrush?>(nameof(HeaderBackground));
+    
+    public static readonly StyledProperty<IDataTemplate?> HeaderTitleTemplateProperty =
+        AvaloniaProperty.Register<GroupBox, IDataTemplate?>(nameof(HeaderTitleTemplate));
 
     public static readonly StyledProperty<PathIcon?> HeaderIconProperty =
         AvaloniaProperty.Register<GroupBox, PathIcon?>(nameof(HeaderIcon));
@@ -52,6 +60,18 @@ public class GroupBox : ContentControl, IControlSharedTokenResourcesHost
     {
         get => GetValue(HeaderTitleColorProperty);
         set => SetValue(HeaderTitleColorProperty, value);
+    }
+    
+    public IBrush? HeaderBackground
+    {
+        get => GetValue(HeaderBackgroundProperty);
+        set => SetValue(HeaderBackgroundProperty, value);
+    }
+    
+    public IDataTemplate? HeaderTitleTemplate
+    {
+        get => GetValue(HeaderTitleTemplateProperty);
+        set => SetValue(HeaderTitleTemplateProperty, value);
     }
 
     public PathIcon? HeaderIcon
@@ -94,14 +114,16 @@ public class GroupBox : ContentControl, IControlSharedTokenResourcesHost
     #endregion
     
     private readonly BorderRenderHelper _borderRenderHelper;
-    private Control? _headerContentContainer;
+    private Border? _headerDecorator;
     private Border? _frame;
     private Rect _borderBounds;
+    private Rect _headerBounds;
     
     static GroupBox()
     {
-        AffectsMeasure<GroupBox>(HeaderIconProperty);
-        AffectsRender<GroupBox>(BackgroundProperty);
+        AffectsMeasure<GroupBox>(HeaderIconProperty, HeaderTitleProperty, HeaderTitleTemplateProperty);
+        AffectsRender<GroupBox>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty,
+            HeaderBackgroundProperty);
     }
 
     public GroupBox()
@@ -112,9 +134,18 @@ public class GroupBox : ContentControl, IControlSharedTokenResourcesHost
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        if (_headerDecorator is not null)
+        {
+            _headerDecorator.PropertyChanged -= HandleHeaderDecoratorPropertyChanged;
+        }
+        
         base.OnApplyTemplate(e);
-        _headerContentContainer = e.NameScope.Find<Decorator>(GroupBoxThemeConstants.HeaderContentPart);
-        _frame                  = e.NameScope.Find<Border>(GroupBoxThemeConstants.FramePart);
+        _headerDecorator = e.NameScope.Find<Border>(GroupBoxThemeConstants.HeaderDecoratorPart);
+        _frame           = e.NameScope.Find<Border>(GroupBoxThemeConstants.FramePart);
+        if (_headerDecorator is not null)
+        {
+            _headerDecorator.PropertyChanged += HandleHeaderDecoratorPropertyChanged;
+        }
     }
 
     // protected override Size MeasureOverride(Size availableSize)
@@ -125,11 +156,14 @@ public class GroupBox : ContentControl, IControlSharedTokenResourcesHost
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = LayoutHelper.ArrangeChild(_frame, finalSize, default, BorderThickness);
-        if (_headerContentContainer is not null)
+        _borderBounds = new Rect(finalSize);
+        _headerBounds = default;
+        if (_headerDecorator is not null && _headerDecorator.Bounds.Width > 0 && _headerDecorator.Bounds.Height > 0)
         {
-            var headerOffset = _headerContentContainer.TranslatePoint(new Point(0, 0), this) ?? default;
-            var offsetY      = headerOffset.Y + _headerContentContainer.DesiredSize.Height / 2;
-            _borderBounds = new Rect(new Point(0, offsetY), new Size(finalSize.Width, finalSize.Height - offsetY));
+            var headerOffset = _headerDecorator.TranslatePoint(default, this) ?? default;
+            _headerBounds = new Rect(headerOffset, _headerDecorator.Bounds.Size);
+            var offsetY   = _headerBounds.Y + _headerBounds.Height / 2;
+            _borderBounds = new Rect(new Point(0, offsetY), new Size(finalSize.Width, Math.Max(0, finalSize.Height - offsetY)));
         }
 
         return size;
@@ -147,14 +181,60 @@ public class GroupBox : ContentControl, IControlSharedTokenResourcesHost
                 Background,
                 BorderBrush);
         }
+
+        var headerGapBrush = ResolveHeaderGapBrush();
+        if (_headerBounds.Width <= 0 || _headerBounds.Height <= 0 || IsTransparentBrush(headerGapBrush))
         {
-            // 绘制遮挡
-            if (_headerContentContainer is not null)
+            return;
+        }
+
+        var horizontalGap = HeaderTitleTemplate is null ? Math.Max(BorderThickness.Left, BorderThickness.Right) + 1 : 0;
+        var gapX          = Math.Max(0, _headerBounds.X - horizontalGap);
+        var gapRight      = Math.Min(Bounds.Width, _headerBounds.Right + horizontalGap);
+        var gapRect       = new Rect(gapX, _headerBounds.Y, Math.Max(0, gapRight - gapX), _headerBounds.Height);
+        context.FillRectangle(headerGapBrush!, gapRect);
+    }
+
+    private void HandleHeaderDecoratorPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == Border.BackgroundProperty)
+        {
+            InvalidateVisual();
+        }
+    }
+
+    private IBrush? ResolveHeaderGapBrush()
+    {
+        if (!IsTransparentBrush(_headerDecorator?.Background))
+        {
+            return _headerDecorator?.Background;
+        }
+
+        foreach (var parent in this.GetVisualAncestors())
+        {
+            var background = GetVisualBackground(parent);
+            if (!IsTransparentBrush(background))
             {
-                var headerOffset = _headerContentContainer.TranslatePoint(new Point(0, 0), this) ?? default;
-                var bounds       = new Rect(headerOffset, _headerContentContainer.DesiredSize);
-                context.FillRectangle(Background ?? new SolidColorBrush(Colors.Transparent), bounds);
+                return background;
             }
         }
+
+        return Background;
+    }
+
+    private static IBrush? GetVisualBackground(Visual visual)
+    {
+        return visual switch
+        {
+            Border border => border.Background,
+            Panel panel => panel.Background,
+            TemplatedControl templatedControl => templatedControl.Background,
+            _ => null
+        };
+    }
+
+    private static bool IsTransparentBrush(IBrush? brush)
+    {
+        return brush is null || brush.Opacity <= 0 || brush is ISolidColorBrush solidColorBrush && solidColorBrush.Color.A == 0;
     }
 }

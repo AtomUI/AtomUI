@@ -12,23 +12,38 @@
                     <DockPanel LastChildFill="True">
                         <Panel Name="{x:Static atom:GroupBoxThemeConstants.HeaderContainerPart}"
                                DockPanel.Dock="Top">
-                            <Decorator Name="{x:Static atom:GroupBoxThemeConstants.HeaderContentPart}"
-                                       VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal">
-                                    <atom:IconPresenter
-                                        Name="{x:Static atom:GroupBoxThemeConstants.HeaderIconPresenterPart}"
-                                        IsVisible="{TemplateBinding HeaderIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                        Icon="{TemplateBinding HeaderIcon}" />
-                                    <atom:TextBlock Name="{x:Static atom:GroupBoxThemeConstants.HeaderPresenterPart}"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Text="{TemplateBinding HeaderTitle}"
-                                                    FontSize="{TemplateBinding HeaderFontSize}"
-                                                    Foreground="{TemplateBinding HeaderTitleColor}"
-                                                    FontStyle="{TemplateBinding HeaderFontStyle}"
-                                                    FontWeight="{TemplateBinding HeaderFontWeight}" />
-                                </StackPanel>
-                            </Decorator>
+                            <Border Name="{x:Static atom:GroupBoxThemeConstants.HeaderDecoratorPart}"
+                                    Background="{TemplateBinding HeaderBackground}"
+                                    VerticalAlignment="Center">
+                                <Grid>
+                                    <StackPanel Name="{x:Static atom:GroupBoxThemeConstants.HeaderDefaultHostPart}"
+                                                Orientation="Horizontal"
+                                                IsVisible="{TemplateBinding HeaderTitleTemplate, Converter={x:Static ObjectConverters.IsNull}}">
+                                        <atom:IconPresenter
+                                            Name="{x:Static atom:GroupBoxThemeConstants.HeaderIconPresenterPart}"
+                                            IsVisible="{TemplateBinding HeaderIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                            Icon="{TemplateBinding HeaderIcon}" />
+                                        <atom:TextBlock Name="{x:Static atom:GroupBoxThemeConstants.HeaderTextPresenterPart}"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Center"
+                                                        Text="{TemplateBinding HeaderTitle}"
+                                                        FontSize="{TemplateBinding HeaderFontSize}"
+                                                        Foreground="{TemplateBinding HeaderTitleColor}"
+                                                        FontStyle="{TemplateBinding HeaderFontStyle}"
+                                                        FontWeight="{TemplateBinding HeaderFontWeight}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal"
+                                                IsVisible="{TemplateBinding HeaderTitleTemplate, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <ContentPresenter Name="{x:Static atom:GroupBoxThemeConstants.HeaderPresenterPart}"
+                                                          HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalContentAlignment="Left"
+                                                          VerticalContentAlignment="Center"
+                                                          Content="{TemplateBinding HeaderTitle}"
+                                                          ContentTemplate="{TemplateBinding HeaderTitleTemplate}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                         </Panel>
 
                         <ContentPresenter Name="{x:Static atom:GroupBoxThemeConstants.ContentPresenterPart}"
@@ -44,6 +59,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
+        <Setter Property="HeaderBackground" Value="Transparent" />
         <Setter Property="HeaderTitleColor" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
         <Setter Property="HeaderFontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />
 
@@ -51,8 +67,12 @@
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:GroupBoxTokenKey.HeaderContainerMargin}}" />
         </Style>
 
-        <Style Selector="^ /template/ Decorator#PART_HeaderContent">
-            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:GroupBoxTokenKey.HeaderContentPadding}}" />
+        <Style Selector="^ /template/ StackPanel#PART_HeaderDefaultHost">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:GroupBoxTokenKey.HeaderContentPadding}}" />
+        </Style>
+        
+        <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorText}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_HeaderIconPresenter">
@@ -66,19 +86,19 @@
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:GroupBoxTokenKey.ContentPadding}}" />
 
         <Style Selector="^[HeaderTitlePosition=Left]">
-            <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+            <Style Selector="^ /template/ Border#PART_HeaderDecorator">
                 <Setter Property="HorizontalAlignment" Value="Left" />
             </Style>
         </Style>
 
         <Style Selector="^[HeaderTitlePosition=Center]">
-            <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+            <Style Selector="^ /template/ Border#PART_HeaderDecorator">
                 <Setter Property="HorizontalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[HeaderTitlePosition=Right]">
-            <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+            <Style Selector="^ /template/ Border#PART_HeaderDecorator">
                 <Setter Property="HorizontalAlignment" Value="Right" />
             </Style>
         </Style>

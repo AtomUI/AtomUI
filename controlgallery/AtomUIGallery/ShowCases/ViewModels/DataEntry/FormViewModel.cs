@@ -8,7 +8,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class FormViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Form";
+    public static EntityKey ID = "Form";
     
     public IScreen HostScreen { get; }
     

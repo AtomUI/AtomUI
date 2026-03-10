@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SegmentedViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Segmented";
+    public static EntityKey ID = "Segmented";
     
     public IScreen HostScreen { get; }
     

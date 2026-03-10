@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class QRCodeViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "QRCode";
+    public static EntityKey ID = "QRCode";
 
     public IScreen HostScreen { get; }
 

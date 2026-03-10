@@ -33,7 +33,7 @@ public record CascaderOption : ICascaderOption, ISelectTagTextProvider
 {
     public ITreeNode<ICascaderOption>? ParentNode { get; private set; }
     
-    public TreeNodeKey? ItemKey { get; init; }
+    public EntityKey? ItemKey { get; init; }
     public object? Header { get; set; }
     public PathIcon? Icon { get; set; }
     public bool IsEnabled { get; set; } = true;

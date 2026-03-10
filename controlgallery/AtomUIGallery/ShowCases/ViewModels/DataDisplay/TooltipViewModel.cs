@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class TooltipViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Tooltip";
+    public static EntityKey ID = "Tooltip";
     
     public IScreen HostScreen { get; }
     

@@ -10,7 +10,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class MenuViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Menu";
+    public static EntityKey ID = "Menu";
 
     public IScreen HostScreen { get; }
 

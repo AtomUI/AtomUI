@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class GridViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "GridShowCase";
+    public static EntityKey ID = "GridShowCase";
 
     public IScreen HostScreen { get; }
 

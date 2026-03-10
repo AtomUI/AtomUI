@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class TagViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Tag";
+    public static EntityKey ID = "Tag";
     
     public IScreen HostScreen { get; }
     

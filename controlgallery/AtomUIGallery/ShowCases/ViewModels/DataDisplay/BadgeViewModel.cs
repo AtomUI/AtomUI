@@ -9,7 +9,7 @@ public class BadgeViewModel : ReactiveObject, IRoutableViewModel, IActivatableVi
 {
     public ViewModelActivator Activator { get; }
 
-    public static TreeNodeKey ID = "Badge";
+    public static EntityKey ID = "Badge";
 
     public IScreen HostScreen { get; }
 

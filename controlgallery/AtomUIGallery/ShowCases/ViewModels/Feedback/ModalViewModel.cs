@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ModalViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Modal";
+    public static EntityKey ID = "Modal";
     
     public IScreen HostScreen { get; }
     

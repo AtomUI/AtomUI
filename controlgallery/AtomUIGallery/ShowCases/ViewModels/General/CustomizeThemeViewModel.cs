@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class CustomizeThemeViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "CustomizeTheme";
+    public static EntityKey ID = "CustomizeTheme";
 
     public IScreen HostScreen { get; }
 

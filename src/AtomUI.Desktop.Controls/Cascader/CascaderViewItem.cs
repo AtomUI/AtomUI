@@ -115,7 +115,7 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         set => SetValue(IsCheckBoxEnabledProperty, value);
     }
 
-    public TreeNodeKey? ItemKey { get; set; }
+    public EntityKey? ItemKey { get; set; }
 
     #endregion
 

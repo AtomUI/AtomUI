@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class PaginationViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Pagination";
+    public static EntityKey ID = "Pagination";
 
     public IScreen HostScreen { get; }
 

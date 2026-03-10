@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class TransferViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Transfer";
+    public static EntityKey ID = "Transfer";
     
     public IScreen HostScreen { get; }
     

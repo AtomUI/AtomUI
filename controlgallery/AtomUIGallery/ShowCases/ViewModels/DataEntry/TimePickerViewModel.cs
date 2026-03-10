@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class TimePickerViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "TimePicker";
+    public static EntityKey ID = "TimePicker";
     
     public IScreen HostScreen { get; }
     

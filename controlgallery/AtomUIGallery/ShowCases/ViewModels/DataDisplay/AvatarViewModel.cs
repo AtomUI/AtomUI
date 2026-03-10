@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class AvatarViewModel : ReactiveObject, IRoutableViewModel, IActivatableViewModel
 {
-    public static TreeNodeKey ID = "Avatar";
+    public static EntityKey ID = "Avatar";
     public ViewModelActivator Activator { get; }
     public IScreen HostScreen { get; }
 

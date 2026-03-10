@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class DrawerViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Drawer";
+    public static EntityKey ID = "Drawer";
     
     public IScreen HostScreen { get; }
     

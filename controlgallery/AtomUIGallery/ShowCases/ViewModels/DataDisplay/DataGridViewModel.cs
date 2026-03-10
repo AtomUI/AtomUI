@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public partial class DataGridViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "DataGrid";
+    public static EntityKey ID = "DataGrid";
 
     public IScreen HostScreen { get; }
 

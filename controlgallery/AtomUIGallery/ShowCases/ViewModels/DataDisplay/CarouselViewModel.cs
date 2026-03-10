@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class CarouselViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Carousel";
+    public static EntityKey ID = "Carousel";
     
     public IScreen HostScreen { get; }
     

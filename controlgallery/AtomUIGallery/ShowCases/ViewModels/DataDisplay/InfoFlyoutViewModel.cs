@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class InfoFlyoutViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "InfoFlyout";
+    public static EntityKey ID = "InfoFlyout";
     
     public IScreen HostScreen { get; }
     

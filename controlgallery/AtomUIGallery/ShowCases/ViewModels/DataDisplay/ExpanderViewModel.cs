@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ExpanderViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Expander";
+    public static EntityKey ID = "Expander";
     
     public IScreen HostScreen { get; }
     

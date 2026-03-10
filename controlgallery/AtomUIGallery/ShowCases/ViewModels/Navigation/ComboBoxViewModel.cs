@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ComboBoxViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "ComboBox";
+    public static EntityKey ID = "ComboBox";
     
     public IScreen HostScreen { get; }
     

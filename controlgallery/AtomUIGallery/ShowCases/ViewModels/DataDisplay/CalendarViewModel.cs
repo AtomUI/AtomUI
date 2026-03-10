@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class CalendarViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Calendar";
+    public static EntityKey ID = "Calendar";
 
     public IScreen HostScreen { get; }
 

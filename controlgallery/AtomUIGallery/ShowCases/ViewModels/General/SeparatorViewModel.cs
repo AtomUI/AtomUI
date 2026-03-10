@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SeparatorViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Separator";
+    public static EntityKey ID = "Separator";
     
     public IScreen HostScreen { get; }
     

@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class LineEditViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "LineEdit";
+    public static EntityKey ID = "LineEdit";
     
     public IScreen HostScreen { get; }
     

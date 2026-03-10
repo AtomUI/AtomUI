@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class RadioButtonViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "RadioButton";
+    public static EntityKey ID = "RadioButton";
     
     public IScreen HostScreen { get; }
     

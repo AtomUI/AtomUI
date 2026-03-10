@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class RateViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Rate";
+    public static EntityKey ID = "Rate";
     
     public IScreen HostScreen { get; }
     

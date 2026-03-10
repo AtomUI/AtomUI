@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ColorPickerViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "ColorPicker";
+    public static EntityKey ID = "ColorPicker";
     
     public IScreen HostScreen { get; }
     

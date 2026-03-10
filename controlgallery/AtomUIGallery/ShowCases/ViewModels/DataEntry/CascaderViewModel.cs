@@ -8,7 +8,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class CascaderViewModel : ReactiveObject, IRoutableViewModel, IActivatableViewModel
 {
-    public static TreeNodeKey ID = "Cascader";
+    public static EntityKey ID = "Cascader";
 
     public IScreen HostScreen { get; }
     public ViewModelActivator Activator { get; }

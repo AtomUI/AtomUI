@@ -8,7 +8,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class DatePickerViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "DatePicker";
+    public static EntityKey ID = "DatePicker";
     
     public IScreen HostScreen { get; }
     

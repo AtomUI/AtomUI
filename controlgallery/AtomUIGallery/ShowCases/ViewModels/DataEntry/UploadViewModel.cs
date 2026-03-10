@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class UploadViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Upload";
+    public static EntityKey ID = "Upload";
     
     public IScreen HostScreen { get; }
     

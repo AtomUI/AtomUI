@@ -8,7 +8,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class OsInfoViewModel : ReactiveObject, IRoutableViewModel, IActivatableViewModel
 {
-    public static TreeNodeKey ID = "OsInfo";
+    public static EntityKey ID = "OsInfo";
 
     public IScreen HostScreen { get; }
     public ViewModelActivator Activator { get; }

@@ -8,7 +8,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SliderViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Slider";
+    public static EntityKey ID = "Slider";
     
     public IScreen HostScreen { get; }
     

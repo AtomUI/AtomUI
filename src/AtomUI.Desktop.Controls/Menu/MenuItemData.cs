@@ -12,7 +12,7 @@ public interface IMenuItemData : ITreeNode<IMenuItemData>
 public class MenuItemData : IMenuItemData
 {
     public ITreeNode<IMenuItemData>? ParentNode { get; internal set; }
-    public TreeNodeKey? ItemKey { get; init; }
+    public EntityKey? ItemKey { get; init; }
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
     public bool IsEnabled { get; init; } = true;

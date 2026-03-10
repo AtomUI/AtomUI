@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class TimelineViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Timeline";
+    public static EntityKey ID = "Timeline";
     
     public IScreen HostScreen { get; }
     

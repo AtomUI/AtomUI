@@ -9,7 +9,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class TabControlViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "TabControl";
+    public static EntityKey ID = "TabControl";
 
     public IScreen HostScreen { get; }
 

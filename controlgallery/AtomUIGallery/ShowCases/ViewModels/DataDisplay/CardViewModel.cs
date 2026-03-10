@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class CardViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Card";
+    public static EntityKey ID = "Card";
 
     public IScreen HostScreen { get; }
 

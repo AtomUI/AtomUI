@@ -9,7 +9,7 @@ namespace AtomUI.Desktop.Controls;
 public record TreeItemNode : ITreeItemNode, ISelectTagTextProvider
 {
     public ITreeNode<ITreeItemNode>? ParentNode { get; private set; }
-    public TreeNodeKey? ItemKey { get; init; }
+    public EntityKey? ItemKey { get; init; }
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
     public bool IsEnabled { get; init; } = true;

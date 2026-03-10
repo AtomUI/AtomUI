@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SplitButtonViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "SplitButton";
+    public static EntityKey ID = "SplitButton";
     
     public IScreen HostScreen { get; }
     

@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class GroupBoxViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "GroupBox";
+    public static EntityKey ID = "GroupBox";
     
     public IScreen HostScreen { get; }
     

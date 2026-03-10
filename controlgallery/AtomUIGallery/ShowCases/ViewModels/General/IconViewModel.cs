@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class IconViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Icon";
+    public static EntityKey ID = "Icon";
     
     public IScreen HostScreen { get; }
     

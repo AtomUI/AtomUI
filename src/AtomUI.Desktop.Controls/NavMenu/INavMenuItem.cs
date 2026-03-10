@@ -7,7 +7,7 @@ public interface INavMenuItem: INavMenuElement
     /// <summary>
     /// Gets or sets a value that item key.
     /// </summary>
-    TreeNodeKey? ItemKey { get; }
+    EntityKey? ItemKey { get; }
     
     INavMenuNode? Node { get; }
     

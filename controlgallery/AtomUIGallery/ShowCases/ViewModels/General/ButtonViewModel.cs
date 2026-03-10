@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ButtonViewModel : ReactiveObject, IRoutableViewModel, IActivatableViewModel
 {
-    public static TreeNodeKey ID = "Button";
+    public static EntityKey ID = "Button";
 
     public IScreen HostScreen { get; }
     public ViewModelActivator Activator { get; }

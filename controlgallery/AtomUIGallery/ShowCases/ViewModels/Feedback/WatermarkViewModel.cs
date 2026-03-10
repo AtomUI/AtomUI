@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class WatermarkViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Watermark";
+    public static EntityKey ID = "Watermark";
     
     public IScreen HostScreen { get; }
     

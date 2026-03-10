@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SpinViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Spin";
+    public static EntityKey ID = "Spin";
     
     public IScreen HostScreen { get; }
     

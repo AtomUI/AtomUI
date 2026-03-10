@@ -43,8 +43,8 @@ public class NavMenuNode : AvaloniaObject, INavMenuNode
             o => o.CommandParameter,
             (o, v) => o.CommandParameter = v);
     
-    public static readonly DirectProperty<NavMenuNode, TreeNodeKey?> ItemKeyProperty =
-        AvaloniaProperty.RegisterDirect<NavMenuNode, TreeNodeKey?>(
+    public static readonly DirectProperty<NavMenuNode, EntityKey?> ItemKeyProperty =
+        AvaloniaProperty.RegisterDirect<NavMenuNode, EntityKey?>(
             nameof(ItemKey),
             o => o.ItemKey,
             (o, v) => o.ItemKey = v);
@@ -93,9 +93,9 @@ public class NavMenuNode : AvaloniaObject, INavMenuNode
         set => SetAndRaise(CommandParameterProperty, ref _commandParameter, value);
     }
     
-    private TreeNodeKey? _itemKey;
+    private EntityKey? _itemKey;
 
-    public TreeNodeKey? ItemKey
+    public EntityKey? ItemKey
     {
         get => _itemKey;
         set => SetAndRaise(ItemKeyProperty, ref _itemKey, value);

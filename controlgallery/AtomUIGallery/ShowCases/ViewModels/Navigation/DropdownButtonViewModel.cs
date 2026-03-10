@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class DropdownButtonViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "DropdownButton";
+    public static EntityKey ID = "DropdownButton";
     
     public IScreen HostScreen { get; }
     

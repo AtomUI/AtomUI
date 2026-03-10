@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class EmptyViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Empty";
+    public static EntityKey ID = "Empty";
     
     public IScreen HostScreen { get; }
     

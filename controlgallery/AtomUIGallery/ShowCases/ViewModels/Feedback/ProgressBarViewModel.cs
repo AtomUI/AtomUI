@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ProgressBarViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "ProgressBar";
+    public static EntityKey ID = "ProgressBar";
     
     public IScreen HostScreen { get; }
     

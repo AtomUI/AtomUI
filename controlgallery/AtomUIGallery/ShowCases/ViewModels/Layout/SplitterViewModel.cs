@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SplitterViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "SplitterShowCase";
+    public static EntityKey ID = "SplitterShowCase";
 
     public IScreen HostScreen { get; }
 

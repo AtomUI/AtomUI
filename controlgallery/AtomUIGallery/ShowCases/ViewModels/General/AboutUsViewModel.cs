@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class AboutUsViewModel : ReactiveObject, IRoutableViewModel, IActivatableViewModel
 {
-    public static TreeNodeKey ID = "AboutUs";
+    public static EntityKey ID = "AboutUs";
 
     public IScreen HostScreen { get; }
     public ViewModelActivator Activator { get; }

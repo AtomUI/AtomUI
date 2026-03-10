@@ -6,12 +6,10 @@ using ReactiveUI;
 
 namespace AtomUIGallery.Workspace.ViewModels;
 
-
-
 public class CaseNavigationViewModel : ReactiveObject
 {
-    private Dictionary<TreeNodeKey, Func<IRoutableViewModel>> _showCaseViewModelFactories;
-    private TreeNodeKey? _currentShowCase;
+    private Dictionary<EntityKey, Func<IRoutableViewModel>> _showCaseViewModelFactories;
+    private EntityKey? _currentShowCase;
     private DispatcherTimer _dispatcherTimer;
     
     private INavMenuNode? _selectedItem;
@@ -26,7 +24,7 @@ public class CaseNavigationViewModel : ReactiveObject
 
     public CaseNavigationViewModel(IScreen hostScreen)
     {
-        _showCaseViewModelFactories = new Dictionary<TreeNodeKey, Func<IRoutableViewModel>>();
+        _showCaseViewModelFactories = new Dictionary<EntityKey, Func<IRoutableViewModel>>();
         HostScreen                  = hostScreen;
         RegisterShowCaseViewModels();
         _dispatcherTimer      =  new DispatcherTimer();
@@ -138,7 +136,7 @@ public class CaseNavigationViewModel : ReactiveObject
         _showCaseViewModelFactories.Add(TabControlViewModel.ID, () => new TabControlViewModel(HostScreen));
     }
 
-    public void NavigateTo(TreeNodeKey showCaseId)
+    public void NavigateTo(EntityKey showCaseId)
     {
         if (_currentShowCase is not null && _currentShowCase == showCaseId)
         {

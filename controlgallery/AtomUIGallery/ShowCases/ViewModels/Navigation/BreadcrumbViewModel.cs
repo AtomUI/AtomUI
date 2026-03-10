@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class BreadcrumbViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Breadcrumb";
+    public static EntityKey ID = "Breadcrumb";
     
     public IScreen HostScreen { get; }
     

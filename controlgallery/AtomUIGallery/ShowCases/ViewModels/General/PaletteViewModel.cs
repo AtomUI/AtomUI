@@ -33,7 +33,7 @@ public class PresetPaletteInfoPair
 
 public class PaletteViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Palette";
+    public static EntityKey ID = "Palette";
 
     public IScreen HostScreen { get; }
 

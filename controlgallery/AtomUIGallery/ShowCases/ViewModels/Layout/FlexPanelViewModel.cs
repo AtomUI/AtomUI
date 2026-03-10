@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class FlexPanelViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "FlexPanelShowCase";
+    public static EntityKey ID = "FlexPanelShowCase";
 
     public IScreen HostScreen { get; }
 

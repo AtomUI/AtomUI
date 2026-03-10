@@ -7,7 +7,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class SelectViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Select";
+    public static EntityKey ID = "Select";
     
     public IScreen HostScreen { get; }
     

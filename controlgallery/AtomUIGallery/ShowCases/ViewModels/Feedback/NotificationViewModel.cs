@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class NotificationViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Notification";
+    public static EntityKey ID = "Notification";
     
     public IScreen HostScreen { get; }
     

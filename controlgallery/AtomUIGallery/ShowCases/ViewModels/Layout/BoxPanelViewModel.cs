@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class BoxPanelViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "BoxPanelShowCase";
+    public static EntityKey ID = "BoxPanelShowCase";
     
     public IScreen HostScreen { get; }
     

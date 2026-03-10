@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class PopupConfirmViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "PopupConfirm";
+    public static EntityKey ID = "PopupConfirm";
     
     public IScreen HostScreen { get; }
     

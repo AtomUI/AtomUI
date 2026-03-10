@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class CollapseViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Collapse";
+    public static EntityKey ID = "Collapse";
     
     public IScreen HostScreen { get; }
     

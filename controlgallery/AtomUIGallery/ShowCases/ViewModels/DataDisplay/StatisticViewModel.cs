@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class StatisticViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "Statistic";
+    public static EntityKey ID = "Statistic";
     
     public IScreen HostScreen { get; }
     

@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ToggleSwitchViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "ToggleSwitch";
+    public static EntityKey ID = "ToggleSwitch";
     
     public IScreen HostScreen { get; }
     

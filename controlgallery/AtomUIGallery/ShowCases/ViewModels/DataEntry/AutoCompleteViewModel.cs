@@ -6,7 +6,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class AutoCompleteViewModel : ReactiveObject, IRoutableViewModel, IActivatableViewModel
 {
-    public static TreeNodeKey ID = "AutoComplete";
+    public static EntityKey ID = "AutoComplete";
     public IScreen HostScreen { get; }
     public ViewModelActivator Activator { get; }
 

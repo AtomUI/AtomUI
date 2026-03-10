@@ -8,7 +8,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ButtonSpinnerViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "ButtonSpinner";
+    public static EntityKey ID = "ButtonSpinner";
 
     public IScreen HostScreen { get; }
 

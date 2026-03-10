@@ -79,8 +79,8 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         AvaloniaProperty.RegisterDirect<NavMenuItem, bool>(
             nameof(IsTopLevel), o => o.IsTopLevel);
     
-    public static readonly StyledProperty<TreeNodeKey?> ItemKeyProperty =
-        AvaloniaProperty.Register<NavMenuItem, TreeNodeKey?>(nameof(ItemKey));
+    public static readonly StyledProperty<EntityKey?> ItemKeyProperty =
+        AvaloniaProperty.Register<NavMenuItem, EntityKey?>(nameof(ItemKey));
     
     public ICommand? Command
     {
@@ -159,7 +159,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         private set => SetAndRaise(IsTopLevelProperty, ref _isTopLevel, value);
     }
     
-    public TreeNodeKey? ItemKey
+    public EntityKey? ItemKey
     {
         get => GetValue(ItemKeyProperty);
         set => SetValue(ItemKeyProperty, value);

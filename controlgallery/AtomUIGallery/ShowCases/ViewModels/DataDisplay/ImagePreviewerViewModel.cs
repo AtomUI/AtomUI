@@ -5,7 +5,7 @@ namespace AtomUIGallery.ShowCases.ViewModels;
 
 public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
 {
-    public static TreeNodeKey ID = "ImagePreviewer";
+    public static EntityKey ID = "ImagePreviewer";
     
     public IScreen HostScreen { get; }
     

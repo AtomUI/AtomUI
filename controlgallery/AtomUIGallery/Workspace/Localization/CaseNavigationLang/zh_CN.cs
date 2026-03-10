@@ -51,6 +51,7 @@ internal class zh_CN : LanguageProvider
     public const string DataEntry_ToggleSwitch = "ToggleSwitch 开关";
     public const string DataEntry_Select = "Select 选择器";
     public const string DataEntry_Slider = "Slider 滑动输入条";
+    public const string DataEntry_Transfer = "Transfer 穿梭框";
     public const string DataEntry_TreeSelect = "TreeSelect 树选择";
     public const string DataEntry_Upload = "Upload 上传";
     

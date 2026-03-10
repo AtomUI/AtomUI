@@ -1160,6 +1160,17 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ToolTipShadows = new TokenResourceKey("AtomUI.Desktop.Controls.ToolTip.ToolTipShadows");
     }
 
+    public static class TransferTokenKey
+    {
+        public static readonly TokenResourceKey HeaderHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.HeaderHeight");
+        public static readonly TokenResourceKey ItemHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ItemHeight");
+        public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ItemPadding");
+        public static readonly TokenResourceKey ListHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ListHeight");
+        public static readonly TokenResourceKey ListWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ListWidth");
+        public static readonly TokenResourceKey ListWidthLG = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ListWidthLG");
+        public static readonly TokenResourceKey TransferHeaderVerticalPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.TransferHeaderVerticalPadding");
+    }
+
     public static class TreeSelectTokenKey
     {
         public static readonly TokenResourceKey MinPopupWidth = new TokenResourceKey("AtomUI.Desktop.Controls.TreeSelect.MinPopupWidth");

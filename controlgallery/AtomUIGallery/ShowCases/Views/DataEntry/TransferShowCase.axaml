@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AtomUIGallery.ShowCases.Views.TransferShowCase"
+             xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:showCase="clr-namespace:AtomUIGallery.ShowCases.Views">
+    <gallery:ShowCasePanel>
+        <gallery:ShowCaseItem
+            Title="Basic"
+            Description="The most basic usage.">
+        </gallery:ShowCaseItem>
+    </gallery:ShowCasePanel>
+</UserControl>

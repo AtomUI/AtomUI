@@ -29,26 +29,17 @@ public class ToggleSwitch : ToggleButton,
                             IFormItemAware
 {
     #region 公共属性定义
-
-    /// <summary>
-    /// Defines the <see cref="GrooveBackground" /> property.
-    /// </summary>
+    
     public static readonly StyledProperty<IBrush?> GrooveBackgroundProperty =
         AvaloniaProperty.Register<ToggleSwitch, IBrush?>(
             nameof(GrooveBackground));
 
-    /// <summary>
-    /// Defines the <see cref="OnContent" /> property.
-    /// </summary>
     public static readonly StyledProperty<object?> OnContentProperty =
         AvaloniaProperty.Register<ToggleSwitch, object?>(nameof(OnContent));
     
     public static readonly StyledProperty<IDataTemplate?> OnContentTemplateProperty = 
         AvaloniaProperty.Register<ToggleSwitch, IDataTemplate?>(nameof(OnContentTemplate));
     
-    /// <summary>
-    /// Defines the <see cref="OffContent" /> property.
-    /// </summary>
     public static readonly StyledProperty<object?> OffContentProperty =
         AvaloniaProperty.Register<ToggleSwitch, object?>(nameof(OffContent));
 
@@ -140,7 +131,7 @@ public class ToggleSwitch : ToggleButton,
 
     #endregion
 
-    #region 私有属性定义
+    #region 内部属性定义
 
     internal static readonly StyledProperty<double> InnerMaxMarginProperty =
         AvaloniaProperty.Register<ToggleSwitch, double>(nameof(InnerMaxMargin));

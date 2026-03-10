@@ -51,6 +51,7 @@ internal class en_US : LanguageProvider
     public const string DataEntry_ToggleSwitch = "ToggleSwitch";
     public const string DataEntry_Select = "Select";
     public const string DataEntry_Slider = "Slider";
+    public const string DataEntry_Transfer = "Transfer";
     public const string DataEntry_TreeSelect = "TreeSelect";
     public const string DataEntry_Upload = "Upload";
     

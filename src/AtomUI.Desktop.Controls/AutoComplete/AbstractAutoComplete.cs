@@ -648,6 +648,7 @@ public class AbstractAutoComplete : TemplatedControl,
     private bool _filterInAction;
     private int _ignoreValuePropertyChange;
     private bool _ignorePropertyChange;
+    private bool _ignoreTextInputBoxChange;
     private bool _popupHasOpened;
     private int _textSelectionStart;
     private CompositeDisposable? _subscriptionsOnOpen;
@@ -1009,10 +1010,10 @@ public class AbstractAutoComplete : TemplatedControl,
         // Update the interface and values only as necessary
         UpdateValue(newText, userInitiated);
         
-        if (minimumLengthReached)
+        if (minimumLengthReached && userInitiated)
         {
             _ignoreTextSelectionChange = true;
-        
+
             if (_delayTimer != null)
             {
                 _delayTimer.Start();
@@ -1059,7 +1060,9 @@ public class AbstractAutoComplete : TemplatedControl,
         if ((userInitiated == null || userInitiated == false) && TextInputBox != null && TextInputBox.Text != value)
         {
             _ignoreValuePropertyChange++;
+            _ignoreTextInputBoxChange = true;
             TextInputBox.Text = value ?? string.Empty;
+            _ignoreTextInputBoxChange = false;
         
             // Text dependency property value was set, fire event
             if (!callTextChanged && (Value == value || Value == null))
@@ -1500,6 +1503,11 @@ public class AbstractAutoComplete : TemplatedControl,
     
     protected virtual void HandleTextInputBoxTextChanged()
     {
+        if (_ignoreTextInputBoxChange)
+        {
+            return;
+        }
+
         //Uses Dispatcher.Post to allow the TextInputBox selection to update before processing
         Dispatcher.UIThread.Post(() =>
         {

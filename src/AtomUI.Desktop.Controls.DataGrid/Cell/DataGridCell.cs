@@ -16,6 +16,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -269,9 +270,14 @@ public class DataGridCell : ContentControl
             return;
         }
 
+        // Check if the click originated from a focusable child control (e.g., AutoComplete
+        // whose inner TextBox explicitly resets e.Handled to false). In that case, we should
+        // not steal focus from the child, but still update DataGrid row/cell state.
+        var focusableChildClicked = HasFocusableChildAtSource(e.Source as Visual);
+
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
-            if (OwningGrid.IsTabStop)
+            if (!focusableChildClicked && OwningGrid.IsTabStop)
             {
                 OwningGrid.Focus();
             }
@@ -281,12 +287,20 @@ public class DataGridCell : ContentControl
                 var handled = false;
                 if (OwningColumn != null && OwningColumn.IsEditable())
                 {
-                    handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !handledByChild);
+                    // When a focusable child was clicked, disable edit mode transitions
+                    // to prevent DataGrid's focus management from interfering with
+                    // the natural focus transfer between child controls.
+                    var allowEdit = !handledByChild && !focusableChildClicked;
+                    handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, allowEdit);
                 }
-                
+
                 // Do not handle PointerPressed with touch or pen,
                 // so we can start scroll gesture on the same event.
-                if (e.Pointer.Type != PointerType.Touch && e.Pointer.Type != PointerType.Pen)
+                // When a focusable child was clicked, do not mark the event as handled
+                // to allow Avalonia's default focus management to work correctly,
+                // ensuring proper :focus-within pseudo-class transitions.
+                if (e.Pointer.Type != PointerType.Touch && e.Pointer.Type != PointerType.Pen
+                    && !focusableChildClicked)
                 {
                     e.Handled = e.Handled || handled;
                 }
@@ -294,7 +308,7 @@ public class DataGridCell : ContentControl
         }
         else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
         {
-            if (OwningGrid.IsTabStop)
+            if (!focusableChildClicked && OwningGrid.IsTabStop)
             {
                 OwningGrid.Focus();
             }
@@ -302,9 +316,30 @@ public class DataGridCell : ContentControl
             if (OwningRow != null)
             {
                 var handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, ColumnIndex, OwningRow.Slot, !handledByChild);
-                e.Handled = e.Handled || handled;
+                if (!focusableChildClicked)
+                {
+                    e.Handled = e.Handled || handled;
+                }
             }
         }
+    }
+
+    /// <summary>
+    /// Walks up the visual tree from the event source to this cell, checking if any ancestor
+    /// is a focusable input element. This handles cases where child controls (e.g., AutoComplete)
+    /// don't mark PointerPressed as handled but still need to retain keyboard focus.
+    /// </summary>
+    private bool HasFocusableChildAtSource(Visual? source)
+    {
+        while (source != null && source != this)
+        {
+            if (source is InputElement { Focusable: true, IsEffectivelyEnabled: true })
+            {
+                return true;
+            }
+            source = source.GetVisualParent();
+        }
+        return false;
     }
 
     internal void UpdatePseudoClasses()

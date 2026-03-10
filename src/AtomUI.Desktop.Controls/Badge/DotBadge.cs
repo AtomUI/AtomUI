@@ -1,4 +1,4 @@
-﻿using System.Reactive.Disposables;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Theme;
@@ -49,7 +49,7 @@ public class DotBadge : Control,
 
     public static readonly StyledProperty<bool> BadgeIsVisibleProperty =
         AvaloniaProperty.Register<DotBadge, bool>(nameof(BadgeIsVisible));
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty
         = MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<DotBadge>();
 
@@ -89,7 +89,7 @@ public class DotBadge : Control,
         get => GetValue(BadgeIsVisibleProperty);
         set => SetValue(BadgeIsVisibleProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -97,9 +97,9 @@ public class DotBadge : Control,
     }
 
     #endregion
-    
+
     #region 内部属性定义
-    
+
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => BadgeToken.ID;
 
@@ -108,6 +108,8 @@ public class DotBadge : Control,
     private DotBadgeAdorner? _dotBadgeAdorner;
     private AdornerLayer? _adornerLayer;
     private CompositeDisposable? _adornerBindingDisposables;
+    private bool _hiddenDueToBounds;
+    private CompositeDisposable? _ancestorBoundsSubscriptions;
 
     static DotBadge()
     {
@@ -152,7 +154,7 @@ public class DotBadge : Control,
             }
 
             dotBadgeAdorner.ApplyToTarget(_adornerLayer, this);
-        } 
+        }
         else
         {
             IsVisible = true;
@@ -188,12 +190,72 @@ public class DotBadge : Control,
         {
             PrepareAdorner();
         }
+
+        SubscribeToAncestorBounds();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        _ancestorBoundsSubscriptions?.Dispose();
+        _ancestorBoundsSubscriptions = null;
         HideAdorner(false);
+    }
+
+    private void SubscribeToAncestorBounds()
+    {
+        _ancestorBoundsSubscriptions?.Dispose();
+        if (DecoratedTarget is null)
+        {
+            return;
+        }
+
+        _ancestorBoundsSubscriptions = new CompositeDisposable();
+        Visual? ancestor = this.GetVisualParent();
+        while (ancestor != null)
+        {
+            if (ancestor is Layoutable layoutable)
+            {
+                _ancestorBoundsSubscriptions.Add(
+                    layoutable.GetObservable(BoundsProperty)
+                        .Subscribe(_ => CheckEffectiveVisibility()));
+                _ancestorBoundsSubscriptions.Add(
+                    layoutable.GetObservable(IsVisibleProperty)
+                        .Subscribe(_ => CheckEffectiveVisibility()));
+            }
+
+            ancestor = ancestor.GetVisualParent();
+        }
+    }
+
+    private void CheckEffectiveVisibility()
+    {
+        if (_dotBadgeAdorner is null || DecoratedTarget is null)
+        {
+            return;
+        }
+
+        var hidden = false;
+        Visual? ancestor = this.GetVisualParent();
+        while (ancestor != null)
+        {
+            if (ancestor is Layoutable layoutable)
+            {
+                if (layoutable.Bounds.Height <= 0 || !layoutable.IsVisible)
+                {
+                    hidden = true;
+                    break;
+                }
+            }
+
+            ancestor = ancestor.GetVisualParent();
+        }
+
+        if (hidden != _hiddenDueToBounds)
+        {
+            _hiddenDueToBounds = hidden;
+            _dotBadgeAdorner.IsVisible = !hidden;
+        }
     }
 
     private void SetupTokenBindings()

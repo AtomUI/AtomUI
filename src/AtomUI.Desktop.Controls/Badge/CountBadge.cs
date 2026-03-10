@@ -1,4 +1,4 @@
-﻿using System.Reactive.Disposables;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Theme;
@@ -7,6 +7,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -122,6 +123,8 @@ public class CountBadge : Control,
     private CountBadgeAdorner? _badgeAdorner;
     private AdornerLayer? _adornerLayer;
     private CompositeDisposable? _adornerBindingDisposables;
+    private bool _hiddenDueToBounds;
+    private CompositeDisposable? _ancestorBoundsSubscriptions;
 
     static CountBadge()
     {
@@ -206,12 +209,71 @@ public class CountBadge : Control,
         }
 
         SetupShowZero();
+        SubscribeToAncestorBounds();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        _ancestorBoundsSubscriptions?.Dispose();
+        _ancestorBoundsSubscriptions = null;
         HideAdorner(false);
+    }
+
+    private void SubscribeToAncestorBounds()
+    {
+        _ancestorBoundsSubscriptions?.Dispose();
+        if (DecoratedTarget is null)
+        {
+            return;
+        }
+
+        _ancestorBoundsSubscriptions = new CompositeDisposable();
+        Visual? ancestor = this.GetVisualParent();
+        while (ancestor != null)
+        {
+            if (ancestor is Layoutable layoutable)
+            {
+                _ancestorBoundsSubscriptions.Add(
+                    layoutable.GetObservable(BoundsProperty)
+                        .Subscribe(_ => CheckEffectiveVisibility()));
+                _ancestorBoundsSubscriptions.Add(
+                    layoutable.GetObservable(IsVisibleProperty)
+                        .Subscribe(_ => CheckEffectiveVisibility()));
+            }
+
+            ancestor = ancestor.GetVisualParent();
+        }
+    }
+
+    private void CheckEffectiveVisibility()
+    {
+        if (_badgeAdorner is null || DecoratedTarget is null)
+        {
+            return;
+        }
+
+        var hidden = false;
+        Visual? ancestor = this.GetVisualParent();
+        while (ancestor != null)
+        {
+            if (ancestor is Layoutable layoutable)
+            {
+                if (layoutable.Bounds.Height <= 0 || !layoutable.IsVisible)
+                {
+                    hidden = true;
+                    break;
+                }
+            }
+
+            ancestor = ancestor.GetVisualParent();
+        }
+
+        if (hidden != _hiddenDueToBounds)
+        {
+            _hiddenDueToBounds = hidden;
+            _badgeAdorner.IsVisible = !hidden;
+        }
     }
 
     private void SetupTokenBindings()

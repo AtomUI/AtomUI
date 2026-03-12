@@ -76,6 +76,7 @@
         <ResourceInclude Source="TransitioningContentControl/Themes/TransitioningContentControlTheme.axaml" />
         <ResourceInclude Source="TreeView/Themes/TreeViewThemes.axaml" />
         <ResourceInclude Source="TreeSelect/Themes/TreeSelectThemes.axaml" />
+        <ResourceInclude Source="Transfer/Themes/TransferThemes.axaml" />
         <ResourceInclude Source="Upload/Themes/UploadThemes.axaml" />
         <ResourceInclude Source="Window/Themes/WindowThemes.axaml" />
     </atom:ControlThemesProvider.ControlThemes>

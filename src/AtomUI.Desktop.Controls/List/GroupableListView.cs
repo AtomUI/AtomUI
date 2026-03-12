@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 
@@ -19,9 +20,11 @@ internal class GroupableListView : ListBox
         get => GetValue(GroupItemTemplateProperty);
         set => SetValue(GroupItemTemplateProperty, value);
     }
+    
     #endregion
     
     internal List? OwningList = null;
+    internal new ISelectionModel Selection => base.Selection;
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {

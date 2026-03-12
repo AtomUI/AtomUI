@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Desktop.Controls.Utils;
 using AtomUI.MotionScene;
 using AtomUI.Theme.Styling;
 using AtomUI.Utils;
@@ -390,7 +391,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 if (pointerEventArgs.Type == RawPointerEventType.LeftButtonUp)
                 {
-                    if ((IgnoreFirstDetected && _firstDetected) || _openAnimating)
+                    // TODO 这个逻辑要优化
+                    if ((IgnoreFirstDetected && _firstDetected) || pointerEventArgs.IsPointLogicalIn(PlacementTarget) || _openAnimating)
                     {
                         if (IgnoreFirstDetected && _firstDetected)
                         {

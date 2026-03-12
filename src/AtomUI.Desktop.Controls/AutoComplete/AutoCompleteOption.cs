@@ -1,3 +1,5 @@
+using AtomUI.Controls;
+
 namespace AtomUI.Desktop.Controls;
 
 public record AutoCompleteOption : IAutoCompleteOption
@@ -9,6 +11,6 @@ public record AutoCompleteOption : IAutoCompleteOption
     public object? Value { get; set; }
 
     public bool IsSelected { get; set; }
-    
-    public string? Key { get; init; }
+
+    public EntityKey? ItemKey { get; init; }
 }

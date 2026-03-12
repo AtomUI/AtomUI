@@ -1,0 +1,49 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TransferListItem}" TargetType="atom:TransferListItem">
+        <ControlTheme.BasedOn>
+            <atom:ListItemTheme TargetType="atom:TransferListItem" />
+        </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:TransferListItem">
+                <Border Name="Frame"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <DockPanel LastChildFill="True" Name="ContentLayout">
+                        <atom:CheckBox
+                            Name="SelectedIndicator"
+                            DockPanel.Dock="Left"
+                            VerticalAlignment="Center"
+                            IsChecked="{TemplateBinding IsSelected, Mode=TwoWay}"
+                            IsWaveSpiritEnabled="False" />
+                        <Panel>
+                            <ContentPresenter Name="ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}" />
+                            <atom:HighlightableTextBlock
+                                HighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                HighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
+                                IsVisible="{TemplateBinding IsFiltering}"
+                                HighlightWords="{TemplateBinding FilterHighlightWords}"
+                                Text="{TemplateBinding ContentText}" />
+                        </Panel>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:is(atom|TransferListItem)">
+            <Style Selector="^ /template/ DockPanel#ContentLayout">
+                <Setter Property="HorizontalSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

@@ -1,0 +1,89 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:transferLang="clr-namespace:AtomUI.Desktop.Controls.TransferLang"
+    x:ClassModifier="internal">
+    <atom:CornerRadiusFilterConverter x:Key="HeaderCornerRadiusFilterConverter"
+                                      BottomLeft="False"
+                                      BottomRight="False"/>
+    <atom:CornerRadiusFilterConverter x:Key="BodyCornerRadiusFilterConverter"
+                                      TopLeft="False"
+                                      TopRight="False"/>
+    <ControlTheme x:Key="{x:Type atom:TransferItemDecorator}" TargetType="atom:TransferItemDecorator">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Frame"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <DockPanel LastChildFill="True">
+                        <Border Name="HeaderFrame"
+                                DockPanel.Dock="Top"
+                                CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource HeaderCornerRadiusFilterConverter}}">
+                            <DockPanel Name="HeaderLayout" LastChildFill="True">
+                                <atom:CheckBox Name="SelectAllCheckBox"
+                                               DockPanel.Dock="Left"
+                                               VerticalAlignment="Center"
+                                               IsChecked="{TemplateBinding IsAllSelected, Mode=TwoWay}"
+                                               IsVisible="{TemplateBinding IsShowSelectAllCheckbox}"
+                                               IsEnabled="{TemplateBinding IsItemsSourceEmpty, Converter={x:Static BoolConverters.Not}}"/>
+                                <atom:TransferSelectDropdown Name="MenuIndicator" DockPanel.Dock="Left"
+                                                             Icon="{TemplateBinding SelectionsIcon}"
+                                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                             IsEnabled="{TemplateBinding IsItemsSourceEmpty, Converter={x:Static BoolConverters.Not}}"
+                                                             IsVisible="{TemplateBinding IsShowSelectDropdownMenu}"
+                                                             IsAllSelected="{TemplateBinding IsAllSelected}"
+                                                             IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"/>
+                                <ContentPresenter Name="SelectedInfo" DockPanel.Dock="Left"
+                                                  Content="{TemplateBinding SelectedMessage}"
+                                                  VerticalAlignment="Center"/>
+                                <ContentPresenter Name="TitleContentPresenter"
+                                                  Content="{TemplateBinding Title}"
+                                                  ContentTemplate="{TemplateBinding TitleTemplate}"
+                                                  HorizontalContentAlignment="Right"
+                                                  VerticalAlignment="Center"
+                                                  TextTrimming="CharacterEllipsis"/>
+                            </DockPanel>
+                        </Border>
+                        <ContentPresenter Name="ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ClipToBounds="True"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BodyCornerRadiusFilterConverter}}"/>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        
+        <Setter Property="ClipToBounds" Value="False"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
+        <Setter Property="Width" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidth}}" />
+        <Setter Property="ItemUint" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.Item}}" />
+        <Setter Property="ItemUintPlural" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.Items}}" />
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListHeight}}" />
+        <Style Selector="^/template/ Border#HeaderFrame">
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderHeight}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderPadding}}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderBorderThickness}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSplit}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
+        </Style>
+
+        <Style Selector="^/template/ DockPanel#HeaderLayout">
+            <Setter Property="HorizontalSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
+        </Style>
+        
+        <Style Selector="^/template/ atom|IconButton#MenuIndicator">
+            <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
+            <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
+        </Style>
+        
+        <Style Selector="^[IsPaginationEnabled=True]">
+            <Setter Property="Width" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidthLG}}" />
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

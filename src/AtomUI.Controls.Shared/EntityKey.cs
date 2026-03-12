@@ -5,6 +5,11 @@ namespace AtomUI.Controls;
 
 public readonly struct EntityKey : IEquatable<EntityKey>
 {
+    public EntityKey()
+    {
+        Value = string.Empty;
+    }
+    
     public EntityKey(string value)
     {
         Value = value;

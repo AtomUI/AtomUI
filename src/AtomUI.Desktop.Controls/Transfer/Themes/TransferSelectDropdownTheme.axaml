@@ -1,0 +1,19 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:transferLang="clr-namespace:AtomUI.Desktop.Controls.TransferLang"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TransferSelectDropdown}" TargetType="atom:TransferSelectDropdown">
+        <ControlTheme.BasedOn>
+            <atom:IconButtonTheme TargetType="atom:TransferSelectDropdown" />
+        </ControlTheme.BasedOn>
+  
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
+        <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
+        <Setter Property="SelectAllText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.SelectAll}}" />
+        <Setter Property="DeSelectAllText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.DeSelectAll}}" />
+        <Setter Property="ToggleSelectCurrentPageText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.ToggleSelectCurrentPage}}" />
+    </ControlTheme>
+</ResourceDictionary>

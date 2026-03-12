@@ -47,6 +47,12 @@ public class MenuFlyout : Flyout
     
     public Func<IPopupHostProvider, RawPointerEventArgs, bool>? ClickHideFlyoutPredicate;
     #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<FlyoutMenuItemClickedEventArgs>? MenuItemClicked;
+
+    #endregion
     
     private protected MenuFlyoutPresenter? Presenter;
     private CompositeDisposable? _presenterBindingDisposables;
@@ -61,6 +67,11 @@ public class MenuFlyout : Flyout
     {
         _presenterBindingDisposables?.Dispose();
         _presenterBindingDisposables = new CompositeDisposable(4);
+
+        if (Presenter != null)
+        {
+            Presenter.MenuItemClicked -= HandleMenuItemClicked;
+        }
         
         Presenter = new MenuFlyoutPresenter
         {
@@ -68,6 +79,7 @@ public class MenuFlyout : Flyout
             ItemsSource = Items
         };
         
+        Presenter.MenuItemClicked += HandleMenuItemClicked;
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, Presenter, MenuFlyoutPresenter.ItemTemplateProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, ItemContainerThemeProperty, Presenter, MenuFlyoutPresenter.ItemContainerThemeProperty));
         _presenterBindingDisposables.Add(BindUtils.RelayBind(this, IsShowArrowEffectiveProperty, Presenter, MenuFlyoutPresenter.IsShowArrowProperty));
@@ -78,6 +90,11 @@ public class MenuFlyout : Flyout
         ConfigureShowArrowEffective();
 
         return Presenter;
+    }
+
+    private void HandleMenuItemClicked(object? sender, FlyoutMenuItemClickedEventArgs e)
+    {
+        MenuItemClicked?.Invoke(sender, e);
     }
 
     protected override void OnOpening(CancelEventArgs args)

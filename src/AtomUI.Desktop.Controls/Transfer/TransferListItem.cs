@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls;
 
-public class TransferTreeItem
+public class TransferListItem : ListItem
 {
     
 }

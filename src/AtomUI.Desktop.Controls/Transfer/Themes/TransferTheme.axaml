@@ -2,12 +2,82 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Transfer}" TargetType="atom:Transfer">
         <Setter Property="Template">
             <ControlTemplate>
-             
+                <Grid Name="RootLayout"
+                      ColumnDefinitions="Auto, Auto, Auto"
+                      RowDefinitions="Auto">
+                    <atom:TransferItemDecorator Name="SourceDecoratorView"
+                                                Content="{TemplateBinding SourcePanel}"
+                                                ContentTemplate="{TemplateBinding SourcePanelTemplate}"
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                SizeType="{TemplateBinding SizeType}"
+                                                Status="{TemplateBinding Status}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"
+                                                Title="{TemplateBinding SourceTitle}"
+                                                TitleTemplate="{TemplateBinding SourceTitleTemplate}"
+                                                SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
+                                                ItemsSource="{TemplateBinding SourcePanelSource}"/>
+                    <StackPanel Name="ActionsLayout"
+                                Orientation="Vertical"
+                                VerticalAlignment="Center"
+                                Grid.Row="0"
+                                Grid.Column="1">
+                        <atom:Button Name="ToTargetButton" ButtonType="Primary" 
+                                     Icon="{TemplateBinding ToTargetTransferIcon}"
+                                     SizeType="Small"
+                                     IsEnabled="{Binding #SourceDecoratorView.HasSelected}"
+                                     Tag="{x:Static atom:TransferDirection.ToTarget}"/>
+                        <atom:Button Name="ToSourceButton"
+                                     ButtonType="Primary"
+                                     Tag="{x:Static atom:TransferDirection.ToSource}"
+                                     Icon="{TemplateBinding ToSourceTransferIcon}"
+                                     SizeType="Small"
+                                     IsEnabled="{Binding #TargetDecoratorView.HasSelected}"
+                                     IsVisible="{TemplateBinding IsOneWay, Converter={x:Static BoolConverters.Not}}" />
+                    </StackPanel>
+                    <atom:TransferItemDecorator Name="TargetDecoratorView"
+                                                Content="{TemplateBinding TargetPanel}"
+                                                ContentTemplate="{TemplateBinding TargetPanelTemplate}"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                SizeType="{TemplateBinding SizeType}"
+                                                Status="{TemplateBinding Status}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"
+                                                Title="{TemplateBinding TargetTitle}"
+                                                TitleTemplate="{TemplateBinding TargetTitleTemplate}"
+                                                SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
+                                                ItemsSource="{TemplateBinding TargetPanelSource}"/>
+                </Grid>
             </ControlTemplate>
         </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
+        
+        <Style Selector="^ /template/ StackPanel#ActionsLayout">
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
+        </Style>
+
+        <Style Selector="^ /template/ Grid#RootLayout">
+            <Setter Property="ColumnSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXS}}" />
+        </Style>
+        
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+        </Style>
+        
+        <Setter Property="SelectionsIcon">
+            <atom:IconTemplate>
+                <antdicons:DownOutlined/>
+            </atom:IconTemplate>
+        </Setter>
+
     </ControlTheme>
 </ResourceDictionary>

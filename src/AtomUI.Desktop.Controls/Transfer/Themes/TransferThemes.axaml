@@ -3,5 +3,10 @@
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="TransferTheme.axaml"/>
+        <ResourceInclude Source="TransferListViewTheme.axaml"/>
+        <ResourceInclude Source="TransferListItemTheme.axaml"/>
+        <ResourceInclude Source="TransferTreeViewTheme.axaml"/>
+        <ResourceInclude Source="TransferItemDecoratorTheme.axaml"/>
+        <ResourceInclude Source="TransferSelectDropdownTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

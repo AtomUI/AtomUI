@@ -105,7 +105,7 @@
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:SelectCandidateList
                                 Name="{x:Static atom:SelectThemeConstants.CandidateListPart}"
-                                IsBorderless="True"
+                                BorderThickness="0"
                                 IsGroupEnabled="{TemplateBinding IsGroupEnabled}"
                                 GroupPropertySelector="{TemplateBinding GroupPropertySelector}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

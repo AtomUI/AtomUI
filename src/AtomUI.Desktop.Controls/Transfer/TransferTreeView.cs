@@ -2,7 +2,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferTableItem : TemplatedControl
+public class TransferTreeView : TemplatedControl
 {
     
 }

@@ -142,17 +142,17 @@ internal class SelectCandidateList : List, ICandidateList
         }
     }
     
-    internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new SelectCandidateListItem();
     }
 
-    internal override bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    protected internal override bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<SelectCandidateListItem>(item, out recycleKey);
     }
     
-    internal override void PrepareListBoxItem(ListItem listItem, object? item, int index, CompositeDisposable disposables)
+    protected internal override void PrepareListBoxItem(ListItem listItem, object? item, int index, CompositeDisposable disposables)
     {
         base.PrepareListBoxItem(listItem, item, index, disposables);
         disposables.Add(BindUtils.RelayBind(this, IsHideSelectedOptionsProperty, listItem, SelectCandidateListItem.IsHideSelectedOptionsProperty));
@@ -514,7 +514,7 @@ internal class SelectCandidateList : List, ICandidateList
         return true;
     }
     
-    internal override bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
+    protected internal override bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
     {
         if (e.Handled)
         {

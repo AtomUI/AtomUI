@@ -50,9 +50,14 @@ internal class TransferToken : AbstractControlDesignToken
     public double HeaderHeight { get; set; }
     
     /// <summary>
-    /// 穿梭框头部垂直 Padding 
+    /// 穿梭框头部内间距 
     /// </summary>
-    public Thickness TransferHeaderVerticalPadding { get; set; }
+    public Thickness HeaderPadding { get; set; }
+    
+    /// <summary>
+    /// 穿梭框头部边框
+    /// </summary>
+    public Thickness HeaderBorderThickness { get; set; }
     
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -63,6 +68,8 @@ internal class TransferToken : AbstractControlDesignToken
         HeaderHeight                  = SharedToken.ControlHeightLG;
         ItemHeight                    = SharedToken.ControlHeight;
         ItemPadding                   = new Thickness(0, (SharedToken.ControlHeight - SharedToken.FontHeight) / 2);
-        TransferHeaderVerticalPadding = new Thickness(0, Math.Ceiling((SharedToken.ControlHeightLG - SharedToken.LineWidth - SharedToken.FontHeight) / 2));
+        HeaderPadding = new Thickness(SharedToken.UniformlyPaddingSM,
+            Math.Ceiling((SharedToken.ControlHeightLG - SharedToken.LineWidth - SharedToken.FontHeight) / 2));
+        HeaderBorderThickness = new Thickness(0, 0, 0, SharedToken.LineWidth);
     }
 }

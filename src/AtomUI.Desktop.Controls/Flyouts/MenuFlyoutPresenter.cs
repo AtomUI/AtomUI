@@ -11,6 +11,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;

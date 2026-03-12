@@ -11,6 +11,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -104,9 +105,6 @@ public class List : TemplatedControl,
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<List>();
-    
-    public static readonly StyledProperty<bool> IsBorderlessProperty =
-        AvaloniaProperty.Register<List, bool>(nameof(IsBorderless), false);
     
     public static readonly StyledProperty<bool> IsShowSelectedIndicatorProperty =
         AvaloniaProperty.Register<List, bool>(nameof(IsShowSelectedIndicator), false);
@@ -243,12 +241,6 @@ public class List : TemplatedControl,
         set => SetValue(IsShowSelectedIndicatorProperty, value);
     }
     
-    public bool IsBorderless
-    {
-        get => GetValue(IsBorderlessProperty);
-        set => SetValue(IsBorderlessProperty, value);
-    }
-    
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -267,7 +259,13 @@ public class List : TemplatedControl,
         set => SetValue(ItemSelectedBgProperty, value);
     }
 
-    public int ItemCount => CollectionView?.Count ?? 0;
+    private int _itemCount;
+
+    public int ItemCount
+    {
+        get => _itemCount;
+        private set => SetAndRaise(ItemCountProperty, ref _itemCount, value);
+    }
     
     public int PageSize
     {
@@ -375,9 +373,6 @@ public class List : TemplatedControl,
     #endregion
 
     #region 公共事件定义
-
-    public event EventHandler<ListCollectionViewChangedEventArgs>? CollectionViewChanged;
-    
     public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
         RoutedEvent.Register<List, SelectionChangedEventArgs>(
             nameof(SelectionChanged),
@@ -389,14 +384,12 @@ public class List : TemplatedControl,
         remove => RemoveHandler(SelectionChangedEvent, value);
     }
     
+    public event EventHandler<ListCollectionViewChangedEventArgs>? CollectionViewChanged;
+    public event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
+    
     #endregion
     
     #region 内部属性定义
-    
-    internal static readonly DirectProperty<List, Thickness> EffectiveBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<List, Thickness>(nameof(EffectiveBorderThickness),
-            o => o.EffectiveBorderThickness,
-            (o, v) => o.EffectiveBorderThickness = v);
     
     internal static readonly DirectProperty<List, bool> IsEmptyDataSourceProperty =
         AvaloniaProperty.RegisterDirect<List, bool>(
@@ -409,14 +402,6 @@ public class List : TemplatedControl,
             nameof(IsEffectiveEmptyVisible),
             o => o.IsEffectiveEmptyVisible,
             (o, v) => o.IsEffectiveEmptyVisible = v);
-    
-    private Thickness _effectiveBorderThickness;
-
-    internal Thickness EffectiveBorderThickness
-    {
-        get => _effectiveBorderThickness;
-        set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
-    }
     
     private bool _isEmptyDataSource = true;
     internal bool IsEmptyDataSource
@@ -439,6 +424,7 @@ public class List : TemplatedControl,
     }
     
     protected static object DefaultRecycleKey { get; } = new ();
+    protected ISelectionModel? Selection => ListView?.Selection;
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ListToken.ID;
@@ -461,6 +447,7 @@ public class List : TemplatedControl,
         ItemsPanelProperty.OverrideDefaultValue<List>(DefaultPanel);
         ItemsSourceProperty.Changed.AddClassHandler<List>((x, e) => x.HandleItemsSourcePropertyChanged(e));
         IsHideOnSinglePageProperty.OverrideDefaultValue<List>(true);
+        ItemCountProperty.Changed.AddClassHandler<List>((list, args) => list.HandleItemCountChanged());
     }
     
     public List()
@@ -490,12 +477,7 @@ public class List : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderThicknessProperty ||
-            change.Property == IsBorderlessProperty)
-        {
-            ConfigureEffectiveBorderThickness();
-        }
-        else if (change.Property == SelectionModeProperty)
+        if (change.Property == SelectionModeProperty)
         {
             SyncSelectionState();
         }
@@ -520,18 +502,6 @@ public class List : TemplatedControl,
         }
     }
 
-    private void ConfigureEffectiveBorderThickness()
-    {
-        if (IsBorderless)
-        {
-            EffectiveBorderThickness = new Thickness(0);
-        }
-        else
-        {
-            EffectiveBorderThickness = BorderThickness;
-        }
-    }
-    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -551,7 +521,7 @@ public class List : TemplatedControl,
             ListView.SelectionChanged -= HandleListViewSelectionChanged;
         }
 
-        ListView   = e.NameScope.Find<GroupableListView>(ListThemeConstants.ListViewPart);
+        ListView = e.NameScope.Find<GroupableListView>(ListThemeConstants.ListViewPart);
         if (ListView != null)
         {
             ListView.OwningList       =  this;
@@ -643,6 +613,7 @@ public class List : TemplatedControl,
         if (sender is ListCollectionView view)
         {
             IsEmptyDataSource = view.IsEmpty;
+            ItemCount         = view.Count;
         }
     }
     
@@ -776,12 +747,12 @@ public class List : TemplatedControl,
         }
     }
 
-    internal virtual Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    protected internal virtual Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new ListItem();
     }
 
-    internal virtual bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    protected internal virtual bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<ListItem>(item, out recycleKey);
     }
@@ -797,8 +768,8 @@ public class List : TemplatedControl,
         return true;
     }
 
-    internal virtual void PrepareListBoxItem(ListItem listItem, object? item, int index,
-                                             CompositeDisposable disposables)
+    protected internal virtual void PrepareListBoxItem(ListItem listItem, object? item, int index,
+                                                      CompositeDisposable disposables)
     {
         var isGroupEnabled = false;
         if (item is IGroupListItemData groupListItemData)
@@ -812,17 +783,17 @@ public class List : TemplatedControl,
         }
     }
 
-    internal virtual bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
+    protected internal virtual bool UpdateSelectionFromPointerEvent(ListItem listItem, PointerEventArgs e)
     {
         return false;
     }
 
-    internal virtual bool UpdateSelection(ListItem listItem,
-                                          bool select = true,
-                                          bool rangeModifier = false,
-                                          bool toggleModifier = false,
-                                          bool rightButton = false,
-                                          bool fromFocus = false)
+    protected internal virtual bool UpdateSelection(ListItem listItem,
+                                           bool select = true,
+                                           bool rangeModifier = false,
+                                           bool toggleModifier = false,
+                                           bool rightButton = false,
+                                           bool fromFocus = false)
     {
         if (ListView != null)
         {
@@ -864,6 +835,11 @@ public class List : TemplatedControl,
     
     protected internal virtual void NotifyListItemClicked(ListItem item)
     {
+    }
+
+    private void HandleItemCountChanged()
+    {
+        ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(ItemCount));
     }
     
     #region 虚拟化上下文管理

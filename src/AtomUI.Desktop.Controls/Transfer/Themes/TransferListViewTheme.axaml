@@ -1,0 +1,14 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TransferListView}" TargetType="atom:TransferListView">
+        <ControlTheme.BasedOn>
+            <atom:ListTheme TargetType="atom:TransferListView" />
+        </ControlTheme.BasedOn>
+        
+        <Setter Property="BorderThickness" Value="0"/>
+        
+    </ControlTheme>
+</ResourceDictionary>

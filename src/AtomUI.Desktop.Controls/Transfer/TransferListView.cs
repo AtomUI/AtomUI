@@ -1,7 +1,10 @@
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -36,7 +39,7 @@ public class TransferListView : List, ITransferView
 
     #region 公共事件定义
 
-    public event EventHandler<TransferItemDeletedEventArgs>? ItemDeleted;
+    public event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
     public event EventHandler? SelectedKeyChanged;
 
     #endregion
@@ -53,6 +56,7 @@ public class TransferListView : List, ITransferView
         ItemsPanelProperty.OverrideDefaultValue<TransferListView>(DefaultPanel);
         SelectedKeysProperty.Changed.AddClassHandler<TransferListView>((view, args) => view.HandleSelectedKeysChanged());
         SelectionChangedEvent.AddClassHandler<TransferListView>((view, args) => view.HandleSelectionChanged(args));
+        IconButton.ClickEvent.AddClassHandler<TransferListView>((view, args) => view.HandleRemoveButtonClicked(args));
     }
     
     protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -63,6 +67,16 @@ public class TransferListView : List, ITransferView
     protected internal override bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TransferListItem>(item, out recycleKey);
+    }
+    
+    protected internal override void PrepareListBoxItem(ListItem listItem, object? item, int index,
+                                                       CompositeDisposable disposables)
+    {
+        base.PrepareListBoxItem(listItem, item, index, disposables);
+        if (listItem is TransferListItem transferListItem)
+        {
+            disposables.Add(BindUtils.RelayBind(this, IsItemSelectableProperty, transferListItem, TransferListItem.IsCheckableProperty));
+        }
     }
 
     private void HandleSelectionChanged(SelectionChangedEventArgs e)
@@ -139,5 +153,25 @@ public class TransferListView : List, ITransferView
             SetCurrentValue(SelectedKeysProperty, _selectedKeysBackup);
         }
         _selectedKeysBackup = null;
+    }
+
+    void ITransferView.SetSelectionEnabled(bool enabled)
+    {
+        SetCurrentValue(IsItemSelectableProperty, enabled);
+        if (enabled)
+        {
+            SetCurrentValue(SelectionModeProperty, SelectionMode.Multiple | SelectionMode.Toggle);
+        }
+    }
+
+    private void HandleRemoveButtonClicked(RoutedEventArgs e)
+    {
+        if (GetContainerFromEventSource(e.Source) is TransferListItem listItem)
+        {
+            if (listItem.DataContext is IItemKey itemKey)
+            {
+                ItemRemoved?.Invoke(this, new TransferItemRemovedEventArgs(itemKey));
+            }
+        }
     }
 }

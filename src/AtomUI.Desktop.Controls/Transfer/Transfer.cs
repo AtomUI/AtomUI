@@ -285,12 +285,15 @@ public class Transfer : TemplatedControl,
 
     #endregion
 
-    private TransferItemDecorator? _sourceView;
-    private TransferItemDecorator? _targetView;
+    private TransferItemDecorator? _sourceViewDecorator;
+    private TransferItemDecorator? _targetViewDecorator;
+    private ITransferView? _sourceView;
+    private ITransferView? _targetView;
     
     static Transfer()
     {
         IconButton.ClickEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleTransferRequest(args));
+        TransferSelectDropdown.SelectActionRequestEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleSelectActionRequest(args));
     }
     
     public Transfer()
@@ -318,9 +321,64 @@ public class Transfer : TemplatedControl,
         {
             SetCurrentValue(TargetPanelProperty, new TransferListView());
         }
+
+        if (_sourceViewDecorator != null)
+        {
+            _sourceViewDecorator.TransferViewCreated -= HandleTransferViewCreated;
+        }
+        if (_targetViewDecorator != null)
+        {
+            _targetViewDecorator.TransferViewCreated -= HandleTransferViewCreated;
+        }
+
+        if (_targetView != null)
+        {
+            _targetView.ItemRemoved     -= HandleItemRemoved;
+        }
+        if (_sourceView != null)
+        {
+            _sourceView.ItemRemoved     -= HandleItemRemoved;
+        }
+        _sourceViewDecorator = e.NameScope.Find<TransferItemDecorator>("SourceDecoratorView");
+        _targetViewDecorator = e.NameScope.Find<TransferItemDecorator>("TargetDecoratorView");
         
-        _sourceView = e.NameScope.Find<TransferItemDecorator>("SourceDecoratorView");
-        _targetView = e.NameScope.Find<TransferItemDecorator>("TargetDecoratorView");
+        if (_sourceViewDecorator != null)
+        {
+            _sourceViewDecorator.TransferViewCreated += HandleTransferViewCreated;
+        }
+        if (_targetViewDecorator != null)
+        {
+            _targetViewDecorator.TransferViewCreated += HandleTransferViewCreated;
+        }
+    }
+
+    private void HandleTransferViewCreated(object? sender, TransferViewCreatedEventArgs args)
+    {
+        if (args.TransferView.ViewType == TransferViewType.Source)
+        {
+            _sourceView = args.TransferView;
+        }
+        else
+        {
+            _targetView                 =  args.TransferView;
+            _targetView.ItemRemoved     += HandleItemRemoved;
+        }
+    }
+
+    private void HandleItemRemoved(object? sender, TransferItemRemovedEventArgs args)
+    {
+        var currentSet = new HashSet<EntityKey>();
+        if (TargetKeys != null)
+        {
+            foreach (var targetKey in TargetKeys)
+            {
+                currentSet.Add(targetKey);
+            }
+        }
+        _sourceViewDecorator?.NotifyAboutToTransfer(TransferDirection.ToSource);
+        currentSet.Remove(args.Item?.ItemKey ?? default);
+        SetCurrentValue(TargetKeysProperty, currentSet.ToList());
+        _sourceViewDecorator?.NotifyTransferCompleted(TransferDirection.ToSource);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -358,11 +416,11 @@ public class Transfer : TemplatedControl,
                 currentSet.Add(targetKey);
             }
         }
-        _sourceView?.NotifyAboutToTransfer(transferDirection);
-        _targetView?.NotifyAboutToTransfer(transferDirection);
+        _sourceViewDecorator?.NotifyAboutToTransfer(transferDirection);
+        _targetViewDecorator?.NotifyAboutToTransfer(transferDirection);
         if (transferDirection == TransferDirection.ToTarget)
         {
-            var keys = _sourceView?.SelectedKeys;
+            var keys = _sourceViewDecorator?.SelectedKeys;
             if (keys != null)
             {
                 foreach (var key in keys)
@@ -374,7 +432,7 @@ public class Transfer : TemplatedControl,
         }
         else
         {
-            var keys = _targetView?.SelectedKeys;
+            var keys = _targetViewDecorator?.SelectedKeys;
             if (keys != null)
             {
                 foreach (var key in keys)
@@ -384,7 +442,17 @@ public class Transfer : TemplatedControl,
                 SetCurrentValue(TargetKeysProperty, currentSet.ToList());
             }
         }
-        _sourceView?.NotifyTransferCompleted(transferDirection);
-        _targetView?.NotifyTransferCompleted(transferDirection);
+        _sourceViewDecorator?.NotifyTransferCompleted(transferDirection);
+        _targetViewDecorator?.NotifyTransferCompleted(transferDirection);
+    }
+    
+    private void HandleSelectActionRequest(TransferSelectActionEventArgs args)
+    {
+        if (args.Action == TransferSelectAction.RemoveAll)
+        {
+            _sourceViewDecorator?.NotifyAboutToTransfer(TransferDirection.ToSource);
+            SetCurrentValue(TargetKeysProperty, null);
+            _sourceViewDecorator?.NotifyTransferCompleted(TransferDirection.ToSource);
+        }
     }
 }

@@ -51,6 +51,9 @@ internal class TransferItemDecorator : TemplatedControl,
     public static readonly StyledProperty<IIconTemplate?> SelectionsIconTemplateProperty =
         AvaloniaProperty.Register<TransferItemDecorator, IIconTemplate?>(nameof(SelectionsIconTemplate));
     
+    public static readonly StyledProperty<bool> IsOneWayProperty =
+        Transfer.IsOneWayProperty.AddOwner<TransferItemDecorator>();
+    
     [DependsOn(nameof(TitleTemplate))]
     public object? Title
     {
@@ -125,8 +128,20 @@ internal class TransferItemDecorator : TemplatedControl,
         set => SetValue(SelectionsIconTemplateProperty, value);
     }
     
+    public bool IsOneWay
+    {
+        get => GetValue(IsOneWayProperty);
+        set => SetValue(IsOneWayProperty, value);
+    }
+    
     public IList<EntityKey>? SelectedKeys => (_transferView as ITransferView)?.SelectedKeys;
     
+    #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<TransferViewCreatedEventArgs>? TransferViewCreated;
+
     #endregion
 
     #region 内部属性定义
@@ -303,6 +318,12 @@ internal class TransferItemDecorator : TemplatedControl,
                 }
             }
         }
+
+        if (change.Property == ViewTypeProperty ||
+            change.Property == IsOneWayProperty)
+        {
+            ConfigureTransferViewSelectionMode();
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -345,6 +366,8 @@ internal class TransferItemDecorator : TemplatedControl,
                     transferView.ItemCountChanged   += HandleItemsCountChanged;
                     transferView.SelectedKeyChanged += HandleSelectedChanged;
                     transferView.ViewType           =  ViewType;
+                    TransferViewCreated?.Invoke(this, new TransferViewCreatedEventArgs(transferView));
+                    ConfigureTransferViewSelectionMode();
                 }
             }
         }
@@ -429,6 +452,17 @@ internal class TransferItemDecorator : TemplatedControl,
         if (_transferView is ITransferView transferView)
         {
             transferView.NotifyTransferCompleted(transferDirection);
+        }
+    }
+
+    private void ConfigureTransferViewSelectionMode()
+    {
+        if (_transferView is ITransferView transferView)
+        {
+            if (ViewType == TransferViewType.Target)
+            {
+                transferView.SetSelectionEnabled(!IsOneWay);
+            }
         }
     }
 }

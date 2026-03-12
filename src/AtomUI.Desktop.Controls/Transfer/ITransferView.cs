@@ -9,7 +9,7 @@ public interface ITransferView
     IList<EntityKey>? SelectedKeys { get; set; }
     int ItemCount { get; }
     TransferViewType ViewType { get; set; }
-    event EventHandler<TransferItemDeletedEventArgs>? ItemDeleted;
+    event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
     event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
     event EventHandler? SelectedKeyChanged;
     
@@ -17,4 +17,5 @@ public interface ITransferView
     void DeselectAll();
     void NotifyAboutToTransfer(TransferDirection transferDirection);
     void NotifyTransferCompleted(TransferDirection transferDirection);
+    void SetSelectionEnabled(bool enabled);
 }

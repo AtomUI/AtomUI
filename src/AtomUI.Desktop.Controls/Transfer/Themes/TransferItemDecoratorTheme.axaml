@@ -26,7 +26,7 @@
                                                DockPanel.Dock="Left"
                                                VerticalAlignment="Center"
                                                IsChecked="{TemplateBinding IsAllSelected, Mode=TwoWay}"
-                                               IsVisible="{TemplateBinding IsShowSelectAllCheckbox}"
+                                               IsVisible="False"
                                                IsEnabled="{TemplateBinding IsItemsSourceEmpty, Converter={x:Static BoolConverters.Not}}"/>
                                 <atom:TransferSelectDropdown Name="MenuIndicator" DockPanel.Dock="Left"
                                                              Icon="{TemplateBinding SelectionsIcon}"
@@ -34,6 +34,8 @@
                                                              IsEnabled="{TemplateBinding IsItemsSourceEmpty, Converter={x:Static BoolConverters.Not}}"
                                                              IsVisible="{TemplateBinding IsShowSelectDropdownMenu}"
                                                              IsAllSelected="{TemplateBinding IsAllSelected}"
+                                                             IsOneWay="{TemplateBinding IsOneWay}"
+                                                             ViewType="{TemplateBinding ViewType}"
                                                              IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"/>
                                 <ContentPresenter Name="SelectedInfo" DockPanel.Dock="Left"
                                                   Content="{TemplateBinding SelectedMessage}"
@@ -80,10 +82,22 @@
             <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
             <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
         </Style>
-        
+
         <Style Selector="^[IsPaginationEnabled=True]">
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidthLG}}" />
         </Style>
+
+        <Style Selector="^[IsShowSelectAllCheckbox=True][ViewType=Source]">
+            <Style Selector="^/template/ atom|CheckBox#SelectAllCheckBox">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
         
+        <Style Selector="^[IsShowSelectAllCheckbox=True][ViewType=Target][IsOneWay=False]">
+            <Style Selector="^/template/ atom|CheckBox#SelectAllCheckBox">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

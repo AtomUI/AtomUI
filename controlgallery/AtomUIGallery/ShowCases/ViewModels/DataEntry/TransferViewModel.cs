@@ -20,6 +20,14 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _basicTransferItems, value);
     }
 
+    private List<IListItemData>? _oneWayTransferItems;
+    
+    public List<IListItemData>? OneWayTransferItems
+    {
+        get => _oneWayTransferItems;
+        set => this.RaiseAndSetIfChanged(ref _oneWayTransferItems, value);
+    }
+    
     public TransferViewModel(IScreen screen)
     {
         HostScreen = screen;

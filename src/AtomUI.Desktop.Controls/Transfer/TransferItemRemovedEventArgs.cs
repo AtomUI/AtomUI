@@ -2,10 +2,10 @@ using AtomUI.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferItemDeletedEventArgs : EventArgs
+public class TransferItemRemovedEventArgs : EventArgs
 {
     public IItemKey? Item { get; }
-    public TransferItemDeletedEventArgs(IItemKey? item)
+    public TransferItemRemovedEventArgs(IItemKey? item)
     {
         Item = item;
     }

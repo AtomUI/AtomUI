@@ -23,7 +23,8 @@
                                                 Title="{TemplateBinding SourceTitle}"
                                                 TitleTemplate="{TemplateBinding SourceTitleTemplate}"
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
-                                                ItemsSource="{TemplateBinding SourcePanelSource}"/>
+                                                ItemsSource="{TemplateBinding SourcePanelSource}"
+                                                IsOneWay="{TemplateBinding IsOneWay}"/>
                     <StackPanel Name="ActionsLayout"
                                 Orientation="Vertical"
                                 VerticalAlignment="Center"
@@ -55,7 +56,8 @@
                                                 Title="{TemplateBinding TargetTitle}"
                                                 TitleTemplate="{TemplateBinding TargetTitleTemplate}"
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
-                                                ItemsSource="{TemplateBinding TargetPanelSource}"/>
+                                                ItemsSource="{TemplateBinding TargetPanelSource}"
+                                                IsOneWay="{TemplateBinding IsOneWay}"/>
                 </Grid>
             </ControlTemplate>
         </Setter>

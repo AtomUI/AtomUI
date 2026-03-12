@@ -11,5 +11,14 @@
             <atom:Transfer SourceTitle="Source" TargetTitle="Target"
                            ItemsSource="{Binding BasicTransferItems}"/>
         </gallery:ShowCaseItem>
+        
+        <gallery:ShowCaseItem
+            Title="One Way"
+            IsOccupyEntireRow="True"
+            Description="Use oneWay to make Transfer the one way style.">
+            <atom:Transfer SourceTitle="Source" TargetTitle="Target"
+                           ItemsSource="{Binding OneWayTransferItems}"
+                           IsOneWay="True"/>
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

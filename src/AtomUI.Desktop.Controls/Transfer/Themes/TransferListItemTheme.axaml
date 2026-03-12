@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TransferListItem}" TargetType="atom:TransferListItem">
         <ControlTheme.BasedOn>
@@ -20,7 +21,14 @@
                             DockPanel.Dock="Left"
                             VerticalAlignment="Center"
                             IsChecked="{TemplateBinding IsSelected, Mode=TwoWay}"
-                            IsWaveSpiritEnabled="False" />
+                            IsWaveSpiritEnabled="False"
+                            IsVisible="{TemplateBinding IsCheckable}"/>
+                        <atom:IconButton
+                            Name="RemoveButton"
+                            DockPanel.Dock="Right"
+                            VerticalAlignment="Center"
+                            Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
+                            IsVisible="{TemplateBinding IsCheckable, Converter={x:Static BoolConverters.Not}}"/>
                         <Panel>
                             <ContentPresenter Name="ContentPresenter"
                                               Content="{TemplateBinding Content}"

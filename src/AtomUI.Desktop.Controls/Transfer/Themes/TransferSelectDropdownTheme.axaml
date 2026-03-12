@@ -15,5 +15,6 @@
         <Setter Property="SelectAllText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.SelectAll}}" />
         <Setter Property="DeSelectAllText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.DeSelectAll}}" />
         <Setter Property="ToggleSelectCurrentPageText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.ToggleSelectCurrentPage}}" />
+        <Setter Property="RemoveAllText" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.RemoveAll}}" />
     </ControlTheme>
 </ResourceDictionary>

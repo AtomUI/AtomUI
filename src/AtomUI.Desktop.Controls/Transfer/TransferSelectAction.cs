@@ -4,5 +4,6 @@ internal enum TransferSelectAction
 {
     SelectAll,
     DeselectAll,
-    SetCurrentPage
+    SetCurrentPage,
+    RemoveAll
 }

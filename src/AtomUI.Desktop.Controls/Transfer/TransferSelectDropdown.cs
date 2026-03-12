@@ -61,6 +61,19 @@ internal class TransferSelectDropdown : IconButton
         AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(ToggleSelectCurrentPageText),
             o => o.ToggleSelectCurrentPageText,
             (o, v) => o.ToggleSelectCurrentPageText = v);
+    
+    internal static readonly DirectProperty<TransferSelectDropdown, string?> RemoveAllTextProperty =
+        AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(RemoveAllText),
+            o => o.RemoveAllText,
+            (o, v) => o.RemoveAllText = v);
+    
+    internal static readonly StyledProperty<bool> IsOneWayProperty =
+        Transfer.IsOneWayProperty.AddOwner<TransferSelectDropdown>();
+    
+    internal static readonly DirectProperty<TransferSelectDropdown, TransferViewType> ViewTypeProperty =
+        AvaloniaProperty.RegisterDirect<TransferSelectDropdown, TransferViewType>(nameof(ViewType),
+            o => o.ViewType,
+            (o, v) => o.ViewType = v);
 
     private string? _selectAllText;
     internal string? SelectAllText
@@ -81,6 +94,26 @@ internal class TransferSelectDropdown : IconButton
     {
         get => _toggleSelectCurrentPageText;
         set => SetAndRaise(ToggleSelectCurrentPageTextProperty, ref _toggleSelectCurrentPageText, value);
+    }
+    
+    private string? _removeAllText;
+    internal string? RemoveAllText
+    {
+        get => _removeAllText;
+        set => SetAndRaise(RemoveAllTextProperty, ref _removeAllText, value);
+    }
+    
+    internal bool IsOneWay
+    {
+        get => GetValue(IsOneWayProperty);
+        set => SetValue(IsOneWayProperty, value);
+    }
+
+    private TransferViewType _viewType;
+    internal TransferViewType ViewType
+    {
+        get => _viewType;
+        set => SetAndRaise(ViewTypeProperty, ref _viewType, value);
     }
     #endregion
 
@@ -104,37 +137,59 @@ internal class TransferSelectDropdown : IconButton
             };
             
             _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, menuFlyout, MenuFlyout.IsMotionEnabledProperty));
-            var selectAllMenuItem = new MenuItem()
+
+            if (ViewType == TransferViewType.Source || !IsOneWay)
             {
-                Tag = TransferSelectAction.SelectAll
-            };
-            _disposables.Add(BindUtils.RelayBind(this, SelectAllTextProperty, selectAllMenuItem, MenuItem.HeaderProperty));
-            _disposables.Add(BindUtils.RelayBind(this, IsAllSelectedProperty, selectAllMenuItem, MenuItem.IsVisibleProperty,
-                converter: value => !value));
-            var deSelectAllMenuItem = new MenuItem()
+                var selectAllMenuItem = new MenuItem()
+                {
+                    Tag = TransferSelectAction.SelectAll
+                };
+                _disposables.Add(BindUtils.RelayBind(this, SelectAllTextProperty, selectAllMenuItem, MenuItem.HeaderProperty));
+                _disposables.Add(BindUtils.RelayBind(this, IsAllSelectedProperty, selectAllMenuItem, MenuItem.IsVisibleProperty,
+                    converter: value => !value));
+                var deSelectAllMenuItem = new MenuItem()
+                {
+                    Tag = TransferSelectAction.DeselectAll
+                };
+                _disposables.Add(BindUtils.RelayBind(this, DeSelectAllTextProperty, deSelectAllMenuItem, MenuItem.HeaderProperty));
+                _disposables.Add(BindUtils.RelayBind(this, IsAllSelectedProperty, deSelectAllMenuItem, MenuItem.IsVisibleProperty));
+                var toggleSelectCurrentPageMenuItem = new MenuItem()
+                {
+                    Tag = TransferSelectAction.SetCurrentPage
+                };
+                _disposables.Add(BindUtils.RelayBind(this, ToggleSelectCurrentPageTextProperty, toggleSelectCurrentPageMenuItem, MenuItem.HeaderProperty));
+                _disposables.Add(BindUtils.RelayBind(this, IsPaginationEnabledProperty, toggleSelectCurrentPageMenuItem, MenuItem.IsVisibleProperty));
+                menuFlyout.Items.Add(selectAllMenuItem);
+                menuFlyout.Items.Add(deSelectAllMenuItem);
+                menuFlyout.Items.Add(toggleSelectCurrentPageMenuItem);
+            }
+            else if (ViewType == TransferViewType.Target && IsOneWay)
             {
-                Tag = TransferSelectAction.DeselectAll
-            };
-            _disposables.Add(BindUtils.RelayBind(this, DeSelectAllTextProperty, deSelectAllMenuItem, MenuItem.HeaderProperty));
-            _disposables.Add(BindUtils.RelayBind(this, IsAllSelectedProperty, deSelectAllMenuItem, MenuItem.IsVisibleProperty));
-            var toggleSelectCurrentPageMenuItem = new MenuItem()
-            {
-                Tag = TransferSelectAction.SetCurrentPage
-            };
-            _disposables.Add(BindUtils.RelayBind(this, ToggleSelectCurrentPageTextProperty, toggleSelectCurrentPageMenuItem, MenuItem.HeaderProperty));
-            _disposables.Add(BindUtils.RelayBind(this, IsPaginationEnabledProperty, toggleSelectCurrentPageMenuItem, MenuItem.IsVisibleProperty));
-            menuFlyout.Items.Add(selectAllMenuItem);
-            menuFlyout.Items.Add(deSelectAllMenuItem);
-            menuFlyout.Items.Add(toggleSelectCurrentPageMenuItem);
+                var removeAllData = new MenuItem
+                {
+                    Tag = TransferSelectAction.RemoveAll
+                };
+                _disposables.Add(BindUtils.RelayBind(this, RemoveAllTextProperty, removeAllData, MenuItem.HeaderProperty));
+                menuFlyout.Items.Add(removeAllData);
+            }
             
             menuFlyout.MenuItemClicked += HandleMenuItemClicked;
             Flyout = menuFlyout;
         }
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnDetachedFromVisualTree(e);
+        base.OnPropertyChanged(change);
+        if (change.Property == IsOneWayProperty ||
+            change.Property == ViewTypeProperty)
+        {
+            ResetFlyout();
+        }
+    }
+
+    private void ResetFlyout()
+    {
         if (Flyout is MenuFlyout menuFlyout)
         {
             menuFlyout.MenuItemClicked -= HandleMenuItemClicked;
@@ -142,6 +197,12 @@ internal class TransferSelectDropdown : IconButton
         _disposables?.Dispose();
         _disposables = null;
         Flyout       = null;
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        ResetFlyout();
     }
 
     private void HandleMenuItemClicked(object? sender, FlyoutMenuItemClickedEventArgs args)

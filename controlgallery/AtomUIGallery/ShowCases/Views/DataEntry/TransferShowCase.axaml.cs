@@ -14,6 +14,7 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
             if (DataContext is TransferViewModel vm)
             {
                 InitBasicTransferItems(vm);
+                InitOneWayTransferItems(vm);
             }
         });
         InitializeComponent();
@@ -32,5 +33,21 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
         }
 
         vm.BasicTransferItems = items;
+    }
+    
+    private void InitOneWayTransferItems(TransferViewModel vm)
+    {
+        var items = new List<IListItemData>();
+        for (var i = 0; i < 20; i++)
+        {
+            items.Add(new ListItemData()
+            {
+                ItemKey = $"{i}",
+                Content = $"content{i + 1}",
+                IsEnabled = !(i % 3 < 1)
+            });
+        }
+
+        vm.OneWayTransferItems = items;
     }
 }

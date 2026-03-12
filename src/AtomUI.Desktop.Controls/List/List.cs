@@ -789,11 +789,11 @@ public class List : TemplatedControl,
     }
 
     protected internal virtual bool UpdateSelection(ListItem listItem,
-                                           bool select = true,
-                                           bool rangeModifier = false,
-                                           bool toggleModifier = false,
-                                           bool rightButton = false,
-                                           bool fromFocus = false)
+                                                    bool select = true,
+                                                    bool rangeModifier = false,
+                                                    bool toggleModifier = false,
+                                                    bool rightButton = false,
+                                                    bool fromFocus = false)
     {
         if (ListView != null)
         {

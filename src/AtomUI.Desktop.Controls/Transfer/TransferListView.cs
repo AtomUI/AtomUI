@@ -5,8 +5,7 @@ using Avalonia.Controls.Templates;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferListView : List,
-                                ITransferView
+public class TransferListView : List, ITransferView
 {
     #region 公共属性定义
 
@@ -15,12 +14,23 @@ public class TransferListView : List,
             o => o.SelectedKeys,
             (o, v) => o.SelectedKeys = v);
     
-    private IList<EntityKey>? _selectedKeys;
+    public static readonly DirectProperty<TransferListView, TransferViewType> ViewTypeProperty =
+        AvaloniaProperty.RegisterDirect<TransferListView, TransferViewType>(nameof(ViewType), 
+            o => o.ViewType,
+            (o, v) => o.ViewType = v);
 
+    private IList<EntityKey>? _selectedKeys;
     public IList<EntityKey>? SelectedKeys
     {
         get => _selectedKeys;
         set => SetAndRaise(SelectedKeysProperty, ref _selectedKeys, value);
+    }
+    
+    private TransferViewType _viewType;
+    public TransferViewType ViewType
+    {
+        get => _viewType;
+        set => SetAndRaise(ViewTypeProperty, ref _viewType, value);
     }
     #endregion
 
@@ -32,6 +42,7 @@ public class TransferListView : List,
     #endregion
     
     private bool _ignoreSyncSelection;
+    private IList<EntityKey>? _selectedKeysBackup;
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel());
@@ -110,5 +121,23 @@ public class TransferListView : List,
         {
             Selection.Clear();
         }
+    }
+
+    void ITransferView.NotifyAboutToTransfer(TransferDirection transferDirection)
+    {
+        _selectedKeysBackup = SelectedKeys;
+    }
+
+    void ITransferView.NotifyTransferCompleted(TransferDirection transferDirection)
+    {
+        if (ViewType == TransferViewType.Source && transferDirection == TransferDirection.ToSource)
+        {
+            SetCurrentValue(SelectedKeysProperty, _selectedKeysBackup);
+        }
+        else if (ViewType == TransferViewType.Target && transferDirection == TransferDirection.ToTarget)
+        {
+            SetCurrentValue(SelectedKeysProperty, _selectedKeysBackup);
+        }
+        _selectedKeysBackup = null;
     }
 }

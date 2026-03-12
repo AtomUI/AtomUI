@@ -358,7 +358,8 @@ public class Transfer : TemplatedControl,
                 currentSet.Add(targetKey);
             }
         }
-        
+        _sourceView?.NotifyAboutToTransfer(transferDirection);
+        _targetView?.NotifyAboutToTransfer(transferDirection);
         if (transferDirection == TransferDirection.ToTarget)
         {
             var keys = _sourceView?.SelectedKeys;
@@ -383,5 +384,7 @@ public class Transfer : TemplatedControl,
                 SetCurrentValue(TargetKeysProperty, currentSet.ToList());
             }
         }
+        _sourceView?.NotifyTransferCompleted(transferDirection);
+        _targetView?.NotifyTransferCompleted(transferDirection);
     }
 }

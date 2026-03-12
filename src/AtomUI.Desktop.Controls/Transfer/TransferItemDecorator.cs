@@ -175,6 +175,11 @@ internal class TransferItemDecorator : TemplatedControl,
         AvaloniaProperty.RegisterDirect<TransferItemDecorator, PathIcon?>(nameof(SelectionsIcon),
             o => o.SelectionsIcon,
             (o, v) => o.SelectionsIcon = v);
+    
+    internal static readonly DirectProperty<TransferItemDecorator, TransferViewType> ViewTypeProperty =
+        AvaloniaProperty.RegisterDirect<TransferItemDecorator, TransferViewType>(nameof(ViewType),
+            o => o.ViewType,
+            (o, v) => o.ViewType = v);
 
     private string? _selectedMessage;
     internal string? SelectedMessage
@@ -237,6 +242,13 @@ internal class TransferItemDecorator : TemplatedControl,
     {
         get => _selectionsIcon;
         set => SetAndRaise(SelectionsIconProperty, ref _selectionsIcon, value);
+    }
+    
+    private TransferViewType _viewType;
+    internal TransferViewType ViewType
+    {
+        get => _viewType;
+        set => SetAndRaise(ViewTypeProperty, ref _viewType, value);
     }
     #endregion
     
@@ -332,6 +344,7 @@ internal class TransferItemDecorator : TemplatedControl,
                     transferView.ItemsSource        =  ItemsSource;
                     transferView.ItemCountChanged   += HandleItemsCountChanged;
                     transferView.SelectedKeyChanged += HandleSelectedChanged;
+                    transferView.ViewType           =  ViewType;
                 }
             }
         }
@@ -400,6 +413,22 @@ internal class TransferItemDecorator : TemplatedControl,
         else if (args.Action == TransferSelectAction.DeselectAll)
         {
             SetCurrentValue(IsAllSelectedProperty, false);
+        }
+    }
+
+    public void NotifyAboutToTransfer(TransferDirection transferDirection)
+    {
+        if (_transferView is ITransferView transferView)
+        {
+            transferView.NotifyAboutToTransfer(transferDirection);
+        }
+    }
+
+    public void NotifyTransferCompleted(TransferDirection transferDirection)
+    {
+        if (_transferView is ITransferView transferView)
+        {
+            transferView.NotifyTransferCompleted(transferDirection);
         }
     }
 }

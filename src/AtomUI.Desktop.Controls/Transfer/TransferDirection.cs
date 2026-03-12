@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls;
 
-internal enum TransferDirection
+public enum TransferDirection
 {
     ToSource,
     ToTarget,

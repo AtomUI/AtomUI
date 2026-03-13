@@ -15,6 +15,15 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
             {
                 InitBasicTransferItems(vm);
                 InitOneWayTransferItems(vm);
+                InitSearchTransferItems(vm);
+                vm.TransferFilterValueSelector = record =>
+                {
+                    if (record is ListItemData listItemData)
+                    {
+                        return listItemData.Content;
+                    }
+                    return record.ToString();
+                };
             }
         });
         InitializeComponent();
@@ -50,4 +59,22 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
 
         vm.OneWayTransferItems = items;
     }
+    
+    private void InitSearchTransferItems(TransferViewModel vm)
+    {
+        var items = new List<IListItemData>();
+        for (var i = 0; i < 20; i++)
+        {
+            items.Add(new SearchCaseItemData()
+            {
+                ItemKey   = $"{i}",
+                Content   = $"content{i + 1}",
+                Description = $"description of content{i + 1}"
+            });
+        }
+
+        vm.SearchTransferItems = items;
+    }
+    
+    
 }

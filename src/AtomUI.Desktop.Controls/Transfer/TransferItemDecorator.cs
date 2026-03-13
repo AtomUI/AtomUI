@@ -54,6 +54,9 @@ internal class TransferItemDecorator : TemplatedControl,
     public static readonly StyledProperty<bool> IsOneWayProperty =
         Transfer.IsOneWayProperty.AddOwner<TransferItemDecorator>();
     
+    public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
+        AvaloniaProperty.Register<TransferItemDecorator, string?>(nameof(FilterPlaceholderText));
+    
     [DependsOn(nameof(TitleTemplate))]
     public object? Title
     {
@@ -132,6 +135,12 @@ internal class TransferItemDecorator : TemplatedControl,
     {
         get => GetValue(IsOneWayProperty);
         set => SetValue(IsOneWayProperty, value);
+    }
+    
+    public string? FilterPlaceholderText
+    {
+        get => GetValue(FilterPlaceholderTextProperty);
+        set => SetValue(FilterPlaceholderTextProperty, value);
     }
     
     public IList<EntityKey>? SelectedKeys => (_transferView as ITransferView)?.SelectedKeys;

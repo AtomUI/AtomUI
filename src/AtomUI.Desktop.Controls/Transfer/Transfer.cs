@@ -31,6 +31,9 @@ public class Transfer : TemplatedControl,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<Transfer>();
     
+    public static readonly StyledProperty<double> ListWidthProperty =
+        AvaloniaProperty.Register<Transfer, double>(nameof(ListWidth), double.NaN);
+    
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Transfer>();
     
@@ -106,6 +109,9 @@ public class Transfer : TemplatedControl,
         AvaloniaProperty.Register<Transfer, TransferFilterValueSelector?>(
             nameof(FilterValueSelector));
     
+    public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
+        AvaloniaProperty.Register<Transfer, string?>(nameof(FilterPlaceholderText));
+    
     public IEnumerable<IItemKey>? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -122,6 +128,12 @@ public class Transfer : TemplatedControl,
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
+    }
+    
+    public double ListWidth
+    {
+        get => GetValue(ListWidthProperty);
+        set => SetValue(ListWidthProperty, value);
     }
     
     [DependsOn(nameof(FooterTemplate))]
@@ -272,6 +284,12 @@ public class Transfer : TemplatedControl,
         get => GetValue(FilterValueSelectorProperty);
         set => SetValue(FilterValueSelectorProperty, value);
     }
+    
+    public string? FilterPlaceholderText
+    {
+        get => GetValue(FilterPlaceholderTextProperty);
+        set => SetValue(FilterPlaceholderTextProperty, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -305,6 +323,11 @@ public class Transfer : TemplatedControl,
         AvaloniaProperty.RegisterDirect<Transfer, string?>(nameof(TargetFilterValue),
             o => o.TargetFilterValue,
             (o, v) => o.TargetFilterValue = v);
+    
+    internal static readonly DirectProperty<Transfer, IValueFilter?> EffectiveFilterProperty =
+        AvaloniaProperty.RegisterDirect<Transfer, IValueFilter?>(nameof(EffectiveFilter),
+            o => o.EffectiveFilter,
+            (o, v) => o.EffectiveFilter = v);
     
     internal IEnumerable<IItemKey>? SourcePanelSource
     {
@@ -346,6 +369,14 @@ public class Transfer : TemplatedControl,
         set => SetAndRaise(TargetFilterValueProperty, ref _targetFilterValue, value);
     }
     
+    private IValueFilter? _effectiveFilter;
+
+    internal IValueFilter? EffectiveFilter
+    {
+        get => _effectiveFilter;
+        set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TransferToken.ID;
 
@@ -360,6 +391,9 @@ public class Transfer : TemplatedControl,
     {
         IconButton.ClickEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleTransferRequest(args));
         TransferSelectDropdown.SelectActionRequestEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleSelectActionRequest(args));
+        LineEdit.TextChangedEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleTransferFilterChanged(args));
+        FilterModeProperty.Changed.AddClassHandler<Transfer>((transfer,e) => transfer.HandleFilterModePropertyChanged(e));
+        FilterProperty.Changed.AddClassHandler<Transfer>((transfer, e) => transfer.HandleFilterPropertyChanged(e));
     }
     
     public Transfer()
@@ -399,11 +433,11 @@ public class Transfer : TemplatedControl,
 
         if (_targetView != null)
         {
-            _targetView.ItemRemoved     -= HandleItemRemoved;
+            _targetView.ItemRemoved -= HandleItemRemoved;
         }
         if (_sourceView != null)
         {
-            _sourceView.ItemRemoved     -= HandleItemRemoved;
+            _sourceView.ItemRemoved -= HandleItemRemoved;
         }
         _sourceViewDecorator = e.NameScope.Find<TransferItemDecorator>("SourceDecoratorView");
         _targetViewDecorator = e.NameScope.Find<TransferItemDecorator>("TargetDecoratorView");
@@ -416,6 +450,8 @@ public class Transfer : TemplatedControl,
         {
             _targetViewDecorator.TransferViewCreated += HandleTransferViewCreated;
         }
+
+        EffectiveFilter = ValueFilterFactory.BuildFilter(FilterMode) ?? Filter;
     }
 
     private void HandleTransferViewCreated(object? sender, TransferViewCreatedEventArgs args)
@@ -450,19 +486,49 @@ public class Transfer : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ItemsSourceProperty ||
-            change.Property == TargetKeysProperty)
+ 
+        if (change.Property == SourceFilterValueProperty)
         {
-            ConfigurePanelItemsSource();
+            ConfigurePanelItemsSourceForFilter(FilterChangeType.Source);
+        }
+        else if (change.Property == TargetFilterValueProperty)
+        {
+            ConfigurePanelItemsSourceForFilter(FilterChangeType.Target);
+        }
+        else if (change.Property == FilterValueSelectorProperty ||
+                 change.Property == EffectiveFilterProperty ||
+                 change.Property == IsFilterEnabledProperty ||
+                 change.Property == ItemsSourceProperty ||
+                 change.Property == TargetKeysProperty)
+        {
+            ConfigurePanelItemsSourceForFilter(FilterChangeType.Both);
         }
     }
 
-    private void ConfigurePanelItemsSource()
+    private void ConfigurePanelItemsSourceForFilter(FilterChangeType changeType)
     {
-        SourcePanelSource = ItemsSource?.Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false));
-        TargetPanelSource = ItemsSource?.Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false);
-    }
+        if (!IsFilterEnabled)
+        {
+            return;
+        }
+        if (changeType.HasFlag(FilterChangeType.Source))
+        {
+            SourcePanelSource = ItemsSource?
+                .Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false))
+                .Where(item => string.IsNullOrEmpty(SourceFilterValue) || 
+                               (EffectiveFilter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item,
+                    SourceFilterValue) ?? false));
+        }
 
+        if (changeType.HasFlag(FilterChangeType.Target))
+        {
+            TargetPanelSource = ItemsSource?
+                                .Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false)
+                                .Where(item => string.IsNullOrEmpty(TargetFilterValue) || 
+                                               (EffectiveFilter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false));
+        }
+    }
+    
     private void HandleTransferRequest(RoutedEventArgs args)
     {
         if (args.Source is Button button && button.Tag is TransferDirection transferDirection)
@@ -520,5 +586,53 @@ public class Transfer : TemplatedControl,
             SetCurrentValue(TargetKeysProperty, null);
             _sourceViewDecorator?.NotifyTransferCompleted(TransferDirection.ToSource);
         }
+    }
+
+    private void HandleTransferFilterChanged(TextChangedEventArgs args)
+    {
+        if (!IsFilterEnabled)
+        {
+            return;
+        }
+        if (args.Source is LineEdit filterInput && filterInput.Tag is TransferViewType viewType)
+        {
+            if (viewType == TransferViewType.Source)
+            {
+                SourceFilterValue = filterInput.Text;
+            }
+
+            if (viewType == TransferViewType.Target)
+            {
+                TargetFilterValue = filterInput.Text;
+            }
+        }
+    }
+    
+    private void HandleFilterModePropertyChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        var mode = (ValueFilterMode)e.NewValue!;
+        EffectiveFilter = ValueFilterFactory.BuildFilter(mode) ?? Filter;
+    }
+    
+    private void HandleFilterPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        var value = e.NewValue as AutoCompleteFilterPredicate<object>;
+        
+        if (value == null)
+        {
+            SetCurrentValue(FilterModeProperty, ValueFilterMode.None);
+        }
+        else
+        {
+            SetCurrentValue(FilterModeProperty, ValueFilterMode.Custom);
+        }
+    }
+    
+    [Flags]
+    private enum FilterChangeType
+    {
+        Source = 0x01,
+        Target = 0x02,
+        Both = Source | Target
     }
 }

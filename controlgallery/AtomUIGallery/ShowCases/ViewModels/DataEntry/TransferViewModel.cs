@@ -36,8 +36,29 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _oneWayTransferEnabled, value);
     }
     
+    private List<IListItemData>? _searchTransferItems;
+    
+    public List<IListItemData>? SearchTransferItems
+    {
+        get => _searchTransferItems;
+        set => this.RaiseAndSetIfChanged(ref _searchTransferItems, value);
+    }
+    
+    private TransferFilterValueSelector? _transferFilterValueSelector;
+    
+    public TransferFilterValueSelector? TransferFilterValueSelector
+    {
+        get => _transferFilterValueSelector;
+        set => this.RaiseAndSetIfChanged(ref _transferFilterValueSelector, value);
+    }
+
     public TransferViewModel(IScreen screen)
     {
         HostScreen = screen;
     }
+}
+
+public record SearchCaseItemData : ListItemData
+{
+    public string? Description { get; init; }
 }

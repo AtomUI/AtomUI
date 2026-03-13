@@ -15,6 +15,7 @@
                                                 ContentTemplate="{TemplateBinding SourcePanelTemplate}"
                                                 Grid.Row="0"
                                                 Grid.Column="0"
+                                                Height="{TemplateBinding Height}"
                                                 ViewType="{x:Static atom:TransferViewType.Source}"
                                                 SizeType="{TemplateBinding SizeType}"
                                                 Status="{TemplateBinding Status}"
@@ -25,7 +26,9 @@
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
                                                 ItemsSource="{TemplateBinding SourcePanelSource}"
                                                 IsOneWay="{TemplateBinding IsOneWay}"
-                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"/>
+                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
+                                                FilterPlaceholderText="{TemplateBinding FilterPlaceholderText}"
+                                                Width="{TemplateBinding ListWidth}"/>
                     <StackPanel Name="ActionsLayout"
                                 Orientation="Vertical"
                                 VerticalAlignment="Center"
@@ -59,7 +62,10 @@
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
                                                 ItemsSource="{TemplateBinding TargetPanelSource}"
                                                 IsOneWay="{TemplateBinding IsOneWay}"
-                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"/>
+                                                Height="{TemplateBinding Height}"
+                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
+                                                FilterPlaceholderText="{TemplateBinding FilterPlaceholderText}"
+                                                Width="{TemplateBinding ListWidth}"/>
                 </Grid>
             </ControlTemplate>
         </Setter>
@@ -84,6 +90,15 @@
                 <antdicons:DownOutlined/>
             </atom:IconTemplate>
         </Setter>
-
+        
+        <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListHeight}}" />
+        <Style Selector="^[IsFilterEnabled=True]">
+            <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListHeightLG}}" />
+        </Style>
+        
+        <Setter Property="ListWidth" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidth}}" />
+        <Style Selector="^[IsPaginationEnabled=True]">
+            <Setter Property="ListWidth" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidthLG}}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

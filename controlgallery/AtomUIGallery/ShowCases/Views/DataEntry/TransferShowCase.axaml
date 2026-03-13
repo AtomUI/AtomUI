@@ -4,26 +4,38 @@
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <gallery:ShowCasePanel>
-        <gallery:ShowCaseItem
-            Title="Basic"
-            IsOccupyEntireRow="True"
-            Description="The most basic usage of Transfer involves providing the source data and target keys arrays, plus the rendering and some callback functions.">
-            <atom:Transfer SourceTitle="Source" TargetTitle="Target"
-                           ItemsSource="{Binding BasicTransferItems}"/>
-        </gallery:ShowCaseItem>
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="Basic" -->
+        <!--     IsOccupyEntireRow="True" -->
+        <!--     Description="The most basic usage of Transfer involves providing the source data and target keys arrays, plus the rendering and some callback functions."> -->
+        <!--     <atom:Transfer SourceTitle="Source" TargetTitle="Target" -->
+        <!--                    ItemsSource="{Binding BasicTransferItems}"/> -->
+        <!-- </gallery:ShowCaseItem> -->
+        <!-- -->
+        <!-- <gallery:ShowCaseItem -->
+        <!--     Title="One Way" -->
+        <!--     IsOccupyEntireRow="True" -->
+        <!--     Description="Use oneWay to make Transfer the one way style."> -->
+        <!--     <StackPanel Spacing="20"> -->
+        <!--         <atom:Transfer SourceTitle="Source" TargetTitle="Target" -->
+        <!--                        ItemsSource="{Binding OneWayTransferItems}" -->
+        <!--                        IsOneWay="True" -->
+        <!--                        IsEnabled="{Binding OneWayTransferEnabled}"/> -->
+        <!--         <atom:ToggleSwitch IsChecked="{Binding OneWayTransferEnabled, Mode=TwoWay}" -->
+        <!--                            OnContent="disable" -->
+        <!--                            OffContent="enable"/> -->
+        <!--     </StackPanel> -->
+        <!-- </gallery:ShowCaseItem> -->
         
         <gallery:ShowCaseItem
-            Title="One Way"
+            Title="Search"
             IsOccupyEntireRow="True"
-            Description="Use oneWay to make Transfer the one way style.">
+            Description="Transfer with a search box.">
             <StackPanel Spacing="20">
-                <atom:Transfer SourceTitle="Source" TargetTitle="Target"
-                               ItemsSource="{Binding OneWayTransferItems}"
-                               IsOneWay="True"
-                               IsEnabled="{Binding OneWayTransferEnabled}"/>
-                <atom:ToggleSwitch IsChecked="{Binding OneWayTransferEnabled, Mode=TwoWay}"
-                                   OnContent="disable"
-                                   OffContent="enable"/>
+                <atom:Transfer ItemsSource="{Binding SearchTransferItems}"
+                               IsFilterEnabled="True"
+                               FilterPlaceholderText="Search here"
+                               FilterValueSelector="{Binding TransferFilterValueSelector}"/>
             </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>

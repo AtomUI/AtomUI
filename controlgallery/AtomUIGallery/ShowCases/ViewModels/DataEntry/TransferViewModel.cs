@@ -67,7 +67,31 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         get => _advanceTransferDefaultTargetKeys;
         set => this.RaiseAndSetIfChanged(ref _advanceTransferDefaultTargetKeys, value);
     }
+    
+    private bool _paginationIsOneWay = false;
+    
+    public bool PaginationIsOneWay
+    {
+        get => _paginationIsOneWay;
+        set => this.RaiseAndSetIfChanged(ref _paginationIsOneWay, value);
+    }
+    
+    private List<IListItemData>? _paginationTransferItems;
+    
+    public List<IListItemData>? PaginationTransferItems
+    {
+        get => _advanceTransferItems;
+        set => this.RaiseAndSetIfChanged(ref _advanceTransferItems, value);
+    }
 
+    private List<EntityKey>? _paginationTransferDefaultTargetKeys;
+    
+    public List<EntityKey>? PaginationTransferDefaultTargetKeys
+    {
+        get => _paginationTransferDefaultTargetKeys;
+        set => this.RaiseAndSetIfChanged(ref _paginationTransferDefaultTargetKeys, value);
+    }
+    
     public TransferViewModel(IScreen screen)
     {
         HostScreen = screen;

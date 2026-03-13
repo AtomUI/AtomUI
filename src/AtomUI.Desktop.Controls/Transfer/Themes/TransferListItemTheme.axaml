@@ -20,7 +20,7 @@
                             Name="SelectedIndicator"
                             DockPanel.Dock="Left"
                             VerticalAlignment="Center"
-                            IsChecked="{TemplateBinding IsSelected, Mode=TwoWay}"
+                            IsChecked="{TemplateBinding IsSelected}"
                             IsWaveSpiritEnabled="False"
                             IsVisible="{TemplateBinding IsCheckable}"/>
                         <atom:TransferRemoveItemButton

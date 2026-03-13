@@ -5,68 +5,81 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.ViewModels">
     <gallery:ShowCasePanel>
-        <gallery:ShowCaseItem
-            Title="Basic"
-            IsOccupyEntireRow="True"
-            Description="The most basic usage of Transfer involves providing the source data and target keys arrays, plus the rendering and some callback functions.">
-            <atom:Transfer SourceTitle="Source" TargetTitle="Target"
-                           ItemsSource="{Binding BasicTransferItems}"/>
-        </gallery:ShowCaseItem>
+<!--         <gallery:ShowCaseItem -->
+<!--             Title="Basic" -->
+<!--             IsOccupyEntireRow="True" -->
+<!--             Description="The most basic usage of Transfer involves providing the source data and target keys arrays, plus the rendering and some callback functions."> -->
+<!--             <atom:Transfer SourceTitle="Source" TargetTitle="Target" -->
+<!--                            ItemsSource="{Binding BasicTransferItems}"/> -->
+<!--         </gallery:ShowCaseItem> -->
+<!--          -->
+<!--         <gallery:ShowCaseItem -->
+<!--             Title="One Way" -->
+<!--             IsOccupyEntireRow="True" -->
+<!--             Description="Use oneWay to make Transfer the one way style."> -->
+<!--             <StackPanel Spacing="20"> -->
+<!--                 <atom:Transfer SourceTitle="Source" TargetTitle="Target" -->
+<!--                                ItemsSource="{Binding OneWayTransferItems}" -->
+<!--                                IsOneWay="True" -->
+<!--                                IsEnabled="{Binding OneWayTransferEnabled}"/> -->
+<!--                 <atom:ToggleSwitch IsChecked="{Binding OneWayTransferEnabled, Mode=TwoWay}" -->
+<!--                                    OnContent="disable" -->
+<!--                                    OffContent="enable"/> -->
+<!--             </StackPanel> -->
+<!--         </gallery:ShowCaseItem> -->
+<!--          -->
+<!--         <gallery:ShowCaseItem -->
+<!--             Title="Search" -->
+<!--             IsOccupyEntireRow="True" -->
+<!--             Description="Transfer with a search box."> -->
+<!--             <StackPanel Spacing="20"> -->
+<!--                 <atom:Transfer ItemsSource="{Binding SearchTransferItems}" -->
+<!--                                IsFilterEnabled="True" -->
+<!--                                FilterPlaceholderText="Search here" -->
+<!--                                FilterValueSelector="{Binding TransferFilterValueSelector}"/> -->
+<!--             </StackPanel> -->
+<!--         </gallery:ShowCaseItem> -->
+<!--          -->
+<!--         <gallery:ShowCaseItem -->
+<!--             Title="Advanced" -->
+<!--             IsOccupyEntireRow="True" -->
+<!--             Description="Advanced Usage of Transfer. -->
+<!-- You can customize the labels of the transfer buttons, the width and height of the columns, and what should be displayed in the footer."> -->
+<!--             <atom:Transfer ItemsSource="{Binding AdvanceTransferItems}" -->
+<!--                            TargetKeys="{Binding AdvanceTransferDefaultTargetKeys}" -->
+<!--                            ToTargetButtonText="to right" -->
+<!--                            ToSourceButtonText="to left" -->
+<!--                            ListWidth="300" -->
+<!--                            Name="AdvanceTransfer"> -->
+<!--                 <atom:Transfer.SourceViewFooter> -->
+<!--                     <atom:Button SizeType="Small" Click="ReloadAdvancedTransferItems">Left button reload</atom:Button> -->
+<!--                 </atom:Transfer.SourceViewFooter> -->
+<!--                 <atom:Transfer.TargetViewFooter> -->
+<!--                     <atom:Button SizeType="Small" Click="ReloadAdvancedTransferItems">Right button reload</atom:Button> -->
+<!--                 </atom:Transfer.TargetViewFooter> -->
+<!--                 <atom:Transfer.ItemTemplate> -->
+<!--                     <DataTemplate x:DataType="viewModels:SearchCaseItemData"> -->
+<!--                         <TextBlock TextTrimming="CharacterEllipsis"> -->
+<!--                             <Run Text="{Binding Content}"/> -->
+<!--                             <Run Text="-"/> -->
+<!--                             <Run Text="{Binding Description}"/> -->
+<!--                         </TextBlock> -->
+<!--                     </DataTemplate> -->
+<!--                 </atom:Transfer.ItemTemplate> -->
+<!--             </atom:Transfer> -->
+<!--         </gallery:ShowCaseItem> -->
         
         <gallery:ShowCaseItem
-            Title="One Way"
+            Title="Pagination"
             IsOccupyEntireRow="True"
-            Description="Use oneWay to make Transfer the one way style.">
+            Description="Store a large amount of items with pagination.">
             <StackPanel Spacing="20">
-                <atom:Transfer SourceTitle="Source" TargetTitle="Target"
-                               ItemsSource="{Binding OneWayTransferItems}"
-                               IsOneWay="True"
-                               IsEnabled="{Binding OneWayTransferEnabled}"/>
-                <atom:ToggleSwitch IsChecked="{Binding OneWayTransferEnabled, Mode=TwoWay}"
-                                   OnContent="disable"
-                                   OffContent="enable"/>
+                <atom:Transfer ItemsSource="{Binding PaginationTransferItems}"
+                               IsOneWay="{Binding PaginationIsOneWay}"/>
+                <atom:ToggleSwitch IsChecked="{Binding PaginationIsOneWay, Mode=TwoWay}"
+                                   OnContent="ony way"
+                                   OffContent="ony way"/>
             </StackPanel>
-        </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem
-            Title="Search"
-            IsOccupyEntireRow="True"
-            Description="Transfer with a search box.">
-            <StackPanel Spacing="20">
-                <atom:Transfer ItemsSource="{Binding SearchTransferItems}"
-                               IsFilterEnabled="True"
-                               FilterPlaceholderText="Search here"
-                               FilterValueSelector="{Binding TransferFilterValueSelector}"/>
-            </StackPanel>
-        </gallery:ShowCaseItem>
-        
-        <gallery:ShowCaseItem
-            Title="Advanced"
-            IsOccupyEntireRow="True"
-            Description="Advanced Usage of Transfer.
-You can customize the labels of the transfer buttons, the width and height of the columns, and what should be displayed in the footer.">
-            <atom:Transfer ItemsSource="{Binding AdvanceTransferItems}"
-                           TargetKeys="{Binding AdvanceTransferDefaultTargetKeys}"
-                           ToTargetButtonText="to right"
-                           ToSourceButtonText="to left"
-                           ListWidth="300"
-                           Name="AdvanceTransfer">
-                <atom:Transfer.SourceViewFooter>
-                    <atom:Button SizeType="Small" Click="ReloadAdvancedTransferItems">Left button reload</atom:Button>
-                </atom:Transfer.SourceViewFooter>
-                <atom:Transfer.TargetViewFooter>
-                    <atom:Button SizeType="Small" Click="ReloadAdvancedTransferItems">Right button reload</atom:Button>
-                </atom:Transfer.TargetViewFooter>
-                <atom:Transfer.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:SearchCaseItemData">
-                        <TextBlock TextTrimming="CharacterEllipsis">
-                            <Run Text="{Binding Content}"/>
-                            <Run Text="-"/>
-                            <Run Text="{Binding Description}"/>
-                        </TextBlock>
-                    </DataTemplate>
-                </atom:Transfer.ItemTemplate>
-            </atom:Transfer>
         </gallery:ShowCaseItem>
 
     </gallery:ShowCasePanel>

@@ -1,11 +1,11 @@
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
-using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using VirtualizingStackPanel = Avalonia.Controls.VirtualizingStackPanel;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -51,7 +51,7 @@ public class TransferListView : ListBox, ITransferView
     private IList<EntityKey>? _selectedKeysBackup;
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new StackPanel());
+        new(() => new VirtualizingStackPanel());
 
     static TransferListView()
     {
@@ -60,6 +60,7 @@ public class TransferListView : ListBox, ITransferView
         SelectedKeysProperty.Changed.AddClassHandler<TransferListView>((view, args) => view.HandleSelectedKeysChanged());
         SelectionChangedEvent.AddClassHandler<TransferListView>((view, args) => view.HandleSelectionChanged(args));
         TransferRemoveItemButton.ClickEvent.AddClassHandler<TransferListView>((view, args) => view.HandleRemoveButtonClicked(args));
+        CheckBox.ClickEvent.AddClassHandler<TransferListView>((view, args) => view.HandleCheckBoxClicked(args));
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<TransferListView>(false);
     }
     
@@ -95,17 +96,9 @@ public class TransferListView : ListBox, ITransferView
             var selectedKeys = new List<EntityKey>();
             foreach (var item in SelectedItems)
             {
-                if (ContainerFromItem(item) is TransferListItem container)
+                if (item is IListItemData listItemData && listItemData.IsEnabled)
                 {
-                    if (!container.IsVisible || container.Classes.Contains(StdPseudoClass.Disabled))
-                    {
-                        this.MarkContainerSelected(container, false);
-                        continue;
-                    }
-                    if (item is IItemKey itemKey)
-                    {
-                        selectedKeys.Add(itemKey.ItemKey ?? default);
-                    }
+                    selectedKeys.Add(listItemData.ItemKey ?? default);
                 }
             }
             SetCurrentValue(SelectedKeysProperty, selectedKeys);
@@ -153,6 +146,10 @@ public class TransferListView : ListBox, ITransferView
         {
             SetCurrentValue(SelectedKeysProperty, _selectedKeysBackup);
         }
+        else
+        {
+            SetCurrentValue(SelectedKeysProperty, null);
+        }
         _selectedKeysBackup = null;
     }
 
@@ -173,6 +170,14 @@ public class TransferListView : ListBox, ITransferView
             {
                 ItemRemoved?.Invoke(this, new TransferItemRemovedEventArgs(itemKey));
             }
+        }
+    }
+
+    private void HandleCheckBoxClicked(RoutedEventArgs e)
+    {
+        if (e.Source is CheckBox checkBox && GetContainerFromEventSource(e.Source) is TransferListItem listItem)
+        {
+            listItem.SetCurrentValue(IsSelectedProperty, checkBox.IsChecked == true);
         }
     }
 }

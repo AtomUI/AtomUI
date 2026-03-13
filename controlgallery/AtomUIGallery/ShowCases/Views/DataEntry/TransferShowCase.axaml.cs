@@ -18,6 +18,7 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
                 InitBasicTransferItems(vm);
                 InitOneWayTransferItems(vm);
                 InitSearchTransferItems(vm);
+                InitPaginationTransferItems(vm);
                 vm.TransferFilterValueSelector = record =>
                 {
                     if (record is ListItemData listItemData)
@@ -101,11 +102,33 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
         vm.AdvanceTransferDefaultTargetKeys = targetKeys;
     }
     
-    private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
+    // private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
+    // {
+    //     if (DataContext is TransferViewModel vm)
+    //     {
+    //         AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
+    //     }
+    // }
+    
+    private void InitPaginationTransferItems(TransferViewModel vm)
     {
-        if (DataContext is TransferViewModel vm)
+        var items      = new List<IListItemData>();
+        var targetKeys = new List<EntityKey>();
+        for (var i = 0; i < 2000; i++)
         {
-            AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
+            var item = new SearchCaseItemData()
+            {
+                ItemKey     = $"{i}",
+                Content     = $"content{i + 1}",
+                Description = $"description of content{i + 1}"
+            };
+            items.Add(item);
+            if (i % 2 == 0)
+            {
+                targetKeys.Add(item.ItemKey!.Value);
+            }
         }
+        vm.PaginationTransferItems             = items;
+        vm.PaginationTransferDefaultTargetKeys = targetKeys;
     }
 }

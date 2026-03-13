@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -374,31 +375,7 @@ public class ListBox : AvaloniaListBox,
         if (container is ListBoxItem listBoxItem)
         {
             var disposables = new CompositeDisposable(8);
-
-            if (this is IListVirtualizingContextAware listVirtualizingContextAwareControl && 
-                listBoxItem is IListItemVirtualizingContextAware virtualListItem)
-            {
-                virtualListItem.VirtualIndex = index;
-                if (_virtualRestoreContext.TryGetValue(index, out var context))
-                {
-                    listVirtualizingContextAwareControl.RestoreVirtualizingContext(listBoxItem, context);
-                    _virtualRestoreContext.Remove(index);
-                }
-                else
-                {
-                    if (item is IListBoxItemData itemData)
-                    {
-                        NotifyRestoreDefaultContext(listBoxItem, itemData);
-                    }
-                }
-            }
-            else
-            {
-                if (item is IListBoxItemData itemData)
-                {
-                    NotifyRestoreDefaultContext(listBoxItem, itemData);
-                }
-            }
+      
             if (ItemTemplate != null)
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listBoxItem, ListBoxItem.ContentTemplateProperty));
@@ -415,12 +392,39 @@ public class ListBox : AvaloniaListBox,
             
             PrepareListBoxItem(listBoxItem, item, index, disposables);
 
-            if (_itemsBindingDisposables.TryGetValue(listBoxItem, out var oldDisposables))
+            var originMotionEnabled = false;
+            try
             {
-                oldDisposables.Dispose();
-                _itemsBindingDisposables.Remove(listBoxItem);
+                originMotionEnabled = listBoxItem.IsMotionEnabled;
+                listBoxItem.SetCurrentValue(IsMotionEnabledProperty, false);
+                if (item is IListBoxItemData itemData)
+                {
+                    NotifyRestoreDefaultContext(listBoxItem, itemData);
+                }
+
+                if (this is IListVirtualizingContextAware listVirtualizingContextAwareControl &&
+                    listBoxItem is IListItemVirtualizingContextAware virtualListItem)
+                {
+                    virtualListItem.VirtualIndex = index;
+                    if (_virtualRestoreContext.TryGetValue(index, out var context))
+                    {
+                        listVirtualizingContextAwareControl.RestoreVirtualizingContext(listBoxItem, context);
+                        _virtualRestoreContext.Remove(index);
+                    }
+                }
+
+                if (_itemsBindingDisposables.TryGetValue(listBoxItem, out var oldDisposables))
+                {
+                    oldDisposables.Dispose();
+                    _itemsBindingDisposables.Remove(listBoxItem);
+                }
+
+                _itemsBindingDisposables.Add(listBoxItem, disposables);
             }
-            _itemsBindingDisposables.Add(listBoxItem, disposables);
+            finally
+            {
+                listBoxItem.SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
+            }
         }
         else
         {
@@ -609,15 +613,32 @@ public class ListBox : AvaloniaListBox,
     #region 虚拟化上下文管理
     protected sealed override void ClearContainerForItemOverride(Control element)
     {
-        if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
+        var originMotionEnabled = false; 
+        try
         {
-            var context = new Dictionary<object, object?>();
-            list.SaveVirtualizingContext(element, context);
-            _virtualRestoreContext.Add(listItem.VirtualIndex, context);
-            list.ClearContainerValues(element);
+            if (element is IMotionAwareControl motionAwareControl)
+            {
+                originMotionEnabled = motionAwareControl.IsMotionEnabled;
+                element.SetCurrentValue(IsMotionEnabledProperty, false);
+            }
+        
+            if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
+            {
+                var context = new Dictionary<object, object?>();
+                list.SaveVirtualizingContext(element, context);
+                _virtualRestoreContext.Add(listItem.VirtualIndex, context);
+                list.ClearContainerValues(element);
+            }
+
+            base.ClearContainerForItemOverride(element);
         }
-     
-        base.ClearContainerForItemOverride(element);
+        finally
+        {
+            if (element is IMotionAwareControl)
+            {
+                element.SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
+            }
+        }
     }
     
     protected virtual void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
@@ -626,8 +647,6 @@ public class ListBox : AvaloniaListBox,
         {
             item.SetCurrentValue(ListBoxItem.ContentProperty, itemData);
         }
-        item.SetCurrentValue(ListBoxItem.IsSelectedProperty, itemData.IsSelected);
-        item.SetCurrentValue(ListBoxItem.IsEnabledProperty, itemData.IsEnabled);
     }
 
     protected virtual void NotifyClearContainerForVirtualizingContext(ListBoxItem item)
@@ -642,11 +661,13 @@ public class ListBox : AvaloniaListBox,
 
     protected virtual void NotifyRestoreVirtualizingContext(ListBoxItem item, IDictionary<object, object?> context)
     {
-        if (context.TryGetValue(ListBoxItem.IsEnabledProperty, out var value))
         {
-            if (value is bool isEnabled)
+            if (context.TryGetValue(ListBoxItem.IsEnabledProperty, out var value))
             {
-                item.SetCurrentValue(ListBoxItem.IsEnabledProperty, isEnabled);
+                if (value is bool isEnabled)
+                {
+                    item.SetCurrentValue(ListBoxItem.IsEnabledProperty, isEnabled);
+                }
             }
         }
     }

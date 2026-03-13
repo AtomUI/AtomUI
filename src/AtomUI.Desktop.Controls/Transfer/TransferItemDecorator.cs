@@ -195,6 +195,11 @@ internal class TransferItemDecorator : TemplatedControl,
         AvaloniaProperty.RegisterDirect<TransferItemDecorator, TransferViewType>(nameof(ViewType),
             o => o.ViewType,
             (o, v) => o.ViewType = v);
+    
+    internal static readonly DirectProperty<TransferItemDecorator, bool> IsFilterEnabledProperty =
+        AvaloniaProperty.RegisterDirect<TransferItemDecorator, bool>(nameof(IsFilterEnabled),
+            o => o.IsFilterEnabled,
+            (o, v) => o.IsFilterEnabled = v);
 
     private string? _selectedMessage;
     internal string? SelectedMessage
@@ -264,6 +269,13 @@ internal class TransferItemDecorator : TemplatedControl,
     {
         get => _viewType;
         set => SetAndRaise(ViewTypeProperty, ref _viewType, value);
+    }
+    
+    private bool _isFilterEnabled;
+    internal bool IsFilterEnabled
+    {
+        get => _isFilterEnabled;
+        set => SetAndRaise(IsFilterEnabledProperty, ref _isFilterEnabled, value);
     }
     #endregion
     

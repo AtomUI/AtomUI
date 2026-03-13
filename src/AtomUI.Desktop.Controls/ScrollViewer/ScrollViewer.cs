@@ -192,7 +192,7 @@ public class ScrollViewer : AvaloniaScrollViewer,
     {
         if (e is RawPointerEventArgs mouseEventArgs)
         {
-            if (mouseEventArgs.GetInputRoot() != TopLevel.GetTopLevel(this))
+            if (mouseEventArgs.GetInputRoot() != TopLevel.GetTopLevel(this) || Classes.Contains(StdPseudoClass.Disabled))
             {
                 return;
             }

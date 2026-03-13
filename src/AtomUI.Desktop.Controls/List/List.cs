@@ -6,6 +6,7 @@ using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -19,6 +20,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
+using VirtualizingStackPanel = Avalonia.Controls.VirtualizingStackPanel;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -840,6 +842,22 @@ public class List : TemplatedControl,
     private void HandleItemCountChanged()
     {
         ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(ItemCount));
+    }
+
+    #region ItemsControl 的方法转发
+
+    public Control? ContainerFromIndex(int index) => ListView?.ContainerFromIndex(index);
+    public Control? ContainerFromItem(object item) => ListView?.ContainerFromItem(item);
+    public int IndexFromContainer(Control container) => ListView?.IndexFromContainer(container) ?? -1;
+    public object? ItemFromContainer(Control container) => ListView?.ItemFromContainer(container);
+    public IEnumerable<Control> GetRealizedContainers() => ListView?.GetRealizedContainers() ?? Array.Empty<Control>();
+    public void ScrollIntoView(int index) => ListView?.ScrollIntoView(index);
+    public void ScrollIntoView(object item) => ListView?.ScrollIntoView(item);
+    #endregion
+
+    internal void MarkContainerSelected(Control container, bool selected)
+    {
+        ListView?.MarkContainerSelected(container, selected);
     }
     
     #region 虚拟化上下文管理

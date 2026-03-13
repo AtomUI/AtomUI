@@ -24,7 +24,8 @@
                                                 TitleTemplate="{TemplateBinding SourceTitleTemplate}"
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
                                                 ItemsSource="{TemplateBinding SourcePanelSource}"
-                                                IsOneWay="{TemplateBinding IsOneWay}"/>
+                                                IsOneWay="{TemplateBinding IsOneWay}"
+                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"/>
                     <StackPanel Name="ActionsLayout"
                                 Orientation="Vertical"
                                 VerticalAlignment="Center"
@@ -57,7 +58,8 @@
                                                 TitleTemplate="{TemplateBinding TargetTitleTemplate}"
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
                                                 ItemsSource="{TemplateBinding TargetPanelSource}"
-                                                IsOneWay="{TemplateBinding IsOneWay}"/>
+                                                IsOneWay="{TemplateBinding IsOneWay}"
+                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"/>
                 </Grid>
             </ControlTemplate>
         </Setter>

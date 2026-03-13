@@ -28,6 +28,14 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _oneWayTransferItems, value);
     }
     
+    private bool _oneWayTransferEnabled = true;
+    
+    public bool OneWayTransferEnabled
+    {
+        get => _oneWayTransferEnabled;
+        set => this.RaiseAndSetIfChanged(ref _oneWayTransferEnabled, value);
+    }
+    
     public TransferViewModel(IScreen screen)
     {
         HostScreen = screen;

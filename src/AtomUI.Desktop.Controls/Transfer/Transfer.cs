@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Controls.Utils;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Utils;
@@ -10,6 +11,8 @@ using Avalonia.Interactivity;
 using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
+
+public delegate object? TransferFilterValueSelector(object record);
 
 public class Transfer : TemplatedControl,
                         IMotionAwareControl,
@@ -87,6 +90,21 @@ public class Transfer : TemplatedControl,
     
     public static readonly StyledProperty<IDataTemplate?> TargetPanelTemplateProperty =
         AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(TargetPanelTemplate));
+    
+    public static readonly StyledProperty<bool> IsFilterEnabledProperty =
+        AvaloniaProperty.Register<Transfer, bool>(nameof(IsFilterEnabled), false);
+    
+    public static readonly StyledProperty<IValueFilter?> FilterProperty =
+        AvaloniaProperty.Register<Transfer, IValueFilter?>(nameof(Filter));
+    
+    public static readonly StyledProperty<ValueFilterMode> FilterModeProperty =
+        AvaloniaProperty.Register<Transfer, ValueFilterMode>(
+            nameof(FilterMode),
+            defaultValue: ValueFilterMode.Contains);
+    
+    public static readonly StyledProperty<TransferFilterValueSelector?> FilterValueSelectorProperty =
+        AvaloniaProperty.Register<Transfer, TransferFilterValueSelector?>(
+            nameof(FilterValueSelector));
     
     public IEnumerable<IItemKey>? ItemsSource
     {
@@ -230,6 +248,30 @@ public class Transfer : TemplatedControl,
         get => GetValue(TargetPanelTemplateProperty);
         set => SetValue(TargetPanelTemplateProperty, value);
     }
+
+    public bool IsFilterEnabled
+    {
+        get => GetValue(IsFilterEnabledProperty);
+        set => SetValue(IsFilterEnabledProperty, value);
+    }
+    
+    public IValueFilter? Filter
+    {
+        get => GetValue(FilterProperty);
+        set => SetValue(FilterProperty, value);
+    }
+    
+    public ValueFilterMode FilterMode
+    {
+        get => GetValue(FilterModeProperty);
+        set => SetValue(FilterModeProperty, value);
+    }
+    
+    public TransferFilterValueSelector? FilterValueSelector
+    {
+        get => GetValue(FilterValueSelectorProperty);
+        set => SetValue(FilterValueSelectorProperty, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -253,6 +295,16 @@ public class Transfer : TemplatedControl,
         AvaloniaProperty.RegisterDirect<Transfer, bool>(nameof(ToSourceButtonEnabled),
             o => o.ToSourceButtonEnabled,
             (o, v) => o.ToSourceButtonEnabled = v);
+    
+    internal static readonly DirectProperty<Transfer, string?> SourceFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<Transfer, string?>(nameof(SourceFilterValue),
+            o => o.SourceFilterValue,
+            (o, v) => o.SourceFilterValue = v);
+    
+    internal static readonly DirectProperty<Transfer, string?> TargetFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<Transfer, string?>(nameof(TargetFilterValue),
+            o => o.TargetFilterValue,
+            (o, v) => o.TargetFilterValue = v);
     
     internal IEnumerable<IItemKey>? SourcePanelSource
     {
@@ -280,6 +332,20 @@ public class Transfer : TemplatedControl,
         set => SetAndRaise(ToSourceButtonEnabledProperty, ref _toSourceButtonEnabled, value);
     }
 
+    private string? _sourceFilterValue;
+    internal string? SourceFilterValue
+    {
+        get => _sourceFilterValue;
+        set => SetAndRaise(SourceFilterValueProperty, ref _sourceFilterValue, value);
+    }
+    
+    private string? _targetFilterValue;
+    internal string? TargetFilterValue
+    {
+        get => _targetFilterValue;
+        set => SetAndRaise(TargetFilterValueProperty, ref _targetFilterValue, value);
+    }
+    
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => TransferToken.ID;
 

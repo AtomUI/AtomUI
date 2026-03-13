@@ -91,6 +91,14 @@ public class TransferListView : List, ITransferView
             var selectedKeys = new List<EntityKey>();
             foreach (var item in SelectedItems)
             {
+                if (ContainerFromItem(item) is TransferListItem container)
+                {
+                    if (!container.IsVisible || container.Classes.Contains(StdPseudoClass.Disabled))
+                    {
+                        MarkContainerSelected(container, false);
+                        continue;
+                    }
+                }
                 if (item is IItemKey itemKey)
                 {
                     selectedKeys.Add(itemKey.ItemKey ?? default);

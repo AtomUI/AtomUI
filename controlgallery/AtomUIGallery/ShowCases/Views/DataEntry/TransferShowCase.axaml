@@ -16,9 +16,15 @@
             Title="One Way"
             IsOccupyEntireRow="True"
             Description="Use oneWay to make Transfer the one way style.">
-            <atom:Transfer SourceTitle="Source" TargetTitle="Target"
-                           ItemsSource="{Binding OneWayTransferItems}"
-                           IsOneWay="True"/>
+            <StackPanel Spacing="20">
+                <atom:Transfer SourceTitle="Source" TargetTitle="Target"
+                               ItemsSource="{Binding OneWayTransferItems}"
+                               IsOneWay="True"
+                               IsEnabled="{Binding OneWayTransferEnabled}"/>
+                <atom:ToggleSwitch IsChecked="{Binding OneWayTransferEnabled, Mode=TwoWay}"
+                                   OnContent="disable"
+                                   OffContent="enable"/>
+            </StackPanel>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

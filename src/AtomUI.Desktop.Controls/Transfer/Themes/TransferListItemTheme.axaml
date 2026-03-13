@@ -23,7 +23,7 @@
                             IsChecked="{TemplateBinding IsSelected, Mode=TwoWay}"
                             IsWaveSpiritEnabled="False"
                             IsVisible="{TemplateBinding IsCheckable}"/>
-                        <atom:IconButton
+                        <atom:TransferRemoveItemButton
                             Name="RemoveButton"
                             DockPanel.Dock="Right"
                             VerticalAlignment="Center"

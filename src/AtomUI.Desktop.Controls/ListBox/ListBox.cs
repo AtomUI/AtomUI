@@ -211,6 +211,7 @@ public class ListBox : AvaloniaListBox,
     #region 公共事件定义
 
     public event EventHandler<ListBoxItemClickedEventArgs>? ItemClicked;
+    public event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
 
     #endregion
 
@@ -255,6 +256,7 @@ public class ListBox : AvaloniaListBox,
     {
         ListBoxItem.ClickedEvent.AddClassHandler<ListBox>((list, args) => list.HandleListBoxItemClicked(args));
         IsItemSelectableProperty.Changed.AddClassHandler<ListBox>((list, args) => list.HandleIsItemSelectableChanged(args));
+        ItemCountProperty.Changed.AddClassHandler<ListBox>((list, args) => list.HandleItemCountChanged());
     }
     
     public ListBox()
@@ -397,7 +399,6 @@ public class ListBox : AvaloniaListBox,
                     NotifyRestoreDefaultContext(listBoxItem, itemData);
                 }
             }
-            
             if (ItemTemplate != null)
             {
                 disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listBoxItem, ListBoxItem.ContentTemplateProperty));
@@ -598,6 +599,11 @@ public class ListBox : AvaloniaListBox,
         }
         
         base.OnKeyDown(e);
+    }
+    
+    private void HandleItemCountChanged()
+    {
+        ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(ItemCount));
     }
 
     #region 虚拟化上下文管理

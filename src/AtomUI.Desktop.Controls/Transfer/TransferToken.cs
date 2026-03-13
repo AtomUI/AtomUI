@@ -32,12 +32,6 @@ internal class TransferToken : AbstractControlDesignToken
     public double ListHeight { get; set; }
     
     /// <summary>
-    /// 大号列表高度
-    /// Height of large list
-    /// </summary>
-    public double ListHeightLG { get; set; }
-    
-    /// <summary>
     /// 列表项高度
     /// Height of list item
     /// </summary>
@@ -60,23 +54,16 @@ internal class TransferToken : AbstractControlDesignToken
     /// </summary>
     public Thickness HeaderPadding { get; set; }
     
-    /// <summary>
-    /// 穿梭框头部边框
-    /// </summary>
-    public Thickness HeaderBorderThickness { get; set; }
-    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ListWidth    = 180;
         ListHeight   = 200;
-        ListHeightLG = 200 + SharedToken.ControlHeight + SharedToken.UniformlyMarginXS * 2;
         ListWidthLG  = 250;
         HeaderHeight = SharedToken.ControlHeightLG;
         ItemHeight   = SharedToken.ControlHeight;
         ItemPadding  = new Thickness(0, (SharedToken.ControlHeight - SharedToken.FontHeight) / 2);
         HeaderPadding = new Thickness(SharedToken.UniformlyPaddingSM,
             Math.Ceiling((SharedToken.ControlHeightLG - SharedToken.LineWidth - SharedToken.FontHeight) / 2));
-        HeaderBorderThickness = new Thickness(0, 0, 0, SharedToken.LineWidth);
     }
 }

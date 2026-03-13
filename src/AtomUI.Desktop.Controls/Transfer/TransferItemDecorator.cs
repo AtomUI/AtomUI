@@ -1,4 +1,6 @@
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -56,6 +58,18 @@ internal class TransferItemDecorator : TemplatedControl,
     
     public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
         AvaloniaProperty.Register<TransferItemDecorator, string?>(nameof(FilterPlaceholderText));
+    
+    public static readonly StyledProperty<object?> FooterProperty =
+        AvaloniaProperty.Register<ContentControl, object?>(nameof(Footer));
+
+    public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
+        AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(FooterTemplate));
+    
+    public static readonly StyledProperty<double> ListHeightProperty =
+        Transfer.ListHeightProperty.AddOwner<TransferItemDecorator>();
+    
+    public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
+        ItemsControl.ItemTemplateProperty.AddOwner<TransferItemDecorator>();
     
     [DependsOn(nameof(TitleTemplate))]
     public object? Title
@@ -143,6 +157,32 @@ internal class TransferItemDecorator : TemplatedControl,
         set => SetValue(FilterPlaceholderTextProperty, value);
     }
     
+    [DependsOn(nameof(FooterTemplate))]
+    public object? Footer
+    {
+        get => GetValue(FooterProperty);
+        set => SetValue(FooterProperty, value);
+    }
+
+    public IDataTemplate? FooterTemplate
+    {
+        get => GetValue(FooterTemplateProperty);
+        set => SetValue(FooterTemplateProperty, value);
+    }
+    
+    public double ListHeight
+    {
+        get => GetValue(ListHeightProperty);
+        set => SetValue(ListHeightProperty, value);
+    }
+    
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
+    public IDataTemplate? ItemTemplate
+    {
+        get => GetValue(ItemTemplateProperty);
+        set => SetValue(ItemTemplateProperty, value);
+    }
+    
     public IList<EntityKey>? SelectedKeys => (_transferView as ITransferView)?.SelectedKeys;
     
     #endregion
@@ -209,6 +249,11 @@ internal class TransferItemDecorator : TemplatedControl,
         AvaloniaProperty.RegisterDirect<TransferItemDecorator, bool>(nameof(IsFilterEnabled),
             o => o.IsFilterEnabled,
             (o, v) => o.IsFilterEnabled = v);
+    
+    internal static readonly DirectProperty<TransferItemDecorator, CornerRadius> BodyCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<TransferItemDecorator, CornerRadius>(nameof(BodyCornerRadius),
+            o => o.BodyCornerRadius,
+            (o, v) => o.BodyCornerRadius = v);
 
     private string? _selectedMessage;
     internal string? SelectedMessage
@@ -286,10 +331,18 @@ internal class TransferItemDecorator : TemplatedControl,
         get => _isFilterEnabled;
         set => SetAndRaise(IsFilterEnabledProperty, ref _isFilterEnabled, value);
     }
+       
+    private CornerRadius _bodyCornerRadius;
+    internal CornerRadius BodyCornerRadius
+    {
+        get => _bodyCornerRadius;
+        set => SetAndRaise(BodyCornerRadiusProperty, ref _bodyCornerRadius, value);
+    }
     #endregion
     
     private ContentPresenter? _contentPresenter;
     private Control? _transferView;
+    private CompositeDisposable? _disposables;
 
     static TransferItemDecorator()
     {
@@ -345,6 +398,13 @@ internal class TransferItemDecorator : TemplatedControl,
         {
             ConfigureTransferViewSelectionMode();
         }
+
+        if (change.Property == CornerRadiusProperty ||
+            change.Property == FooterProperty ||
+            change.Property == FooterTemplateProperty)
+        {
+            ConfigureBodyCornerRadius();
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -377,18 +437,25 @@ internal class TransferItemDecorator : TemplatedControl,
                     transferView.ItemsSource        =  ItemsSource;
                     transferView.ItemCountChanged   -= HandleItemsCountChanged;
                     transferView.SelectedKeyChanged -= HandleSelectedChanged;
+                    _disposables?.Dispose();
+                    _disposables = null;
                 }
             }
             _transferView = e.NewValue as Control;
             {
                 if (_transferView is ITransferView transferView)
                 {
+                    _disposables                    =  new CompositeDisposable(2);
                     transferView.ItemsSource        =  ItemsSource;
                     transferView.ItemCountChanged   += HandleItemsCountChanged;
                     transferView.SelectedKeyChanged += HandleSelectedChanged;
                     transferView.ViewType           =  ViewType;
                     TransferViewCreated?.Invoke(this, new TransferViewCreatedEventArgs(transferView));
                     ConfigureTransferViewSelectionMode();
+                    if (transferView.IsSupportItemTemplate)
+                    {
+                        _disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, _transferView, ItemTemplateProperty));
+                    }
                 }
             }
         }
@@ -407,7 +474,7 @@ internal class TransferItemDecorator : TemplatedControl,
             var selectedCount = transferView.SelectedKeys?.Count ?? 0;
             SetCurrentValue(SelectedCountProperty, selectedCount);
             SetCurrentValue(HasSelectedProperty, selectedCount > 0);
-            if (selectedCount == ItemCount)
+            if (ItemCount > 0 && selectedCount == ItemCount)
             {
                 SetCurrentValue(IsAllSelectedProperty, true);
             }
@@ -485,5 +552,12 @@ internal class TransferItemDecorator : TemplatedControl,
                 transferView.SetSelectionEnabled(!IsOneWay);
             }
         }
+    }
+
+    private void ConfigureBodyCornerRadius()
+    {
+        BodyCornerRadius = (Footer != null || FooterTemplate != null)
+            ? new CornerRadius(0)
+            : new CornerRadius(0, 0, CornerRadius.BottomRight, CornerRadius.BottomLeft);
     }
 }

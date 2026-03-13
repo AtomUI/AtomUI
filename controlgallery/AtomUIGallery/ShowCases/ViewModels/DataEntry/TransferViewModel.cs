@@ -51,6 +51,22 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         get => _transferFilterValueSelector;
         set => this.RaiseAndSetIfChanged(ref _transferFilterValueSelector, value);
     }
+    
+    private List<IListItemData>? _advanceTransferItems;
+    
+    public List<IListItemData>? AdvanceTransferItems
+    {
+        get => _advanceTransferItems;
+        set => this.RaiseAndSetIfChanged(ref _advanceTransferItems, value);
+    }
+    
+    private List<EntityKey>? _advanceTransferDefaultTargetKeys;
+    
+    public List<EntityKey>? AdvanceTransferDefaultTargetKeys
+    {
+        get => _advanceTransferDefaultTargetKeys;
+        set => this.RaiseAndSetIfChanged(ref _advanceTransferDefaultTargetKeys, value);
+    }
 
     public TransferViewModel(IScreen screen)
     {

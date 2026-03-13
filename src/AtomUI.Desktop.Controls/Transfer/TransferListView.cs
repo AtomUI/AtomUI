@@ -1,6 +1,7 @@
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -8,7 +9,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferListView : List, ITransferView
+public class TransferListView : ListBox, ITransferView
 {
     #region 公共属性定义
 
@@ -35,6 +36,8 @@ public class TransferListView : List, ITransferView
         get => _viewType;
         set => SetAndRaise(ViewTypeProperty, ref _viewType, value);
     }
+
+    public bool IsSupportItemTemplate => true;
     #endregion
 
     #region 公共事件定义
@@ -56,21 +59,22 @@ public class TransferListView : List, ITransferView
         ItemsPanelProperty.OverrideDefaultValue<TransferListView>(DefaultPanel);
         SelectedKeysProperty.Changed.AddClassHandler<TransferListView>((view, args) => view.HandleSelectedKeysChanged());
         SelectionChangedEvent.AddClassHandler<TransferListView>((view, args) => view.HandleSelectionChanged(args));
-        IconButton.ClickEvent.AddClassHandler<TransferListView>((view, args) => view.HandleRemoveButtonClicked(args));
+        TransferRemoveItemButton.ClickEvent.AddClassHandler<TransferListView>((view, args) => view.HandleRemoveButtonClicked(args));
+        AutoScrollToSelectedItemProperty.OverrideDefaultValue<TransferListView>(false);
     }
     
-    protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new TransferListItem();
     }
 
-    protected internal override bool? NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TransferListItem>(item, out recycleKey);
     }
     
-    protected internal override void PrepareListBoxItem(ListItem listItem, object? item, int index,
-                                                       CompositeDisposable disposables)
+    protected override void PrepareListBoxItem(ListBoxItem listItem, object? item, int index,
+                                               CompositeDisposable disposables)
     {
         base.PrepareListBoxItem(listItem, item, index, disposables);
         if (listItem is TransferListItem transferListItem)
@@ -95,13 +99,13 @@ public class TransferListView : List, ITransferView
                 {
                     if (!container.IsVisible || container.Classes.Contains(StdPseudoClass.Disabled))
                     {
-                        MarkContainerSelected(container, false);
+                        this.MarkContainerSelected(container, false);
                         continue;
                     }
-                }
-                if (item is IItemKey itemKey)
-                {
-                    selectedKeys.Add(itemKey.ItemKey ?? default);
+                    if (item is IItemKey itemKey)
+                    {
+                        selectedKeys.Add(itemKey.ItemKey ?? default);
+                    }
                 }
             }
             SetCurrentValue(SelectedKeysProperty, selectedKeys);
@@ -113,7 +117,7 @@ public class TransferListView : List, ITransferView
         base.OnPropertyChanged(change);
         if (change.Property == ItemsSourceProperty)
         {
-            Selection?.Clear();
+            Selection.Clear();
         }
     }
 
@@ -128,21 +132,10 @@ public class TransferListView : List, ITransferView
         var selectedItems = ItemsSource?.Cast<IItemKey>().Where(item => SelectedKeys?.Contains(item.ItemKey ?? default) ?? false).ToList();
         SetCurrentValue(SelectedItemsProperty, selectedItems);
     }
-
-    public void SelectAll()
-    {
-        if (Selection != null)
-        {
-            Selection.SelectAll();
-        }
-    }
-
+    
     public void DeselectAll()
     {
-        if (Selection != null)
-        {
-            Selection.Clear();
-        }
+        Selection.Clear();
     }
 
     void ITransferView.NotifyAboutToTransfer(TransferDirection transferDirection)
@@ -174,7 +167,7 @@ public class TransferListView : List, ITransferView
 
     private void HandleRemoveButtonClicked(RoutedEventArgs e)
     {
-        if (GetContainerFromEventSource(e.Source) is TransferListItem listItem)
+        if (e.Source is TransferRemoveItemButton && GetContainerFromEventSource(e.Source) is TransferListItem listItem)
         {
             if (listItem.DataContext is IItemKey itemKey)
             {

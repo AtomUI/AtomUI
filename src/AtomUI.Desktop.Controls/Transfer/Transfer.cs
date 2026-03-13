@@ -34,14 +34,23 @@ public class Transfer : TemplatedControl,
     public static readonly StyledProperty<double> ListWidthProperty =
         AvaloniaProperty.Register<Transfer, double>(nameof(ListWidth), double.NaN);
     
+    public static readonly StyledProperty<double> ListHeightProperty =
+        AvaloniaProperty.Register<Transfer, double>(nameof(ListHeight), double.NaN);
+    
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Transfer>();
     
-    public static readonly StyledProperty<object?> FooterProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(Footer));
+    public static readonly StyledProperty<object?> SourceViewFooterProperty =
+        AvaloniaProperty.Register<Transfer, object?>(nameof(SourceViewFooter));
     
-    public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(FooterTemplate));
+    public static readonly StyledProperty<IDataTemplate?> SourceViewFooterTemplateProperty =
+        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(SourceViewFooterTemplate));
+    
+    public static readonly StyledProperty<object?> TargetViewFooterProperty =
+        AvaloniaProperty.Register<Transfer, object?>(nameof(TargetViewFooter));
+    
+    public static readonly StyledProperty<IDataTemplate?> TargetViewFooterTemplateProperty =
+        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(TargetViewFooterTemplate));
     
     public static readonly StyledProperty<IIconTemplate?> SelectionsIconProperty =
         AvaloniaProperty.Register<Transfer, IIconTemplate?>(nameof(SelectionsIcon));
@@ -112,6 +121,15 @@ public class Transfer : TemplatedControl,
     public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
         AvaloniaProperty.Register<Transfer, string?>(nameof(FilterPlaceholderText));
     
+    public static readonly StyledProperty<string?> ToSourceButtonTextProperty =
+        AvaloniaProperty.Register<Transfer, string?>(nameof(ToSourceButtonText));
+    
+    public static readonly StyledProperty<string?> ToTargetButtonTextProperty =
+        AvaloniaProperty.Register<Transfer, string?>(nameof(ToTargetButtonText));
+    
+    public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
+        ItemsControl.ItemTemplateProperty.AddOwner<Transfer>();
+    
     public IEnumerable<IItemKey>? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -136,17 +154,36 @@ public class Transfer : TemplatedControl,
         set => SetValue(ListWidthProperty, value);
     }
     
-    [DependsOn(nameof(FooterTemplate))]
-    public object? Footer
+    public double ListHeight
     {
-        get => GetValue(FooterProperty);
-        set => SetValue(FooterProperty, value);
+        get => GetValue(ListHeightProperty);
+        set => SetValue(ListHeightProperty, value);
     }
     
-    public IDataTemplate? FooterTemplate
+    [DependsOn(nameof(SourceViewFooterTemplate))]
+    public object? SourceViewFooter
     {
-        get => GetValue(FooterTemplateProperty);
-        set => SetValue(FooterTemplateProperty, value);
+        get => GetValue(SourceViewFooterProperty);
+        set => SetValue(SourceViewFooterProperty, value);
+    }
+    
+    public IDataTemplate? SourceViewFooterTemplate
+    {
+        get => GetValue(SourceViewFooterTemplateProperty);
+        set => SetValue(SourceViewFooterTemplateProperty, value);
+    }
+    
+    [DependsOn(nameof(TargetViewFooterTemplate))]
+    public object? TargetViewFooter
+    {
+        get => GetValue(TargetViewFooterProperty);
+        set => SetValue(TargetViewFooterProperty, value);
+    }
+    
+    public IDataTemplate? TargetViewFooterTemplate
+    {
+        get => GetValue(TargetViewFooterTemplateProperty);
+        set => SetValue(TargetViewFooterTemplateProperty, value);
     }
     
     public bool IsMotionEnabled
@@ -290,6 +327,26 @@ public class Transfer : TemplatedControl,
         get => GetValue(FilterPlaceholderTextProperty);
         set => SetValue(FilterPlaceholderTextProperty, value);
     }
+    
+    public string? ToSourceButtonText
+    {
+        get => GetValue(ToSourceButtonTextProperty);
+        set => SetValue(ToSourceButtonTextProperty, value);
+    }
+    
+    public string? ToTargetButtonText
+    {
+        get => GetValue(ToTargetButtonTextProperty);
+        set => SetValue(ToTargetButtonTextProperty, value);
+    }
+    
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
+    public IDataTemplate? ItemTemplate
+    {
+        get => GetValue(ItemTemplateProperty);
+        set => SetValue(ItemTemplateProperty, value);
+    }
+    
     #endregion
 
     #region 公共事件定义
@@ -507,24 +564,20 @@ public class Transfer : TemplatedControl,
 
     private void ConfigurePanelItemsSourceForFilter(FilterChangeType changeType)
     {
-        if (!IsFilterEnabled)
-        {
-            return;
-        }
         if (changeType.HasFlag(FilterChangeType.Source))
         {
             SourcePanelSource = ItemsSource?
                 .Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false))
-                .Where(item => string.IsNullOrEmpty(SourceFilterValue) || 
+                .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(SourceFilterValue) || 
                                (EffectiveFilter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item,
-                    SourceFilterValue) ?? false));
+                                   SourceFilterValue) ?? false));
         }
 
         if (changeType.HasFlag(FilterChangeType.Target))
         {
             TargetPanelSource = ItemsSource?
                                 .Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false)
-                                .Where(item => string.IsNullOrEmpty(TargetFilterValue) || 
+                                .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(TargetFilterValue) || 
                                                (EffectiveFilter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false));
         }
     }

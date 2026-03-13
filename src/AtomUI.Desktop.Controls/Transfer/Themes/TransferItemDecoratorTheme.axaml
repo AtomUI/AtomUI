@@ -8,9 +8,19 @@
     <atom:CornerRadiusFilterConverter x:Key="HeaderCornerRadiusFilterConverter"
                                       BottomLeft="False"
                                       BottomRight="False"/>
-    <atom:CornerRadiusFilterConverter x:Key="BodyCornerRadiusFilterConverter"
+    <atom:CornerRadiusFilterConverter x:Key="FooterCornerRadiusFilterConverter"
                                       TopLeft="False"
                                       TopRight="False"/>
+    <atom:BorderThicknessFilterConverter x:Key="HeaderBorderThickness"
+                                         Top="False"
+                                         Right="False"
+                                         Bottom="True"
+                                         Left="False"/>
+    <atom:BorderThicknessFilterConverter x:Key="FooterBorderThickness"
+                                         Top="True"
+                                         Right="False"
+                                         Bottom="False"
+                                         Left="False"/>
     <ControlTheme x:Key="{x:Type atom:TransferItemDecorator}" TargetType="atom:TransferItemDecorator">
         <Setter Property="Template">
             <ControlTemplate>
@@ -21,7 +31,8 @@
                     <DockPanel LastChildFill="True" Name="RootLayout">
                         <Border Name="HeaderFrame"
                                 DockPanel.Dock="Top"
-                                CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource HeaderCornerRadiusFilterConverter}}">
+                                CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource HeaderCornerRadiusFilterConverter}}"
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource HeaderBorderThickness}}">
                             <DockPanel Name="HeaderLayout" LastChildFill="True">
                                 <atom:CheckBox Name="SelectAllCheckBox"
                                                DockPanel.Dock="Left"
@@ -60,11 +71,22 @@
                                 <antdicons:SearchOutlined StrokeBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}"/>
                             </atom:LineEdit.InnerLeftContent>
                         </atom:LineEdit>
+                        <Border Name="FooterFrame"
+                                DockPanel.Dock="Bottom"
+                                IsVisible="{TemplateBinding Footer, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource FooterCornerRadiusFilterConverter}}"
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource FooterBorderThickness}}">
+                            <ContentPresenter Name="FooterPresenter"
+                                              Content="{TemplateBinding Footer}"
+                                              ContentTemplate="{TemplateBinding FooterTemplate}"/>
+                        </Border>
                         <ContentPresenter Name="ContentPresenter"
                                           Content="{TemplateBinding Content}"
                                           ClipToBounds="True"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BodyCornerRadiusFilterConverter}}"/>
+                                          CornerRadius="{TemplateBinding BodyCornerRadius}"
+                                          Height="{TemplateBinding ListHeight}"
+                                          HorizontalAlignment="Stretch"/>
                     </DockPanel>
                 </Border>
             </ControlTemplate>
@@ -81,7 +103,6 @@
         <Style Selector="^/template/ Border#HeaderFrame">
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderHeight}}" />
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderPadding}}" />
-            <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderBorderThickness}}" />
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSplit}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainer}}" />
         </Style>
@@ -109,6 +130,11 @@
         
         <Style Selector="^/template/ atom|LineEdit#FilterInput">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginXS}}" />
+        </Style>
+        
+        <Style Selector="^/template/ Border#FooterFrame">
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderPadding}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSplit}}" />
         </Style>
 
     </ControlTheme>

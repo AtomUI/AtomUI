@@ -15,7 +15,7 @@
                                                 ContentTemplate="{TemplateBinding SourcePanelTemplate}"
                                                 Grid.Row="0"
                                                 Grid.Column="0"
-                                                Height="{TemplateBinding Height}"
+                                                ListHeight="{TemplateBinding ListHeight}"
                                                 ViewType="{x:Static atom:TransferViewType.Source}"
                                                 SizeType="{TemplateBinding SizeType}"
                                                 Status="{TemplateBinding Status}"
@@ -28,7 +28,10 @@
                                                 IsOneWay="{TemplateBinding IsOneWay}"
                                                 IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
                                                 FilterPlaceholderText="{TemplateBinding FilterPlaceholderText}"
-                                                Width="{TemplateBinding ListWidth}"/>
+                                                Width="{TemplateBinding ListWidth}"
+                                                Footer="{TemplateBinding SourceViewFooter}"
+                                                FooterTemplate="{TemplateBinding SourceViewFooterTemplate}"
+                                                ItemTemplate="{TemplateBinding ItemTemplate}"/>
                     <StackPanel Name="ActionsLayout"
                                 Orientation="Vertical"
                                 VerticalAlignment="Center"
@@ -38,13 +41,17 @@
                                      Icon="{TemplateBinding ToTargetTransferIcon}"
                                      SizeType="Small"
                                      IsEnabled="{Binding #SourceDecoratorView.HasSelected}"
-                                     Tag="{x:Static atom:TransferDirection.ToTarget}"/>
+                                     Tag="{x:Static atom:TransferDirection.ToTarget}"
+                                     Content="{TemplateBinding ToTargetButtonText}"
+                                     HorizontalAlignment="Stretch"/>
                         <atom:Button Name="ToSourceButton"
                                      ButtonType="Primary"
                                      Tag="{x:Static atom:TransferDirection.ToSource}"
                                      Icon="{TemplateBinding ToSourceTransferIcon}"
                                      SizeType="Small"
                                      IsEnabled="{Binding #TargetDecoratorView.HasSelected}"
+                                     Content="{TemplateBinding ToSourceButtonText}"
+                                     HorizontalAlignment="Stretch"
                                      IsVisible="{TemplateBinding IsOneWay, Converter={x:Static BoolConverters.Not}}" />
                     </StackPanel>
                     <atom:TransferItemDecorator Name="TargetDecoratorView"
@@ -62,10 +69,13 @@
                                                 SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
                                                 ItemsSource="{TemplateBinding TargetPanelSource}"
                                                 IsOneWay="{TemplateBinding IsOneWay}"
-                                                Height="{TemplateBinding Height}"
+                                                ListHeight="{TemplateBinding ListHeight}"
                                                 IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
                                                 FilterPlaceholderText="{TemplateBinding FilterPlaceholderText}"
-                                                Width="{TemplateBinding ListWidth}"/>
+                                                Width="{TemplateBinding ListWidth}"
+                                                Footer="{TemplateBinding TargetViewFooter}"
+                                                FooterTemplate="{TemplateBinding TargetViewFooterTemplate}"
+                                                ItemTemplate="{TemplateBinding ItemTemplate}"/>
                 </Grid>
             </ControlTemplate>
         </Setter>
@@ -91,14 +101,16 @@
             </atom:IconTemplate>
         </Setter>
         
-        <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListHeight}}" />
-        <Style Selector="^[IsFilterEnabled=True]">
-            <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListHeightLG}}" />
-        </Style>
-        
+        <Setter Property="ListHeight" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListHeight}}" />
         <Setter Property="ListWidth" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidth}}" />
         <Style Selector="^[IsPaginationEnabled=True]">
             <Setter Property="ListWidth" Value="{DynamicResource {x:Static atom:TransferTokenKey.ListWidthLG}}" />
         </Style>
+        
+        <Setter Property="ItemTemplate">
+            <DataTemplate x:DataType="atom:IListItemData">
+                <atom:TextBlock Text="{Binding Content}" />
+            </DataTemplate>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

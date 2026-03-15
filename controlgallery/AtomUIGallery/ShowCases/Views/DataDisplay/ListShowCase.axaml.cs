@@ -18,7 +18,6 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         {
             if (DataContext is ListViewModel viewModel)
             {
-         
                 viewModel.ListItemsWidthDisabled = [
                     new ListItemData()
                     {
@@ -45,13 +44,14 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
                 InitializeOrderedGroupItems(viewModel);
                 InitializeEmptyDemoItems(viewModel);
                 InitializeBasicListBoxItems(viewModel);
+                InitializePaginationListBoxItems(viewModel);
                 viewModel.SelectionMode = SelectionMode.Single;
             }
         });
         InitializeComponent();
-        SelectionModeOptionGroup.OptionCheckedChanged += HandleSelectionModeOptionCheckedChanged;
-        FilteredList.CollectionViewChanged            += HandleFilterCollectionViewChanged;
-        OrderedList.CollectionViewChanged             += HandleOrderedCollectionViewChanged;
+        // SelectionModeOptionGroup.OptionCheckedChanged += HandleSelectionModeOptionCheckedChanged;
+        // FilteredList.CollectionViewChanged            += HandleFilterCollectionViewChanged;
+        // OrderedList.CollectionViewChanged             += HandleOrderedCollectionViewChanged;
     }
 
     private void HandleSelectionModeOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs e)
@@ -322,5 +322,20 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         {
             SearchListBox.ItemFilterValue = searchEdit.Text?.Trim();
         }
+    }
+
+    private void InitializePaginationListBoxItems(ListViewModel viewModel)
+    {
+        var list = new List<IListItemData>();
+        for (var i = 0; i < 2000; i++)
+        {
+            list.Add(new ListItemData()
+            {
+                ItemKey = $"{i}",
+                Content = $"Content {i}"
+            });
+        }
+
+        viewModel.PaginationListItems = list;
     }
 }

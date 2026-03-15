@@ -112,7 +112,7 @@ internal class ListToken : AbstractControlDesignToken
 
         ContentPadding   = new Thickness(SharedToken.UniformlyPaddingXXS / 2);
         ItemMargin       = new Thickness(0, 0.5);
-        PaginationMargin = new Thickness(0, SharedToken.UniformlyMargin);
+        PaginationMargin = new Thickness(0, SharedToken.UniformlyMarginXS);
         GroupHeaderColor = SharedToken.ColorTextDescription;
     }
 }

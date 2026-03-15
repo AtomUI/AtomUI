@@ -142,6 +142,12 @@ public class List : TemplatedControl,
     public static readonly StyledProperty<ITemplate<Panel?>> ItemsPanelProperty = 
         ItemsControl.ItemsPanelProperty.AddOwner<List>();
     
+    public static readonly StyledProperty<AbstractPagination?> TopPaginationProperty =
+        AvaloniaProperty.Register<List, AbstractPagination?>(nameof(TopPagination));
+    
+    public static readonly StyledProperty<AbstractPagination?> BottomPaginationProperty =
+        AvaloniaProperty.Register<List, AbstractPagination?>(nameof(BottomPagination));
+    
     public IEnumerable? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -370,6 +376,17 @@ public class List : TemplatedControl,
         set => SetValue(ItemsPanelProperty, value);
     }
     
+    public AbstractPagination? TopPagination
+    {
+        get => GetValue(TopPaginationProperty);
+        set => SetValue(TopPaginationProperty, value);
+    }
+    
+    public AbstractPagination? BottomPagination
+    {
+        get => GetValue(BottomPaginationProperty);
+        set => SetValue(BottomPaginationProperty, value);
+    }
     #endregion
 
     #region 公共事件定义
@@ -437,10 +454,12 @@ public class List : TemplatedControl,
     private IListCollectionView? _listCollectionView;
     private bool _areHandlersSuspended;
     private bool _measured;
-    private Pagination? _topPagination;
-    private Pagination? _bottomPagination;
+    private AbstractPagination? _topPagination;
+    private AbstractPagination? _bottomPagination;
     internal GroupableListView? ListView;
     private CompositeDisposable? _relayBindingDisposables;
+    private CompositeDisposable? _topPaginationDisposables;
+    private CompositeDisposable? _bottomPaginationDisposables;
     
     static List()
     {
@@ -500,6 +519,88 @@ public class List : TemplatedControl,
         {
             ReConfigureGroupInfo();
         }
+        else if (change.Property == TopPaginationProperty)
+        {
+            HandleTopPaginationChanged(change);
+        }
+        else if (change.Property == BottomPaginationProperty)
+        {
+            HandleBottomPaginationChanged(change);
+        }
+        else if (change.Property == PaginationVisibilityProperty)
+        {
+            HandlePaginationVisibility();
+        }
+    }
+
+    private void HandleTopPaginationChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.OldValue is AbstractPagination oldPagination)
+        {
+            oldPagination.CurrentPageChanged -= HandlePageChangeRequest;
+            _topPaginationDisposables?.Dispose();
+        }
+
+        if (args.NewValue is AbstractPagination newPagination)
+        {
+            newPagination.CurrentPageChanged += HandlePageChangeRequest;
+            _topPaginationDisposables        =  new CompositeDisposable();
+            _topPaginationDisposables.Add(BindUtils.RelayBind(this, TopPaginationAlignProperty, newPagination, AbstractPagination.AlignProperty));
+            _topPaginationDisposables.Add(BindUtils.RelayBind(this, IsHideOnSinglePageProperty, newPagination, AbstractPagination.IsHideOnSinglePageProperty));
+            _topPaginationDisposables.Add(BindUtils.RelayBind(this, IsEnabledProperty, newPagination, AbstractPagination.IsEnabledProperty));
+            _topPaginationDisposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, newPagination, AbstractPagination.SizeTypeProperty));
+            _topPaginationDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
+            _topPaginationDisposables.Add(BindUtils.RelayBind(this, PaginationVisibilityProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
+            _topPagination = newPagination;
+            HandlePaginationVisibility();
+        }
+    }
+    
+    private void HandleBottomPaginationChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.OldValue is AbstractPagination oldPagination)
+        {
+            oldPagination.CurrentPageChanged -= HandlePageChangeRequest;
+            _bottomPaginationDisposables?.Dispose();
+        }
+
+        if (args.NewValue is AbstractPagination newPagination)
+        {
+            newPagination.CurrentPageChanged += HandlePageChangeRequest;
+            _bottomPaginationDisposables     =  new  CompositeDisposable();
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, TopPaginationAlignProperty, newPagination, AbstractPagination.AlignProperty));
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsHideOnSinglePageProperty, newPagination, AbstractPagination.IsHideOnSinglePageProperty));
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsEnabledProperty, newPagination, AbstractPagination.IsEnabledProperty));
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, newPagination, AbstractPagination.SizeTypeProperty));
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, PaginationVisibilityProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
+            _bottomPagination = newPagination;
+            HandlePaginationVisibility();
+        }
+    }
+
+    private void HandlePaginationVisibility()
+    {
+        if (PaginationVisibility == ListPaginationVisibility.None)
+        {
+            _topPagination?.IsVisible = false;
+            _bottomPagination?.IsVisible = false;
+        }
+        else if (PaginationVisibility == ListPaginationVisibility.Both)
+        {
+            _topPagination?.IsVisible    = true;
+            _bottomPagination?.IsVisible = true;
+        }
+        else if (PaginationVisibility == ListPaginationVisibility.Top)
+        {
+            _topPagination?.IsVisible = true;
+            _bottomPagination?.IsVisible = false;
+        }
+        else
+        {
+            _topPagination?.IsVisible    = false;
+            _bottomPagination?.IsVisible = true;
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -513,19 +614,7 @@ public class List : TemplatedControl,
                 PresetImage = PresetEmptyImage.Simple
             }, BindingPriority.Template);
         }
-        _topPagination    = e.NameScope.Find<Pagination>(ListThemeConstants.TopPaginationPart);
-        _bottomPagination = e.NameScope.Find<Pagination>(ListThemeConstants.BottomPaginationPart);
 
-        if (_topPagination != null)
-        {
-            _topPagination.CurrentPageChanged += HandlePageChangeRequest;
-        }
-        
-        if (_bottomPagination != null)
-        {
-            _bottomPagination.CurrentPageChanged += HandlePageChangeRequest;
-        }
-        
         if (ListView != null)
         {
             ListView.SelectionChanged -= HandleListViewSelectionChanged;

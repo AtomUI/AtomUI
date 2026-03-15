@@ -120,5 +120,20 @@
                 </atom:ListBox>
             </StackPanel>
         </gallery:ShowCaseItem>
+
+        <gallery:ShowCaseItem
+            Title="Pagination list"
+            Description="Pagination list.">
+            <atom:List
+                x:DataType="viewModels:ListViewModel"
+                ItemsSource="{Binding PaginationListItems}"
+                PageSize="100"
+                PaginationVisibility="Bottom"
+                Height="400">
+                <atom:List.BottomPagination>
+                    <atom:Pagination/>
+                </atom:List.BottomPagination>
+            </atom:List>
+        </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

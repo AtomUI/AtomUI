@@ -86,6 +86,14 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _basicListBoxItems, value);
     }
     
+    private List<IListItemData>? _paginationListItems;
+    
+    public List<IListItemData>? PaginationListItems
+    {
+        get => _paginationListItems;
+        set => this.RaiseAndSetIfChanged(ref _paginationListItems, value);
+    }
+    
     public ListViewModel(IScreen screen)
     {
         HostScreen = screen;

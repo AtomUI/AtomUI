@@ -151,8 +151,6 @@ public class Pagination : AbstractPagination, IControlSharedTokenResourcesHost
         {
             SetupSizeChanger();
         }
-        
-        TemplateConfigured = true;
     }
 
     private void HandleContainerPrepared(object? sender, ContainerPreparedEventArgs args)
@@ -178,7 +176,7 @@ public class Pagination : AbstractPagination, IControlSharedTokenResourcesHost
                 navItem.PaginationItemType = PaginationItemType.PageIndicator;
             }
         }
-
+        TemplateConfigured = true;
         if (_paginationNav.GetRealizedContainers().Count() == count)
         {
             HandlePageConditionChanged();

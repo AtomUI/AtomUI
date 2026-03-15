@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -130,7 +131,7 @@ public class CandidateList : ListBox, ICandidateList
             {
                 var item      = Items[i];
                 var container = ContainerFromIndex(i);
-                if (item is IListBoxItemData selectOption)
+                if (item is IListItemData selectOption)
                 {
                     container?.SetCurrentValue(IsEnabledProperty, selectOption.IsEnabled);
                 }
@@ -443,7 +444,7 @@ public class CandidateList : ListBox, ICandidateList
 
     #region 虚拟化上下文管理
 
-    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
+    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListItemData itemData)
     {
         base.NotifyRestoreDefaultContext(item, itemData);
         if (item is CandidateListItem candidateListItem && item is IListItemVirtualizingContextAware virtualListItem)

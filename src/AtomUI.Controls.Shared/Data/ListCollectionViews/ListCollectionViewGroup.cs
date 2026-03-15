@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Avalonia.Collections;
 
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Controls.Data;
 
 public abstract class ListCollectionViewGroup : INotifyPropertyChanged
 {

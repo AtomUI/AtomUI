@@ -27,18 +27,18 @@ public partial class AutoCompleteShowCase : ReactiveUserControl<AutoCompleteView
         vm.FilterCaseOptions = [
             new AutoCompleteOption()
             {
-                Header = "Burns Bay Road",
-                Value = "Burns Bay Road",
+                Header  = "Burns Bay Road",
+                Content = "Burns Bay Road",
             },
             new AutoCompleteOption()
             {
-                Header = "Downing Street",
-                Value  = "Downing Street",
+                Header  = "Downing Street",
+                Content = "Downing Street",
             },
             new AutoCompleteOption()
             {
-                Header = "Wall Street",
-                Value  = "Wall Street",
+                Header  = "Wall Street",
+                Content = "Wall Street",
             },
         ];
     }

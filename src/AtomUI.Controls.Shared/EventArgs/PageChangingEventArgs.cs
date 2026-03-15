@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls;
 
 public sealed class PageChangingEventArgs : CancelEventArgs
 {

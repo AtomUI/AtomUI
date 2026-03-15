@@ -1,8 +1,6 @@
 using AtomUI.Controls;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -98,6 +96,19 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
     #endregion
     
     #region 内部属性定义
+    
+    internal static readonly DirectProperty<AbstractPagination, bool> IsEffectiveHideOnSinglePageVisibleProperty =
+        AvaloniaProperty.RegisterDirect<AbstractPagination, bool>(
+            nameof(IsEffectiveHideOnSinglePageVisible),
+            o => o.IsEffectiveHideOnSinglePageVisible,
+            (o, v) => o.IsEffectiveHideOnSinglePageVisible = v);
+    
+    private bool _isEffectiveHideOnSinglePageVisible = false;
+    internal bool IsEffectiveHideOnSinglePageVisible
+    {
+        get => _isEffectiveHideOnSinglePageVisible;
+        set => SetAndRaise(IsEffectiveHideOnSinglePageVisibleProperty, ref _isEffectiveHideOnSinglePageVisible, value);
+    }
 
     private static bool PageSizeValidator(int pageSize)
     {
@@ -117,26 +128,22 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (TemplateConfigured)
+        if (change.Property == TotalProperty ||
+            change.Property == PageSizeProperty ||
+            change.Property == CurrentPageProperty)
         {
-            if (change.Property == TotalProperty ||
-                change.Property == PageSizeProperty ||
-                change.Property == CurrentPageProperty)
-            {
-                HandlePageConditionChanged();
-            }
+            HandlePageConditionChanged();
         }
-
         if (change.Property == IsHideOnSinglePageProperty ||
             change.Property == PageCountProperty)
         {
             if (IsHideOnSinglePage)
             {
-                SetValue(IsVisibleProperty, PageCount > 1, BindingPriority.Template);
+                SetValue(IsEffectiveHideOnSinglePageVisibleProperty, PageCount > 1);
             }
             else
             {
-                SetValue(IsVisibleProperty, true, BindingPriority.Template);
+                SetValue(IsEffectiveHideOnSinglePageVisibleProperty, true);
             }
         }
     }
@@ -154,11 +161,11 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
 
     protected virtual void NotifyPageConditionChanged(int currentPage, int pageCount, int pageSize, long total)
     {
+        EmitCurrentPageChanged(CurrentPage, pageCount, pageSize);
     }
 
     protected void EmitCurrentPageChanged(int currentPage, int pageCount, int pageSize)
     {
         CurrentPageChanged?.Invoke(this, new PageChangedEventArgs(currentPage, pageCount, pageSize));
     }
-    
 }

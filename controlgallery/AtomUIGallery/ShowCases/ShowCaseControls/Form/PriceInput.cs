@@ -108,7 +108,7 @@ public class PriceInput : TemplatedControl,
         Debug.Assert(_numberInput != null);
         Debug.Assert(_unitInput != null);
         var value = _numberInput.Value ?? decimal.Zero;
-        var unit = _unitInput.SelectedOption?.Value?.ToString() ?? "RMB";
+        var unit = _unitInput.SelectedOption?.Content?.ToString() ?? "RMB";
         Value = new PriceInfo(value, unit);
         HandleValueChanged();
     }
@@ -118,7 +118,7 @@ public class PriceInput : TemplatedControl,
         Debug.Assert(_numberInput != null);
         Debug.Assert(_unitInput != null);
         var value = _numberInput.Value ?? decimal.Zero;
-        var unit  = _unitInput.SelectedOption?.Value?.ToString() ?? "RMB";
+        var unit  = _unitInput.SelectedOption?.Content?.ToString() ?? "RMB";
         Value = new PriceInfo(value, unit);
         HandleValueChanged();
     }

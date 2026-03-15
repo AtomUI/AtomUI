@@ -110,7 +110,7 @@ public class Donation: TemplatedControl,
         var value = _valueInput?.Text;
         if (!string.IsNullOrWhiteSpace(value))
         {
-            var unit  = _unitInput.SelectedOption?.Value?.ToString() ?? "CNY";
+            var unit  = _unitInput.SelectedOption?.Content?.ToString() ?? "CNY";
             Value = new DonationInfo(value, unit);
         }
         else 
@@ -127,7 +127,7 @@ public class Donation: TemplatedControl,
         var value = _valueInput?.Text;
         if (!string.IsNullOrWhiteSpace(value))
         {
-            var unit  = _unitInput.SelectedOption?.Value?.ToString() ?? "CNY";
+            var unit  = _unitInput.SelectedOption?.Content?.ToString() ?? "CNY";
             Value = new DonationInfo(value, unit);
         }
         else 

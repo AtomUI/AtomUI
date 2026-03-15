@@ -1,3 +1,4 @@
+using AtomUI.Controls.Data;
 using AtomUI.Controls.Utils;
 
 namespace AtomUI.Desktop.Controls;
@@ -22,7 +23,7 @@ public class DefaultListBoxItemFilter : IListBoxItemFilter
         {
             if (listBoxItem.Content is IListItemData listItemData)
             {
-                var valueStr = listItemData.Value?.ToString();
+                var valueStr = listItemData.Content?.ToString();
                 return _valueFilter.Filter(valueStr, filterValue);
             }
         }

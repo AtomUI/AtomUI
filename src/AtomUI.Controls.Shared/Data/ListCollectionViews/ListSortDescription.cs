@@ -4,7 +4,7 @@ using System.Globalization;
 using AtomUI.Utils;
 using Avalonia.Collections;
 
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Controls.Data;
 
 public abstract class ListSortDescription
 {

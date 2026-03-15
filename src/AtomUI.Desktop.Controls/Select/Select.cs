@@ -1,6 +1,6 @@
 using System.Diagnostics;
+using AtomUI.Controls.Data;
 using AtomUI.Controls.Utils;
-using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Theme;
 using AtomUI.Utils;
@@ -220,7 +220,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     {
         if (data is ISelectOption option)
         {
-            return option.Value;
+            return option.Content;
         }
         return null;
     };
@@ -349,7 +349,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             return DefaultValueCompareFn(value, selectOption);
         }
         var strValue = value.ToString();
-        var optValue = selectOption.Value?.ToString();
+        var optValue = selectOption.Content?.ToString();
         return strValue == optValue;
     }
 
@@ -854,7 +854,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
                 _addNewOption = new SelectOption()
                 {
                     Header         = ActivateFilterValue,
-                    Value          = ActivateFilterValue,
+                    Content        = ActivateFilterValue,
                     IsDynamicAdded = true
                 };
                 Options.Add(_addNewOption);

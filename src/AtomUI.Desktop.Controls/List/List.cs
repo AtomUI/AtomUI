@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
@@ -23,9 +24,6 @@ using Avalonia.VisualTree;
 using VirtualizingStackPanel = Avalonia.Controls.VirtualizingStackPanel;
 
 namespace AtomUI.Desktop.Controls;
-
-public delegate object? ListGroupPropertySelector(object data);
-public delegate object? ListFilterPropertySelector(object data);
 
 public class List : TemplatedControl,
                     ISizeTypeAware,
@@ -518,6 +516,16 @@ public class List : TemplatedControl,
         _topPagination    = e.NameScope.Find<Pagination>(ListThemeConstants.TopPaginationPart);
         _bottomPagination = e.NameScope.Find<Pagination>(ListThemeConstants.BottomPaginationPart);
 
+        if (_topPagination != null)
+        {
+            _topPagination.CurrentPageChanged += HandlePageChangeRequest;
+        }
+        
+        if (_bottomPagination != null)
+        {
+            _bottomPagination.CurrentPageChanged += HandlePageChangeRequest;
+        }
+        
         if (ListView != null)
         {
             ListView.SelectionChanged -= HandleListViewSelectionChanged;
@@ -532,6 +540,14 @@ public class List : TemplatedControl,
         }
         UpdatePseudoClasses();
         ConfigureEmptyIndicator();
+    }
+    
+    private void HandlePageChangeRequest(object? sender, PageChangedEventArgs args)
+    {
+        if (CollectionView is ListCollectionView collectionView)
+        {
+            collectionView.MoveToPage(args.PageIndex - 1);
+        }
     }
 
     private void HandleListViewSelectionChanged(object? sender, SelectionChangedEventArgs args)
@@ -678,7 +694,6 @@ public class List : TemplatedControl,
                 _topPagination.Total       = collectionView.ItemCount;
                 _topPagination.PageSize    = PageSize;
                 _topPagination.CurrentPage = Pagination.DefaultCurrentPage;
-              
             }
             if (_bottomPagination != null)
             {
@@ -863,18 +878,31 @@ public class List : TemplatedControl,
     #region 虚拟化上下文管理
     protected internal virtual void NotifyRestoreDefaultContext(ListItem item, IListItemData itemData)
     {
+        if (itemData is IGroupListItemData groupListItemData)
+        {
+            item.SetCurrentValue(ListItem.IsGroupItemProperty, groupListItemData.IsGroupItem);
+        }
     }
 
     protected internal virtual void NotifyClearContainerForVirtualizingContext(ListItem item)
     {
+        item.ClearValue(ListItem.IsGroupItemProperty);
     }
     
     protected internal virtual void NotifySaveVirtualizingContext(ListItem item, IDictionary<object, object?> context)
     {
+        context.Add(ListItem.IsGroupItemProperty, item.IsGroupItem);
     }
 
     protected internal virtual void NotifyRestoreVirtualizingContext(ListItem item, IDictionary<object, object?> context)
     {
+        if (context.TryGetValue(ListItem.IsGroupItemProperty, out var value))
+        {
+            if (value is bool isGroupItem)
+            {
+                item.SetCurrentValue(ListItem.IsGroupItemProperty, isGroupItem);
+            }
+        }
     }
     #endregion
 }

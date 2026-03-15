@@ -64,6 +64,9 @@ public class Transfer : TemplatedControl,
     public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
         AvaloniaProperty.Register<Transfer, bool>(nameof(IsPaginationEnabled));
     
+    public static readonly StyledProperty<int> PageSizeProperty =
+        AvaloniaProperty.Register<Transfer, int>(nameof(PageSize), 10);
+    
     public static readonly StyledProperty<bool> IsShowSearchProperty =
         AvaloniaProperty.Register<Transfer, bool>(nameof(IsShowSearch));
     
@@ -214,6 +217,12 @@ public class Transfer : TemplatedControl,
     {
         get => GetValue(IsPaginationEnabledProperty);
         set => SetValue(IsPaginationEnabledProperty, value);
+    }
+    
+    public int PageSize
+    {
+        get => GetValue(PageSizeProperty);
+        set => SetValue(PageSizeProperty, value);
     }
     
     public bool IsShowSearch

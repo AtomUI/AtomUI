@@ -5,7 +5,6 @@ using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ShowCaseControls;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -224,7 +223,7 @@ public class NoteFormItem : FormItem
             {
                 if (formItem.GetItemValue() is ISelectOption selectOption)
                 {
-                    SetItemValue($"Hi, {selectOption.Value}!");
+                    SetItemValue($"Hi, {selectOption.Content}!");
                 }
             }
         }
@@ -240,7 +239,7 @@ public class CustomizeGenderFormItem : FormItem
             if (formItem.Content is Select select && select.Mode == SelectMode.Single)
             {
                 var option = formItem.GetItemValue() as ISelectOption;
-                if (option?.Value?.ToString() == "other")
+                if (option?.Content?.ToString() == "other")
                 {
                     IsVisible = true;
                 }

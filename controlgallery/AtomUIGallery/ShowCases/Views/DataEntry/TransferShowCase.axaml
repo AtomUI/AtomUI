@@ -75,7 +75,8 @@
             Description="Store a large amount of items with pagination.">
             <StackPanel Spacing="20">
                 <atom:Transfer ItemsSource="{Binding PaginationTransferItems}"
-                               IsOneWay="{Binding PaginationIsOneWay}"/>
+                               IsOneWay="{Binding PaginationIsOneWay}"
+                               IsPaginationEnabled="True"/>
                 <atom:ToggleSwitch IsChecked="{Binding PaginationIsOneWay, Mode=TwoWay}"
                                    OnContent="ony way"
                                    OffContent="ony way"/>

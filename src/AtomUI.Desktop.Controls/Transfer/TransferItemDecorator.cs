@@ -50,6 +50,9 @@ internal class TransferItemDecorator : TemplatedControl,
     public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
         Transfer.IsPaginationEnabledProperty.AddOwner<TransferItemDecorator>();
     
+    public static readonly StyledProperty<int> PageSizeProperty =
+        Transfer.PageSizeProperty.AddOwner<TransferItemDecorator>();
+    
     public static readonly StyledProperty<IIconTemplate?> SelectionsIconTemplateProperty =
         AvaloniaProperty.Register<TransferItemDecorator, IIconTemplate?>(nameof(SelectionsIconTemplate));
     
@@ -137,6 +140,12 @@ internal class TransferItemDecorator : TemplatedControl,
     {
         get => GetValue(IsPaginationEnabledProperty);
         set => SetValue(IsPaginationEnabledProperty, value);
+    }
+    
+    public int PageSize
+    {
+        get => GetValue(PageSizeProperty);
+        set => SetValue(PageSizeProperty, value);
     }
     
     public IIconTemplate? SelectionsIconTemplate
@@ -363,7 +372,7 @@ internal class TransferItemDecorator : TemplatedControl,
         {
             if (_transferView is ITransferView transferView)
             {
-                transferView.ItemsSource = ItemsSource;
+                transferView.SetItemsSource(ItemsSource);
             }
         }
 
@@ -405,6 +414,17 @@ internal class TransferItemDecorator : TemplatedControl,
         {
             ConfigureBodyCornerRadius();
         }
+
+        if (change.Property == IsPaginationEnabledProperty ||
+            change.Property == PageSizeProperty)
+        {
+            if (_transferView is ITransferView transferView && transferView.IsSupportPagination)
+            {
+                transferView.SetPaginationEnabled(IsPaginationEnabled);
+                transferView.SetPageSize(PageSize);
+                transferView.SetItemsSource(ItemsSource);
+            }
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -434,7 +454,7 @@ internal class TransferItemDecorator : TemplatedControl,
             {
                 if (_transferView is ITransferView transferView)
                 {
-                    transferView.ItemsSource        =  ItemsSource;
+                    transferView.SetItemsSource(null);
                     transferView.ItemCountChanged   -= HandleItemsCountChanged;
                     transferView.SelectedKeyChanged -= HandleSelectedChanged;
                     _disposables?.Dispose();
@@ -445,8 +465,13 @@ internal class TransferItemDecorator : TemplatedControl,
             {
                 if (_transferView is ITransferView transferView)
                 {
-                    _disposables                    =  new CompositeDisposable(2);
-                    transferView.ItemsSource        =  ItemsSource;
+                    _disposables = new CompositeDisposable(2);
+                    if (transferView.IsSupportPagination)
+                    {
+                        transferView.SetPaginationEnabled(IsPaginationEnabled);
+                        transferView.SetPageSize(PageSize);
+                    }
+                    transferView.SetItemsSource(ItemsSource);
                     transferView.ItemCountChanged   += HandleItemsCountChanged;
                     transferView.SelectedKeyChanged += HandleSelectedChanged;
                     transferView.ViewType           =  ViewType;

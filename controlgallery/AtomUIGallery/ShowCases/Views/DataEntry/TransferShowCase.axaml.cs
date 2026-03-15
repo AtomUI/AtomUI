@@ -1,7 +1,6 @@
 using AtomUI.Controls;
-using AtomUI.Desktop.Controls;
+using AtomUI.Controls.Data;
 using AtomUIGallery.ShowCases.ViewModels;
-using Avalonia.Interactivity;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 

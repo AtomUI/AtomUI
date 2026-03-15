@@ -61,39 +61,43 @@ public class SimplePagination : AbstractPagination, IControlSharedTokenResources
         _previousPageItem.Click += HandleNavItemClicked;
         _nextPageItem.Click     += HandleNavItemClicked;
         _quickJumper.KeyUp      += HandleLineEditKeyUp;
-        
+        TemplateConfigured      =  true;
         HandlePageConditionChanged();
     }
 
     protected override void NotifyPageConditionChanged(int currentPage, int pageCount, int pageSize, long total)
     {
-        if (IsReadOnly)
+        if (TemplateConfigured)
         {
-            if (_infoIndicator != null)
+            if (IsReadOnly)
             {
-                _infoIndicator.Text = $"{currentPage} / {pageCount}";
+                if (_infoIndicator != null)
+                {
+                    _infoIndicator.Text = $"{currentPage} / {pageCount}";
+                }
             }
-        }
-        else
-        {
-            if (_infoIndicator != null)
+            else
             {
-                _infoIndicator.Text = $" / {pageCount}";
-            }
+                if (_infoIndicator != null)
+                {
+                    _infoIndicator.Text = $" / {pageCount}";
+                }
 
-            if (_quickJumper != null)
-            {
-                _quickJumper.Text = $"{currentPage}";
+                if (_quickJumper != null)
+                {
+                    _quickJumper.Text = $"{currentPage}";
+                }
             }
-        }
-        Debug.Assert(_previousPageItem != null);
-        Debug.Assert(_nextPageItem != null);
+            Debug.Assert(_previousPageItem != null);
+            Debug.Assert(_nextPageItem != null);
         
-        _previousPageItem.IsEnabled  = currentPage > 1;
-        _previousPageItem.PageNumber = Math.Max(1, CurrentPage - 1);
-        _nextPageItem.IsEnabled      = currentPage < pageCount;
-        _nextPageItem.PageNumber     = Math.Min(pageCount, CurrentPage + 1);
-        EmitCurrentPageChanged(CurrentPage, pageCount, pageSize);
+            _previousPageItem.IsEnabled  = currentPage > 1;
+            _previousPageItem.PageNumber = Math.Max(1, CurrentPage - 1);
+            _nextPageItem.IsEnabled      = currentPage < pageCount;
+            _nextPageItem.PageNumber     = Math.Min(pageCount, CurrentPage + 1);
+        }
+        
+        base.NotifyPageConditionChanged(currentPage, pageCount, pageSize, total);
     }
     
     private void HandleNavItemClicked(object? sender, RoutedEventArgs args)

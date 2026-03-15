@@ -187,36 +187,39 @@ public class Pagination : AbstractPagination, IControlSharedTokenResourcesHost
 
     protected override void NotifyPageConditionChanged(int currentPage, int pageCount, int pageSize, long total)
     {
-        Debug.Assert(_paginationNav != null);
-        Debug.Assert(_previousPageItem != null);
-        Debug.Assert(_nextPageItem != null);
-        var count = _paginationNav.ItemCount;
-        // 清空状态 clear state
-        _paginationNav.SelectedIndex = -1;
-        _selectedNavItemIndex        = -1;
-        for (int i = 1; i < count - 1; i++)
+        if (TemplateConfigured)
         {
-            var container = _paginationNav.ContainerFromIndex(i);
-            if (container is PaginationNavItem navItem)
+            Debug.Assert(_paginationNav != null);
+            Debug.Assert(_previousPageItem != null);
+            Debug.Assert(_nextPageItem != null);
+            var count = _paginationNav.ItemCount;
+            // 清空状态 clear state
+            _paginationNav.SelectedIndex = -1;
+            _selectedNavItemIndex        = -1;
+            for (int i = 1; i < count - 1; i++)
             {
-                navItem.PaginationItemType = PaginationItemType.PageIndicator;
-                navItem.IsVisible          = false;
-                navItem.Content            = null;
+                var container = _paginationNav.ContainerFromIndex(i);
+                if (container is PaginationNavItem navItem)
+                {
+                    navItem.PaginationItemType = PaginationItemType.PageIndicator;
+                    navItem.IsVisible          = false;
+                    navItem.Content            = null;
+                }
             }
+
+            _previousPageItem.IsEnabled  = currentPage > 1;
+            _previousPageItem.PageNumber = Math.Max(1, CurrentPage - 1);
+            _nextPageItem.IsEnabled      = currentPage < pageCount;
+            _nextPageItem.PageNumber     = Math.Min(pageCount, CurrentPage + 1);
+            _nextPushItemIndex           = 1;
+
+            SetupLeftButtonRange(currentPage, pageCount);
+            SetupNextIndicatorNavItem(currentPage, true);
+            SetupRightButtonRange(currentPage, pageCount);
+            _paginationNav.SelectedIndex = _selectedNavItemIndex;
+            SetupTotalInfoText();
         }
-
-        _previousPageItem.IsEnabled  = currentPage > 1;
-        _previousPageItem.PageNumber = Math.Max(1, CurrentPage - 1);
-        _nextPageItem.IsEnabled      = currentPage < pageCount;
-        _nextPageItem.PageNumber     = Math.Min(pageCount, CurrentPage + 1);
-        _nextPushItemIndex           = 1;
-
-        SetupLeftButtonRange(currentPage, pageCount);
-        SetupNextIndicatorNavItem(currentPage, true);
-        SetupRightButtonRange(currentPage, pageCount);
-        _paginationNav.SelectedIndex = _selectedNavItemIndex;
-        SetupTotalInfoText();
-        EmitCurrentPageChanged(currentPage, pageCount, pageSize);
+        base.NotifyPageConditionChanged(currentPage, pageCount, pageSize, total);
     }
 
     private void HandlePageNavRequest(object? sender, PageNavRequestArgs args)

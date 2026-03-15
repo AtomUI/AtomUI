@@ -1,8 +1,15 @@
+using System.Collections;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.Data;
+using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using VirtualizingStackPanel = Avalonia.Controls.VirtualizingStackPanel;
@@ -22,6 +29,12 @@ public class TransferListView : ListBox, ITransferView
         AvaloniaProperty.RegisterDirect<TransferListView, TransferViewType>(nameof(ViewType), 
             o => o.ViewType,
             (o, v) => o.ViewType = v);
+    
+    public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
+        Transfer.IsPaginationEnabledProperty.AddOwner<TransferListView>();
+    
+    public static readonly StyledProperty<int> PageSizeProperty =
+        Transfer.PageSizeProperty.AddOwner<TransferListView>();
 
     private IList<EntityKey>? _selectedKeys;
     public IList<EntityKey>? SelectedKeys
@@ -36,8 +49,21 @@ public class TransferListView : ListBox, ITransferView
         get => _viewType;
         set => SetAndRaise(ViewTypeProperty, ref _viewType, value);
     }
+    
+    public bool IsPaginationEnabled
+    {
+        get => GetValue(IsPaginationEnabledProperty);
+        set => SetValue(IsPaginationEnabledProperty, value);
+    }
 
+    public int PageSize
+    {
+        get => GetValue(PageSizeProperty);
+        set => SetValue(PageSizeProperty, value);
+    }
+    
     public bool IsSupportItemTemplate => true;
+    public bool IsSupportPagination => true;
     #endregion
 
     #region 公共事件定义
@@ -49,6 +75,9 @@ public class TransferListView : ListBox, ITransferView
     
     private bool _ignoreSyncSelection;
     private IList<EntityKey>? _selectedKeysBackup;
+    private int _currentPageSizeBackup;
+    private IListCollectionView? _listCollectionView;
+    private SimplePagination? _pagination;
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new VirtualizingStackPanel());
@@ -131,11 +160,113 @@ public class TransferListView : ListBox, ITransferView
         Selection.Clear();
     }
 
+    void ITransferView.SetPaginationEnabled(bool enabled)
+    {
+        SetCurrentValue(IsPaginationEnabledProperty, enabled);
+    }
+
+    void ITransferView.SetItemsSource(IEnumerable? itemsSource)
+    {
+        if (!IsPaginationEnabled)
+        {
+            SetCurrentValue(ItemsSourceProperty, itemsSource);
+            _listCollectionView = null;
+        }
+        else
+        {
+            var oldCollectionView = _listCollectionView;
+            var newItemsSource = itemsSource;
+        
+            _listCollectionView = null;
+            IListCollectionView? newCollectionView;
+            if (newItemsSource is IListCollectionView)
+            {
+                newCollectionView   = (IListCollectionView)newItemsSource;
+            }
+            else
+            {
+                newCollectionView = newItemsSource is not null
+                    ? CreateView(newItemsSource)
+                    : default;
+            }
+            if (oldCollectionView != null)
+            {
+                if (oldCollectionView is ListCollectionView oldDataGridCollectionView)
+                {
+                    oldDataGridCollectionView.PageChanging -= HandlePageChanging;
+                }
+            }
+            if (newCollectionView != null)
+            {
+                if (newCollectionView is ListCollectionView newDataGridCollectionView)
+                {
+                    newDataGridCollectionView.PageChanging += HandlePageChanging;
+                }
+            }
+       
+            _listCollectionView = newCollectionView;
+            
+            if (oldCollectionView != newCollectionView)
+            {
+                SetCurrentValue(ItemsSourceProperty, _listCollectionView);
+            }
+            ReConfigurePagination();
+        }
+    }
+    
+    internal static IListCollectionView CreateView(IEnumerable source)
+    {
+        Debug.Assert(source != null, "source unexpectedly null");
+        Debug.Assert(!(source is IListCollectionView), "source is an IListCollectionView");
+
+        IListCollectionView? collectionView = null;
+
+        if (source is IListCollectionViewFactory collectionViewFactory)
+        {
+            // If the source is a collection view factory, give it a chance to produce a custom collection view.
+            collectionView = collectionViewFactory.CreateView();
+            // Intentionally not catching potential exception thrown by ICollectionViewFactory.CreateView().
+        }
+        if (collectionView == null)
+        {
+            // If we still do not have a collection view, default to a PagedCollectionView.
+            collectionView = new ListCollectionView(source);
+        }
+        return collectionView;
+    }
+    
+    private void HandlePageChanging(object? sender, PageChangingEventArgs args)
+    {
+        var targetPage = args.NewPageIndex + 1;
+        if (_pagination != null && _pagination.CurrentPage != targetPage)
+        {
+            _pagination.CurrentPage = targetPage;
+        }
+    }
+    
+    private void ReConfigurePagination()
+    {
+        if (IsSupportPagination && IsPaginationEnabled)
+        {
+            if (_listCollectionView is ListCollectionView collectionView)
+            {
+                collectionView.PageSize = PageSize;
+                if (_pagination != null)
+                {
+                    _pagination.Total       = collectionView.ItemCount;
+                    _pagination.PageSize    = PageSize;
+                    _pagination.CurrentPage = Pagination.DefaultCurrentPage;
+                }
+            }
+        }
+    }
+    
     void ITransferView.NotifyAboutToTransfer(TransferDirection transferDirection)
     {
         _selectedKeysBackup = SelectedKeys;
+        _currentPageSizeBackup = _pagination?.CurrentPage ?? 1;
     }
-
+    
     void ITransferView.NotifyTransferCompleted(TransferDirection transferDirection)
     {
         if (ViewType == TransferViewType.Source && transferDirection == TransferDirection.ToSource)
@@ -150,7 +281,15 @@ public class TransferListView : ListBox, ITransferView
         {
             SetCurrentValue(SelectedKeysProperty, null);
         }
-        _selectedKeysBackup = null;
+
+        if (IsPaginationEnabled && _pagination != null)
+        {
+            var pageCount = _pagination.PageCount;
+            var newPageCount = _currentPageSizeBackup <= pageCount ? _currentPageSizeBackup : pageCount;
+            _pagination.CurrentPage = newPageCount;
+        }
+        _selectedKeysBackup    = null;
+        _currentPageSizeBackup = 1;
     }
 
     void ITransferView.SetSelectionEnabled(bool enabled)
@@ -160,6 +299,11 @@ public class TransferListView : ListBox, ITransferView
         {
             SetCurrentValue(SelectionModeProperty, SelectionMode.Multiple | SelectionMode.Toggle);
         }
+    }
+
+    void ITransferView.SetPageSize(int pageSize)
+    {
+        SetCurrentValue(PageSizeProperty, pageSize);
     }
 
     private void HandleRemoveButtonClicked(RoutedEventArgs e)
@@ -179,5 +323,39 @@ public class TransferListView : ListBox, ITransferView
         {
             listItem.SetCurrentValue(IsSelectedProperty, checkBox.IsChecked == true);
         }
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _pagination = e.NameScope.Find<SimplePagination>("Pagination");
+        if (_pagination != null)
+        {
+            _pagination.CurrentPageChanged += HandlePageChangeRequest;
+        }
+    }
+    
+    private void HandlePageChangeRequest(object? sender, PageChangedEventArgs args)
+    {
+        if (_listCollectionView is ListCollectionView collectionView)
+        {
+            collectionView.MoveToPage(args.PageIndex - 1);
+        }
+    }
+    
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        var selection = this.GetSelection();
+        if (selection == null)
+        {
+            selection = new TransferListViewSelectionModel
+            {
+                SingleSelect = !SelectionMode.HasAllFlags(SelectionMode.Multiple),
+            }; 
+            this.InitializeSelectionModel(selection);
+        }
+        Console.WriteLine(selection.Count);
+ 
+        base.PrepareContainerForItemOverride(container, item, index);
     }
 }

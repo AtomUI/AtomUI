@@ -1,7 +1,7 @@
 using AtomUI.Controls.Utils;
 using Avalonia.Collections;
 
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Controls.Data;
 
 public class ListFilterDescription : IListFilterDescription
 {

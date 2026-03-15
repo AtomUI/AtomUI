@@ -5,11 +5,12 @@ namespace AtomUI.Desktop.Controls;
 
 public interface ITransferView
 {
-    IEnumerable? ItemsSource { get; set; }
     IList<EntityKey>? SelectedKeys { get; set; }
     int ItemCount { get; }
     bool IsSupportItemTemplate { get; }
+    bool IsSupportPagination { get; }
     TransferViewType ViewType { get; set; }
+  
     event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
     event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
     event EventHandler? SelectedKeyChanged;
@@ -19,4 +20,7 @@ public interface ITransferView
     void NotifyAboutToTransfer(TransferDirection transferDirection);
     void NotifyTransferCompleted(TransferDirection transferDirection);
     void SetSelectionEnabled(bool enabled);
+    void SetItemsSource(IEnumerable? itemsSource);
+    void SetPaginationEnabled(bool enabled);
+    void SetPageSize(int pageSize);
 }

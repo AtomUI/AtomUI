@@ -76,22 +76,22 @@ public class SelectOptionsAsyncLoader : ISelectOptionsAsyncLoader
         options.Add(new SelectOption()
         {
             Header = "Jack",
-            Value = "jack"
+            Content = "jack"
         });
         options.Add(new SelectOption()
         {
-            Header = "Lucy",
-            Value  = "lucy"
+            Header  = "Lucy",
+            Content = "lucy"
         });
         options.Add(new SelectOption()
         {
-            Header = "Yiminghe",
-            Value  = "yiminghe"
+            Header  = "Yiminghe",
+            Content = "yiminghe"
         });
         options.Add(new SelectOption()
         {
-            Header = "Disabled",
-            Value  = "disabled",
+            Header    = "Disabled",
+            Content   = "disabled",
             IsEnabled = false
         });
         return new SelectOptionsLoadResult()

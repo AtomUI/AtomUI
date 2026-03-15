@@ -206,8 +206,8 @@
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Select IsAllowClear="True" DefaultValues="Zhejiang">
-                        <atom:SelectOption Header="Zhejiang" Value="Zhejiang" />
-                        <atom:SelectOption Header="Jiangsu" Value="Jiangsu" />
+                        <atom:SelectOption Header="Zhejiang" Content="Zhejiang" />
+                        <atom:SelectOption Header="Jiangsu" Content="Jiangsu" />
                     </atom:Select>
                     <atom:LineEdit Text="Xihu District, Hangzhou" atom:CompactSpace.ItemSize="4*"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="4*"/>
@@ -215,8 +215,8 @@
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Select  IsAllowClear="True" DefaultValues="Zhejiang" Mode="Multiple" atom:CompactSpace.ItemSize="4*">
-                        <atom:SelectOption Header="Zhejiang" Value="Zhejiang" />
-                        <atom:SelectOption Header="Jiangsu" Value="Jiangsu" />
+                        <atom:SelectOption Header="Zhejiang" Content="Zhejiang" />
+                        <atom:SelectOption Header="Jiangsu" Content="Jiangsu" />
                     </atom:Select>
                     <atom:LineEdit Text="Xihu District, Hangzhou" atom:CompactSpace.ItemSize="4*"/>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="4*"/>
@@ -231,8 +231,8 @@
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Select DefaultValues="Option1">
-                        <atom:SelectOption Header="Option1" Value="Option1" />
-                        <atom:SelectOption Header="Option2" Value="Option2" />
+                        <atom:SelectOption Header="Option1" Content="Option1" />
+                        <atom:SelectOption Header="Option2" Content="Option2" />
                     </atom:Select>
                     <atom:LineEdit Text="input content" atom:CompactSpace.ItemSize="5*"/>
                     <atom:NumericUpDown Value="12" atom:CompactSpace.ItemSize="80"/>
@@ -254,20 +254,20 @@
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Select DefaultValues="Option1-1">
-                        <atom:SelectOption Header="Option1-1" Value="Option1-1" />
-                        <atom:SelectOption Header="Option2-1" Value="Option2-1" />
+                        <atom:SelectOption Header="Option1-1" Content="Option1-1" />
+                        <atom:SelectOption Header="Option2-1" Content="Option2-1" />
                     </atom:Select>
                     <atom:Select DefaultValues="Option2-1">
-                        <atom:SelectOption Header="Option2-1" Value="Option2-1" />
-                        <atom:SelectOption Header="Option2-2" Value="Option2-2" />
+                        <atom:SelectOption Header="Option2-1" Content="Option2-1" />
+                        <atom:SelectOption Header="Option2-2" Content="Option2-2" />
                     </atom:Select>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
                 </atom:CompactSpace>
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Select DefaultValues="1">
-                        <atom:SelectOption Header="Between" Value="1" />
-                        <atom:SelectOption Header="Except" Value="2" />
+                        <atom:SelectOption Header="Between" Content="1" />
+                        <atom:SelectOption Header="Except" Content="2" />
                     </atom:Select>
                     <atom:LineEdit atom:CompactSpace.ItemSize="100" PlaceholderText="Minimum"/>
                     <atom:LineEdit PlaceholderText="~" IsEnabled="False"/>
@@ -277,12 +277,12 @@
         
                 <atom:CompactSpace Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <atom:Select DefaultValues="Sign Up">
-                        <atom:SelectOption Header="Sign Up" Value="Sign Up" />
-                        <atom:SelectOption Header="Sign In" Value="Sign In" />
+                        <atom:SelectOption Header="Sign Up" Content="Sign Up" />
+                        <atom:SelectOption Header="Sign In" Content="Sign In" />
                     </atom:Select>
                     <atom:AutoComplete PlaceholderText="Email">
-                        <atom:AutoCompleteOption Header="text 1" Value="text 1"/>
-                        <atom:AutoCompleteOption Header="text 2" Value="text 2"/>
+                        <atom:AutoCompleteOption Header="text 1" Content="text 1"/>
+                        <atom:AutoCompleteOption Header="text 2" Content="text 2"/>
                     </atom:AutoComplete>
                     <atom:CompactSpaceFiller atom:CompactSpace.ItemSize="5*"/>
                 </atom:CompactSpace>

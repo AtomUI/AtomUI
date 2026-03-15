@@ -1,4 +1,4 @@
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls;
 
 public interface IGroupHeader
 {

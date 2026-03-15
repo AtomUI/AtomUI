@@ -13,15 +13,15 @@
             <WrapPanel ItemSpacing="10" LineSpacing="10">
                 <atom:Select Mode="Single" PlaceholderText="Please select" Width="120"
                              DefaultValues="lucy">
-                    <atom:SelectOption Header="Jack" Value="jack" />
-                    <atom:SelectOption Header="Lucy" Value="lucy" />
-                    <atom:SelectOption Header="Yiminghe" Value="yiminghe" />
-                    <atom:SelectOption Header="Disabled" IsEnabled="False" Value="disabled" />
+                    <atom:SelectOption Header="Jack" Content="jack" />
+                    <atom:SelectOption Header="Lucy" Content="lucy" />
+                    <atom:SelectOption Header="Yiminghe" Content="yiminghe" />
+                    <atom:SelectOption Header="Disabled" IsEnabled="False" Content="disabled" />
                 </atom:Select>
                 
                 <atom:Select Mode="Single" PlaceholderText="Please select" IsEnabled="False" Width="120"
                              DefaultValues="lucy">
-                    <atom:SelectOption Header="Lucy" Value="lucy" />
+                    <atom:SelectOption Header="Lucy" Content="lucy" />
                 </atom:Select>
         
                 <atom:Select Mode="Single"
@@ -29,11 +29,11 @@
                              Width="120"
                              DefaultValues="lucy"
                              OptionsLoader="{Binding SelectOptionsAsyncLoader}">
-                    <atom:SelectOption Header="Lucy" Value="lucy" />
+                    <atom:SelectOption Header="Lucy" Content="lucy" />
                 </atom:Select>
         
                 <atom:Select Mode="Single" PlaceholderText="Please select" IsAllowClear="True" Width="120">
-                    <atom:SelectOption Header="Lucy" Value="lucy" />
+                    <atom:SelectOption Header="Lucy" Content="lucy" />
                 </atom:Select>
                 
                 <atom:Select Mode="Single" PlaceholderText="Please select" IsAllowClear="True" Width="120"
@@ -47,9 +47,9 @@
             Title="Select with search field"
             Description="Search the options while expanded.">
             <atom:Select Mode="Single" PlaceholderText="Please select" IsFilterEnabled="True">
-                <atom:SelectOption Header="Jack" Value="jack" />
-                <atom:SelectOption Header="Lucy" Value="lucy" />
-                <atom:SelectOption Header="Tom" Value="tom" />
+                <atom:SelectOption Header="Jack" Content="jack" />
+                <atom:SelectOption Header="Lucy" Content="lucy" />
+                <atom:SelectOption Header="Tom" Content="tom" />
             </atom:Select>
         </gallery:ShowCaseItem>
         
@@ -60,9 +60,9 @@
                          Mode="Single"
                          PlaceholderText="Select a person"
                          IsFilterEnabled="True">
-                <atom:SelectOption Header="Jack" Value="jack" />
-                <atom:SelectOption Header="Lucy" Value="lucy" />
-                <atom:SelectOption Header="Tom" Value="tom" />
+                <atom:SelectOption Header="Jack" Content="jack" />
+                <atom:SelectOption Header="Lucy" Content="lucy" />
+                <atom:SelectOption Header="Tom" Content="tom" />
             </atom:Select>
         </gallery:ShowCaseItem>
         
@@ -142,10 +142,10 @@
                          IsFilterEnabled="True"
                          HorizontalAlignment="Stretch"
                          IsAllowClear="True">
-                <views:CustomOption Header="China" Value="china" Description="China (中国)" Emoji="🇨🇳" />
-                <views:CustomOption Header="USA" Value="usa" Description="USA (美国)" Emoji="🇺🇸" />
-                <views:CustomOption Header="Japan" Value="japan" Description="Japan (日本)" Emoji="🇯🇵" />
-                <views:CustomOption Header="Korea" Value="korea" Description="Korea (韩国)" Emoji="🇰🇷" />
+                <views:CustomOption Header="China" Content="china" Description="China (中国)" Emoji="🇨🇳" />
+                <views:CustomOption Header="USA" Content="usa" Description="USA (美国)" Emoji="🇺🇸" />
+                <views:CustomOption Header="Japan" Content="japan" Description="Japan (日本)" Emoji="🇯🇵" />
+                <views:CustomOption Header="Korea" Content="korea" Description="Korea (韩国)" Emoji="🇰🇷" />
                 <atom:Select.OptionTemplate>
                     <DataTemplate x:DataType="views:CustomOption">
                         <StackPanel Orientation="Horizontal" Spacing="5">
@@ -165,10 +165,10 @@
                          Width="200"
                          IsGroupEnabled="True"
                          IsFilterEnabled="True">
-                <atom:SelectOption Header="Jack" Value="jack" Group="Manager" />
-                <atom:SelectOption Header="Lucy" Value="lucy" Group="Manager" />
-                <atom:SelectOption Header="Chloe" Value="chloe" Group="engineer" />
-                <atom:SelectOption Header="Lucas" Value="lucas" Group="engineer" />
+                <atom:SelectOption Header="Jack" Content="jack" Group="Manager" />
+                <atom:SelectOption Header="Lucy" Content="lucy" Group="Manager" />
+                <atom:SelectOption Header="Chloe" Content="chloe" Group="engineer" />
+                <atom:SelectOption Header="Lucas" Content="lucas" Group="engineer" />
             </atom:Select>
         </gallery:ShowCaseItem>
         
@@ -180,17 +180,17 @@
                     <atom:Select Mode="Single"
                                  PlaceholderText="Outline"
                                  HorizontalAlignment="Stretch">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  DefaultValues="lucy"
                                  IsFilterEnabled="True">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                 </UniformGrid>
         
@@ -199,18 +199,18 @@
                                  PlaceholderText="Filled"
                                  HorizontalAlignment="Stretch"
                                  StyleVariant="Filled">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  StyleVariant="Filled"
                                  IsFilterEnabled="True"
                                  DefaultValues="lucy">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                 </UniformGrid>
         
@@ -219,18 +219,18 @@
                                  PlaceholderText="Borderless"
                                  HorizontalAlignment="Stretch"
                                  StyleVariant="Borderless">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
                                  StyleVariant="Borderless"
                                  IsFilterEnabled="True"
                                  DefaultValues="lucy">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                 </UniformGrid>
             </StackPanel>
@@ -244,10 +244,10 @@
                          IsHideSelectedOptions="True"
                          IsFilterEnabled="True"
                          HorizontalAlignment="Stretch">
-                <atom:SelectOption Header="Apples" Value="Apples" />
-                <atom:SelectOption Header="Nails" Value="Nails" />
-                <atom:SelectOption Header="Bananas" Value="Bananas" />
-                <atom:SelectOption Header="Helicopters" Value="Helicopters" />
+                <atom:SelectOption Header="Apples" Content="Apples" />
+                <atom:SelectOption Header="Nails" Content="Nails" />
+                <atom:SelectOption Header="Bananas" Content="Bananas" />
+                <atom:SelectOption Header="Helicopters" Content="Helicopters" />
             </atom:Select>
         </gallery:ShowCaseItem>
         
@@ -269,15 +269,15 @@
                              PlaceholderText="Please select"
                              MaxCount="3"
                              IsShowMaxCountIndicator="True">
-                    <atom:SelectOption Header="Ava Swift" Value="Ava Swift" />
-                    <atom:SelectOption Header="Cole Reed" Value="Cole Reed" />
-                    <atom:SelectOption Header="Mia Blake" Value="Mia Blake" />
-                    <atom:SelectOption Header="Jake Stone" Value="Jake Stone" />
-                    <atom:SelectOption Header="Lily Lane" Value="Lily Lane" />
-                    <atom:SelectOption Header="Ryan Chase" Value="Ryan Chase" />
-                    <atom:SelectOption Header="Zoe Fox" Value="Zoe Fox" />
-                    <atom:SelectOption Header="Alex Grey" Value="Alex Grey" />
-                    <atom:SelectOption Header="Elle Blair" Value="Elle Blair" />
+                    <atom:SelectOption Header="Ava Swift" Content="Ava Swift" />
+                    <atom:SelectOption Header="Cole Reed" Content="Cole Reed" />
+                    <atom:SelectOption Header="Mia Blake" Content="Mia Blake" />
+                    <atom:SelectOption Header="Jake Stone" Content="Jake Stone" />
+                    <atom:SelectOption Header="Lily Lane" Content="Lily Lane" />
+                    <atom:SelectOption Header="Ryan Chase" Content="Ryan Chase" />
+                    <atom:SelectOption Header="Zoe Fox" Content="Zoe Fox" />
+                    <atom:SelectOption Header="Alex Grey" Content="Alex Grey" />
+                    <atom:SelectOption Header="Elle Blair" Content="Elle Blair" />
                 </atom:Select>
             </StackPanel>
         </gallery:ShowCaseItem>
@@ -324,9 +324,9 @@
                                  HorizontalAlignment="Stretch"
                                  Width="200"
                                  ContentLeftAddOn="User">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                     <atom:Select Mode="Single" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
@@ -334,9 +334,9 @@
                                  IsFilterEnabled="True"
                                  Width="200"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
         
                     <atom:Select Mode="Single" PlaceholderText="Please select"
@@ -346,9 +346,9 @@
                                  Width="200"
                                  IsEnabled="False"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                 </StackPanel>
         
@@ -359,9 +359,9 @@
                                  HorizontalAlignment="Stretch"
                                  Width="200"
                                  ContentLeftAddOn="User">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
                                  HorizontalAlignment="Stretch"
@@ -369,9 +369,9 @@
                                  IsFilterEnabled="True"
                                  Width="200"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
         
                     <atom:Select Mode="Multiple" PlaceholderText="Please select"
@@ -381,9 +381,9 @@
                                  Width="200"
                                  IsEnabled="False"
                                  ContentRightAddOn="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
-                        <atom:SelectOption Header="Jack" Value="jack" />
-                        <atom:SelectOption Header="Lucy" Value="lucy" />
-                        <atom:SelectOption Header="yiminghe" Value="Yiminghe" />
+                        <atom:SelectOption Header="Jack" Content="jack" />
+                        <atom:SelectOption Header="Lucy" Content="lucy" />
+                        <atom:SelectOption Header="yiminghe" Content="Yiminghe" />
                     </atom:Select>
                 </StackPanel>
             </StackPanel>

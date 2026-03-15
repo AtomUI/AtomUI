@@ -1634,7 +1634,7 @@ public class AbstractAutoComplete : TemplatedControl,
                     if (top != null)
                     {
                         newSelectedItem = top;
-                        var topString = (top.Value ?? top.Header ?? top.ItemKey)?.ToString();
+                        var topString = (top.Content ?? top.Header ?? top.ItemKey)?.ToString();
                 
                         // Only replace partially when the two words being the same
                         int minLength = Math.Min(topString?.Length ?? 0, Value?.Length ?? 0);
@@ -1712,7 +1712,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
         else
         {
-            value = option.Header?.ToString() ?? option.Value?.ToString() ?? option.ItemKey?.ToString();
+            value = option.Header?.ToString() ?? option.Content?.ToString() ?? option.ItemKey?.ToString();
         }
         return value;
     }
@@ -1727,7 +1727,7 @@ public class AbstractAutoComplete : TemplatedControl,
         }
         else if (newItem is IAutoCompleteOption option)
         {
-            text = option.Value?.ToString() ?? option.Header?.ToString() ?? option.ItemKey?.ToString();
+            text = option.Content?.ToString() ?? option.Header?.ToString() ?? option.ItemKey?.ToString();
         }
         // Update the Text property and the TextInputBox values
         UpdateValue(text);

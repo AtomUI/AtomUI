@@ -1,7 +1,9 @@
+using AtomUI.Controls.Data;
+
 namespace AtomUI.Desktop.Controls;
 
-internal record CascaderViewFilterListItemData : ListBoxItemData, ICascaderItemInfo
+internal record CascaderViewFilterListItemData : ListItemData, ICascaderItemInfo
 {
     public IList<ICascaderOption>? ExpandItems { get; set; }
-    public string Path => Value?.ToString() ?? string.Empty;
+    public string Path => Content?.ToString() ?? string.Empty;
 }

@@ -1,4 +1,4 @@
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Controls.Data;
 
 public interface IListFilterDescription
 {

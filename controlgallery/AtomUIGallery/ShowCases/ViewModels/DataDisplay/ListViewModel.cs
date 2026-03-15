@@ -1,4 +1,5 @@
 ﻿using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls;
 using Avalonia.Controls;
 using ReactiveUI;
@@ -77,9 +78,9 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _selectionMode, value);
     }
     
-    private List<IListBoxItemData>? _basicListBoxItems;
+    private List<IListItemData>? _basicListBoxItems;
     
-    public List<IListBoxItemData>? BasicListBoxItems
+    public List<IListItemData>? BasicListBoxItems
     {
         get => _basicListBoxItems;
         set => this.RaiseAndSetIfChanged(ref _basicListBoxItems, value);

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
+using AtomUI.Controls.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
@@ -94,7 +95,7 @@ internal class GroupableListView : ListBox
     }
     
     #region 虚拟化上下文管理
-    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
+    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListItemData itemData)
     {
         base.NotifyRestoreDefaultContext(item, itemData);
         if (item is ListItem listItem && itemData is ListItemData listItemData)

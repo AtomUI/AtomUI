@@ -52,8 +52,8 @@ public partial class CascaderView
                 }
                 result.Sort((lhs, rhs) =>
                 {
-                    var lhsStr = lhs.Value?.ToString() ?? string.Empty;
-                    var rhsStr = rhs.Value?.ToString() ?? string.Empty;
+                    var lhsStr = lhs.Content?.ToString() ?? string.Empty;
+                    var rhsStr = rhs.Content?.ToString() ?? string.Empty;
                     return string.Compare(lhsStr, rhsStr, StringComparison.OrdinalIgnoreCase);
                 });
                 _allPathInfos = result;
@@ -85,7 +85,7 @@ public partial class CascaderView
         pathHeaders.Reverse();
         return new CascaderViewFilterListItemData()
         {
-            Value       = string.Join('/', pathHeaders),
+            Content       = string.Join('/', pathHeaders),
             ExpandItems = pathNodes,
             IsEnabled   = option.IsEnabled
         };

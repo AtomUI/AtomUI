@@ -65,7 +65,7 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 {
                     Header = value.Replace("\r\n", " ")
                                   .Replace("\n", " "),
-                    Value  = value,
+                    Content  = value,
                 });
             }
             {
@@ -74,7 +74,7 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 {
                     Header = value.Replace("\r\n", " ")
                                   .Replace("\n", " "),
-                    Value =  value,
+                    Content =  value,
                 });
             }
             {
@@ -83,7 +83,7 @@ public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 {
                     Header = value.Replace("\r\n", " ")
                                   .Replace("\n", " "),
-                    Value  = value,
+                    Content  = value,
                 });
             }
         }
@@ -118,8 +118,8 @@ public class CustomLabelOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 var value = $"{context}@{suffix}";
                 data.Add(new AutoCompleteOption()
                 {
-                    Header = value,
-                    Value  = value,
+                    Header  = value,
+                    Content = value,
                 });
             }
         }
@@ -150,7 +150,7 @@ public class SearchEditOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 data.Add(new CustomAutoCompleteOption()
                 {
                     Header      = value,
-                    Value       = newValue,
+                    Content     = newValue,
                     ResultCount = random.Next(100, 200)
                 });
             }

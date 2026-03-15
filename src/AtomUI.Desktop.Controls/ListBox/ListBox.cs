@@ -1,8 +1,8 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using AtomUI.Data;
-using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -357,7 +357,7 @@ public class ListBox : AvaloniaListBox,
     {
         if (container is ListBoxItem listBoxItem && item != null && item is not Visual)
         {
-            if (item is IListBoxItemData itemData)
+            if (item is IListItemData itemData)
             {
                 NotifyRestoreDefaultContext(listBoxItem, itemData);
             }
@@ -397,7 +397,7 @@ public class ListBox : AvaloniaListBox,
             {
                 originMotionEnabled = listBoxItem.IsMotionEnabled;
                 listBoxItem.SetCurrentValue(IsMotionEnabledProperty, false);
-                if (item is IListBoxItemData itemData)
+                if (item is IListItemData itemData)
                 {
                     NotifyRestoreDefaultContext(listBoxItem, itemData);
                 }
@@ -641,7 +641,7 @@ public class ListBox : AvaloniaListBox,
         }
     }
     
-    protected virtual void NotifyRestoreDefaultContext(ListBoxItem item, IListBoxItemData itemData)
+    protected virtual void NotifyRestoreDefaultContext(ListBoxItem item, IListItemData itemData)
     {
         if (!item.IsSet(ListBoxItem.ContentProperty))
         {
@@ -690,7 +690,7 @@ public class ListBox : AvaloniaListBox,
 
     void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
     {
-        if (item is ListBoxItem listBoxItem && defaultContext is IListBoxItemData listBoxItemData)
+        if (item is ListBoxItem listBoxItem && defaultContext is IListItemData listBoxItemData)
         {
             ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifyRestoreDefaultContext(listItem, listBoxItemData));
         }

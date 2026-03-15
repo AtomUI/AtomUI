@@ -7,8 +7,52 @@
         <ControlTheme.BasedOn>
             <atom:ListBoxTheme TargetType="atom:TransferListView" />
         </ControlTheme.BasedOn>
-        
-        <Setter Property="BorderThickness" Value="0"/>
-        
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:TransferListView">
+                <Border Name="Frame"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}"
+                        Margin="{TemplateBinding Margin}">
+                    <DockPanel LastChildFill="True">
+                        <atom:SimplePagination DockPanel.Dock="Bottom"
+                                         Name="Pagination"
+                                         Align="Start"
+                                         IsHideOnSinglePage="True"
+                                         IsEnabled="{TemplateBinding IsEnabled}"
+                                         SizeType="Small"
+                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                        <Panel>
+                            <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+                                               IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                               IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
+                                               AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                               HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                               VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                               IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                                               IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                               IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
+                                <ItemsPresenter Name="ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                            </atom:ScrollViewer>
+                            <ContentPresenter
+                                Name="EmptyIndicator"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Padding="{TemplateBinding EmptyIndicatorPadding}"
+                                IsVisible="{TemplateBinding IsEffectiveEmptyVisible}"
+                                Content="{TemplateBinding EmptyIndicator}"
+                                ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}" />
+                        </Panel>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="BorderThickness" Value="0" />
+
     </ControlTheme>
 </ResourceDictionary>

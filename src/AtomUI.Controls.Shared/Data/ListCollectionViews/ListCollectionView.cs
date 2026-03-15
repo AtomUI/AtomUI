@@ -4,11 +4,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using AtomUI.Desktop.Controls.Data;
 using AtomUI.Utils;
 using Avalonia.Collections;
 
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls.Data;
+
+public delegate object? ListGroupPropertySelector(object data);
+public delegate object? ListFilterPropertySelector(object data);
 
 internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyChanged
 {
@@ -325,7 +327,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// <remarks>
     /// <p>
     /// Clear a sort criteria by assigning SortDescription.Empty to this property.
-    /// One or more sort criteria in form of <seealso cref="Data.ListSortDescription"/>
+    /// One or more sort criteria in form of <seealso cref="ListSortDescription"/>
     /// can be used, each specifying a property and direction to sort by.
     /// </p>
     /// </remarks>
@@ -730,7 +732,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         return $"'{action}' is not allowed during a transaction started by '{transaction}'.";
     }
     
-     /// <summary>
+    /// <summary>
     /// Return the item at the specified index
     /// </summary>
     /// <param name="index">Index of the item we want to retrieve</param>
@@ -955,7 +957,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
             // if we need to add an item into the view due to paging
             if (addIndex > -1)
             {
-                int    internalIndex = ConvertToInternalIndex(addIndex);
+                int     internalIndex = ConvertToInternalIndex(addIndex);
                 object? addItem       = null;
                 if (IsGrouping)
                 {
@@ -1216,7 +1218,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
             }
 
             for (int index = _pageSize * PageIndex;
-                 index < (int)Math.Min(_pageSize * (PageIndex + 1), InternalList.Count);
+                 index < Math.Min(_pageSize * (PageIndex + 1), InternalList.Count);
                  index++)
             {
                 list.Add(InternalList[index]);
@@ -1225,6 +1227,27 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
             return new NewItemAwareEnumerator(this, list.GetEnumerator(), CurrentAddItem);
         }
         return new NewItemAwareEnumerator(this, InternalList.GetEnumerator(), CurrentAddItem);
+    }
+
+    public IEnumerator GetAllRangeEnumerator()
+    {
+        EnsureCollectionInSync();
+        VerifyRefreshNotDeferred();
+
+        if (IsGrouping)
+        {
+            return RootGroup.GetLeafEnumerator();
+        }
+        return new NewItemAwareEnumerator(this, InternalList.GetEnumerator(), CurrentAddItem);
+    }
+
+    public IEnumerable ToAllRangeEnumerable()
+    {
+        var enumerator = GetAllRangeEnumerator();
+        while (enumerator.MoveNext())
+        {
+            yield return enumerator.Current;
+        }
     }
 
     /// <summary>
@@ -1339,7 +1362,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         return MoveToPage(_pageIndex + 1);
     }
     
-     /// <summary>
+    /// <summary>
     /// Requests a page move to page <paramref name="pageIndex"/>.
     /// </summary>
     /// <param name="pageIndex">Index of the target page</param>
@@ -1577,7 +1600,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         return propertyValue;
     }
     
-     /// <summary>
+    /// <summary>
     /// Returns true if specified flag in flags is set.
     /// </summary>
     /// <param name="flags">Flag we are checking for</param>
@@ -1887,7 +1910,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         }
     }
     
-     /// <summary>
+    /// <summary>
     /// GroupBy changed handler
     /// </summary>
     /// <param name="sender">CollectionViewGroup whose GroupBy has changed</param>
@@ -2474,7 +2497,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         }
     }
 
-     /// <summary>
+    /// <summary>
     /// Raises the PageChanged event
     /// </summary>
     private void RaisePageChanged()
@@ -2582,7 +2605,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
                 NotifyCollectionChangedAction.Reset));
     }
     
-     /// <summary>
+    /// <summary>
     /// Sets the specified Flag(s)
     /// </summary>
     /// <param name="flags">Flags we want to set</param>
@@ -2992,7 +3015,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         private int _timestamp;
     }
         
-     internal class MergedComparer
+    internal class MergedComparer
     {
         private readonly IComparer<object>[] _comparers;
 

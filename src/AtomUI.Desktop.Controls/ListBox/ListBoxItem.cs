@@ -1,11 +1,11 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using DynamicData;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -220,9 +220,9 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         }
         else if (change.Property == ContentProperty)
         {
-            if (Content is IListBoxItemData listBoxItemData)
+            if (Content is IListItemData listBoxItemData)
             {
-                ContentText = listBoxItemData.Value as string;
+                ContentText = listBoxItemData.Content as string;
             }
             else if (Content is string strContent)
             {

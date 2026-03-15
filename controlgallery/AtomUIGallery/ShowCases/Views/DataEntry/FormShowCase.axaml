@@ -75,9 +75,9 @@
                     <atom:Select IsAllowClear="True"
                                  PlaceholderText="Select a option and change input text above"
                                  HorizontalAlignment="Stretch">
-                        <atom:SelectOption Header="male" Value="male" />
-                        <atom:SelectOption Header="female" Value="female" />
-                        <atom:SelectOption Header="other" Value="other" />
+                        <atom:SelectOption Header="male" Content="male" />
+                        <atom:SelectOption Header="female" Content="female" />
+                        <atom:SelectOption Header="other" Content="other" />
                     </atom:Select>
                 </atom:FormItem>
                 <gallery:CustomizeGenderFormItem LabelText="Customize Gender"
@@ -220,7 +220,7 @@
                     </atom:FormItem>
                     <atom:FormItem LabelText="Select" FieldName="select">
                         <atom:Select HorizontalAlignment="Stretch">
-                            <atom:SelectOption Header="Demo" Value="demo"/>
+                            <atom:SelectOption Header="Demo" Content="demo"/>
                         </atom:Select>
                     </atom:FormItem>
         
@@ -1001,9 +1001,9 @@
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
                     <atom:Select DefaultValues="male" HorizontalAlignment="Stretch">
-                        <atom:SelectOption Header="Male" Value="male"/>
-                        <atom:SelectOption Header="Female" Value="female"/>
-                        <atom:SelectOption Header="Other" Value="other"/>
+                        <atom:SelectOption Header="Male" Content="male"/>
+                        <atom:SelectOption Header="Female" Content="female"/>
+                        <atom:SelectOption Header="Other" Content="other"/>
                     </atom:Select>
                 </atom:FormItem>
         
@@ -1261,9 +1261,9 @@
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
                     <atom:Select IsAllowClear="True" PlaceholderText="I'm Select" DefaultValues="1" HorizontalAlignment="Stretch">
-                        <atom:SelectOption Header="Option 1" Value="1"/>
-                        <atom:SelectOption Header="Option 2" Value="2"/>
-                        <atom:SelectOption Header="Option 3" Value="3"/>
+                        <atom:SelectOption Header="Option 1" Content="1"/>
+                        <atom:SelectOption Header="Option 2" Content="2"/>
+                        <atom:SelectOption Header="Option 3" Content="3"/>
                     </atom:Select>
                 </atom:FormItem>
         
@@ -1406,8 +1406,8 @@
                         </atom:FormValidatorProvider>
                     </atom:FormItem.Validators>
                     <atom:Select PlaceholderText="Please select a country" HorizontalAlignment="Stretch">
-                        <atom:SelectOption Header="China" Value="china"/>
-                        <atom:SelectOption Header="U.S.A" Value="usa"/>
+                        <atom:SelectOption Header="China" Content="china"/>
+                        <atom:SelectOption Header="U.S.A" Content="usa"/>
                     </atom:Select>
                 </atom:FormItem>
                 
@@ -1423,9 +1423,9 @@
                                  HorizontalAlignment="Stretch"
                                  Mode="Multiple"
                                  IsAllowClear="True">
-                        <atom:SelectOption Header="Red" Value="red"/>
-                        <atom:SelectOption Header="Green" Value="green"/>
-                        <atom:SelectOption Header="Blue" Value="blue"/>
+                        <atom:SelectOption Header="Red" Content="red"/>
+                        <atom:SelectOption Header="Green" Content="green"/>
+                        <atom:SelectOption Header="Blue" Content="blue"/>
                     </atom:Select>
                 </atom:FormItem>
                 

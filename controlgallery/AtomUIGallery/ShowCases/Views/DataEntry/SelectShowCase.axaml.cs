@@ -30,23 +30,23 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
         viewModel.BasicSelectedOptions = [
             new SelectOption()
             {
-                Header = "Jack",
-                Value  = "jack",
+                Header  = "Jack",
+                Content = "jack",
             },
             new SelectOption()
             {
-                Header = "Lucy",
-                Value  = "lucy",
+                Header  = "Lucy",
+                Content = "lucy",
             },
             new SelectOption()
             {
-                Header = "Yiminghe",
-                Value  = "yiminghe",
+                Header  = "Yiminghe",
+                Content = "yiminghe",
             },
             new SelectOption()
             {
                 Header    = "Disabled",
-                Value     = "disabled",
+                Content   = "disabled",
                 IsEnabled = false
             }
         ];
@@ -61,8 +61,8 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
             var base36Str = ConvertToBase36(i);
             options.Add(new SelectOption 
             {
-                Header = base36Str + i,
-                Value = base36Str + i
+                Header  = base36Str + i,
+                Content = base36Str + i
             });
         }
         viewModel.RandomOptions = options;
@@ -76,8 +76,8 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
             var base36Str = ConvertToBase36(i);
             options.Add(new SelectOption 
             {
-                Header = $"Long label: {base36Str + i}",
-                Value  = base36Str + i
+                Header  = $"Long label: {base36Str + i}",
+                Content = base36Str + i
             });
         }
         viewModel.MaxTagCountOptions = options;

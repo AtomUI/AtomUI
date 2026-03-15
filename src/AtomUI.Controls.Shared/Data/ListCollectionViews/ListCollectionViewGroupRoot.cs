@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Collections;
 
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Controls.Data;
 
 internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, INotifyCollectionChanged
 {
@@ -209,8 +209,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <param name="level">The level of grouping.</param>
     /// <param name="key">Name of subGroup to add to</param>
     /// <param name="loading">Whether we are currently loading</param>
-    private void AddToSubgroup(object item, ListCollectionViewGroupInternal group, int level, object key,
-                               bool loading)
+    private void AddToSubgroup(object item, ListCollectionViewGroupInternal group, int level, object key, bool loading)
     {
         ListCollectionViewGroupInternal? subGroup;
         int                                 index = (_isDataInGroupOrder) ? group.LastIndex : 0;
@@ -252,15 +251,12 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
             }
         }
 
-        var itemData = new ListItemData()
+        var groupItemData = new GroupListItemData()
         {
-            Content = key.ToString()!,
+            Content     = key.ToString()!,
+            IsGroupItem = true
         };
-        if (itemData is IGroupListItemData groupListItemData)
-        {
-            groupListItemData.IsGroupItem = true;
-        }
-        AddToSubgroups(itemData, subGroup, level + 1, loading);
+        AddToSubgroups(groupItemData, subGroup, level + 1, loading);
         AddToSubgroups(item, subGroup, level + 1, loading);
     }
 

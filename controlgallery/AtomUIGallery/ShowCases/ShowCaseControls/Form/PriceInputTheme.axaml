@@ -21,8 +21,8 @@
                                  StyleVariant="{TemplateBinding StyleVariant}"
                                  DefaultValues="RMB"
                                  Name="UnitInput">
-                        <atom:SelectOption Header="RMB" Value="RMB"/>
-                        <atom:SelectOption Header="Dollar" Value="Dollar"/>
+                        <atom:SelectOption Header="RMB" Content="RMB"/>
+                        <atom:SelectOption Header="Dollar" Content="Dollar"/>
                     </atom:Select>
                 </StackPanel>
             </ControlTemplate>

@@ -18,8 +18,8 @@
                                  Status="{TemplateBinding Status}"
                                  StyleVariant="{TemplateBinding StyleVariant}"
                                  Name="UnitInput">
-                        <atom:SelectOption Header="$" Value="USD" />
-                        <atom:SelectOption Header="¥" Value="CNY" />
+                        <atom:SelectOption Header="$" Content="USD" />
+                        <atom:SelectOption Header="¥" Content="CNY" />
                     </atom:Select>
                 </atom:CompactSpace>
             </ControlTemplate>

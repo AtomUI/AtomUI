@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia;
 
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Controls.Data;
 
 internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
 {

@@ -1,16 +1,17 @@
-﻿using AtomUI.Desktop.Controls;
-using AtomUI.Desktop.Controls.Data;
+﻿using AtomUI.Controls.Data;
+using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
+using IListItemData = AtomUI.Controls.Data.IListItemData;
+using ListItemData = AtomUI.Controls.Data.ListItemData;
 
 namespace AtomUIGallery.ShowCases.Views;
 
 public partial class ListShowCase : ReactiveUserControl<ListViewModel>
 {
-    
     public ListShowCase()
     {
         this.WhenActivated(disposables =>
@@ -227,25 +228,25 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
     private void InitializeBasicListBoxItems(ListViewModel viewModel)
     {
         viewModel.BasicListBoxItems = [
-            new ListBoxItemData()
+            new ListItemData()
             {
-                Value = "Racing car sprays burning fuel into crowd."
+                Content = "Racing car sprays burning fuel into crowd."
             },
-            new ListBoxItemData()
+            new ListItemData()
             {
-                Value = "Japanese princess to wed commoner."
+                Content = "Japanese princess to wed commoner."
             },
-            new ListBoxItemData()
+            new ListItemData()
             {
-                Value = "Australian walks 100km after outback crash."
+                Content = "Australian walks 100km after outback crash."
             },
-            new ListBoxItemData()
+            new ListItemData()
             {
-                Value = "Man charged over missing wedding girl."
+                Content = "Man charged over missing wedding girl."
             },
-            new ListBoxItemData()
+            new ListItemData()
             {
-                Value = "Los Angeles battles huge wildfires."
+                Content = "Los Angeles battles huge wildfires."
             },
         ];
     }
@@ -299,7 +300,7 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
                     {
                         return listItemData.Content;
                     }
-
+    
                     return null;
                 },
                 FilterConditions       = ["a"]

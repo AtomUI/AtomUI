@@ -13,8 +13,8 @@
                                  Status="{TemplateBinding Status}"
                                  StyleVariant="{TemplateBinding StyleVariant}"
                                  Name="CountryCode">
-                        <atom:SelectOption Header="+86" Value="+86"/>
-                        <atom:SelectOption Header="+87" Value="+87"/>
+                        <atom:SelectOption Header="+86" Content="+86"/>
+                        <atom:SelectOption Header="+87" Content="+87"/>
                     </atom:Select>
                     <atom:LineEdit Name="PhoneNumber" atom:CompactSpace.ItemSize="*"
                                    SizeType="{TemplateBinding SizeType}"

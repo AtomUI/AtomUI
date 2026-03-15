@@ -1,4 +1,4 @@
-using AtomUI.Desktop.Controls.Data;
+using AtomUI.Controls.Data;
 
 namespace AtomUI.Desktop.Controls;
 

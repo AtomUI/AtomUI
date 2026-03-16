@@ -7,17 +7,17 @@ using AtomUI.Controls.Data;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
-using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -25,10 +25,10 @@ using VirtualizingStackPanel = Avalonia.Controls.VirtualizingStackPanel;
 
 namespace AtomUI.Desktop.Controls;
 
-public class List : TemplatedControl,
-                    ISizeTypeAware,
-                    IMotionAwareControl,
-                    IControlSharedTokenResourcesHost
+public partial class List : TemplatedControl,
+                            ISizeTypeAware,
+                            IMotionAwareControl,
+                            IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     
@@ -76,38 +76,8 @@ public class List : TemplatedControl,
         AvaloniaProperty.Register<List, ListGroupPropertySelector?>(
             nameof(GroupPropertySelector));
     
-    public static readonly DirectProperty<List, int> SelectedIndexProperty =
-        AvaloniaProperty.RegisterDirect<List, int>(
-            nameof(SelectedIndex),
-            o => o.SelectedIndex,
-            (o, v) => o.SelectedIndex = v,
-            unsetValue: -1,
-            defaultBindingMode: BindingMode.TwoWay);
-    
-    public static readonly DirectProperty<List, IList?> SelectedItemsProperty =
-        AvaloniaProperty.RegisterDirect<List, IList?>(nameof(SelectedItems), 
-            o => o.SelectedItems, 
-            (o, v) => o.SelectedItems = v,
-            defaultBindingMode: BindingMode.TwoWay);
-    
-    public static readonly DirectProperty<List, object?> SelectedItemProperty =
-        AvaloniaProperty.RegisterDirect<List, object?>(
-            nameof(SelectedItem),
-            o => o.SelectedItem,
-            (o, v) => o.SelectedItem = v,
-            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
-    
-    public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
-        AvaloniaProperty.Register<List, SelectionMode>(nameof(SelectionMode));
-    
-    public static readonly StyledProperty<bool> IsItemSelectableProperty =
-        AvaloniaProperty.Register<List, bool>(nameof(IsItemSelectable), true);
-    
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<List>();
-    
-    public static readonly StyledProperty<bool> IsShowSelectedIndicatorProperty =
-        AvaloniaProperty.Register<List, bool>(nameof(IsShowSelectedIndicator), false);
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<List>();
@@ -197,42 +167,6 @@ public class List : TemplatedControl,
     {
         get => GetValue(GroupPropertySelectorProperty);
         set => SetValue(GroupPropertySelectorProperty, value);
-    }
-    
-    private int _selectedIndex;
-
-    public int SelectedIndex
-    {
-        get => _selectedIndex;
-        set => SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value);
-    }
-    
-    private IList? _selectedItems;
-
-    public IList? SelectedItems
-    {
-        get => _selectedItems;
-        set => SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
-    }
-    
-    private object? _selectedItem;
-
-    public object? SelectedItem
-    {
-        get => _selectedItem;
-        set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
-    }
-    
-    public SelectionMode SelectionMode
-    {
-        get => GetValue(SelectionModeProperty);
-        set => SetValue(SelectionModeProperty, value);
-    }
-    
-    public bool IsItemSelectable
-    {
-        get => GetValue(IsItemSelectableProperty);
-        set => SetValue(IsItemSelectableProperty, value);
     }
     
     public SizeType SizeType
@@ -433,15 +367,8 @@ public class List : TemplatedControl,
         get => _isEffectiveEmptyVisible;
         set => SetAndRaise(IsEffectiveEmptyVisibleProperty, ref _isEffectiveEmptyVisible, value);
     }
-
-    internal bool EventsWired
-    {
-        get;
-        private set;
-    }
     
     protected static object DefaultRecycleKey { get; } = new ();
-    protected ISelectionModel? Selection => ListView?.Selection;
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
     string IControlSharedTokenResourcesHost.TokenId => ListToken.ID;
@@ -460,11 +387,12 @@ public class List : TemplatedControl,
     private CompositeDisposable? _relayBindingDisposables;
     private CompositeDisposable? _topPaginationDisposables;
     private CompositeDisposable? _bottomPaginationDisposables;
+    private IDisposable? _inputManagerDisposable;
     
     static List()
     {
         ItemsPanelProperty.OverrideDefaultValue<List>(DefaultPanel);
-        ItemsSourceProperty.Changed.AddClassHandler<List>((x, e) => x.HandleItemsSourcePropertyChanged(e));
+        ItemsSourceProperty.Changed.AddClassHandler<List>((list, e) => list.HandleItemsSourcePropertyChanged(e));
         IsHideOnSinglePageProperty.OverrideDefaultValue<List>(true);
         ItemCountProperty.Changed.AddClassHandler<List>((list, args) => list.HandleItemCountChanged());
     }
@@ -472,6 +400,18 @@ public class List : TemplatedControl,
     public List()
     {
         this.RegisterResources();
+    }
+    
+    protected override void OnDataContextBeginUpdate()
+    {
+        base.OnDataContextBeginUpdate();
+        BeginUpdating();
+    }
+    
+    protected override void OnDataContextEndUpdate()
+    {
+        base.OnDataContextEndUpdate();
+        EndUpdating();
     }
 
     protected override void OnInitialized()
@@ -481,6 +421,7 @@ public class List : TemplatedControl,
         {
             SetCurrentValue(GroupPropertySelectorProperty, GroupSelector);
         }
+        TryInitializeSelectionSource(_selection, _updateState is null);
     }
 
     private object? GroupSelector(object item)
@@ -498,7 +439,7 @@ public class List : TemplatedControl,
         base.OnPropertyChanged(change);
         if (change.Property == SelectionModeProperty)
         {
-            SyncSelectionState();
+            SyncSelectionMode();
         }
         else if (change.Property == IsGroupEnabledProperty)
         {
@@ -531,6 +472,8 @@ public class List : TemplatedControl,
         {
             HandlePaginationVisibility();
         }
+
+        NotifyPropertyChangedForSelection(change);
     }
 
     private void HandleTopPaginationChanged(AvaloniaPropertyChangedEventArgs args)
@@ -583,7 +526,7 @@ public class List : TemplatedControl,
     {
         if (PaginationVisibility == ListPaginationVisibility.None)
         {
-            _topPagination?.IsVisible = false;
+            _topPagination?.IsVisible    = false;
             _bottomPagination?.IsVisible = false;
         }
         else if (PaginationVisibility == ListPaginationVisibility.Both)
@@ -593,7 +536,7 @@ public class List : TemplatedControl,
         }
         else if (PaginationVisibility == ListPaginationVisibility.Top)
         {
-            _topPagination?.IsVisible = true;
+            _topPagination?.IsVisible    = true;
             _bottomPagination?.IsVisible = false;
         }
         else
@@ -617,15 +560,16 @@ public class List : TemplatedControl,
 
         if (ListView != null)
         {
-            ListView.SelectionChanged -= HandleListViewSelectionChanged;
+            ListView.SyncSelectionRequest -= HandleSyncSelectionRequest;
         }
 
         ListView = e.NameScope.Find<GroupableListView>(ListThemeConstants.ListViewPart);
         if (ListView != null)
         {
-            ListView.OwningList       =  this;
-            ListView.SelectionChanged += HandleListViewSelectionChanged;
-            SyncSelectionState();
+            ListView.OwningList           =  this;
+            ListView.SyncSelectionRequest += HandleSyncSelectionRequest;
+            SyncSelectionMode();
+            SyncSelectionToListView();
         }
         UpdatePseudoClasses();
         ConfigureEmptyIndicator();
@@ -637,11 +581,6 @@ public class List : TemplatedControl,
         {
             collectionView.MoveToPage(args.PageIndex - 1);
         }
-    }
-
-    private void HandleListViewSelectionChanged(object? sender, SelectionChangedEventArgs args)
-    {
-        RaiseEvent(new SelectionChangedEventArgs(SelectionChangedEvent, args.RemovedItems, args.AddedItems));
     }
     
     private void UpdatePseudoClasses()
@@ -676,6 +615,7 @@ public class List : TemplatedControl,
                 if (oldCollectionView is ListCollectionView oldDataGridCollectionView)
                 {
                     oldDataGridCollectionView.PageChanging -= HandlePageChanging;
+                    oldDataGridCollectionView.PageChanged  -= HandlePageChanged;
                 }
             }
             if (newCollectionView != null)
@@ -684,6 +624,7 @@ public class List : TemplatedControl,
                 if (newCollectionView is ListCollectionView newDataGridCollectionView)
                 {
                     newDataGridCollectionView.PageChanging += HandlePageChanging;
+                    newDataGridCollectionView.PageChanged  += HandlePageChanged;
                 }
 
                 IsEmptyDataSource = newCollectionView.IsEmpty;
@@ -706,9 +647,7 @@ public class List : TemplatedControl,
             }
             ConfigureGroupInfo();
             _measured     = false;
-            SetCurrentValue(SelectedItemsProperty, null);
-            SetCurrentValue(SelectedItemProperty, null);
-            SetCurrentValue(SelectedIndexProperty, -1);
+            NotifyItemsSourceChangedForSelection();
             ReConfigurePagination();
             InvalidateMeasure();
             UpdatePseudoClasses();
@@ -720,12 +659,19 @@ public class List : TemplatedControl,
         if (sender is ListCollectionView view)
         {
             IsEmptyDataSource = view.IsEmpty;
-            ItemCount         = view.Count;
+            ItemCount         = view.TotalItemCount;
         }
     }
     
     private void HandlePageChanging(object? sender, PageChangingEventArgs args)
     {
+        if (ListView != null)
+        {
+            if (ListView.Selection.Count > 0)
+            {
+                ListView.Selection.Clear();
+            }
+        }
         var targetPage = args.NewPageIndex + 1;
         if (_topPagination != null && _topPagination.CurrentPage != targetPage)
         {
@@ -736,6 +682,11 @@ public class List : TemplatedControl,
         {
             _bottomPagination.CurrentPage = targetPage;
         }
+    }
+
+    private void HandlePageChanged(object? sender, EventArgs args)
+    {
+        SyncSelectionToListView();
     }
     
     private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value,
@@ -780,13 +731,13 @@ public class List : TemplatedControl,
             collectionView.PageSize = PageSize;
             if (_topPagination != null)
             {
-                _topPagination.Total       = collectionView.ItemCount;
+                _topPagination.Total       = collectionView.TotalItemCount;
                 _topPagination.PageSize    = PageSize;
                 _topPagination.CurrentPage = Pagination.DefaultCurrentPage;
             }
             if (_bottomPagination != null)
             {
-                _bottomPagination.Total       = collectionView.ItemCount;
+                _bottomPagination.Total       = collectionView.TotalItemCount;
                 _bottomPagination.PageSize    = PageSize;
                 _bottomPagination.CurrentPage = Pagination.DefaultCurrentPage;
             }
@@ -874,8 +825,20 @@ public class List : TemplatedControl,
         return true;
     }
 
+    protected internal virtual void AboutToPrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        // Ensure that the selection model is created at this point so that accessing it in 
+        // ContainerForItemPreparedOverride doesn't cause it to be initialized (which can
+        // make containers become deselected when they're synced with the empty selection
+        // mode).
+        GetOrCreateSelectionModel();
+    }
+    
+    protected internal virtual void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {}
+
     protected internal virtual void PrepareListBoxItem(ListItem listItem, object? item, int index,
-                                                      CompositeDisposable disposables)
+                                                       CompositeDisposable disposables)
     {
         var isGroupEnabled = false;
         if (item is IGroupListItemData groupListItemData)
@@ -924,7 +887,7 @@ public class List : TemplatedControl,
         return null;
     }
     
-    private void SyncSelectionState()
+    private void SyncSelectionMode()
     {
         if (ListView != null)
         {
@@ -948,6 +911,34 @@ public class List : TemplatedControl,
         ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(ItemCount));
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
+        _inputManagerDisposable = inputManager.Process.Subscribe(HandleKeyDown);
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromLogicalTree(e);
+        _inputManagerDisposable?.Dispose();
+    }
+
+    private void HandleKeyDown(RawInputEventArgs e)
+    {
+        if (e is RawKeyEventArgs keyEventArgs)
+        {
+            if (keyEventArgs.Type == RawKeyEventType.KeyDown)
+            {
+                _rawKeyEventArgs = keyEventArgs;
+            }
+            else
+            {
+                _rawKeyEventArgs = null;
+            }
+        }
+    }
+    
     #region ItemsControl 的方法转发
 
     public Control? ContainerFromIndex(int index) => ListView?.ContainerFromIndex(index);
@@ -958,11 +949,6 @@ public class List : TemplatedControl,
     public void ScrollIntoView(int index) => ListView?.ScrollIntoView(index);
     public void ScrollIntoView(object item) => ListView?.ScrollIntoView(item);
     #endregion
-
-    internal void MarkContainerSelected(Control container, bool selected)
-    {
-        ListView?.MarkContainerSelected(container, selected);
-    }
     
     #region 虚拟化上下文管理
     protected internal virtual void NotifyRestoreDefaultContext(ListItem item, IListItemData itemData)

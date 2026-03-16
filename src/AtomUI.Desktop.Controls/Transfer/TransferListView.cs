@@ -109,7 +109,7 @@ public class TransferListView : ListBox, ITransferView
         base.PrepareListBoxItem(listItem, item, index, disposables);
         if (listItem is TransferListItem transferListItem)
         {
-            disposables.Add(BindUtils.RelayBind(this, IsItemSelectableProperty, transferListItem, TransferListItem.IsCheckableProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsSelectableProperty, transferListItem, TransferListItem.IsCheckableProperty));
         }
     }
 
@@ -294,7 +294,7 @@ public class TransferListView : ListBox, ITransferView
 
     void ITransferView.SetSelectionEnabled(bool enabled)
     {
-        SetCurrentValue(IsItemSelectableProperty, enabled);
+        SetCurrentValue(IsSelectableProperty, enabled);
         if (enabled)
         {
             SetCurrentValue(SelectionModeProperty, SelectionMode.Multiple | SelectionMode.Toggle);

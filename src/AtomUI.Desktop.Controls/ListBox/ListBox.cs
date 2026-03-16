@@ -24,8 +24,8 @@ public class ListBox : AvaloniaListBox,
                        IListVirtualizingContextAware
 {
     #region 公共属性定义
-    public static readonly StyledProperty<bool> IsItemSelectableProperty =
-        AvaloniaProperty.Register<ListBox, bool>(nameof(IsItemSelectable), true);
+    public static readonly StyledProperty<bool> IsSelectableProperty =
+        AvaloniaProperty.Register<ListBox, bool>(nameof(IsSelectable), true);
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<ListBox>();
@@ -89,10 +89,10 @@ public class ListBox : AvaloniaListBox,
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<ListBox, IBrush?>(nameof(FilterHighlightForeground));
     
-    public bool IsItemSelectable
+    public bool IsSelectable
     {
-        get => GetValue(IsItemSelectableProperty);
-        set => SetValue(IsItemSelectableProperty, value);
+        get => GetValue(IsSelectableProperty);
+        set => SetValue(IsSelectableProperty, value);
     }
     
     public SizeType SizeType
@@ -256,7 +256,7 @@ public class ListBox : AvaloniaListBox,
     static ListBox()
     {
         ListBoxItem.ClickedEvent.AddClassHandler<ListBox>((list, args) => list.HandleListBoxItemClicked(args));
-        IsItemSelectableProperty.Changed.AddClassHandler<ListBox>((list, args) => list.HandleIsItemSelectableChanged(args));
+        IsSelectableProperty.Changed.AddClassHandler<ListBox>((list, args) => list.HandleIsSelectableChanged(args));
         ItemCountProperty.Changed.AddClassHandler<ListBox>((list, args) => list.HandleItemCountChanged());
     }
     
@@ -322,7 +322,7 @@ public class ListBox : AvaloniaListBox,
         }
     }
 
-    private void HandleIsItemSelectableChanged(AvaloniaPropertyChangedEventArgs e)
+    private void HandleIsSelectableChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (e.NewValue is bool && (bool)e.NewValue == false)
         {
@@ -455,7 +455,7 @@ public class ListBox : AvaloniaListBox,
     
     protected internal virtual bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
     {
-        if (IsItemSelectable)
+        if (IsSelectable)
         {
             // TODO: use TopLevel.PlatformSettings here, but first need to update our tests to use TopLevels. 
             var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
@@ -571,7 +571,7 @@ public class ListBox : AvaloniaListBox,
     
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (IsItemSelectable)
+        if (IsSelectable)
         {
             var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
             var ctrl    = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);

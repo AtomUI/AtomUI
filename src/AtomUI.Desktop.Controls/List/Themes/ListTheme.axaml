@@ -21,11 +21,11 @@
                            VerticalAlignment="Stretch">
                     <DockPanel LastChildFill="True">
                         <ContentPresenter Name="TopPaginationPresenter" DockPanel.Dock="Top" 
-                                          IsVisible="False" 
+                                          IsVisible="{TemplateBinding TopPagination, Converter={x:Static ObjectConverters.IsNotNull}}" 
                                           Content="{TemplateBinding TopPagination}"/>
-                        <ContentPresenter Name="BottomPaginationPresenter" DockPanel.Dock="Bottom" IsVisible="False"
-                                          Content="{TemplateBinding BottomPagination}"
-                                          />
+                        <ContentPresenter Name="BottomPaginationPresenter" DockPanel.Dock="Bottom" 
+                                          IsVisible="{TemplateBinding BottomPagination, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                          Content="{TemplateBinding BottomPagination}"/>
                         <Panel>
                             <atom:GroupableListView Name="{x:Static atom:ListThemeConstants.ListViewPart}"
                                                     atom:ScrollViewer.IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
@@ -41,12 +41,9 @@
                                                     ItemSelectedBg="{TemplateBinding ItemSelectedBg}"
                                                     ItemHoverBg="{TemplateBinding ItemHoverBg}"
                                                     IsShowSelectedIndicator="{TemplateBinding IsShowSelectedIndicator}"
-                                                    IsItemSelectable="{TemplateBinding IsItemSelectable}"
+                                                    IsSelectable="{TemplateBinding IsSelectable}"
                                                     ItemsSource="{TemplateBinding CollectionView}"
                                                     SelectionMode="{TemplateBinding SelectionMode}"
-                                                    SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}"
-                                                    SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}"
-                                                    SelectedItems="{TemplateBinding SelectedItems, Mode=TwoWay}"
                                                     AutoScrollToSelectedItem="{TemplateBinding AutoScrollToSelectedItem}"
                                                     IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}" />
                             <ContentPresenter
@@ -110,33 +107,7 @@
         <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"/>
         </Style>
-
-        <Style Selector="^[PaginationVisibility=Top]">
-            <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
-                <Setter Property="IsVisible" Value="True"/>
-            </Style>
-            <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
-                <Setter Property="IsVisible" Value="False"/>
-            </Style>
-        </Style>
         
-        <Style Selector="^[PaginationVisibility=Bottom]">
-            <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
-                <Setter Property="IsVisible" Value="False"/>
-            </Style>
-            <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
-                <Setter Property="IsVisible" Value="True"/>
-            </Style>
-        </Style>
-        
-        <Style Selector="^[PaginationVisibility=Both]">
-            <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
-                <Setter Property="IsVisible" Value="True"/>
-            </Style>
-            <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
-                <Setter Property="IsVisible" Value="True"/>
-            </Style>
-        </Style>
     </Style>
 
 </ControlTheme>

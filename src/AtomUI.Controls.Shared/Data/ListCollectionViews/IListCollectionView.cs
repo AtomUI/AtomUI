@@ -16,6 +16,9 @@ public interface IListCollectionView: IEnumerable, INotifyCollectionChanged
     bool CanGroup { get; }
     bool IsGrouping { get; }
     int GroupingDepth { get; }
+    int TotalItemCount { get; }
+    int PageSize { get; }
+    int PageIndex { get; }
     IAvaloniaReadOnlyList<object>? Groups { get; }
     ListSortDescriptionList SortDescriptions { get; }
     ListFilterDescriptionList FilterDescriptions { get; }
@@ -28,4 +31,7 @@ public interface IListCollectionView: IEnumerable, INotifyCollectionChanged
     void Remove(object? item);
     void RemoveAt(int index);
     int Count { get; }
+    int IndexOf(object? item);
+    int? PageIndexOf(object? item);
+    object? GetItemAt(int index);
 }

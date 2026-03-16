@@ -23,9 +23,22 @@ internal class GroupableListView : ListBox
     }
     
     #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<ListSyncSelectionEventArgs>? SyncSelectionRequest;
+
+    #endregion
     
     internal List? OwningList = null;
     internal new ISelectionModel Selection => base.Selection;
+
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        OwningList?.AboutToPrepareContainerForItemOverride(container, item, index);
+        base.PrepareContainerForItemOverride(container, item, index);
+        OwningList?.PrepareContainerForItemOverride(container, item, index);
+    }
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
@@ -73,7 +86,15 @@ internal class GroupableListView : ListBox
             }
         }
 
-        return base.UpdateSelectionFromPointerEvent(source, e);
+        try
+        {
+            SelectionChanged += HandleSelectionChanged;
+            return base.UpdateSelectionFromPointerEvent(source, e);
+        }
+        finally
+        {
+            SelectionChanged -= HandleSelectionChanged;
+        }
     }
     
     protected override void NotifyListBoxItemClicked(ListBoxItem item)
@@ -91,7 +112,20 @@ internal class GroupableListView : ListBox
                                   bool rightButton = false,
                                   bool fromFocus = false)
     {
-        return UpdateSelectionFromEventSource(listItem, select, rangeModifier, toggleModifier, rightButton, fromFocus);
+        try
+        {
+            SelectionChanged += HandleSelectionChanged;
+            return UpdateSelectionFromEventSource(listItem, select, rangeModifier, toggleModifier, rightButton, fromFocus);
+        }
+        finally
+        {
+            SelectionChanged -= HandleSelectionChanged;
+        }
+    }
+
+    private void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        SyncSelectionRequest?.Invoke(sender, new ListSyncSelectionEventArgs(e.RemovedItems, e.AddedItems));
     }
     
     #region 虚拟化上下文管理

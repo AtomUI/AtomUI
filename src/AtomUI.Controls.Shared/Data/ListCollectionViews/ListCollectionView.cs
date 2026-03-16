@@ -1326,6 +1326,33 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         }
         return internalIndex;
     }
+
+    public int? PageIndexOf(object? item)
+    {
+        EnsureCollectionInSync();
+        VerifyRefreshNotDeferred();
+
+        if (IsGrouping || PageSize <= 0)
+        {
+            return null;
+        }
+
+        var index = -1;
+        if (IsAddingNew && Equals(item, CurrentAddItem) && UsesLocalArray)
+        {
+            index = Count - 1;
+        }
+        else
+        {
+            index = InternalIndexOf(item);
+        }
+
+        if (index == -1)
+        {
+            return null;
+        }
+        return index / PageSize;
+    }
     
     /// <summary>
     /// Moves to the first page.

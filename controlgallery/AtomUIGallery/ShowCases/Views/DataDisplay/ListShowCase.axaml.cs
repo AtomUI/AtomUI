@@ -288,41 +288,41 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
         viewModel.EmptyDemoItems = items;
     }
     
-    private void HandleFilterCollectionViewChanged(object? sender, ListCollectionViewChangedEventArgs e)
-    {
-        if (FilteredList.CollectionView != null)
-        {
-            FilteredList.CollectionView.FilterDescriptions.Add(new ListFilterDescription()
-            {
-                FilterPropertySelector = data =>
-                {
-                    if (data is IListItemData listItemData)
-                    {
-                        return listItemData.Content;
-                    }
-    
-                    return null;
-                },
-                FilterConditions       = ["a"]
-            });
-        }
-    }
-    
-    private void HandleOrderedCollectionViewChanged(object? sender, ListCollectionViewChangedEventArgs e)
-    {
-        if (OrderedList.CollectionView != null)
-        {
-            OrderedList.CollectionView.SortDescriptions.Add(ListSortDescription.FromPath("Content"));
-        }
-    }
-    
-    private void HandleFilterListBoxClicked(object? sender, RoutedEventArgs e)
-    {
-        if (sender is SearchEdit searchEdit)
-        {
-            SearchListBox.ItemFilterValue = searchEdit.Text?.Trim();
-        }
-    }
+    // private void HandleFilterCollectionViewChanged(object? sender, ListCollectionViewChangedEventArgs e)
+    // {
+    //     if (FilteredList.CollectionView != null)
+    //     {
+    //         FilteredList.CollectionView.FilterDescriptions.Add(new ListFilterDescription()
+    //         {
+    //             FilterPropertySelector = data =>
+    //             {
+    //                 if (data is IListItemData listItemData)
+    //                 {
+    //                     return listItemData.Content;
+    //                 }
+    //
+    //                 return null;
+    //             },
+    //             FilterConditions       = ["a"]
+    //         });
+    //     }
+    // }
+    //
+    // private void HandleOrderedCollectionViewChanged(object? sender, ListCollectionViewChangedEventArgs e)
+    // {
+    //     if (OrderedList.CollectionView != null)
+    //     {
+    //         OrderedList.CollectionView.SortDescriptions.Add(ListSortDescription.FromPath("Content"));
+    //     }
+    // }
+    //
+    // private void HandleFilterListBoxClicked(object? sender, RoutedEventArgs e)
+    // {
+    //     if (sender is SearchEdit searchEdit)
+    //     {
+    //         SearchListBox.ItemFilterValue = searchEdit.Text?.Trim();
+    //     }
+    // }
 
     private void InitializePaginationListBoxItems(ListViewModel viewModel)
     {

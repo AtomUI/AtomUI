@@ -11,7 +11,7 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class TransferListViewSelectionModel : SelectionModel<object?>, ISelectionModel
+internal class ListViewSelectionModel : SelectionModel<object?>, ISelectionModel
 {
     private IList? _writableSelectedItems;
     private int _ignoreModelChanges;
@@ -32,7 +32,7 @@ internal class TransferListViewSelectionModel : SelectionModel<object?>, ISelect
         set => SetListSource(value);
     }
     
-    public TransferListViewSelectionModel()
+    public ListViewSelectionModel()
     {
         SelectionChanged += OnSelectionChanged;
         SourceReset      += OnSourceReset;
@@ -138,7 +138,7 @@ internal class TransferListViewSelectionModel : SelectionModel<object?>, ISelect
 
         object?[]? oldSelection = null;
 
-        if (Source is object && value is object)
+        if (Source != null && value != null)
         {
             oldSelection = new object?[WritableSelectedItems.Count];
             WritableSelectedItems.CopyTo(oldSelection, 0);
@@ -169,7 +169,7 @@ internal class TransferListViewSelectionModel : SelectionModel<object?>, ISelect
 
     private void SyncToSelectedItems()
     {
-        if (_writableSelectedItems is object &&
+        if (_writableSelectedItems != null &&
             !SequenceEqual(_writableSelectedItems, base.SelectedItems))
         {
             try
@@ -400,5 +400,4 @@ internal class TransferListViewSelectionModel : SelectionModel<object?>, ISelect
 
         return !e2.MoveNext();
     }
-    
 }

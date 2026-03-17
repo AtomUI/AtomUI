@@ -26,7 +26,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <summary>
     /// Private accessor for an ObservableCollection containing group descriptions
     /// </summary>
-    private readonly AvaloniaList<IListGroupDescription> _groupBy = new ();
+    private readonly GroupDescriptionList _groupBy = new ();
 
     /// <summary>
     /// Indicates whether the list of items (after applying the sort and filters, if any) 
@@ -64,7 +64,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <summary>
     /// Gets the description of grouping, indexed by level.
     /// </summary>
-    public virtual AvaloniaList<IListGroupDescription> GroupDescriptions => _groupBy;
+    public virtual GroupDescriptionList GroupDescriptions => _groupBy;
 
     /// <summary>
     /// Gets or sets the current IComparer being used

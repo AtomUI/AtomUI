@@ -160,7 +160,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// <summary>
     /// Gets the description of grouping, indexed by level.
     /// </summary>
-    public AvaloniaList<IListGroupDescription> GroupDescriptions => _group.GroupDescriptions;
+    public GroupDescriptionList GroupDescriptions => _group.GroupDescriptions;
 
     int IListCollectionView.GroupingDepth => GroupDescriptions.Count;
 
@@ -336,26 +336,26 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// Use <seealso cref="CanSort"/> property to test if sorting is supported before adding
     /// to SortDescriptions.
     /// </exception>
-    public ListSortDescriptionList SortDescriptions
+    public SortDescriptionList SortDescriptions
     {
         get
         {
             if (_sortDescriptions == null)
             {
-                SetSortDescriptions(new ListSortDescriptionList());
+                SetSortDescriptions(new SortDescriptionList());
             }
             Debug.Assert(_sortDescriptions != null);
             return _sortDescriptions;
         }
     }
 
-    public ListFilterDescriptionList FilterDescriptions
+    public FilterDescriptionList FilterDescriptions
     {
         get
         {
             if (_filterDescriptions == null)
             {
-                SetFilterDescriptions(new ListFilterDescriptionList());
+                SetFilterDescriptions(new FilterDescriptionList());
             }
             Debug.Assert(_filterDescriptions != null);
             return _filterDescriptions;
@@ -640,12 +640,12 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// <summary>
     /// Private accessor for the SortDescriptions
     /// </summary>
-    private ListSortDescriptionList? _sortDescriptions;
+    private SortDescriptionList? _sortDescriptions;
     
     /// <summary>
     /// Private accessor for the FilterDescriptions
     /// </summary>
-    private ListFilterDescriptionList? _filterDescriptions;
+    private FilterDescriptionList? _filterDescriptions;
     
     /// <summary>
     /// Private accessor for the SourceCollection
@@ -2653,7 +2653,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// Set new SortDescription collection; re-hook collection change notification handler
     /// </summary>
     /// <param name="descriptions">SortDescriptionCollection to set the property value to</param>
-    private void SetSortDescriptions(ListSortDescriptionList descriptions)
+    private void SetSortDescriptions(SortDescriptionList descriptions)
     {
         if (_sortDescriptions != null)
         {
@@ -2673,7 +2673,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// Set new FilterDescription collection; re-hook collection change notification handler
     /// </summary>
     /// <param name="descriptions"></param>
-    private void SetFilterDescriptions(ListFilterDescriptionList descriptions)
+    private void SetFilterDescriptions(FilterDescriptionList descriptions)
     {
         if (_filterDescriptions != null)
         {
@@ -3046,7 +3046,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     {
         private readonly IComparer<object>[] _comparers;
 
-        public MergedComparer(ListSortDescriptionList coll)
+        public MergedComparer(SortDescriptionList coll)
         {
             _comparers = MakeComparerArray(coll);
         }
@@ -3056,7 +3056,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         {
         }
 
-        private static IComparer<object>[] MakeComparerArray(ListSortDescriptionList coll)
+        private static IComparer<object>[] MakeComparerArray(SortDescriptionList coll)
         {
             return
                 coll.Select(c => c.Comparer)

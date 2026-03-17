@@ -19,6 +19,6 @@ internal static class ItemsSourceViewReflectionExtensions
 
     public static IList? TryGetInitializedSource(this ItemsSourceView itemsView)
     {
-        return TryGetInitializedSourceMethodInfo.Value.Invoke(itemsView, [itemsView]) as IList;
+        return TryGetInitializedSourceMethodInfo.Value.Invoke(itemsView, []) as IList;
     }
 }

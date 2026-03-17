@@ -124,17 +124,29 @@
         <gallery:ShowCaseItem
             Title="Pagination list"
             Description="Pagination list.">
-            <atom:List
+            <!-- <atom:List -->
+            <!--     x:DataType="viewModels:ListViewModel" -->
+            <!--     ItemsSource="{Binding PaginationListItems}" -->
+            <!--     PageSize="100" -->
+            <!--     PaginationVisibility="Bottom" -->
+            <!--     SelectionMode="Multiple" -->
+            <!--     Height="400"> -->
+            <!--     <atom:List.BottomPagination> -->
+            <!--         <atom:Pagination/> -->
+            <!--     </atom:List.BottomPagination> -->
+            <!-- </atom:List> -->
+            
+            <atom:ListView
                 x:DataType="viewModels:ListViewModel"
                 ItemsSource="{Binding PaginationListItems}"
-                PageSize="100"
                 PaginationVisibility="Bottom"
                 SelectionMode="Multiple"
-                Height="400">
-                <atom:List.BottomPagination>
+                Height="400"
+                PageSize="100">
+                <atom:ListView.BottomPagination>
                     <atom:Pagination/>
-                </atom:List.BottomPagination>
-            </atom:List>
+                </atom:ListView.BottomPagination>
+            </atom:ListView>
         </gallery:ShowCaseItem>
     </gallery:ShowCasePanel>
 </UserControl>

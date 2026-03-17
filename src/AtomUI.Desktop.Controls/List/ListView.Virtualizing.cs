@@ -47,16 +47,22 @@ public partial class ListView : IListVirtualizingContextAware
         {
             item.SetCurrentValue(ListViewItem.ContentProperty, itemData);
         }
+        if (itemData is IGroupListItemData groupListItemData)
+        {
+            item.SetCurrentValue(ListViewItem.IsGroupItemProperty, groupListItemData.IsGroupItem);
+        }
     }
 
     protected virtual void NotifyClearContainerForVirtualizingContext(ListViewItem item)
     {
         item.ClearValue(ListViewItem.IsEnabledProperty);
+        item.ClearValue(ListViewItem.IsGroupItemProperty);
     }
     
     protected virtual void NotifySaveVirtualizingContext(ListViewItem item, IDictionary<object, object?> context)
     {
         context.Add(ListViewItem.IsEnabledProperty, item.IsEnabled);
+        context.Add(ListViewItem.IsGroupItemProperty, item.IsGroupItem);
     }
 
     protected virtual void NotifyRestoreVirtualizingContext(ListViewItem item, IDictionary<object, object?> context)
@@ -70,37 +76,46 @@ public partial class ListView : IListVirtualizingContextAware
                 }
             }
         }
+        {
+            if (context.TryGetValue(ListViewItem.IsGroupItemProperty, out var value))
+            {
+                if (value is bool isGroupItem)
+                {
+                    item.SetCurrentValue(ListViewItem.IsGroupItemProperty, isGroupItem);
+                }
+            }
+        }
     }
 
     void IListVirtualizingContextAware.SaveVirtualizingContext(Control item, IDictionary<object, object?> context)
     {
-        if (item is ListViewItem listBoxItem)
+        if (item is ListViewItem listViewItem)
         {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifySaveVirtualizingContext(listItem, context));
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listViewItem, listItem => NotifySaveVirtualizingContext(listItem, context));
         }
     }
 
     void IListVirtualizingContextAware.RestoreVirtualizingContext(Control item, IDictionary<object, object?> context)
     {
-        if (item is ListViewItem listBoxItem)
+        if (item is ListViewItem listViewItem)
         {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifyRestoreVirtualizingContext(listItem, context));
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listViewItem, listItem => NotifyRestoreVirtualizingContext(listItem, context));
         }
     }
 
     void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
     {
-        if (item is ListViewItem listBoxItem && defaultContext is IListItemData listBoxItemData)
+        if (item is ListViewItem listViewItem && defaultContext is IListItemData listViewItemData)
         {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, listItem => NotifyRestoreDefaultContext(listItem, listBoxItemData));
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listViewItem, listItem => NotifyRestoreDefaultContext(listItem, listViewItemData));
         }
     }
 
     void IListVirtualizingContextAware.ClearContainerValues(Control item)
     {
-        if (item is ListViewItem listBoxItem)
+        if (item is ListViewItem listViewItem)
         {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listBoxItem, NotifyClearContainerForVirtualizingContext);
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(listViewItem, NotifyClearContainerForVirtualizingContext);
         }
     }
     #endregion

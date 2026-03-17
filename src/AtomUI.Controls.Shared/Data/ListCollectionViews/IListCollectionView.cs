@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Collections;
 
@@ -17,11 +18,12 @@ public interface IListCollectionView: IEnumerable, INotifyCollectionChanged
     bool IsGrouping { get; }
     int GroupingDepth { get; }
     int TotalItemCount { get; }
-    int PageSize { get; }
+    int PageSize { get; set; }
     int PageIndex { get; }
     IAvaloniaReadOnlyList<object>? Groups { get; }
-    ListSortDescriptionList SortDescriptions { get; }
-    ListFilterDescriptionList FilterDescriptions { get; }
+    GroupDescriptionList GroupDescriptions { get; }
+    SortDescriptionList SortDescriptions { get; }
+    FilterDescriptionList FilterDescriptions { get; }
     bool IsEmpty { get; }
     void Refresh();
     IDisposable DeferRefresh();
@@ -34,4 +36,13 @@ public interface IListCollectionView: IEnumerable, INotifyCollectionChanged
     int IndexOf(object? item);
     int? PageIndexOf(object? item);
     object? GetItemAt(int index);
+    bool MoveToPage(int pageIndex);
+    bool MoveToFirstPage();
+    bool MoveToLastPage();
+    bool MoveToNextPage();
+    bool MoveToPreviousPage();
+    
+    event EventHandler<EventArgs>? PageChanged;
+    event EventHandler<PageChangingEventArgs>? PageChanging;
+    event PropertyChangedEventHandler? PropertyChanged;
 }

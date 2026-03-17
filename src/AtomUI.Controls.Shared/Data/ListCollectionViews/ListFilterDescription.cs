@@ -48,4 +48,4 @@ public class ListFilterDescription : IListFilterDescription
     }
 }
 
-public class ListFilterDescriptionList : AvaloniaList<IListFilterDescription> {}
+public class FilterDescriptionList : AvaloniaList<IListFilterDescription> {}

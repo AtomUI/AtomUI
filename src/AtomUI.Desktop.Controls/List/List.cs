@@ -280,7 +280,7 @@ public partial class List : TemplatedControl,
         set => SetValue(AutoScrollToSelectedItemProperty, value);
     }
     
-    public ListSortDescriptionList? SortDescriptions
+    public SortDescriptionList? SortDescriptions
     {
         get
         {
@@ -292,7 +292,7 @@ public partial class List : TemplatedControl,
         }
     }
     
-    public ListFilterDescriptionList? FilterDescriptions
+    public FilterDescriptionList? FilterDescriptions
     {
         get
         {

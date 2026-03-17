@@ -14,28 +14,44 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     Padding="{TemplateBinding Padding}"
                     Margin="{TemplateBinding Margin}">
-                <Panel>
-                    <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
-                                       IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
-                                       IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
-                                       AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
-                                       HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                       VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                                       IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
-                                       IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                                       IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
-                        <ItemsPresenter Name="ItemsPresenter"
-                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
-                    </atom:ScrollViewer>
-                    <ContentPresenter
-                        Name="EmptyIndicator"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        Padding="{TemplateBinding EmptyIndicatorPadding}"
-                        IsVisible="{TemplateBinding IsEffectiveEmptyVisible}"
-                        Content="{TemplateBinding EmptyIndicator}"
-                        ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}" />
-                </Panel>
+                <DockPanel LastChildFill="True">
+                    <ContentPresenter Name="TopPaginationPresenter" DockPanel.Dock="Top" 
+                                      IsVisible="{TemplateBinding TopPagination, Converter={x:Static ObjectConverters.IsNotNull}}" 
+                                      Content="{TemplateBinding TopPagination}"/>
+                    <ContentPresenter Name="BottomPaginationPresenter" DockPanel.Dock="Bottom" 
+                                      IsVisible="{TemplateBinding BottomPagination, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                      Content="{TemplateBinding BottomPagination}"/>
+                    <atom:Spin IsSpinning="{TemplateBinding IsOperating}"
+                               IsShowTip="True"
+                               Tip="{TemplateBinding OperatingMsg}"
+                               CustomIndicator="{TemplateBinding CustomOperatingIndicator}"
+                               CustomIndicatorTemplate="{TemplateBinding CustomOperatingIndicatorTemplate}"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch">
+                        <Panel>
+                            <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+                                               IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
+                                               IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
+                                               AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
+                                               HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                               VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                               IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}"
+                                               IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                               IsScrollInertiaEnabled="{TemplateBinding ScrollViewer.IsScrollInertiaEnabled}">
+                                <ItemsPresenter Name="ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                            </atom:ScrollViewer>
+                            <ContentPresenter
+                                Name="EmptyIndicator"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Padding="{TemplateBinding EmptyIndicatorPadding}"
+                                IsVisible="{TemplateBinding IsEffectiveEmptyVisible}"
+                                Content="{TemplateBinding EmptyIndicator}"
+                                ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}" />
+                        </Panel>
+                    </atom:Spin>
+                </DockPanel>
             </Border>
         </ControlTemplate>
     </Setter>
@@ -52,14 +68,15 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ContentPadding}}" />
-        <Setter Property="FilterHighlightForeground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.FilterHighlightColor}}" />
-        
+        <Setter Property="FilterHighlightForeground"
+                Value="{DynamicResource {x:Static atom:ListBoxTokenKey.FilterHighlightColor}}" />
+
         <Setter Property="SelectedIndicator">
             <atom:IconTemplate>
                 <antdicons:CheckOutlined />
             </atom:IconTemplate>
         </Setter>
-        
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
             <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.PaddingXL}}" />
@@ -74,18 +91,31 @@
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
             <Setter Property="EmptyIndicatorPadding" Value="{DynamicResource {x:Static atom:SharedTokenKey.Padding}}" />
         </Style>
-        
+
         <Setter Property="EmptyIndicatorTemplate">
             <DataTemplate>
-                <atom:Empty SizeType="Small" PresetImage="Simple"/>
+                <atom:Empty SizeType="Small" PresetImage="Simple" />
             </DataTemplate>
         </Setter>
-        
+
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:IListItemData">
                 <atom:TextBlock Text="{Binding Content}" />
             </DataTemplate>
         </Setter>
+        
+        <Setter Property="GroupItemTemplate">
+            <DataTemplate x:DataType="atom:IListItemData">
+                <atom:TextBlock Text="{Binding Content}" />
+            </DataTemplate>
+        </Setter>
+        
+        <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"/>
+        </Style>
+        <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"/>
+        </Style>
     </Style>
 
 </ControlTheme>

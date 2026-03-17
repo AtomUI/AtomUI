@@ -342,4 +342,4 @@ public class ListComparerSortDescription : ListSortDescription
     }
 }
 
-public class ListSortDescriptionList : AvaloniaList<ListSortDescription> {}
+public class SortDescriptionList : AvaloniaList<ListSortDescription> {}

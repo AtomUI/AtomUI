@@ -9,3 +9,5 @@ public interface IListGroupDescription
     object? GroupKeyFromItem(object item, int level, CultureInfo culture);
     bool KeysMatch(object groupKey, object itemKey);
 }
+
+public class GroupDescriptionList : AvaloniaList<IListGroupDescription> {}

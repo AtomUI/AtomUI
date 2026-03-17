@@ -49,19 +49,19 @@ public partial class ListView
     public static readonly StyledProperty<IBinding?> SelectedValueBindingProperty =
         AvaloniaProperty.Register<ListView, IBinding?>(nameof(SelectedValueBinding));
     
-    protected static readonly DirectProperty<ListView, IList?> SelectedItemsProperty =
+    public static readonly DirectProperty<ListView, IList?> SelectedItemsProperty =
         AvaloniaProperty.RegisterDirect<ListView, IList?>(
             nameof(SelectedItems),
             o => o.SelectedItems,
             (o, v) => o.SelectedItems = v);
     
-    protected static readonly DirectProperty<ListView, ISelectionModel> SelectionProperty =
+    public static readonly DirectProperty<ListView, ISelectionModel> SelectionProperty =
         AvaloniaProperty.RegisterDirect<ListView, ISelectionModel>(
             nameof(Selection),
             o => o.Selection,
             (o, v) => o.Selection = v);
     
-    protected static readonly StyledProperty<SelectionMode> SelectionModeProperty =
+    public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
         AvaloniaProperty.Register<ListView, SelectionMode>(
             nameof(SelectionMode));
     
@@ -153,7 +153,7 @@ public partial class ListView
         set => SetValue(SelectedValueProperty, value);
     }
     
-    protected IList? SelectedItems
+    public IList? SelectedItems
     {
         get
         {
@@ -190,7 +190,7 @@ public partial class ListView
     }
 
     [AllowNull]
-    protected ISelectionModel Selection
+    public ISelectionModel Selection
     {
         get => _updateState?.Selection.HasValue == true ?
             _updateState.Selection.Value :
@@ -248,7 +248,7 @@ public partial class ListView
         set => SetValue(WrapSelectionProperty, value);
     }
     
-    protected SelectionMode SelectionMode
+    public SelectionMode SelectionMode
     {
         get => GetValue(SelectionModeProperty);
         set => SetValue(SelectionModeProperty, value);
@@ -289,7 +289,6 @@ public partial class ListView
     private bool _hasScrolledToSelectedItem;
     private BindingEvaluator<object?>? _selectedValueBindingEvaluator;
     private bool _isSelectionChangeActive;
-    
     
     public override void BeginInit()
     {
@@ -341,11 +340,9 @@ public partial class ListView
 
         AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
     }
-    
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
 
+    private void NotifyApplyTemplateForSelecting()
+    {
         void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
         {
             LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
@@ -390,7 +387,9 @@ public partial class ListView
         }
 
         if (Selection.AnchorIndex == index)
+        {
             KeyboardNavigation.SetTabOnceActiveElement(this, container);
+        }
     }
     
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
@@ -427,7 +426,9 @@ public partial class ListView
         if (!e.Handled)
         {
             if (!IsTextSearchEnabled)
+            {
                 return;
+            }
 
             StopTextSearchTimer();
 
@@ -465,7 +466,9 @@ public partial class ListView
         else if (change.Property == SelectedValueProperty)
         {
             if (_isSelectionChangeActive)
+            {
                 return;
+            }
 
             if (_updateState is not null)
             {
@@ -528,7 +531,9 @@ public partial class ListView
         bool rangeModifier = false)
     {
         if (Presenter?.Panel is not INavigableContainer container)
+        {
             return false;
+        }
 
         if (from is null)
         {
@@ -670,7 +675,9 @@ public partial class ListView
     private void OnItemsViewSourceChanged(object? sender, EventArgs e)
     {
         if (_updateState is null)
+        {
             TryInitializeSelectionSource(_selection, true);
+        }
     }
         
     private void OnSelectionModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -769,7 +776,9 @@ public partial class ListView
     private void SelectItemWithValue(object? value)
     {
         if (ItemCount == 0 || _isSelectionChangeActive)
+        {
             return;
+        }
 
         try
         {

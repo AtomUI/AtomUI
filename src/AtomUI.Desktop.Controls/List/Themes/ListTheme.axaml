@@ -107,7 +107,6 @@
         <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"/>
         </Style>
-        
     </Style>
 
 </ControlTheme>

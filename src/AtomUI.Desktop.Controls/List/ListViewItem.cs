@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -19,7 +18,7 @@ public class ListViewItem : ContentControl,
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsSelectedProperty =
-        SelectingItemsControl.IsSelectedProperty.AddOwner<ListViewItem>();
+        ListView.IsSelectedProperty.AddOwner<ListViewItem>();
     
     public bool IsSelected
     {
@@ -217,7 +216,6 @@ public class ListViewItem : ContentControl,
         FocusableProperty.OverrideDefaultValue<ListViewItem>(true);
         AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<ListViewItem>(IsOffscreenBehavior.FromClip);
     }
-
     
     private void ConfigureTransitions(bool force)
     {
@@ -366,4 +364,5 @@ public class ListViewItem : ContentControl,
 
         _pointerDownPoint = s_invalidPoint;
     }
+    
 }

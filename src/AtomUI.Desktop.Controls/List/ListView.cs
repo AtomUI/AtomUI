@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -7,7 +8,9 @@ using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -21,7 +24,7 @@ public partial class ListView : ItemsControl,
                                 IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
-
+    
     public static readonly StyledProperty<bool> IsSelectableProperty =
         AvaloniaProperty.Register<ListView, bool>(nameof(IsSelectable), true);
     
@@ -58,6 +61,13 @@ public partial class ListView : ItemsControl,
     public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
         AvaloniaProperty.Register<ListView, bool>(nameof(IsShowEmptyIndicator), true);
     
+    public static readonly StyledProperty<bool> IsGroupEnabledProperty =
+        AvaloniaProperty.Register<ListView, bool>(nameof(IsGroupEnabled), false);
+    
+    public static readonly StyledProperty<ListGroupPropertySelector?> GroupPropertySelectorProperty =
+        AvaloniaProperty.Register<ListView, ListGroupPropertySelector?>(
+            nameof(GroupPropertySelector));
+    
     public static readonly DirectProperty<ListView, IListViewItemFilter?> ItemFilterProperty =
         AvaloniaProperty.RegisterDirect<ListView, IListViewItemFilter?>(
             nameof(ItemFilter),
@@ -86,6 +96,42 @@ public partial class ListView : ItemsControl,
     
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<ListView, IBrush?>(nameof(FilterHighlightForeground));
+    
+    public static readonly DirectProperty<ListView, int> TotalItemCountProperty =
+        AvaloniaProperty.RegisterDirect<ListView, int>(nameof(TotalItemCount), o => o.TotalItemCount);
+    
+    public static readonly StyledProperty<IDataTemplate?> GroupItemTemplateProperty =
+        AvaloniaProperty.Register<ListView, IDataTemplate?>(nameof(GroupItemTemplate));
+    
+    public static readonly StyledProperty<bool> IsOperatingProperty =
+        AvaloniaProperty.Register<ListView, bool>(nameof(IsOperating));
+    
+    public static readonly StyledProperty<string?> OperatingMsgProperty =
+        AvaloniaProperty.Register<ListView, string?>(nameof(OperatingMsg));
+    
+    public static readonly StyledProperty<object?> CustomOperatingIndicatorProperty =
+        AvaloniaProperty.Register<ListView, object?>(nameof(CustomOperatingIndicator));
+
+    public static readonly StyledProperty<IDataTemplate?> CustomOperatingIndicatorTemplateProperty =
+        AvaloniaProperty.Register<ListView, IDataTemplate?>(nameof(CustomOperatingIndicatorTemplate));
+    
+    public static readonly StyledProperty<AbstractPagination?> TopPaginationProperty =
+        AvaloniaProperty.Register<ListView, AbstractPagination?>(nameof(TopPagination));
+    
+    public static readonly StyledProperty<AbstractPagination?> BottomPaginationProperty =
+        AvaloniaProperty.Register<ListView, AbstractPagination?>(nameof(BottomPagination));
+    
+    public static readonly StyledProperty<bool> IsHideOnSinglePageProperty =
+        AbstractPagination.IsHideOnSinglePageProperty.AddOwner<ListView>();
+    
+    public static readonly StyledProperty<ListPaginationVisibility> PaginationVisibilityProperty =
+        AvaloniaProperty.Register<ListView, ListPaginationVisibility>(nameof(PaginationVisibility), ListPaginationVisibility.Bottom);
+    
+    public static readonly StyledProperty<PaginationAlign> TopPaginationAlignProperty =
+        AvaloniaProperty.Register<ListView, PaginationAlign>(nameof(TopPaginationAlign), PaginationAlign.End);
+    
+    public static readonly StyledProperty<PaginationAlign> BottomPaginationAlignProperty =
+        AvaloniaProperty.Register<ListView, PaginationAlign>(nameof(BottomPaginationAlign), PaginationAlign.End);
     
     public bool IsSelectable
     {
@@ -160,6 +206,18 @@ public partial class ListView : ItemsControl,
         set => SetValue(IsShowEmptyIndicatorProperty, value);
     }
     
+    public bool IsGroupEnabled
+    {
+        get => GetValue(IsGroupEnabledProperty);
+        set => SetValue(IsGroupEnabledProperty, value);
+    }
+    
+    public ListGroupPropertySelector? GroupPropertySelector
+    {
+        get => GetValue(GroupPropertySelectorProperty);
+        set => SetValue(GroupPropertySelectorProperty, value);
+    }
+    
     private IListViewItemFilter? _itemFilter;
     
     public IListViewItemFilter? ItemFilter
@@ -205,6 +263,87 @@ public partial class ListView : ItemsControl,
         get => GetValue(FilterHighlightForegroundProperty);
         set => SetValue(FilterHighlightForegroundProperty, value);
     }
+    
+    private int _totalItemCount;
+    public int TotalItemCount
+    {
+        get => _totalItemCount;
+        private set
+        {
+            if (SetAndRaise(TotalItemCountProperty, ref _totalItemCount, value))
+            {
+                UpdatePseudoClasses();
+            }
+        }
+    }
+    
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
+    public IDataTemplate? GroupItemTemplate
+    {
+        get => GetValue(GroupItemTemplateProperty);
+        set => SetValue(GroupItemTemplateProperty, value);
+    }
+    
+    public bool IsOperating
+    {
+        get => GetValue(IsOperatingProperty);
+        set => SetValue(IsOperatingProperty, value);
+    }
+    
+    public string? OperatingMsg
+    {
+        get => GetValue(OperatingMsgProperty);
+        set => SetValue(OperatingMsgProperty, value);
+    }
+    
+    [DependsOn(nameof(CustomOperatingIndicatorTemplate))]
+    public object? CustomOperatingIndicator
+    {
+        get => GetValue(CustomOperatingIndicatorProperty);
+        set => SetValue(CustomOperatingIndicatorProperty, value);
+    }
+    
+    public IDataTemplate? CustomOperatingIndicatorTemplate
+    {
+        get => GetValue(CustomOperatingIndicatorTemplateProperty);
+        set => SetValue(CustomOperatingIndicatorTemplateProperty, value);
+    }
+    
+    public AbstractPagination? TopPagination
+    {
+        get => GetValue(TopPaginationProperty);
+        set => SetValue(TopPaginationProperty, value);
+    }
+    
+    public AbstractPagination? BottomPagination
+    {
+        get => GetValue(BottomPaginationProperty);
+        set => SetValue(BottomPaginationProperty, value);
+    }
+    
+    public bool IsHideOnSinglePage
+    {
+        get => GetValue(IsHideOnSinglePageProperty);
+        set => SetValue(IsHideOnSinglePageProperty, value);
+    }
+    
+    public ListPaginationVisibility PaginationVisibility
+    {
+        get => GetValue(PaginationVisibilityProperty);
+        set => SetValue(PaginationVisibilityProperty, value);
+    }
+    
+    public PaginationAlign TopPaginationAlign
+    {
+        get => GetValue(TopPaginationAlignProperty);
+        set => SetValue(TopPaginationAlignProperty, value);
+    }
+    
+    public PaginationAlign BottomPaginationAlign
+    {
+        get => GetValue(BottomPaginationAlignProperty);
+        set => SetValue(BottomPaginationAlignProperty, value);
+    }
 
     #endregion
     
@@ -216,6 +355,11 @@ public partial class ListView : ItemsControl,
     #endregion
     
     #region 内部属性定义
+    internal static readonly DirectProperty<ListView, bool> IsEmptyDataSourceProperty =
+        AvaloniaProperty.RegisterDirect<ListView, bool>(
+            nameof(IsEmptyDataSource),
+            o => o.IsEmptyDataSource,
+            (o, v) => o.IsEmptyDataSource = v);
 
     internal static readonly DirectProperty<ListView, Thickness> EffectiveBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<ListView, Thickness>(nameof(EffectiveBorderThickness),
@@ -227,6 +371,13 @@ public partial class ListView : ItemsControl,
             nameof(IsEffectiveEmptyVisible),
             o => o.IsEffectiveEmptyVisible,
             (o, v) => o.IsEffectiveEmptyVisible = v);
+    
+    private bool _isEmptyDataSource = true;
+    internal bool IsEmptyDataSource
+    {
+        get => _isEmptyDataSource;
+        set => SetAndRaise(IsEmptyDataSourceProperty, ref _isEmptyDataSource, value);
+    }
     
     private Thickness _effectiveBorderThickness;
 
@@ -250,13 +401,20 @@ public partial class ListView : ItemsControl,
     
     private protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
     private protected readonly Dictionary<object, bool> _filterContext = new();
+    private bool _areHandlersSuspended;
+    private static readonly FuncTemplate<Panel?> DefaultPanel =
+        new(() => new VirtualizingStackPanel());
+
+    private IListCollectionView? _collectionView;
     
     static ListView()
     {
-        IsSelectedChangedEvent.AddClassHandler<ListView>((x, e) => x.ContainerSelectionChanged(e));
+        ItemsPanelProperty.OverrideDefaultValue<ListView>(DefaultPanel);
+        IsSelectedChangedEvent.AddClassHandler<ListView>((list, e) => list.ContainerSelectionChanged(e));
         ListViewItem.ClickedEvent.AddClassHandler<ListView>((list, args) => list.HandleListViewItemClicked(args));
         IsSelectableProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleIsSelectableChanged(args));
         ItemCountProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleItemCountChanged());
+        ItemsSourceProperty.Changed.AddClassHandler<ListView>((list, e) => list.HandleItemsSourcePropertyChanged(e));
     }
     
     public ListView()
@@ -269,6 +427,92 @@ public partial class ListView : ItemsControl,
         
         LogicalChildren.CollectionChanged += HandleChildrenChanged;
         Items.CollectionChanged           += HandleItemCollectionChanged;
+    }
+    
+    private void HandleItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        if (!_areHandlersSuspended)
+        {
+            var                  oldCollectionView = change.OldValue as ListCollectionView;
+            var                  newItemsSource    = (IEnumerable?)change.NewValue;
+            IListCollectionView? newCollectionView = null;
+            if (newItemsSource is IListCollectionView)
+            {
+                newCollectionView  = (IListCollectionView)newItemsSource;
+            }
+            else
+            {
+                if (newItemsSource != null)
+                {
+                    newCollectionView = new ListCollectionView(newItemsSource);
+                }
+            }
+            if (oldCollectionView != null)
+            {
+                oldCollectionView.PropertyChanged   -= HandleCollectionPropertyChanged;
+                oldCollectionView.CollectionChanged -= HandleCollectionViewChanged;
+                oldCollectionView.PageChanging      -= HandlePageChanging;
+                oldCollectionView.PageChanged       -= HandlePageChanged;
+            }
+            if (newCollectionView != null)
+            {
+                newCollectionView.PropertyChanged   += HandleCollectionPropertyChanged;
+                newCollectionView.CollectionChanged += HandleCollectionViewChanged;
+                newCollectionView.PageChanging      += HandlePageChanging;
+                newCollectionView.PageChanged       += HandlePageChanged;
+                IsEmptyDataSource                   =  newCollectionView.IsEmpty;
+                TotalItemCount                      =  newCollectionView.TotalItemCount;
+       
+                // if (newCollectionView.Filter == null)
+                // {
+                //     newCollectionView.Filter = new ListDefaultFilter(newCollectionView);
+                // }
+            }
+            else
+            {
+                IsEmptyDataSource = true;
+            }
+
+            _collectionView = newCollectionView;
+            ItemsSource     = newCollectionView;
+            ConfigureGroupInfo();
+            ReConfigurePagination();
+            InvalidateMeasure();
+            UpdatePseudoClasses();
+        }
+    }
+    
+    private void HandleCollectionViewChanged(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (sender is ListCollectionView view)
+        {
+            IsEmptyDataSource = view.IsEmpty;
+            TotalItemCount         = view.TotalItemCount;
+        }
+    }
+    
+    private void ConfigureGroupInfo()
+    {
+        if (ItemsSource is ListCollectionView collectionView)
+        {
+            if (IsGroupEnabled)
+            {
+                if (GroupPropertySelector != null)
+                {
+                    collectionView.GroupDescriptions.Add(new ListGroupDescription(GroupPropertySelector));
+                }
+            }
+            else
+            {
+                collectionView.GroupDescriptions.Clear();
+            }
+        }
+    }
+    
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(ListPseudoClass.Empty, ItemCount == 0);
+        PseudoClasses.Set(ListPseudoClass.SingleItem, ItemCount == 1);
     }
     
     protected override void OnInitialized()
@@ -310,7 +554,9 @@ public partial class ListView : ItemsControl,
         base.OnPropertyChanged(change);
         if (change.Property == ItemsSourceProperty ||
             change.Property == IsFilteringProperty ||
-            change.Property == FilterResultCountProperty)
+            change.Property == FilterResultCountProperty ||
+            change.Property == IsShowEmptyIndicatorProperty ||
+            change.Property == IsEmptyDataSourceProperty)
         {
             ConfigureEmptyIndicator();
         }
@@ -325,8 +571,23 @@ public partial class ListView : ItemsControl,
             ConfigureIsFiltering();
             FilterItems();
         }
+        else if (change.Property == IsGroupEnabledProperty)
+        {
+            if (_collectionView != null)
+            {
+                using (_collectionView.DeferRefresh())
+                {
+                    ConfigureGroupInfo();
+                }
+            }
+        }
+        else if (change.Property == GroupPropertySelectorProperty)
+        {
+            ReConfigureGroupInfo();
+        }
 
         HandlePropertyChangedForSelecting(change);
+        HandlePropertyChangedForPagination(change);
     }
 
     private void HandleIsSelectableChanged(AvaloniaPropertyChangedEventArgs e)
@@ -621,5 +882,38 @@ public partial class ListView : ItemsControl,
     private void HandleItemCountChanged()
     {
         ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(ItemCount));
+    }
+    
+    private void ReConfigureGroupInfo()
+    {
+        if (_collectionView != null)
+        {
+            _collectionView.GroupDescriptions.Clear();
+            if (IsGroupEnabled)
+            {
+                if (GroupPropertySelector != null)
+                {
+                    _collectionView.GroupDescriptions.Add(new ListGroupDescription(GroupPropertySelector));
+                }
+            }
+        }
+    }
+    
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        NotifyApplyTemplateForSelecting();
+        
+        if (EmptyIndicator == null)
+        {
+            SetValue(EmptyIndicatorProperty, new Empty()
+            {
+                SizeType    = SizeType.Small,
+                PresetImage = PresetEmptyImage.Simple
+            }, BindingPriority.Template);
+        }
+        
+        UpdatePseudoClasses();
+        ConfigureEmptyIndicator();
     }
 }

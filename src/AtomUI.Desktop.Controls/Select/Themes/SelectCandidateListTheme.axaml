@@ -5,7 +5,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SelectCandidateList}" TargetType="atom:SelectCandidateList">
         <ControlTheme.BasedOn>
-            <atom:ListTheme TargetType="atom:SelectCandidateList" />
+            <atom:ListViewTheme TargetType="atom:SelectCandidateList" />
         </ControlTheme.BasedOn>
         
         <Setter Property="ItemTemplate">

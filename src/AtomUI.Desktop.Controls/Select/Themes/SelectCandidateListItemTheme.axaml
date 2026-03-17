@@ -5,14 +5,14 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SelectCandidateListItem}" TargetType="atom:SelectCandidateListItem">
         <ControlTheme.BasedOn>
-            <atom:ListItemTheme TargetType="atom:SelectCandidateListItem" />
+            <atom:ListViewItemTheme TargetType="atom:SelectCandidateListItem" />
         </ControlTheme.BasedOn>
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
             <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionFontSize}}"/>
             <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SelectTokenKey.OptionHeight}}"/>
             <Style Selector="^[IsSelected=False][IsCandidateSelected=True]">
-                <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemHoverBgColor}}" />
+                <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemHoverBgColor}}" />
             </Style>
             
             <Style Selector="^[IsHideSelectedOptions=True][IsSelected=True]">

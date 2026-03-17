@@ -29,7 +29,7 @@
                                HorizontalAlignment="Stretch"
                                VerticalAlignment="Stretch">
                         <Panel>
-                            <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+                            <atom:ScrollViewer Name="{x:Static atom:ListViewThemeConstants.ScrollViewerPart}"
                                                IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
                                                IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
                                                AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
@@ -62,14 +62,14 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
-        <Setter Property="ItemHoverBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverBgColor}}" />
-        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemSelectedBgColor}}" />
+        <Setter Property="ItemHoverBg" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemHoverBgColor}}" />
+        <Setter Property="ItemSelectedBg" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemSelectedBgColor}}" />
         <Setter Property="IsMotionEnabled" Value="{DynamicResource {x:Static atom:SharedTokenKey.EnableMotion}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
-        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ContentPadding}}" />
+        <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ContentPadding}}" />
         <Setter Property="FilterHighlightForeground"
-                Value="{DynamicResource {x:Static atom:ListBoxTokenKey.FilterHighlightColor}}" />
+                Value="{DynamicResource {x:Static atom:ListViewTokenKey.FilterHighlightColor}}" />
 
         <Setter Property="SelectedIndicator">
             <atom:IconTemplate>
@@ -111,10 +111,10 @@
         </Setter>
         
         <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
-            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"/>
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListViewTokenKey.PaginationMargin}}"/>
         </Style>
         <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
-            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListTokenKey.PaginationMargin}}"/>
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListViewTokenKey.PaginationMargin}}"/>
         </Style>
     </Style>
 

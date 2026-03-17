@@ -395,7 +395,7 @@ public partial class ListView : ItemsControl,
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
-    string IControlSharedTokenResourcesHost.TokenId => ListToken.ID;
+    string IControlSharedTokenResourcesHost.TokenId => ListViewToken.ID;
 
     #endregion
     
@@ -463,10 +463,7 @@ public partial class ListView : ItemsControl,
                 IsEmptyDataSource                   =  newCollectionView.IsEmpty;
                 TotalItemCount                      =  newCollectionView.TotalItemCount;
        
-                // if (newCollectionView.Filter == null)
-                // {
-                //     newCollectionView.Filter = new ListDefaultFilter(newCollectionView);
-                // }
+                newCollectionView.Filter ??= new ListDefaultFilter(newCollectionView);
             }
             else
             {
@@ -848,12 +845,12 @@ public partial class ListView : ItemsControl,
     {
         if (args.Source is ListViewItem item)
         {
-            NotifyListViewItemClicked(item);
+            NotifyItemClicked(item);
             ItemClicked?.Invoke(this, new ListViewItemClickedEventArgs(item));
         }
     }
     
-    protected virtual void NotifyListViewItemClicked(ListViewItem item)
+    protected internal virtual void NotifyItemClicked(ListViewItem item)
     {
     }
     

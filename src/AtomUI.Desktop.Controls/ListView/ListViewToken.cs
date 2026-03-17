@@ -5,16 +5,16 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal class ListToken : AbstractControlDesignToken
+internal class ListViewToken : AbstractControlDesignToken
 {
-    public const string ID = "List";
+    public const string ID = "ListView";
 
-    public ListToken()
+    public ListViewToken()
         : this(ID)
     {
     }
 
-    protected ListToken(string id)
+    protected ListViewToken(string id)
         : base(id)
     {
     }
@@ -89,6 +89,16 @@ internal class ListToken : AbstractControlDesignToken
     /// </summary>
     public Color GroupHeaderColor { get; set; }
     
+    /// <summary>
+    /// 列表项选中标记的外间距
+    /// </summary>
+    public Thickness SelectedIndicatorMargin { get; set; }
+    
+    /// <summary>
+    /// 过滤高亮颜色
+    /// </summary>
+    public Color FilterHighlightColor { get; set; }
+    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -110,9 +120,11 @@ internal class ListToken : AbstractControlDesignToken
         ItemPaddingSM = new Thickness(SharedToken.UniformlyPaddingXS, 0);
         ItemPadding   = new Thickness(SharedToken.UniformlyPaddingSM, 0);
 
-        ContentPadding   = new Thickness(SharedToken.UniformlyPaddingXXS / 2);
-        ItemMargin       = new Thickness(0, 0.5);
-        PaginationMargin = new Thickness(0, SharedToken.UniformlyMarginXS);
-        GroupHeaderColor = SharedToken.ColorTextDescription;
+        ContentPadding          = new Thickness(SharedToken.UniformlyPaddingXXS / 2);
+        ItemMargin              = new Thickness(0, 0.5);
+        PaginationMargin        = new Thickness(0, SharedToken.UniformlyMarginXS);
+        GroupHeaderColor        = SharedToken.ColorTextDescription;
+        SelectedIndicatorMargin = new Thickness(SharedToken.UniformlyMarginXXS, 0, 0, 0);
+        FilterHighlightColor    = SharedToken.ColorError;
     }
 }

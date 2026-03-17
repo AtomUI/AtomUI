@@ -2,7 +2,7 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferListItem : ListItem
+public class TransferListItem : ListBoxItem
 {
     #region 内部属性定义
     internal static readonly DirectProperty<TransferListItem, bool> IsCheckableProperty =

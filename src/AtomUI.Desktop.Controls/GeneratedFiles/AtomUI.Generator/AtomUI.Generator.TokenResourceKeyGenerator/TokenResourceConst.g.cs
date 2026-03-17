@@ -468,24 +468,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey RightAddOnPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.TextArea.RightAddOnPaddingSM");
     }
 
-    public static class ListTokenKey
-    {
-        public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.List.ContentPadding");
-        public static readonly TokenResourceKey GroupHeaderColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.GroupHeaderColor");
-        public static readonly TokenResourceKey ItemBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemBgColor");
-        public static readonly TokenResourceKey ItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemColor");
-        public static readonly TokenResourceKey ItemDisabledColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemDisabledColor");
-        public static readonly TokenResourceKey ItemHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemHoverBgColor");
-        public static readonly TokenResourceKey ItemHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemHoverColor");
-        public static readonly TokenResourceKey ItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemMargin");
-        public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemPadding");
-        public static readonly TokenResourceKey ItemPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemPaddingLG");
-        public static readonly TokenResourceKey ItemPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemPaddingSM");
-        public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemSelectedBgColor");
-        public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.List.ItemSelectedColor");
-        public static readonly TokenResourceKey PaginationMargin = new TokenResourceKey("AtomUI.Desktop.Controls.List.PaginationMargin");
-    }
-
     public static class ListBoxTokenKey
     {
         public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ContentPadding");
@@ -502,6 +484,26 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedBgColor");
         public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.ItemSelectedColor");
         public static readonly TokenResourceKey SelectedIndicatorMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListBox.SelectedIndicatorMargin");
+    }
+
+    public static class ListViewTokenKey
+    {
+        public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ContentPadding");
+        public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.FilterHighlightColor");
+        public static readonly TokenResourceKey GroupHeaderColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.GroupHeaderColor");
+        public static readonly TokenResourceKey ItemBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemBgColor");
+        public static readonly TokenResourceKey ItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemColor");
+        public static readonly TokenResourceKey ItemDisabledColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemDisabledColor");
+        public static readonly TokenResourceKey ItemHoverBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemHoverBgColor");
+        public static readonly TokenResourceKey ItemHoverColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemHoverColor");
+        public static readonly TokenResourceKey ItemMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemMargin");
+        public static readonly TokenResourceKey ItemPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemPadding");
+        public static readonly TokenResourceKey ItemPaddingLG = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemPaddingLG");
+        public static readonly TokenResourceKey ItemPaddingSM = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemPaddingSM");
+        public static readonly TokenResourceKey ItemSelectedBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemSelectedBgColor");
+        public static readonly TokenResourceKey ItemSelectedColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemSelectedColor");
+        public static readonly TokenResourceKey PaginationMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.PaginationMargin");
+        public static readonly TokenResourceKey SelectedIndicatorMargin = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.SelectedIndicatorMargin");
     }
 
     public static class MarqueeLabelTokenKey

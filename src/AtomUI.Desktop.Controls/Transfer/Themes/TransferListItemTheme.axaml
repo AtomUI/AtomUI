@@ -6,7 +6,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TransferListItem}" TargetType="atom:TransferListItem">
         <ControlTheme.BasedOn>
-            <atom:ListItemTheme TargetType="atom:TransferListItem" />
+            <atom:ListViewItemTheme TargetType="atom:TransferListItem" />
         </ControlTheme.BasedOn>
 
         <Setter Property="Template">

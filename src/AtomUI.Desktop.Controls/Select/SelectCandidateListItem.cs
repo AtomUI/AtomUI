@@ -2,7 +2,7 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class SelectCandidateListItem : ListItem
+internal class SelectCandidateListItem : ListViewItem
 {
     #region 公共属性定义
 

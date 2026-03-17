@@ -40,10 +40,10 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         AvaloniaProperty.Register<Select, bool>(nameof(IsDefaultActiveFirstOption));
     
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
-        List.IsGroupEnabledProperty.AddOwner<Select>();
+        ListView.IsGroupEnabledProperty.AddOwner<Select>();
     
     public static readonly StyledProperty<ListGroupPropertySelector?> GroupPropertySelectorProperty =
-        List.GroupPropertySelectorProperty.AddOwner<Select>();
+        ListView.GroupPropertySelectorProperty.AddOwner<Select>();
     
     public static readonly StyledProperty<bool> IsHideSelectedOptionsProperty =
         AvaloniaProperty.Register<Select, bool>(nameof(IsHideSelectedOptions));
@@ -741,7 +741,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             return;
         }
 
-        _candidateList.SetCurrentValue(List.SelectionModeProperty,
+        _candidateList.SetCurrentValue(ListView.SelectionModeProperty,
             Mode == SelectMode.Single ? SelectionMode.Single : SelectionMode.Multiple);
     }
     
@@ -788,79 +788,79 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void HandleSearchInputTextChanged(TextChangedEventArgs e)
     {
-        if (_candidateList != null && _candidateList.FilterDescriptions != null)
-        {
-            if (e.Source is TextBox textBox)
-            {
-                ActivateFilterValue = textBox.Text?.Trim();
-            }
-
-            if (_addNewOption != null)
-            {
-                var isSelected     = SelectedOptions?.Contains(_addNewOption) == true;
-                var isCurrentInput = ActivateFilterValue == _addNewOption.Header?.ToString();
-                if (!isSelected && !isCurrentInput)
-                {
-                    Options.Remove(_addNewOption);
-                    _addNewOption = null;
-                }
-            }
-            ConfigurePlaceholderVisible();
-            
-            if (string.IsNullOrEmpty(ActivateFilterValue))
-            {
-                _candidateList.FilterDescriptions.Clear();
-                _filterDescription               = null;
-            }
-            else
-            {
-                if (_filterDescription != null)
-                {
-                    var oldFilter = _filterDescription;
-                    Debug.Assert(oldFilter.FilterConditions.Count == 1);
-                    var oldFilterValue = oldFilter.FilterConditions.First().ToString();
-                    if (oldFilterValue != ActivateFilterValue)
-                    {
-                        _filterDescription = new ListFilterDescription()
-                        {
-                            FilterPropertySelector = _filterDescription.FilterPropertySelector,
-                            Filter                 =  _filterDescription.Filter,
-                            FilterConditions       = [ActivateFilterValue]
-                        };
-                        _candidateList.FilterDescriptions.Remove(oldFilter);
-                        _candidateList.FilterDescriptions.Add(_filterDescription);
-                    }
-                }
-                else
-                {
-                    var filter = ValueFilterFactory.BuildFilter(FilterMode) ?? Filter;
-                    Debug.Assert(filter != null);
-                    _filterDescription = new ListFilterDescription()
-                    {
-                        FilterPropertySelector = FilterValueSelector,
-                        Filter                 = (value, filterValue) => filter.Filter(value, filterValue),
-                        FilterConditions       = [ActivateFilterValue],
-                    };
-                    _candidateList.FilterDescriptions.Add(_filterDescription);
-                }
-            }
-            // Only allow "create from search text" in Tags mode.
-            // For Single/Multiple, when data is empty (or filter results are empty),
-            // the dropdown should show the empty indicator instead of adding a temporary option.
-            if (Mode == SelectMode.Tags &&
-                _candidateList.CollectionView?.Count == 0 &&
-                !string.IsNullOrWhiteSpace(ActivateFilterValue))
-            {
-                _addNewOption = new SelectOption()
-                {
-                    Header         = ActivateFilterValue,
-                    Content        = ActivateFilterValue,
-                    IsDynamicAdded = true
-                };
-                Options.Add(_addNewOption);
-            }
-            Dispatcher.UIThread.Post(SyncSelectionToCandidateList);
-        }
+        // if (_candidateList != null && _candidateList.FilterDescriptions != null)
+        // {
+        //     if (e.Source is TextBox textBox)
+        //     {
+        //         ActivateFilterValue = textBox.Text?.Trim();
+        //     }
+        //
+        //     if (_addNewOption != null)
+        //     {
+        //         var isSelected     = SelectedOptions?.Contains(_addNewOption) == true;
+        //         var isCurrentInput = ActivateFilterValue == _addNewOption.Header?.ToString();
+        //         if (!isSelected && !isCurrentInput)
+        //         {
+        //             Options.Remove(_addNewOption);
+        //             _addNewOption = null;
+        //         }
+        //     }
+        //     ConfigurePlaceholderVisible();
+        //     
+        //     if (string.IsNullOrEmpty(ActivateFilterValue))
+        //     {
+        //         _candidateList.FilterDescriptions.Clear();
+        //         _filterDescription               = null;
+        //     }
+        //     else
+        //     {
+        //         if (_filterDescription != null)
+        //         {
+        //             var oldFilter = _filterDescription;
+        //             Debug.Assert(oldFilter.FilterConditions.Count == 1);
+        //             var oldFilterValue = oldFilter.FilterConditions.First().ToString();
+        //             if (oldFilterValue != ActivateFilterValue)
+        //             {
+        //                 _filterDescription = new ListFilterDescription()
+        //                 {
+        //                     FilterPropertySelector = _filterDescription.FilterPropertySelector,
+        //                     Filter                 =  _filterDescription.Filter,
+        //                     FilterConditions       = [ActivateFilterValue]
+        //                 };
+        //                 _candidateList.FilterDescriptions.Remove(oldFilter);
+        //                 _candidateList.FilterDescriptions.Add(_filterDescription);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             var filter = ValueFilterFactory.BuildFilter(FilterMode) ?? Filter;
+        //             Debug.Assert(filter != null);
+        //             _filterDescription = new ListFilterDescription()
+        //             {
+        //                 FilterPropertySelector = FilterValueSelector,
+        //                 Filter                 = (value, filterValue) => filter.Filter(value, filterValue),
+        //                 FilterConditions       = [ActivateFilterValue],
+        //             };
+        //             _candidateList.FilterDescriptions.Add(_filterDescription);
+        //         }
+        //     }
+        //     // Only allow "create from search text" in Tags mode.
+        //     // For Single/Multiple, when data is empty (or filter results are empty),
+        //     // the dropdown should show the empty indicator instead of adding a temporary option.
+        //     if (Mode == SelectMode.Tags &&
+        //         _candidateList.CollectionView?.Count == 0 &&
+        //         !string.IsNullOrWhiteSpace(ActivateFilterValue))
+        //     {
+        //         _addNewOption = new SelectOption()
+        //         {
+        //             Header         = ActivateFilterValue,
+        //             Content        = ActivateFilterValue,
+        //             IsDynamicAdded = true
+        //         };
+        //         Options.Add(_addNewOption);
+        //     }
+        //     Dispatcher.UIThread.Post(SyncSelectionToCandidateList);
+        // }
         e.Handled = true;
     }
 
@@ -896,18 +896,18 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     private void HandleFilterValueSelectorChanged()
     {
-        if (_filterDescription != null && _candidateList!= null && _candidateList.FilterDescriptions != null)
-        {
-            var oldFilter = _filterDescription;
-            _filterDescription = new ListFilterDescription()
-            {
-                FilterPropertySelector = FilterValueSelector,
-                Filter                 =  oldFilter.Filter,
-                FilterConditions       = oldFilter.FilterConditions
-            };
-            _candidateList.FilterDescriptions.Remove(oldFilter);
-            _candidateList.FilterDescriptions.Add(_filterDescription);
-        }
+        // if (_filterDescription != null && _candidateList!= null && _candidateList.FilterDescriptions != null)
+        // {
+        //     var oldFilter = _filterDescription;
+        //     _filterDescription = new ListFilterDescription()
+        //     {
+        //         FilterPropertySelector = FilterValueSelector,
+        //         Filter                 =  oldFilter.Filter,
+        //         FilterConditions       = oldFilter.FilterConditions
+        //     };
+        //     _candidateList.FilterDescriptions.Remove(oldFilter);
+        //     _candidateList.FilterDescriptions.Add(_filterDescription);
+        // }
     }
     
     private void HandleOptionsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs change)

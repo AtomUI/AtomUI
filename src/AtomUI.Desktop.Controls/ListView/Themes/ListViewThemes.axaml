@@ -3,9 +3,6 @@
                     x:ClassModifier="internal"
                     xmlns:atom="https://atomui.net"
                     xmlns:themes="using:AtomUI.Desktop.Controls.Themes">
-    <themes:ListTheme x:Key="{x:Type atom:List}" TargetType="atom:List" />
-    <themes:GroupableListViewTheme x:Key="{x:Type atom:GroupableListView}" TargetType="atom:GroupableListView" />
-    <themes:ListItemTheme x:Key="{x:Type atom:ListItem}" TargetType="atom:ListItem" />
     <themes:ListViewTheme x:Key="{x:Type atom:ListView}" TargetType="atom:ListView" />
     <themes:ListViewItemTheme x:Key="{x:Type atom:ListViewItem}" TargetType="atom:ListViewItem" />
 </ResourceDictionary>

@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls.Themes;
 
-internal static class ListThemeConstants
+internal static class ListViewThemeConstants
 {
     public const string ScrollViewerPart = "PART_ScrollViewer";
     public const string TopPaginationPart = "PART_TopPagination";

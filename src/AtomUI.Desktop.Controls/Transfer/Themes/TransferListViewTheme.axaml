@@ -26,7 +26,7 @@
                                          SizeType="Small"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
                         <Panel>
-                            <atom:ScrollViewer Name="{x:Static atom:ListThemeConstants.ScrollViewerPart}"
+                            <atom:ScrollViewer Name="{x:Static atom:ListViewThemeConstants.ScrollViewerPart}"
                                                IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
                                                IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
                                                AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"

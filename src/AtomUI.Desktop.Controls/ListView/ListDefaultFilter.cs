@@ -1,6 +1,6 @@
 using AtomUI.Controls.Data;
 
-namespace AtomUI.Desktop.Controls.Data;
+namespace AtomUI.Desktop.Controls;
 
 internal class ListDefaultFilter
 {

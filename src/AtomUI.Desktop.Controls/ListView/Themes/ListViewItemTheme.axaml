@@ -36,18 +36,18 @@
     
     <Style Selector="^:is(atom|ListViewItem)">
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemMargin}}" />
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemColor}}" />
-        <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemBgColor}}" />
+        <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemMargin}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemColor}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemBgColor}}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
 
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemHoverColor}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemHoverColor}}" />
             <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <Style Selector="^:selected:not(:disabled)">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemSelectedColor}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemSelectedColor}}" />
             <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
         </Style>
 
@@ -55,25 +55,25 @@
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
-            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.SelectedIndicatorMargin}}" />
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListViewTokenKey.SelectedIndicatorMargin}}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadius}}" />
             <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightLG}}" />
-            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemPaddingLG}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemPaddingLG}}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusSM}}" />
             <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeight}}" />
-            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemPadding}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemPadding}}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusXS}}" />
             <Setter Property="MinHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.ControlHeightSM}}" />
-            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListBoxTokenKey.ItemPaddingSM}}" />
+            <Setter Property="Padding" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemPaddingSM}}" />
         </Style>
 
         <Style Selector="^:disabled">
@@ -84,8 +84,8 @@
         </Style>
         
         <Style Selector="^[IsGroupItem=True]">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListTokenKey.GroupHeaderColor}}" />
-            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListTokenKey.ItemBgColor}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.GroupHeaderColor}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemBgColor}}" />
             <Style Selector="^:pointerover">
                 <Setter Property="Background" Value="Transparent" />
             </Style>

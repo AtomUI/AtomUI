@@ -60,23 +60,14 @@ public class ListBox : AvaloniaListBox,
     public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
         AvaloniaProperty.Register<ListBox, bool>(nameof(IsShowEmptyIndicator), true);
     
-    public static readonly DirectProperty<ListBox, IListBoxItemFilter?> ItemFilterProperty =
-        AvaloniaProperty.RegisterDirect<ListBox, IListBoxItemFilter?>(
-            nameof(ItemFilter),
-            o => o.ItemFilter,
-            (o, v) => o.ItemFilter = v);
+    public static readonly StyledProperty<IListBoxItemFilter?> ItemFilterProperty =
+        AvaloniaProperty.Register<ListBox, IListBoxItemFilter?>(nameof(ItemFilter));
     
-    public static readonly DirectProperty<ListBox, object?> ItemFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<ListBox, object?>(
-            nameof(ItemFilterValue),
-            o => o.ItemFilterValue,
-            (o, v) => o.ItemFilterValue = v);
+    public static readonly StyledProperty<object?> ItemFilterValueProperty =
+        AvaloniaProperty.Register<ListBox, object?>(nameof(ItemFilterValue));
     
-    public static readonly DirectProperty<ListBox, TextBlockHighlightStrategy> ItemFilterHighlightStrategyProperty =
-        AvaloniaProperty.RegisterDirect<ListBox, TextBlockHighlightStrategy>(
-            nameof(ItemFilterHighlightStrategy),
-            o => o.ItemFilterHighlightStrategy,
-            (o, v) => o.ItemFilterHighlightStrategy = v);
+    public static readonly StyledProperty<TextBlockHighlightStrategy> ItemFilterHighlightStrategyProperty =
+        AvaloniaProperty.Register<ListBox, TextBlockHighlightStrategy>(nameof(ItemFilterHighlightStrategy), TextBlockHighlightStrategy.All);
     
     public static readonly DirectProperty<ListBox, int> FilterResultCountProperty =
         AvaloniaProperty.RegisterDirect<ListBox, int>(nameof(FilterResultCount),
@@ -161,31 +152,25 @@ public class ListBox : AvaloniaListBox,
         get => GetValue(IsShowEmptyIndicatorProperty);
         set => SetValue(IsShowEmptyIndicatorProperty, value);
     }
-    
-    private IListBoxItemFilter? _itemFilter;
-    
+
     public IListBoxItemFilter? ItemFilter
     {
-        get => _itemFilter;
-        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+        get => GetValue(ItemFilterProperty);
+        set => SetValue(ItemFilterProperty, value);
     }
-
-    private object? _itemFilterValue;
     
     public object? ItemFilterValue
     {
-        get => _itemFilterValue;
-        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
+        get => GetValue(ItemFilterValueProperty);
+        set => SetValue(ItemFilterValueProperty, value);
     }
-    
-    private TextBlockHighlightStrategy _itemFilterHighlightStrategy = TextBlockHighlightStrategy.All;
     
     public TextBlockHighlightStrategy ItemFilterHighlightStrategy
     {
-        get => _itemFilterHighlightStrategy;
-        set => SetAndRaise(ItemFilterHighlightStrategyProperty, ref _itemFilterHighlightStrategy, value);
+        get => GetValue(ItemFilterHighlightStrategyProperty);
+        set => SetValue(ItemFilterHighlightStrategyProperty, value);
     }
-    
+
     private int _filterResultCount;
     
     public int FilterResultCount

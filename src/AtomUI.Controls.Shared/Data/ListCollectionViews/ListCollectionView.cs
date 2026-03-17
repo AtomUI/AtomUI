@@ -9,9 +9,6 @@ using Avalonia.Collections;
 
 namespace AtomUI.Controls.Data;
 
-public delegate object? ListGroupPropertySelector(object data);
-public delegate object? ListFilterPropertySelector(object data);
-
 internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyChanged
 {
     #region 公共属性定义
@@ -2492,7 +2489,9 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
                 var itemType = ItemType;
                 Debug.Assert(itemType != null);
                 foreach (var sort in SortDescriptions)
-                    sort.Initialize(itemType);
+                {
+                    (sort as ListSortDescription)?.Initialize(itemType);
+                }
 
                 // create the SortFieldComparer to use
                 var sortFieldComparer = new MergedComparer(this);
@@ -2770,8 +2769,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
 
         foreach (var sort in SortDescriptions)
         {
-            sort.Initialize(itemType);
-
+            (sort as ListSortDescription)?.Initialize(itemType);
             if (seq is IOrderedEnumerable<object> orderedEnum)
             {
                 seq = sort.ThenBy(orderedEnum);

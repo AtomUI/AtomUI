@@ -1,12 +1,13 @@
 using System.Globalization;
+using AtomUI.Controls.Utils;
 
 namespace AtomUI.Controls.Data;
 
 public class ListGroupDescription : AbstractListGroupDescription
 {
-    private ListGroupPropertySelector _propertySelector;
+    private DefaultFilterValueSelector _propertySelector;
 
-    public ListGroupDescription(ListGroupPropertySelector selector)
+    public ListGroupDescription(DefaultFilterValueSelector selector)
     {
         _propertySelector = selector;
     }

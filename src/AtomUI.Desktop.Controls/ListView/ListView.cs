@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
+using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Theme;
 using AtomUI.Utils;
@@ -64,38 +65,26 @@ public partial class ListView : ItemsControl,
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         AvaloniaProperty.Register<ListView, bool>(nameof(IsGroupEnabled), false);
     
-    public static readonly StyledProperty<ListGroupPropertySelector?> GroupPropertySelectorProperty =
-        AvaloniaProperty.Register<ListView, ListGroupPropertySelector?>(
+    public static readonly StyledProperty<DefaultFilterValueSelector?> GroupPropertySelectorProperty =
+        AvaloniaProperty.Register<ListView, DefaultFilterValueSelector?>(
             nameof(GroupPropertySelector));
     
-    public static readonly DirectProperty<ListView, IListViewItemFilter?> ItemFilterProperty =
-        AvaloniaProperty.RegisterDirect<ListView, IListViewItemFilter?>(
-            nameof(ItemFilter),
-            o => o.ItemFilter,
-            (o, v) => o.ItemFilter = v);
+    public static readonly StyledProperty<IList<IListSortDescription>?> SortDescriptionsProperty =
+        AvaloniaProperty.Register<ListView, IList<IListSortDescription>?>(nameof(SortDescriptions));
     
-    public static readonly DirectProperty<ListView, object?> ItemFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<ListView, object?>(
-            nameof(ItemFilterValue),
-            o => o.ItemFilterValue,
-            (o, v) => o.ItemFilterValue = v);
+    public static readonly StyledProperty<IValueFilter?> FilterProperty =
+        AvaloniaProperty.Register<ListView, IValueFilter?>(nameof(Filter));
     
-    public static readonly DirectProperty<ListView, TextBlockHighlightStrategy> ItemFilterHighlightStrategyProperty =
-        AvaloniaProperty.RegisterDirect<ListView, TextBlockHighlightStrategy>(
-            nameof(ItemFilterHighlightStrategy),
-            o => o.ItemFilterHighlightStrategy,
-            (o, v) => o.ItemFilterHighlightStrategy = v);
+    public static readonly StyledProperty<object?> FilterValueProperty =
+        AvaloniaProperty.Register<ListView, object?>(nameof(FilterValue));
     
-    public static readonly DirectProperty<ListView, int> FilterResultCountProperty =
-        AvaloniaProperty.RegisterDirect<ListView, int>(nameof(FilterResultCount),
-            o => o.FilterResultCount);
+    public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
+        AvaloniaProperty.Register<ListView, DefaultFilterValueSelector?>(
+            nameof(FilterValueSelector));
     
     public static readonly DirectProperty<ListView, bool> IsFilteringProperty =
         AvaloniaProperty.RegisterDirect<ListView, bool>(nameof(IsFiltering),
             o => o.IsFiltering);
-    
-    public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
-        AvaloniaProperty.Register<ListView, IBrush?>(nameof(FilterHighlightForeground));
     
     public static readonly DirectProperty<ListView, int> TotalItemCountProperty =
         AvaloniaProperty.RegisterDirect<ListView, int>(nameof(TotalItemCount), o => o.TotalItemCount);
@@ -212,42 +201,34 @@ public partial class ListView : ItemsControl,
         set => SetValue(IsGroupEnabledProperty, value);
     }
     
-    public ListGroupPropertySelector? GroupPropertySelector
+    public DefaultFilterValueSelector? GroupPropertySelector
     {
         get => GetValue(GroupPropertySelectorProperty);
         set => SetValue(GroupPropertySelectorProperty, value);
     }
     
-    private IListViewItemFilter? _itemFilter;
-    
-    public IListViewItemFilter? ItemFilter
+    public IList<IListSortDescription>? SortDescriptions
     {
-        get => _itemFilter;
-        set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+        get => GetValue(SortDescriptionsProperty);
+        set => SetValue(SortDescriptionsProperty, value);
+    }
+    
+    public IValueFilter? Filter
+    {
+        get => GetValue(FilterProperty);
+        set => SetValue(FilterProperty, value);
     }
 
-    private object? _itemFilterValue;
-    
-    public object? ItemFilterValue
+    public object? FilterValue
     {
-        get => _itemFilterValue;
-        set => SetAndRaise(ItemFilterValueProperty, ref _itemFilterValue, value);
+        get => GetValue(FilterValueProperty);
+        set => SetValue(FilterValueProperty, value);
     }
     
-    private TextBlockHighlightStrategy _itemFilterHighlightStrategy = TextBlockHighlightStrategy.All;
-    
-    public TextBlockHighlightStrategy ItemFilterHighlightStrategy
+    public DefaultFilterValueSelector? FilterValueSelector
     {
-        get => _itemFilterHighlightStrategy;
-        set => SetAndRaise(ItemFilterHighlightStrategyProperty, ref _itemFilterHighlightStrategy, value);
-    }
-    
-    private int _filterResultCount;
-    
-    public int FilterResultCount
-    {
-        get => _filterResultCount;
-        private set => SetAndRaise(FilterResultCountProperty, ref _filterResultCount, value);
+        get => GetValue(FilterValueSelectorProperty);
+        set => SetValue(FilterValueSelectorProperty, value);
     }
     
     private bool _isFiltering;
@@ -256,12 +237,6 @@ public partial class ListView : ItemsControl,
     {
         get => _isFiltering;
         private set => SetAndRaise(IsFilteringProperty, ref _isFiltering, value);
-    }
-
-    public IBrush? FilterHighlightForeground
-    {
-        get => GetValue(FilterHighlightForegroundProperty);
-        set => SetValue(FilterHighlightForegroundProperty, value);
     }
     
     private int _totalItemCount;
@@ -400,7 +375,6 @@ public partial class ListView : ItemsControl,
     #endregion
     
     private protected readonly Dictionary<object, CompositeDisposable> _itemsBindingDisposables = new();
-    private protected readonly Dictionary<object, bool> _filterContext = new();
     private bool _areHandlersSuspended;
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new VirtualizingStackPanel());
@@ -472,6 +446,8 @@ public partial class ListView : ItemsControl,
 
             _collectionView = newCollectionView;
             SetValueNoCallback(ItemsSourceProperty, newCollectionView);
+            ConfigureFilterDescription();
+            ConfigureSortDescriptions();
             ConfigureGroupInfo();
             ReConfigurePagination();
             InvalidateMeasure();
@@ -498,13 +474,13 @@ public partial class ListView : ItemsControl,
         if (sender is ListCollectionView view)
         {
             IsEmptyDataSource = view.IsEmpty;
-            TotalItemCount         = view.TotalItemCount;
+            TotalItemCount    = view.TotalItemCount;
         }
     }
     
     private void ConfigureGroupInfo()
     {
-        if (ItemsSource is ListCollectionView collectionView)
+        if (ItemsSource is IListCollectionView collectionView)
         {
             if (IsGroupEnabled)
             {
@@ -529,14 +505,23 @@ public partial class ListView : ItemsControl,
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (ItemFilter == null)
+        if (GroupPropertySelector == null)
         {
-            SetCurrentValue(ItemFilterProperty, new DefaultListViewItemFilter());
+            SetCurrentValue(GroupPropertySelectorProperty, GroupSelector);
         }
-
         ConfigureEmptyIndicator();
         ConfigureIsFiltering();
         TryInitializeSelectionSource(_selection, _updateState is null);
+    }
+    
+    private object? GroupSelector(object item)
+    {
+        if (item is IGroupHeader groupHeader)
+        {
+            return groupHeader.Group;
+        }
+
+        return null;
     }
 
     private void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -557,7 +542,13 @@ public partial class ListView : ItemsControl,
     {
         _virtualRestoreContext.Clear();
         ConfigureEmptyIndicator();
-        FilterItems();
+        foreach (var item in Items)
+        {
+            if (item is not IListItemData)
+            {
+                throw new Exception("Unexpected item type, must implement IListItemData.");
+            }
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -565,7 +556,6 @@ public partial class ListView : ItemsControl,
         base.OnPropertyChanged(change);
         if (change.Property == ItemsSourceProperty ||
             change.Property == IsFilteringProperty ||
-            change.Property == FilterResultCountProperty ||
             change.Property == IsShowEmptyIndicatorProperty ||
             change.Property == IsEmptyDataSourceProperty)
         {
@@ -576,11 +566,16 @@ public partial class ListView : ItemsControl,
         {
             ConfigureEffectiveBorderThickness();
         }
-        else if (change.Property == ItemFilterValueProperty ||
-                 change.Property == ItemFilterProperty)
+        else if (change.Property == FilterValueProperty ||
+                 change.Property == FilterProperty ||
+                 change.Property == FilterValueSelectorProperty)
         {
             ConfigureIsFiltering();
-            FilterItems();
+            ConfigureFilterDescription();
+        }
+        else if (change.Property == SortDescriptionsProperty)
+        {
+            ConfigureSortDescriptions();
         }
         else if (change.Property == IsGroupEnabledProperty)
         {
@@ -613,7 +608,7 @@ public partial class ListView : ItemsControl,
     
     private void ConfigureIsFiltering()
     {
-        IsFiltering = ItemFilter != null && ItemFilterValue != null;
+        IsFiltering = Filter != null && FilterValue != null;
     }
 
     private protected void DisposableListItem(object item)
@@ -627,18 +622,18 @@ public partial class ListView : ItemsControl,
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        var listViewItem = new ListViewItem();
-        NotifyContainerForItemCreated(listViewItem, item);
-        return listViewItem;
+        var listItem = new ListViewItem();
+        NotifyContainerForItemCreated(listItem, item);
+        return listItem;
     }
     
     protected virtual void NotifyContainerForItemCreated(Control container, object? item)
     {
-        if (container is ListViewItem listViewItem && item != null && item is not Visual)
+        if (container is ListViewItem listItem && item != null && item is not Visual)
         {
             if (item is IListItemData itemData)
             {
-                NotifyRestoreDefaultContext(listViewItem, itemData);
+                NotifyRestoreDefaultContext(listItem, itemData);
             }
         }
     }
@@ -657,58 +652,67 @@ public partial class ListView : ItemsControl,
         GetOrCreateSelectionModel();
         
         base.PrepareContainerForItemOverride(container, item, index);
-        if (container is ListViewItem listViewItem)
+        if (container is ListViewItem listItem)
         {
             var disposables = new CompositeDisposable(8);
+            
+            var isGroupEnabled = false;
+            if (item is IGroupListItemData groupListItemData)
+            {
+                listItem.IsGroupItem = groupListItemData.IsGroupItem;
+                isGroupEnabled       = listItem.IsGroupItem;
+            }
+            if (GroupItemTemplate != null && isGroupEnabled)
+            {
+                disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, listItem, ListViewItem.ContentTemplateProperty));
+            }
       
             if (ItemTemplate != null)
             {
-                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listViewItem, ListViewItem.ContentTemplateProperty));
+                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listItem, ListViewItem.ContentTemplateProperty));
             }
             
-            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, listViewItem, ListViewItem.SizeTypeProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, listViewItem, ListViewItem.IsMotionEnabledProperty));
-            disposables.Add(BindUtils.RelayBind(this, SelectedIndicatorProperty, listViewItem, ListViewItem.SelectedIndicatorProperty));
-            disposables.Add(BindUtils.RelayBind(this, ItemHoverBgProperty, listViewItem, ListViewItem.ItemHoverBgProperty));
-            disposables.Add(BindUtils.RelayBind(this, ItemSelectedBgProperty, listViewItem, ListViewItem.ItemSelectedBgProperty));
-            disposables.Add(BindUtils.RelayBind(this, IsShowSelectedIndicatorProperty, listViewItem, ListViewItem.IsShowSelectedIndicatorProperty));
-            disposables.Add(BindUtils.RelayBind(this, ItemFilterHighlightStrategyProperty, listViewItem, ListViewItem.FilterHighlightStrategyProperty));
-            disposables.Add(BindUtils.RelayBind(this, FilterHighlightForegroundProperty, listViewItem, ListViewItem.FilterHighlightForegroundProperty));
-            
-            PrepareListViewItem(listViewItem, item, index, disposables);
+            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, listItem, ListViewItem.SizeTypeProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, listItem, ListViewItem.IsMotionEnabledProperty));
+            disposables.Add(BindUtils.RelayBind(this, SelectedIndicatorProperty, listItem, ListViewItem.SelectedIndicatorProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemHoverBgProperty, listItem, ListViewItem.ItemHoverBgProperty));
+            disposables.Add(BindUtils.RelayBind(this, ItemSelectedBgProperty, listItem, ListViewItem.ItemSelectedBgProperty));
+            disposables.Add(BindUtils.RelayBind(this, IsShowSelectedIndicatorProperty, listItem, ListViewItem.IsShowSelectedIndicatorProperty));
+           
+            PrepareListViewItem(listItem, item, index, disposables);
 
             var originMotionEnabled = false;
             try
             {
-                originMotionEnabled = listViewItem.IsMotionEnabled;
-                listViewItem.SetCurrentValue(IsMotionEnabledProperty, false);
+                originMotionEnabled = listItem.IsMotionEnabled;
+                listItem.SetCurrentValue(IsMotionEnabledProperty, false);
                 if (item is IListItemData itemData)
                 {
-                    NotifyRestoreDefaultContext(listViewItem, itemData);
+                    NotifyRestoreDefaultContext(listItem, itemData);
                 }
 
                 if (this is IListVirtualizingContextAware listVirtualizingContextAwareControl &&
-                    listViewItem is IListItemVirtualizingContextAware virtualListItem)
+                    listItem is IListItemVirtualizingContextAware virtualListItem)
                 {
                     virtualListItem.VirtualIndex = index;
                     if (_virtualRestoreContext.TryGetValue(index, out var context))
                     {
-                        listVirtualizingContextAwareControl.RestoreVirtualizingContext(listViewItem, context);
+                        listVirtualizingContextAwareControl.RestoreVirtualizingContext(listItem, context);
                         _virtualRestoreContext.Remove(index);
                     }
                 }
 
-                if (_itemsBindingDisposables.TryGetValue(listViewItem, out var oldDisposables))
+                if (_itemsBindingDisposables.TryGetValue(listItem, out var oldDisposables))
                 {
                     oldDisposables.Dispose();
-                    _itemsBindingDisposables.Remove(listViewItem);
+                    _itemsBindingDisposables.Remove(listItem);
                 }
 
-                _itemsBindingDisposables.Add(listViewItem, disposables);
+                _itemsBindingDisposables.Add(listItem, disposables);
             }
             finally
             {
-                listViewItem.SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
+                listItem.SetCurrentValue(IsMotionEnabledProperty, originMotionEnabled);
             }
         }
         else
@@ -717,13 +721,13 @@ public partial class ListView : ItemsControl,
         }
     }
     
-    protected virtual void PrepareListViewItem(ListViewItem listViewItem, object? item, int index, CompositeDisposable disposables)
+    protected virtual void PrepareListViewItem(ListViewItem listItem, object? item, int index, CompositeDisposable disposables)
     {
     }
     
     protected virtual void ConfigureEmptyIndicator()
     {
-        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (TotalItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
+        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && TotalItemCount == 0);
     }
     
     private void ConfigureEffectiveBorderThickness()
@@ -754,91 +758,6 @@ public partial class ListView : ItemsControl,
                 e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
         }
         return false;
-    }
-
-    protected bool FilterItem(ListViewItem item)
-    {
-        if (ItemFilter == null)
-        {
-            return false;
-        }
-        return ItemFilter.Filter(this, item, ItemFilterValue);
-    }
-
-    private void FilterItems()
-    {
-        if (ItemFilter != null && ItemFilterValue != null && IsLoaded)
-        {
-            if (ItemFilterHighlightStrategy.HasFlag(TextBlockHighlightStrategy.HideUnMatched))
-            {
-                if (_filterContext.Count == 0)
-                {
-                    foreach (var item in Items)
-                    {
-                        if (item != null)
-                        {
-                            var container = ContainerFromItem(item);
-                            if (container is ListViewItem listViewItem)
-                            {
-                                _filterContext[listViewItem] = listViewItem.IsVisible;
-                            }
-                        }
-                    }
-                }
-            }
-            IsFiltering = true;
-            var count = 0;
-            foreach (var item in Items)
-            {
-                if (item != null)
-                {
-                    var container    = ContainerFromItem(item);
-                    if (container is ListViewItem listViewItem)
-                    {
-                        var filterResult = FilterItem(listViewItem);
-                        if (filterResult)
-                        {
-                            ++count;
-                        }
-
-                        if (ItemFilterHighlightStrategy.HasFlag(TextBlockHighlightStrategy.HideUnMatched))
-                        {
-                            listViewItem.SetCurrentValue(ListViewItem.IsVisibleProperty, filterResult);
-                        }
-                       
-                        listViewItem.IsFiltering = true;
-                        listViewItem.FilterValue = ItemFilterValue;
-                    }
-                }
-            }
-            FilterResultCount = count;
-        }
-        else
-        {
-            ClearFilter();
-        }
-    }
-
-    private void ClearFilter()
-    {
-        foreach (var item in Items)
-        {
-            if (item != null)
-            {
-                var container = ContainerFromItem(item);
-                if (container is ListViewItem listViewItem)
-                {
-                    if (_filterContext.TryGetValue(listViewItem, out bool value))
-                    {
-                        listViewItem.SetCurrentValue(ListViewItem.IsVisibleProperty, value);
-                    }
-                    listViewItem.IsFiltering = false;
-                    listViewItem.FilterValue = null;
-                }
-            }
-        }
-        IsFiltering = false;
-        _filterContext.Clear();
     }
     
     private void HandleListViewItemClicked(RoutedEventArgs args)
@@ -926,5 +845,35 @@ public partial class ListView : ItemsControl,
         
         UpdatePseudoClasses();
         ConfigureEmptyIndicator();
+        HandlePaginationVisibility();
+    }
+
+    private void ConfigureFilterDescription()
+    {
+        if (_collectionView != null)
+        {
+            _collectionView.FilterDescriptions.Clear();
+            if (FilterValue != null && Filter != null)
+            {
+                _collectionView.FilterDescriptions.Add(new ListFilterDescription()
+                {
+                    FilterPropertySelector = FilterValueSelector ?? (record => (record as IListItemData)?.Content) ,
+                    FilterConditions       = [FilterValue],
+                    Filter                 = Filter.Filter
+                });
+            }
+        }
+    }
+
+    private void ConfigureSortDescriptions()
+    {
+        if (_collectionView != null)
+        {
+            _collectionView.SortDescriptions.Clear();
+            if (SortDescriptions != null)
+            {
+                _collectionView.SortDescriptions.AddRange(SortDescriptions);
+            }
+        }
     }
 }

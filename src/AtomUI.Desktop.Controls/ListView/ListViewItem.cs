@@ -1,6 +1,5 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Controls.Data;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -31,7 +30,7 @@ public class ListViewItem : ContentControl,
     #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
-        RoutedEvent.Register<DropdownButton, RoutedEventArgs>(
+        RoutedEvent.Register<ListViewItem, RoutedEventArgs>(
             nameof(Clicked),
             RoutingStrategies.Bubble);
     
@@ -71,35 +70,6 @@ public class ListViewItem : ContentControl,
         AvaloniaProperty.RegisterDirect<ListViewItem, IconTemplate?>(nameof(SelectedIndicator),
             o => o.SelectedIndicator,
             (o, v) => o.SelectedIndicator = v);
-    
-    internal static readonly DirectProperty<ListViewItem, bool> IsFilteringProperty =
-        AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsFiltering),
-            o => o.IsFiltering,
-            (o, v) => o.IsFiltering = v);
-    
-    internal static readonly DirectProperty<ListViewItem, object?> FilterValueProperty =
-        AvaloniaProperty.RegisterDirect<ListViewItem, object?>(nameof(FilterValue),
-            o => o.FilterValue,
-            (o, v) => o.FilterValue = v);
-    
-    internal static readonly DirectProperty<ListViewItem, TextBlockHighlightStrategy> FilterHighlightStrategyProperty =
-        AvaloniaProperty.RegisterDirect<ListViewItem, TextBlockHighlightStrategy>(
-            nameof(FilterHighlightStrategy),
-            o => o.FilterHighlightStrategy,
-            (o, v) => o.FilterHighlightStrategy = v);
-    
-    internal static readonly DirectProperty<ListViewItem, string?> FilterHighlightWordsProperty =
-        AvaloniaProperty.RegisterDirect<ListViewItem, string?>(
-            nameof(FilterHighlightWords), t => t.FilterHighlightWords, 
-            (t, v) => t.FilterHighlightWords = v);
-    
-    internal static readonly DirectProperty<ListViewItem, string?> ContentTextProperty =
-        AvaloniaProperty.RegisterDirect<ListViewItem, string?>(
-            nameof(ContentText), t => t.ContentText, 
-            (t, v) => t.ContentText = v);
-    
-    internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
-        ListBox.FilterHighlightForegroundProperty.AddOwner<ListViewItem>();
     
     internal static readonly StyledProperty<bool> IsGroupItemProperty =
         AvaloniaProperty.Register<ListViewItem, bool>(nameof(IsGroupItem));
@@ -150,50 +120,6 @@ public class ListViewItem : ContentControl,
     {
         get => _selectedIndicator;
         set => SetAndRaise(SelectedIndicatorProperty, ref _selectedIndicator, value);
-    }
-    
-    private bool _isFiltering;
-
-    internal bool IsFiltering
-    {
-        get => _isFiltering;
-        set => SetAndRaise(IsFilteringProperty, ref _isFiltering, value);
-    }
-    
-    private object? _filterValue;
-
-    internal object? FilterValue
-    {
-        get => _filterValue;
-        set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
-    }
-    
-    private TextBlockHighlightStrategy _filterHighlightStrategy = TextBlockHighlightStrategy.All;
-    
-    public TextBlockHighlightStrategy FilterHighlightStrategy
-    {
-        get => _filterHighlightStrategy;
-        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
-    }
-    
-    private string? _filterHighlightWords;
-    internal string? FilterHighlightWords
-    {
-        get => _filterHighlightWords;
-        set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
-    }
-    
-    private string? _contentText;
-    internal string? ContentText
-    {
-        get => _contentText;
-        set => SetAndRaise(ContentTextProperty, ref _contentText, value);
-    }
-    
-    public IBrush? FilterHighlightForeground
-    {
-        get => GetValue(FilterHighlightForegroundProperty);
-        set => SetValue(FilterHighlightForegroundProperty, value);
     }
     
     internal bool IsGroupItem
@@ -250,21 +176,6 @@ public class ListViewItem : ContentControl,
             change.Property == IsShowSelectedIndicatorProperty)
         {
             ConfigureSelectedIndicator();
-        }
-        else if (change.Property == ContentProperty)
-        {
-            if (Content is IListItemData listBoxItemData)
-            {
-                ContentText = listBoxItemData.Content as string;
-            }
-            else if (Content is string strContent)
-            {
-                ContentText = strContent;
-            }
-        }
-        else if (change.Property == FilterValueProperty)
-        {
-            FilterHighlightWords = FilterValue?.ToString();
         }
     }
 
@@ -364,5 +275,4 @@ public class ListViewItem : ContentControl,
 
         _pointerDownPoint = s_invalidPoint;
     }
-    
 }

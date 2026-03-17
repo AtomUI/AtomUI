@@ -96,7 +96,7 @@ public partial class ListView
         if (args.NewValue is AbstractPagination newPagination)
         {
             newPagination.CurrentPageChanged += HandlePageChangeRequest;
-            _bottomPaginationDisposables     =  new  CompositeDisposable();
+            _bottomPaginationDisposables     =  new CompositeDisposable();
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, TopPaginationAlignProperty, newPagination, AbstractPagination.AlignProperty));
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsHideOnSinglePageProperty, newPagination, AbstractPagination.IsHideOnSinglePageProperty));
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsEnabledProperty, newPagination, AbstractPagination.IsEnabledProperty));
@@ -183,5 +183,6 @@ public partial class ListView
                 _bottomPagination.CurrentPage = PageIndex + 1;
             }
         }
+        
     }
 }

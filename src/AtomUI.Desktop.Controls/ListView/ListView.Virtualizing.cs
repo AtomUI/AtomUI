@@ -51,6 +51,7 @@ public partial class ListView : IListVirtualizingContextAware
         {
             item.SetCurrentValue(ListViewItem.IsGroupItemProperty, groupListItemData.IsGroupItem);
         }
+        item.SetCurrentValue(ListViewItem.IsEnabledProperty, itemData.IsEnabled);
     }
 
     protected virtual void NotifyClearContainerForVirtualizingContext(ListViewItem item)

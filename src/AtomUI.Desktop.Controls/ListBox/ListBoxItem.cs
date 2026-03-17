@@ -16,7 +16,7 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
     #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
-        RoutedEvent.Register<DropdownButton, RoutedEventArgs>(
+        RoutedEvent.Register<ListViewItem, RoutedEventArgs>(
             nameof(Clicked),
             RoutingStrategies.Bubble);
     

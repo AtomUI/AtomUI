@@ -489,7 +489,6 @@ namespace AtomUI.Desktop.Controls.DesignTokens
     public static class ListViewTokenKey
     {
         public static readonly TokenResourceKey ContentPadding = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ContentPadding");
-        public static readonly TokenResourceKey FilterHighlightColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.FilterHighlightColor");
         public static readonly TokenResourceKey GroupHeaderColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.GroupHeaderColor");
         public static readonly TokenResourceKey ItemBgColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemBgColor");
         public static readonly TokenResourceKey ItemColor = new TokenResourceKey("AtomUI.Desktop.Controls.ListView.ItemColor");

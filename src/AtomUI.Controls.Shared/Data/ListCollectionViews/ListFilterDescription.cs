@@ -5,7 +5,7 @@ namespace AtomUI.Controls.Data;
 
 public class ListFilterDescription : IListFilterDescription
 {
-    public ListFilterPropertySelector? FilterPropertySelector { get; set; }
+    public DefaultFilterValueSelector? FilterPropertySelector { get; set; }
 
     public ValueFilterMode FallbackFilterMode { get; init; } = ValueFilterMode.Contains;
     

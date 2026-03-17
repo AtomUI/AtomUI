@@ -94,11 +94,6 @@ internal class ListViewToken : AbstractControlDesignToken
     /// </summary>
     public Thickness SelectedIndicatorMargin { get; set; }
     
-    /// <summary>
-    /// 过滤高亮颜色
-    /// </summary>
-    public Color FilterHighlightColor { get; set; }
-    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -125,6 +120,5 @@ internal class ListViewToken : AbstractControlDesignToken
         PaginationMargin        = new Thickness(0, SharedToken.UniformlyMarginXS);
         GroupHeaderColor        = SharedToken.ColorTextDescription;
         SelectedIndicatorMargin = new Thickness(SharedToken.UniformlyMarginXXS, 0, 0, 0);
-        FilterHighlightColor    = SharedToken.ColorError;
     }
 }

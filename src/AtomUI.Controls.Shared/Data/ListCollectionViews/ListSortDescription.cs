@@ -6,7 +6,7 @@ using Avalonia.Collections;
 
 namespace AtomUI.Controls.Data;
 
-public abstract class ListSortDescription
+public abstract class ListSortDescription : IListSortDescription
 {
     public virtual string? PropertyPath => null;
     
@@ -342,4 +342,4 @@ public class ListComparerSortDescription : ListSortDescription
     }
 }
 
-public class SortDescriptionList : AvaloniaList<ListSortDescription> {}
+public class SortDescriptionList : AvaloniaList<IListSortDescription> {}

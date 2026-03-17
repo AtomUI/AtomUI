@@ -12,7 +12,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -42,7 +41,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
     public static readonly StyledProperty<bool> IsGroupEnabledProperty =
         ListView.IsGroupEnabledProperty.AddOwner<Select>();
     
-    public static readonly StyledProperty<ListGroupPropertySelector?> GroupPropertySelectorProperty =
+    public static readonly StyledProperty<DefaultFilterValueSelector?> GroupPropertySelectorProperty =
         ListView.GroupPropertySelectorProperty.AddOwner<Select>();
     
     public static readonly StyledProperty<bool> IsHideSelectedOptionsProperty =
@@ -88,8 +87,8 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
             nameof(FilterMode),
             defaultValue: ValueFilterMode.Contains);
     
-    public static readonly StyledProperty<ListFilterPropertySelector?> FilterValueSelectorProperty =
-        AvaloniaProperty.Register<AbstractSelect, ListFilterPropertySelector?>(
+    public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
+        AvaloniaProperty.Register<AbstractSelect, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
     
     public IEnumerable<ISelectOption>? OptionsSource
@@ -117,7 +116,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(IsGroupEnabledProperty, value);
     }
     
-    public ListGroupPropertySelector? GroupPropertySelector
+    public DefaultFilterValueSelector? GroupPropertySelector
     {
         get => GetValue(GroupPropertySelectorProperty);
         set => SetValue(GroupPropertySelectorProperty, value);
@@ -186,7 +185,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         set => SetValue(FilterModeProperty, value);
     }
 
-    public ListFilterPropertySelector? FilterValueSelector
+    public DefaultFilterValueSelector? FilterValueSelector
     {
         get => GetValue(FilterValueSelectorProperty);
         set => SetValue(FilterValueSelectorProperty, value);
@@ -207,7 +206,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
 
     #endregion
 
-    public static readonly ListFilterPropertySelector HeaderFilterPropertySelector = data =>
+    public static readonly DefaultFilterValueSelector HeaderFilterPropertySelector = data =>
     {
         if (data is ISelectOption option)
         {
@@ -216,7 +215,7 @@ public partial class Select : AbstractSelect, IControlSharedTokenResourcesHost
         return null;
     };
     
-    public static readonly ListFilterPropertySelector ValueFilterPropertySelector = data =>
+    public static readonly DefaultFilterValueSelector ValueFilterPropertySelector = data =>
     {
         if (data is ISelectOption option)
         {

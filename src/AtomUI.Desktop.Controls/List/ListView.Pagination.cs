@@ -173,14 +173,14 @@ public partial class ListView
             {
                 _topPagination.Total       = _collectionView.TotalItemCount;
                 _topPagination.PageSize    = PageSize;
-                _topPagination.CurrentPage = PageIndex;
+                _topPagination.CurrentPage = PageIndex + 1;
             }
 
             if (_bottomPagination != null)
             {
                 _bottomPagination.Total       = _collectionView.TotalItemCount;
                 _bottomPagination.PageSize    = PageSize;
-                _bottomPagination.CurrentPage = PageIndex;
+                _bottomPagination.CurrentPage = PageIndex + 1;
             }
         }
     }

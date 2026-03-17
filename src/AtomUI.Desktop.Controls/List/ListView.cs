@@ -413,7 +413,7 @@ public partial class ListView : ItemsControl,
         IsSelectedChangedEvent.AddClassHandler<ListView>((list, e) => list.ContainerSelectionChanged(e));
         ListViewItem.ClickedEvent.AddClassHandler<ListView>((list, args) => list.HandleListViewItemClicked(args));
         IsSelectableProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleIsSelectableChanged(args));
-        ItemCountProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleItemCountChanged());
+        TotalItemCountProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleItemCountChanged());
         ItemsSourceProperty.Changed.AddClassHandler<ListView>((list, e) => list.HandleItemsSourcePropertyChanged(e));
     }
     
@@ -474,11 +474,25 @@ public partial class ListView : ItemsControl,
             }
 
             _collectionView = newCollectionView;
-            ItemsSource     = newCollectionView;
+            SetValueNoCallback(ItemsSourceProperty, newCollectionView);
             ConfigureGroupInfo();
             ReConfigurePagination();
             InvalidateMeasure();
             UpdatePseudoClasses();
+        }
+    }
+    
+    private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value,
+                                       BindingPriority priority = BindingPriority.LocalValue)
+    {
+        _areHandlersSuspended = true;
+        try
+        {
+            SetValue(property, value, priority);
+        }
+        finally
+        {
+            _areHandlersSuspended = false;
         }
     }
     
@@ -511,8 +525,8 @@ public partial class ListView : ItemsControl,
     
     private void UpdatePseudoClasses()
     {
-        PseudoClasses.Set(ListPseudoClass.Empty, ItemCount == 0);
-        PseudoClasses.Set(ListPseudoClass.SingleItem, ItemCount == 1);
+        PseudoClasses.Set(ListPseudoClass.Empty, TotalItemCount == 0);
+        PseudoClasses.Set(ListPseudoClass.SingleItem, TotalItemCount == 1);
     }
     
     protected override void OnInitialized()
@@ -712,7 +726,7 @@ public partial class ListView : ItemsControl,
     
     protected virtual void ConfigureEmptyIndicator()
     {
-        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (ItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
+        SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (TotalItemCount == 0 || (IsFiltering && FilterResultCount == 0)));
     }
     
     private void ConfigureEffectiveBorderThickness()
@@ -881,7 +895,7 @@ public partial class ListView : ItemsControl,
     
     private void HandleItemCountChanged()
     {
-        ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(ItemCount));
+        ItemCountChanged?.Invoke(this, new ItemCountChangedEventArgs(TotalItemCount));
     }
     
     private void ReConfigureGroupInfo()

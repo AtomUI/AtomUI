@@ -311,7 +311,7 @@ public partial class ListView
         for (var current = eventSource as Visual; current != null; current = current.GetVisualParent())
         {
             if (current is Control control && control.Parent == this &&
-                IndexFromContainer(control) != -1)
+                GlobalIndexFromContainer(control) != -1)
             {
                 return control;
             }
@@ -328,7 +328,7 @@ public partial class ListView
             return;
         }
     
-        if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
+        if (AlwaysSelected && SelectedIndex == -1 && TotalItemCount > 0)
         {
             SelectedIndex = 0;
         }
@@ -375,7 +375,7 @@ public partial class ListView
         {
             // The IsSelected property is not set on the container: update the container
             // selection based on the current selection as understood by this control.
-            MarkContainerSelected(container, Selection.IsSelected(index));
+            MarkContainerSelected(container, Selection.IsSelected(GlobalIndex(index)));
         }
         else
         {
@@ -383,7 +383,7 @@ public partial class ListView
             // container theme which has bound the IsSelected property. Update our selection
             // based on the selection state of the container.
             var containerIsSelected = GetIsSelected(container);
-            UpdateSelection(index, containerIsSelected, toggleModifier: true);
+            UpdateSelection(GlobalIndex(index), containerIsSelected, toggleModifier: true);
         }
 
         if (Selection.AnchorIndex == index)
@@ -395,7 +395,8 @@ public partial class ListView
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
     {
         base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
-        MarkContainerSelected(container, Selection.IsSelected(newIndex));
+        
+        MarkContainerSelected(container, Selection.IsSelected(GlobalIndex(newIndex)));
     }
     
     protected override void OnDataContextBeginUpdate()
@@ -549,7 +550,7 @@ public partial class ListView
 
         if (GetNextControl(container, direction, from, wrap) is Control next)
         {
-            var index = IndexFromContainer(next);
+            var index = GlobalIndexFromContainer(next);
 
             if (index != -1)
             {
@@ -570,7 +571,7 @@ public partial class ListView
         bool rightButton = false,
         bool fromFocus = false)
     {
-        if (index < 0 || index >= ItemCount)
+        if (index < 0 || index >= TotalItemCount)
         {
             return;
         }
@@ -634,12 +635,37 @@ public partial class ListView
         bool rightButton = false,
         bool fromFocus = false)
     {
-        var index = IndexFromContainer(container);
+        var index = GlobalIndexFromContainer(container);
 
         if (index != -1)
         {
             UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton, fromFocus);
         }
+    }
+
+    protected int GlobalIndexFromContainer(Control container)
+    {
+        var index = IndexFromContainer(container);
+        return GlobalIndex(index);
+    }
+
+    protected int GlobalIndex(int index)
+    {
+        if (PageSize <= 0)
+        {
+            return index;
+        }
+        return PageIndex * PageSize + index;
+    }
+
+    protected int GlobalIndexLocalIndex(int globalIndex)
+    {
+        if (PageSize <= 0)
+        {
+            return globalIndex;
+        }
+
+        return globalIndex % PageSize;
     }
 
     protected bool UpdateSelectionFromEventSource(
@@ -730,7 +756,7 @@ public partial class ListView
     {
         void Mark(int index, bool selected)
         {
-            var container = ContainerFromIndex(index);
+            var container = ContainerFromIndex(GlobalIndexLocalIndex(index));
 
             if (container != null)
             {
@@ -738,19 +764,30 @@ public partial class ListView
             }
         }
 
-        foreach (var i in e.SelectedIndexes)
+        if (PageSize <= 0)
         {
-            Mark(i, true);
-        }
+            foreach (var i in e.SelectedIndexes)
+            {
+                Mark(i, true);
+            }
 
-        foreach (var i in e.DeselectedIndexes)
-        {
-            Mark(i, false);
-        }
+            foreach (var i in e.DeselectedIndexes)
+            {
+                Mark(i, false);
+            }
 
-        if (!_isSelectionChangeActive)
+            if (!_isSelectionChangeActive)
+            {
+                UpdateSelectedValueFromItem();
+            }
+        }
+        else
         {
-            UpdateSelectedValueFromItem();
+            for (var i = 0; i < ItemCount; i++)
+            {
+                var globalIndex = GlobalIndex(i);
+                Mark(i, Selection.IsSelected(globalIndex));
+            }
         }
 
         var route = BuildEventRoute(SelectionChangedEvent);
@@ -775,7 +812,7 @@ public partial class ListView
         
     private void SelectItemWithValue(object? value)
     {
-        if (ItemCount == 0 || _isSelectionChangeActive)
+        if (TotalItemCount == 0 || _isSelectionChangeActive)
         {
             return;
         }
@@ -801,7 +838,7 @@ public partial class ListView
         
     private object? FindItemWithValue(object? value)
     {
-        if (ItemCount == 0 || value is null)
+        if (TotalItemCount == 0 || value is null)
         {
             return AvaloniaProperty.UnsetValue;
         }
@@ -904,7 +941,7 @@ public partial class ListView
         if (!_ignoreContainerSelectionChanged &&
             e.Source is Control control &&
             control.Parent == this &&
-            IndexFromContainer(control) is var index &&
+            GlobalIndexFromContainer(control) is var index &&
             index >= 0)
         {
             if (GetIsSelected(control))
@@ -945,7 +982,7 @@ public partial class ListView
             {
                 MarkContainerSelected(
                     container,
-                    Selection.IsSelected(IndexFromContainer(container)));
+                    Selection.IsSelected(GlobalIndexFromContainer(container)));
             }
         }
     }
@@ -1092,7 +1129,7 @@ public partial class ListView
                 SelectedItem = state.SelectedItem.Value;
             }
 
-            if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
+            if (AlwaysSelected && SelectedIndex == -1 && TotalItemCount > 0)
             {
                 SelectedIndex = 0;
             }

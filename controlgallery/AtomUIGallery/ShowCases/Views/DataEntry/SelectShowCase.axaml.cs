@@ -22,7 +22,7 @@ public partial class SelectShowCase : ReactiveUserControl<SelectViewModel>
             }
         });
         InitializeComponent();
-        //CustomSearchSelect.Filter = new CustomFilter();
+        CustomSearchSelect.Filter = new CustomFilter();
     }
     
     private void InitializeBasicOptions(SelectViewModel viewModel)

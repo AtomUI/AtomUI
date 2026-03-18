@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
+using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls;
 using ReactiveUI;
 
@@ -45,9 +46,9 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _searchTransferItems, value);
     }
     
-    private TransferFilterValueSelector? _transferFilterValueSelector;
+    private DefaultFilterValueSelector? _transferFilterValueSelector;
     
-    public TransferFilterValueSelector? TransferFilterValueSelector
+    public DefaultFilterValueSelector? TransferFilterValueSelector
     {
         get => _transferFilterValueSelector;
         set => this.RaiseAndSetIfChanged(ref _transferFilterValueSelector, value);

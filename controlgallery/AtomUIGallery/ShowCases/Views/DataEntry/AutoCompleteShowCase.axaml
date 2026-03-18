@@ -58,7 +58,7 @@
                                OptionsSource="{Binding FilterCaseOptions}"
                                Width="300"
                                IsAllowClear="True"
-                               FilterMode="Contains" />
+                               Filter="{atom:ValueFilterProvider Contains}" />
         </gallery:ShowCaseItem>
 
         <gallery:ShowCaseItem Title="Status"

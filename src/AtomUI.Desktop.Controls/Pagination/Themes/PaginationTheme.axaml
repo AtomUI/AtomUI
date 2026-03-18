@@ -10,7 +10,7 @@
             <ControlTemplate>
                 <StackPanel Name="{x:Static atom:PaginationThemeConstants.RootLayoutPart}"
                             Orientation="Horizontal"
-                            IsVisible="{TemplateBinding IsEffectiveHideOnSinglePageVisible}">
+                            IsVisible="{TemplateBinding IsEffectiveVisible}">
                     <ContentPresenter Name="{x:Static atom:PaginationThemeConstants.TotalInfoPresenterPart}"
                                       IsVisible="{TemplateBinding IsShowTotalInfo}"
                                       Content="{TemplateBinding TotalInfoText, Mode=Default, Converter={StaticResource StringToTextBlockConverter}}" />

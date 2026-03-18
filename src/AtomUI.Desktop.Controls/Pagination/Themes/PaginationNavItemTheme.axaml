@@ -136,6 +136,10 @@
                 <Setter Property="Background"
                         Value="{DynamicResource {x:Static atom:PaginationTokenKey.ItemActiveBgDisabled}}" />
             </Style>
+            
+            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            </Style>
 
         </Style>
     </ControlTheme>

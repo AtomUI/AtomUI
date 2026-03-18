@@ -76,7 +76,8 @@
             <StackPanel Spacing="20">
                 <atom:Transfer ItemsSource="{Binding PaginationTransferItems}"
                                IsOneWay="{Binding PaginationIsOneWay}"
-                               IsPaginationEnabled="True"/>
+                               IsPaginationEnabled="True"
+                               ListHeight="370"/>
                 <atom:ToggleSwitch IsChecked="{Binding PaginationIsOneWay, Mode=TwoWay}"
                                    OnContent="ony way"
                                    OffContent="ony way"/>

@@ -1170,6 +1170,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey ListHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ListHeight");
         public static readonly TokenResourceKey ListWidth = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ListWidth");
         public static readonly TokenResourceKey ListWidthLG = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ListWidthLG");
+        public static readonly TokenResourceKey PaginationMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.PaginationMargin");
     }
 
     public static class TreeSelectTokenKey

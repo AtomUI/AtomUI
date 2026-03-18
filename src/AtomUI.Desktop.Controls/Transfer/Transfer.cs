@@ -549,7 +549,8 @@ public class Transfer : TemplatedControl,
                 .Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false))
                 .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(SourceFilterValue) || 
                                (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item,
-                                   SourceFilterValue) ?? false));
+                                   SourceFilterValue) ?? false))
+                .ToArray();
         }
 
         if (changeType.HasFlag(FilterChangeType.Target))
@@ -557,7 +558,8 @@ public class Transfer : TemplatedControl,
             TargetPanelSource = ItemsSource?
                                 .Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false)
                                 .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(TargetFilterValue) || 
-                                               (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false));
+                                               (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false))
+                                .ToArray();
         }
     }
     

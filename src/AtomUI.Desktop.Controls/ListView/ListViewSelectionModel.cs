@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using AtomUI.Collections;
-using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Collections;
@@ -356,7 +355,7 @@ internal class ListViewSelectionModel : SelectionModel<object?>, ISelectionModel
         {
             return l.IndexOf(item);
         }
-        else if (source is ItemsSourceView v)
+        if (source is ItemsSourceView v)
         {
             return v.IndexOf(item);
         }

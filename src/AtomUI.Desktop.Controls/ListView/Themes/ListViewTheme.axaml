@@ -111,6 +111,7 @@
         <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListViewTokenKey.PaginationMargin}}"/>
         </Style>
+        
         <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:ListViewTokenKey.PaginationMargin}}"/>
         </Style>

@@ -97,17 +97,17 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
     
     #region 内部属性定义
     
-    internal static readonly DirectProperty<AbstractPagination, bool> IsEffectiveHideOnSinglePageVisibleProperty =
+    internal static readonly DirectProperty<AbstractPagination, bool> IsEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<AbstractPagination, bool>(
-            nameof(IsEffectiveHideOnSinglePageVisible),
-            o => o.IsEffectiveHideOnSinglePageVisible,
-            (o, v) => o.IsEffectiveHideOnSinglePageVisible = v);
+            nameof(IsEffectiveVisible),
+            o => o.IsEffectiveVisible,
+            (o, v) => o.IsEffectiveVisible = v);
     
-    private bool _isEffectiveHideOnSinglePageVisible = false;
-    internal bool IsEffectiveHideOnSinglePageVisible
+    private bool _isEffectiveVisible = false;
+    internal bool IsEffectiveVisible
     {
-        get => _isEffectiveHideOnSinglePageVisible;
-        set => SetAndRaise(IsEffectiveHideOnSinglePageVisibleProperty, ref _isEffectiveHideOnSinglePageVisible, value);
+        get => _isEffectiveVisible;
+        set => SetAndRaise(IsEffectiveVisibleProperty, ref _isEffectiveVisible, value);
     }
 
     private static bool PageSizeValidator(int pageSize)
@@ -135,15 +135,23 @@ public abstract class AbstractPagination : TemplatedControl, ISizeTypeAware, IMo
             HandlePageConditionChanged();
         }
         if (change.Property == IsHideOnSinglePageProperty ||
-            change.Property == PageCountProperty)
+            change.Property == PageCountProperty ||
+            change.Property == TotalProperty)
         {
-            if (IsHideOnSinglePage)
+            if (Total > 0)
             {
-                SetValue(IsEffectiveHideOnSinglePageVisibleProperty, PageCount > 1);
+                if (IsHideOnSinglePage)
+                {
+                    SetValue(IsEffectiveVisibleProperty, PageCount > 1);
+                }
+                else
+                {
+                    SetValue(IsEffectiveVisibleProperty, true);
+                }
             }
             else
             {
-                SetValue(IsEffectiveHideOnSinglePageVisibleProperty, true);
+                SetValue(IsEffectiveVisibleProperty, false);
             }
         }
     }

@@ -9,18 +9,20 @@
             <ControlTemplate>
                 <StackPanel Name="{x:Static atom:SimplePaginationThemeConstants.RootLayoutPart}"
                             VerticalAlignment="Center"
-                            Orientation="Horizontal">
+                            Orientation="Horizontal"
+                            IsVisible="{TemplateBinding IsEffectiveVisible}">
                     <atom:PaginationNavItem Name="{x:Static atom:SimplePaginationThemeConstants.PreviousNavItemPart}"
                                             PaginationItemType="Previous"
                                             Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
                                             SizeType="{TemplateBinding SizeType}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
-                    <atom:LineEdit Name="{x:Static atom:SimplePaginationThemeConstants.QuickJumperPart}"
-                                   IsVisible="{TemplateBinding IsReadOnly, Mode=Default, Converter={x:Static BoolConverters.Not}}"
-                                   SizeType="{TemplateBinding SizeType}"
-                                   IsEnabled="{TemplateBinding IsEnabled}" 
-                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                    <atom:QuickJumpEdit Name="{x:Static atom:SimplePaginationThemeConstants.QuickJumperPart}"
+                                        IsVisible="{TemplateBinding IsReadOnly, Mode=Default, Converter={x:Static BoolConverters.Not}}"
+                                        SizeType="{TemplateBinding SizeType}"
+                                        IsEnabled="{TemplateBinding IsEnabled}" 
+                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                        Minimum="1"/>
                     <atom:TextBlock Name="{x:Static atom:SimplePaginationThemeConstants.InfoIndicatorPart}"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Center"

@@ -77,7 +77,6 @@ public partial class ListView
             _topPaginationDisposables.Add(BindUtils.RelayBind(this, TopPaginationAlignProperty, newPagination, AbstractPagination.AlignProperty));
             _topPaginationDisposables.Add(BindUtils.RelayBind(this, IsHideOnSinglePageProperty, newPagination, AbstractPagination.IsHideOnSinglePageProperty));
             _topPaginationDisposables.Add(BindUtils.RelayBind(this, IsEnabledProperty, newPagination, AbstractPagination.IsEnabledProperty));
-            _topPaginationDisposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, newPagination, AbstractPagination.SizeTypeProperty));
             _topPaginationDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
             _topPaginationDisposables.Add(BindUtils.RelayBind(this, PaginationVisibilityProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
             _topPagination = newPagination;
@@ -97,10 +96,9 @@ public partial class ListView
         {
             newPagination.CurrentPageChanged += HandlePageChangeRequest;
             _bottomPaginationDisposables     =  new CompositeDisposable();
-            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, TopPaginationAlignProperty, newPagination, AbstractPagination.AlignProperty));
+            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, BottomPaginationAlignProperty, newPagination, AbstractPagination.AlignProperty));
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsHideOnSinglePageProperty, newPagination, AbstractPagination.IsHideOnSinglePageProperty));
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsEnabledProperty, newPagination, AbstractPagination.IsEnabledProperty));
-            _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, newPagination, AbstractPagination.SizeTypeProperty));
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
             _bottomPaginationDisposables.Add(BindUtils.RelayBind(this, PaginationVisibilityProperty, newPagination, AbstractPagination.IsMotionEnabledProperty));
             _bottomPagination = newPagination;

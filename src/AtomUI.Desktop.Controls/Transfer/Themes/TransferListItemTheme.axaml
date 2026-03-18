@@ -29,20 +29,11 @@
                             VerticalAlignment="Center"
                             Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
                             IsVisible="{TemplateBinding IsCheckable, Converter={x:Static BoolConverters.Not}}"/>
-                        <Panel>
-                            <ContentPresenter Name="ContentPresenter"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}" />
-                            <atom:HighlightableTextBlock
-                                HighlightForeground="{TemplateBinding FilterHighlightForeground}"
-                                HighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
-                                IsVisible="{TemplateBinding IsFiltering}"
-                                HighlightWords="{TemplateBinding FilterHighlightWords}"
-                                Text="{TemplateBinding ContentText}" />
-                        </Panel>
+                        <ContentPresenter Name="ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </DockPanel>
                 </Border>
             </ControlTemplate>

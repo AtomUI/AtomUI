@@ -442,7 +442,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     
     private void ConfigurePlaceholderVisible()
     {
-        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0) && string.IsNullOrEmpty(ActivateFilterValue));
+        SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedItem == null && (SelectedItems == null || SelectedItems?.Count == 0) && string.IsNullOrEmpty(FilterValue?.ToString()));
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -497,7 +497,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
             {
                 _singleFilterInput.Clear();
                 _singleFilterInput.Width = double.NaN;
-                ActivateFilterValue      = null;
+                FilterValue              = null;
             }
         }
     }
@@ -723,7 +723,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         {
             if (e.Source is TextBox textBox)
             {
-                ActivateFilterValue = textBox.Text?.Trim();
+                FilterValue = textBox.Text?.Trim();
             }
             ConfigurePlaceholderVisible();
         }

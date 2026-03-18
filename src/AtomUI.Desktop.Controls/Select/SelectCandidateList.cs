@@ -116,23 +116,18 @@ internal class SelectCandidateList : ListView, ICandidateList
 
     static SelectCandidateList()
     {
+        AffectsArrange<SelectCandidateList>(IsHideSelectedOptionsProperty);
         SelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectItemChanged(args));
         CandidateSelectedIndexProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedIndexChanged(args));
         CandidateSelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleCandidateSelectedItemChanged(args));
-        AffectsArrange<SelectCandidateList>(IsHideSelectedOptionsProperty);
         SelectionChangedEvent.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectionChanged());
-        
         ItemsPanelProperty.OverrideDefaultValue<SelectCandidateList>(DefaultPanel);
     }
 
-    protected override void OnInitialized()
+    protected override void NotifyFilterContextChanged()
     {
-        base.OnInitialized();
-        // FilterDescriptions?.CollectionChanged += (sender, args) =>
-        // {
-        //     CandidateSelectedIndex = -1;
-        //     CandidateSelectedItem  = null;
-        // };
+        CandidateSelectedIndex = -1;
+        CandidateSelectedItem  = null;
     }
 
     private void HandleSelectionChanged()
@@ -306,7 +301,7 @@ internal class SelectCandidateList : ListView, ICandidateList
     {
         if (_candidateSelectedIndex == -1)
         {
-            CandidateSelectedIndex = SelectedIndex != -1 ? FindNextEnabledIndex(SelectedIndex, -1) : ItemCount - 1;
+            CandidateSelectedIndex = SelectedIndex != -1 ? FindNextEnabledIndex(SelectedIndex, -1) : TotalItemCount - 1;
         }
         else
         {
@@ -333,7 +328,7 @@ internal class SelectCandidateList : ListView, ICandidateList
         while (true)
         {
             index += delta;
-            if (index >= ItemCount)
+            if (index >= TotalItemCount)
             {
                 index = 0;
                 if (!findCycle)
@@ -347,7 +342,7 @@ internal class SelectCandidateList : ListView, ICandidateList
             }
             else if (index < 0)
             {
-                index = ItemCount - 1;
+                index = TotalItemCount - 1;
                 if (!findCycle)
                 {
                     findCycle = true;
@@ -358,7 +353,7 @@ internal class SelectCandidateList : ListView, ICandidateList
                 }
             }
             
-            var container = ContainerFromIndex(index);
+            var container = ContainerFromIndex(GlobalIndexLocalIndex(index));
             if (container == null || container is SelectCandidateListItem listItem && listItem.IsEnabled)
             {
                 return index;
@@ -368,7 +363,7 @@ internal class SelectCandidateList : ListView, ICandidateList
     
     protected internal override void NotifyItemClicked(ListViewItem item)
     {
-        if (IsSingleMode())
+        if (IsSingleMode() && !item.IsGroupItem)
         {
             NotifyCommit();
         }
@@ -464,30 +459,31 @@ internal class SelectCandidateList : ListView, ICandidateList
             return false;
         }
 
-        return TrySetCandidateItemSelected(index);
+        return TrySetCandidateItemSelected(GlobalIndex(index));
     }
     
     public bool TrySetCandidateItemSelected(int index)
     {
-        if (index < 0 || index > ItemCount - 1)
+        if (index < 0 || index > TotalItemCount - 1)
         {
             return false;
         }
         
+        var localIndex = GlobalIndexLocalIndex(index);
         if (ItemsPanelRoot is CandidateVirtualizingStackPanel virtualizingStackPanel)
         {
-            virtualizingStackPanel.ScrollCandidateItemIntoView(index);
+            virtualizingStackPanel.ScrollCandidateItemIntoView(localIndex);
         }
 
         for (var i = 0; i < ItemCount; i++)
         {
             if (ContainerFromIndex(i) is SelectCandidateListItem childContainer)
             {
-                if (i == index)
+                if (i == localIndex)
                 {
                     childContainer.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, true);
                     SetCurrentValue(CandidateSelectedItemProperty, Items[i]);
-                    SetCurrentValue(CandidateSelectedIndexProperty, i);
+                    SetCurrentValue(CandidateSelectedIndexProperty, GlobalIndex(i));
                 }
                 else
                 {
@@ -500,31 +496,27 @@ internal class SelectCandidateList : ListView, ICandidateList
     
     protected internal override bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
     {
-        base.UpdateSelectionFromPointerEvent(source, e);
-
-        if (e.Handled)
+        if (source is ListViewItem listItem && !listItem.IsGroupItem)
         {
-            return false;
-        }
-
-        if (source is ListViewItem listItem)
-        {
-            
-            var select = true;
-            if (IsSingleMode())
+            if (!IsSingleMode())
             {
-                if (listItem.IsSelected)
+                var index = GlobalIndexFromContainer(listItem);
+                if (index != -1)
                 {
-                    e.Handled = true;
-                    return false;
+                    if (Selection.IsSelected(index))
+                    {
+                        Selection.Deselect(index);
+                    }
+                    else
+                    {
+                        Selection.Select(index);
+                    }
                 }
             }
             else
             {
-                select = !listItem.IsSelected;
+                base.UpdateSelectionFromPointerEvent(source, e);
             }
-        
-            UpdateSelection(listItem, select, false, true);
         }
         return true;
     }
@@ -583,7 +575,7 @@ internal class SelectCandidateList : ListView, ICandidateList
         {
             if (CandidateSelectedIndex != -1)
             {
-                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, virtualListItem.VirtualIndex == CandidateSelectedIndex);
+                listItem.SetCurrentValue(SelectCandidateListItem.IsCandidateSelectedProperty, virtualListItem.VirtualIndex == GlobalIndexLocalIndex(CandidateSelectedIndex));
             }
         }
     }

@@ -32,17 +32,18 @@
         <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemColor}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemBgColor}}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-
-        <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemHoverColor}}" />
-            <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
+        
+        <Style Selector="^[IsGroupItem=False]">
+            <Style Selector="^:pointerover">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemHoverColor}}" />
+                <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
+            </Style>
+            <Style Selector="^:selected:not(:disabled)">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemSelectedColor}}" />
+                <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
+            </Style>
         </Style>
-
-        <Style Selector="^:selected:not(:disabled)">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemSelectedColor}}" />
-            <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
-        </Style>
-
+        
         <Style Selector="^ /template/ atom|IconPresenter#SelectedIndicator">
             <Setter Property="IconBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorPrimary}}" />
             <Setter Property="Width" Value="{DynamicResource {x:Static atom:SharedTokenKey.IconSize}}" />
@@ -79,9 +80,6 @@
         <Style Selector="^[IsGroupItem=True]">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static atom:ListViewTokenKey.GroupHeaderColor}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static atom:ListViewTokenKey.ItemBgColor}}" />
-            <Style Selector="^:pointerover">
-                <Setter Property="Background" Value="Transparent" />
-            </Style>
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="FontSize" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSize}}" />

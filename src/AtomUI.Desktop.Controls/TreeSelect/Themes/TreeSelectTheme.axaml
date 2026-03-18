@@ -109,7 +109,7 @@
                                                      NodeHoverMode="Block"
                                                      ToggleType="{TemplateBinding TreeViewToggleType}"
                                                      IsDefaultExpandAll="{TemplateBinding IsDefaultExpandAll}"
-                                                     FilterValue="{TemplateBinding ActivateFilterValue}"
+                                                     FilterValue="{TemplateBinding FilterValue}"
                                                      Filter="{TemplateBinding Filter}"
                                                      FilterHighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
                                                      ItemTemplate="{TemplateBinding ItemTemplate}"

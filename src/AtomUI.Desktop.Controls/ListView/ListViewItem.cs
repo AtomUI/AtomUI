@@ -73,6 +73,9 @@ public class ListViewItem : ContentControl,
     
     internal static readonly StyledProperty<bool> IsGroupItemProperty =
         AvaloniaProperty.Register<ListViewItem, bool>(nameof(IsGroupItem));
+
+    internal static readonly StyledProperty<ClickMode> ItemClickModeProperty =
+        ListView.ItemClickModeProperty.AddOwner<ListViewItem>();
     
     internal SizeType SizeType
     {
@@ -126,6 +129,12 @@ public class ListViewItem : ContentControl,
     {
         get => GetValue(IsGroupItemProperty);
         set => SetValue(IsGroupItemProperty, value);
+    }
+    
+    internal ClickMode ItemClickMode
+    {
+        get => GetValue(ItemClickModeProperty);
+        set => SetValue(ItemClickModeProperty, value);
     }
 
     #endregion
@@ -209,7 +218,9 @@ public class ListViewItem : ContentControl,
         _pointerDownPoint = s_invalidPoint;
 
         if (e.Handled)
+        {
             return;
+        }
 
         if (!e.Handled && ItemsControl.ItemsControlFromItemContainer(this) is ListView owner)
         {
@@ -234,6 +245,14 @@ public class ListViewItem : ContentControl,
                     // Ideally we'd set handled here, but that would prevent the scroll gesture
                     // recognizer from working.
                     ////e.Handled = true;
+                }
+            }
+
+            if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed)
+            {
+                if (ItemClickMode == ClickMode.Press)
+                {
+                    RaiseEvent(new RoutedEventArgs(ClickedEvent));
                 }
             }
         }
@@ -270,6 +289,15 @@ public class ListViewItem : ContentControl,
 
                     e.Handled = true;
                 }
+            }
+
+            
+        }
+        if (!e.Handled && e.InitialPressMouseButton == MouseButton.Left)
+        {
+            if (ItemClickMode == ClickMode.Release)
+            {
+                RaiseEvent(new RoutedEventArgs(ClickedEvent));
             }
         }
 

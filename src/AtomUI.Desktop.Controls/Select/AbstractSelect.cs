@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
-using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Themes;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -420,21 +419,11 @@ public class AbstractSelect : TemplatedControl,
             o => o.SelectedCount,
             (o, v) => o.SelectedCount = v);
     
-    internal static readonly DirectProperty<AbstractSelect, string?> ActivateFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<AbstractSelect, string?>(nameof(ActivateFilterValue),
-            o => o.ActivateFilterValue,
-            (o, v) => o.ActivateFilterValue = v);
-    
     internal static readonly DirectProperty<AbstractSelect, PlacementMode> PopupPlacementProperty =
         AvaloniaProperty.RegisterDirect<AbstractSelect, PlacementMode>(
             nameof(PopupPlacement),
             o => o.PopupPlacement,
             (o, v) => o.PopupPlacement = v);
-    
-    internal static readonly DirectProperty<AbstractSelect, IValueFilter?> EffectiveFilterProperty =
-        AvaloniaProperty.RegisterDirect<AbstractSelect, IValueFilter?>(nameof(EffectiveFilter),
-            o => o.EffectiveFilter,
-            (o, v) => o.EffectiveFilter = v);
     
     internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<AbstractSelect>();
@@ -512,28 +501,12 @@ public class AbstractSelect : TemplatedControl,
         set => SetAndRaise(SelectedCountProperty, ref _selectedCount, value);
     }
     
-    private string? _activateFilterValue;
-
-    internal string? ActivateFilterValue
-    {
-        get => _activateFilterValue;
-        set => SetAndRaise(ActivateFilterValueProperty, ref _activateFilterValue, value);
-    }
-    
     private PlacementMode _popupPlacement = PlacementMode.BottomEdgeAlignedLeft;
 
     internal PlacementMode PopupPlacement
     {
         get => _popupPlacement;
         set => SetAndRaise(PopupPlacementProperty, ref _popupPlacement, value);
-    }
-    
-    private IValueFilter? _effectiveFilter;
-
-    internal IValueFilter? EffectiveFilter
-    {
-        get => _effectiveFilter;
-        set => SetAndRaise(EffectiveFilterProperty, ref _effectiveFilter, value);
     }
     
     internal SpaceItemPosition? CompactSpaceItemPosition

@@ -183,6 +183,5 @@ public partial class ListView
                 _bottomPagination.CurrentPage = PageIndex + 1;
             }
         }
-        
     }
 }

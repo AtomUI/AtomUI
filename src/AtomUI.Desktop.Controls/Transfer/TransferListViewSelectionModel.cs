@@ -126,7 +126,7 @@ internal class TransferListViewSelectionModel : SelectionModel<object?>, ISelect
                 return;
             }
 
-            value = new TransferListCollectionViewEnumerable(collectionView);
+            
         }
         else
         {

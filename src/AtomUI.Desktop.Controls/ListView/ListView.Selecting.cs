@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using AtomUI.Controls;
+using AtomUI.Controls.Data;
 using AtomUI.Controls.Utils;
 using AtomUI.Utils;
 using Avalonia;
@@ -205,7 +206,7 @@ public partial class ListView
             }
             else if (_selection != value)
             {
-                if (value.Source != null && value.Source != ItemsView.Source)
+                if (value.Source != null && ItemsSource is IListCollectionView collectionView && value.Source != collectionView.SourceCollection)
                 {
                     throw new ArgumentException(
                         "The supplied ISelectionModel already has an assigned Source but this " +
@@ -678,7 +679,7 @@ public partial class ListView
     {
         var container = GetContainerFromEventSource(eventSource);
 
-        if (container != null)
+        if (container is ListViewItem listViewItem && (!IsGroupEnabled || !listViewItem.IsGroupItem))
         {
             UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton, fromFocus);
             return true;
@@ -1036,7 +1037,7 @@ public partial class ListView
 
     private void TryInitializeSelectionSource(ISelectionModel? selection, bool shouldSelectItemFromSelectedValue)
     {
-        if (selection is not null && ItemsView.TryGetInitializedSource() is { } source)
+        if (selection is not null && ItemsSource is IListCollectionView listCollectionView)
         {
             // InternalSelectionModel keeps the SelectedIndex and SelectedItem values before the ItemsSource is set.
             // However, SelectedValue isn't part of that model, so we have to set the SelectedItem from
@@ -1057,8 +1058,14 @@ public partial class ListView
                     selection.SelectedItem = item;
                 }
             }
-
-            selection.Source = source;
+            if (IsGroupEnabled)
+            {
+                selection.Source = listCollectionView;
+            }
+            else
+            {
+                selection.Source = listCollectionView.SourceCollection;
+            }
         }
     }
 

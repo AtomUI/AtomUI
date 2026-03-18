@@ -367,7 +367,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     /// <summary>
     /// Gets the total number of items in the view before paging is applied.
     /// </summary>
-    public int TotalItemCount => InternalList.Count;
+    public int TotalItemCount => IsGrouping ? Count : InternalList.Count;
     
     #endregion
 
@@ -1197,7 +1197,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
     {
         EnsureCollectionInSync();
         VerifyRefreshNotDeferred();
-
+    
         if (IsGrouping)
         {
             return RootGroup.GetLeafEnumerator();
@@ -1225,28 +1225,7 @@ internal class ListCollectionView : IListCollectionView, IList, INotifyPropertyC
         }
         return new NewItemAwareEnumerator(this, InternalList.GetEnumerator(), CurrentAddItem);
     }
-
-    public IEnumerator GetAllRangeEnumerator()
-    {
-        EnsureCollectionInSync();
-        VerifyRefreshNotDeferred();
-
-        if (IsGrouping)
-        {
-            return RootGroup.GetLeafEnumerator();
-        }
-        return new NewItemAwareEnumerator(this, InternalList.GetEnumerator(), CurrentAddItem);
-    }
-
-    public IEnumerable ToAllRangeEnumerable()
-    {
-        var enumerator = GetAllRangeEnumerator();
-        while (enumerator.MoveNext())
-        {
-            yield return enumerator.Current;
-        }
-    }
-
+    
     /// <summary>
     /// Interface Implementation for GetEnumerator()
     /// </summary>

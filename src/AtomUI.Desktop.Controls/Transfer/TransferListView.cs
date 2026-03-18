@@ -353,8 +353,6 @@ public class TransferListView : ListBox, ITransferView
             }; 
             this.InitializeSelectionModel(selection);
         }
-        Console.WriteLine(selection.Count);
- 
         base.PrepareContainerForItemOverride(container, item, index);
     }
 }

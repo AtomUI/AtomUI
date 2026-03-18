@@ -292,13 +292,13 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         if (IsMultiple)
         {
             SetCurrentValue(IsPlaceholderTextVisibleProperty, (SelectedOptions == null || SelectedOptions?.Count == 0) && 
-                                                              string.IsNullOrWhiteSpace(ActivateFilterValue) &&
+                                                              string.IsNullOrWhiteSpace(FilterValue?.ToString()) &&
                                                               string.IsNullOrWhiteSpace(SelectedOptionPath));
         }
         else
         {
             SetCurrentValue(IsPlaceholderTextVisibleProperty, SelectedOption == null && 
-                                                              string.IsNullOrWhiteSpace(ActivateFilterValue) &&
+                                                              string.IsNullOrWhiteSpace(FilterValue?.ToString()) &&
                                                               string.IsNullOrWhiteSpace(SelectedOptionPath));
         }
        
@@ -470,7 +470,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
             {
                 _singleFilterInput.Clear();
                 _singleFilterInput.Width = double.NaN;
-                ActivateFilterValue      = null;
+                FilterValue              = null;
             }
         }
     }
@@ -691,7 +691,7 @@ public class Cascader : AbstractSelect, IControlSharedTokenResourcesHost
         {
             if (e.Source is TextBox textBox)
             {
-                ActivateFilterValue = textBox.Text?.Trim();
+                FilterValue = textBox.Text?.Trim();
             }
             ConfigurePlaceholderVisible();
         }

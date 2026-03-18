@@ -1,4 +1,5 @@
-﻿using AtomUI.Desktop.Controls;
+﻿using AtomUI.Controls.Data;
+using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -48,8 +49,8 @@ public partial class ListShowCase : ReactiveUserControl<ListViewModel>
             }
         });
         InitializeComponent();
-        // SelectionModeOptionGroup.OptionCheckedChanged += HandleSelectionModeOptionCheckedChanged;
-        // OrderedList.SortDescriptions = [ListSortDescription.FromPath("Content")];
+        SelectionModeOptionGroup.OptionCheckedChanged += HandleSelectionModeOptionCheckedChanged;
+        OrderedList.SortDescriptions = [ListSortDescription.FromPath("Content")];
     }
 
     private void HandleSelectionModeOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs e)

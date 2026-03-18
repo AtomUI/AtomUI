@@ -106,6 +106,9 @@
                             <atom:SelectCandidateList
                                 Name="{x:Static atom:SelectThemeConstants.CandidateListPart}"
                                 BorderThickness="0"
+                                Filter="{TemplateBinding Filter}"
+                                FilterValue="{TemplateBinding FilterValue}"
+                                FilterValueSelector="{TemplateBinding FilterValueSelector}"
                                 IsGroupEnabled="{TemplateBinding IsGroupEnabled}"
                                 GroupPropertySelector="{TemplateBinding GroupPropertySelector}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

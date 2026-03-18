@@ -18,7 +18,6 @@ internal class ListViewSelectionModel : SelectionModel<object?>, ISelectionModel
     private bool _ignoreSelectedItemsChanges;
     private bool _skipSyncFromSelectedItems;
     private bool _isResetting;
-    private ListCollectionView? _collectionView;
 
     IEnumerable? ISelectionModel.Source 
     {
@@ -118,22 +117,9 @@ internal class ListViewSelectionModel : SelectionModel<object?>, ISelectionModel
 
     protected void SetListSource(IEnumerable? value)
     {
-        var collectionView = value as ListCollectionView;
-        if (collectionView != null)
+        if (Source == value)
         {
-            if (_collectionView == collectionView)
-            {
-                return;
-            }
-
-            value = new TransferListCollectionViewEnumerable(collectionView);
-        }
-        else
-        {
-            if (Source == value)
-            {
-                return;
-            }
+            return;
         }
 
         object?[]? oldSelection = null;
@@ -149,7 +135,6 @@ internal class ListViewSelectionModel : SelectionModel<object?>, ISelectionModel
             _ignoreSelectedItemsChanges = true;
             ++_ignoreModelChanges;
             this.SetSource(value);
-            _collectionView = collectionView;
         }
         finally
         {

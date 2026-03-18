@@ -122,6 +122,9 @@ public partial class ListView : ItemsControl,
     public static readonly StyledProperty<PaginationAlign> BottomPaginationAlignProperty =
         AvaloniaProperty.Register<ListView, PaginationAlign>(nameof(BottomPaginationAlign), PaginationAlign.End);
     
+    public static readonly StyledProperty<ClickMode> ItemClickModeProperty =
+        AvaloniaProperty.Register<ListView, ClickMode>(nameof(ItemClickMode));
+    
     public bool IsSelectable
     {
         get => GetValue(IsSelectableProperty);
@@ -320,12 +323,18 @@ public partial class ListView : ItemsControl,
         set => SetValue(BottomPaginationAlignProperty, value);
     }
 
+    public ClickMode ItemClickMode
+    {
+        get => GetValue(ItemClickModeProperty);
+        set => SetValue(ItemClickModeProperty, value);
+    }
     #endregion
     
     #region 公共事件定义
 
     public event EventHandler<ListViewItemClickedEventArgs>? ItemClicked;
     public event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
+    public event EventHandler? FilterContextChanged;
 
     #endregion
     
@@ -471,7 +480,7 @@ public partial class ListView : ItemsControl,
     
     private void HandleCollectionViewChanged(object? sender, NotifyCollectionChangedEventArgs args)
     {
-        if (sender is ListCollectionView view)
+        if (sender is IListCollectionView view)
         {
             IsEmptyDataSource = view.IsEmpty;
             TotalItemCount    = view.TotalItemCount;
@@ -584,6 +593,7 @@ public partial class ListView : ItemsControl,
                 using (_collectionView.DeferRefresh())
                 {
                     ConfigureGroupInfo();
+                    TryInitializeSelectionSource(Selection, false);
                 }
             }
         }
@@ -656,20 +666,21 @@ public partial class ListView : ItemsControl,
         {
             var disposables = new CompositeDisposable(8);
             
-            var isGroupEnabled = false;
             if (item is IGroupListItemData groupListItemData)
             {
                 listItem.IsGroupItem = groupListItemData.IsGroupItem;
-                isGroupEnabled       = listItem.IsGroupItem;
+                var isGroupEnabled = listItem.IsGroupItem;
+                if (GroupItemTemplate != null && isGroupEnabled)
+                {
+                    disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, listItem, ListViewItem.ContentTemplateProperty));
+                }
             }
-            if (GroupItemTemplate != null && isGroupEnabled)
+            else
             {
-                disposables.Add(BindUtils.RelayBind(this, GroupItemTemplateProperty, listItem, ListViewItem.ContentTemplateProperty));
-            }
-      
-            if (ItemTemplate != null)
-            {
-                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listItem, ListViewItem.ContentTemplateProperty));
+                if (ItemTemplate != null)
+                {
+                    disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, listItem, ListViewItem.ContentTemplateProperty));
+                }
             }
             
             disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, listItem, ListViewItem.SizeTypeProperty));
@@ -678,7 +689,8 @@ public partial class ListView : ItemsControl,
             disposables.Add(BindUtils.RelayBind(this, ItemHoverBgProperty, listItem, ListViewItem.ItemHoverBgProperty));
             disposables.Add(BindUtils.RelayBind(this, ItemSelectedBgProperty, listItem, ListViewItem.ItemSelectedBgProperty));
             disposables.Add(BindUtils.RelayBind(this, IsShowSelectedIndicatorProperty, listItem, ListViewItem.IsShowSelectedIndicatorProperty));
-           
+            disposables.Add(BindUtils.RelayBind(this, ItemClickModeProperty, listItem, ListViewItem.ItemClickModeProperty));
+            
             PrepareListViewItem(listItem, item, index, disposables);
 
             var originMotionEnabled = false;
@@ -862,7 +874,15 @@ public partial class ListView : ItemsControl,
                     Filter                 = Filter.Filter
                 });
             }
+            IsFiltering = _collectionView.FilterDescriptions.Count > 0;
         }
+
+        NotifyFilterContextChanged();
+        FilterContextChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifyFilterContextChanged()
+    {
     }
 
     private void ConfigureSortDescriptions()

@@ -101,7 +101,7 @@
                                                HorizontalAlignment="Stretch"
                                                VerticalAlignment="Stretch"
                                                IsCheckable="{TemplateBinding IsMultiple}"
-                                               FilterValue="{TemplateBinding ActivateFilterValue}"
+                                               FilterValue="{TemplateBinding FilterValue}"
                                                Filter="{TemplateBinding Filter}"
                                                BorderThickness="0"
                                                FilterHighlightStrategy="{TemplateBinding FilterHighlightStrategy}"

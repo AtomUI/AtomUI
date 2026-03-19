@@ -550,6 +550,11 @@ internal class TransferItemDecorator : TemplatedControl,
         {
             SetCurrentValue(IsAllSelectedProperty, false);
         }
+
+        if (_transferView is ITransferView transferView)
+        {
+            transferView.NotifySelectAction(args.Action);
+        }
     }
 
     public void NotifyAboutToTransfer(TransferDirection transferDirection)

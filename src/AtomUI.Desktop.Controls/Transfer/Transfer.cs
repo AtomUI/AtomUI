@@ -59,11 +59,8 @@ public class Transfer : TemplatedControl,
     public static readonly StyledProperty<PathIcon?> ToTargetTransferIconProperty =
         AvaloniaProperty.Register<Transfer, PathIcon?>(nameof(ToTargetTransferIcon));
     
-    public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
-        AvaloniaProperty.Register<Transfer, bool>(nameof(IsPaginationEnabled));
-    
     public static readonly StyledProperty<int> PageSizeProperty =
-        AvaloniaProperty.Register<Transfer, int>(nameof(PageSize), 10);
+        AvaloniaProperty.Register<Transfer, int>(nameof(PageSize), 0);
     
     public static readonly StyledProperty<bool> IsShowSearchProperty =
         AvaloniaProperty.Register<Transfer, bool>(nameof(IsShowSearch));
@@ -204,12 +201,6 @@ public class Transfer : TemplatedControl,
     {
         get => GetValue(ToTargetTransferIconProperty);
         set => SetValue(ToTargetTransferIconProperty, value);
-    }
-    
-    public bool IsPaginationEnabled
-    {
-        get => GetValue(IsPaginationEnabledProperty);
-        set => SetValue(IsPaginationEnabledProperty, value);
     }
     
     public int PageSize
@@ -377,6 +368,9 @@ public class Transfer : TemplatedControl,
             o => o.TargetFilterValue,
             (o, v) => o.TargetFilterValue = v);
     
+    internal static readonly StyledProperty<bool> IsPaginationEnabledProperty =
+        AvaloniaProperty.Register<Transfer, bool>(nameof(IsPaginationEnabled));
+    
     internal IEnumerable<IItemKey>? SourcePanelSource
     {
         get => GetValue(SourcePanelSourceProperty);
@@ -415,6 +409,12 @@ public class Transfer : TemplatedControl,
     {
         get => _targetFilterValue;
         set => SetAndRaise(TargetFilterValueProperty, ref _targetFilterValue, value);
+    }
+    
+    internal bool IsPaginationEnabled
+    {
+        get => GetValue(IsPaginationEnabledProperty);
+        set => SetValue(IsPaginationEnabledProperty, value);
     }
     
     Control IControlSharedTokenResourcesHost.HostControl => this;
@@ -488,6 +488,7 @@ public class Transfer : TemplatedControl,
         {
             _targetViewDecorator.TransferViewCreated += HandleTransferViewCreated;
         }
+        SetCurrentValue(IsPaginationEnabledProperty, PageSize > 0);
     }
 
     private void HandleTransferViewCreated(object? sender, TransferViewCreatedEventArgs args)
@@ -539,27 +540,46 @@ public class Transfer : TemplatedControl,
         {
             ConfigurePanelItemsSourceForFilter(FilterChangeType.Both);
         }
+        else if (change.Property == PageSizeProperty)
+        {
+            SetCurrentValue(IsPaginationEnabledProperty, PageSize > 0);
+        }
     }
 
     private void ConfigurePanelItemsSourceForFilter(FilterChangeType changeType)
     {
+        var               sourcePanelSourceChanged = false;
+        var               targetPanelSourceChanged = false;
+        IList<EntityKey>? sourceItemKeys           = null;
+        IList<EntityKey>? targetItemKeys           = null;
         if (changeType.HasFlag(FilterChangeType.Source))
         {
-            SourcePanelSource = ItemsSource?
+            var sourcePanelSource = ItemsSource?
                 .Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false))
                 .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(SourceFilterValue) || 
                                (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item,
                                    SourceFilterValue) ?? false))
                 .ToArray();
+            sourcePanelSourceChanged = SourcePanelSource != sourcePanelSource;
+            SourcePanelSource        = sourcePanelSource;
+            sourceItemKeys           = sourcePanelSource?.Select(item => item.ItemKey ?? default).ToList();
         }
 
         if (changeType.HasFlag(FilterChangeType.Target))
         {
-            TargetPanelSource = ItemsSource?
+            var targetPanelSource = ItemsSource?
                                 .Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false)
                                 .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(TargetFilterValue) || 
                                                (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false))
                                 .ToArray();
+            TargetPanelSource        = targetPanelSource;
+            targetPanelSourceChanged = TargetPanelSource != targetPanelSource;
+            targetItemKeys           = targetPanelSource?.Select(item => item.ItemKey ?? default).ToList();
+        }
+
+        if (sourcePanelSourceChanged || targetPanelSourceChanged)
+        {
+            SelectionChanged?.Invoke(this, new TransferSelectionChangedEventArgs(sourceItemKeys, targetItemKeys));
         }
     }
     

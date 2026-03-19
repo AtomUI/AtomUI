@@ -19,6 +19,7 @@ public interface ITransferView
     void DeselectAll();
     void NotifyAboutToTransfer(TransferDirection transferDirection);
     void NotifyTransferCompleted(TransferDirection transferDirection);
+    void NotifySelectAction(TransferSelectAction selectAction);
     void SetSelectionEnabled(bool enabled);
     void SetItemsSource(IEnumerable? itemsSource);
     void SetPaginationEnabled(bool enabled);

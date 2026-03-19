@@ -20,5 +20,15 @@
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TransferTokenKey.PaginationMargin}}"/>
         </Style>
         
+        <Style Selector="^[IsPaginationEnabled=False]">
+            <Style Selector="^ /template/ ContentPresenter#TopPaginationPresenter">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+        
+            <Style Selector="^ /template/ ContentPresenter#BottomPaginationPresenter">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+        </Style>
+        
     </ControlTheme>
 </ResourceDictionary>

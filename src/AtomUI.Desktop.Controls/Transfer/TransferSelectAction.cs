@@ -1,9 +1,10 @@
 namespace AtomUI.Desktop.Controls;
 
-internal enum TransferSelectAction
+public enum TransferSelectAction
 {
     SelectAll,
     DeselectAll,
-    SetCurrentPage,
+    SelectCurrentPage,
+    InvertSelectCurrentPage,
     RemoveAll
 }

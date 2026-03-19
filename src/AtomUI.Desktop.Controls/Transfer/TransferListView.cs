@@ -226,4 +226,36 @@ public class TransferListView : ListView, ITransferView
             SizeType = SizeType.Small
         });
     }
+
+    public void NotifySelectAction(TransferSelectAction selectAction)
+    {
+        if (selectAction == TransferSelectAction.SelectCurrentPage)
+        {
+            if (IsPaginationEnabled)
+            {
+                var startIndex = GlobalIndex(0);
+                var endIndex = GlobalIndex(ItemCount - 1);
+                Selection.SelectRange(startIndex, endIndex);
+            }
+            else
+            {
+                Selection.SelectAll();   
+            }
+        }
+        else if (selectAction == TransferSelectAction.InvertSelectCurrentPage)
+        {
+            for (var i = 0; i < ItemCount; i++)
+            {
+                var globalIndex = GlobalIndex(i);
+                if (Selection.IsSelected(globalIndex))
+                {
+                    Selection.Deselect(globalIndex);
+                }
+                else
+                {
+                    Selection.Select(globalIndex);
+                }
+            }
+        }
+    }
 }

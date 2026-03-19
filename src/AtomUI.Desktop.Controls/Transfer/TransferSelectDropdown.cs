@@ -57,10 +57,15 @@ internal class TransferSelectDropdown : IconButton
             o => o.DeSelectAllText,
             (o, v) => o.DeSelectAllText = v);
     
-    internal static readonly DirectProperty<TransferSelectDropdown, string?> ToggleSelectCurrentPageTextProperty =
-        AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(ToggleSelectCurrentPageText),
-            o => o.ToggleSelectCurrentPageText,
-            (o, v) => o.ToggleSelectCurrentPageText = v);
+    internal static readonly DirectProperty<TransferSelectDropdown, string?> InvertSelectCurrentPageTextProperty =
+        AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(InvertSelectCurrentPageText),
+            o => o.InvertSelectCurrentPageText,
+            (o, v) => o.InvertSelectCurrentPageText = v);
+    
+    internal static readonly DirectProperty<TransferSelectDropdown, string?> SelectCurrentPageTextProperty =
+        AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(SelectCurrentPageText),
+            o => o.SelectCurrentPageText,
+            (o, v) => o.SelectCurrentPageText = v);
     
     internal static readonly DirectProperty<TransferSelectDropdown, string?> RemoveAllTextProperty =
         AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(RemoveAllText),
@@ -89,11 +94,18 @@ internal class TransferSelectDropdown : IconButton
         set => SetAndRaise(DeSelectAllTextProperty, ref _deSelectAllText, value);
     }
     
-    private string? _toggleSelectCurrentPageText;
-    internal string? ToggleSelectCurrentPageText
+    private string? _invertSelectCurrentPageText;
+    internal string? InvertSelectCurrentPageText
     {
-        get => _toggleSelectCurrentPageText;
-        set => SetAndRaise(ToggleSelectCurrentPageTextProperty, ref _toggleSelectCurrentPageText, value);
+        get => _invertSelectCurrentPageText;
+        set => SetAndRaise(InvertSelectCurrentPageTextProperty, ref _invertSelectCurrentPageText, value);
+    }
+    
+    private string? _selectCurrentPageText;
+    internal string? SelectCurrentPageText
+    {
+        get => _selectCurrentPageText;
+        set => SetAndRaise(SelectCurrentPageTextProperty, ref _selectCurrentPageText, value);
     }
     
     private string? _removeAllText;
@@ -153,15 +165,24 @@ internal class TransferSelectDropdown : IconButton
                 };
                 _disposables.Add(BindUtils.RelayBind(this, DeSelectAllTextProperty, deSelectAllMenuItem, MenuItem.HeaderProperty));
                 _disposables.Add(BindUtils.RelayBind(this, IsAllSelectedProperty, deSelectAllMenuItem, MenuItem.IsVisibleProperty));
-                var toggleSelectCurrentPageMenuItem = new MenuItem()
+               
+                var invertSelectCurrentPageMenuItem = new MenuItem()
                 {
-                    Tag = TransferSelectAction.SetCurrentPage
+                    Tag = TransferSelectAction.InvertSelectCurrentPage
                 };
-                _disposables.Add(BindUtils.RelayBind(this, ToggleSelectCurrentPageTextProperty, toggleSelectCurrentPageMenuItem, MenuItem.HeaderProperty));
-                _disposables.Add(BindUtils.RelayBind(this, IsPaginationEnabledProperty, toggleSelectCurrentPageMenuItem, MenuItem.IsVisibleProperty));
+                _disposables.Add(BindUtils.RelayBind(this, InvertSelectCurrentPageTextProperty, invertSelectCurrentPageMenuItem, MenuItem.HeaderProperty));
+                
+                var selectCurrentPageMenuItem = new MenuItem()
+                {
+                    Tag = TransferSelectAction.SelectCurrentPage
+                };
+                _disposables.Add(BindUtils.RelayBind(this, SelectCurrentPageTextProperty, selectCurrentPageMenuItem, MenuItem.HeaderProperty));
+                _disposables.Add(BindUtils.RelayBind(this, IsPaginationEnabledProperty, selectCurrentPageMenuItem, MenuItem.IsVisibleProperty));
+                
                 menuFlyout.Items.Add(selectAllMenuItem);
                 menuFlyout.Items.Add(deSelectAllMenuItem);
-                menuFlyout.Items.Add(toggleSelectCurrentPageMenuItem);
+                menuFlyout.Items.Add(selectCurrentPageMenuItem);
+                menuFlyout.Items.Add(invertSelectCurrentPageMenuItem);
             }
             else if (ViewType == TransferViewType.Target && IsOneWay)
             {

@@ -1,6 +1,7 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUIGallery.ShowCases.ViewModels;
+using Avalonia.Interactivity;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 
@@ -101,13 +102,13 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
         vm.AdvanceTransferDefaultTargetKeys = targetKeys;
     }
     
-    // private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
-    // {
-    //     if (DataContext is TransferViewModel vm)
-    //     {
-    //         AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
-    //     }
-    // }
+    private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is TransferViewModel vm)
+        {
+            AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
+        }
+    }
     
     private void InitPaginationTransferItems(TransferViewModel vm)
     {

@@ -10,5 +10,6 @@ internal class zh_CN : LanguageProvider
     public const string SelectAll = "全选所有";
     public const string DeSelectAll = "取消全选";
     public const string RemoveAll = "删除所有";
-    public const string ToggleSelectCurrentPage = "反选当页";
+    public const string InvertSelectCurrentPage = "反选当页";
+    public const string SelectCurrentPage = "选择当页";
 }

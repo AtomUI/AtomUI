@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUI.Controls.Utils;
@@ -94,6 +95,23 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _paginationTransferDefaultTargetKeys, value);
     }
     
+    private List<DataGridTransferData>? _gridDataTransformItems;
+    
+    public List<DataGridTransferData>? GridDataTransformItems
+    {
+        get => _gridDataTransformItems;
+        set => this.RaiseAndSetIfChanged(ref _gridDataTransformItems, value);
+    }
+    
+        
+    private List<ITreeItemNode> _transferTreeNodes = [];
+    
+    public List<ITreeItemNode> TransferTreeNodes
+    {
+        get => _transferTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _transferTreeNodes, value);
+    }
+    
     public TransferViewModel(IScreen screen)
     {
         HostScreen = screen;
@@ -103,4 +121,12 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
 public record SearchCaseItemData : ListItemData
 {
     public string? Description { get; init; }
+}
+
+public record DataGridTransferData : IItemKey
+{
+    public EntityKey? ItemKey { get; init; }
+    public string? Title { get; init; }
+    public string? Description  { get; init; }
+    public string? Tag  { get; init; }
 }

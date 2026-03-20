@@ -2,70 +2,70 @@ namespace AtomUI.Desktop.Controls;
 
 public class TreeViewDragStartedEventArgs : EventArgs
 {
-    public TreeItem Item { get; }
+    public TreeViewItem ViewItem { get; }
 
-    public TreeViewDragStartedEventArgs(TreeItem item)
+    public TreeViewDragStartedEventArgs(TreeViewItem viewItem)
     {
-        Item = item;
+        ViewItem = viewItem;
     }
 }
 
 public class TreeViewDragCompletedEventArgs : EventArgs
 {
-    public TreeItem Item { get; }
+    public TreeViewItem ViewItem { get; }
 
-    public TreeViewDragCompletedEventArgs(TreeItem item)
+    public TreeViewDragCompletedEventArgs(TreeViewItem viewItem)
     {
-        Item = item;
+        ViewItem = viewItem;
     }
 }
 
 public class TreeViewDragEnterEventArgs : EventArgs
 {
-    public TreeItem DraggedItem { get; }
-    public TreeItem DragOverItem { get; }
+    public TreeViewItem DraggedViewItem { get; }
+    public TreeViewItem DragOverViewItem { get; }
 
-    public TreeViewDragEnterEventArgs(TreeItem draggedItem, TreeItem dragOverItem)
+    public TreeViewDragEnterEventArgs(TreeViewItem draggedViewItem, TreeViewItem dragOverViewItem)
     {
-        DraggedItem  = draggedItem;
-        DragOverItem = dragOverItem;
+        DraggedViewItem  = draggedViewItem;
+        DragOverViewItem = dragOverViewItem;
     }
 }
 
 public class TreeViewDragLeaveEventArgs : EventArgs
 {
-    public TreeItem DraggedItem { get; }
-    public TreeItem DragOverItem { get; }
+    public TreeViewItem DraggedViewItem { get; }
+    public TreeViewItem DragOverViewItem { get; }
 
-    public TreeViewDragLeaveEventArgs(TreeItem draggedItem, TreeItem dragOverItem)
+    public TreeViewDragLeaveEventArgs(TreeViewItem draggedViewItem, TreeViewItem dragOverViewItem)
     {
-        DraggedItem  = draggedItem;
-        DragOverItem = dragOverItem;
+        DraggedViewItem  = draggedViewItem;
+        DragOverViewItem = dragOverViewItem;
     }
 }
 
 public class TreeViewDragOverEventArgs : EventArgs
 {
-    public TreeItem DraggedItem { get; }
-    public TreeItem DragOverItem { get; }
+    public TreeViewItem DraggedViewItem { get; }
+    public TreeViewItem DragOverViewItem { get; }
 
-    public TreeViewDragOverEventArgs(TreeItem draggedItem, TreeItem dragOverItem)
+    public TreeViewDragOverEventArgs(TreeViewItem draggedViewItem, TreeViewItem dragOverViewItem)
     {
-        DraggedItem  = draggedItem;
-        DragOverItem = dragOverItem;
+        DraggedViewItem  = draggedViewItem;
+        DragOverViewItem = dragOverViewItem;
     }
 }
 
 public class TreeViewDroppedEventArgs : EventArgs
 {
-    public TreeItem DraggedItem { get; }
-    public TreeItem? DroppedItem { get; }
+    public TreeViewItem DraggedViewItem { get; }
+    public TreeViewItem? DroppedItem { get; }
     
     public int DropIndex { get; }
 
-    public TreeViewDroppedEventArgs(TreeItem draggedItem, TreeItem? droppedItem, int dropIndex)
+    public TreeViewDroppedEventArgs(TreeViewItem draggedViewItem, TreeViewItem? droppedItem, int dropIndex)
     {
-        DraggedItem = draggedItem;
+        DraggedViewItem = draggedViewItem;
         DroppedItem = droppedItem;
         DropIndex   = dropIndex;
     }

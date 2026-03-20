@@ -10,16 +10,13 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-public sealed class DataGridSelectionColumn : DataGridColumn
+public class DataGridSelectionColumn : DataGridColumn
 {
     private DataGrid? _owningGrid;
     private CheckBox? _headerCheckBox;
     private CompositeDisposable? _headerBindingDisposables;
 
-    public DataGridSelectionColumn()
-    {
-        IsReadOnly = true;    
-    }
+    public override bool IsReadOnly => true;
     
     protected override Control? GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding? editBinding)
     {
@@ -292,18 +289,6 @@ public sealed class DataGridSelectionColumn : DataGridColumn
             else if (checkBox.IsChecked == true)
             {
                 OwningGrid?.SelectAll();
-            }
-        }
-    }
-
-    protected override void NotifyOwningGridAttached(DataGrid? owningGrid)
-    {
-        base.NotifyOwningGridAttached(owningGrid);
-        if (owningGrid != null)
-        {
-            if (owningGrid.SelectionMode == DataGridSelectionMode.None)
-            {
-                throw DataGridError.DataGridColumn.SelectionModeException();
             }
         }
     }

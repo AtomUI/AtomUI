@@ -30,7 +30,7 @@ internal class TransferItemDecorator : TemplatedControl,
         ContentControl.ContentTemplateProperty.AddOwner<TransferItemDecorator>();
 
     public static readonly StyledProperty<IEnumerable<IItemKey>?> ItemsSourceProperty =
-        Transfer.ItemsSourceProperty.AddOwner<TransferItemDecorator>();
+        AbstractTransfer.ItemsSourceProperty.AddOwner<TransferItemDecorator>();
     
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<TransferItemDecorator>();
@@ -48,16 +48,16 @@ internal class TransferItemDecorator : TemplatedControl,
         AvaloniaProperty.Register<TransferItemDecorator, bool>(nameof(IsShowSelectDropdownMenu), true);
     
     public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
-        Transfer.IsPaginationEnabledProperty.AddOwner<TransferItemDecorator>();
+        AbstractTransfer.IsPaginationEnabledProperty.AddOwner<TransferItemDecorator>();
     
     public static readonly StyledProperty<int> PageSizeProperty =
-        Transfer.PageSizeProperty.AddOwner<TransferItemDecorator>();
+        ListTransfer.PageSizeProperty.AddOwner<TransferItemDecorator>();
     
     public static readonly StyledProperty<IIconTemplate?> SelectionsIconTemplateProperty =
         AvaloniaProperty.Register<TransferItemDecorator, IIconTemplate?>(nameof(SelectionsIconTemplate));
     
     public static readonly StyledProperty<bool> IsOneWayProperty =
-        Transfer.IsOneWayProperty.AddOwner<TransferItemDecorator>();
+        AbstractTransfer.IsOneWayProperty.AddOwner<TransferItemDecorator>();
     
     public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
         AvaloniaProperty.Register<TransferItemDecorator, string?>(nameof(FilterPlaceholderText));
@@ -69,7 +69,7 @@ internal class TransferItemDecorator : TemplatedControl,
         AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(FooterTemplate));
     
     public static readonly StyledProperty<double> ListHeightProperty =
-        Transfer.ListHeightProperty.AddOwner<TransferItemDecorator>();
+        AbstractTransfer.ListHeightProperty.AddOwner<TransferItemDecorator>();
     
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         ItemsControl.ItemTemplateProperty.AddOwner<TransferItemDecorator>();
@@ -87,6 +87,7 @@ internal class TransferItemDecorator : TemplatedControl,
         set => SetValue(TitleTemplateProperty, value);
     }
     
+    [Content]
     [DependsOn(nameof(ContentTemplate))]
     public object? Content
     {
@@ -401,6 +402,13 @@ internal class TransferItemDecorator : TemplatedControl,
                 }
             }
         }
+        else if (change.Property == SelectionsIconTemplateProperty)
+        {
+            if (_transferView is ITransferView transferView)
+            {
+                transferView.SetSelectionsIcon(SelectionsIconTemplate?.Build());
+            }
+        }
 
         if (change.Property == ViewTypeProperty ||
             change.Property == IsOneWayProperty)
@@ -408,6 +416,14 @@ internal class TransferItemDecorator : TemplatedControl,
             ConfigureTransferViewSelectionMode();
         }
 
+        if (change.Property == IsOneWayProperty)
+        {
+            if (_transferView is ITransferView transferView)
+            {
+                transferView.NotifyIsOneWay(IsOneWay);
+            }
+        }
+        
         if (change.Property == CornerRadiusProperty ||
             change.Property == FooterProperty ||
             change.Property == FooterTemplateProperty)
@@ -423,6 +439,17 @@ internal class TransferItemDecorator : TemplatedControl,
                 transferView.SetPaginationEnabled(IsPaginationEnabled);
                 transferView.SetPageSize(PageSize);
                 transferView.SetItemsSource(ItemsSource);
+            }
+        }
+
+        if (change.Property == ItemTemplateProperty)
+        {
+            if (_transferView is ITransferView transferView)
+            {
+                if (transferView.IsSupportItemTemplate)
+                {
+                    transferView.SetItemTemplate(ItemTemplate);
+                }
             }
         }
     }
@@ -472,6 +499,8 @@ internal class TransferItemDecorator : TemplatedControl,
                         transferView.SetPageSize(PageSize);
                     }
                     transferView.SetItemsSource(ItemsSource);
+                    transferView.SetSelectionsIcon(SelectionsIconTemplate?.Build());
+                    transferView.NotifyIsOneWay(IsOneWay);
                     transferView.ItemCountChanged   += HandleItemsCountChanged;
                     transferView.SelectedKeyChanged += HandleSelectedChanged;
                     transferView.ViewType           =  ViewType;
@@ -479,8 +508,14 @@ internal class TransferItemDecorator : TemplatedControl,
                     ConfigureTransferViewSelectionMode();
                     if (transferView.IsSupportItemTemplate)
                     {
-                        _disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, _transferView, ItemTemplateProperty));
+                        transferView.SetItemTemplate(ItemTemplate);
                     }
+                    _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, _transferView, IsMotionEnabledProperty));
+                }
+
+                if (_transferView is ITransferDecoratorProvider transferDecoratorProvider)
+                {
+                    transferDecoratorProvider.ProvideTransferDecorator(this);
                 }
             }
         }
@@ -580,6 +615,10 @@ internal class TransferItemDecorator : TemplatedControl,
             if (ViewType == TransferViewType.Target)
             {
                 transferView.SetSelectionEnabled(!IsOneWay);
+            }
+            else if (ViewType == TransferViewType.Source)
+            {
+                transferView.SetSelectionEnabled(true);
             }
         }
     }

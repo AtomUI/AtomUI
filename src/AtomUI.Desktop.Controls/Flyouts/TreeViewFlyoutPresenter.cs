@@ -154,7 +154,7 @@ public class TreeViewFlyoutPresenter : FloatableTreeView,
 
     private void HandleTreeViewItemClicked(object? sender, RoutedEventArgs args)
     {
-        if (sender is TreeItem treeViewItem)
+        if (sender is TreeViewItem treeViewItem)
         {
             var ev = new FlyoutTreeViewItemClickedEventArgs(TreeViewItemClickedEvent, treeViewItem);
             RaiseEvent(ev);
@@ -217,11 +217,11 @@ public class FlyoutTreeViewItemClickedEventArgs : RoutedEventArgs
     /// <summary>
     /// 当前鼠标点击的树节点
     /// </summary>
-    public TreeItem Item { get; }
+    public TreeViewItem ViewItem { get; }
 
-    public FlyoutTreeViewItemClickedEventArgs(RoutedEvent routedEvent, TreeItem treeItem)
+    public FlyoutTreeViewItemClickedEventArgs(RoutedEvent routedEvent, TreeViewItem treeViewItem)
         : base(routedEvent)
     {
-        Item = treeItem;
+        ViewItem = treeViewItem;
     }
 }

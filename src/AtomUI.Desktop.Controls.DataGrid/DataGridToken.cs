@@ -190,6 +190,11 @@ internal class DataGridToken : AbstractControlDesignToken
     /// 分页器的外边距
     /// </summary>
     public Thickness PaginationMargin { get; set; }
+    
+    /// <summary>
+    /// 分页器的外边距（小号）
+    /// </summary>
+    public Thickness PaginationMarginSM { get; set; }
 
     #region 内部 Token
 
@@ -369,6 +374,7 @@ internal class DataGridToken : AbstractControlDesignToken
         });
         ColumnReorderActiveBg = colorFillContentSolid;
 
-        PaginationMargin = new Thickness(0, SharedToken.UniformlyMargin);
+        PaginationMargin   = new Thickness(0, SharedToken.UniformlyMargin);
+        PaginationMarginSM = new Thickness(0, SharedToken.UniformlyMarginXS);
     }
 }

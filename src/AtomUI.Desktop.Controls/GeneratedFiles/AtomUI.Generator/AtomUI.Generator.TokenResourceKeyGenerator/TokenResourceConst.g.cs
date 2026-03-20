@@ -1163,6 +1163,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
 
     public static class TransferTokenKey
     {
+        public static readonly TokenResourceKey DataGridSelectionHeaderMargin = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.DataGridSelectionHeaderMargin");
         public static readonly TokenResourceKey HeaderHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.HeaderHeight");
         public static readonly TokenResourceKey HeaderPadding = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.HeaderPadding");
         public static readonly TokenResourceKey ItemHeight = new TokenResourceKey("AtomUI.Desktop.Controls.Transfer.ItemHeight");

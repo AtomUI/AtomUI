@@ -4,10 +4,10 @@ namespace AtomUI.Desktop.Controls;
 
 public class TreeItemContextMenuEventArgs : RoutedEventArgs
 {
-    public TreeItem Item { get; }
+    public TreeViewItem ViewItem { get; }
     
-    public TreeItemContextMenuEventArgs(TreeItem item)
+    public TreeItemContextMenuEventArgs(TreeViewItem viewItem)
     {
-        Item = item;
+        ViewItem = viewItem;
     }
 }

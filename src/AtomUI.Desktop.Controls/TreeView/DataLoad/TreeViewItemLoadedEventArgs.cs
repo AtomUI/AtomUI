@@ -3,9 +3,9 @@ namespace AtomUI.Desktop.Controls;
 public class TreeViewItemLoadedEventArgs : EventArgs
 {
     public TreeItemLoadResult Result { get; }
-    public TreeItem Target { get; }
+    public TreeViewItem Target { get; }
     
-    public TreeViewItemLoadedEventArgs(TreeItem target, TreeItemLoadResult result)
+    public TreeViewItemLoadedEventArgs(TreeViewItem target, TreeItemLoadResult result)
     {
         Target = target;
         Result = result;

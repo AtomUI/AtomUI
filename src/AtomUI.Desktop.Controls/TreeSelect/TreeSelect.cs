@@ -319,9 +319,9 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
     {
         FocusableProperty.OverrideDefaultValue<TreeSelect>(true);
         SelectHandle.ClearRequestedEvent.AddClassHandler<TreeSelect>((target, args) => target.HandleClearRequest());
-        TreeItem.ClickEvent.AddClassHandler<TreeSelect>((treeSelect, args) =>
+        TreeViewItem.ClickEvent.AddClassHandler<TreeSelect>((treeSelect, args) =>
         {
-            if (args.Source is TreeItem item)
+            if (args.Source is TreeViewItem item)
             {
                 treeSelect.HandleTreeViewItemClicked(item);
             }
@@ -709,7 +709,7 @@ public class TreeSelect : AbstractSelect, IControlSharedTokenResourcesHost
         base.OnPointerReleased(e);
     }
 
-    private void HandleTreeViewItemClicked(TreeItem item)
+    private void HandleTreeViewItemClicked(TreeViewItem viewItem)
     {
         if (!IsMultiple)
         {

@@ -3,7 +3,7 @@ using Avalonia.Data.Converters;
 
 namespace AtomUI.Desktop.Controls.Converters;
 
-internal class DataGridPaginationVisibilityConvertor : IValueConverter
+public class DataGridPaginationVisibilityConvertor : IValueConverter
 {
     public bool IsTop { get; set; }
     

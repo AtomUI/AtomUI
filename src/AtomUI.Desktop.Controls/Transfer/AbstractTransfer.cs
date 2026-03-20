@@ -12,116 +12,105 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Transfer : TemplatedControl,
-                        IMotionAwareControl,
-                        IInputControlStatusAware,
-                        ISizeTypeAware,
-                        IControlSharedTokenResourcesHost
+public abstract class AbstractTransfer: TemplatedControl,
+                                        IMotionAwareControl,
+                                        IInputControlStatusAware,
+                                        ISizeTypeAware,
+                                        IControlSharedTokenResourcesHost
 {
     #region 公共属性定义
     
     public static readonly StyledProperty<IEnumerable<IItemKey>?> ItemsSourceProperty =
-        AvaloniaProperty.Register<Transfer, IEnumerable<IItemKey>?>(nameof(ItemsSource));
+        AvaloniaProperty.Register<AbstractTransfer, IEnumerable<IItemKey>?>(nameof(ItemsSource));
     
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
-        InputControlStatusProperty.StatusProperty.AddOwner<Transfer>();
+        InputControlStatusProperty.StatusProperty.AddOwner<AbstractTransfer>();
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<Transfer>();
+        SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractTransfer>();
     
     public static readonly StyledProperty<double> ListWidthProperty =
-        AvaloniaProperty.Register<Transfer, double>(nameof(ListWidth), double.NaN);
+        AvaloniaProperty.Register<AbstractTransfer, double>(nameof(ListWidth), double.NaN);
     
     public static readonly StyledProperty<double> ListHeightProperty =
-        AvaloniaProperty.Register<Transfer, double>(nameof(ListHeight), double.NaN);
+        AvaloniaProperty.Register<AbstractTransfer, double>(nameof(ListHeight), double.NaN);
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Transfer>();
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractTransfer>();
     
     public static readonly StyledProperty<object?> SourceViewFooterProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(SourceViewFooter));
+        AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(SourceViewFooter));
     
     public static readonly StyledProperty<IDataTemplate?> SourceViewFooterTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(SourceViewFooterTemplate));
+        AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(SourceViewFooterTemplate));
     
     public static readonly StyledProperty<object?> TargetViewFooterProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(TargetViewFooter));
+        AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(TargetViewFooter));
     
     public static readonly StyledProperty<IDataTemplate?> TargetViewFooterTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(TargetViewFooterTemplate));
+        AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(TargetViewFooterTemplate));
     
     public static readonly StyledProperty<IIconTemplate?> SelectionsIconProperty =
-        AvaloniaProperty.Register<Transfer, IIconTemplate?>(nameof(SelectionsIcon));
+        AvaloniaProperty.Register<AbstractTransfer, IIconTemplate?>(nameof(SelectionsIcon));
     
     public static readonly StyledProperty<PathIcon?> ToSourceTransferIconProperty =
-        AvaloniaProperty.Register<Transfer, PathIcon?>(nameof(ToSourceTransferIcon));
+        AvaloniaProperty.Register<AbstractTransfer, PathIcon?>(nameof(ToSourceTransferIcon));
     
     public static readonly StyledProperty<PathIcon?> ToTargetTransferIconProperty =
-        AvaloniaProperty.Register<Transfer, PathIcon?>(nameof(ToTargetTransferIcon));
-    
-    public static readonly StyledProperty<int> PageSizeProperty =
-        AvaloniaProperty.Register<Transfer, int>(nameof(PageSize), 0);
+        AvaloniaProperty.Register<AbstractTransfer, PathIcon?>(nameof(ToTargetTransferIcon));
     
     public static readonly StyledProperty<bool> IsShowSearchProperty =
-        AvaloniaProperty.Register<Transfer, bool>(nameof(IsShowSearch));
+        AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsShowSearch));
     
     public static readonly StyledProperty<bool> IsShowSelectAllProperty =
-        AvaloniaProperty.Register<Transfer, bool>(nameof(IsShowSelectAll));
+        AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsShowSelectAll));
     
     public static readonly StyledProperty<object?> SourceTitleProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(SourceTitle));
+        AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(SourceTitle));
     
     public static readonly StyledProperty<IDataTemplate?> SourceTitleTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(SourceTitleTemplate));
+        AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(SourceTitleTemplate));
     
     public static readonly StyledProperty<object?> TargetTitleProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(TargetTitle));
+        AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(TargetTitle));
     
     public static readonly StyledProperty<IDataTemplate?> TargetTitleTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(TargetTitleTemplate));
+        AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(TargetTitleTemplate));
     
     public static readonly StyledProperty<bool> IsOneWayProperty =
-        AvaloniaProperty.Register<Transfer, bool>(nameof(IsOneWay));
+        AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsOneWay));
     
     public static readonly StyledProperty<IList<EntityKey>?> SelectedKeysProperty =
-        AvaloniaProperty.Register<Transfer, IList<EntityKey>?>(nameof(SelectedKeys));
+        AvaloniaProperty.Register<AbstractTransfer, IList<EntityKey>?>(nameof(SelectedKeys));
     
     public static readonly StyledProperty<IList<EntityKey>?> TargetKeysProperty =
-        AvaloniaProperty.Register<Transfer, IList<EntityKey>?>(nameof(TargetKeys));
-    
-    public static readonly StyledProperty<object?> SourcePanelProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(SourcePanel));
-    
-    public static readonly StyledProperty<IDataTemplate?> SourcePanelTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(SourcePanelTemplate));
-    
-    public static readonly StyledProperty<object?> TargetPanelProperty =
-        AvaloniaProperty.Register<Transfer, object?>(nameof(TargetPanel));
-    
-    public static readonly StyledProperty<IDataTemplate?> TargetPanelTemplateProperty =
-        AvaloniaProperty.Register<Transfer, IDataTemplate?>(nameof(TargetPanelTemplate));
+        AvaloniaProperty.Register<AbstractTransfer, IList<EntityKey>?>(nameof(TargetKeys));
     
     public static readonly StyledProperty<bool> IsFilterEnabledProperty =
-        AvaloniaProperty.Register<Transfer, bool>(nameof(IsFilterEnabled), false);
+        AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsFilterEnabled), false);
     
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
-        AvaloniaProperty.Register<Transfer, IValueFilter?>(nameof(Filter));
+        AvaloniaProperty.Register<AbstractTransfer, IValueFilter?>(nameof(Filter));
     
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
-        AvaloniaProperty.Register<Transfer, DefaultFilterValueSelector?>(
+        AvaloniaProperty.Register<AbstractTransfer, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
     
     public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
-        AvaloniaProperty.Register<Transfer, string?>(nameof(FilterPlaceholderText));
+        AvaloniaProperty.Register<AbstractTransfer, string?>(nameof(FilterPlaceholderText));
     
     public static readonly StyledProperty<string?> ToSourceButtonTextProperty =
-        AvaloniaProperty.Register<Transfer, string?>(nameof(ToSourceButtonText));
+        AvaloniaProperty.Register<AbstractTransfer, string?>(nameof(ToSourceButtonText));
     
     public static readonly StyledProperty<string?> ToTargetButtonTextProperty =
-        AvaloniaProperty.Register<Transfer, string?>(nameof(ToTargetButtonText));
+        AvaloniaProperty.Register<AbstractTransfer, string?>(nameof(ToTargetButtonText));
     
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
-        ItemsControl.ItemTemplateProperty.AddOwner<Transfer>();
+        ItemsControl.ItemTemplateProperty.AddOwner<AbstractTransfer>();
+    
+    public static readonly StyledProperty<bool> IsStretchViewProperty =
+        AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsStretchView));
+    
     
     public IEnumerable<IItemKey>? ItemsSource
     {
@@ -203,12 +192,6 @@ public class Transfer : TemplatedControl,
         set => SetValue(ToTargetTransferIconProperty, value);
     }
     
-    public int PageSize
-    {
-        get => GetValue(PageSizeProperty);
-        set => SetValue(PageSizeProperty, value);
-    }
-    
     public bool IsShowSearch
     {
         get => GetValue(IsShowSearchProperty);
@@ -264,32 +247,6 @@ public class Transfer : TemplatedControl,
         get => GetValue(TargetKeysProperty);
         set => SetValue(TargetKeysProperty, value);
     }
-    
-    [DependsOn(nameof(SourcePanelTemplate))]
-    public object? SourcePanel
-    {
-        get => GetValue(SourcePanelProperty);
-        set => SetValue(SourcePanelProperty, value);
-    }
-    
-    public IDataTemplate? SourcePanelTemplate
-    {
-        get => GetValue(SourcePanelTemplateProperty);
-        set => SetValue(SourcePanelTemplateProperty, value);
-    }
-    
-    [DependsOn(nameof(TargetPanelTemplate))]
-    public object? TargetPanel
-    {
-        get => GetValue(TargetPanelProperty);
-        set => SetValue(TargetPanelProperty, value);
-    }
-    
-    public IDataTemplate? TargetPanelTemplate
-    {
-        get => GetValue(TargetPanelTemplateProperty);
-        set => SetValue(TargetPanelTemplateProperty, value);
-    }
 
     public bool IsFilterEnabled
     {
@@ -334,6 +291,12 @@ public class Transfer : TemplatedControl,
         set => SetValue(ItemTemplateProperty, value);
     }
     
+    public bool IsStretchView
+    {
+        get => GetValue(IsStretchViewProperty);
+        set => SetValue(IsStretchViewProperty, value);
+    }
+    
     #endregion
 
     #region 公共事件定义
@@ -342,45 +305,45 @@ public class Transfer : TemplatedControl,
 
     #region 内部属性定义
     
-    internal static readonly StyledProperty<IEnumerable<IItemKey>?> SourcePanelSourceProperty =
-        AvaloniaProperty.Register<Transfer, IEnumerable<IItemKey>?>(nameof(SourcePanelSource));
+    internal static readonly StyledProperty<IEnumerable<IItemKey>?> SourceViewSourceProperty =
+        AvaloniaProperty.Register<AbstractTransfer, IEnumerable<IItemKey>?>(nameof(SourceViewSource));
     
-    internal static readonly StyledProperty<IEnumerable<IItemKey>?> TargetPanelSourceProperty =
-        AvaloniaProperty.Register<Transfer, IEnumerable<IItemKey>?>(nameof(TargetPanelSource));
+    internal static readonly StyledProperty<IEnumerable<IItemKey>?> TargetViewSourceProperty =
+        AvaloniaProperty.Register<AbstractTransfer, IEnumerable<IItemKey>?>(nameof(TargetViewSource));
     
-    internal static readonly DirectProperty<Transfer, bool> ToTargetButtonEnabledProperty =
-        AvaloniaProperty.RegisterDirect<Transfer, bool>(nameof(ToTargetButtonEnabled),
+    internal static readonly DirectProperty<AbstractTransfer, bool> ToTargetButtonEnabledProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTransfer, bool>(nameof(ToTargetButtonEnabled),
             o => o.ToTargetButtonEnabled,
             (o, v) => o.ToTargetButtonEnabled = v);
     
-    internal static readonly DirectProperty<Transfer, bool> ToSourceButtonEnabledProperty =
-        AvaloniaProperty.RegisterDirect<Transfer, bool>(nameof(ToSourceButtonEnabled),
+    internal static readonly DirectProperty<AbstractTransfer, bool> ToSourceButtonEnabledProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTransfer, bool>(nameof(ToSourceButtonEnabled),
             o => o.ToSourceButtonEnabled,
             (o, v) => o.ToSourceButtonEnabled = v);
     
-    internal static readonly DirectProperty<Transfer, string?> SourceFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<Transfer, string?>(nameof(SourceFilterValue),
+    internal static readonly DirectProperty<AbstractTransfer, string?> SourceFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTransfer, string?>(nameof(SourceFilterValue),
             o => o.SourceFilterValue,
             (o, v) => o.SourceFilterValue = v);
     
-    internal static readonly DirectProperty<Transfer, string?> TargetFilterValueProperty =
-        AvaloniaProperty.RegisterDirect<Transfer, string?>(nameof(TargetFilterValue),
+    internal static readonly DirectProperty<AbstractTransfer, string?> TargetFilterValueProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTransfer, string?>(nameof(TargetFilterValue),
             o => o.TargetFilterValue,
             (o, v) => o.TargetFilterValue = v);
     
     internal static readonly StyledProperty<bool> IsPaginationEnabledProperty =
-        AvaloniaProperty.Register<Transfer, bool>(nameof(IsPaginationEnabled));
+        AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsPaginationEnabled));
     
-    internal IEnumerable<IItemKey>? SourcePanelSource
+    internal IEnumerable<IItemKey>? SourceViewSource
     {
-        get => GetValue(SourcePanelSourceProperty);
-        set => SetValue(SourcePanelSourceProperty, value);
+        get => GetValue(SourceViewSourceProperty);
+        set => SetValue(SourceViewSourceProperty, value);
     }
     
-    internal IEnumerable<IItemKey>? TargetPanelSource
+    internal IEnumerable<IItemKey>? TargetViewSource
     {
-        get => GetValue(TargetPanelSourceProperty);
-        set => SetValue(TargetPanelSourceProperty, value);
+        get => GetValue(TargetViewSourceProperty);
+        set => SetValue(TargetViewSourceProperty, value);
     }
     
     private bool _toTargetButtonEnabled;
@@ -426,15 +389,16 @@ public class Transfer : TemplatedControl,
     private TransferItemDecorator? _targetViewDecorator;
     private ITransferView? _sourceView;
     private ITransferView? _targetView;
+    private Grid? _rootLayout;
     
-    static Transfer()
+    static AbstractTransfer()
     {
-        IconButton.ClickEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleTransferRequest(args));
-        TransferSelectDropdown.SelectActionRequestEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleSelectActionRequest(args));
-        LineEdit.TextChangedEvent.AddClassHandler<Transfer>((transfer, args) => transfer.HandleTransferFilterChanged(args));
+        IconButton.ClickEvent.AddClassHandler<AbstractTransfer>((transfer, args) => transfer.HandleTransferRequest(args));
+        TransferSelectDropdown.SelectActionRequestEvent.AddClassHandler<AbstractTransfer>((transfer, args) => transfer.HandleSelectActionRequest(args));
+        LineEdit.TextChangedEvent.AddClassHandler<AbstractTransfer>((transfer, args) => transfer.HandleTransferFilterChanged(args));
     }
     
-    public Transfer()
+    public AbstractTransfer()
     {
         this.RegisterResources();
     }
@@ -446,18 +410,10 @@ public class Transfer : TemplatedControl,
         {
             SetCurrentValue(ToSourceTransferIconProperty, new LeftOutlined());
         }
+
         if (ToTargetTransferIcon == null)
         {
             SetCurrentValue(ToTargetTransferIconProperty, new RightOutlined());
-        }
-        if (SourcePanel == null)
-        {
-            SetCurrentValue(SourcePanelProperty, new TransferListView());
-        }
-
-        if (TargetPanel == null)
-        {
-            SetCurrentValue(TargetPanelProperty, new TransferListView());
         }
 
         if (_sourceViewDecorator != null)
@@ -479,7 +435,8 @@ public class Transfer : TemplatedControl,
         }
         _sourceViewDecorator = e.NameScope.Find<TransferItemDecorator>("SourceDecoratorView");
         _targetViewDecorator = e.NameScope.Find<TransferItemDecorator>("TargetDecoratorView");
-        
+        _rootLayout          = e.NameScope.Find<Grid>("RootLayout");
+        ConfigureRootLayout();
         if (_sourceViewDecorator != null)
         {
             _sourceViewDecorator.TransferViewCreated += HandleTransferViewCreated;
@@ -488,7 +445,6 @@ public class Transfer : TemplatedControl,
         {
             _targetViewDecorator.TransferViewCreated += HandleTransferViewCreated;
         }
-        SetCurrentValue(IsPaginationEnabledProperty, PageSize > 0);
     }
 
     private void HandleTransferViewCreated(object? sender, TransferViewCreatedEventArgs args)
@@ -499,8 +455,8 @@ public class Transfer : TemplatedControl,
         }
         else
         {
-            _targetView                 =  args.TransferView;
-            _targetView.ItemRemoved     += HandleItemRemoved;
+            _targetView             =  args.TransferView;
+            _targetView.ItemRemoved += HandleItemRemoved;
         }
     }
 
@@ -540,13 +496,13 @@ public class Transfer : TemplatedControl,
         {
             ConfigurePanelItemsSourceForFilter(FilterChangeType.Both);
         }
-        else if (change.Property == PageSizeProperty)
+        else if (change.Property == IsStretchViewProperty)
         {
-            SetCurrentValue(IsPaginationEnabledProperty, PageSize > 0);
+            ConfigureRootLayout();
         }
     }
 
-    private void ConfigurePanelItemsSourceForFilter(FilterChangeType changeType)
+    protected virtual void ConfigurePanelItemsSourceForFilter(FilterChangeType changeType)
     {
         var               sourcePanelSourceChanged = false;
         var               targetPanelSourceChanged = false;
@@ -555,32 +511,37 @@ public class Transfer : TemplatedControl,
         if (changeType.HasFlag(FilterChangeType.Source))
         {
             var sourcePanelSource = ItemsSource?
-                .Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false))
-                .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(SourceFilterValue) || 
-                               (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item,
-                                   SourceFilterValue) ?? false))
-                .ToArray();
-            sourcePanelSourceChanged = SourcePanelSource != sourcePanelSource;
-            SourcePanelSource        = sourcePanelSource;
+                                    .Where(item => !(TargetKeys?.Contains(item.ItemKey ?? default) ?? false))
+                                    .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(SourceFilterValue) || 
+                                                   (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item,
+                                                       SourceFilterValue) ?? false))
+                                    .ToArray();
+            sourcePanelSourceChanged = SourceViewSource != sourcePanelSource;
+            SourceViewSource        = sourcePanelSource;
             sourceItemKeys           = sourcePanelSource?.Select(item => item.ItemKey ?? default).ToList();
         }
 
         if (changeType.HasFlag(FilterChangeType.Target))
         {
             var targetPanelSource = ItemsSource?
-                                .Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false)
-                                .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(TargetFilterValue) || 
-                                               (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false))
-                                .ToArray();
-            TargetPanelSource        = targetPanelSource;
-            targetPanelSourceChanged = TargetPanelSource != targetPanelSource;
+                                    .Where(item => TargetKeys?.Contains(item.ItemKey ?? default) ?? false)
+                                    .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(TargetFilterValue) || 
+                                                   (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false))
+                                    .ToArray();
+            TargetViewSource        = targetPanelSource;
+            targetPanelSourceChanged = TargetViewSource != targetPanelSource;
             targetItemKeys           = targetPanelSource?.Select(item => item.ItemKey ?? default).ToList();
         }
 
         if (sourcePanelSourceChanged || targetPanelSourceChanged)
         {
-            SelectionChanged?.Invoke(this, new TransferSelectionChangedEventArgs(sourceItemKeys, targetItemKeys));
+            NotifySelectionChanged(sourceItemKeys, targetItemKeys);
         }
+    }
+
+    protected void NotifySelectionChanged(IList<EntityKey>? sourceItemKeys, IList<EntityKey>? targetItemKeys)
+    {
+        SelectionChanged?.Invoke(this, new TransferSelectionChangedEventArgs(sourceItemKeys, targetItemKeys));
     }
     
     private void HandleTransferRequest(RoutedEventArgs args)
@@ -592,7 +553,7 @@ public class Transfer : TemplatedControl,
         args.Handled = true;
     }
 
-    private void TransferItems(TransferDirection transferDirection)
+    protected virtual void TransferItems(TransferDirection transferDirection)
     {
         var currentSet = new HashSet<EntityKey>();
         if (TargetKeys != null)
@@ -661,9 +622,29 @@ public class Transfer : TemplatedControl,
             }
         }
     }
+
+    private void ConfigureRootLayout()
+    {
+        if (_rootLayout != null)
+        {
+            _rootLayout.ColumnDefinitions.Clear();
+            if (IsStretchView)
+            {
+                _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+                _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            }
+            else
+            {
+                _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+                _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+                _rootLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+            }
+        }
+    }
     
     [Flags]
-    private enum FilterChangeType
+    protected enum FilterChangeType
     {
         Source = 0x01,
         Target = 0x02,

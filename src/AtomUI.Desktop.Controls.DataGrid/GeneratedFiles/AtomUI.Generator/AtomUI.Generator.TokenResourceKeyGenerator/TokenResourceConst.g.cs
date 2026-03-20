@@ -35,6 +35,7 @@ namespace AtomUI.Desktop.Controls.DesignTokens
         public static readonly TokenResourceKey HeaderSplitColor = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.HeaderSplitColor");
         public static readonly TokenResourceKey LeftFrozenShadows = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.LeftFrozenShadows");
         public static readonly TokenResourceKey PaginationMargin = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.PaginationMargin");
+        public static readonly TokenResourceKey PaginationMarginSM = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.PaginationMarginSM");
         public static readonly TokenResourceKey RightFrozenShadows = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.RightFrozenShadows");
         public static readonly TokenResourceKey RowExpandedBg = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.RowExpandedBg");
         public static readonly TokenResourceKey RowHoverBg = new TokenResourceKey("AtomUI.Desktop.Controls.DataGrid.RowHoverBg");

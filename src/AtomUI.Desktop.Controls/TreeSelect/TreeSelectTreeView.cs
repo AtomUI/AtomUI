@@ -25,7 +25,7 @@ internal class TreeSelectTreeView : TreeView
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TreeSelectTreeItem();
+        return new TreeViewSelectTreeViewItem();
     }
 
     protected override bool NeedsContainerOverride(
@@ -33,27 +33,27 @@ internal class TreeSelectTreeView : TreeView
         int index,
         out object? recycleKey)
     {
-        return NeedsContainer<TreeSelectTreeItem>(item, out recycleKey);
+        return NeedsContainer<TreeViewSelectTreeViewItem>(item, out recycleKey);
     }
 
-    protected override void NotifyTreeItemClicked(TreeItem item)
+    protected override void NotifyTreeItemClicked(TreeViewItem viewItem)
     {
         if (ToggleType == ItemToggleType.CheckBox)
         {
-            if (item.IsChecked == true)
+            if (viewItem.IsChecked == true)
             {
-                item.SetCurrentValue(TreeItem.IsCheckedProperty, false);
+                viewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, false);
             }
             else
             {
-                item.SetCurrentValue(TreeItem.IsCheckedProperty, true);
+                viewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
             }
         }
     }
     
-    protected override void PrepareTreeViewItem(TreeItem treeItem, object? item, int index, CompositeDisposable disposables)
+    protected override void PrepareTreeViewItem(TreeViewItem treeViewItem, object? item, int index, CompositeDisposable disposables)
     {
-        base.PrepareTreeViewItem(treeItem, item, index, disposables);
-        disposables.Add(BindUtils.RelayBind(this, IsMaxSelectReachedProperty, treeItem, TreeSelectTreeItem.IsMaxSelectReachedProperty));
+        base.PrepareTreeViewItem(treeViewItem, item, index, disposables);
+        disposables.Add(BindUtils.RelayBind(this, IsMaxSelectReachedProperty, treeViewItem, TreeViewSelectTreeViewItem.IsMaxSelectReachedProperty));
     }
 }

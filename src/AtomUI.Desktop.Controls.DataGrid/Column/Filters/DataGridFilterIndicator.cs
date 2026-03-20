@@ -172,8 +172,8 @@ internal class DataGridFilterIndicator : IconButton
             var treeItems         = BuildTreeItems(OwningColumn.Filters.ToList());
             if (FilterMultiple)
             {
-                var selectAllTreeItem = new DataGridFilterTreeItem();
-                LanguageResourceBinder.CreateBinding(selectAllTreeItem, DataGridFilterTreeItem.HeaderProperty,
+                var selectAllTreeItem = new DataGridFilterTreeViewItem();
+                LanguageResourceBinder.CreateBinding(selectAllTreeItem, DataGridFilterTreeViewItem.HeaderProperty,
                     DataGridLangResourceKey.SelectAllFilterItems);
               
                 foreach (var treeItem in treeItems)
@@ -225,12 +225,12 @@ internal class DataGridFilterIndicator : IconButton
         return menuItems;
     }
 
-    private List<DataGridFilterTreeItem> BuildTreeItems(List<DataGridFilterItem> filterItems)
+    private List<DataGridFilterTreeViewItem> BuildTreeItems(List<DataGridFilterItem> filterItems)
     {
-        var treeItems = new List<DataGridFilterTreeItem>();
+        var treeItems = new List<DataGridFilterTreeViewItem>();
         foreach (var item in filterItems)
         {
-            var treeItem = new DataGridFilterTreeItem()
+            var treeItem = new DataGridFilterTreeViewItem()
             {
                 Header      = item.Text,
                 FilterValue = item.Value,

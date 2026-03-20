@@ -4,10 +4,10 @@ namespace AtomUI.Desktop.Controls;
 
 internal class TreeViewItemLoadRequestEventArgs : RoutedEventArgs
 {
-    public TreeItem Item { get; }
+    public TreeViewItem ViewItem { get; }
 
-    public TreeViewItemLoadRequestEventArgs(TreeItem item)
+    public TreeViewItemLoadRequestEventArgs(TreeViewItem viewItem)
     {
-        Item = item;
+        ViewItem = viewItem;
     }
 }

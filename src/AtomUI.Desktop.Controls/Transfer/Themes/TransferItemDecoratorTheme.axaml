@@ -27,7 +27,8 @@
                 <Border Name="Frame"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        ClipToBounds="True">
                     <DockPanel LastChildFill="True" Name="RootLayout">
                         <Border Name="HeaderFrame"
                                 DockPanel.Dock="Top"
@@ -86,7 +87,8 @@
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
                                           CornerRadius="{TemplateBinding BodyCornerRadius}"
                                           Height="{TemplateBinding ListHeight}"
-                                          HorizontalAlignment="Stretch"/>
+                                          HorizontalAlignment="Stretch"
+                                          HorizontalContentAlignment="Stretch"/>
                     </DockPanel>
                 </Border>
             </ControlTemplate>

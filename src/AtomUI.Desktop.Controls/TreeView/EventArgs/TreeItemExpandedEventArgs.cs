@@ -2,10 +2,10 @@ namespace AtomUI.Desktop.Controls;
 
 public class TreeItemExpandedEventArgs : EventArgs
 {
-    public TreeItem Item { get; }
+    public TreeViewItem ViewItem { get; }
 
-    public TreeItemExpandedEventArgs(TreeItem item)
+    public TreeItemExpandedEventArgs(TreeViewItem viewItem)
     {
-        Item = item;
+        ViewItem = viewItem;
     }
 }

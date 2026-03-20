@@ -4,9 +4,9 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes">
-    <ControlTheme x:Key="{x:Type atom:DataGridFilterTreeItem}" TargetType="atom:DataGridFilterTreeItem">
+    <ControlTheme x:Key="{x:Type atom:DataGridFilterTreeViewItem}" TargetType="atom:DataGridFilterTreeViewItem">
         <ControlTheme.BasedOn>
-            <themes:TreeViewItemTheme TargetType="atom:DataGridFilterTreeItem"/>
+            <themes:TreeViewItemTheme TargetType="atom:DataGridFilterTreeViewItem"/>
         </ControlTheme.BasedOn>
     </ControlTheme>
 </ResourceDictionary>

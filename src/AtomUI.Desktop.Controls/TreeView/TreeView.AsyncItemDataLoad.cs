@@ -22,7 +22,7 @@ public partial class TreeView
     }
     #endregion
 
-    private void HandleNodeLoadRequest(TreeItem item)
+    private void HandleNodeLoadRequest(TreeViewItem viewItem)
     {
         if (DataLoader == null)
         {
@@ -32,18 +32,18 @@ public partial class TreeView
         {
             throw new InvalidOperationException("ITreeNodeDataLoader is set, but the tree nodes are not initially set via ItemsSource.");
         }
-        var data = TreeItemFromContainer(item);
+        var data = TreeItemFromContainer(viewItem);
         if (data is ITreeItemNode treeItemData)
         {
             var cts = new CancellationTokenSource(); // TODO 做一个超时结束
-            item.IsLoading = true;
+            viewItem.IsLoading = true;
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 Debug.Assert(DataLoader != null);
                 var result = await DataLoader.LoadAsync(treeItemData, cts.Token);
-                item.IsLoading   = false;
-                item.AsyncLoaded = true; // TODO 是不是应该多给几次机会？
-                TreeItemLoaded?.Invoke(this, new TreeViewItemLoadedEventArgs(item, result));
+                viewItem.IsLoading   = false;
+                viewItem.AsyncLoaded = true; // TODO 是不是应该多给几次机会？
+                TreeItemLoaded?.Invoke(this, new TreeViewItemLoadedEventArgs(viewItem, result));
                 if (result.IsSuccess)
                 {
                     if (result.Data?.Count > 0)
@@ -53,7 +53,7 @@ public partial class TreeView
                             child.UpdateParentNode(treeItemData);
                         }
                         treeItemData.Children.AddRange(result.Data);
-                        item.IsExpanded = true;
+                        viewItem.IsExpanded = true;
                     }
                 }
             });

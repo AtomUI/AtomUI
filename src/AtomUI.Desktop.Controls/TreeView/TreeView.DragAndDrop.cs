@@ -72,10 +72,10 @@ public partial class TreeView
     #endregion
     
     private Point? _lastPoint;
-    private TreeItem? _beingDraggedTreeItem;
+    private TreeViewItem? _beingDraggedTreeItem;
     private DragPreviewAdorner? _dragPreview;
-    private TreeItem? _currentDragOver; // 这个不是目标节点，有可能是在父节点上拖动
-    private TreeItem? _dropTargetNode; // 目标释放节点
+    private TreeViewItem? _currentDragOver; // 这个不是目标节点，有可能是在父节点上拖动
+    private TreeViewItem? _dropTargetNode; // 目标释放节点
     private DropTargetInfo? _dropTargetInfo;
     
     private static void ConfigureDragAndDrop()
@@ -87,18 +87,18 @@ public partial class TreeView
 
         NodeSwitcherButton.NodeLoadRequestEvent.AddClassHandler<TreeView>((tree, args) =>
         {
-            tree.HandleNodeLoadRequest(args.Item);
+            tree.HandleNodeLoadRequest(args.ViewItem);
         });
     }
     
     // 自己优先的查找，用于确认拖动发生的节点
-    internal TreeItem? GetNodeByPositionSelfFirst(Point position)
+    internal TreeViewItem? GetNodeByPositionSelfFirst(Point position)
     {
-        TreeItem? result = null;
+        TreeViewItem? result = null;
         for (var i = 0; i < ItemCount; i++)
         {
             var current = ContainerFromIndex(i);
-            if (current is TreeItem currentTreeItem && currentTreeItem.IsVisible)
+            if (current is TreeViewItem currentTreeItem && currentTreeItem.IsVisible)
             {
                 result = GetNodeByPositionSelfFirst(position, currentTreeItem);
             }
@@ -112,7 +112,7 @@ public partial class TreeView
         return result;
     }
 
-    private TreeItem? GetNodeByPositionSelfFirst(Point position, TreeItem current)
+    private TreeViewItem? GetNodeByPositionSelfFirst(Point position, TreeViewItem current)
     {
         if (!IsVisibleInViewport(current))
         {
@@ -130,7 +130,7 @@ public partial class TreeView
         for (var i = 0; i < current.ItemCount; i++)
         {
             var child = current.ContainerFromIndex(i);
-            if (child is TreeItem childItem)
+            if (child is TreeViewItem childItem)
             {
                 result = GetNodeByPositionSelfFirst(position, childItem);
             }
@@ -145,13 +145,13 @@ public partial class TreeView
     }
 
     // 孩子优先的查找
-    internal TreeItem? GetNodeByPosition(Point position)
+    internal TreeViewItem? GetNodeByPosition(Point position)
     {
-        TreeItem? result = null;
+        TreeViewItem? result = null;
         for (var i = 0; i < ItemCount; i++)
         {
             var child = ContainerFromIndex(i);
-            if (child is TreeItem childItem)
+            if (child is TreeViewItem childItem)
             {
                 result = GetNodeByPosition(position, childItem);
             }
@@ -165,9 +165,9 @@ public partial class TreeView
         return result;
     }
 
-    private TreeItem? GetNodeByPosition(Point position, TreeItem current)
+    private TreeViewItem? GetNodeByPosition(Point position, TreeViewItem current)
     {
-        TreeItem? result = null;
+        TreeViewItem? result = null;
 
         if (!IsVisibleInViewport(current))
         {
@@ -177,7 +177,7 @@ public partial class TreeView
         for (var i = 0; i < current.ItemCount; i++)
         {
             var child = current.ContainerFromIndex(i);
-            if (child is TreeItem childItem)
+            if (child is TreeViewItem childItem)
             {
                 result = GetNodeByPosition(position, childItem);
             }
@@ -193,13 +193,13 @@ public partial class TreeView
         return result;
     }
 
-    internal TreeItem? GetNodeByOffsetY(Point position)
+    internal TreeViewItem? GetNodeByOffsetY(Point position)
     {
-        TreeItem? result = null;
+        TreeViewItem? result = null;
         for (var i = 0; i < ItemCount; i++)
         {
             var child = ContainerFromIndex(i);
-            if (child is TreeItem childItem)
+            if (child is TreeViewItem childItem)
             {
                 result = GetNodeByOffsetY(position, childItem);
             }
@@ -213,9 +213,9 @@ public partial class TreeView
         return result;
     }
 
-    private TreeItem? GetNodeByOffsetY(Point position, TreeItem current)
+    private TreeViewItem? GetNodeByOffsetY(Point position, TreeViewItem current)
     {
-        TreeItem? result = null;
+        TreeViewItem? result = null;
 
         if (!IsVisibleInViewport(current))
         {
@@ -225,7 +225,7 @@ public partial class TreeView
         for (var i = 0; i < current.ItemCount; i++)
         {
             var child = current.ContainerFromIndex(i);
-            if (child is TreeItem childItem)
+            if (child is TreeViewItem childItem)
             {
                 result = GetNodeByOffsetY(position, childItem);
             }
@@ -371,7 +371,7 @@ public partial class TreeView
         var maxOffsetY = Bounds.Height - DragIndicatorLineWidth / 2;
 
         var effectiveIndex = 0;
-        if (effectiveDropTarget.Parent is TreeItem parentItem)
+        if (effectiveDropTarget.Parent is TreeViewItem parentItem)
         {
             effectiveIndex                 = parentItem.IndexFromContainer(effectiveDropTarget);
             _dropTargetInfo.TargetTreeItem = parentItem;
@@ -501,7 +501,7 @@ public partial class TreeView
         var     sourceIsRoot               = false;
         
         
-        if (_beingDraggedTreeItem.Parent is TreeItem parentItem)
+        if (_beingDraggedTreeItem.Parent is TreeViewItem parentItem)
         {
             sourceItem = parentItem.ItemFromContainer(_beingDraggedTreeItem);
             if (sourceItem is not null)
@@ -542,13 +542,13 @@ public partial class TreeView
         }
     }
 
-    private bool IsVisibleInViewport(TreeItem item)
+    private bool IsVisibleInViewport(TreeViewItem viewItem)
     {
         // 先判断是否展开
-        if (item.Level > 0)
+        if (viewItem.Level > 0)
         {
             var isExpanded  = true;
-            var currentItem = item.Parent as TreeItem;
+            var currentItem = viewItem.Parent as TreeViewItem;
             while (currentItem is not null)
             {
                 if (!currentItem.IsExpanded)
@@ -557,7 +557,7 @@ public partial class TreeView
                     break;
                 }
 
-                currentItem = currentItem.Parent as TreeItem;
+                currentItem = currentItem.Parent as TreeViewItem;
             }
 
             if (!isExpanded)
@@ -566,22 +566,22 @@ public partial class TreeView
             }
         }
 
-        var dragBounds   = item.GetDragBounds();
-        var offset       = item.TranslatePoint(dragBounds.Position, this) ?? default;
+        var dragBounds   = viewItem.GetDragBounds();
+        var offset       = viewItem.TranslatePoint(dragBounds.Position, this) ?? default;
         var targetBounds = new Rect(offset, dragBounds.Size);
         return new Rect(Bounds.Size).Contains(targetBounds);
     }
 
-    private bool IsDescendantNodeOf(TreeItem parentItem, TreeItem descendantItem)
+    private bool IsDescendantNodeOf(TreeViewItem parentViewItem, TreeViewItem descendantViewItem)
     {
-        TreeItem? target = descendantItem;
+        TreeViewItem? target = descendantViewItem;
         while (target != null)
         {
-            if (target == parentItem)
+            if (target == parentViewItem)
             {
                 return true;
             }
-            target = target.Parent as TreeItem;
+            target = target.Parent as TreeViewItem;
         }
         return false;
     }
@@ -605,14 +605,14 @@ public partial class TreeView
 
 internal class DropTargetInfo
 {
-    public TreeItem? TargetTreeItem { get; set; }
+    public TreeViewItem? TargetTreeItem { get; set; }
     public int Index { get; set; }
     public bool IsRoot { get; set; }
 }
 
 internal record DragIndicatorRenderInfo
 {
-    public TreeItem? TargetTreeItem { get; set; }
+    public TreeViewItem? TargetTreeItem { get; set; }
     public Point StartPoint { get; set; }
     public Point EndPoint { get; set; }
 }

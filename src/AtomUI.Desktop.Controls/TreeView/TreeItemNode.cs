@@ -12,7 +12,7 @@ public record TreeItemNode : ITreeItemNode, ISelectTagTextProvider
     public EntityKey? ItemKey { get; init; }
     public object? Header { get; init; }
     public PathIcon? Icon { get; init; }
-    public bool IsEnabled { get; init; } = true;
+    public bool IsEnabled { get; set; } = true;
     public bool? IsChecked { get; set; } = false;
     public bool IsSelected { get; set; }
     public bool IsExpanded { get; set; }

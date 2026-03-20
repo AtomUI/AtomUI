@@ -4,7 +4,7 @@ using Avalonia.Data.Converters;
 
 namespace AtomUI.Desktop.Controls.Converters;
 
-internal class DataGridUniformBorderThicknessToScalarConverter : IValueConverter
+public class DataGridUniformBorderThicknessToScalarConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {

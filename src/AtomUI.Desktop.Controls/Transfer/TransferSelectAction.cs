@@ -6,5 +6,6 @@ public enum TransferSelectAction
     DeselectAll,
     SelectCurrentPage,
     InvertSelectCurrentPage,
+    RemoveCurrentPage,
     RemoveAll
 }

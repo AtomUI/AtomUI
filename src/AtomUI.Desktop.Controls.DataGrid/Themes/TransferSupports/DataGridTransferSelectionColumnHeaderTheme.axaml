@@ -1,0 +1,27 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:ClassModifier="internal"
+    xmlns:atom="https://atomui.net">
+    <ControlTheme x:Key="{x:Type atom:DataGridTransferSelectionColumnHeader}"
+                  TargetType="atom:DataGridTransferSelectionColumnHeader">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Orientation="Horizontal" Name="RootLayout">
+                    <atom:CheckBox IsChecked="{TemplateBinding IsAllSelected, Mode=TwoWay}"/>
+                    <atom:TransferSelectDropdown
+                        Icon="{TemplateBinding SelectionsIcon}" 
+                        IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"
+                        IsOneWay="{TemplateBinding IsOneWay}"/>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="ClipToBounds" Value="False" />
+        <Style Selector="^ /template/ StackPanel#RootLayout">
+            <Setter Property="Margin" Value="{DynamicResource {x:Static atom:TransferTokenKey.DataGridSelectionHeaderMargin}}" />
+            <Setter Property="Spacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
+        </Style>
+        
+    </ControlTheme>
+</ResourceDictionary>

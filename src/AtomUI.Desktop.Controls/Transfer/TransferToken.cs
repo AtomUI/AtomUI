@@ -59,6 +59,8 @@ internal class TransferToken : AbstractControlDesignToken
     /// </summary>
     public Thickness PaginationMargin { get; set; }
     
+    public Thickness DataGridSelectionHeaderMargin { get; set; }
+    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -70,6 +72,7 @@ internal class TransferToken : AbstractControlDesignToken
         ItemPadding  = new Thickness(0, (SharedToken.ControlHeight - SharedToken.FontHeight) / 2);
         HeaderPadding = new Thickness(SharedToken.UniformlyPaddingSM,
             Math.Ceiling((SharedToken.ControlHeightLG - SharedToken.LineWidth - SharedToken.FontHeight) / 2));
-        PaginationMargin        = new Thickness(0, SharedToken.UniformlyMarginXXS);
+        PaginationMargin              = new Thickness(0, SharedToken.UniformlyMarginXXS);
+        DataGridSelectionHeaderMargin = new Thickness(SharedToken.UniformlyPaddingXS * 2, 0, 0, 0);
     }
 }

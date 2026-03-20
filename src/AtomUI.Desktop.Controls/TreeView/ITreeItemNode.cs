@@ -11,6 +11,7 @@ public interface ITreeItemNode : ITreeNode<ITreeItemNode>
     string? GroupName { get; }
     bool IsLeaf { get; }
     object? Value { get; set; }
+    new bool IsEnabled { get; set; }
 
     void UpdateParentNode(ITreeItemNode? parentNode) => throw new NotImplementedException();
 }

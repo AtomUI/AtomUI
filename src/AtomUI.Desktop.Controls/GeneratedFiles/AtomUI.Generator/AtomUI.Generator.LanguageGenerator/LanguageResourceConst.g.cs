@@ -83,6 +83,7 @@ namespace AtomUI.Desktop.Controls.TransferLang
         public static readonly LanguageResourceKey Item = new LanguageResourceKey("Transfer.Item", "AtomUI.Lang");
         public static readonly LanguageResourceKey Items = new LanguageResourceKey("Transfer.Items", "AtomUI.Lang");
         public static readonly LanguageResourceKey RemoveAll = new LanguageResourceKey("Transfer.RemoveAll", "AtomUI.Lang");
+        public static readonly LanguageResourceKey RemoveCurrentPage = new LanguageResourceKey("Transfer.RemoveCurrentPage", "AtomUI.Lang");
         public static readonly LanguageResourceKey SelectAll = new LanguageResourceKey("Transfer.SelectAll", "AtomUI.Lang");
         public static readonly LanguageResourceKey SelectCurrentPage = new LanguageResourceKey("Transfer.SelectCurrentPage", "AtomUI.Lang");
     }

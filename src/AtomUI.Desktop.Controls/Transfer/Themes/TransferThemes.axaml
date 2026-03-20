@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="TransferTheme.axaml"/>
+        <ResourceInclude Source="ListTransferTheme.axaml"/>
+        <ResourceInclude Source="TreeTransferTheme.axaml"/>
         <ResourceInclude Source="TransferListViewTheme.axaml"/>
         <ResourceInclude Source="TransferListItemTheme.axaml"/>
         <ResourceInclude Source="TransferTreeViewTheme.axaml"/>

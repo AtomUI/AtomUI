@@ -1,5 +1,7 @@
 using System.Collections;
 using AtomUI.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -20,8 +22,16 @@ public interface ITransferView
     void NotifyAboutToTransfer(TransferDirection transferDirection);
     void NotifyTransferCompleted(TransferDirection transferDirection);
     void NotifySelectAction(TransferSelectAction selectAction);
+    public void NotifyIsOneWay(bool isOneWay) {}
     void SetSelectionEnabled(bool enabled);
+    public void SetSelectionsIcon(PathIcon? icon) {}
     void SetItemsSource(IEnumerable? itemsSource);
-    void SetPaginationEnabled(bool enabled);
+    public void SetItemTemplate(IDataTemplate? itemTemplate) {}
+    public void SetPaginationEnabled(bool enabled) {}
     void SetPageSize(int pageSize);
+}
+
+internal interface ITransferDecoratorProvider
+{
+    void ProvideTransferDecorator(TransferItemDecorator decorator);
 }

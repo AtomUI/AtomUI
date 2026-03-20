@@ -16,7 +16,7 @@ internal class TransferSelectDropdown : IconButton
             (o, v) => o.IsAllSelected = v);
     
     public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
-        Transfer.IsPaginationEnabledProperty.AddOwner<TransferSelectDropdown>();
+        AbstractTransfer.IsPaginationEnabledProperty.AddOwner<TransferSelectDropdown>();
     
     private bool _isAllSelected;
     public bool IsAllSelected
@@ -67,13 +67,18 @@ internal class TransferSelectDropdown : IconButton
             o => o.SelectCurrentPageText,
             (o, v) => o.SelectCurrentPageText = v);
     
+    internal static readonly DirectProperty<TransferSelectDropdown, string?> RemoveCurrentPageTextProperty =
+        AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(RemoveCurrentPageText),
+            o => o.RemoveCurrentPageText,
+            (o, v) => o.RemoveCurrentPageText = v);
+    
     internal static readonly DirectProperty<TransferSelectDropdown, string?> RemoveAllTextProperty =
         AvaloniaProperty.RegisterDirect<TransferSelectDropdown, string?>(nameof(RemoveAllText),
             o => o.RemoveAllText,
             (o, v) => o.RemoveAllText = v);
     
     internal static readonly StyledProperty<bool> IsOneWayProperty =
-        Transfer.IsOneWayProperty.AddOwner<TransferSelectDropdown>();
+        AbstractTransfer.IsOneWayProperty.AddOwner<TransferSelectDropdown>();
     
     internal static readonly DirectProperty<TransferSelectDropdown, TransferViewType> ViewTypeProperty =
         AvaloniaProperty.RegisterDirect<TransferSelectDropdown, TransferViewType>(nameof(ViewType),
@@ -106,6 +111,13 @@ internal class TransferSelectDropdown : IconButton
     {
         get => _selectCurrentPageText;
         set => SetAndRaise(SelectCurrentPageTextProperty, ref _selectCurrentPageText, value);
+    }
+    
+    private string? _removeCurrentPageText;
+    internal string? RemoveCurrentPageText
+    {
+        get => _removeCurrentPageText;
+        set => SetAndRaise(RemoveCurrentPageTextProperty, ref _removeCurrentPageText, value);
     }
     
     private string? _removeAllText;
@@ -191,6 +203,14 @@ internal class TransferSelectDropdown : IconButton
                     Tag = TransferSelectAction.RemoveAll
                 };
                 _disposables.Add(BindUtils.RelayBind(this, RemoveAllTextProperty, removeAllData, MenuItem.HeaderProperty));
+                
+                var removeCurrentPage = new MenuItem
+                {
+                    Tag = TransferSelectAction.RemoveCurrentPage
+                };
+                _disposables.Add(BindUtils.RelayBind(this, RemoveCurrentPageTextProperty, removeCurrentPage, MenuItem.HeaderProperty));
+                _disposables.Add(BindUtils.RelayBind(this, IsPaginationEnabledProperty, removeCurrentPage, MenuItem.IsVisibleProperty));
+                menuFlyout.Items.Add(removeCurrentPage);
                 menuFlyout.Items.Add(removeAllData);
             }
             

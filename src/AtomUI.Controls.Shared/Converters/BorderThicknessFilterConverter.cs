@@ -4,7 +4,7 @@ using Avalonia.Data.Converters;
 
 namespace AtomUI.Controls.Converters;
 
-internal class BorderThicknessFilterConverter : IValueConverter
+public class BorderThicknessFilterConverter : IValueConverter
 {
     public bool Left { get; set; } = true;
 

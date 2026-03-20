@@ -3,9 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:TreeSelectTreeItem}" TargetType="atom:TreeSelectTreeItem">
+    <ControlTheme x:Key="{x:Type atom:TreeViewSelectTreeViewItem}" TargetType="atom:TreeViewSelectTreeViewItem">
         <ControlTheme.BasedOn>
-            <atom:TreeViewItemTheme TargetType="atom:TreeSelectTreeItem" />
+            <atom:TreeViewItemTheme TargetType="atom:TreeViewSelectTreeViewItem" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>

@@ -50,5 +50,11 @@
                 <atom:Empty SizeType="Small" PresetImage="Simple"/>
             </DataTemplate>
         </Setter>
+        
+        <Setter Property="ItemTemplate">
+            <TreeDataTemplate ItemsSource="{Binding Children}" DataType="atom:ITreeItemNode">
+                <atom:TextBlock Text="{Binding Header}" />
+            </TreeDataTemplate>
+        </Setter>
     </Style>
 </ControlTheme>

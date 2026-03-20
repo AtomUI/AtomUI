@@ -2,7 +2,6 @@
                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                             xmlns:atom="https://atomui.net"
                             x:Class="AtomUI.Desktop.Controls.AtomUIDataGridThemesProvider"
-                            xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
                             Id="AtomUI.Desktop.Controls.DataGrid">
     <atom:ControlThemesProvider.ControlThemes>
         <ResourceInclude Source="Themes/DataGridCellTheme.axaml" />
@@ -13,7 +12,6 @@
         <ResourceInclude Source="Themes/DataGridRowTheme.axaml" />
         <ResourceInclude Source="Themes/DataGridRowReorderHandle.axaml" />
         <ResourceInclude Source="Themes/DataGridRowExpander.axaml" />
-        <ResourceInclude Source="Themes/DataGridTheme.axaml" />
         <ResourceInclude Source="Themes/DataGridTopLeftColumnHeaderTheme.axaml" />
         <ResourceInclude Source="Themes/DataGridOperationButtons.axaml" />
         <ResourceInclude Source="Themes/Filters/DataGridSortIndicatorTheme.axaml" />
@@ -22,9 +20,11 @@
         <ResourceInclude Source="Themes/Filters/DataGridFilterTreeItemTheme.axaml" />
         <ResourceInclude Source="Themes/Filters/DataGridMenuFilterFlyoutPresenterTheme.axaml" />
         <ResourceInclude Source="Themes/Filters/DataGridTreeFilterFlyoutPresenterTheme.axaml" />
+        <ResourceInclude Source="Themes/TransferSupports/DataGridTransferSelectionColumnHeaderTheme.axaml" />
+        <ResourceInclude Source="Themes/TransferSupports/TransferDataGridViewTheme.axaml" />
         <ResourceDictionary>
-            <themes:DataGridColumnHeaderTheme x:Key="{x:Type atom:DataGridColumnHeader}"
-                                              TargetType="atom:DataGridColumnHeader" />
+            <atom:DataGridColumnHeaderTheme x:Key="{x:Type atom:DataGridColumnHeader}" TargetType="atom:DataGridColumnHeader" />
+            <atom:DataGridTheme x:Key="{x:Type atom:DataGrid}" TargetType="atom:DataGrid" />
         </ResourceDictionary>
     </atom:ControlThemesProvider.ControlThemes>
 </atom:ControlThemesProvider>

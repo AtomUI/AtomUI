@@ -26,7 +26,7 @@ public class TransferListView : ListView, ITransferView
             (o, v) => o.ViewType = v);
     
     public static readonly StyledProperty<bool> IsPaginationEnabledProperty =
-        Transfer.IsPaginationEnabledProperty.AddOwner<TransferListView>();
+        AbstractTransfer.IsPaginationEnabledProperty.AddOwner<TransferListView>();
 
     private IList<EntityKey>? _selectedKeys;
     public IList<EntityKey>? SelectedKeys
@@ -139,6 +139,11 @@ public class TransferListView : ListView, ITransferView
     void ITransferView.SetItemsSource(IEnumerable? itemsSource)
     {
         SetCurrentValue(ItemsSourceProperty, itemsSource);
+    }
+
+    void ITransferView.SetItemTemplate(IDataTemplate? itemTemplate)
+    {
+        SetCurrentValue(ItemTemplateProperty, itemTemplate);
     }
     
     void ITransferView.NotifyAboutToTransfer(TransferDirection transferDirection)

@@ -85,7 +85,7 @@ internal class DataGridTreeFilterFlyout : TreeViewFlyout
     }
 }
 
-internal class DataGridFilterTreeItem : TreeItem
+internal class DataGridFilterTreeViewItem : TreeViewItem
 {
     public string? FilterValue { get; set; }
 

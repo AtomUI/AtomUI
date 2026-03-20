@@ -4,10 +4,11 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TransferTreeView}" TargetType="atom:TransferTreeView">
-        <Setter Property="Template">
-            <ControlTemplate>
-             
-            </ControlTemplate>
-        </Setter>
+        <ControlTheme.BasedOn>
+            <atom:TreeViewTheme TargetType="atom:TransferTreeView"/>
+        </ControlTheme.BasedOn>
+        
+        <Setter Property="ToggleType" Value="CheckBox"/>
+        <Setter Property="IsCheckStrictly" Value="True"/>
     </ControlTheme>
 </ResourceDictionary>

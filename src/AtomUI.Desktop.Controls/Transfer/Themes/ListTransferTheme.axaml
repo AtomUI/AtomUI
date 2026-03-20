@@ -1,0 +1,87 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:ListTransfer}" TargetType="atom:ListTransfer">
+        <ControlTheme.BasedOn>
+            <atom:AbstractTransferTheme TargetType="atom:ListTransfer" />
+        </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:ListTransfer">
+                <Grid Name="RootLayout"
+                      RowDefinitions="Auto">
+                    <atom:TransferItemDecorator Name="SourceDecoratorView"
+                                                Content="{TemplateBinding SourceView}"
+                                                HorizontalAlignment="Left"
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                ListHeight="{TemplateBinding ListHeight}"
+                                                ViewType="{x:Static atom:TransferViewType.Source}"
+                                                SizeType="{TemplateBinding SizeType}"
+                                                Status="{TemplateBinding Status}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"
+                                                PageSize="{TemplateBinding PageSize}"
+                                                Title="{TemplateBinding SourceTitle}"
+                                                TitleTemplate="{TemplateBinding SourceTitleTemplate}"
+                                                SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
+                                                ItemsSource="{TemplateBinding SourceViewSource}"
+                                                IsOneWay="{TemplateBinding IsOneWay}"
+                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
+                                                FilterPlaceholderText="{TemplateBinding FilterPlaceholderText}"
+                                                Width="{TemplateBinding ListWidth}"
+                                                Footer="{TemplateBinding SourceViewFooter}"
+                                                FooterTemplate="{TemplateBinding SourceViewFooterTemplate}"
+                                                ItemTemplate="{TemplateBinding ItemTemplate}" />
+                    <StackPanel Name="ActionsLayout"
+                                Orientation="Vertical"
+                                VerticalAlignment="Center"
+                                Grid.Row="0"
+                                Grid.Column="1">
+                        <atom:Button Name="ToTargetButton" ButtonType="Primary"
+                                     Icon="{TemplateBinding ToTargetTransferIcon}"
+                                     SizeType="Small"
+                                     IsEnabled="{Binding #SourceDecoratorView.HasSelected}"
+                                     Tag="{x:Static atom:TransferDirection.ToTarget}"
+                                     Content="{TemplateBinding ToTargetButtonText}"
+                                     HorizontalAlignment="Stretch" />
+                        <atom:Button Name="ToSourceButton"
+                                     ButtonType="Primary"
+                                     Tag="{x:Static atom:TransferDirection.ToSource}"
+                                     Icon="{TemplateBinding ToSourceTransferIcon}"
+                                     SizeType="Small"
+                                     IsEnabled="{Binding #TargetDecoratorView.HasSelected}"
+                                     Content="{TemplateBinding ToSourceButtonText}"
+                                     HorizontalAlignment="Stretch"
+                                     IsVisible="{TemplateBinding IsOneWay, Converter={x:Static BoolConverters.Not}}" />
+                    </StackPanel>
+                    <atom:TransferItemDecorator Name="TargetDecoratorView"
+                                                Content="{TemplateBinding TargetView}"
+                                                HorizontalAlignment="Left"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                ViewType="{x:Static atom:TransferViewType.Target}"
+                                                SizeType="{TemplateBinding SizeType}"
+                                                Status="{TemplateBinding Status}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"
+                                                PageSize="{TemplateBinding PageSize}"
+                                                Title="{TemplateBinding TargetTitle}"
+                                                TitleTemplate="{TemplateBinding TargetTitleTemplate}"
+                                                SelectionsIconTemplate="{TemplateBinding SelectionsIcon}"
+                                                ItemsSource="{TemplateBinding TargetViewSource}"
+                                                IsOneWay="{TemplateBinding IsOneWay}"
+                                                ListHeight="{TemplateBinding ListHeight}"
+                                                IsFilterEnabled="{TemplateBinding IsFilterEnabled}"
+                                                FilterPlaceholderText="{TemplateBinding FilterPlaceholderText}"
+                                                Width="{TemplateBinding ListWidth}"
+                                                Footer="{TemplateBinding TargetViewFooter}"
+                                                FooterTemplate="{TemplateBinding TargetViewFooterTemplate}"
+                                                ItemTemplate="{TemplateBinding ItemTemplate}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

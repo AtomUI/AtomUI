@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
+using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ViewModels;
 using Avalonia.Interactivity;
 using ReactiveUI;
@@ -19,6 +20,7 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
                 InitOneWayTransferItems(vm);
                 InitSearchTransferItems(vm);
                 InitPaginationTransferItems(vm);
+                InitDataGridTransferItems(vm);
                 vm.TransferFilterValueSelector = record =>
                 {
                     if (record is ListItemData listItemData)
@@ -28,6 +30,7 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
                     return record.ToString();
                 };
                 InitAdvanceTransferItems(vm);
+                InitTreeViewTransferItems(vm);
             }
         });
         InitializeComponent();
@@ -102,13 +105,13 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
         vm.AdvanceTransferDefaultTargetKeys = targetKeys;
     }
     
-    private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is TransferViewModel vm)
-        {
-            AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
-        }
-    }
+    // private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
+    // {
+    //     if (DataContext is TransferViewModel vm)
+    //     {
+    //         AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
+    //     }
+    // }
     
     private void InitPaginationTransferItems(TransferViewModel vm)
     {
@@ -131,4 +134,65 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
         vm.PaginationTransferItems             = items;
         vm.PaginationTransferDefaultTargetKeys = targetKeys;
     }
+
+    private void InitDataGridTransferItems(TransferViewModel vm)
+    {
+        var          items = new List<DataGridTransferData>();
+        List<string> tags  = ["cat", "dog", "bird"];
+        for (var i = 0; i < 20; i++)
+        {
+            items.Add(new DataGridTransferData()
+            {
+                ItemKey     = $"{i}",
+                Title       = $"content{i + 1}",
+                Description = $"description of content{i + 1}",
+                Tag         = tags[i % 3]
+            });
+        }
+        vm.GridDataTransformItems = items;
+    }
+
+    private void InitTreeViewTransferItems(TransferViewModel vm)
+    {
+        vm.TransferTreeNodes = [
+            new TreeItemNode()
+            {
+                ItemKey = "0-0",
+                Header = "0-0"
+            },
+            new TreeItemNode()
+            {
+                ItemKey = "0-1",
+                Header = "0-1",
+                Children = [
+                    new TreeItemNode()
+                    {
+                        ItemKey = "0-1-0",
+                        Header = "0-1-0",
+                    },
+                    new TreeItemNode()
+                    {
+                        ItemKey = "0-1-1",
+                        Header = "0-1-1",
+                    }
+                ]
+            },
+            new TreeItemNode()
+            {
+                ItemKey = "0-2",
+                Header = "0-2"
+            },
+            new TreeItemNode()
+            {
+                ItemKey = "0-3",
+                Header = "0-3"
+            },
+            new TreeItemNode()
+            {
+                ItemKey = "0-4",
+                Header = "0-4"
+            }
+        ];
+    }
+    
 }

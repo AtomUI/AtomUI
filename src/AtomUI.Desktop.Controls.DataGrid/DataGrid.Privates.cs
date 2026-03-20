@@ -1472,8 +1472,12 @@ public partial class DataGrid
         if (sender is DataGridCollectionView view)
         {
             IsEmptyDataSource = view.IsEmpty;
+            NotifyDataCollectionViewChanged(view, args);
         }
     }
+    
+    protected virtual void NotifyDataCollectionViewChanged(DataGridCollectionView view, NotifyCollectionChangedEventArgs args)
+    {}
 
     internal void UpdatePseudoClasses()
     {

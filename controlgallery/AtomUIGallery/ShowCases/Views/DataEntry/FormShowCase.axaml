@@ -298,15 +298,15 @@
         
                     <atom:FormItem LabelText="Tree" FieldName="tree">
                         <atom:TreeView>
-                            <atom:TreeItem Header="Parent 1" ItemKey="0-0">
-                                <atom:TreeItem Header="Child 1-1" ItemKey="0-0-0">
-                                    <atom:TreeItem Header="Grandchild 1-1-1" ItemKey="0-0-0-0"/>
-                                </atom:TreeItem>
-                                <atom:TreeItem Header="Child 1-2" ItemKey="0-0-1"/>
-                            </atom:TreeItem>
-                            <atom:TreeItem Header="Parent 2" ItemKey="0-1">
-                                <atom:TreeItem Header="Child 2-1" ItemKey="0-1-0"/>
-                            </atom:TreeItem>
+                            <atom:TreeViewItem Header="Parent 1" ItemKey="0-0">
+                                <atom:TreeViewItem Header="Child 1-1" ItemKey="0-0-0">
+                                    <atom:TreeViewItem Header="Grandchild 1-1-1" ItemKey="0-0-0-0"/>
+                                </atom:TreeViewItem>
+                                <atom:TreeViewItem Header="Child 1-2" ItemKey="0-0-1"/>
+                            </atom:TreeViewItem>
+                            <atom:TreeViewItem Header="Parent 2" ItemKey="0-1">
+                                <atom:TreeViewItem Header="Child 2-1" ItemKey="0-1-0"/>
+                            </atom:TreeViewItem>
                         </atom:TreeView>
                     </atom:FormItem>
                 </atom:Form>

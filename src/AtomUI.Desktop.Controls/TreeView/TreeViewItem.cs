@@ -20,32 +20,32 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaTreeItem = Avalonia.Controls.TreeViewItem;
 
 [PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio)]
-public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
+public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> IconProperty =
-        AvaloniaProperty.Register<TreeItem, PathIcon?>(nameof(Icon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(Icon));
 
     public static readonly StyledProperty<bool?> IsCheckedProperty =
-        AvaloniaProperty.Register<TreeItem, bool?>(nameof(IsChecked), false);
+        AvaloniaProperty.Register<TreeViewItem, bool?>(nameof(IsChecked), false);
 
-    public static readonly DirectProperty<TreeItem, bool> IsLeafProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsLeaf),
+    public static readonly DirectProperty<TreeViewItem, bool> IsLeafProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsLeaf),
             o => o.IsLeaf);
 
     public static readonly StyledProperty<bool> IsLoadingProperty =
-        AvaloniaProperty.Register<TreeItem, bool>(nameof(IsLoading), false);
+        AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsLoading), false);
     
     public static readonly StyledProperty<string?> GroupNameProperty =
-        RadioButton.GroupNameProperty.AddOwner<TreeItem>();
+        RadioButton.GroupNameProperty.AddOwner<TreeViewItem>();
     
-    public static readonly DirectProperty<TreeItem, object?> ValueProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, object?>(nameof(Value),
+    public static readonly DirectProperty<TreeViewItem, object?> ValueProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, object?>(nameof(Value),
             o => o.Value,
            (o, v) => o.Value = v);
     
     public static readonly StyledProperty<bool> IsIndicatorEnabledProperty =
-        AvaloniaProperty.Register<TreeItem, bool>(nameof(IsIndicatorEnabled), true);
+        AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsIndicatorEnabled), true);
 
     public PathIcon? Icon
     {
@@ -103,12 +103,12 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
     #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-        RoutedEvent.Register<TreeItem, RoutedEventArgs>(
+        RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(
             nameof(Click),
             RoutingStrategies.Bubble);
     
     public static readonly RoutedEvent<RoutedEventArgs> ContextMenuRequestEvent =
-        RoutedEvent.Register<TreeItem, RoutedEventArgs>(nameof(ContextMenuRequest), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+        RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(nameof(ContextMenuRequest), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
     
     public event EventHandler<RoutedEventArgs>? Click
     {
@@ -126,96 +126,96 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
     #region 内部属性定义
     
     internal static readonly StyledProperty<PathIcon?> SwitcherExpandIconProperty =
-        AvaloniaProperty.Register<TreeItem, PathIcon?>(nameof(SwitcherExpandIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherExpandIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherCollapseIconProperty =
-        AvaloniaProperty.Register<TreeItem, PathIcon?>(nameof(SwitcherCollapseIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherCollapseIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherRotationIconProperty =
-        AvaloniaProperty.Register<TreeItem, PathIcon?>(nameof(SwitcherRotationIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherRotationIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherLoadingIconProperty =
-        AvaloniaProperty.Register<TreeItem, PathIcon?>(nameof(SwitcherLoadingIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLoadingIcon));
 
     internal static readonly StyledProperty<PathIcon?> SwitcherLeafIconProperty =
-        AvaloniaProperty.Register<TreeItem, PathIcon?>(nameof(SwitcherLeafIcon));
+        AvaloniaProperty.Register<TreeViewItem, PathIcon?>(nameof(SwitcherLeafIcon));
 
-    internal static readonly DirectProperty<TreeItem, TreeItemHoverMode> NodeHoverModeProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, TreeItemHoverMode>(nameof(NodeHoverMode),
+    internal static readonly DirectProperty<TreeViewItem, TreeItemHoverMode> NodeHoverModeProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeItemHoverMode>(nameof(NodeHoverMode),
             o => o.NodeHoverMode,
             (o, v) => o.NodeHoverMode = v);
 
-    internal static readonly DirectProperty<TreeItem, bool> IsShowLineProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsShowLine),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsShowLineProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsShowLine),
             o => o.IsShowLine,
             (o, v) => o.IsShowLine = v);
 
-    internal static readonly DirectProperty<TreeItem, bool> IsShowIconProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsShowIcon),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsShowIconProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsShowIcon),
             o => o.IsShowIcon,
             (o, v) => o.IsShowIcon = v);
 
-    internal static readonly DirectProperty<TreeItem, bool> IsDraggingProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsDragging),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsDraggingProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsDragging),
             o => o.IsDragging,
             (o, v) => o.IsDragging = v);
 
-    internal static readonly DirectProperty<TreeItem, bool> IsDragOverProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsDragOver),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsDragOverProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsDragOver),
             o => o.IsDragOver,
             (o, v) => o.IsDragOver = v);
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TreeItem>();
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TreeViewItem>();
 
-    internal static readonly DirectProperty<TreeItem, bool> IsSwitcherRotationProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(
+    internal static readonly DirectProperty<TreeViewItem, bool> IsSwitcherRotationProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
             nameof(IsSwitcherRotation),
             o => o.IsSwitcherRotation,
             (o, v) => o.IsSwitcherRotation = v);
     
     internal static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
-        TreeView.ToggleTypeProperty.AddOwner<TreeItem>();
+        TreeView.ToggleTypeProperty.AddOwner<TreeViewItem>();
     
     internal static readonly StyledProperty<bool> IsShowLeafIconProperty =
-        AvaloniaProperty.Register<TreeItem, bool>(nameof(IsShowLeafIcon));
+        AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsShowLeafIcon));
     
-    internal static readonly DirectProperty<TreeItem, bool> HasTreeItemDataLoaderProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(HasTreeItemDataLoader),
+    internal static readonly DirectProperty<TreeViewItem, bool> HasTreeItemDataLoaderProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(HasTreeItemDataLoader),
             o => o.HasTreeItemDataLoader,
             (o, v) => o.HasTreeItemDataLoader = v);
     
-    internal static readonly DirectProperty<TreeItem, bool> IsAutoExpandParentProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsAutoExpandParent),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsAutoExpandParentProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsAutoExpandParent),
             o => o.IsAutoExpandParent,
             (o, v) => o.IsAutoExpandParent = v);
     
-    internal static readonly DirectProperty<TreeItem, bool> IsFilterModeProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsFilterMode),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsFilterModeProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsFilterMode),
             o => o.IsFilterMode,
             (o, v) => o.IsFilterMode = v);
     
-    internal static readonly DirectProperty<TreeItem, bool> IsFilterMatchProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(nameof(IsFilterMatch),
+    internal static readonly DirectProperty<TreeViewItem, bool> IsFilterMatchProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsFilterMatch),
             o => o.IsFilterMatch,
             (o, v) => o.IsFilterMatch = v);
     
-    internal static readonly DirectProperty<TreeItem, string?> FilterHighlightWordsProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, string?>(nameof(FilterHighlightWords),
+    internal static readonly DirectProperty<TreeViewItem, string?> FilterHighlightWordsProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, string?>(nameof(FilterHighlightWords),
             o => o.FilterHighlightWords,
             (o, v) => o.FilterHighlightWords = v);
 
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
-        TreeView.FilterHighlightForegroundProperty.AddOwner<TreeItem>();
+        TreeView.FilterHighlightForegroundProperty.AddOwner<TreeViewItem>();
     
-    internal static readonly DirectProperty<TreeItem, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, TreeFilterHighlightStrategy>(
+    internal static readonly DirectProperty<TreeViewItem, TreeFilterHighlightStrategy> FilterHighlightStrategyProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, TreeFilterHighlightStrategy>(
             nameof(FilterHighlightStrategy),
             o => o.FilterHighlightStrategy,
             (o, v) => o.FilterHighlightStrategy = v);
     
-    internal static readonly DirectProperty<TreeItem, bool> IsSelectableProperty =
-        AvaloniaProperty.RegisterDirect<TreeItem, bool>(
+    internal static readonly DirectProperty<TreeViewItem, bool> IsSelectableProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
             nameof(IsSelectable),
             o => o.IsSelectable,
             (o, v) => o.IsSelectable = v);
@@ -389,13 +389,13 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
     private BaseMotionActor? _itemsPresenterMotionActor;
     private readonly BorderRenderHelper _borderRenderHelper;
     private TreeViewItemHeader? _header;
-    private readonly Dictionary<TreeItem, CompositeDisposable> _itemsBindingDisposables = new();
+    private readonly Dictionary<TreeViewItem, CompositeDisposable> _itemsBindingDisposables = new();
     internal bool AsyncLoaded;
     private FilterContextBackup? _filterContextBackup;
 
-    static TreeItem()
+    static TreeViewItem()
     {
-        AffectsRender<TreeItem>(
+        AffectsRender<TreeViewItem>(
             IsShowLineProperty,
             IsShowLeafIconProperty,
             IsDraggingProperty,
@@ -406,7 +406,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
             BackgroundProperty);
     }
 
-    public TreeItem()
+    public TreeViewItem()
     {
         _borderRenderHelper               =  new BorderRenderHelper();
         LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
@@ -443,7 +443,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
             {
                 foreach (var item in e.OldItems)
                 {
-                    if (item is TreeItem treeViewItem)
+                    if (item is TreeViewItem treeViewItem)
                     {
                         if (_itemsBindingDisposables.TryGetValue(treeViewItem, out var disposable))
                         {
@@ -572,7 +572,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
                 _isRealExpanded = true;
                 if (IsAutoExpandParent)
                 {
-                    if (Parent is TreeItem parentTreeItem)
+                    if (Parent is TreeViewItem parentTreeItem)
                     {
                         parentTreeItem.SetCurrentValue(IsExpandedProperty, true);
                     }
@@ -785,7 +785,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TreeItem();
+        return new TreeViewItem();
     }
     
     protected override bool NeedsContainerOverride(
@@ -793,7 +793,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
         int index,
         out object? recycleKey)
     {
-        return NeedsContainer<TreeItem>(item, out recycleKey);
+        return NeedsContainer<TreeViewItem>(item, out recycleKey);
     }
 
     protected override void ContainerForItemPreparedOverride(Control container,
@@ -801,7 +801,7 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
                                                              int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
-        if (container is TreeItem treeViewItem)
+        if (container is TreeViewItem treeViewItem)
         {
             treeViewItem.OwnerTreeView = OwnerTreeView;
             var disposables = new CompositeDisposable(8);
@@ -846,21 +846,21 @@ public class TreeItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
         }
     }
     
-    protected virtual void PrepareTreeViewItem(TreeItem treeItem, object? item, int index, CompositeDisposable disposables)
+    protected virtual void PrepareTreeViewItem(TreeViewItem treeViewItem, object? item, int index, CompositeDisposable disposables)
     {
     }
 
-    internal static void ApplyNodeData(TreeItem treeItem, ITreeItemNode treeItemData, CompositeDisposable disposables)
+    internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeItemNode treeItemData, CompositeDisposable disposables)
     {
-        treeItem.SetCurrentValue(IconProperty, treeItemData.Icon);
-        treeItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);
-        treeItem.SetCurrentValue(IsSelectedProperty, treeItemData.IsSelected);
-        treeItem.SetCurrentValue(IsEnabledProperty, treeItemData.IsEnabled);
-        treeItem.SetCurrentValue(IsExpandedProperty, treeItemData.IsExpanded);
-        treeItem.SetCurrentValue(IsIndicatorEnabledProperty, treeItemData.IsIndicatorEnabled);
+        treeViewItem.SetCurrentValue(IconProperty, treeItemData.Icon);
+        treeViewItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);
+        treeViewItem.SetCurrentValue(IsSelectedProperty, treeItemData.IsSelected);
+        treeViewItem.SetCurrentValue(IsEnabledProperty, treeItemData.IsEnabled);
+        treeViewItem.SetCurrentValue(IsExpandedProperty, treeItemData.IsExpanded);
+        treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeItemData.IsIndicatorEnabled);
         
-        treeItem.ItemKey = treeItemData.ItemKey;
-        treeItem.IsLeaf  = treeItemData.IsLeaf;
+        treeViewItem.ItemKey = treeItemData.ItemKey;
+        treeViewItem.IsLeaf  = treeItemData.IsLeaf;
     }
 
     private void ConfigureIsLeaf()

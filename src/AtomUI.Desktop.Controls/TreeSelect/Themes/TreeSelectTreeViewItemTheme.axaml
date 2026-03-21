@@ -10,7 +10,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel Orientation="Vertical">
-                    <atom:TreeViewItemHeader Name="{x:Static atom:TreeViewItemThemeConstants.HeaderPart}"
+                    <atom:TreeViewItemHeader Name="Header"
                                              Icon="{TemplateBinding Icon}"
                                              IsShowIcon="{TemplateBinding IsShowIcon}"
                                              IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
@@ -55,12 +55,12 @@
             </ControlTemplate>
         </Setter>
         
-        <Style Selector="^ /template/ atom|TreeViewItemHeader#PART_Header">
+        <Style Selector="^ /template/ atom|TreeViewItemHeader#Header">
             <Setter Property="IsEnabled" Value="{TemplateBinding IsEnabled}"/>
         </Style>
         
         <Style Selector="^[IsMaxSelectReached=True][IsChecked=False][IsSelected=False]">
-            <Style Selector="^ /template/ atom|TreeViewItemHeader#PART_Header">
+            <Style Selector="^ /template/ atom|TreeViewItemHeader#Header">
                 <Setter Property="IsEnabled" Value="False"/>
             </Style>
         </Style>

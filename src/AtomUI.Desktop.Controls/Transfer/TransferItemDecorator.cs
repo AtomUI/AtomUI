@@ -353,6 +353,7 @@ internal class TransferItemDecorator : TemplatedControl,
     private ContentPresenter? _contentPresenter;
     private Control? _transferView;
     private CompositeDisposable? _disposables;
+    private bool _ignoreIsAllPropertyChanged;
 
     static TransferItemDecorator()
     {
@@ -390,17 +391,25 @@ internal class TransferItemDecorator : TemplatedControl,
         }
         else if (change.Property == IsAllSelectedProperty)
         {
-            if (_transferView is ITransferView transferView)
+            if (_ignoreIsAllPropertyChanged)
             {
-                if (IsAllSelected == true)
+                _ignoreIsAllPropertyChanged = false;
+            }
+            else
+            {
+                if (_transferView is ITransferView transferView)
                 {
-                    transferView.SelectAll();
-                }
-                else if (IsAllSelected == false)
-                {
-                    transferView.DeselectAll();
+                    if (IsAllSelected == true)
+                    {
+                        transferView.SelectAll();
+                    }
+                    else if (IsAllSelected == false)
+                    {
+                        transferView.DeselectAll();
+                    }
                 }
             }
+            
         }
         else if (change.Property == SelectionsIconTemplateProperty)
         {
@@ -482,8 +491,8 @@ internal class TransferItemDecorator : TemplatedControl,
                 if (_transferView is ITransferView transferView)
                 {
                     transferView.SetItemsSource(null);
-                    transferView.ItemCountChanged   -= HandleItemsCountChanged;
-                    transferView.SelectedKeyChanged -= HandleSelectedChanged;
+                    transferView.ItemCountChanged      -= HandleItemsCountChanged;
+                    transferView.SelectionCountChanged -= HandleSelectionCountChanged;
                     _disposables?.Dispose();
                     _disposables = null;
                 }
@@ -501,9 +510,9 @@ internal class TransferItemDecorator : TemplatedControl,
                     transferView.SetItemsSource(ItemsSource);
                     transferView.SetSelectionsIcon(SelectionsIconTemplate?.Build());
                     transferView.NotifyIsOneWay(IsOneWay);
-                    transferView.ItemCountChanged   += HandleItemsCountChanged;
-                    transferView.SelectedKeyChanged += HandleSelectedChanged;
-                    transferView.ViewType           =  ViewType;
+                    transferView.ItemCountChanged      += HandleItemsCountChanged;
+                    transferView.SelectionCountChanged += HandleSelectionCountChanged;
+                    transferView.ViewType              =  ViewType;
                     TransferViewCreated?.Invoke(this, new TransferViewCreatedEventArgs(transferView));
                     ConfigureTransferViewSelectionMode();
                     if (transferView.IsSupportItemTemplate)
@@ -527,25 +536,26 @@ internal class TransferItemDecorator : TemplatedControl,
         SetCurrentValue(IsItemsSourceEmptyProperty, args.ItemCount == 0);
     }
 
-    private void HandleSelectedChanged(object? sender, EventArgs args)
+    private void HandleSelectionCountChanged(object? sender, SelectionCountChangedEventArgs args)
     {
-        if (_transferView is ITransferView transferView)
+        var selectedCount = args.Count;
+        SetCurrentValue(SelectedCountProperty, selectedCount);
+        SetCurrentValue(HasSelectedProperty, selectedCount > 0);
+        var oldIsAllSelected = IsAllSelected;
+        if (ItemCount > 0 && selectedCount == ItemCount)
         {
-            var selectedCount = transferView.SelectedKeys?.Count ?? 0;
-            SetCurrentValue(SelectedCountProperty, selectedCount);
-            SetCurrentValue(HasSelectedProperty, selectedCount > 0);
-            if (ItemCount > 0 && selectedCount == ItemCount)
-            {
-                SetCurrentValue(IsAllSelectedProperty, true);
-            }
-            else if (selectedCount != 0)
-            {
-                SetCurrentValue(IsAllSelectedProperty, null);
-            }
-            else
-            {
-                SetCurrentValue(IsAllSelectedProperty, false);
-            }
+            _ignoreIsAllPropertyChanged = oldIsAllSelected != true;
+            SetCurrentValue(IsAllSelectedProperty, true);
+        }
+        else if (selectedCount != 0)
+        {
+            _ignoreIsAllPropertyChanged = oldIsAllSelected != null;
+            SetCurrentValue(IsAllSelectedProperty, null);
+        }
+        else
+        {
+            _ignoreIsAllPropertyChanged = oldIsAllSelected != false;
+            SetCurrentValue(IsAllSelectedProperty, false);
         }
     }
 

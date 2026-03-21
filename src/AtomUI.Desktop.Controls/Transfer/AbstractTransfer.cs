@@ -403,6 +403,15 @@ public abstract class AbstractTransfer: TemplatedControl,
         this.RegisterResources();
     }
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (IsFilterEnabled && Filter == null)
+        {
+            SetCurrentValue(FilterProperty, ValueFilterFactory.BuildFilter(ValueFilterMode.Contains));
+        }
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -427,11 +436,11 @@ public abstract class AbstractTransfer: TemplatedControl,
 
         if (_targetView != null)
         {
-            _targetView.ItemRemoved -= HandleItemRemoved;
+            _targetView.ItemsRemoved -= HandleItemRemoved;
         }
         if (_sourceView != null)
         {
-            _sourceView.ItemRemoved -= HandleItemRemoved;
+            _sourceView.ItemsRemoved -= HandleItemRemoved;
         }
         _sourceViewDecorator = e.NameScope.Find<TransferItemDecorator>("SourceDecoratorView");
         _targetViewDecorator = e.NameScope.Find<TransferItemDecorator>("TargetDecoratorView");
@@ -455,12 +464,12 @@ public abstract class AbstractTransfer: TemplatedControl,
         }
         else
         {
-            _targetView             =  args.TransferView;
-            _targetView.ItemRemoved += HandleItemRemoved;
+            _targetView              =  args.TransferView;
+            _targetView.ItemsRemoved += HandleItemRemoved;
         }
     }
 
-    private void HandleItemRemoved(object? sender, TransferItemRemovedEventArgs args)
+    private void HandleItemRemoved(object? sender, TransferItemsRemovedEventArgs args)
     {
         var currentSet = new HashSet<EntityKey>();
         if (TargetKeys != null)
@@ -471,7 +480,13 @@ public abstract class AbstractTransfer: TemplatedControl,
             }
         }
         _sourceViewDecorator?.NotifyAboutToTransfer(TransferDirection.ToSource);
-        currentSet.Remove(args.Item?.ItemKey ?? default);
+        if (args.Items != null)
+        {
+            foreach (var item in args.Items)
+            {
+                currentSet.Remove(item.ItemKey ?? default);
+            }
+        }
         SetCurrentValue(TargetKeysProperty, currentSet.ToList());
         _sourceViewDecorator?.NotifyTransferCompleted(TransferDirection.ToSource);
     }

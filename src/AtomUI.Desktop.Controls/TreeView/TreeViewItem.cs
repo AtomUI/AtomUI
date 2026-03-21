@@ -616,7 +616,7 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _header             = e.NameScope.Find<TreeViewItemHeader>(TreeViewItemThemeConstants.HeaderPart);
+        _header = e.NameScope.Find<TreeViewItemHeader>("Header");
         _itemsPresenterMotionActor =
             e.NameScope.Find<BaseMotionActor>(TreeViewItemThemeConstants.ItemsPresenterMotionActorPart);
         
@@ -788,17 +788,12 @@ public class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
         return new TreeViewItem();
     }
     
-    protected override bool NeedsContainerOverride(
-        object? item,
-        int index,
-        out object? recycleKey)
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TreeViewItem>(item, out recycleKey);
     }
 
-    protected override void ContainerForItemPreparedOverride(Control container,
-                                                             object? item,
-                                                             int index)
+    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
         if (container is TreeViewItem treeViewItem)

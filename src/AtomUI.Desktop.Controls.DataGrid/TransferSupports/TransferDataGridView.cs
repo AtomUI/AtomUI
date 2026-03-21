@@ -84,10 +84,10 @@ public class TransferDataGridView : DataGrid,
     
     #region 公共事件定义
 
-    public event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
+    public event EventHandler<TransferItemsRemovedEventArgs>? ItemsRemoved;
     public event EventHandler? SelectedKeyChanged;
     public event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
-
+    public event EventHandler<SelectionCountChangedEventArgs>? SelectionCountChanged;
     #endregion
 
     protected override void NotifyDataCollectionViewChanged(DataGridCollectionView view, NotifyCollectionChangedEventArgs args)

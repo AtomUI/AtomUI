@@ -105,13 +105,13 @@ public partial class TransferShowCase : ReactiveUserControl<TransferViewModel>
         vm.AdvanceTransferDefaultTargetKeys = targetKeys;
     }
     
-    // private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
-    // {
-    //     if (DataContext is TransferViewModel vm)
-    //     {
-    //         AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
-    //     }
-    // }
+    private void ReloadAdvancedTransferItems(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is TransferViewModel vm)
+        {
+            AdvanceTransfer.TargetKeys = vm.AdvanceTransferDefaultTargetKeys;
+        }
+    }
     
     private void InitPaginationTransferItems(TransferViewModel vm)
     {

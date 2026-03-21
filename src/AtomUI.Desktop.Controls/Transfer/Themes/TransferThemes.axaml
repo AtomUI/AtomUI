@@ -9,5 +9,7 @@
         <ResourceInclude Source="TransferTreeViewTheme.axaml"/>
         <ResourceInclude Source="TransferItemDecoratorTheme.axaml"/>
         <ResourceInclude Source="TransferSelectDropdownTheme.axaml"/>
+        <ResourceInclude Source="TransferTreeViewItemTheme.axaml"/>
+        <ResourceInclude Source="TransferTreeViewItemHeaderTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

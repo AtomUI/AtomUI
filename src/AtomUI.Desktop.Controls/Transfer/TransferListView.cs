@@ -54,8 +54,9 @@ public class TransferListView : ListView, ITransferView
 
     #region 公共事件定义
 
-    public event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
+    public event EventHandler<TransferItemsRemovedEventArgs>? ItemsRemoved;
     public event EventHandler? SelectedKeyChanged;
+    public event EventHandler<SelectionCountChangedEventArgs>? SelectionCountChanged;
 
     #endregion
     
@@ -76,7 +77,36 @@ public class TransferListView : ListView, ITransferView
         CheckBox.ClickEvent.AddClassHandler<TransferListView>((view, args) => view.HandleCheckBoxClicked(args));
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<TransferListView>(false);
     }
-    
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ItemsSourceProperty)
+        {
+            HandleItemsSourceChange();
+        }
+    }
+
+    private void HandleItemsSourceChange()
+    {
+        if (SelectedKeys != null)
+        {
+            var newSelectedKeys = new List<EntityKey>();
+            if (ItemsSource != null)
+            {
+                var allItems = ItemsSource.Cast<IItemKey>().Select(item => item.ItemKey).ToHashSet();
+                foreach (var selectedKey in SelectedKeys)
+                {
+                    if (allItems.Contains(selectedKey))
+                    {
+                        newSelectedKeys.Add(selectedKey);
+                    }
+                }
+            }
+            SetCurrentValue(SelectedKeysProperty, newSelectedKeys);
+        }
+    }
+
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new TransferListItem();
@@ -120,6 +150,7 @@ public class TransferListView : ListView, ITransferView
     private void HandleSelectedKeysChanged()
     {
         SelectedKeyChanged?.Invoke(this, EventArgs.Empty);
+        SelectionCountChanged?.Invoke(this, new SelectionCountChangedEventArgs(SelectedKeys?.Count ?? 0));
         if (_ignoreSyncSelection)
         {
             _ignoreSyncSelection = false;
@@ -207,7 +238,7 @@ public class TransferListView : ListView, ITransferView
         {
             if (listItem.DataContext is IItemKey itemKey)
             {
-                ItemRemoved?.Invoke(this, new TransferItemRemovedEventArgs(itemKey));
+                ItemsRemoved?.Invoke(this, new TransferItemsRemovedEventArgs([itemKey]));
             }
         }
     }
@@ -261,6 +292,10 @@ public class TransferListView : ListView, ITransferView
                     Selection.Select(globalIndex);
                 }
             }
+        }
+        else if (selectAction == TransferSelectAction.RemoveCurrentPage)
+        {
+            ItemsRemoved?.Invoke(this, new TransferItemsRemovedEventArgs(Items.Cast<IItemKey>().ToList()));
         }
     }
 }

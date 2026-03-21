@@ -1,14 +1,13 @@
 using System.Collections;
 using AtomUI.Controls;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Threading;
+using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferTreeView : TreeView, 
-                                ITransferTreeView,
-                                ITransferDecoratorProvider
+public class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorProvider
 {
     #region 公共属性定义
     public static readonly DirectProperty<TransferTreeView, IList<EntityKey>?> SelectedKeysProperty =
@@ -16,8 +15,8 @@ public class TransferTreeView : TreeView,
             o => o.SelectedKeys,
             (o, v) => o.SelectedKeys = v);
     
-    public static readonly DirectProperty<TransferTreeView, IList<EntityKey>?> MaskKeysProperty =
-        AvaloniaProperty.RegisterDirect<TransferTreeView, IList<EntityKey>?>(nameof(MaskKeys), 
+    public static readonly DirectProperty<TransferTreeView, ISet<EntityKey>?> MaskKeysProperty =
+        AvaloniaProperty.RegisterDirect<TransferTreeView, ISet<EntityKey>?>(nameof(MaskKeys), 
             o => o.MaskKeys,
             (o, v) => o.MaskKeys = v);
     
@@ -33,8 +32,8 @@ public class TransferTreeView : TreeView,
         set => SetAndRaise(SelectedKeysProperty, ref _selectedKeys, value);
     }
     
-    private IList<EntityKey>? _maskKeys;
-    public IList<EntityKey>? MaskKeys
+    private ISet<EntityKey>? _maskKeys;
+    public ISet<EntityKey>? MaskKeys
     {
         get => _maskKeys;
         set => SetAndRaise(MaskKeysProperty, ref _maskKeys, value);
@@ -53,9 +52,10 @@ public class TransferTreeView : TreeView,
     
     #region 公共事件定义
 
-    public event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
+    public event EventHandler<TransferItemsRemovedEventArgs>? ItemsRemoved;
     public event EventHandler? SelectedKeyChanged;
     public event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
+    public event EventHandler<SelectionCountChangedEventArgs>? SelectionCountChanged;
 
     #endregion
     
@@ -64,14 +64,30 @@ public class TransferTreeView : TreeView,
     static TransferTreeView()
     {
         SelectedKeysProperty.Changed.AddClassHandler<TransferTreeView>((view, args) => view.HandleSelectedKeysChanged());
-        ItemCountProperty.Changed.AddClassHandler<TransferTreeView>((view, args) => view.HandleItemCountChanged());
+        TransferTreeViewItem.ClickEvent.AddClassHandler<TransferTreeView>((view, args) => view.HandleItemClicked(args));
     }
 
     public TransferTreeView()
     {
         CheckedItemsChanged += HandleCheckedItemsChanged;
     }
-    
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == MaskKeysProperty ||
+            change.Property == ItemsSourceProperty)
+        {
+            MaskNodes();
+            HandleItemCountChanged();
+        }
+
+        if (change.Property == MaskKeysProperty)
+        {
+            ConfigureSelectedKeys();
+        }
+    }
+
     private void HandleItemCountChanged()
     {
         var nodes      = Items.Cast<ITreeItemNode>().ToList();
@@ -104,7 +120,13 @@ public class TransferTreeView : TreeView,
     
     private void HandleCheckedItemsChanged(object? sender, EventArgs e)
     {
+        ConfigureSelectedKeys();
+    }
+
+    private void ConfigureSelectedKeys()
+    {
         _ignoreSyncSelection = true;
+    
         if (CheckedItems.Count == 0)
         {
             SetCurrentValue(SelectedKeysProperty, null);
@@ -116,23 +138,60 @@ public class TransferTreeView : TreeView,
             {
                 if (item is ITreeItemNode treeItemNode && treeItemNode.IsEnabled)
                 {
-                    selectedKeys.Add(treeItemNode.ItemKey ?? default);
+                    var itemKey = treeItemNode.ItemKey ?? default;
+                    if (MaskKeys == null || MaskKeys?.Contains(itemKey) == false)
+                    {
+                        selectedKeys.Add(treeItemNode.ItemKey ?? default); 
+                    }
                 }
             }
             SetCurrentValue(SelectedKeysProperty, selectedKeys);
         }
+        SelectionCountChanged?.Invoke(this, new SelectionCountChangedEventArgs(SelectedKeys?.Count ?? 0));
     }
 
-    private int CalculateAllNodesCount(ITreeItemNode node)
+    private int CalculateAllNodesCount(ITreeItemNode treeNode)
     {
         var count = 0;
-        foreach (var child in node.Children)
+        if (MaskKeys == null || MaskKeys?.Contains(treeNode.ItemKey ?? default) == false)
+        {
+            count += 1;
+        }
+        foreach (var child in treeNode.Children)
         {
             count += CalculateAllNodesCount(child);
         }
-        return count + 1;
+        return count;
     }
 
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        return new TransferTreeViewItem();
+    }
+
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        return NeedsContainer<TransferTreeViewItem>(item, out recycleKey);
+    }
+    
+    protected override bool RecursiveCheckNodePredicate(TreeViewItem treeViewItem)
+    {
+        if (treeViewItem is TransferTreeViewItem transferTreeViewItem)
+        {
+            return !transferTreeViewItem.IsMasked;
+        }
+        return true;
+    }
+    
+    protected override bool RecursiveUnCheckNodePredicate(TreeViewItem treeViewItem)
+    {
+        if (treeViewItem is TransferTreeViewItem transferTreeViewItem)
+        {
+            return !transferTreeViewItem.IsMasked;
+        }
+        return true;
+    }
+    
     public new void SelectAll()
     {
         for (var i = 0; i < ItemCount; i++)
@@ -152,6 +211,35 @@ public class TransferTreeView : TreeView,
             {
                 UnCheckedSubTree(treeItem);
             }
+        }
+    }
+
+    private void MaskNodes()
+    {
+        var nodes = Items.Cast<ITreeItemNode>().ToList();
+        foreach (var node in nodes)
+        {
+            MaskNodeRecursively(node);
+        }
+    }
+
+    private void MaskNodeRecursively(ITreeItemNode item)
+    {
+        var container = TreeContainerFromItem(item);
+        if (container is TransferTreeViewItem treeItem)
+        {
+            if (MaskKeys?.Contains(item.ItemKey ?? default) == true)
+            {
+                treeItem.IsMasked = true;
+            }
+            else
+            {
+                treeItem.IsMasked = false;
+            }
+        }
+        foreach (var child in item.Children)
+        {
+            MaskNodeRecursively(child);
         }
     }
 
@@ -188,12 +276,36 @@ public class TransferTreeView : TreeView,
         }
     }
     
-    public void NotifySelectAction(TransferSelectAction selectAction)
+    void ITransferView.NotifySelectAction(TransferSelectAction selectAction)
     {
+    }
+
+    void ITransferTreeView.SetMaskedItems(IList<EntityKey>? maskedItems)
+    {
+        SetCurrentValue(MaskKeysProperty, maskedItems?.ToHashSet());
     }
     
     void ITransferDecoratorProvider.ProvideTransferDecorator(TransferItemDecorator decorator)
     {
         decorator.IsShowSelectDropdownMenu = false;
+    }
+
+    private void HandleItemClicked(RoutedEventArgs e)
+    {
+        if (e.Source is TransferTreeViewItem treeViewItem)
+        {
+            if (!treeViewItem.IsMasked)
+            {
+                var item = TreeItemFromContainer(treeViewItem);
+                if (treeViewItem.IsChecked != true)
+                {
+                    CheckedItems.Add(item);
+                }
+                else
+                {
+                    CheckedItems.Remove(item);
+                }
+            }
+        }
     }
 }

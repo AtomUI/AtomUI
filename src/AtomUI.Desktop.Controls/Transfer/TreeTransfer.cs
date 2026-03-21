@@ -35,10 +35,11 @@ public class TreeTransfer : AbstractTransfer
         IList<EntityKey>? targetItemKeys           = null;
         if (changeType.HasFlag(FilterChangeType.Source))
         {
-            var sourcePanelSource = ItemsSource?.Cast<ITreeItemNode>().ToArray();
+            var sourcePanelSource = ItemsSource;
             sourcePanelSourceChanged = SourceViewSource != sourcePanelSource;
-            SourceViewSource        = sourcePanelSource;
+            SourceViewSource         = sourcePanelSource;
             sourceItemKeys           = sourcePanelSource?.Select(item => item.ItemKey ?? default).ToList();
+            SourceView?.SetMaskedItems(TargetKeys);
         }
 
         if (changeType.HasFlag(FilterChangeType.Target))
@@ -47,7 +48,7 @@ public class TreeTransfer : AbstractTransfer
                 .Where(item => !IsFilterEnabled || string.IsNullOrEmpty(TargetFilterValue) || 
                                (Filter?.Filter(FilterValueSelector != null ? FilterValueSelector(item) : item, TargetFilterValue) ?? false))
                 .ToArray();
-            TargetViewSource        = targetPanelSource;
+            TargetViewSource         = targetPanelSource;
             targetPanelSourceChanged = TargetViewSource != targetPanelSource;
             targetItemKeys           = targetPanelSource.Select(item => item.ItemKey ?? default).ToList();
         }
@@ -79,4 +80,5 @@ public class TreeTransfer : AbstractTransfer
         }
         return results;
     }
+    
 }

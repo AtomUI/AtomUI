@@ -13,8 +13,9 @@ public interface ITransferView
     bool IsSupportPagination { get; }
     TransferViewType ViewType { get; set; }
   
-    event EventHandler<TransferItemRemovedEventArgs>? ItemRemoved;
+    event EventHandler<TransferItemsRemovedEventArgs>? ItemsRemoved;
     event EventHandler<ItemCountChangedEventArgs>? ItemCountChanged;
+    event EventHandler<SelectionCountChangedEventArgs>? SelectionCountChanged;
     event EventHandler? SelectedKeyChanged;
     
     void SelectAll();

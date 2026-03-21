@@ -196,18 +196,26 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
                     {
                         return;
                     }
-                    TreeView.SyncingCheckedItems = true;
-                    var      treeNode             = TreeView.TreeItemFromContainer(viewItem);
-                    if (viewItem.IsChecked == true)
+
+                    try
                     {
-                        if (!TreeView.CheckedItems.Contains(treeNode))
+                        TreeView.SyncingCheckedItems = true;
+                        var treeNode = TreeView.TreeItemFromContainer(viewItem);
+                        if (viewItem.IsChecked == true)
                         {
-                            TreeView.CheckedItems.Add(treeNode);
+                            if (!TreeView.CheckedItems.Contains(treeNode))
+                            {
+                                TreeView.CheckedItems.Add(treeNode);
+                            }
+                        }
+                        else
+                        {
+                            TreeView.CheckedItems.Remove(treeNode);
                         }
                     }
-                    else
+                    finally
                     {
-                        TreeView.CheckedItems.Remove(treeNode);
+                        TreeView.SyncingCheckedItems = false;
                     }
                 }
             }

@@ -19,6 +19,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -527,11 +528,14 @@ public partial class TreeView : AvaloniaTreeView,
                 SetCurrentValue(IsMotionEnabledProperty, motionEnabled.Value);
             }
 
-            for (var i = 0; i < ItemCount; i++)
+            foreach (var item in Items)
             {
-                if (ContainerFromIndex(i) is TreeViewItem treeItem)
+                if (item != null)
                 {
-                    ExpandSubTree(treeItem);
+                    if (TreeContainerFromItem(item) is TreeViewItem treeItem)
+                    {
+                        ExpandSubTree(treeItem);
+                    }
                 }
             }
         }
@@ -608,13 +612,26 @@ public partial class TreeView : AvaloniaTreeView,
         }
     }
 
+    protected virtual bool RecursiveCheckNodePredicate(TreeViewItem treeViewItem)
+    {
+        return true;
+    }
+    
+    protected virtual bool RecursiveUnCheckNodePredicate(TreeViewItem treeViewItem)
+    {
+        return true;
+    }
+
     private ISet<object> DoCheckedSubTree(TreeViewItem treeViewItem)
     {
         var checkedItems = new HashSet<object>();
-        treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
-        var treeItemData = TreeItemFromContainer(treeViewItem);
-        Debug.Assert(treeItemData != null);
-        checkedItems.Add(treeItemData);
+        if (RecursiveCheckNodePredicate(treeViewItem))
+        {
+            treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
+            var treeItemData = TreeItemFromContainer(treeViewItem);
+            Debug.Assert(treeItemData != null);
+            checkedItems.Add(treeItemData);
+        }
         var originIsExpanded = treeViewItem.IsExpanded;
         try
         {
@@ -638,8 +655,11 @@ public partial class TreeView : AvaloniaTreeView,
                 }
             }
 
-            var (checkedParentItems, _) = SetupParentNodeCheckedStatus(treeViewItem);
-            checkedItems.UnionWith(checkedParentItems);
+            if (!IsCheckStrictly)
+            {
+                var (checkedParentItems, _) = SetupParentNodeCheckedStatus(treeViewItem);
+                checkedItems.UnionWith(checkedParentItems);
+            }
         }
         finally
         {
@@ -687,13 +707,13 @@ public partial class TreeView : AvaloniaTreeView,
     public ISet<object> DoUnCheckedSubTree(TreeViewItem treeViewItem)
     {
         var unCheckedItems = new HashSet<object>();
-        if (treeViewItem.IsChecked == true)
+        if (treeViewItem.IsChecked == true && RecursiveUnCheckNodePredicate(treeViewItem))
         {
             var treeItemData = TreeItemFromContainer(treeViewItem);
             Debug.Assert(treeItemData != null);
             unCheckedItems.Add(treeItemData);
+            treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, false);
         }
-        treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, false);
         var originIsExpanded = treeViewItem.IsExpanded;
 
         try
@@ -717,8 +737,12 @@ public partial class TreeView : AvaloniaTreeView,
                     }
                 }
             }
-            var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(treeViewItem);
-            unCheckedItems.UnionWith(unCheckedParentItems);
+
+            if (!IsCheckStrictly)
+            {
+                var (_, unCheckedParentItems) = SetupParentNodeCheckedStatus(treeViewItem);
+                unCheckedItems.UnionWith(unCheckedParentItems);
+            }
             return unCheckedItems;
         }
         finally
@@ -732,23 +756,17 @@ public partial class TreeView : AvaloniaTreeView,
         PseudoClasses.Set(StdPseudoClass.Draggable, IsDraggable);
     }
 
-    protected override Control CreateContainerForItemOverride(object? item,
-                                                              int index,
-                                                              object? recycleKey)
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new TreeViewItem();
     }
 
-    protected override bool NeedsContainerOverride(object? item,
-                                                   int index,
-                                                   out object? recycleKey)
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TreeViewItem>(item, out recycleKey);
     }
 
-    protected override void ContainerForItemPreparedOverride(Control container,
-                                                             object? item,
-                                                             int index)
+    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
         if (container is TreeViewItem treeViewItem)
@@ -909,13 +927,13 @@ public partial class TreeView : AvaloniaTreeView,
                     {
                         MarkContainerChecked(container, false);
                     }
-                    if (CheckedItems.Count > 0)
+                    if (e.NewItems?.Count > 0)
                     {
-                        CheckedItemsAdded(CheckedItems);
+                        CheckedItemsAdded(e.NewItems);
                     }
                 }
 
-                if (CheckedItems.Count > 0)
+                if (e.NewItems?.Count > 0)
                 {
                     added = new List<object>();
                     foreach (var item in CheckedItems)
@@ -1336,7 +1354,7 @@ public partial class TreeView : AvaloniaTreeView,
         
         if (IsDefaultExpandAll)
         {
-            ExpandAll(false);
+            Dispatcher.UIThread.Post(() => ExpandAll(false));
         }
         else
         {

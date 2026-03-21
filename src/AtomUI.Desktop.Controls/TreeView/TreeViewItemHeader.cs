@@ -57,6 +57,9 @@ internal class TreeViewItemHeader : ContentControl
     public static readonly StyledProperty<string?> GroupNameProperty =
         TreeViewItem.GroupNameProperty.AddOwner<TreeViewItemHeader>();
     
+    public static readonly StyledProperty<bool> IsMaskedProperty =
+        AvaloniaProperty.Register<TreeViewItemHeader, bool>(nameof(IsMasked));
+    
     public bool IsExpanded
     {
         get => GetValue(IsExpandedProperty);
@@ -129,6 +132,12 @@ internal class TreeViewItemHeader : ContentControl
     {
         get => GetValue(GroupNameProperty);
         set => SetValue(GroupNameProperty, value);
+    }
+    
+    public bool IsMasked
+    {
+        get => GetValue(IsMaskedProperty);
+        set => SetValue(IsMaskedProperty, value);
     }
     
     public bool IsIndicatorEnabled

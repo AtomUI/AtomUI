@@ -1,0 +1,128 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TransferTreeViewItemHeader}" TargetType="atom:TransferTreeViewItemHeader">
+        <ControlTheme.BasedOn>
+            <atom:TreeViewItemHeaderTheme TargetType="atom:TransferTreeViewItemHeader" />
+        </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Frame"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}">
+                    <Grid Name="ItemsLayout"
+                          ColumnDefinitions="Auto, Auto, Auto, *"
+                          Margin="{TemplateBinding Level, Mode=OneWay, Converter={x:Static atom:TreeViewItemTheme.MarginMultiplierConverter}}">
+                        <atom:NodeSwitcherButton
+                            Name="{x:Static atom:TreeViewItemHeaderThemeConstants.NodeSwitcherButtonPart}"
+                            Grid.Column="0"
+                            Focusable="False"
+                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                            IconMode="{TemplateBinding SwitcherMode}"
+                            CollapseIcon="{TemplateBinding SwitcherCollapseIcon}"
+                            ExpandIcon="{TemplateBinding SwitcherExpandIcon}"
+                            LoadingIcon="{TemplateBinding SwitcherLoadingIcon}"
+                            RotationIcon="{TemplateBinding SwitcherRotationIcon}"
+                            LeafIcon="{TemplateBinding SwitcherLeafIcon}"
+                            IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                            IsLoading="{TemplateBinding IsLoading}" />
+
+                        <Decorator Grid.Column="1" Classes="mask-decorator">
+                            <atom:CheckBox Name="ToggleCheckbox"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                           IsVisible="False">
+                                <atom:RadioButton.IsEnabled>
+                                    <MultiBinding
+                                        Converter="{x:Static atom:TreeViewItemTheme.TreeViewItemIndicatorEnabledConverter}">
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsEnabled" />
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                                 Path="IsIndicatorEnabled" />
+                                    </MultiBinding>
+                                </atom:RadioButton.IsEnabled>
+                            </atom:CheckBox>
+                        </Decorator>
+                        <Decorator Grid.Column="1" Classes="mask-decorator">
+                            <atom:RadioButton Name="ToggleRadio"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+
+                                              IsChecked="{TemplateBinding IsChecked}"
+                                              GroupName="{TemplateBinding GroupName}"
+                                              IsVisible="False">
+                                <atom:RadioButton.IsEnabled>
+                                    <MultiBinding
+                                        Converter="{x:Static atom:TreeViewItemTheme.TreeViewItemIndicatorEnabledConverter}">
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsEnabled" />
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                                 Path="IsIndicatorEnabled" />
+                                    </MultiBinding>
+                                </atom:RadioButton.IsEnabled>
+                            </atom:RadioButton>
+                        </Decorator>
+                        <Decorator Grid.Column="2" Classes="mask-decorator">
+                            <atom:IconPresenter
+                                Name="{x:Static atom:TreeViewItemHeaderThemeConstants.IconPresenterPart}"
+                                Icon="{TemplateBinding Icon}"
+                                IsEnabled="{TemplateBinding IsEnabled}"
+                                IsVisible="{TemplateBinding IconEffectiveVisible}" />
+                        </Decorator>
+                        <Decorator Grid.Column="3" Classes="mask-decorator">
+                            <Border Name="{x:Static atom:TreeViewItemHeaderThemeConstants.HeaderContentFramePart}"
+                                    IsEnabled="{TemplateBinding IsEnabled}"
+                                    Background="{TemplateBinding ContentFrameBackground}">
+                                <Panel>
+                                    <ContentPresenter Name="HeaderPresenter"
+                                                      VerticalContentAlignment="Center"
+                                                      Content="{TemplateBinding Content}"
+                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                      IsVisible="False" />
+                                    <TextBlock Name="FilterHighlighter"
+                                               VerticalAlignment="Center"
+                                               IsVisible="False"
+                                               Inlines="{TemplateBinding FilterHighlightRuns}" />
+                                </Panel>
+                            </Border>
+                        </Decorator>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^[IsMasked=True]">
+            <Style Selector="^ /template/ Decorator.mask-decorator">
+                <Setter Property="IsEnabled" Value="False" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDisabled}}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
+                <Setter Property="Opacity" Value="0.3" />
+            </Style>
+
+            <Style Selector="^:not(^[NodeHoverMode=WholeLine])">
+                <Style Selector="^[IsSelectable=True]">
+                    <Style Selector="^[IsSelected=True]">
+                        <Setter Property="ContentFrameBackground"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainerDisabled}}" />
+                    </Style>
+                </Style>
+            </Style>
+
+            <Style Selector="^[NodeHoverMode=WholeLine]">
+                <Style Selector="^[IsSelectable=True]">
+                    <Style Selector="^[IsSelected=True]">
+                        <Setter Property="Background"
+                                Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBgContainerDisabled}}" />
+                    </Style>
+                </Style>
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

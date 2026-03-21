@@ -7,20 +7,20 @@
     x:ClassModifier="internal">
     <atom:CornerRadiusFilterConverter x:Key="HeaderCornerRadiusFilterConverter"
                                       BottomLeft="False"
-                                      BottomRight="False"/>
+                                      BottomRight="False" />
     <atom:CornerRadiusFilterConverter x:Key="FooterCornerRadiusFilterConverter"
                                       TopLeft="False"
-                                      TopRight="False"/>
+                                      TopRight="False" />
     <atom:BorderThicknessFilterConverter x:Key="HeaderBorderThickness"
                                          Top="False"
                                          Right="False"
                                          Bottom="True"
-                                         Left="False"/>
+                                         Left="False" />
     <atom:BorderThicknessFilterConverter x:Key="FooterBorderThickness"
                                          Top="True"
                                          Right="False"
                                          Bottom="False"
-                                         Left="False"/>
+                                         Left="False" />
     <ControlTheme x:Key="{x:Type atom:TransferItemDecorator}" TargetType="atom:TransferItemDecorator">
         <Setter Property="Template">
             <ControlTemplate>
@@ -40,7 +40,7 @@
                                                VerticalAlignment="Center"
                                                IsChecked="{TemplateBinding IsAllSelected, Mode=TwoWay}"
                                                IsVisible="False"
-                                               IsEnabled="{TemplateBinding IsItemsSourceEmpty, Converter={x:Static BoolConverters.Not}}"/>
+                                               IsEnabled="{TemplateBinding IsItemsSourceEmpty, Converter={x:Static BoolConverters.Not}}" />
                                 <atom:TransferSelectDropdown Name="MenuIndicator" DockPanel.Dock="Left"
                                                              Icon="{TemplateBinding SelectionsIcon}"
                                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -49,16 +49,16 @@
                                                              IsAllSelected="{TemplateBinding IsAllSelected}"
                                                              IsOneWay="{TemplateBinding IsOneWay}"
                                                              ViewType="{TemplateBinding ViewType}"
-                                                             IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}"/>
+                                                             IsPaginationEnabled="{TemplateBinding IsPaginationEnabled}" />
                                 <ContentPresenter Name="SelectedInfo" DockPanel.Dock="Left"
                                                   Content="{TemplateBinding SelectedMessage}"
-                                                  VerticalAlignment="Center"/>
+                                                  VerticalAlignment="Center" />
                                 <ContentPresenter Name="TitleContentPresenter"
                                                   Content="{TemplateBinding Title}"
                                                   ContentTemplate="{TemplateBinding TitleTemplate}"
                                                   HorizontalContentAlignment="Right"
                                                   VerticalAlignment="Center"
-                                                  TextTrimming="CharacterEllipsis"/>
+                                                  TextTrimming="CharacterEllipsis" />
                             </DockPanel>
                         </Border>
                         <atom:LineEdit HorizontalAlignment="Stretch"
@@ -69,7 +69,8 @@
                                        Tag="{TemplateBinding ViewType}"
                                        IsAllowClear="True">
                             <atom:LineEdit.InnerLeftContent>
-                                <antdicons:SearchOutlined StrokeBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}"/>
+                                <antdicons:SearchOutlined
+                                    StrokeBrush="{DynamicResource {x:Static atom:SharedTokenKey.ColorTextDescription}}" />
                             </atom:LineEdit.InnerLeftContent>
                         </atom:LineEdit>
                         <Border Name="FooterFrame"
@@ -79,7 +80,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource FooterBorderThickness}}">
                             <ContentPresenter Name="FooterPresenter"
                                               Content="{TemplateBinding Footer}"
-                                              ContentTemplate="{TemplateBinding FooterTemplate}"/>
+                                              ContentTemplate="{TemplateBinding FooterTemplate}" />
                         </Border>
                         <ContentPresenter Name="ContentPresenter"
                                           Content="{TemplateBinding Content}"
@@ -88,20 +89,21 @@
                                           CornerRadius="{TemplateBinding BodyCornerRadius}"
                                           Height="{TemplateBinding ListHeight}"
                                           HorizontalAlignment="Stretch"
-                                          HorizontalContentAlignment="Stretch"/>
+                                          HorizontalContentAlignment="Stretch" />
                     </DockPanel>
                 </Border>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="ClipToBounds" Value="False"/>
+
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorBorder}}" />
         <Setter Property="BorderThickness" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderThickness}}" />
         <Setter Property="CornerRadius" Value="{DynamicResource {x:Static atom:SharedTokenKey.BorderRadiusLG}}" />
-    
+
         <Setter Property="ItemUint" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.Item}}" />
-        <Setter Property="ItemUintPlural" Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.Items}}" />
-        
+        <Setter Property="ItemUintPlural"
+                Value="{DynamicResource {x:Static transferLang:TransferLangResourceKey.Items}}" />
+
         <Style Selector="^/template/ Border#HeaderFrame">
             <Setter Property="Height" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderHeight}}" />
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderPadding}}" />
@@ -112,7 +114,7 @@
         <Style Selector="^/template/ DockPanel#HeaderLayout">
             <Setter Property="HorizontalSpacing" Value="{DynamicResource {x:Static atom:SharedTokenKey.SpacingXXS}}" />
         </Style>
-        
+
         <Style Selector="^/template/ atom|IconButton#MenuIndicator">
             <Setter Property="IconWidth" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
             <Setter Property="IconHeight" Value="{DynamicResource {x:Static atom:SharedTokenKey.FontSizeIcon}}" />
@@ -123,20 +125,32 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-        
+
         <Style Selector="^[IsShowSelectAllCheckbox=True][ViewType=Target][IsOneWay=False]">
             <Style Selector="^/template/ atom|CheckBox#SelectAllCheckBox">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-        
+
         <Style Selector="^/template/ atom|LineEdit#FilterInput">
             <Setter Property="Margin" Value="{DynamicResource {x:Static atom:SharedTokenKey.MarginXS}}" />
         </Style>
-        
+
         <Style Selector="^/template/ Border#FooterFrame">
             <Setter Property="Padding" Value="{DynamicResource {x:Static atom:TransferTokenKey.HeaderPadding}}" />
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorSplit}}" />
+        </Style>
+        
+        <Style Selector="^:not(^:disabled)">
+            <Style Selector="^[Status=Error]">
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorError}}" />
+            </Style>
+
+            <Style Selector="^[Status=Warning]">
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource {x:Static atom:SharedTokenKey.ColorWarning}}" />
+            </Style>
         </Style>
 
     </ControlTheme>

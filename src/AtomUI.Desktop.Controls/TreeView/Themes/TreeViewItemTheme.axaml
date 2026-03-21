@@ -7,7 +7,7 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TreeViewItem">
             <StackPanel Orientation="Vertical">
-                <atom:TreeViewItemHeader Name="{x:Static atom:TreeViewItemThemeConstants.HeaderPart}"
+                <atom:TreeViewItemHeader Name="Header"
                                          Icon="{TemplateBinding Icon}"
                                          IsShowIcon="{TemplateBinding IsShowIcon}"
                                          IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"

@@ -112,6 +112,14 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _transferTreeNodes, value);
     }
     
+    private bool _treeTransferIsOneWay = false;
+    
+    public bool TreeTransferIsOneWay
+    {
+        get => _treeTransferIsOneWay;
+        set => this.RaiseAndSetIfChanged(ref _treeTransferIsOneWay, value);
+    }
+    
     public TransferViewModel(IScreen screen)
     {
         HostScreen = screen;

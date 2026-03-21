@@ -78,7 +78,7 @@ public class ListTransfer : AbstractTransfer
                                                        SourceFilterValue) ?? false))
                                     .ToArray();
             sourcePanelSourceChanged = SourceViewSource != sourcePanelSource;
-            SourceViewSource        = sourcePanelSource;
+            SourceViewSource         = sourcePanelSource;
             sourceItemKeys           = sourcePanelSource?.Select(item => item.ItemKey ?? default).ToList();
         }
 

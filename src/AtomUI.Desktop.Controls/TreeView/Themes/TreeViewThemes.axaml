@@ -4,8 +4,8 @@
                     xmlns:atom="https://atomui.net">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="NodeSwitcherButtonTheme.axaml" />
-        <ResourceInclude Source="TreeViewItemHeaderTheme.axaml" />
     </ResourceDictionary.MergedDictionaries>
     <atom:TreeViewTheme x:Key="{x:Type atom:TreeView}" TargetType="atom:TreeView"/>
+    <atom:TreeViewItemHeaderTheme x:Key="{x:Type atom:TreeViewItemHeader}" TargetType="atom:TreeViewItemHeader"/>
     <atom:TreeViewItemTheme x:Key="{x:Type atom:TreeViewItem}" TargetType="atom:TreeViewItem"/>
 </ResourceDictionary>

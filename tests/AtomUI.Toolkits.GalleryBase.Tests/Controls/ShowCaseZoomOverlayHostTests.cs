@@ -1,5 +1,6 @@
 using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
@@ -130,19 +131,38 @@ public class ShowCaseZoomOverlayHostTests
     }
 
     [Fact]
-    public void ZoomRequest_Captures_The_Content_Card_Layout_Width()
+    public void ZoomRequest_Relayouts_Fill_Affine_Content_At_The_Stage_Width()
     {
-        var content = new Border { Width = 240, Height = 120 };
+        // 铺满型内容（期望宽度跟随所给宽度）：卡片内只有 240 宽，放大后以舞台宽度重新布局铺满，
+        // 不再冻结卡片内宽度（StageMeasureWidth 机制已退役）
+        var content = new FillAffineControl { Height = 40 };
         var item = new ShowCaseItem { Title = "Zoom", Content = content };
-        var host = new ShowCaseZoomOverlayHost { PageContent = new StackPanel { Children = { item } } };
+        var narrowCardHost = new StackPanel { Width = 240, Children = { item } };
+        var host = new ShowCaseZoomOverlayHost { PageContent = narrowCardHost };
 
         ShowInWindow(host, () =>
         {
             RaiseZoom(item);
 
-            var overlay = FindOverlay(host);
-            overlay.StageMeasureWidth.ShouldBe(240, 0.5);
+            var stagePanel = host.GetVisualDescendants()
+                                 .OfType<ShowCaseZoomStagePanel>()
+                                 .Single();
+            stagePanel.Bounds.Width.ShouldBeGreaterThan(300);
+            content.Bounds.Width.ShouldBe(stagePanel.Bounds.Width, 0.5,
+                "fill-affine content must re-layout at the stage width after zooming");
+            content.Bounds.X.ShouldBe(0, 0.5);
         });
+    }
+
+    private sealed class FillAffineControl : Control
+    {
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var width = double.IsInfinity(availableSize.Width) || double.IsNaN(availableSize.Width)
+                ? 0
+                : availableSize.Width;
+            return new Size(width, Height);
+        }
     }
 
     [Fact]

@@ -96,8 +96,9 @@ public class ShowCaseZoomOverlayTests
     }
 
     [Fact]
-    public void Stage_Measures_With_The_Stage_Width_When_No_Layout_Width_Is_Captured()
+    public void Stage_Lets_Fill_Affine_Content_Fill_The_Stage_Width()
     {
+        // 铺满型内容（期望宽度跟随所给宽度，如 24 栅格、表格）：以舞台宽度重新布局并铺满
         var content = new FluidControl { Height = 40 };
         ShowInWindow(new ShowCaseZoomOverlay { StageContent = content, IsOpen = true }, overlay =>
         {
@@ -108,24 +109,6 @@ public class ShowCaseZoomOverlayTests
             content.Bounds.X.ShouldBe(0, 0.5);
             content.RenderTransform.ShouldBeNull();
         });
-    }
-
-    [Fact]
-    public void Stage_Respects_The_Captured_Layout_Width_For_Fluid_Content()
-    {
-        // 拉伸型内容以捕获的卡片内布局宽度测量，保持与卡片内完全一致的布局，不被舞台宽度拉伸
-        var content = new FluidControl { Height = 40 };
-        ShowInWindow(
-            new ShowCaseZoomOverlay { StageContent = content, IsOpen = true, StageMeasureWidth = 120 },
-            overlay =>
-            {
-                var stageRoot = FindStageRoot(overlay);
-                Dispatcher.UIThread.RunJobs();
-
-                stageRoot.Bounds.Width.ShouldBeGreaterThan(200);
-                content.Bounds.Width.ShouldBe(120, 0.5);
-                content.Bounds.X.ShouldBe((stageRoot.Bounds.Width - 120) / 2, 0.5);
-            });
     }
 
     [Fact]

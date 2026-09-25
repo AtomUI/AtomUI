@@ -70,10 +70,6 @@ public sealed class ShowCaseZoomOverlayHost : UserControl
 
         _zoomedItem    = item;
         _zoomedContent = item.Content;
-        // 捕获内容在卡片内的布局宽度，舞台按该宽度测量，保证放大态布局与卡片内一致
-        _overlay.StageMeasureWidth = _zoomedContent is Control staged && staged.Bounds.Width > 0
-            ? staged.Bounds.Width
-            : double.NaN;
         item.SetCurrentValue(ContentControl.ContentProperty, null);
         item.DetachedFromVisualTree += HandleZoomedItemDetached;
 
@@ -139,7 +135,6 @@ public sealed class ShowCaseZoomOverlayHost : UserControl
         _overlay.StageContent     = null;
         _overlay.Title            = null;
         _overlay.Description      = null;
-        _overlay.StageMeasureWidth = double.NaN;
         _overlay.DataContext      = null;
 
         if (_zoomedContent is Control stagedContent)

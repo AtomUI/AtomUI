@@ -26,9 +26,6 @@ public class ShowCaseZoomOverlay : TemplatedControl
     public static readonly StyledProperty<object?> StageContentProperty =
         AvaloniaProperty.Register<ShowCaseZoomOverlay, object?>(nameof(StageContent));
 
-    public static readonly StyledProperty<double> StageMeasureWidthProperty =
-        AvaloniaProperty.Register<ShowCaseZoomOverlay, double>(nameof(StageMeasureWidth), double.NaN);
-
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ShowCaseZoomOverlay>();
 
@@ -70,16 +67,6 @@ public class ShowCaseZoomOverlay : TemplatedControl
     {
         get => GetValue(StageContentProperty);
         set => SetValue(StageContentProperty, value);
-    }
-
-    /// <summary>
-    /// 内容在原 ShowCaseItem 卡片内的布局宽度。设置后舞台以该宽度测量内容，
-    /// 保证放大态与卡片内布局（换行、间距）完全一致；未设置时以舞台宽度测量。
-    /// </summary>
-    public double StageMeasureWidth
-    {
-        get => GetValue(StageMeasureWidthProperty);
-        set => SetValue(StageMeasureWidthProperty, value);
     }
 
     public bool IsMotionEnabled

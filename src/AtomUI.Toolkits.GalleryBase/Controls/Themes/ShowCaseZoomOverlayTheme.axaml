@@ -44,8 +44,7 @@
                                             Text="{TemplateBinding Description}"
                                             IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                             <Grid Name="PART_StageRoot">
-                                <gallery:ShowCaseZoomStagePanel Name="PART_StagePanel"
-                                                                StageMeasureWidth="{TemplateBinding StageMeasureWidth}" />
+                                <gallery:ShowCaseZoomStagePanel Name="PART_StagePanel" />
                             </Grid>
                         </DockPanel>
                     </Border>

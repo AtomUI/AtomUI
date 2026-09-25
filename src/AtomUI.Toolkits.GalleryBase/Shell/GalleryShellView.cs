@@ -124,7 +124,12 @@ public sealed class GalleryShellView : UserControl, IDisposable
             PageContent = rootLayout
         };
 
-        Content = codeDrawerHost;
+        var zoomOverlayHost = new ShowCaseZoomOverlayHost
+        {
+            PageContent = codeDrawerHost
+        };
+
+        Content = zoomOverlayHost;
     }
 
     public void Dispose()

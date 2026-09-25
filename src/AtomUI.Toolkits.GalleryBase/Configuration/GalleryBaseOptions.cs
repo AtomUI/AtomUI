@@ -20,6 +20,8 @@ public sealed class GalleryBaseOptions
 
     public GallerySourceCodeDisplayOptions SourceCodeDisplay { get; } = new();
 
+    public GalleryShowCaseZoomOptions ShowCaseZoom { get; } = new();
+
     public GalleryBaseConfiguration BuildConfiguration()
     {
         return GalleryBaseConfiguration.Create(this);
@@ -76,4 +78,9 @@ public sealed class GallerySourceCodeDisplayOptions
     public bool IsEnabled { get; set; }
 
     public IShowCaseCodeSnippetProvider? SnippetProvider { get; set; }
+}
+
+public sealed class GalleryShowCaseZoomOptions
+{
+    public bool IsEnabled { get; set; } = true;
 }

@@ -17,14 +17,23 @@ public enum ShowCaseItemSpan
 public class ShowCaseItem : ContentControl
 {
     private const string ShowSourceButtonPart = "PART_ShowSourceButton";
+    private const string ZoomButtonPart        = "PART_ZoomButton";
 
     public static readonly RoutedEvent<ShowCaseSourceCodeRequestedEventArgs> SourceCodeRequestedEvent =
         RoutedEvent.Register<ShowCaseItem, ShowCaseSourceCodeRequestedEventArgs>(
             nameof(SourceCodeRequested),
             RoutingStrategies.Bubble);
 
+    public static readonly RoutedEvent<ShowCaseZoomRequestedEventArgs> ZoomRequestedEvent =
+        RoutedEvent.Register<ShowCaseItem, ShowCaseZoomRequestedEventArgs>(
+            nameof(ZoomRequested),
+            RoutingStrategies.Bubble);
+
     public static readonly StyledProperty<string> TitleProperty =
         AvaloniaProperty.Register<ShowCaseItem, string>(nameof(Title));
+
+    public static readonly StyledProperty<bool> IsZoomEnabledProperty =
+        AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsZoomEnabled), true);
 
     public static readonly StyledProperty<string> DescriptionProperty =
         AvaloniaProperty.Register<ShowCaseItem, string>(nameof(Description));
@@ -65,6 +74,9 @@ public class ShowCaseItem : ContentControl
     internal static readonly StyledProperty<bool> IsCodeActionVisibleProperty =
         AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsCodeActionVisible), false);
 
+    internal static readonly StyledProperty<bool> IsZoomActionVisibleProperty =
+        AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsZoomActionVisible), false);
+
     internal static readonly StyledProperty<bool> IsDeferredPlaceholderVisibleProperty =
         AvaloniaProperty.Register<ShowCaseItem, bool>(nameof(IsDeferredPlaceholderVisible), false);
 
@@ -77,10 +89,17 @@ public class ShowCaseItem : ContentControl
         remove => RemoveHandler(SourceCodeRequestedEvent, value);
     }
 
+    public event EventHandler<ShowCaseZoomRequestedEventArgs> ZoomRequested
+    {
+        add => AddHandler(ZoomRequestedEvent, value);
+        remove => RemoveHandler(ZoomRequestedEvent, value);
+    }
+
     public ShowCaseItem()
     {
         AddHandler(Button.ClickEvent, HandleButtonClick);
         UpdateCodeActionVisibility();
+        UpdateZoomActionVisibility();
     }
 
     public string Title
@@ -99,6 +118,12 @@ public class ShowCaseItem : ContentControl
     {
         get => GetValue(IsOccupyEntireRowProperty);
         set => SetValue(IsOccupyEntireRowProperty, value);
+    }
+
+    public bool IsZoomEnabled
+    {
+        get => GetValue(IsZoomEnabledProperty);
+        set => SetValue(IsZoomEnabledProperty, value);
     }
 
     public ShowCaseItemSpan Span
@@ -167,6 +192,12 @@ public class ShowCaseItem : ContentControl
         set => SetValue(IsCodeActionVisibleProperty, value);
     }
 
+    internal bool IsZoomActionVisible
+    {
+        get => GetValue(IsZoomActionVisibleProperty);
+        set => SetValue(IsZoomActionVisibleProperty, value);
+    }
+
     internal bool IsDeferredPlaceholderVisible
     {
         get => GetValue(IsDeferredPlaceholderVisibleProperty);
@@ -214,6 +245,7 @@ public class ShowCaseItem : ContentControl
     {
         base.OnAttachedToVisualTree(e);
         UpdateCodeActionVisibility();
+        UpdateZoomActionVisibility();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -230,6 +262,11 @@ public class ShowCaseItem : ContentControl
         if (change.Property == BadgeTextProperty)
         {
             UpdateBadgeVisibility();
+        }
+
+        if (change.Property == IsZoomEnabledProperty)
+        {
+            UpdateZoomActionVisibility();
         }
     }
 
@@ -260,18 +297,47 @@ public class ShowCaseItem : ContentControl
         IsCodeActionVisible = GalleryBaseConfigurationProvider.Current?.SourceCodeDisplay.CanShowSourceCode == true;
     }
 
+    private void UpdateZoomActionVisibility()
+    {
+        IsZoomActionVisible = IsZoomEnabled &&
+                              (GalleryBaseConfigurationProvider.Current?.ShowCaseZoom.IsEnabled ?? true);
+    }
+
     private void HandleButtonClick(object? sender, RoutedEventArgs e)
     {
-        if (e.Source is not Button { Name: ShowSourceButtonPart })
+        if (e.Source is not Button button)
         {
             return;
         }
 
-        if (TryCreateSnippetKey(out var key))
+        if (button.Name == ZoomButtonPart)
         {
-            RaiseEvent(new ShowCaseSourceCodeRequestedEventArgs(SourceCodeRequestedEvent, key, Title));
-            e.Handled = true;
+            HandleZoomButtonClick(button, e);
+            return;
         }
+
+        if (button.Name == ShowSourceButtonPart)
+        {
+            if (TryCreateSnippetKey(out var key))
+            {
+                RaiseEvent(new ShowCaseSourceCodeRequestedEventArgs(SourceCodeRequestedEvent, key, Title));
+                e.Handled = true;
+            }
+        }
+    }
+
+    private void HandleZoomButtonClick(Button button, RoutedEventArgs e)
+    {
+        if (!IsZoomEnabled ||
+            (GalleryBaseConfigurationProvider.Current?.ShowCaseZoom.IsEnabled ?? true) != true)
+        {
+            return;
+        }
+
+        MaterializeDeferredContent();
+        RaiseEvent(new ShowCaseZoomRequestedEventArgs(
+            ZoomRequestedEvent, this, Title, Description));
+        e.Handled = true;
     }
 
     private bool TryCreateSnippetKey(out ShowCaseCodeSnippetKey key)

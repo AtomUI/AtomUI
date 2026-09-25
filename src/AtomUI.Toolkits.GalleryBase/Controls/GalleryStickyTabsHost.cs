@@ -49,6 +49,21 @@ public class GalleryStickyTabsHost : TemplatedControl
     public static readonly StyledProperty<bool> IsStickyMirrorEnabledProperty =
         AvaloniaProperty.Register<GalleryStickyTabsHost, bool>(nameof(IsStickyMirrorEnabled), true);
 
+    /// <summary>
+    /// 挂起粘滞提升：置位期间即使处于钉住状态也不把页签宿主提升到窗口级
+    /// adorner 层（已提升的会降级回面板）。供模态覆盖（如 ShowCaseItem 放大
+    /// overlay）使用——overlay 位于内容树内，必须盖住页面的提升物；否则钉住
+    /// 的页签会浮在 overlay 之上。
+    /// </summary>
+    internal static readonly StyledProperty<bool> IsStickyElevationSuppressedProperty =
+        AvaloniaProperty.Register<GalleryStickyTabsHost, bool>(nameof(IsStickyElevationSuppressed));
+
+    internal bool IsStickyElevationSuppressed
+    {
+        get => GetValue(IsStickyElevationSuppressedProperty);
+        set => SetValue(IsStickyElevationSuppressedProperty, value);
+    }
+
     internal static readonly DirectProperty<GalleryStickyTabsHost, bool> HasStickyContentProperty =
         AvaloniaProperty.RegisterDirect<GalleryStickyTabsHost, bool>(
             nameof(HasStickyContent),
@@ -220,6 +235,10 @@ public class GalleryStickyTabsHost : TemplatedControl
         {
             UpdateContentMaxHeight();
         }
+        else if (change.Property == IsStickyElevationSuppressedProperty)
+        {
+            QueueStickyElevationUpdate();
+        }
     }
 
     private void ReleaseTemplateParts()
@@ -309,7 +328,7 @@ public class GalleryStickyTabsHost : TemplatedControl
 
     private void UpdateStickyElevation()
     {
-        if (!IsStickyMirrorEnabled)
+        if (!IsStickyMirrorEnabled || IsStickyElevationSuppressed)
         {
             DemoteStickyContent();
             return;

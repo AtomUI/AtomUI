@@ -137,6 +137,14 @@ public class CardShowCasePageTests
         return source[firstItemStart..panelCloseStart];
     }
 
+    [Fact]
+    public void Card_ShowCase_Keeps_Zoom_Enabled_On_All_ShowCase_Items()
+    {
+        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Card/Views/CardShowCase.axaml");
+
+        CountOccurrences(source, "IsZoomEnabled=\"False\"").ShouldBe(0);
+    }
+
     private static string ExtractSemanticPartExample(string source)
     {
         const string sourceKeyMarker = "SourceKey=\"card-semantic-part\"";

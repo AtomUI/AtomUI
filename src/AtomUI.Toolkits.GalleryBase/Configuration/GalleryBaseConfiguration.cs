@@ -24,6 +24,8 @@ public sealed class GalleryBaseConfiguration
 
     public GallerySourceCodeDisplayConfiguration SourceCodeDisplay { get; }
 
+    public GalleryShowCaseZoomConfiguration ShowCaseZoom { get; }
+
     private GalleryBaseConfiguration(GalleryBrandingConfiguration branding,
                                      IReadOnlyList<GalleryNavigationNode> navigationNodes,
                                      IReadOnlyList<EntityKey> defaultOpenKeys,
@@ -31,7 +33,8 @@ public sealed class GalleryBaseConfiguration
                                      GalleryRouteRegistry routes,
                                      GalleryShellConfiguration shell,
                                      GalleryPlatformConfiguration platform,
-                                     GallerySourceCodeDisplayConfiguration sourceCodeDisplay)
+                                     GallerySourceCodeDisplayConfiguration sourceCodeDisplay,
+                                     GalleryShowCaseZoomConfiguration showCaseZoom)
     {
         Branding          = branding;
         NavigationNodes   = navigationNodes;
@@ -41,6 +44,7 @@ public sealed class GalleryBaseConfiguration
         Shell             = shell;
         Platform          = platform;
         SourceCodeDisplay = sourceCodeDisplay;
+        ShowCaseZoom      = showCaseZoom;
     }
 
     internal static GalleryBaseConfiguration Create(GalleryBaseOptions options)
@@ -60,7 +64,8 @@ public sealed class GalleryBaseConfiguration
             routes,
             GalleryShellConfiguration.FromOptions(options.Shell),
             GalleryPlatformConfiguration.FromOptions(options.Platform),
-            GallerySourceCodeDisplayConfiguration.FromOptions(options.SourceCodeDisplay));
+            GallerySourceCodeDisplayConfiguration.FromOptions(options.SourceCodeDisplay),
+            GalleryShowCaseZoomConfiguration.FromOptions(options.ShowCaseZoom));
     }
 
     private static void ValidateNavigation(GalleryNavigationBuilder navigation,
@@ -317,5 +322,20 @@ public sealed class GallerySourceCodeDisplayConfiguration
     internal static GallerySourceCodeDisplayConfiguration FromOptions(GallerySourceCodeDisplayOptions options)
     {
         return new GallerySourceCodeDisplayConfiguration(options.IsEnabled, options.SnippetProvider);
+    }
+}
+
+public sealed class GalleryShowCaseZoomConfiguration
+{
+    public bool IsEnabled { get; }
+
+    private GalleryShowCaseZoomConfiguration(bool isEnabled)
+    {
+        IsEnabled = isEnabled;
+    }
+
+    internal static GalleryShowCaseZoomConfiguration FromOptions(GalleryShowCaseZoomOptions options)
+    {
+        return new GalleryShowCaseZoomConfiguration(options.IsEnabled);
     }
 }

@@ -1,0 +1,81 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="using:AtomUI.Icons.AntDesign"
+    xmlns:gallery="https://atomui.net/toolkits/gallery-base">
+
+    <ControlTheme x:Key="{x:Type gallery:ShowCaseZoomOverlay}"
+                  TargetType="{x:Type gallery:ShowCaseZoomOverlay}">
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type gallery:ShowCaseZoomOverlay}">
+                <Border Name="PART_RootBorder"
+                        Background="{atom:SharedTokenResource ColorBgLayout}"
+                        ClipToBounds="True">
+                    <Border Name="PART_CardBorder"
+                            Background="{atom:SharedTokenResource ColorBgContainer}"
+                            ClipToBounds="True">
+                        <DockPanel Margin="{gallery:ShowCaseZoomOverlayTokenResource CardPadding}">
+                            <Grid DockPanel.Dock="Top"
+                                  ColumnDefinitions="*,Auto"
+                                  Margin="{gallery:ShowCaseZoomOverlayTokenResource HeaderMargin}">
+                                <atom:Separator Grid.Column="0"
+                                                TitlePosition="Center"
+                                                FontWeight="{gallery:ShowCaseZoomOverlayTokenResource TitleFontWeight}"
+                                                Title="{TemplateBinding Title}" />
+                                <atom:IconButton Name="PART_CloseButton"
+                                                 Grid.Column="1"
+                                                 Width="28"
+                                                 Height="28"
+                                                 IconWidth="16"
+                                                 IconHeight="16"
+                                                 VerticalAlignment="Center"
+                                                 atom:ToolTip.Tip="Exit zoom">
+                                    <atom:IconButton.Icon>
+                                        <antdicons:ShrinkOutlined />
+                                    </atom:IconButton.Icon>
+                                </atom:IconButton>
+                            </Grid>
+                            <atom:TextBlock Name="PART_DescriptionText"
+                                            DockPanel.Dock="Bottom"
+                                            TextWrapping="Wrap"
+                                            Margin="{gallery:ShowCaseZoomOverlayTokenResource DescriptionMargin}"
+                                            Text="{TemplateBinding Description}"
+                                            IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <Grid Name="PART_StageRoot">
+                                <gallery:ShowCaseZoomStagePanel Name="PART_StagePanel"
+                                                                StageMeasureWidth="{TemplateBinding StageMeasureWidth}" />
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^ /template/ Border#PART_RootBorder">
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform" Value="scale(0.96)" />
+        </Style>
+        <Style Selector="^[IsOpen=True] /template/ Border#PART_RootBorder">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="RenderTransform" Value="scale(1)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity"
+                                      Duration="0:0:0.18"
+                                      Easing="CubicEaseOut" />
+                    <TransformOperationsTransition Property="RenderTransform"
+                                                   Duration="0:0:0.18"
+                                                   Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="^.no-motion /template/ Border#PART_RootBorder">
+            <Setter Property="Transitions" Value="{x:Null}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

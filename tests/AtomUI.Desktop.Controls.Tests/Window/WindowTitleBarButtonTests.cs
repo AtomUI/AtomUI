@@ -255,6 +255,14 @@ public class WindowTitleBarButtonTests
             toggleButton.ApplyTemplate();
             host.UpdateLayout();
 
+            // CaptionButtonGroup 在构造函数里用 LocalValue 写入真实平台 OsType，优先级高于主题的
+            // OsType TemplateBinding，因此在测试机上必须显式驱动 macOS 模板，否则会静默落到宿主平台模板。
+            var group = titleBar.GetVisualDescendants()
+                                .OfType<CaptionButtonGroup>()
+                                .Single();
+            group.SetValue(CaptionButtonGroup.OsTypeProperty, OsType.macOS);
+            host.UpdateLayout();
+
             var pinButton = titleBar.GetVisualDescendants()
                                     .OfType<CaptionButton>()
                                     .Single();
@@ -312,6 +320,14 @@ public class WindowTitleBarButtonTests
             host.Show();
             titleBar.ApplyTemplate();
             button.ApplyTemplate();
+            host.UpdateLayout();
+
+            // CaptionButtonGroup 在构造函数里用 LocalValue 写入真实平台 OsType，优先级高于主题的
+            // OsType TemplateBinding，因此在测试机上必须显式驱动 macOS 模板，否则会静默落到宿主平台模板。
+            var group = titleBar.GetVisualDescendants()
+                                .OfType<CaptionButtonGroup>()
+                                .Single();
+            group.SetValue(CaptionButtonGroup.OsTypeProperty, OsType.macOS);
             host.UpdateLayout();
 
             var pinButton = titleBar.GetVisualDescendants()

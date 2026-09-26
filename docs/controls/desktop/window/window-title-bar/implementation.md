@@ -44,6 +44,7 @@ src/AtomUI.Desktop.Controls/
 │   ├── WindowTitleBarLayoutPanel.cs
 │   ├── CaptionButtonGroup.cs
 │   ├── CaptionButton.cs
+│   ├── CaptionButtonFrame.cs
 │   ├── WindowsCaptionButton.cs
 │   ├── WindowsCaptionButtonLayout.cs
 │   ├── WindowTitleBarToken.cs
@@ -57,6 +58,7 @@ src/AtomUI.Desktop.Controls/
 │       ├── WindowTitleBarButtonTheme.axaml
 │       ├── WindowTitleBarToggleButtonTheme.axaml
 │       ├── CaptionButtonGroupTheme.axaml
+│       ├── CaptionButtonFrameTheme.axaml
 │       ├── CaptionButtonTheme.axaml
 │       └── WindowsCaptionButtonTheme.axaml
 └── ImagePreviewer/
@@ -79,10 +81,11 @@ src/AtomUI.Desktop.Controls/
 | `Strategies/*` | 解释平台 `Auto` 值并归一有效 native chrome insets，不操作 Visual。 |
 | `CaptionButtonGroup.cs` | 从标题栏投影输入推导按钮 effective visibility 和 checked state，并向固定按钮提供宿主命令。 |
 | `CaptionButton.cs` | 计算 effective icon、圆形背景和 transition 初始化时序。 |
+| `CaptionButtonFrame.cs` | managed caption 的共享几何外壳：内缩的圆角背景层 + 决定布局盒的内容层，供 `CaptionButton` 与两个 AddOn 按钮复用同一套几何来源。 |
 | `WindowsCaptionButton.cs` | 使用共享 Windows 方形测量，并维护窗口状态切换后的 pointer-over 修正。 |
 | `WindowsCaptionButtonLayout.cs` | 以无状态纯函数归一 Windows caption 类按钮的测量约束与方形 `DesiredSize`，供系统按钮和 AddOn 按钮共享。 |
 | `WindowTitleBarToken.cs` | 从 SharedToken 计算标题栏视觉变量，不保存实例状态。 |
-| `Themes/*.axaml` | 声明静态 composition、平台模板、selector、命中测试角色和 Token 消费；AddOn themes 基于公共 IconButton family 只覆盖标题栏视觉。 |
+| `Themes/*.axaml` | 声明静态 composition、平台模板、selector、命中测试角色和 Token 消费；`CaptionButtonFrameTheme` 是两层几何的唯一声明处，caption band 与 AddOn themes 只组合该外壳并各自提供 presenter。 |
 
 ## 4. 状态与数据流
 

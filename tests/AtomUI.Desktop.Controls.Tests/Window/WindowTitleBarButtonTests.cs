@@ -1,8 +1,10 @@
 using System.Xml.Linq;
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -202,6 +204,240 @@ public class WindowTitleBarButtonTests
             button.Background!
                   .ShouldBeAssignableTo<ISolidColorBrush>()
                   .Color.ShouldBe(Colors.Transparent);
+        }
+        finally
+        {
+            host.Close();
+        }
+    }
+
+    [Fact]
+    public void MacOS_AddOn_Buttons_Match_The_Managed_Caption_Button_Circle()
+    {
+        var button = new WindowTitleBarButton
+        {
+            Icon = new CameraOutlined()
+        };
+        var toggleButton = new WindowTitleBarToggleButton
+        {
+            CheckedIcon = new SearchOutlined(),
+            UnCheckedIcon = new SettingOutlined()
+        };
+        var titleBar = new WindowTitleBar
+        {
+            RightAddOn = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children = { button, toggleButton }
+            },
+            IsWindowActive = true,
+            Title = "Title",
+            IsPinCaptionButtonVisible = true,
+            IsPinCaptionButtonSupported = true
+        };
+        titleBar.SetValue(WindowTitleBar.OsTypeProperty, OsType.macOS);
+        titleBar.Theme = Application.Current!
+            .FindResource(typeof(WindowTitleBar))
+            .ShouldBeAssignableTo<ControlTheme>();
+
+        var host = new Avalonia.Controls.Window
+        {
+            Width = 400,
+            Height = 100,
+            Content = titleBar
+        };
+
+        try
+        {
+            host.Show();
+            titleBar.ApplyTemplate();
+            button.ApplyTemplate();
+            toggleButton.ApplyTemplate();
+            host.UpdateLayout();
+
+            var pinButton = titleBar.GetVisualDescendants()
+                                    .OfType<CaptionButton>()
+                                    .Single();
+            pinButton.IsVisible.ShouldBeTrue();
+            pinButton.ApplyTemplate();
+            host.UpdateLayout();
+
+            button.Bounds.Size.ShouldBe(new Size(30, 30));
+            toggleButton.Bounds.Size.ShouldBe(new Size(30, 30));
+            pinButton.Bounds.Size.ShouldBe(new Size(30, 30));
+
+            var buttonFrame = FindCaptionFrame(button);
+            var toggleFrame = FindCaptionFrame(toggleButton);
+            var pinFrame = FindCaptionFrame(pinButton);
+            buttonFrame.CornerRadius.ShouldBe(new CornerRadius(15));
+            toggleFrame.CornerRadius.ShouldBe(new CornerRadius(15));
+            buttonFrame.CornerRadius.ShouldBe(pinFrame.CornerRadius);
+            toggleFrame.CornerRadius.ShouldBe(pinFrame.CornerRadius);
+        }
+        finally
+        {
+            host.Close();
+        }
+    }
+
+    [Fact]
+    public void MacOS_AddOn_Button_Is_Spaced_From_The_Caption_Button_Group()
+    {
+        var button = new WindowTitleBarButton
+        {
+            Icon = new CameraOutlined()
+        };
+        var titleBar = new WindowTitleBar
+        {
+            RightAddOn = button,
+            IsWindowActive = true,
+            Title = "Title",
+            IsPinCaptionButtonVisible = true,
+            IsPinCaptionButtonSupported = true
+        };
+        titleBar.SetValue(WindowTitleBar.OsTypeProperty, OsType.macOS);
+        titleBar.Theme = Application.Current!
+            .FindResource(typeof(WindowTitleBar))
+            .ShouldBeAssignableTo<ControlTheme>();
+
+        var host = new Avalonia.Controls.Window
+        {
+            Width = 400,
+            Height = 100,
+            Content = titleBar
+        };
+
+        try
+        {
+            host.Show();
+            titleBar.ApplyTemplate();
+            button.ApplyTemplate();
+            host.UpdateLayout();
+
+            var pinButton = titleBar.GetVisualDescendants()
+                                    .OfType<CaptionButton>()
+                                    .Single();
+            pinButton.ApplyTemplate();
+            host.UpdateLayout();
+
+            var addOnRight = button.TranslatePoint(new Point(button.Bounds.Width, 0), titleBar)!.Value.X;
+            var pinLeft = pinButton.TranslatePoint(new Point(0, 0), titleBar)!.Value.X;
+
+            (pinLeft - addOnRight).ShouldBe(8);
+
+            titleBar.RightAddOn = null;
+            host.UpdateLayout();
+
+            var pinRight = pinButton.TranslatePoint(new Point(pinButton.Bounds.Width, 0), titleBar)!.Value.X;
+            // 没有 AddOn 内容时，Trailing spacing 不产生幽灵间距，caption group 仍贴住尾随内容边界。
+            Math.Abs(titleBar.Bounds.Width - titleBar.Padding.Right - pinRight)
+                .ShouldBeLessThanOrEqualTo(1d);
+        }
+        finally
+        {
+            host.Close();
+        }
+    }
+
+    [Fact]
+    public void Linux_AddOn_Buttons_Match_The_Managed_Caption_Band_Geometry()
+    {
+        var button = new WindowTitleBarButton
+        {
+            Icon = new CameraOutlined()
+        };
+        var toggleButton = new WindowTitleBarToggleButton
+        {
+            CheckedIcon = new SearchOutlined(),
+            UnCheckedIcon = new SettingOutlined()
+        };
+        var titleBar = new WindowTitleBar
+        {
+            RightAddOn = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children = { button, toggleButton }
+            },
+            IsWindowActive = true,
+            Title = "Title",
+            IsPinCaptionButtonVisible = true,
+            IsPinCaptionButtonSupported = true
+        };
+        titleBar.SetValue(WindowTitleBar.OsTypeProperty, OsType.Linux);
+        titleBar.Theme = Application.Current!
+            .FindResource(typeof(WindowTitleBar))
+            .ShouldBeAssignableTo<ControlTheme>();
+
+        var host = new Avalonia.Controls.Window
+        {
+            Width = 400,
+            Height = 100,
+            Content = titleBar
+        };
+
+        try
+        {
+            host.Show();
+            titleBar.ApplyTemplate();
+            button.ApplyTemplate();
+            toggleButton.ApplyTemplate();
+            host.UpdateLayout();
+
+            // CaptionButtonGroup 在构造函数里用 LocalValue 写入真实平台 OsType，优先级高于主题的
+            // OsType TemplateBinding，因此在测试机上必须显式驱动 Linux 模板，否则会静默落到宿主平台模板。
+            var group = titleBar.GetVisualDescendants()
+                                .OfType<CaptionButtonGroup>()
+                                .Single();
+            group.SetValue(CaptionButtonGroup.OsTypeProperty, OsType.Linux);
+            host.UpdateLayout();
+
+            titleBar.GetVisualDescendants()
+                   .OfType<CaptionButton>()
+                   .ShouldContain(candidate => candidate.Name == "PART_MinimizeButton");
+
+            var pinButton = titleBar.GetVisualDescendants()
+                                    .OfType<CaptionButton>()
+                                    .Single(candidate => candidate.Name == "PART_PinButton");
+            var minimizeButton = titleBar.GetVisualDescendants()
+                                         .OfType<CaptionButton>()
+                                         .Single(candidate => candidate.Name == "PART_MinimizeButton");
+            pinButton.ApplyTemplate();
+            minimizeButton.ApplyTemplate();
+            host.UpdateLayout();
+
+            var buttonFrame = FindCaptionFrame(button);
+            var toggleFrame = FindCaptionFrame(toggleButton);
+            var pinFrame = FindCaptionFrame(pinButton);
+            var minimizeFrame = FindCaptionFrame(minimizeButton);
+
+            // 圆角、可见背景尺寸和背景 inset 必须与相邻 managed caption button 完全一致。
+            buttonFrame.CornerRadius.ShouldBe(new CornerRadius(15));
+            buttonFrame.CornerRadius.ShouldBe(pinFrame.CornerRadius);
+            toggleFrame.CornerRadius.ShouldBe(pinFrame.CornerRadius);
+            buttonFrame.Bounds.Size.ShouldBe(new Size(26, 26));
+            buttonFrame.Bounds.Size.ShouldBe(pinFrame.Bounds.Size);
+            toggleFrame.Bounds.Size.ShouldBe(pinFrame.Bounds.Size);
+            buttonFrame.Margin.ShouldBe(new Thickness(2));
+            buttonFrame.Margin.ShouldBe(pinButton.BackgroundInset);
+            toggleFrame.Margin.ShouldBe(pinButton.BackgroundInset);
+
+            // 命中面仍是 30 逻辑像素，与 caption button 的布局盒一致。
+            button.Bounds.Size.ShouldBe(new Size(30, 30));
+            toggleButton.Bounds.Size.ShouldBe(new Size(30, 30));
+            pinButton.Bounds.Size.ShouldBe(new Size(30, 30));
+
+            // 可见背景之间的间距也要等于 caption band 内部的可见间距。
+            var addOnVisibleRight = toggleButton.TranslatePoint(
+                new Point(toggleFrame.Bounds.Right, 0), titleBar)!.Value.X;
+            var pinVisibleLeft = pinButton.TranslatePoint(
+                new Point(pinFrame.Bounds.X, 0), titleBar)!.Value.X;
+            var pinVisibleRight = pinButton.TranslatePoint(
+                new Point(pinFrame.Bounds.Right, 0), titleBar)!.Value.X;
+            var minimizeVisibleLeft = minimizeButton.TranslatePoint(
+                new Point(minimizeFrame.Bounds.X, 0), titleBar)!.Value.X;
+
+            (pinVisibleLeft - addOnVisibleRight).ShouldBe(12);
+            (pinVisibleLeft - addOnVisibleRight).ShouldBe(minimizeVisibleLeft - pinVisibleRight);
         }
         finally
         {
@@ -466,6 +702,49 @@ public class WindowTitleBarButtonTests
     }
 
     [Fact]
+    public void AddOn_Themes_Reuse_The_Shared_Managed_Caption_Frame()
+    {
+        var frameTheme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonFrameTheme.axaml"));
+        var buttonTheme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowTitleBarButtonTheme.axaml"));
+        var toggleTheme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowTitleBarToggleButtonTheme.axaml"));
+        var manifest = File.ReadAllText(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ThemeAssetManifestGenerator/GeneratedControlThemeAssetManifest.g.cs"));
+
+        manifest.ShouldContain("WindowTitleBar/Themes/CaptionButtonFrameTheme.axaml");
+
+        // 背景层 + 内容层的几何结构只在共享外壳里定义一次。
+        frameTheme.Descendants()
+                  .Count(element => (string?)element.Attribute("Name") == "PART_Frame")
+                  .ShouldBe(1);
+
+        foreach (var theme in new[] { buttonTheme, toggleTheme })
+        {
+            var frames = theme.Descendants()
+                              .Where(element => element.Name.LocalName == "CaptionButtonFrame")
+                              .ToList();
+            frames.Count.ShouldBe(1);
+            frames[0].Descendants()
+                     .ShouldNotContain(element => (string?)element.Attribute("Name") == "PART_Frame");
+            theme.Descendants()
+                 .ShouldNotContain(element => element.Name.LocalName == "PixelAlignedBorder");
+        }
+
+        // Linux 通过共享外壳的属性表达背景内缩，而不是自己搭背景层。
+        foreach (var theme in new[] { buttonTheme, toggleTheme })
+        {
+            theme.Descendants()
+                 .ShouldContain(element =>
+                     element.Name.LocalName == "Setter" &&
+                     (string?)element.Attribute("Property") == "BackgroundInset" &&
+                     (string?)element.Attribute("Value") ==
+                     "{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}");
+        }
+    }
+
+    [Fact]
     public void AddOn_Themes_Are_Registered_As_Independent_Assets_And_Stay_Out_Of_System_Caption_Contract()
     {
         Application.Current!
@@ -495,6 +774,15 @@ public class WindowTitleBarButtonTests
             theme.ToString().ShouldNotContain("CaptionButtonAction");
             theme.ToString().ShouldNotContain("ElementRole");
         }
+    }
+
+    // managed caption band 与 AddOn 家族共用 CaptionButtonFrame，背景层节点名同为 PART_Frame。
+    // PixelAlignedBorder 派生自 Decorator（不是 Avalonia Border），必须按真实类型查找。
+    private static PixelAlignedBorder FindCaptionFrame(Control control)
+    {
+        return control.GetVisualDescendants()
+                      .OfType<PixelAlignedBorder>()
+                      .Single(border => border.Name == "PART_Frame");
     }
 
     private static string GetRepoFile(string relativePath)

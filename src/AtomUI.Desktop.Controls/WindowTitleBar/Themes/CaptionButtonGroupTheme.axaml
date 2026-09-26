@@ -4,6 +4,11 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
+    <!-- Windows caption 图标几何独立成资产；显式合并进来，让 XAML 设计器也能解析 StaticResource。
+         运行时主题资产管线同样会合并该字典，重复合并不改变 key 语义。 -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowsCaptionIconGeometries.axaml" />
+    </ResourceDictionary.MergedDictionaries>
     <ControlTheme x:Key="{x:Type atom:CaptionButtonGroup}" TargetType="atom:CaptionButtonGroup">
         <Style Selector="^[OsType=Linux]">
             <Setter Property="Template">
@@ -81,7 +86,7 @@
                 </ControlTemplate>
             </Setter>
             <Style Selector="^ /template/ atom|CaptionButton">
-                <Setter Property="BackgroundInset" Value="2" />
+                <Setter Property="BackgroundInset" Value="{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}" />
             </Style>
         </Style>
         

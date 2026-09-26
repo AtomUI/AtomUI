@@ -2,6 +2,20 @@
 
 本文档记录 WindowTitleBar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-09-25
+
+- Theme
+  - Align Linux/macOS `WindowTitleBarButton` and `WindowTitleBarToggleButton` geometry with the adjacent managed caption band: the AddOn themes now take `CornerRadius` from `CaptionButtonCornerRadius` instead of the shared `BorderRadiusSM`, and the title bar trailing container separates the AddOn area from `PART_CaptionButtonGroup` with `CaptionGroupSpacing`, so the buttons read as one set with the system caption buttons instead of touching them. The spacing collapses when no AddOn content is present, and the Windows trailing layout keeps zero spacing.
+  - Extract the managed caption geometry into an internal `CaptionButtonFrame` (inset rounded background layer plus layout-driving content layer) with its own ControlTheme. `CaptionButtonTheme` and both AddOn themes now compose that frame and only contribute their own presenters, so the two-layer structure is declared once instead of being copied per theme. Linux passes `CaptionButtonBackgroundInset` to the shared frame, shrinking the background to the same 26 logical pixel circle as the adjacent caption buttons while the 30 logical pixel hit surface is preserved. Windows square geometry is unchanged.
+- Token
+  - Add `CaptionButtonCornerRadius` to `WindowTitleBarToken`, derived from `CaptionButtonIconSize` and `CaptionButtonPadding`. It mirrors the size-derived circle of the internal `CaptionButton`; the control keeps its measured derivation so the fullscreen caption-button size override still resolves correctly.
+  - Add `CaptionButtonBackgroundInset` to `WindowTitleBarToken`, derived from `SizeUnit`, and make the Linux caption group consume it instead of a literal, so the caption band and the AddOn buttons share one background-inset source.
+- Docs
+  - Record the Linux/macOS geometry rule in the AddOn platform matrix, ControlTheme section and verification list, and add the new Tokens to the token table.
+- Verification
+  - Cover Linux and macOS AddOn button and toggle button corner equality against the real `PART_PinButton`, the visible background size and inset equality, the operation-area gap, the no-AddOn no-phantom-gap case, and the preserved 30 logical pixel hit surface in `WindowTitleBarButtonTests`.
+  - Cover the shared frame rendering itself in `WindowTitleBarCaptionFrameRenderingTests`: a real render pass paints the inset circular background for both AddOn buttons, while the hit surface corners stay unpainted.
+
 ## 2026-09-10
 
 - Platform

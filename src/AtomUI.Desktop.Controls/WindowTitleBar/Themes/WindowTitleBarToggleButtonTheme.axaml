@@ -10,6 +10,39 @@
         <themes:ToggleIconButtonTheme TargetType="{x:Type atom:WindowTitleBarToggleButton}" />
     </ControlTheme.BasedOn>
 
+    <!-- 复用 managed caption 的共享几何外壳：背景层与内容层由 CaptionButtonFrame 拥有，
+         这里只声明 AddOn 自己的 presenter 契约，因此不复制 caption band 的几何结构。 -->
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:WindowTitleBarToggleButton">
+            <atom:CaptionButtonFrame Background="{TemplateBinding Background}"
+                                     BorderBrush="{TemplateBinding BorderBrush}"
+                                     BorderThickness="{TemplateBinding BorderThickness}"
+                                     CornerRadius="{TemplateBinding CornerRadius}"
+                                     Padding="{TemplateBinding Padding}"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch">
+                <Panel Name="PART_RootLayout">
+                    <atom:IconPresenter Name="PART_CheckedIconPresenter"
+                                        Icon="{TemplateBinding CheckedIcon}"
+                                        IsVisible="{TemplateBinding IsChecked}"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        IconBrush="{TemplateBinding IconBrush}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                    <atom:IconPresenter Name="PART_UnCheckedIconPresenter"
+                                        Icon="{TemplateBinding UnCheckedIcon}"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        IsVisible="{TemplateBinding IsChecked, Converter={x:Static BoolConverters.Not}}"
+                                        IconBrush="{TemplateBinding IconBrush}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                </Panel>
+            </atom:CaptionButtonFrame>
+        </ControlTemplate>
+    </Setter>
+
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -43,6 +76,17 @@
 
     <Style Selector="^[HostMotionEnabled=False]">
         <Setter Property="IsMotionEnabled" Value="False" />
+    </Style>
+
+    <Style Selector="^[HostOsType=macOS]">
+        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarTokenResource CaptionButtonCornerRadius}" />
+    </Style>
+
+    <Style Selector="^[HostOsType=Linux]">
+        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarTokenResource CaptionButtonCornerRadius}" />
+        <Style Selector="^ /template/ atom|CaptionButtonFrame">
+            <Setter Property="BackgroundInset" Value="{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}" />
+        </Style>
     </Style>
 
     <Style Selector="^[HostOsType=Windows]">

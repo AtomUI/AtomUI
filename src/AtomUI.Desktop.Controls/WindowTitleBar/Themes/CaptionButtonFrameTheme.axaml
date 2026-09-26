@@ -1,0 +1,29 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:CaptionButtonFrame}" TargetType="atom:CaptionButtonFrame">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <atom:PixelAlignedBorder Name="PART_Frame"
+                                             Background="{TemplateBinding Background}"
+                                             BorderBrush="{TemplateBinding BorderBrush}"
+                                             BorderThickness="{TemplateBinding BorderThickness}"
+                                             CornerRadius="{TemplateBinding CornerRadius}"
+                                             Margin="{TemplateBinding BackgroundInset}"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Stretch" />
+                    <Border Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch" />
+                    </Border>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

@@ -39,10 +39,14 @@ Token 负责尺寸、间距、字体和状态颜色，不负责以下运行时�
 | `CaptionButtonIconSize` | 通用 caption action icon 尺寸。 | Linux/macOS buttons、Windows extended actions、全屏 buttons、WindowTitleBar AddOn buttons |
 | `WindowsCaptionIconSize` | Windows minimize/maximize/close glyph 尺寸。 | `WindowsCaptionButton` |
 | `CaptionButtonPadding` | managed caption button 内容 padding；Windows AddOn 的外部命中面仍由标题栏可用高度决定。 | `CaptionButtonTheme`、WindowTitleBar AddOn button themes |
-| `CaptionGroupSpacing` | 非 Windows caption buttons、全屏操作和非 Windows AddOn button group 的可选语义间距。 | CaptionButtonGroup、全屏标题宿主、应用 AddOn 容器 |
+| `CaptionButtonCornerRadius` | managed caption button 的正圆圆角，由 `CaptionButtonIconSize` 与 `CaptionButtonPadding` 推导。 | Linux/macOS WindowTitleBar AddOn button themes |
+| `CaptionButtonBackgroundInset` | managed caption button 背景相对布局盒的内缩；Linux managed caption band 用 `SizeUnit / 2` 把 30 逻辑像素命中面收成 26 逻辑像素圆形背景。 | Linux `CaptionButtonGroupTheme`、Linux WindowTitleBar AddOn button themes、`CaptionButtonFrameTheme` |
+| `CaptionGroupSpacing` | 非 Windows caption buttons、全屏操作和非 Windows AddOn button group 的可选语义间距。 | CaptionButtonGroup、全屏标题宿主、Linux/macOS WindowTitleBar Trailing 容器、应用 AddOn 容器 |
 | `FullscreenCaptionButtonSize` | 全屏标题宿主中 caption button 的固定尺寸。 | Window drawn decorations、fullscreen popover |
 
-Windows 原生风格 caption buttons 连续贴合排列，group spacing 为零；Windows AddOn 需要连续 hover 按钮带时，其应用容器同样设置零 spacing。Linux/macOS 与全屏操作可使用 `CaptionGroupSpacing`。`LeftAddOn` / `RightAddOn` 允许任意内容，因此容器 spacing 始终由应用所有，Theme 不强制覆盖。Linux 的按钮背景 inset 属于 Theme 状态视觉，不改变按钮布局占用尺寸。
+Windows 原生风格 caption buttons 连续贴合排列，group spacing 为零；Windows AddOn 需要连续 hover 按钮带时，其应用容器同样设置零 spacing。Linux 与全屏操作可使用 `CaptionGroupSpacing`；Linux/macOS 标题栏在 Trailing 容器上固定使用该 Token 分隔 AddOn 操作区与 caption group，使圆形按钮之间保持同一语义间距，没有 AddOn 内容时不产生幽灵间距。`LeftAddOn` / `RightAddOn` 允许任意内容，因此容器内部 spacing 始终由应用所有，Theme 不强制覆盖。`CaptionButtonBackgroundInset` 属于 Theme 状态视觉，只内缩背景层，不改变按钮布局占用尺寸和命中面。
+
+`CaptionButtonCornerRadius` 与 `CaptionButton` 按实测尺寸推导的圆角同源：内容尺寸固定为 icon + padding，默认主题下 30×30 得到 15。该 Token 在 Linux/macOS AddOn theme 生效，让 `WindowTitleBarButton` 与 `WindowTitleBarToggleButton` 和相邻系统 caption 按钮共用同一圆角来源；`CaptionButton` 自身保留实测推导，以覆盖全屏标题宿主对按钮尺寸的覆盖。`CaptionButtonBackgroundInset` 同时被 Linux `CaptionButtonGroupTheme` 与 Linux AddOn theme 消费，是 26 逻辑像素圆形背景的唯一来源；两个家族都通过 `CaptionButtonFrame` 把这个值应用到共享的背景层。Windows AddOn 维持直角铺满标题栏的方形交互面，不消费这两个 Token。
 
 ### 2.3 Active 与 inactive 视觉
 

@@ -23438,6 +23438,11 @@ Source: ./controls/window-title-bar/semantic-cn.md
 
 ```text
 WindowTitleBar
+  -> CaptionButtonFrame (control theme, CaptionButtonFrameTheme.axaml)
+     -> Panel (template-stable)
+        -> PixelAlignedBorder#PART_Frame (template-stable)
+        -> Border (template-stable)
+           -> ContentPresenter#PART_ContentPresenter (template-stable)
   -> CaptionButtonGroup (control theme, CaptionButtonGroupTheme.axaml)
      -> StackPanel#RootLayout (template-stable)
         -> CaptionButton#PART_FullScreenButton (template-stable)
@@ -23454,11 +23459,11 @@ WindowTitleBar
         -> WindowsCaptionButton#PART_MaximizeButton (template-stable)
         -> WindowsCaptionButton#PART_CloseButton (template-stable)
   -> CaptionButton (control theme, CaptionButtonTheme.axaml)
-     -> Panel (template-stable)
-        -> Border#PART_Frame (template-stable)
-        -> Border (template-stable)
-           -> IconPresenter#PART_IconPresenter (template-stable)
+     -> CaptionButtonFrame (internal-observable)
+        -> IconPresenter#PART_IconPresenter (template-stable)
   -> WindowTitleBarButton (control theme, WindowTitleBarButtonTheme.axaml)
+     -> CaptionButtonFrame (internal-observable)
+        -> IconPresenter#IconPresenter (internal-observable)
   -> WindowTitleBar (control theme, WindowTitleBarTheme.axaml)
      -> Border#Frame (template-stable)
         -> WindowTitleBarLayoutPanel (internal-observable)
@@ -23490,6 +23495,10 @@ WindowTitleBar
               -> ContentPresenter#PART_RightAddOn (template-stable)
               -> CaptionButtonGroup#PART_CaptionButtonGroup (template-stable)
   -> WindowTitleBarToggleButton (control theme, WindowTitleBarToggleButtonTheme.axaml)
+     -> CaptionButtonFrame (internal-observable)
+        -> Panel#PART_RootLayout (template-stable)
+           -> IconPresenter#PART_CheckedIconPresenter (template-stable)
+           -> IconPresenter#PART_UnCheckedIconPresenter (template-stable)
   -> WindowsCaptionButton (control theme, WindowsCaptionButtonTheme.axaml)
      -> Border#PART_Frame (template-stable)
         -> IconPresenter#PART_IconPresenter (template-stable)
@@ -23500,6 +23509,10 @@ WindowTitleBar
 | 节点 | 类型 | 来源 | 生命周期 owner | 影响的 public API | 稳定性 | Agent 使用边界 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `WindowTitleBar` | public control | `源文档 + public API` | 用户代码 / 控件宿主 | public API | public | 用户可直接使用 public 控件；可作为示例和 API 入口。 |
+| `CaptionButtonFrame` | control theme | `CaptionButtonFrameTheme.axaml` | WindowTitleBar | `Background`, `BackgroundInset`, `BorderBrush`, `BorderThickness`, `Content`, `ContentTemplate` | internal-observable | 用于理解结构和状态流，不应指导用户代码直接依赖。 |
+| `Panel` | template node (Panel) | `CaptionButtonFrameTheme.axaml` | CaptionButtonFrame | `Background`, `BackgroundInset`, `BorderBrush`, `BorderThickness`, `Content`, `ContentTemplate` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
+| `PART_Frame` | template node (PixelAlignedBorder) | `CaptionButtonFrameTheme.axaml` | CaptionButtonFrame | `Background`, `BackgroundInset`, `BorderBrush`, `BorderThickness`, `CornerRadius` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
+| `PART_ContentPresenter` | template node (ContentPresenter) | `CaptionButtonFrameTheme.axaml` | CaptionButtonFrame | `Content`, `ContentTemplate` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `CaptionButtonGroup` | control theme | `CaptionButtonGroupTheme.axaml` | WindowTitleBar | `CaptionButtonCommand`, `HostWindowState`, `IsCloseButtonEffectivelyVisible`, `IsFullScreenButtonEffectivelyVisible`, `IsMaximizeButtonEffectivelyVisible`, `IsMinimizeButtonEffectivelyVisible` | internal-observable | 用于理解结构和状态流，不应指导用户代码直接依赖。 |
 | `RootLayout` | template node (StackPanel) | `CaptionButtonGroupTheme.axaml` | CaptionButtonGroup | `CaptionButtonCommand`, `IsCloseButtonEffectivelyVisible`, `IsFullScreenButtonEffectivelyVisible`, `IsMaximizeButtonEffectivelyVisible`, `IsMinimizeButtonEffectivelyVisible`, `IsMotionEnabled` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `PART_FullScreenButton` | template node (CaptionButton) | `CaptionButtonGroupTheme.axaml` | CaptionButtonGroup | `CaptionButtonCommand`, `IsFullScreenButtonEffectivelyVisible`, `IsMotionEnabled`, `IsWindowActive`, `IsWindowFullScreen` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
@@ -23513,10 +23526,9 @@ WindowTitleBar
 | `PART_MaximizeButton` | template node (WindowsCaptionButton) | `CaptionButtonGroupTheme.axaml` | CaptionButtonGroup | `CaptionButtonCommand`, `HostWindowState`, `IsMaximizeButtonEffectivelyVisible`, `IsMotionEnabled`, `IsWindowActive`, `IsWindowMaximized` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `PART_CloseButton` | template node (WindowsCaptionButton) | `CaptionButtonGroupTheme.axaml` | CaptionButtonGroup | `CaptionButtonCommand`, `HostWindowState`, `IsCloseButtonEffectivelyVisible`, `IsMotionEnabled`, `IsWindowActive` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `CaptionButton` | control theme | `CaptionButtonTheme.axaml` | WindowTitleBar | `Background`, `BackgroundInset`, `EffectiveCornerRadius`, `EffectiveIcon`, `HorizontalAlignment`, `IconHeight` | internal-observable | 用于理解结构和状态流，不应指导用户代码直接依赖。 |
-| `Panel` | template node (Panel) | `CaptionButtonTheme.axaml` | CaptionButton | `Background`, `BackgroundInset`, `EffectiveCornerRadius`, `EffectiveIcon`, `HorizontalAlignment`, `IconHeight` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
-| `PART_Frame` | template node (Border) | `CaptionButtonTheme.axaml` | CaptionButton | `Background`, `BackgroundInset`, `EffectiveCornerRadius` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `PART_IconPresenter` | template node (IconPresenter) | `CaptionButtonTheme.axaml` | CaptionButton | `EffectiveIcon`, `IconHeight`, `IconWidth` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
-| `WindowTitleBarButton` | control theme | `WindowTitleBarButtonTheme.axaml` | 用户代码 / 控件宿主 | 主题状态 / visual state | public | 用户可直接使用 public 控件；可作为示例和 API 入口。 |
+| `WindowTitleBarButton` | control theme | `WindowTitleBarButtonTheme.axaml` | 用户代码 / 控件宿主 | `Background`, `BorderBrush`, `BorderThickness`, `CornerRadius`, `Icon`, `IconBrush` | public | 用户可直接使用 public 控件；可作为示例和 API 入口。 |
+| `IconPresenter` | template node (IconPresenter) | `WindowTitleBarButtonTheme.axaml` | WindowTitleBarButton | `Icon`, `IconBrush`, `IconHeight`, `IconWidth` | internal-observable | 用于理解结构和状态流，不应指导用户代码直接依赖。 |
 | `WindowTitleBar` | control theme | `WindowTitleBarTheme.axaml` | 用户代码 / 控件宿主 | `Background`, `CanMaximize`, `CanMinimize`, `CaptionButtonCommand`, `EffectiveLogoPresenterContent`, `EffectiveLogoPresenterContentTemplate` | public | 用户可直接使用 public 控件；可作为示例和 API 入口。 |
 | `Frame` | template node (Border) | `WindowTitleBarTheme.axaml` | WindowTitleBar | `Background`, `CanMaximize`, `CanMinimize`, `CaptionButtonCommand`, `EffectiveLogoPresenterContent`, `EffectiveLogoPresenterContentTemplate` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `WindowTitleBarLayoutPanel` | template node (WindowTitleBarLayoutPanel) | `WindowTitleBarTheme.axaml` | WindowTitleBar | `CanMaximize`, `CanMinimize`, `CaptionButtonCommand`, `EffectiveLogoPresenterContent`, `EffectiveLogoPresenterContentTemplate`, `HostWindowState` | internal-observable | 用于理解结构和状态流，不应指导用户代码直接依赖。 |
@@ -23527,10 +23539,11 @@ WindowTitleBar
 | `StackPanel` | template node (StackPanel) | `WindowTitleBarTheme.axaml` | WindowTitleBar | `CanMaximize`, `CanMinimize`, `CaptionButtonCommand`, `HostWindowState`, `IsCloseCaptionButtonVisible`, `IsFullScreenCaptionButtonVisible` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `PART_RightAddOn` | template node (ContentPresenter) | `WindowTitleBarTheme.axaml` | WindowTitleBar | `IsMotionEnabled`, `IsWindowActive`, `OsType`, `RightAddOn`, `RightAddOnTemplate` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `PART_CaptionButtonGroup` | template node (CaptionButtonGroup) | `WindowTitleBarTheme.axaml` | WindowTitleBar | `CanMaximize`, `CanMinimize`, `CaptionButtonCommand`, `HostWindowState`, `IsCloseCaptionButtonVisible`, `IsFullScreenCaptionButtonVisible` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
-| `WindowTitleBarToggleButton` | control theme | `WindowTitleBarToggleButtonTheme.axaml` | 用户代码 / 控件宿主 | 主题状态 / visual state | public | 用户可直接使用 public 控件；可作为示例和 API 入口。 |
+| `WindowTitleBarToggleButton` | control theme | `WindowTitleBarToggleButtonTheme.axaml` | 用户代码 / 控件宿主 | `Background`, `BorderBrush`, `BorderThickness`, `CheckedIcon`, `CornerRadius`, `IconBrush` | public | 用户可直接使用 public 控件；可作为示例和 API 入口。 |
+| `PART_RootLayout` | template node (Panel) | `WindowTitleBarToggleButtonTheme.axaml` | WindowTitleBarToggleButton | `CheckedIcon`, `IconBrush`, `IconHeight`, `IconWidth`, `IsChecked`, `UnCheckedIcon` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
+| `PART_CheckedIconPresenter` | template node (IconPresenter) | `WindowTitleBarToggleButtonTheme.axaml` | WindowTitleBarToggleButton | `CheckedIcon`, `IconBrush`, `IconHeight`, `IconWidth`, `IsChecked` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
+| `PART_UnCheckedIconPresenter` | template node (IconPresenter) | `WindowTitleBarToggleButtonTheme.axaml` | WindowTitleBarToggleButton | `IconBrush`, `IconHeight`, `IconWidth`, `IsChecked`, `UnCheckedIcon` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 | `WindowsCaptionButton` | control theme | `WindowsCaptionButtonTheme.axaml` | WindowTitleBar | `Background`, `EffectiveCornerRadius`, `EffectiveIcon`, `IconHeight`, `IconWidth`, `Padding` | internal-observable | 用于理解结构和状态流，不应指导用户代码直接依赖。 |
-| `PART_Frame` | template node (Border) | `WindowsCaptionButtonTheme.axaml` | WindowsCaptionButton | `Background`, `EffectiveCornerRadius`, `EffectiveIcon`, `IconHeight`, `IconWidth`, `Padding` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
-| `PART_IconPresenter` | template node (IconPresenter) | `WindowsCaptionButtonTheme.axaml` | WindowsCaptionButton | `EffectiveIcon`, `IconHeight`, `IconWidth` | template-stable | 用于主题维护；变更需同步主题、实现和 LLMS。 |
 
 ## Template Parts
 

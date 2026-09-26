@@ -65,7 +65,8 @@
                                               IsVisible="{TemplateBinding IsEffectiveTitleVisible}" />
                         </DockPanel>
                         <StackPanel atom:WindowTitleBarLayoutPanel.Role="Trailing"
-                                    Orientation="Horizontal">
+                                    Orientation="Horizontal"
+                                    Spacing="{atom:WindowTitleBarTokenResource CaptionGroupSpacing}">
                             <ContentPresenter Name="PART_RightAddOn"
                                               VerticalAlignment="Center"
                                               VerticalContentAlignment="Center"
@@ -234,7 +235,8 @@
                                               IsVisible="{TemplateBinding IsEffectiveTitleVisible}" />
                         </DockPanel>
                         <StackPanel atom:WindowTitleBarLayoutPanel.Role="Trailing"
-                                    Orientation="Horizontal">
+                                    Orientation="Horizontal"
+                                    Spacing="{atom:WindowTitleBarTokenResource CaptionGroupSpacing}">
                             <ContentPresenter Name="PART_RightAddOn"
                                               VerticalAlignment="Center"
                                               VerticalContentAlignment="Center"

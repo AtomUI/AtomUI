@@ -82,7 +82,7 @@ Add-on 可以包含可交互控件，也可以是 `null`、隐藏节点或当前
 需要与标题栏 managed caption visual 保持一致的应用操作，可以直接使用 `WindowTitleBarButton` 或
 `WindowTitleBarToggleButton`。前者继承 `IconButton`，使用 `Icon`、`Command` 和标准按钮输入语义；后者继承
 `ToggleIconButton`，使用 `CheckedIcon`、`UnCheckedIcon`、`IsChecked` 和标准 ToggleButton 输入语义。两个控件的
-业务命令、启用状态和 checked 状态仍由应用所有，不映射到 Window 的系统操作。Windows 中两者默认占满标题栏可用高度并形成方形交互面，使用直角、透明常态背景和 Arrow 光标，业务图标继续使用 `CaptionButtonIconSize`；Linux/macOS 保持内容驱动的圆角 managed visual 与 Hand 光标。按钮容器间距由应用内容所有，Windows 中需要连续 hover 按钮带时应使用零 spacing。
+业务命令、启用状态和 checked 状态仍由应用所有，不映射到 Window 的系统操作。Windows 中两者默认占满标题栏可用高度并形成方形交互面，使用直角、透明常态背景和 Arrow 光标，业务图标继续使用 `CaptionButtonIconSize`；Linux/macOS 保持内容驱动的 30 逻辑像素方形命中面，把圆角换成 `CaptionButtonCornerRadius`，并以 `CaptionGroupSpacing` 与 caption group 分隔，Linux 额外用 `CaptionButtonBackgroundInset` 把背景收成与相邻 caption button 相同的 26 逻辑像素圆形，因此圆形按钮与相邻 managed caption button 的圆角、可见尺寸和间距同源。按钮容器内部间距由应用内容所有，Windows 中需要连续 hover 按钮带时应使用零 spacing。
 
 ### 3.3 宿主状态
 
@@ -105,7 +105,7 @@ Add-on 可以包含可交互控件，也可以是 `null`、隐藏节点或当前
 
 ## 事件与命令
 
-业务命令、启用状态和 checked 状态仍由应用所有，不映射到 Window 的系统操作。Windows 中两者默认占满标题栏可用高度并形成方形交互面，使用直角、透明常态背景和 Arrow 光标，业务图标继续使用 `CaptionButtonIconSize`；Linux/macOS 保持内容驱动的圆角 managed visual 与 Hand 光标。按钮容器间距由应用内容所有，Windows 中需要连续 hover 按钮带时应使用零 spacing。
+业务命令、启用状态和 checked 状态仍由应用所有，不映射到 Window 的系统操作。Windows 中两者默认占满标题栏可用高度并形成方形交互面，使用直角、透明常态背景和 Arrow 光标，业务图标继续使用 `CaptionButtonIconSize`；Linux/macOS 保持内容驱动的 30 逻辑像素方形命中面，把圆角换成 `CaptionButtonCornerRadius`，并以 `CaptionGroupSpacing` 与 caption group 分隔，Linux 额外用 `CaptionButtonBackgroundInset` 把背景收成与相邻 caption button 相同的 26 逻辑像素圆形，因此圆形按钮与相邻 managed caption button 的圆角、可见尺寸和间距同源。按钮容器内部间距由应用内容所有，Windows 中需要连续 hover 按钮带时应使用零 spacing。
 ### 3.4 交互事件
 事件在对应的 `PointerReleased` 阶段发出，避免窗口同步 resize 破坏当前 pointer capture。pointer capture 丢失或释放条件不匹配时，请求被取消。
 
@@ -303,6 +303,7 @@ src/AtomUI.Desktop.Controls/
 │   ├── WindowTitleBarLayoutPanel.cs
 │   ├── CaptionButtonGroup.cs
 │   ├── CaptionButton.cs
+│   ├── CaptionButtonFrame.cs
 │   ├── WindowsCaptionButton.cs
 │   ├── WindowsCaptionButtonLayout.cs
 │   ├── WindowTitleBarToken.cs
@@ -316,6 +317,7 @@ src/AtomUI.Desktop.Controls/
 │       ├── WindowTitleBarButtonTheme.axaml
 │       ├── WindowTitleBarToggleButtonTheme.axaml
 │       ├── CaptionButtonGroupTheme.axaml
+│       ├── CaptionButtonFrameTheme.axaml
 │       ├── CaptionButtonTheme.axaml
 │       └── WindowsCaptionButtonTheme.axaml
 └── ImagePreviewer/

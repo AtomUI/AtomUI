@@ -578,6 +578,7 @@ public partial class Window : AvaloniaWindow,
     private readonly WindowCaptionButtonCommand _captionButtonCommand;
     private FullscreenPopoverLayer? _fullscreenPopoverLayer;
     private WindowResizer? _windowResizer;
+    private Border? _transparencyFallbackBorder;
     private MediaBreakPointIndicator? _mediaBreakPointIndicator;
     private CompositeDisposable? _defaultTitleBarBindings;
     private Window? _mainWindowLogoFallbackSource;
@@ -910,7 +911,9 @@ public partial class Window : AvaloniaWindow,
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _transparencyFallbackBorder = null;
         base.OnApplyTemplate(e);
+        _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
 
         HandleCreateTitleBar();
         EnsureWindowsCsdMinimumHeight();
@@ -1513,6 +1516,7 @@ public partial class Window : AvaloniaWindow,
     protected override void OnClosed(EventArgs e)
     {
         _isOpened = false;
+        _transparencyFallbackBorder = null;
         StopMacOsWindowButtonObserver();
         if (_titleBar != null)
         {
@@ -1649,6 +1653,15 @@ public partial class Window : AvaloniaWindow,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == TransparencyBackgroundFallbackProperty &&
+            ActualTransparencyLevel == WindowTransparencyLevel.None &&
+            _transparencyFallbackBorder is not null)
+        {
+            // TopLevel writes this part's Background as a local value when applying the template
+            // or changing transparency, overriding ControlTheme setters and TemplateBinding.
+            // Mirror later fallback changes here; TopLevel still owns transparency transitions.
+            _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
+        }
         if (change.Property == WindowStateProperty)
         {
             var (oldState, newState) = change.GetOldAndNewValue<WindowState>();

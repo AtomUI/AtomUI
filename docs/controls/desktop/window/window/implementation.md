@@ -227,6 +227,17 @@ Resolve owner ThemeContext
 
 回归验证至少覆盖：根 Dark 主题在 `WindowOpenedEvent` 前的背景、owner 局部 ThemeContext、用户显式背景不被覆盖、关闭后 lease/资源桥释放，以及失败显示的回滚。Headless 测试只能证明 managed 状态顺序；Windows、macOS 和 Linux 的最终首帧必须通过各平台实机显示或录屏验证。
 
+### 7.2 不透明表面的动态 fallback 背景
+
+`WindowTheme` 负责通过 Token 资源更新 `Background` 和 `TransparencyBackgroundFallback`，用户 local value
+继续优先。实际透明度为 `None` 时，`PART_TransparencyFallback` 必须同步当前有效的
+`TransparencyBackgroundFallback`；透明表面仍由 Avalonia 清空该部件背景。
+
+Avalonia `TopLevel` 在应用模板和透明度变化时以 local value 写入该 Border 的 `Background`，普通
+ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Window` 因此只补充 fallback 属性变化时
+的同步，不新增资源订阅，不参与 Token 解析，也不接管透明度切换。部件引用在模板重套用时替换、关闭时释放；
+没有该部件的自定义模板保持自身绘制行为。
+
 ## 8. 资源、性能与 AOT 边界
 
 资源和 AOT 约束：

@@ -2,6 +2,13 @@
 
 本文档记录 Window 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-09
+
+- Theme
+  - Keep the opaque surface fallback background synchronized with runtime theme and explicit `TransparencyBackgroundFallback` changes, preserving Avalonia's transparency transitions.
+- Lifecycle
+  - Scope the fallback Border reference to the current template and release it when the Window closes.
+
 ## 2026-09-04
 
 - Integration

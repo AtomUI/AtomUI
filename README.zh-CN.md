@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview-cn)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.4-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.5-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
@@ -69,10 +69,10 @@ Avalonia 12.1.3<br>
 
 #### 最新版本说明
 
-AtomUI 6.2.4 恢复 Release 的 .NET 8/.NET 10 双目标与按目标框架选择的 AOT 依赖分析，
-新增 ColorPicker 可选确认与取消，并改进 TimePicker 候选值编辑及滚动交互。
-TimePicker 默认启用确认并使用 24 小时制；自定义主题与预编译消费方升级前请阅读
-[6.2.4 API 迁移指南](docs/releases/6.2.4-api-changes.zh-CN.md)和 [Changelog](./CHANGELOG.zh-CN.md)。
+AtomUI 6.2.5 修复应用主题切换后 Window 内容背景未更新的问题，
+同时保留透明窗口行为和显式设置的后备背景。生成的注册组类型名随版本变化，
+请同步升级相关包、重新编译已编译的消费方，并重新发布裁剪/NativeAOT 应用。
+详情见 [6.2.5 API 迁移指南](docs/releases/6.2.5-api-changes.zh-CN.md)和 [Changelog](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS
 
@@ -129,10 +129,10 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.4
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.4
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.4
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.4
+dotnet add package AtomUI.Desktop.Controls --version 6.2.5
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.5
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.5
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.5
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -159,10 +159,10 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.4"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.4"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.4"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.4"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.5"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.5"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.5"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.5"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

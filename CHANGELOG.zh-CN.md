@@ -6,6 +6,15 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.5
+
+`2026-10-10`
+
+- 破坏性变更
+  - 注册：六个控件包公开生成的 `ControlPackageGroup_*` 类型名随版本变化。请同步升级 AtomUI 包、重新编译已编译的消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.5 API 迁移指南](docs/releases/6.2.5-api-changes.zh-CN.md)。
+- Window
+  - 修复应用主题切换后窗口内容背景未更新的问题，同时保留透明窗口行为和显式设置的后备背景。#496
+
 ## 6.2.4
 
 `2026-10-07`

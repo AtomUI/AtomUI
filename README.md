@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.4-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.5-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
@@ -75,10 +75,11 @@ Windows, macOS and Linux<br>
 
 #### Latest Release Notes
 
-AtomUI 6.2.4 restores .NET 8/.NET 10 Release packages with target-specific AOT dependency analysis,
-adds optional ColorPicker confirmation and cancellation, and improves TimePicker candidate editing and scrolling.
-TimePicker defaults now require confirmation and use the 24-hour clock; custom themes and precompiled consumers
-must review the [6.2.4 API migration guide](docs/releases/6.2.4-api-changes.md) and [Changelog](./CHANGELOG.md).
+AtomUI 6.2.5 fixes Window content backgrounds that did not update when the application theme changed.
+Transparent window behavior and explicitly configured fallback backgrounds remain supported. Generated
+registration group identities change with the version: upgrade related packages together, rebuild compiled
+consumers and republish trimmed/NativeAOT applications. See the [6.2.5 API migration guide](docs/releases/6.2.5-api-changes.md)
+and [Changelog](./CHANGELOG.md).
 
 #### Incubator
 
@@ -133,10 +134,10 @@ The packages we have released are as follows:
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.4
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.4
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.4
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.4
+dotnet add package AtomUI.Desktop.Controls --version 6.2.5
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.5
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.5
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.5
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -164,10 +165,10 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.4"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.4"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.4"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.4"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.5"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.5"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.5"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.5"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

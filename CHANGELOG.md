@@ -4,6 +4,15 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.5
+
+`2026-10-10`
+
+- Breaking Changes
+  - Registration: version-specific public `ControlPackageGroup_*` types change in six control packages. Upgrade AtomUI packages together, rebuild compiled consumers and republish trimmed/NativeAOT applications; see the [6.2.5 API migration guide](docs/releases/6.2.5-api-changes.md).
+- Window
+  - Fix the content background failing to update when the application theme changes, while preserving transparency behavior and explicit fallback backgrounds. #496
+
 ## 6.2.4
 
 `2026-10-07`

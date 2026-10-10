@@ -713,7 +713,7 @@ public class CalendarRenderTests
     {
         var today = DateTime.Today;
         var selectedDay = today.Day == 1 ? 2 : 1;
-        var disabledDay = selectedDay is 10 ? 11 : 10;
+        var disabledDay = today.Day == 10 ? 11 : 10;
         var calendar = new AtomUICalendar
         {
             Value = new DateTime(today.Year, today.Month, selectedDay),

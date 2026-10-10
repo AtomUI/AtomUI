@@ -28,9 +28,7 @@ internal sealed class ControlThemeAssetManifest
                 throw new ThemeSchemaException(
                     $"Control theme asset '{descriptor.AssetUri}' has an empty resource-key schema fingerprint.");
             }
-            var expectedFingerprint = ThemeSchemaRegistry.ComputeResourceKeySchemaFingerprint(
-                descriptor,
-                registry.GlobalTokens);
+            var expectedFingerprint = registry.ComputeRegisteredResourceKeySchemaFingerprint(descriptor);
             if (descriptor.ResourceKeySchemaFingerprint != expectedFingerprint)
             {
                 throw new ThemeSchemaException(

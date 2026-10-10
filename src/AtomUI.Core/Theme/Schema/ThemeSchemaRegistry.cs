@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -14,7 +15,7 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<ThemeAlgorithm, ThemeAlgorithmDescriptor> _algorithmsByAlgorithm;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
-    private readonly object?[][] _controlSharedResourceKeys;
+    private ConcurrentDictionary<(int ControlSlot, SharedTokenKind Kind), object>? _controlSharedResourceKeys;
 
     internal ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
@@ -96,7 +97,6 @@ internal sealed class ThemeSchemaRegistry
         _algorithmsByAlgorithm = algorithmMap.ToFrozenDictionary();
         _controlResourceSlotsByKey = CreateControlResourceSlotMap(controlArray);
         _sharedResourceKeys = CreateSharedResourceKeys(globalArray);
-        _controlSharedResourceKeys = CreateControlSharedResourceKeys(controlArray.Length);
     }
 
     public IReadOnlyList<TokenDescriptor> GlobalTokens { get; }
@@ -111,10 +111,26 @@ internal sealed class ThemeSchemaRegistry
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(globalTokens);
 
+        return ComputeResourceKeySchemaFingerprintCore(
+            descriptor, globalTokens.Count, globalTokens.OrderBy(static token => token.Slot));
+    }
+
+    internal ulong ComputeRegisteredResourceKeySchemaFingerprint(ControlThemeAssetDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        // Registry construction already validated and ordered the global slot table.
+        return ComputeResourceKeySchemaFingerprintCore(descriptor, GlobalTokens.Count, GlobalTokens);
+    }
+
+    private static ulong ComputeResourceKeySchemaFingerprintCore(
+        ControlThemeAssetDescriptor descriptor,
+        int globalTokenCount,
+        IEnumerable<TokenDescriptor> orderedGlobalTokens)
+    {
         var fingerprint = new SchemaFingerprintBuilder();
         AddAssetSchema(ref fingerprint, descriptor);
-        fingerprint.Add(globalTokens.Count);
-        foreach (var token in globalTokens.OrderBy(static token => token.Slot))
+        fingerprint.Add(globalTokenCount);
+        foreach (var token in orderedGlobalTokens)
         {
             fingerprint.Add(token.Name);
         }
@@ -237,18 +253,19 @@ internal sealed class ThemeSchemaRegistry
     internal object GetControlSharedResourceKey(int controlSlot, SharedTokenKind kind)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(controlSlot);
-        if ((uint)controlSlot >= (uint)_controlSharedResourceKeys.Length)
+        if ((uint)controlSlot >= (uint)Controls.Count)
         {
             throw new ArgumentOutOfRangeException(nameof(controlSlot));
         }
 
-        var kindSlot = (int)kind;
-        if ((uint)kindSlot >= (uint)_controlSharedResourceKeys[controlSlot].Length ||
-            _controlSharedResourceKeys[controlSlot][kindSlot] is not { } key)
+        if (!Enum.IsDefined(kind))
         {
             throw new ArgumentOutOfRangeException(nameof(kind));
         }
-        return key;
+
+        // Production lookup resolves unbound keys directly; allocate bound keys only on request.
+        var keys = LazyInitializer.EnsureInitialized(ref _controlSharedResourceKeys);
+        return keys.GetOrAdd((controlSlot, kind), static key => new ControlTokenResourceKey(key.ControlSlot, key.Kind));
     }
 
     internal object GetControlSharedResourceKey(
@@ -260,23 +277,6 @@ internal sealed class ThemeSchemaRegistry
             throw new KeyNotFoundException($"Control Token identity '{identity}' is not registered.");
         }
         return GetControlSharedResourceKey(descriptor.Slot, kind);
-    }
-
-    private static object?[][] CreateControlSharedResourceKeys(int controlCount)
-    {
-        var kinds = Enum.GetValues<SharedTokenKind>();
-        var length = kinds.Length == 0 ? 0 : kinds.Max(static kind => (int)kind) + 1;
-        var result = new object?[controlCount][];
-        for (var controlSlot = 0; controlSlot < controlCount; controlSlot++)
-        {
-            var keys = new object?[length];
-            foreach (var kind in kinds)
-            {
-                keys[(int)kind] = new ControlTokenResourceKey(controlSlot, kind);
-            }
-            result[controlSlot] = keys;
-        }
-        return result;
     }
 
     private static object?[] CreateSharedResourceKeys(

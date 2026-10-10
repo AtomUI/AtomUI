@@ -74,6 +74,17 @@ public sealed class ControlTokenDescriptor
         _evaluator  = evaluator;
     }
 
+    private ControlTokenDescriptor(ControlTokenDescriptor source, int slot)
+    {
+        ControlType = source.ControlType;
+        Identity    = source.Identity;
+        Slot        = slot;
+        // Public construction already copied, ordered and sealed this metadata.
+        OwnTokens   = source.OwnTokens;
+        _factory    = source._factory;
+        _evaluator  = source._evaluator;
+    }
+
     public Type ControlType { get; }
     public ControlTokenIdentity Identity { get; }
     public int Slot { get; }
@@ -95,13 +106,7 @@ public sealed class ControlTokenDescriptor
     internal ControlTokenDescriptor Bind(int slot)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
-        return new ControlTokenDescriptor(
-            ControlType,
-            Identity,
-            slot,
-            OwnTokens,
-            _factory,
-            _evaluator);
+        return new ControlTokenDescriptor(this, slot);
     }
 
     internal bool TryGetOwnToken(

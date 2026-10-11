@@ -233,7 +233,10 @@ public class DenseThemeCompilerTests
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
-        var controlSnapshot = result.Snapshot!.Controls.ShouldHaveSingleItem();
+        // Controls 为按槽位惰性容器（不实现枚举），单槽位语义用 Count + 索引表达。
+        var controls = result.Snapshot!.Controls;
+        controls.Count.ShouldBe(1);
+        var controlSnapshot = controls[0];
         controlSnapshot.EffectiveGlobalTokenDelta.ShouldBeEmpty();
         controlSnapshot.EffectiveGlobalResourceDelta.ShouldBeEmpty();
         controlSnapshot.ControlTokenValues.ShouldBeSameAs(TokenValueTable.Empty);
@@ -253,7 +256,9 @@ public class DenseThemeCompilerTests
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
-        var controlSnapshot = result.Snapshot!.Controls.ShouldHaveSingleItem();
+        var controls = result.Snapshot!.Controls;
+        controls.Count.ShouldBe(1);
+        var controlSnapshot = controls[0];
         controlSnapshot.EffectiveGlobalTokenDelta.ShouldBeEmpty();
         controlSnapshot.EffectiveGlobalResourceDelta.ShouldBeEmpty();
         controlSnapshot.ControlTokenValues.Count.ShouldBe(1);
@@ -348,10 +353,14 @@ public class DenseThemeCompilerTests
             reusableParent: parent,
             changeSet: changeSet)).Snapshot!;
 
-        buttonEvaluations.ShouldBe(2);
-        inputEvaluations.ShouldBe(1);
         child.Controls[button.Slot].ShouldNotBeSameAs(parent.Controls[button.Slot]);
         child.Controls[input.Slot].ShouldBeSameAs(parent.Controls[input.Slot]);
+
+        // 惰性契约（runtime.md §7 控件槽位编译契约）：评估发生在首访而非编译期。
+        // 首访后 button 被父子两次独立求值（2），input 复用父对象只求值一次（1）——
+        // "changeSet 只重算变更控件"的不变量保持不变。
+        buttonEvaluations.ShouldBe(2);
+        inputEvaluations.ShouldBe(1);
     }
 
     [Fact]

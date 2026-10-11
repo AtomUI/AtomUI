@@ -589,9 +589,9 @@ ThemeCompileInput
   -> apply Map overrides
   -> format Alias Token
   -> apply Alias overrides and AtomUI final normalization
-  -> evaluate each registered Control
-  -> freeze token values and resources
-  -> ThemeSnapshot
+  -> resolve each registered Control slot state (cheap config comparison)
+  -> freeze global token values and resources
+  -> ThemeSnapshot (control slots compile on first query)
 ```
 
 编译阶段允许使用可变 builder，因为算法天然需要逐步派生。builder 的生命周期只限于一次编译，不能进入
@@ -621,7 +621,15 @@ snapshot，也不能通过公开 API 返回。
 Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Global Token，不能继续只读取全局
 `IsDark`。
 
-任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot。
+控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`
+按槽位惰性编译，首次查询时经同一 `CompileControl` 函数与同一缓存键编译，结果值与急切编译逐位
+相等（急切参考路径 `CompileControlsEagerForTest` 差分锁定）。首帧内首次实例化的控件一次性支付
+内联编译成本（~0.7ms 量级）。主题切换复用同样惰性：子快照槽位记录父快照引用，首访时物化并共享
+同一对象。失败语义同步后移：控件级编译错误（不支持的算法模式、evaluator 抛出等）不再使
+`ApplyTheme` 整体失败，而是在首次查询该槽位时抛出、后续每次查询重复抛出。
+
+任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot——该原子性指
+全局维度（Seed/算法链/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。
 
 ## 8. ThemeSnapshot
 
@@ -636,7 +644,7 @@ ThemeSnapshot
 +-- GlobalTokenValues: dense immutable TokenValueTable
 +-- GlobalResources
 +-- PresetColorPalettes
-\-- Controls[registry control slot]
+\-- Controls: LazyControlSnapshots[registry control slot]  (compile on first query)
     +-- Appearance
     +-- EffectiveGlobalTokenDelta
     +-- ControlTokenValues: dense immutable TokenValueTable
@@ -648,6 +656,10 @@ ThemeSnapshot
 - Token schema 由生成器分配在当前 registry revision 内稳定的 slot；完整 Token 值表使用稠密不可变数组，不使用
   object-key 字典保存每个值。
 - Control 表按 registry slot 存放引用，`ControlTokenIdentity` 只用于配置边界和诊断。
+- Control 表是按槽位惰性编译的容器（只暴露 Count 与索引器，不实现枚举）；构造期解析槽位状态
+  （已物化 / 复用父槽 / 待编译），保留字节估算为构造期基线加首访物化增量。缓存在插入时采样
+  `EstimatedRetainedBytes`，物化增长不回灌——估算漂移上界为全部槽位字节，只影响驱逐时机，
+  不影响正确性。
 - 稀疏覆盖、Control Effective Global Token 差量和 Avalonia 资源投影使用不可变集合或 `FrozenDictionary`。
 - 颜色资源在 snapshot 中已经转换为不可变 Brush。
 - palette、集合和其他引用值必须在冻结前深复制为不可变值。

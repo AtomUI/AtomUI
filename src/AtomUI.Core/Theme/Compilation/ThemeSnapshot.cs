@@ -19,7 +19,7 @@ internal sealed class ThemeSnapshot
         TokenValueTable globalTokenValues,
         IReadOnlyDictionary<object, object?> globalResources,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> presetColorPalettes,
-        IReadOnlyList<ControlThemeSnapshot> controlSlots)
+        LazyControlSnapshots controlSlots)
     {
         ThemeId = themeId;
         Definition = definition;
@@ -33,7 +33,11 @@ internal sealed class ThemeSnapshot
         GlobalResources = globalResources;
         PresetColorPalettes = presetColorPalettes;
         Controls = controlSlots;
-        EstimatedRetainedBytes = ThemeRetainedBytesEstimator.EstimateSnapshot(this);
+        // 全局部分 + 槽位表开销在构造期冻结；控件快照字节随首访物化增量累计。
+        // 已知取舍（设计文档 §4）：ThemeSnapshotCache / ControlCompilationCache 在插入时采样本值，
+        // 物化增长不回灌——估算是启发式容量阀，漂移上界 = 实消费槽位字节（≤187 槽位 × 单槽 KB 级），
+        // 驱逐只影响性能不影响正确性。
+        _estimatedRetainedBytesBase = ThemeRetainedBytesEstimator.EstimateSnapshotBase(this);
     }
 
     internal string ThemeId { get; }
@@ -47,6 +51,9 @@ internal sealed class ThemeSnapshot
     internal TokenValueTable GlobalTokenValues { get; }
     internal IReadOnlyDictionary<object, object?> GlobalResources { get; }
     internal IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> PresetColorPalettes { get; }
-    internal IReadOnlyList<ControlThemeSnapshot> Controls { get; }
-    internal long EstimatedRetainedBytes { get; }
+    internal LazyControlSnapshots Controls { get; }
+    private readonly long _estimatedRetainedBytesBase;
+
+    internal long EstimatedRetainedBytes =>
+        ThemeRetainedBytesEstimator.Add(_estimatedRetainedBytesBase, Controls.MaterializedBytes);
 }

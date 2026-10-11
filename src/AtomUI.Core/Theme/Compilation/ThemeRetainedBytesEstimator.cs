@@ -30,7 +30,7 @@ internal static class ThemeRetainedBytesEstimator
         return retainedBytes;
     }
 
-    internal static long EstimateSnapshot(ThemeSnapshot snapshot)
+    internal static long EstimateSnapshotBase(ThemeSnapshot snapshot)
     {
         var retainedBytes = Add(ObjectOverhead, EstimateValue(snapshot.ThemeId));
         retainedBytes = Add(retainedBytes, EstimateValue(snapshot.DefinitionRevision.SourceIdentity));
@@ -39,12 +39,10 @@ internal static class ThemeRetainedBytesEstimator
         retainedBytes = Add(retainedBytes, snapshot.GlobalTokenValues.EstimatedRetainedBytes);
         retainedBytes = Add(retainedBytes, EstimateResourceMap(snapshot.GlobalResources));
         retainedBytes = Add(retainedBytes, EstimatePalettes(snapshot.PresetColorPalettes));
+        // 控件部分 = 槽位表开销 + 首访物化增量（LazyControlSnapshots.MaterializedBytes），
+        // 由 ThemeSnapshot.EstimatedRetainedBytes 实时求和；此处不枚举槽位——枚举即全量物化，
+        // 正是惰性化要避免的形态。
         retainedBytes = Add(retainedBytes, ObjectOverhead + snapshot.Controls.Count * ReferenceBytes);
-        foreach (var control in snapshot.Controls)
-        {
-            retainedBytes = Add(retainedBytes, control.EstimatedRetainedBytes);
-        }
-
         return retainedBytes;
     }
 
@@ -92,7 +90,9 @@ internal static class ThemeRetainedBytesEstimator
         };
     }
 
-    private static long Add(long left, long right)
+    // internal：ThemeSnapshot.EstimatedRetainedBytes 与 LazyControlSnapshots 的增量累计共用
+    // 同一饱和语义（long.MaxValue 封顶），负值不允许进入 BoundedLruCache 尺寸记账。
+    internal static long Add(long left, long right)
     {
         if (right < 0 || left > long.MaxValue - right)
         {

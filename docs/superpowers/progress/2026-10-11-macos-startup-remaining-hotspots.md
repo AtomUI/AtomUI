@@ -50,7 +50,7 @@ harness 为空窗口真实桌面注册（UseDesktopControls）。
 热点兑现核对：A 估 60-90ms 实测 −24.2ms（部分份额已被前轮 914ce40ef 取走）；B 估 50-70ms 实测
 −71.7ms（达成，经方案 B 惰性挂载实现——原计划"生成等价 C# wrapper"机制因 Avalonia 编译期 include
 展开为急切 Build 调用且运行时 ResourceInclude 在 AOT 下不可用而废弃）；D 估 20-30ms 实测 3.1-4.7ms
-（估计基于 Task 2 前缀续算前的测量，主份额已被 Task 2 取走）；C 待用户批准（契约修订门，见热点 C 节）。
+（估计基于 Task 2 前缀续算前的测量，主份额已被 Task 2 取走）；C 估 62-68ms 实测 −60.9ms（SyncTotal，已实施，见热点 C 节"实施与实测"）。
 
 正确性验收：Core 528/528、Generator 458/458、Desktop 全套 4184 零崩溃（4 个失败为急切基线同样复现的
 存量负载敏感 flaky）；Gallery osx-arm64 全裁剪 NativeAOT 发布通过 + 产物运行冒烟通过；整分支新鲜
@@ -225,6 +225,30 @@ ThemeSnapshot.Controls 由 IReadOnlyList<ControlThemeSnapshot> 改为按需槽�
 预期收益：空窗口 CompileControls 72.3 → **~2-5ms**（仅 Window 所需槽位）；
 代价：每控件首次实例化 +~0.5-0.7ms（Gallery 页面导航首批控件摊销）。
 
+### 实施与实测（2026-10-11 已实施，契约修订经用户批准）
+
+实施：新增 `LazyControlSnapshots`（Count + 索引器，不实现枚举）+ `LazyControlSnapshotSource`
+（冻结编译输入）+ `ControlSlotState`（Materialized/ReuseParent/Uncompiled 构造期急切解析）；
+`CompileControls` 改惰性解析循环，旧急切循环原样保留为 `CompileControlsEagerForTest` 差分钩子；
+`ThemeSnapshot.EstimatedRetainedBytes` 改实时属性（构造期基线 + `MaterializedBytes` 增量），
+估算器删全量枚举；契约修订落入 [runtime.md](../../architecture/systems/theming/runtime.md) §7/§8。
+spec：`docs/superpowers/specs/2026-10-11-hotspot-c-lazy-control-snapshots-design.md`。
+
+实测（交错 10× 采样中位数，对照 b3557e188 基线）：
+
+| 指标 | 基线 | 惰性 | Δ |
+|---|---:|---:|---:|
+| UseAtomUI.SyncTotal | 452.2 | 391.2 | **−60.9** |
+| UseAtomUI.PostConfigure | 255.9 | 189.8 | **−66.1** |
+| Mark.FrameworkCompleted | 686.7 | 644.9 | −41.8 |
+| Mark.FirstRender | 962.4 | 935.6 | −26.8 |
+| Mark.DispatcherIdle | 1032.1 | 1001.1 | −31.0 |
+
+验收：193 槽位真实注册表差分（主变体 + ReuseParent/Uncompiled 混合变体）逐 token/逐资源/逐保留字节
+结构相等 ✓；启动 MaterializedCount 实测 **0**（精确棘轮）✓；并发单飞（同槽/异槽）✓；估算增量恒等 ✓；
+主题切换 Committed + 首查契约 ✓。差分方法论修正：Easing/Brush/Transform 每编译克隆自有不可变副本
+（所有权边界），引用不等是既有设计，差分按结构比较（eager-vs-eager 探针证实与惰性化无关）。
+
 ---
 
 ## 热点 D：ThemeManagerBuilder.Build 46.1ms —— Revision 指纹与冻结仍全量
@@ -357,4 +381,4 @@ ICU 初始化与 JIT 无算法空间。`LanguageManager` 的三次小复制已�
 问题 6 已由 MatchedBundleResolver 实施。
 
 本文所有预期收益为源码复杂度推算，**未经实现验证**；每项实施后回填实测并更新状态。
-【2026-10-11 状态更新：热点 A/B/D 已实施并实测回填（见上方"最终实测收益"表）；热点 C 待用户批准（契约修订门）；热点 E 维持"不立项"结论。】
+【2026-10-11 状态更新：热点 A/B/C/D 已实施并实测回填（见上方"最终实测收益"表与热点 C 节"实施与实测"）；热点 E 维持"不立项"结论。】

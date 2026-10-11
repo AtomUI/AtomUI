@@ -64,6 +64,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     private Application? _application;
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<ControlThemeResourceRegistration>> _stagedThemeResources = new();
     private ThemeSchemaRegistry? _startupRegistry;
+    private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private ControlThemeAssetManifest? _startupControlThemeAssetManifest;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
@@ -1057,6 +1058,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         _applicationInitialized = false;
         _stagedThemeResources.Clear();
         _startupRegistry = null;
+        _packageSchemaFingerprints = null;
         _startupControlThemeAssetManifest = null;
         _compiledThemeCatalog = null;
         _themeCatalogDiagnostics = Array.Empty<ThemeDiagnostic>();
@@ -1716,6 +1718,15 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal void PrepareRegistrationSchema() => _startupRegistry ??= CreateStartupRegistry();
 
+    /// <summary>
+    /// 全部生成包携带的编译期 schema 指纹；null 表示至少一个包缺失（启动 Revision 走全量算法）。
+    /// 必须在 PrepareRegistrationSchema 之前调用。
+    /// </summary>
+    internal void SetPackageSchemaFingerprints(IReadOnlyList<PackageSchemaFingerprint>? packageFingerprints) =>
+        _packageSchemaFingerprints = packageFingerprints;
+
+    internal ThemeSchemaRevision? StartupRegistryRevision => _startupRegistry?.Revision;
+
     internal void StageControlThemeResources(IControlThemesProvider provider, IReadOnlyList<ControlThemeResourceRegistration> resources) =>
         _stagedThemeResources.Add(provider, resources);
 
@@ -1727,9 +1738,11 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
             {
                 foreach (var registration in registrations)
                 {
-                    var resource = registration.Factory() ?? throw new InvalidOperationException(
-                        $"Theme resource factory '{registration.AssetId}' returned null.");
-                    provider.ControlThemes.Add(resource);
+                    // 惰性挂载：注册工厂推迟到首次资源查找执行。wrapper 字典的构造即编译期
+                    // populate（急切构建合并主题），直接执行会让启动为全部资产付费；代理保持
+                    // 合并位置与查找顺序不变，空窗口为零消费资产零付费。
+                    provider.ControlThemes.Add(
+                        new DeferredControlThemeResourceProvider(registration.AssetId, registration.Factory));
                 }
             }
             foreach (var resourceProvider in provider.ControlThemes)
@@ -1743,11 +1756,19 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     private ThemeSchemaRegistry CreateStartupRegistry()
     {
-        var registry = new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(),
-            _controlTokenDescriptors,
-            GeneratedThemeSchema.GetAlgorithms(),
-            _controlThemeAssetDescriptors);
+        var registry = _packageSchemaFingerprints is { } packageFingerprints
+            ? new ThemeSchemaRegistry(
+                GeneratedThemeSchema.GetGlobalTokens(),
+                _controlTokenDescriptors,
+                GeneratedThemeSchema.GetAlgorithms(),
+                _controlThemeAssetDescriptors,
+                GeneratedThemeSchema.GlobalSchemaFingerprint,
+                packageFingerprints)
+            : new ThemeSchemaRegistry(
+                GeneratedThemeSchema.GetGlobalTokens(),
+                _controlTokenDescriptors,
+                GeneratedThemeSchema.GetAlgorithms(),
+                _controlThemeAssetDescriptors);
         ValidateSemanticContracts(registry);
         _startupControlThemeAssetManifest = new ControlThemeAssetManifest(registry);
         return registry;

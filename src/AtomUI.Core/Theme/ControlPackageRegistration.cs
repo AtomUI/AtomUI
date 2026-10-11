@@ -84,6 +84,8 @@ public sealed class ControlPackageRegistration
 
     public IReadOnlyList<ControlThemeResourceRegistration> Resources { get; }
     public long PackageCommitOrdinal { get; internal set; } = -1;
+    /// <summary>生成器 emit 的包级 schema 指纹常量；手工注册为空，启动 Revision 回退全量计算。</summary>
+    public ulong? SchemaFingerprint { get; internal set; }
     public string Id { get; }
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
     public IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }

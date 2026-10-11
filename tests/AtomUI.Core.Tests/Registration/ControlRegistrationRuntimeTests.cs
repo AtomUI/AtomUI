@@ -30,9 +30,13 @@ public class ControlRegistrationRuntimeTests
             builder.ThemeManagerBuilder.ControlPackages.Select(p => p.Id).ShouldBe(["Common", "Desktop"]);
             using var manager = builder.ThemeManagerBuilder.Build();
             manager.InitializeApplication(Application.Current!);
-            calls.TakeLast(6).ShouldBe(["Common/shared", "Common/a", "Common/z", "Desktop/shared", "Desktop/a", "Desktop/z"]);
+            // 惰性挂载：挂载只记录代理，工厂推迟到首次资源查找，按合并列表逆序（后挂载优先）逐个构造。
+            calls.Count.ShouldBe(7);
             manager.Resources.TryGetResource("priority", null, out var priority).ShouldBeTrue();
             priority.ShouldBe("Desktop/z");
+            calls.TakeLast(1).ShouldBe(["Desktop/z"]);
+            manager.Resources.TryGetResource("missing", null, out _).ShouldBeFalse();
+            calls.TakeLast(6).ShouldBe(["Desktop/z", "Desktop/a", "Desktop/shared", "Common/z", "Common/a", "Common/shared"]);
             return Task.CompletedTask;
 
             void Register(string id, Action<IAtomUIBuilder>? prepare = null) => ControlRegistrationRuntime.RegisterPackage(
@@ -281,6 +285,9 @@ public class ControlRegistrationRuntimeTests
             calls.ShouldBe(0);
             using var manager = builder.ThemeManagerBuilder.Build();
             manager.InitializeApplication(Application.Current!);
+            // 惰性挂载：去重后的唯一注册项只挂一个代理，首次全量扫描恰好执行一次工厂。
+            calls.ShouldBe(0);
+            manager.Resources.TryGetResource("missing", null, out _).ShouldBeFalse();
             calls.ShouldBe(1);
             return Task.CompletedTask;
         });

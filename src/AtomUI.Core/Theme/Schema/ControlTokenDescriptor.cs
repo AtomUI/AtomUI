@@ -49,7 +49,7 @@ public sealed class ControlTokenDescriptor
                 nameof(controlType));
         }
 
-        var ownTokenArray = ownTokens.OrderBy(static token => token.Slot).ToArray();
+        var ownTokenArray = OrderOwnTokens(ownTokens);
         if (ownTokenArray.Length == 0)
         {
             if (factory is not null || evaluator is not null)
@@ -107,6 +107,21 @@ public sealed class ControlTokenDescriptor
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         return new ControlTokenDescriptor(this, slot);
+    }
+
+    // Generated factories emit own Tokens slot-ascending (slot == emission index); the O(n) scan lets
+    // that input skip the OrderBy wrapper while unsorted public input keeps the stable-sort contract.
+    private static TokenDescriptor[] OrderOwnTokens(IEnumerable<TokenDescriptor> ownTokens)
+    {
+        var array = ownTokens.ToArray();
+        for (var index = 1; index < array.Length; index++)
+        {
+            if (array[index - 1].Slot > array[index].Slot)
+            {
+                return array.OrderBy(static token => token.Slot).ToArray();
+            }
+        }
+        return array;
     }
 
     internal bool TryGetOwnToken(

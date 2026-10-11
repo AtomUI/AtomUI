@@ -51,7 +51,9 @@ internal sealed class ControlThemeAssetManifest
             if (descriptor.ResourceKeySchemaFingerprint != expectedFingerprint)
             {
                 throw new ThemeSchemaException(
-                    $"Control theme asset '{descriptor.AssetUri}' was compiled against a different resource-key schema.");
+                    $"Control theme asset '{descriptor.AssetUri}' was compiled against a different resource-key schema. " +
+                    "The containing package was likely compiled with an incompatible AtomUI generator version; " +
+                    "rebuild it against the current AtomUI.Core.");
             }
             if (!uris.Add(descriptor.AssetUri.ToString()))
             {

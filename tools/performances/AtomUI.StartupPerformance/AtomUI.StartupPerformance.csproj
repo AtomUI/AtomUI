@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUIDevelopTargetFramework)</TargetFrameworks>
+        <OutputType>WinExe</OutputType>
+        <RootNamespace>AtomUI.StartupPerformance</RootNamespace>
+        <AssemblyName>AtomUI.StartupPerformance</AssemblyName>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../src/AtomUI.Core/AtomUI.Core.csproj"/>
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj"/>
+        <ProjectReference Include="../../../src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj"/>
+    </ItemGroup>
+
+</Project>

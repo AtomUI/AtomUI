@@ -18,6 +18,12 @@ public sealed class ControlPackageRegistrationBuilder
 
     internal ControlPackageRegistrationBuilder() { }
 
+    /// <summary>
+    /// 生成注册 Collect 写入的包级 schema 指纹常量（编译期预计算）。手工收集留空，
+    /// 启动 registry 的 Revision 随之回退到全量遍历算法。
+    /// </summary>
+    public ulong? PackageSchemaFingerprint { get; set; }
+
     public void AddControl(ControlTokenDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) =>
     {
         ArgumentNullException.ThrowIfNull(descriptor);
@@ -103,7 +109,10 @@ public sealed class ControlPackageRegistrationBuilder
                 throw new InvalidOperationException($"Theme asset '{asset.AssetId}' has no resource factory.");
             }
         }
-        return new(id, _controls, _assets.Values, _semantics, provider, _resources.Values);
+        return new(id, _controls, _assets.Values, _semantics, provider, _resources.Values)
+        {
+            SchemaFingerprint = PackageSchemaFingerprint
+        };
     }
 
     internal void Fail(Exception exception) => _failure ??= exception;

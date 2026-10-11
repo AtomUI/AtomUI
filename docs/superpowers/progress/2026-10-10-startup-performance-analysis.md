@@ -1,161 +1,168 @@
-# AtomUI 启动性能分析与优化候选
+# AtomUI 启动性能分析与优化进展
 
-分析日期：2026-10-10。状态：源码分析完成；空窗口阶段基线已实测（见下节"空窗口启动基线实测"）；
-六个热点的源码级定位与修复算法设计另见
-[启动热点深挖与修复方案](2026-10-10-startup-hotspots-and-fix-designs.md)；优化尚未实施。
+初次分析：2026-10-10。实测与源码同步：2026-10-11。
 
-正式启动链路由[启动与注册链路](../../architecture/foundations/startup-and-registration.md)维护；本记录保存当次发现、
-候选方案及后续验证条件，不作为新的架构契约或已实现优化的证据。
+**当前结论：Windows 上的一轮启动优化已实施并提交，有可重复的收益，但改善幅度有限。**
+空窗口探针中，启动至根 Render 回调缩短约 202–209 ms（约 11%–13%）；AtomUI Window 场景仍需约 1.66 s。
+这证明该轮重构有效，不表示启动等待已消除，也不支持原先把多个预期收益相加后的乐观目标。
 
-## 空窗口启动基线实测（2026-10-10 补充）
+对应生产提交为 `914ce40ef`（`perf(Core): 优化初始化算法并减少启动耗时与分配`），
+其前一轮 Core 优化为 `ee1db4001`。本次文档同步核对的 HEAD 为 `106a9659d`。
+原报告中的“改动未提交”是测量当时的状态；当前不再沿用该状态描述。
 
-方法：临时骨架应用（标准 UseAtomUI：en-US 单语言、默认主题、AlibabaSans、UseDesktopControls、空白
-Avalonia Window），进程内 Stopwatch 分阶段打点，窗口 Opened 后退出；Release/Debug 各连跑 3 次。
-基线状态：HEAD `ee1db4001` + 工作树两项未提交改动（ThemeSchemaRegistry 字符指纹优化、ILC8 条件注册后端）。
-测量探针与骨架已全部删除，工作树还原。
+正式契约仍由[启动与注册链路](../../architecture/foundations/startup-and-registration.md)维护；
+六项热点的实际处置与原方案修正见[启动热点与方案处置](2026-10-10-startup-hotspots-and-fix-designs.md)。
 
-总量（macOS arm64，本机）：
+## 证据来源与适用范围
 
-| 配置 | Main → UseAtomUI 返回 | 窗口 Opened | Dispatcher Idle |
-|---|---|---|---|
-| Release 3 次均值 | ~1.04s | ~1.21s | ~1.29s |
-| Debug 3 次均值 | ~1.05s | ~1.28s | ~1.37s |
+| 记录 | 场景与指标 | 本文用途 |
+| --- | --- | --- |
+| [Windows 优化结果](2026-10-11-windows-startup-algorithm-results.md)及[原始证据](2026-10-11-windows-startup-algorithm-evidence.json) | Release 空窗口；启动、初始化、Opened、根 Render、分配；每版本每场景 10 个独立进程 | 当前这轮优化的主要收益依据 |
+| [前一轮 Core 优化结果](2026-10-10-core-startup-performance-results.md) | macOS Gallery 等价配置；CoreCLR / NativeAOT 的 UseAtomUI 调用；每产物 16 个独立进程 | 资源键、descriptor 绑定和 Manifest 优化的历史依据 |
+| 本文“历史空窗口基线” | macOS 空窗口；Debug / Release 各 3 次 | 保留初次观察，不作为 Windows 优化的对照组 |
 
-阶段占比（Release，UseAtomUI 同步段合计 ~460-490ms）：
+本次更新复核已有证据，没有重新执行启动采样。Windows JSON 的 60 条原始样本重新计算后与下表一致。
+其 48 项源码清单中 47 项与当前工作树逐字节一致；Desktop 项目文件不一致，原报告另行记录了用户当时保留的
+Debug 排除配置。因此这些数字属于当时的测量产物，不能称为当前 checkout 的重新实测结果。
+二进制清单、探针哈希、配置和完整样本由原始证据保存。
 
-| 阶段 | 耗时 | 说明 |
-|---|---|---|
-| Main→App.Initialize 进入 | ~210-325ms | 运行时装载/JIT/Avalonia 平台初始化，非 AtomUI 可控 |
-| UseLanguages | ~7ms | 单语言 |
-| UseAlibabaSansFont | ~20ms | FontCollection 注册 |
-| UseDesktopControls | ~230ms | 319 个 fragment：183 控件 descriptor + 318 资产 descriptor（CreateGenerated 内含双重 255 全局 token 名指纹） |
-| LocalizationBuilder.Build | ~33ms | 单语言 Snapshot；Gallery 四语言按比例 ~130ms |
-| ThemeManagerBuilder.Build | ~87ms | descriptor 汇集、ThemeSchemaRegistry 冻结（全量排序/校验/Revision 指纹）、资产去重 |
-| BuildOwnedServices | ~12ms | |
-| LoadThemeCatalog | ~40ms | 读内置主题 XML + SHA256 + 绑定 |
-| MountStaticResources | ~140-195ms | **324 个资源工厂全量物化**（生成式双层 ResourceInclude 包装），启动期最重单项 |
-| ApplyThemeAsync(初始) | ~120-160ms | CompileGlobal ~20ms（255 token）+ CompileControls ~100ms（187 控件，每控件 CopyBuilder 按 Format/Parse 复制全局 token） |
-| Styles 挂载等收尾 | ~100ms | rootContextStyle + Application.Styles.Add(this)（携带 324 字典资源树挂载） |
-| ModuleInitializers | ~27ms | |
-| Window 构造→Opened | ~150-170ms | 首个 TopLevel 平台初始化 + 首帧 |
+三组记录的操作系统、配置、计时边界和源码基线不同，不能跨表相减、累加改善率，或把 macOS NativeAOT
+结果当成这轮 Windows NativeAOT 的结果。
 
-实测确认的问题点排序（占 UseAtomUI 段比例）：包注册与 descriptor 物化（UseDesktopControls+Builder，~68%）＞
-静态资源全量物化（MountStaticResources，~35%）＞首主题编译（CompileControls 为主）＞装载/平台（不可控项单列）。
-Gallery 全量配置（四语言、五包、五个内置主题、用户主题目录、WorkspaceWindow）按比例推算约 1.8s，
-与用户观察一致。
+## Windows 当前一轮实测
 
-## 分析基线
+### 方法与边界
 
-分析基于本地 HEAD `f0e9b4133` 及工作树。当时已有两项未提交改动：
+- Windows 10.0.26200，SDK 10.0.401，CoreCLR 10.0.12，Avalonia 12.1.3，Release / net10.0，Win32，800×600。
+- 基线产物来自 `ee1db40012292f3b4105a7810507e2475a177f23` 对应测量工作区；候选使用相同探针和项目选项。
+  原始报告保留 baseline / candidate 的 105 文件清单及探针哈希，基线没有在采样时重新构建。
+- 三种场景：纯 Avalonia、AtomUI 初始化＋Avalonia Window、AtomUI 初始化＋AtomUI Window。
+  每版本每场景 10 次，共 60 个进程；每轮交换基线/候选先后顺序，串行采集，未剔除离群值。
+- 独立新进程不等于清空 OS 文件缓存；用户后台进程与 OS 缓存未受控。采样期间没有任务自身的并行构建或测试。
+- 启动时间包含进程/运行时启动及启动器开销；根 Render 是 Opened 后根哨兵的绘制回调，
+  不证明整个子树渲染完成、合成器提交或屏幕实际呈现，更不等同于首屏可交互。
+- 初始化分配为该区间的进程总托管分配，不是峰值 RSS、存活内存或整个启动周期的分配。
 
-- `src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs`：字符指纹计算优化。
-- `src/AtomUI.Toolchain/Backends/ILC8/Adapter/ConditionalRegistrationBackend.cs`：条件注册后端改动。
+### 启动至根 Render 回调
 
-本次分析和文档整理没有修改上述代码。后续基准必须固定这两项改动的状态，不能混用 HEAD 与工作树结果归因。
-没有运行启动计时、产品测试或 AOT 发布；下文的排序基于可定位的重复工作、预估改动风险和验证难度，不代表实测成本排名。
+下表均为中位数，单位 ms；改善率为 `(基线 - 优化后) / 基线`，差值由未舍入样本计算。
 
-## 当前实现中的候选点
+| 场景 | 基线 | 优化后 | 减少耗时 | 改善率 |
+| --- | ---: | ---: | ---: | ---: |
+| 纯 Avalonia 对照 | 530.947 | 531.143 | -0.196 | -0.04% |
+| AtomUI 初始化＋Avalonia Window | 1571.324 | 1369.487 | 201.837 | 12.85% |
+| AtomUI 初始化＋AtomUI Window | 1864.418 | 1655.117 | 209.300 | 11.23% |
 
-### 资源键二维表预创建
+两种 AtomUI 场景在各自 10 个配对轮次中均更快；纯 Avalonia 对照整体基本不变。
+这是本组样本的方向一致性，不扩展为所有机器、配置的统计保证，也不据 10 个样本宣称稳定 P95。
 
-[ThemeSchemaRegistry](../../../src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs) 的
-`CreateControlSharedResourceKeys()` 为每个注册控件、每种 SharedTokenKind 创建并装箱 ControlTokenResourceKey，
-还分配对应二维数组。成本随注册控件数与共享 Token 种类数的乘积增长。
+### 初始化耗时与分配
 
-本次搜索生产源码、测试、性能工具及现有生成 C#，`GetControlSharedResourceKey()` 的外部调用只出现在
-ThemeTokenResourceProviderTests 和 ThemeResourceLookupPerformanceTests。实际
-[ThemeTokenResourceProvider](../../../src/AtomUI.Core/Theme/Resources/ThemeTokenResourceProvider.cs) 通过 identity/type
-解析 slot，并使用全局资源键表；这张控件共享键二维表未发现生产消费者。实施前须重新搜索，排除新增调用。
+| 指标 | 基线中位数 | 优化后中位数 | 改善率 |
+| --- | ---: | ---: | ---: |
+| AtomUI 初始化＋Avalonia Window：初始化耗时 | 1063.499 ms | 857.540 ms | 19.37% |
+| AtomUI 初始化＋AtomUI Window：初始化耗时 | 1077.029 ms | 864.555 ms | 19.73% |
+| AtomUI 初始化＋Avalonia Window：初始化托管分配 | 9,203,016 B | 5,270,280 B | 42.73% |
+| AtomUI 初始化＋AtomUI Window：初始化托管分配 | 9,212,828 B | 5,273,260 B | 42.76% |
 
-候选：消除全量预创建；如保留内部键工厂，仅按实际请求提供稳定键。不能一并删除生产查询使用的全局键表，
-也不能把键分配移入每次 TryGetResource。验证 bound/unbound key、owner、非法 slot/kind、主题切换及热查询零分配。
+分配下降约 43%，但端到端回调等待只下降约 11%–13%。用户仍会经历明显启动等待；不能用分配改善率替代启动提速比例。
+本轮是多项改动的组合 A/B，以下单项微测量只用于解释成本，不能把总收益重复归给某一项。
 
-### Gallery 重复构建完整配置
+## 当前源码中的候选处置
 
-[AtomUIGalleryModule.RegisterViews](../../../controlgallery/AtomUIGallery/AtomUIGalleryModule.cs) 调用
-`CreateConfiguration()`，构建 branding、导航、路由和源码展示配置；
-[UseGalleryBase](../../../src/AtomUI.Toolkits.GalleryBase/ThemeManagerBuilderExtensions.cs) 又调用 Configure 和
-BuildConfiguration 构建正式配置。本次源码包含 78 条路由声明，声明保存工厂，不等于创建 78 个页面。
+| 初始候选 | 当前状态 | 已知边界 |
+| --- | --- | --- |
+| 控件共享资源键二维表预创建 | 前一轮已改为 registry 私有的按需缓存 | 生产资源查询路径与全局键表保留，不重复计入 Windows 本轮收益 |
+| descriptor 绑定、资产指纹重复排序 | 已复用规范化 OwnTokens、registry 有序表和可信 Manifest 路径 | 任意输入仍独立复制、规范化及校验 |
+| Gallery 重复完整配置 | RegisterViews 使用只读路由元数据；场景记录完整配置构建 7→1 次 | 78 条路由仍是工厂；应用配置独立，ViewLocator.Map 的复制成本仍在 |
+| 语言 Snapshot 重复扫描 | Windows 轮次保留按需扩展候选链及部分重复扫描减量 | 来源优先级、稀疏互补、英文最终回退及全部支持语言验证保留 |
+| 主题读取与缓冲区 | Core 自有内置主题转为构建期 Reader/XSD 校验；其他来源使用 4 KiB 池化读取缓冲 | 不能让所有 avares 来源免校验；实际字节上限、摘要、reload 识别仍在 |
+| 控件全局 Token 复制 | 确定的生成式 schema 使用强类型复制，优化调色板复制及部分资源投影 | 仍保留独立可变副本；自定义 accessor 保留原语义 |
+| 静态主题资源包装 | 符合条件的 typed theme 用 AddDeferred，部分已有 x:Class 字典直接构造 | Windows 记录 Desktop 315 项中 49 项 deferred、4 项 direct、262 项保留包装；没有通用惰性代理 |
+| 包注册与 schema 指纹 | FNV 零后缀计算、操作内类型名缓存、owner 合并及注册分配等已优化 | 保留协议、逐资产证据、跨包 owner/资源契约；没有改为抽查 |
 
-候选：RegisterViews 直接复用 ConfigureRoutes，只创建其需要的路由表。避免为此新增跨 Application 的可变配置缓存。
-目标是减少一次完整配置构建，路由注册本身仍必须完成；需验证 ViewLocator、默认导航、所有路由和配置隔离一致。
+源码入口与单项证据见[六项热点处置](2026-10-10-startup-hotspots-and-fix-designs.md)及
+[Windows 逐项结果](2026-10-11-windows-startup-algorithm-results.md)。
+前一轮 macOS 的两版语言候选曾撤回；不能据此说当前 Localization 未优化，Windows 保留的是后续方案。
 
-### 语言 Snapshot 逐词条扫描 bundle
+## 优化后仍有成本的阶段
 
-[LanguageSnapshotBuilder](../../../src/AtomUI.Localization/LanguageSnapshotBuilder.cs) 对每个词条按来源优先级、
-语言候选、完整 bundle 列表逐层查找。Gallery 启动时构建全部四种支持语言的 Snapshot。
+Windows 报告对候选二进制副本做了两轮 Cecil 调用点插桩，每轮 3 个新进程。以下保留第二轮全部 3 个样本，
+不删除明显更慢的首个样本，其原因尚未确定。单位均为 ms。
 
-候选：为每个 Catalog、每种目标语言预先形成有序候选 bundle 链，词条循环只判断候选值是否存在。
-保留来源优先级先于候选语言具体程度、英文最终回退、同优先级非重叠 bundle 合法互补、覆盖与格式错误诊断。
-不能用单 bundle 字典覆盖合法的多个互补来源，也不把非当前语言的校验推迟到首次切换。
+| 调用边界 | 进程 1 | 进程 2 | 进程 3 |
+| --- | ---: | ---: | ---: |
+| 完整 UseAtomUI 调用 | 1808.225 | 865.929 | 842.934 |
+| configure callback / UseDesktopControls | 1058.307 | 326.370 | 324.896 |
+| LocalizationBuilder.Build | 33.732 | 33.653 | 32.347 |
+| ThemeManagerBuilder.Build | 54.470 | 53.571 | 54.471 |
+| Owned services | 10.531 | 10.594 | 10.719 |
+| ApplicationScope.InitializeApplication | 384.837 | 397.106 | 375.761 |
+| ↳ 默认配置规范化 | 4.609 | 5.912 | 4.269 |
+| ↳ 内置主题 Catalog | 14.728 | 23.459 | 15.193 |
+| ↳ 静态资源挂载 | 183.207 | 186.835 | 176.225 |
+| ↳ 首次 ApplyThemeAsync | 170.633 | 169.650 | 168.718 |
+| Desktop runtime initializer | 39.245 | 38.894 | 38.663 |
+| AtomUI Window 构造 | 82.602 | 73.737 | 73.748 |
+| Framework Show 调用 | 1691.108 | 335.755 | 340.080 |
 
-### 主题资产指纹重复排序
+这是有扰动的诊断数据：区间包含首次调用/JIT，父级间隙还包含调用方、装载及日志成本；带箭头的行属于
+ApplicationScope.InitializeApplication，不能与父级相加。它们不能直接从未插桩 A/B 总耗时中扣除，
+也不能全部解释为可消除的算法工作。
 
-[ComputeResourceKeySchemaFingerprint](../../../src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs) 对每个资产重新
-按 slot 排序全局 Token，而 registry 已经构建有序 Token 表。
+后两个进程说明注册、资源挂载和首次主题应用仍值得优先细分，但尚未证明新的重复算法或进一步收益：
+注册包含 Common prepare、provider、生成式收集、Build/AddPackage 与语言登记；普通非裁剪收集直接调用已知生成类型。
+首次 ApplyThemeAsync 包含配置合并、编译/缓存与提交，不能把约 170 ms 全归为调色板计算或 Token 复制。
+Window 构造与 Show 也要继续单列，不能把余量一概算入 AtomUI 初始化或宣布不可优化。
 
-候选：内部受控路径复用已经规范化的顺序，避免重复排序。接受任意输入的其他入口仍需维持排序语义；
-生成式契约证据和当前 registry 的独立校验必须保留。新旧指纹逐位相等，过期资产、owner 冲突和诊断行为一致。
-工作区已有字符 hash 优化，不能把该改动的收益再次归入重复排序优化。
+## 历史空窗口基线（macOS，2026-10-10）
 
-### 主题读取缓冲区分配
+初次骨架为 en-US 单语言、默认主题、AlibabaSans、UseDesktopControls、空白 Avalonia Window。
+记录基线为 `ee1db4001` 加当时 ThemeSchemaRegistry 字符指纹与 ILC8 条件注册后端工作区改动。
+更早的源码分析从 `f0e9b4133` 工作区开始，不能与上述计时基线混用。临时探针已删除。
 
-[CompiledThemeCatalog.ReadBounded](../../../src/AtomUI.Core/Theme/Definitions/CompiledThemeCatalog.cs) 每次分配
-81,920 字节缓冲区。Core 一个默认主题与 Gallery 四个附加内置主题都成功走该路径时，仅此固定缓冲区累计分配
-409,600 字节，即 400 KiB；不包含内容副本、XML 和绑定对象，也不表示峰值存活内存。
+| 配置 | Main→UseAtomUI 返回 | Main→Opened | Main→Dispatcher Idle |
+| --- | ---: | ---: | ---: |
+| Release，3 次均值 | 约 1.04 s | 约 1.21 s | 约 1.29 s |
+| Debug，3 次均值 | 约 1.05 s | 约 1.28 s | 约 1.37 s |
 
-候选：实测后评估适当缓冲区大小或池化。必须保留读取上限、异常、内容摘要和 reload 变更识别；池化缓冲区须
-在 finally 归还，不能进入持久 Snapshot。冷进程首次租用可能仍产生分配，不能只用热池结果宣称启动获益。
+这些是原记录的里程碑观测，不是当前源码的 macOS 复测，也不是实际显示首帧或首屏可交互证据。
+原方法文字同时写“Opened 后退出”和 Idle 数据，退出时序需恢复探针核实，本文不补造解释。
 
-### 控件 Token 编译中的全局复制
+原阶段记录中的 UseDesktopControls 约 230 ms、Builder 约 87 ms、MountStaticResources 约 140–195 ms、
+首次 ApplyThemeAsync 约 120–160 ms 可以保留为定位线索，但与“UseAtomUI 同步段合计 460–490 ms”没有自洽的
+包含关系说明。原 68% / 35% 占比及该合计不再作为有效成本分解；不能将其相加预测整体收益。
 
-[ThemeCompiler.CompileControl](../../../src/AtomUI.Core/Theme/Compilation/ThemeCompiler.cs) 对进入该分支的控件
-复制完整全局 DesignToken，包含部分引用值的格式化/解析和调色板复制。无 Own Token 且无配置的控件已走轻量路径，
-不能把复制次数直接视为全部注册控件数。
+原 Gallery 约 1.8 s、优化后约 1.0–1.2 s 都属于按配置推算，未测量真实 Gallery 首屏。
+旧文“1.0–1.2ms”为单位错误；本次撤下该目标，不以修正单位的方式把推算升级为实测。
 
-候选：先量化复制占比，再评估保持隔离的强类型复制或其他设计。`EffectiveGlobalToken` 可变，控件计算入口可扩展，
-直接共享实例可能造成控件间污染。[主题架构](../../architecture/systems/theming/runtime.md) 中的 copy-on-write 目标
-也不能当作当前代码已经实现的事实。该项改动面较大，后置于可直接减少重复工作的项目。
+## 前一轮 Core 优化的历史收益
 
-## 已有机制和风险边界
+[前一轮报告](2026-10-10-core-startup-performance-results.md)使用 macOS arm64、SDK 10.0.300、
+Release / net10.0 和 Gallery 等价配置，OS 缓存预热，每产物 16 个独立进程。指标仅为 UseAtomUI 调用中位数：
 
-- 生成式不可变 descriptor 已缓存；ThemeManager 内已有定义加载、Snapshot 与控件编译缓存。
-  这些机制有各自的生命周期与命中前提，新进程冷启动仍需首次创建。
-- Gallery 路由保存工厂；图片 pipeline 已使用 DeferredHttpImageTransport。不要重复提出这些已存在的优化。
-- 全部语言覆盖检查、跨包 schema 校验、资源优先级与首帧完整主题提交是必须保留的契约。
-- [MediaBreakPointThemeBootstrapper](../../../src/AtomUI.Desktop.Controls/Window/MediaBreakPointThemeBootstrapper.cs)
-  静态持有 ThemeManager/ControlTheme；本次未做多 Application 复现。将其列为隔离与生命周期基线检查项，
-  不以本次源码阅读宣称已证实或修复泄漏。
-- 资源工厂延迟执行会触及资源可用时机、查找顺序和首次使用错误，不属于首批等价减量候选。
+| 模式 | 基线 | 优化后 | 改善率 |
+| --- | ---: | ---: | ---: |
+| CoreCLR 内核初始化 | 748.224 ms | 735.350 ms | 1.72% |
+| osx-arm64 NativeAOT 内核初始化 | 82.021 ms | 74.634 ms | 9.01% |
 
-## 建议的实施与验收顺序
+当时保留资源键、descriptor 绑定和 Manifest 三项优化；已有字符指纹和 ILC8 工作区改动固定在各产物中，不计入该收益。
+这些结果不是本轮 Windows 的前后对比，也不能证明 Windows NativeAOT 已验收。
 
-1. ~~补齐真正的进程启动与阶段计时。~~ 已完成（2026-10-10 空窗口基线实测，见上节）；下一步将骨架固化为
-   常驻测量工具（可并入 GalleryPerformance 或独立 StartupPerformance harness）再开始改动。
-2. 先单独验证资源键二维表，再依次验证 Gallery 配置、语言候选链、Schema 重复排序。每轮固定相同输入，
-   只改变一个因素，核对目标阶段和总启动耗时；没有有效收益或出现回归时不保留该性能改动。
-3. 根据阶段占比决定是否处理读取缓冲区和 Token 复制。若资源物化占主导，另行设计，保留原始首帧和首次交互契约。
-4. 在清理临时探针后，对最终改动模块进行 focused 验证；涉及生成器、注册与裁剪边界时完成对应 AOT 专项。
+## 后续研究与验收
 
-基于实测占比补充的优先级修正（2026-10-10）：
+1. 固定当前 Windows 产物、探针、窗口/字体/语言/主题配置，复用相同计时边界建立下一轮基线；
+   如测真实 Gallery，另建默认路由及首屏交互场景，不把空窗口收益直接外推。
+2. 优先细分包注册、资源挂载、首次主题应用，区分算法、JIT/装载与 owner 挂载成本；每次只验证一个因素。
+   有成本不等于有安全可消除的工作，不为阶段预先承诺固定节省毫秒数。
+3. 同时检查首帧主题完整性、首次导航、弹层、语言/主题切换，避免只把启动成本移到首次交互。
+   保留应用隔离、资源优先级、失败行为和 AOT/裁剪契约。
+4. 复用或编写临时差分验证，按项目测试生命周期清理后做明确模块路径的 focused 验证；
+   未有用户指令不运行全量回归。每轮用同样采样策略比较，无有效收益或有行为回归时撤回性能改动。
 
-- **静态资源延迟物化（候选第一优先）**：324 个 GeneratedThemeAssetResource 双层包装在
-  `MountStaticResources` 全量实例化是启动期最重单项（~140-195ms）。GeneratedThemeAssetResource 本身是
-  ResourceDictionary+ResourceInclude 壳，可评估延迟到首次资源查找/按 owner 控件首次实例化时物化；
-  必须保留资源查找顺序契约（包内 ControlResourcePhase 顺序）与 reload 行为。
-- **CompileControls 复制减量**：187 控件逐一 `CopyBuilder`（Format/Parse 往返 255 token）贡献 ~100ms；
-  与既有"控件 Token 编译中的全局复制"候选项合并评估（无 config 且无 Own Token 的控件已走空快照轻路径，
-  剩余为有 Own Token 控件的必要复制，需量化可共享比例）。
-- **CreateGenerated 双重指纹**：318 个资产 descriptor 每个都要对 255 个全局 token 名做两轮 FNV
-  （contract + resourceKey 指纹），这部分包含在 UseDesktopControls ~230ms 内；可评估指纹结果内联为
-  编译期常量、运行时只校验一次的方案（需保留过期资产生成契约校验语义，放宽为抽查或构建期断言）。
+Windows 原报告仍有原生 Gallery 视觉走查、缺少原生链接器导致的 NativeAOT 发布/运行、
+3 个依赖符号链接权限的测试，以及原基线同样存在的 24 B 分配断言失败未闭环。
+当时 Windows 临时证据目录的清理也记录为待处理；本次没有连接原环境或重新确认目录状态。
+实际 full-trim consumer 与 Browser 的已完成验证不能替代这些缺口。
 
-基准固定源码、SDK、配置、RID、字体、用户主题目录内容、窗口尺寸和默认路由。Release CoreCLR、NativeAOT、Browser
-分别记录；每组至少 10 次独立进程，报告样本数、均值、中位数、范围和分配；P95 需要更多样本并说明稳定性。
-区分进程冷启动与 OS/浏览器资产缓存状态，前后交替采样，不在计时范围内构建或发布。
-
-验收复用现有 ThemeStartup/ThemeFollowSystem、注册与资产契约、LanguageSnapshot/LanguageCatalogRegistry、
-ApplicationScope 和资源查询测试。新增差分验证默认临时保存，比较快照值、诊断、通知、失败行为与对象隔离后删除；
-实际首帧、窗口尺寸、主题/语言切换、首次弹层与交互由对应宿主复核。
-
-本记录没有优化后的数据，不声明启动提速、内存下降或任何产品行为已经通过验证。
+本次只同步两份分析文档、复核保存样本及源码引用；没有新增产品优化、重新跑性能或补齐上述运行验收。

@@ -50,6 +50,16 @@ internal sealed class GeneratedThemeSchemaWriter
         source.AppendLine();
         source.AppendLine("internal static class GeneratedThemeSchema");
         source.AppendLine("{");
+        if (_globalTokens.Count != 0 || _algorithms.Count != 0)
+        {
+            // Compile-time identity of this assembly's global token and algorithm sections. Core's
+            // startup registry combines it with the per-package schema fingerprints; assemblies
+            // without globals or algorithms emit nothing and never participate in that section.
+            source.Append("    internal const ulong GlobalSchemaFingerprint = 0x")
+                  .Append(RegistrationFingerprint.ComputeGlobalSchema(_globalTokens, _algorithms).ToString("X16"))
+                  .AppendLine("UL;");
+            source.AppendLine();
+        }
         WriteGlobalTokens(source);
         source.AppendLine();
         WriteAlgorithms(source);

@@ -310,7 +310,9 @@ internal sealed class RegistrationModelBuilder
 
         var builderType = _compilation.GetTypeByMetadataName("AtomUI.Registration.ControlPackageRegistrationBuilder");
         return new(_packageId, _compilation.Assembly.Identity.GetDisplayName(), GeneratedCodeNamespace.ForAssembly(_compilation.AssemblyName), new(controls), new(assets), new(globalNames),
-            builderType is null ? null : RegistrationType.From(builderType), RegistrationType.From(_compilation.GetSpecialType(SpecialType.System_Void)));
+            RegistrationFingerprint.ComputeContractPrefix(globalNames), RegistrationFingerprint.ComputeResourceKeyPrefix(globalNames),
+            builderType is null ? null : RegistrationType.From(builderType), RegistrationType.From(_compilation.GetSpecialType(SpecialType.System_Void)),
+            RegistrationFingerprint.ComputePackageSchema(_packageId, _catalog, controls, tokens, assets));
     }
 
     private PlatformAvailability Availability(INamedTypeSymbol type)

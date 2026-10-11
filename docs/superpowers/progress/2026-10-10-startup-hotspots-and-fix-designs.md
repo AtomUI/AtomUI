@@ -1,350 +1,234 @@
-# AtomUI 空窗口启动性能问题与优化方案（源码深挖版）
-
-分析日期：2026-10-10。状态：源码级定位与优化算法设计完成，**尚未实施任何优化**。
-
-基线：HEAD `ee1db4001` + 工作树两项未提交改动（ThemeSchemaRegistry 字符指纹优化、ILC8 条件注册后端）。
-测量方法见 [2026-10-10 启动性能分析](2026-10-10-startup-performance-analysis.md) 的"空窗口启动基线实测"一节；
-本文只记录源码级问题定位与修复方案，不重复测量过程。
+# AtomUI 启动热点与优化方案处置
 
-外部框架行为核对来源（Avalonia main 分支，版本 12.1.3 对应实现一致）：
-
-- `ResourceInclude`：`Loaded` 属性惰性加载，`Source` 设置不触发加载，首次 `TryGetResource`/`AddOwner` 才加载。
-- `ResourceDictionary.TryGetResource`：先查自身与 theme 字典，再对 `MergedDictionaries` **按索引逆序**遍历，
-  合并字典的相对顺序即资源查找优先级。
-
-## 实测阶段与热点总表
-
-空窗口（en-US 单语言、默认主题、AlibabaSans、UseDesktopControls、空白 Avalonia Window，Release）：
-
-| 阶段 | 实测 | 源码入口 |
-|---|---|---|
-| Main→App.Initialize 进入 | ~210-325ms | 运行时装载/JIT/Avalonia 平台初始化（非 AtomUI 可控） |
-| UseLanguages | ~7ms | |
-| UseAlibabaSansFont | ~20ms | `AlibabaSansThemeManagerBuilderExtensions.UseAlibabaSansFont` |
-| UseDesktopControls | ~230ms ★ | `GeneratedTypeMapRegistration.Collect`（生成代码，src/AtomUI.Desktop.Controls GeneratedFiles:2569） |
-| LocalizationBuilder.Build | ~33ms | `LanguageCatalogRegistry.Create` + `LanguageSnapshotBuilder.Build` |
-| ThemeManagerBuilder.Build | ~87ms ★ | `ThemeManagerBuilder.BuildCore`（src/AtomUI.Core/Theme/ThemeManagerBuilder.cs:184） |
-| LoadThemeCatalog | ~40ms | `CompiledThemeCatalog.LoadSource`（src/AtomUI.Core/Theme/Definitions/CompiledThemeCatalog.cs:330） |
-| MountStaticResources | ~140-195ms ★★ | `ThemeManager.MountStaticResources`（src/AtomUI.Core/Theme/ThemeManager.cs:1722） |
-| ApplyThemeAsync 首次编译 | ~120-160ms | `ThemeCompiler.Compile`；其中 CompileControls ~100ms ★ |
-| Styles 挂载收尾 + ModuleInitializers | ~130ms | `ThemeManager.InitializeApplication` 尾部（ThemeManager.cs:195-200） |
-| Window 构造→Opened | ~150-170ms | 框架边界（首个 TopLevel 平台初始化+首帧），不在 AtomUI 优化射程 |
-
-UseAtomUI 同步段合计 ~460-490ms；本机空窗口 Main→窗口出现 ~1.2s（Release）。
-Gallery 全量配置（四语言、五包、五主题、用户主题目录、WorkspaceWindow）按比例推算 ~1.8s，与用户观察一致。
-
----
-
-## 问题 1（★★ 最重单项）：MountStaticResources 为惰性内容付出急切包装成本
-
-### 源码定位
-
-- 挂载循环：`ThemeManager.MountStaticResources`（src/AtomUI.Core/Theme/ThemeManager.cs:1722-1742）——
-  遍历 `_stagedThemeResources`，逐个执行 `registration.Factory()`，再 `Resources.MergedDictionaries.Add`。
-- 工厂本体：构建期任务 `GenerateThemeAssetWrappersTask`（src/AtomUI.Toolchain/Tasks/GenerateThemeAssetWrappersTask.cs:69-89）
-  为每个主题资产生成两层包装：
-  - C# 侧 `GeneratedThemeAssetResource_XXX : ResourceDictionary`，构造函数调用 `AvaloniaXamlLoader.Load(this)`
-    （.artifacts/.../AtomUIThemeAssets/GeneratedThemeAssetResources.g.cs，Desktop 包 317 个类）；
-  - AXAML 侧仅含一条 `ResourceInclude Source="..._Deferred.axaml"`，Deferred 文件才承载真实控件主题。
-- `ControlThemeResourceRegistration` 携带 `CreateResource_XXX` 工厂委托（GeneratedTypeMapRegistration.g.cs:10167 形态）。
-
-### 算法问题
-
-实测该阶段物化 324 个资源工厂耗时 ~105-116ms（每包 ~0.33ms），加上 `MergedDictionaries.Add` 挂接共 ~140-195ms。
-而 Avalonia `ResourceInclude.Loaded` 是惰性的：真实控件主题（TextBoxTheme 等，`_Deferred.axaml`）
-**在启动期根本不会加载**。这 324 次 `AvaloniaXamlLoader.Load(this)` 加载的只是"包装字典自身"——
-XAML 编译产物类型查找、ResourceDictionary 分配、单条 MergedDictionaries populate。
-即：**为本身已设计为惰性的内容，急切构造了一整层包装**。空窗口未创建任何 AtomUI 控件，这 324 个包装
-中绝大多数在进程生命周期内可能只被遍历、从不被命中。
-
-### 修复方案：惰性代理挂载（Lazy Proxy Mount）
-
-注册期与挂载期只创建轻量代理，首次资源访问才物化真实包装：
-
-```
-DeferredThemeResourceProxy : IResourceProvider, IThemeVariantProvider
-  字段：AssetId、factory 委托、volatile IResourceProvider? _inner
-  TryGetResource / HasResources / AddOwner / RemoveOwner / OwnerChanged：
-      EnsureMaterialized() 后转发内部实例
-  EnsureMaterialized()：factory() → 写 _inner（双检锁）
-```
-
-- `MountStaticResources` 改为 `Resources.MergedDictionaries.Add(new DeferredThemeResourceProxy(registration))`，
-  324 次纯对象分配，零 XAML 调用。
-- **顺序契约**：`ResourceDictionary.TryGetResource` 对合并字典按索引逆序遍历，代理占据原 registration 位置，
-  包内与跨包资源优先级不变。
-- **转发契约**：代理必须转发 `OwnerChanged`（add/remove 都转发到已物化实例；未物化时登记挂起订阅）与
-  `IThemeVariantProvider.Key`；`AddOwner` 是最常见的首个触发点。
-- **reload 路径**：`ReloadThemesAsync` 重建 catalog 后替换 registration 时换新代理；旧代理若已物化，
-  沿用现有资源字典替换语义。
-- **连带收益**：`MediaBreakPointThemeBootstrapper.Rebuild`（src/AtomUI.Desktop.Controls/Window/MediaBreakPointThemeBootstrapper.cs:68-72）
-  首次 `TryGetResource(typeof(Window))` 只会物化 Window 所需的一个包装，而非全量。
-
-### 验收要点
-
-1. 页面测试断言：空窗口启动后实际物化资产数远小于 324（记录精确数字作为回归门限）。
-2. 全部控件 ControlTheme 查找仍命中（复用现有资源查询/主题契约测试）。
-3. `OwnerChanged`/ThemeVariant 转发正确；主题切换（Light/Dark）后 `ThemeTokenResourceProvider` 通知不丢。
-4. reload：修改用户目录主题定义 → `ReloadThemesAsync` → 新定义生效且旧代理不复活。
-
-预期收益：~120-180ms（该阶段近清零）。
-
----
-
-## 问题 2（★）：包注册期 CreateGenerated 双重全量指纹与重复排序
-
-### 源码定位
-
-- Collect 入口：生成代码 `GeneratedControlPackageRegistration.Collect`（src/AtomUI.Desktop.Controls/GeneratedFiles/
-  AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs:2569）——
-  319 次 `new ControlFragment_XXX().Add(builder)`。
-- 每个 fragment：物化 `ControlTokenDescriptor`（`ownTokens.OrderBy(slot).ToArray()`，
-  src/AtomUI.Core/Theme/Schema/ControlTokenDescriptor.cs:52）+ Semantic descriptor + `AddAsset_XXX`。
-- 资产 descriptor：`ControlThemeAssetDescriptor.CreateGenerated`
-  （src/AtomUI.Core/Theme/Schema/ControlThemeAssetDescriptor.cs:56-86）。
-
-### 算法问题
-
-1. **双重全量指纹**：`CreateGenerated` 对每个资产执行
-   `ComputeGeneratedContractFingerprint`（ThemeSchemaRegistry.cs:155-199）与
-   `ComputeGeneratedResourceKeySchemaFingerprint`（ThemeSchemaRegistry.cs:141-153），
-   两者都对 `CompiledGlobalTokenNames`（255 个名字的包级共享数组）逐字符 FNV。
-   Desktop 包 318 资产 × 2 指纹 × 255 名字 × 平均 ~20 字符 ≈ **320 万次乘加哈希**。
-   而生成器编译期已算出同样值并作为十六进制常量传入（如 `0x6E0C0417C86EC8B9UL`），运行时重算仅用于
-   "过期生成资产"校验。
-2. **构造器内三层 LINQ 排序**（ControlThemeAssetDescriptor.cs:43-51）：`exports.OrderBy(AQN).ThenBy(...)`、
-   `Canonicalize` 字典化+排序、`bindings.Distinct().OrderBy×4`。生成器 emit 的本来就是确定顺序，
-   运行时再排一次纯属重复；AQN 字符串每次拼接 100+ 字符。
-3. `ControlTokenDescriptor` 构造对已按 slot 有序的生成数组再 `OrderBy(slot)`。
-
-### 修复方案：共享前缀指纹 + 预排序直通 + 校验抽查
-
-```
-(1) 指纹重排共享前缀：
-    调整两个指纹函数的字段顺序，使 [全局 token 名列表] 位于最前、资产专有字段在后。
-    FNV-1a 是顺序敏感的链式哈希 → 名字段成为可共享前缀状态。
-    每包构建一次 prefixState（缓存在包级静态字段），每资产从 prefixState 续算专有字段。
-    复杂度 O(assets×names) → O(names + assets)：318×255 → 255+318。
-    生成器与运行时同源修改、同步重发常量（同一次原子提交，无新旧混编兼容问题）。
-
-(2) 预排序直通构造：
-    生成器按已排序顺序 emit exports/owners/bindings；新增 internal 构造器入口接受
-    PreSorted 标记，跳过 OrderBy/Canonicalize 排序，仅保留 O(n) 线性冲突查重
-    （顺序敏感语义由生成器输出保证，运行时只验不排）。
-
-(3) 指纹校验降级为抽查：
-    每包首个资产做全量指纹重算校验（证明生成器-运行时一致性），其余资产只比对常量。
-    常量不等仍抛 ThemeSchemaException（过期生成资产检测不消失）；
-    放弃的仅是"每资产独立重算"这一冗余证明形式。
-```
-
-### 验收要点
-
-1. 新旧指纹逐位相等测试（临时差分测试：旧算法结果 vs 新顺序结果，全资产枚举）。
-2. 过期资产契约检测保留：手工构造错误常量的 descriptor 必须抛 `ThemeSchemaException`。
-3. 冲突检测保留：重复 AssetId、冲突 owner、重复 export key 仍报错。
-4. 涉及生成器与裁剪边界：跑对应 AOT 专项（TypeMap 契约不变）。
+初次分析：2026-10-10。实测与源码同步：2026-10-11。
 
-预期收益：~100-150ms。
+**Windows 优化已在 `914ce40ef` 实施并提交；本文件按实际保留实现更新原六项方案。**
+本轮空窗口启动至根 Render 回调缩短约 202–209 ms，但 AtomUI Window 场景仍约 1.66 s。
+收益成立而幅度有限，不能继续把原先六项算法推算相加，宣称启动可降至约 1 s。
 
----
-
-## 问题 3（★）：CompileControls 逐控件全量复制全局 DesignToken
+完整测量口径和跨平台基线区分见[启动性能分析与优化进展](2026-10-10-startup-performance-analysis.md)；
+本轮数据来自[Windows 结果报告](2026-10-11-windows-startup-algorithm-results.md)和
+[60 条原始样本及证据](2026-10-11-windows-startup-algorithm-evidence.json)。
+本次没有重新运行性能测试。后文微测量来自该轮各专项，样本策略不同，不是单项独立的整机启动收益。
 
-### 源码定位
+## 总体实测与方案状态
 
-- 循环：`ThemeCompiler.CompileControls`（src/AtomUI.Core/Theme/Compilation/ThemeCompiler.cs:234-314），187 控件。
-- 单控件：`CompileControl`（ThemeCompiler.cs:351-438）第一行 `CopyBuilder(globalBuilder, 255 descriptors)`。
-- 复制实现：`CopyBuilder`（ThemeCompiler.cs:648-673）——逐 token `GetValue`（装箱）→
-  引用类型走 `Format`（装箱 ToString）→ `Parse`（字符串解析）往返 → `SetValue`（拆箱），
-  再复制 10 组 `ColorPalettes`。
-- 消费者：`controlBuilder.AssignEffectiveGlobalToken(effectiveGlobalBuilder)`
-  （ThemeCompiler.cs:420 → AbstractControlDesignToken.cs:10-13）→
-  控件 token 的 `CalculateTokenValues` **只读**引用（如 AlertToken.cs:67-82 只读
-  `EffectiveGlobalToken.FontSizeHeading3` 等）。
-- `EvaluateAlgorithms`（ThemeCompiler.cs:631-646）每个算法链也走一次 `CopyBuilder`。
-
-### 算法问题
+| 场景：启动至根 Render 回调 | 基线中位数 | 优化后中位数 | 改善率 |
+| --- | ---: | ---: | ---: |
+| 纯 Avalonia 对照 | 530.947 ms | 531.143 ms | -0.04% |
+| AtomUI 初始化＋Avalonia Window | 1571.324 ms | 1369.487 ms | 12.85% |
+| AtomUI 初始化＋AtomUI Window | 1864.418 ms | 1655.117 ms | 11.23% |
 
-启动时所有控件 `config == null` → `effectiveGlobalMatchesRoot = true` → 不产生任何 delta。
-即：183 个有 OwnToken 的控件各自复制一份 255 token 的全局 DesignToken，
-**仅为给只读的 `CalculateTokenValues` 提供输入**；当前源码中不存在任何控件写这份副本。
-Format/Parse 字符串往返的本意是"值规范化隔离"，对只读场景是纯开销：
-~183 × (255 次装箱复制 + 引用类型字符串往返 + 10 次调色板复制) ≈ 100ms。
+每版本每场景 10 次独立进程；改善率为 `(基线 - 优化后) / 基线`。两个 AtomUI 场景初始化托管分配下降约 43%，
+但这不等于整体启动快 43%。根 Render 回调不代表屏幕实际呈现或首屏可交互，未控制空 OS 缓存状态。
 
-### 修复方案：共享只读全局 + 慢路径类型化克隆
+| 原问题 | 本轮保留方案 | 原方案处置 |
+| --- | --- | --- |
+| 1 静态资源包装 | 有严格适用条件的 AddDeferred / 直接构造 | 通用惰性代理不能按原设计兑现收益；未实施 |
+| 2 生成资产指纹/排序 | 等价 FNV 编码减量、owner 合并等 | 未重排哈希字段、未改为抽查 |
+| 3 全局 DesignToken 复制 | 生成式强类型复制，保留隔离 | 未共享可变根 builder |
+| 4 Builder/Registry | 复用受控索引、有序表和冻结资产，减少注册分配 | 未以包常量替代 Registry.Revision，未全面取消排序 |
+| 5 主题 XML 与缓冲 | Core 内置主题构建期校验；外部流池化缓冲 | 未把全部 avares 来源视为免校验可信源 |
+| 6 语言 Snapshot | 按需扩展候选链，合并部分覆盖/冲突扫描 | 未实现原先的全量预建索引＋覆盖位图方案 |
 
-```
-(1) 快路径（config == null 且 appearance 与全局一致）：
-    直接 controlBuilder.AssignEffectiveGlobalToken(globalBuilder)——全部控件共享根
-    builder 实例，零复制。CompileControl 该分支不再调用 CopyBuilder。
+下面分别记录成本来源、实际实现和必须保留的边界；“仍有成本”不等于已经证明下一项优化。
 
-(2) 只读契约守护：
-    Debug 构建给 DesignToken 加 Freeze 后只读标记（setter 写已冻结实例时抛异常）；
-    或由生成器对 [ControlDesignToken] 类的 CalculateTokenValues 做静态分析，
-    禁止对 EffectiveGlobalToken 赋值。Release 构建零开销。
+## 问题 1：静态资源包装与挂载
 
-(3) 慢路径（控件级 Global/Custom 算法模式，ReevaluateControlGlobal）保留复制，但把
-    Format/Parse 字符串往返替换为类型化克隆 switch（Color/Thickness/FontFamily/Brush/
-    Easing 各自的不可变 Clone）。语义等价：不可变克隆是比字符串往返更强的规范化
-    （Format/Parse 原本就假设值可无损往返）。EvaluateAlgorithms 的逐算法复制同步受益。
-```
+### 当前实现和实测边界
 
-### 验收要点
+[ThemeManager.MountStaticResources](../../../src/AtomUI.Core/Theme/ThemeManager.cs)仍逐个执行 staged factory，
+再按既定顺序挂载资源。优化发生在
+[TypeMapRegistrationWriter](../../../src/AtomUI.Generator/Registration/TypeMapRegistrationWriter.cs)生成的工厂中：
 
-1. 全控件 `CalculateTokenValues` 只读性静态检查通过（或 Debug 写守护在测试套件中零触发）。
-2. 主题切换差分测试：Light/Dark/Compact/局部 scope 前后，全部控件 ThemeSnapshot 逐 token 与旧实现相等。
-3. 控件级 Global/Custom 算法模式（Gallery 中对应 ShowCase）行为不变。
-4. 控件间隔离回归：确认没有任何控件 token 类写 `EffectiveGlobalToken.*` 属性。
+- 符合精确结构和构造条件的 typed theme：创建 ResourceDictionary，通过 AddDeferred 注册现有编译主题构造器，
+  保留按键首次查找时创建主题及每字典缓存。
+- 已有 authored x:Class 且可安全构造的字典：直接调用原构造器，保留其 AXAML。
+- 其余资产沿用[包装生成任务](../../../src/AtomUI.Toolchain/Tasks/GenerateThemeAssetWrappersTask.cs)及原回退路径。
 
-预期收益：CompileControls ~100ms → ~25-35ms。
+Windows 专项记录 Desktop 315 个资产中 49 个走 deferred typed、4 个直接构造、262 个保留包装。
+这是该次产物的资产口径，不与原 macOS 记录的 324 个总挂载工厂混用。
+局部热态测量为 typed factory 2784→472 B；已有 x:Class 字典 fixture 约 7624→6000 B，
+后者冷态耗时区间重叠，不能宣称确定的冷启动耗时收益。
 
----
+候选插桩记录中挂载阶段为 183.207 / 186.835 / 176.225 ms，并没有接近原预测的 5–15 ms。
+这些区间包含调用/JIT/挂载成本，不能全归为包装对象分配。
 
-## 问题 4：ThemeManagerBuilder/ThemeSchemaRegistry 重复排序与第三轮全量指纹
+### 原通用代理为何不能直接采用
 
-### 源码定位
+本次框架核对使用本地源码 `/Users/chinboy/Projects/ReferenceProjects/Avalonia`，tag 为 `12.1.3`，
+与当前依赖版本一致，工作树无改动。关键实现为：
 
-- `ThemeManagerBuilder.BuildCore`（src/AtomUI.Core/Theme/ThemeManagerBuilder.cs:198-278）：
-  descriptor 汇集、`HasSameMetadata` 去重（`SequenceEqual(Select(...))`，每次比较分配 LINQ 投影）、
-  `PrepareRegistrationSchema`（:276）。
-- `ThemeSchemaRegistry` 构造器（src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs:20-100）：
-  全量 `OrderBy` ×4（输入本就是 slot 有序的生成数组，`ValidateDenseSlots` 随后还要再断言有序）、
-  `BuildUniqueMap` ×3、`ToFrozenDictionary` ×5。
-- `ComputeRevision`（ThemeSchemaRegistry.cs:404-447）：对 183 控件逐个 AQN + 255 token 明细 +
-  318 资产逐个 `AddAssetSchema`（又是 AQN），这是同一 schema 信息在启动路径的**第三轮**全量指纹
-  （生成期 → CreateGenerated → ComputeRevision）。
+- `Avalonia.Markup.Xaml/Styling/ResourceInclude.cs`：AddOwner、HasResources、OwnerChanged 订阅等都会访问 Loaded。
+- `Avalonia.Base/Controls/ResourceDictionary.cs`：OnAddOwner 遍历子 provider，调用 AddOwner 与 HasResources；
+  TryGetResource 对 MergedDictionaries 逆序查找。
+- `Avalonia.Base/Styling/Styles.cs`：Styles 获得 owner 时继续向资源字典和子项传递 owner。
 
-### 算法问题
+原代理设计让 AddOwner/HasResources 调用 EnsureMaterialized，因此至迟在资源树获得 owner 时会物化，
+无法避免启动阶段工作。即使推迟 owner 传播，首次反向资源查找也可能物化多个未命中字典；
+没有可靠的键覆盖信息，就不能声称“查找 Window 只物化一个包装”。
 
-同一份信息三轮指纹化、两次排序、LINQ 分配遍布去重路径，总贡献 ~87ms 中除 descriptor 汇集外的主体。
+ResourceInclude 字典加载、字典内 deferred 主题实例化和 ControlTemplate 实例化是不同层级。
+原文把它们概括为“真实主题启动期根本不会加载”过于绝对，后续测量须分别记录。
 
-### 修复方案
+### 保留边界及后续研究
 
-```
-(1) 免排序直入：生成器保证 slot/Catalog/Id 有序（现状即如此）；registry 构造器增加
-    internal 预排序入口，OrderBy 替换为已有的 ValidateDenseSlots O(n) 有序断言。
-(2) Revision 编译期化：生成器为每包 emit 包级 schema revision 常量（构建时算好）；
-    运行时 ComputeRevision 退化为组合各包常量的轻量哈希。
-    Registry.Revision 仅用于进程内缓存失效判定，值只需进程内一致，跨进程稳定性不是契约。
-(3) HasSameMetadata 去 LINQ 化：手写循环逐字段比较，零分配。
-```
+普通 classless 资源根改写可能改变 IRootObjectProvider、词法资源、BaseUri、owner 和构造时机；
+Windows 原型已发现这类兼容性差异，因此保留 262 个包装。
+[RegistrationModelBuilder](../../../src/AtomUI.Generator/Registration/RegistrationModelBuilder.cs)还对构造器、可见性、
+required members、TargetType 及诊断条件做守卫，不能为扩展优化覆盖率直接去掉回退。
 
-### 验收要点
+ReloadThemesAsync 更新主题定义 Catalog 与快照，不是重新注册控件包；原方案所写“reload 替换全部代理”
+不是现有流程。后续如探索更广泛延迟，需要另行证明资源优先级、owner/variant 通知、首次失败时机、作用域和裁剪语义。
+不得把修改 owner 行为或把成本转到首次交互视为已经成立的等价优化。
 
-1. 相同注册集合下 Registry 的查询行为（identity/type/slot/资源键）不变。
-2. 主题切换缓存失效仍正确：Revision 变化触发重编译的路径保持（现有 ThemeStartup/ThemeFollowSystem 测试）。
-3. 跨包重复注册、冲突 owner 失败行为不变。
+## 问题 2：包注册期资产指纹与规范化
 
-预期收益：~50-65ms。
+### 当前实现
 
----
+[ControlThemeAssetDescriptor.CreateGenerated](../../../src/AtomUI.Core/Theme/Schema/ControlThemeAssetDescriptor.cs)
+仍逐资产验证生成契约，并用生成时全局 Token 名生成资源 schema 指纹；
+[ThemeSchemaRegistry](../../../src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs)相关路径保留当前 registry 的独立验证。
 
-## 问题 5：LoadThemeCatalog 对内置来源执行 XSD 校验与过量缓冲分配
+本轮保留 FNV 零后缀乘法折叠，维持原八字节编码、整数扩展和零哨兵语义；
+资产 owner 规范化减少空输入的重复遍历，非空输入保留跨 binding 冲突检查。
+局部空 descriptor 测量为 2016→1392 B，不能据此推出 UseDesktopControls 可减少 100–150 ms。
 
-### 源码定位
+### 原共享前缀与抽查方案的修正
 
-- 读取路径：`CompiledThemeCatalog.LoadSource`（src/AtomUI.Core/Theme/Definitions/CompiledThemeCatalog.cs:330-444）：
-  `ReadBounded`（:446-465，固定 81,920 字节缓冲，实际内置主题 XML 仅 385 字节）→ SHA256 → XmlReader。
-- XSD 校验：`ThemeDocumentReader.CreateReaderSettings`（src/AtomUI.Core/Theme/Definitions/ThemeDocumentReader.cs:101-133）
-  `ValidationType.Schema` + 首次触发 `Lazy<XmlSchemaSet>` 编译；对全部来源（含内置 avares）生效。
+把全局名字段移到 FNV 输入前面会改变指纹，不能同时要求“与原算法逐位相等”。
+如果未来要改变协议，需要明确兼容性与版本策略，不能用生成器和运行时同仓提交代替混合版本消费者的评估。
 
-### 算法问题
+生成契约指纹使用编译可表达的类型元数据，资源指纹包含运行时完整类型身份，registry 校验又使用实际已注册 schema。
+这些校验承担不同的证明责任，不能因为都包含全局名就认为可以相互替代。
+首个资产通过也不能证明其他资产常量或 owner/export 证据正确，因此本轮没有把逐资产校验降级为抽查。
 
-内置 avares 来源是构建期产物，且其契约已被问题 2 的生成期指纹覆盖；对它执行运行时 XSD 校验
-（含首次 schema 编译成本）与 80KB 固定缓冲读取属于重复防护。
+该处仍有重复计算可以继续量化，但不能先承诺“318×255 降为 255+318”或固定节省时间。
+任何等价减量都要保留旧协议差分、过期资产、owner 冲突和跨包验证，并对真实裁剪消费者验证。
 
-### 修复方案
+## 问题 3：控件全局 DesignToken 复制
 
-```
-(1) 来源分级：CoreThemeDefinitionResolver/AvaloniaAssetThemeDefinitionResolver 的内置来源
-    跳过 XSD 校验（仍保留 XML 良构性解析与读取上限）；UserDirectoryThemeDefinitionResolver
-    保留全量 XSD 校验——用户输入才是运行时校验的目标对象。
-(2) ReadBounded 缓冲区按流长度就近分配（CanSeek 时直接按 Length 分配一次性读），
-    保留 maxBytes 上限与异常语义。
-```
+### 当前实现和局部证据
 
-### 验收要点
+[ThemeCompiler.CopyBuilder](../../../src/AtomUI.Core/Theme/Compilation/ThemeCompiler.cs)只在 descriptor 对象身份
+与规范生成式全局 schema 一致时使用 GeneratedThemeSchema.CopyGlobalValues；
+[GeneratedThemeSchemaWriter](../../../src/AtomUI.Generator/ThemeSchema/GeneratedThemeSchemaWriter.cs)生成强类型复制代码。
+自定义 accessor/schema 仍走原有读取、格式化/解析与写入路径。
 
-1. 内置主题加载结果与诊断逐字节一致（临时差分测试）。
-2. 用户目录非法 XML / 超 / 违反 XSD 的定义仍产生原有诊断与回退行为。
-3. reload 变更识别（内容摘要路径）不受影响。
+CompileControl 保留独立 effectiveGlobalBuilder，调色板保留复制。FontFamily 的已知不可变值和部分冻结表投影
+可复用，但不把可变 Brush 或自定义回调结果视为天然可共享。
+无 Own Token 且无配置的原有轻量路径继续存在，不把所有注册控件都算成复制次数。
 
-预期收益：~15-25ms。
+专项局部测量：每次热态复制分配 16,880→3,936 B，首次复制中位数 18.451→7.443 ms。
+这不是全部 CompileControls 的耗时；原先“约 100 ms→25–35 ms”没有独立实测支持，撤下该预测。
 
----
+### 原共享根 builder 方案的修正
 
-## 问题 6：本地化 Snapshot 逐词条线性扫描
+[AbstractControlDesignToken.EffectiveGlobalToken](../../../src/AtomUI.Core/Theme/DesignTokens/AbstractControlDesignToken.cs)
+指向可变 DesignToken；公共 descriptor 支持自定义 evaluator。
+仓库内控件只读不能证明外部扩展只读，Debug 写保护也不能保证 Release 隔离，属性写检查还需考虑可变对象的内部修改。
 
-### 源码定位
+本轮通过更便宜的复制保留隔离，没有引入共享可变根实例或完整 copy-on-write 机制。
+后续仍应检查自定义 accessor、副作用/调用顺序、Light/Dark/Compact、控件级 Global/Custom 算法和局部 scope。
+原始调色板 memoization 原型因首次计算变慢已撤回，不把热态收益视为启动收益。
 
-- `LanguageCatalogRegistry.Create` 的 `ValidateEnglishSource`
-  （src/AtomUI.Localization/Catalog/LanguageCatalogRegistry.cs:148-164）：每 unit 对全部 bundle `Any` 扫描，
-  O(units × bundles)。
-- `LanguageSnapshotBuilder.TryResolveValue`（src/AtomUI.Localization/LanguageSnapshotBuilder.cs:97-147）：
-  每词条按 3 优先级 × 候选语言 × 全部 bundle 线性查找（`TryFindBundleValue` :149-172）；
-  顶层再加 `s_sourcePriorities` 外层循环。
-- Gallery 启动为全部支持语言构建 Snapshot（四语言），单语言 ~33ms 按比例 ~130ms。
+## 问题 4：Builder、Registry 与 Manifest 重复工作
 
-### 算法问题
+### 已实施的减量
 
-查找结构未预建索引：registry 已按 `(Language, SourceKind)` 排序 bundle 列表，但查询仍是逐 bundle 线性比较。
+- 前一轮已移除控件共享键二维表的全量预创建、复用绑定 descriptor 的规范化 OwnTokens，
+  并让 Manifest 使用 registry 有序全局表；见[前一轮结果](2026-10-10-core-startup-performance-results.md)。
+- 本轮 [ThemeSchemaRegistry](../../../src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs)复用 bound identity map，
+  在一次操作内缓存重复类型名信息，并保存冻结资产顺序。
+- [ControlThemeAssetManifest](../../../src/AtomUI.Core/Theme/Schema/ControlThemeAssetManifest.cs)的受控启动入口
+  复用 registry 已验证内容；接受任意公共输入的入口仍防御性复制、验证指纹与冲突。
+- [ControlPackageRegistrationBuilder](../../../src/AtomUI.Core/Registration/ControlPackageRegistrationBuilder.cs)
+  使用静态带状态回调等减少闭包/重复边界成本，保留递归注册与失败污染语义。
 
-### 修复方案
+局部热态全局 registry 分配约 320,569→90,997 B，Resource Add 分配 96→0 B。
+它们不是 Builder 总体或冷进程的独立 A/B。候选插桩中的 Builder 三次为 54.470 / 53.571 / 54.471 ms；
+不能与旧 macOS 的约 87 ms 直接相减。
 
-```
-(1) registry 冻结时构建 (LanguageTag, TranslationSourceKind) → bundle 的字典索引
-    （同 key 多 bundle 保持有序列表，兼容同优先级非重叠互补语义）。
-(2) 每 catalog 预计算 en-US 覆盖位图（ulong 位集，每 unit 一位），
-    ValidateEnglishSource 与 requiresTranslatedCoverage 检查降为 O(units/64)。
-(3) TryResolveValue 主循环改为：候选语言 × 优先级直接索引取 bundle，判 Values[unitSlot] 非空即返回；
-    保留来源优先级先于语言具体程度、en-US 最终回退与诊断语义。
-```
+### 未采用的简化
 
-### 验收要点
+Registry 仍需要处理实际选中的控件、跨包集合与 owner/类型证据；包内有序不意味着合并输入天然满足全部规范顺序。
+本轮未把所有排序换成预排序直通，也未用包级编译常量替代运行时 ComputeRevision。
 
-1. 全部支持语言的 Snapshot 与旧实现逐词条相等（含 CompositeFormat 解析结果与覆盖异常）。
-2. 语言覆盖检查（仅靠 en-US 回退的翻译缺失异常）与冲突诊断行为不变。
-3. 复用 LanguageSnapshot/LanguageCatalogRegistry 现有测试。
+Revision 服务于实际 schema/算法的缓存身份，必须覆盖选择集合及自定义输入；
+“只需要进程内一致”本身不能证明包常量组合足够。原预计节省 50–65 ms 不再保留为收益承诺。
 
-预期收益：单语言 ~25ms、Gallery 四语言 ~100ms → 合计 ~30-40ms。
+## 问题 5：内置主题 XML 校验与外部读取
 
----
+### 当前实现和证据
 
-## 次级观察（不单列方案）
+[GenerateBuiltInThemeDocumentTask](../../../src/AtomUI.Toolchain/Tasks/GenerateBuiltInThemeDocumentTask.cs)
+在构建时复用权威 ThemeDocumentReader/XSD，生成 Core 内置主题文档及内容摘要。
+只有封闭的 Core 自有
+[BuiltInThemeDefinitionSource](../../../src/AtomUI.Core/Theme/Definitions/BuiltInThemeDefinitionSource.cs)
+使用该结果；运行时仍按实际 registry 绑定，保留来源 URI 和原始资源访问契约。
 
-- `UseAlibabaSansFont` ~20ms：`EmbeddedFontCollection` 构造即扫描 avares 字体资产清单。属一次性必要成本，
-  除非后续测量证明 6 个 ttf 的清单扫描异常，否则不动。
-- ModuleInitializers ~27ms（动画器注册、ToolTipService、MediaBreakPointThemeBootstrapper.Attach）：
-  其中 `Rebuild` 的 `TryGetResource(typeof(Window))` 沿 324 个合并字典逆序遍历查找，
-  是问题 1 代理方案的直接受益者，不需要单独修复。
-- Main→Initialize 的 ~210-325ms 与 Window→Opened 的 ~150-170ms 属运行时/装载与 Avalonia 首个 TopLevel/
-  首帧成本，非算法问题；优化对比时必须单列，避免误归因。NativeAOT 发布是另一条改善路径，不在本文范围。
+[CompiledThemeCatalog](../../../src/AtomUI.Core/Theme/Definitions/CompiledThemeCatalog.cs)对其他来源继续读流、
+计算摘要并执行 Reader。读取租用 4 KiB 缓冲，在 finally 归还，按实际读取字节限制大小，不信任 Length/CanSeek。
+reload 仍可识别同长度、同时间戳但内容变化的外部定义。
 
-## 收益汇总与实施顺序
+专项 3 进程证据中 Catalog 首次使用约 33–45→12–13 ms，仅作为局部小样本；
+512 B 外部读取的热态分配 83,590→1,584 B，不能用热池数据保证冷进程同幅度收益。
 
-| 问题 | 实测 | 修复方案 | 预期后 |
-|---|---|---|---|
-| 1 MountStaticResources | 140-195ms | 惰性代理挂载 | ~5-15ms |
-| 2 包注册指纹/排序 | ~230ms（UseDesktopControls 段） | 共享前缀指纹+预排序+抽查 | ~80-120ms |
-| 4 Builder/Registry | ~87ms | 免排序+Revision 常量+去 LINQ | ~25-35ms |
-| 3 CompileControls | ~100ms | 共享只读全局+类型化克隆 | ~25-35ms |
-| 5 LoadThemeCatalog | ~40ms | 内置源免 XSD+按长缓冲 | ~15-25ms |
-| 6 Localization 单语言 | ~33ms | bundle 索引+覆盖位图 | ~8-12ms |
-| **UseAtomUI 合计** | **~460-490ms** | | **~160-240ms** |
+### 原免 XSD 方案的修正
 
-骨架空窗口（本机 ~1.2s）预计降到 ~0.9-1.0s；Gallery 全量配置按比例从 ~1.8s 降到 ~1.0-1.2ms。
+ControlTheme 资产指纹校验的是导出主题、owner、绑定及资源 schema，不能证明主题定义 XML 满足 XSD。
+avares 只是资源位置，也不自动意味着内容已经被相同 Reader/XSD 验证。
+因此本轮是把特定自有来源的校验前移，不是关闭所有嵌入来源的校验。
 
-实施顺序（每轮单因素对照，前后用同一骨架探针复测）：
+构建期生成必须保留 XML/XSD 变更触发重建、无效输入使构建失败、旧生成产物失效及原诊断位置。
+对外部来源继续保留超限、异常、摘要、无效定义诊断和回退；不能用流的报告长度替代真实读取上限。
 
-1. **问题 1**：收益最大且独立可测；先固化探针骨架为常驻测量 harness。
-2. **问题 2 + 4**：同属"指纹与排序减量"主题，生成器与运行时原子提交；新旧指纹逐位比对。
-3. **问题 3**：需要只读契约守护与全量快照差分，风险最高，放在工具链就绪后。
-4. **问题 5 + 6**：低风险收尾。
+## 问题 6：本地化 Snapshot 候选匹配
 
-通用验收约束：每轮固定相同输入与样本策略（≥10 次冷启动），无收益或回归即回退；清理临时差分测试后
-做 focused 验证；涉及生成器/注册/裁剪边界的问题 2/3/4 完成 AOT 专项；全部实施遵守
-[启动与注册链路](../../architecture/foundations/startup-and-registration.md)声明的失败行为与契约保留边界。
+### 当前实现与小输入边界
 
-本文所有"预期收益"均为算法复杂度与实测占比推算，**未经实现验证，不声明已达成**；
-每项实施后须回填实测数字并更新本文状态。
+[LanguageSnapshotBuilder](../../../src/AtomUI.Localization/LanguageSnapshotBuilder.cs)使用 MatchedBundleResolver，
+按实际词条需要逐步扩展有序候选前缀；首个命中内联保存，立即命中时无需列表或扫描后续无关 bundle。
+[LanguageCatalogRegistry](../../../src/AtomUI.Localization/Catalog/LanguageCatalogRegistry.cs)合并部分冲突/英文覆盖扫描，
+保留原缺失词条诊断顺序。
+
+候选枚举以来源优先级为外层，再处理语言候选，en-US 保持最终回退；
+同语言同来源的非重叠 bundle 仍能互补。原方案的“候选语言×优先级”文字不应理解为可交换优先级。
+所有支持语言 Snapshot 仍在启动时验证，不把翻译缺失推迟到用户首次切换语言。
+
+局部分配证据：四语言 4817 词条场景 5,706,648→465,752 B，单词条 808→744 B；
+这些阶段的耗时对噪声敏感，没有据此证明单语言可由 33 ms 降到 8–12 ms，
+也不能把单语言耗时线性乘四作为 Gallery 多语言实测。
+
+前一轮 macOS 的全量候选链方案曾因小 Catalog 提前命中产生额外分配而撤回；
+Windows 后续保留的是按需扩展方案。原“全量字典索引＋覆盖位图”不作为当前实现描述。
+
+## 六项以外的本轮改动
+
+完整处置见[Windows 报告](2026-10-11-windows-startup-algorithm-results.md)，不能把整轮约 200 ms
+收益仅归给本文件六个热点：
+
+- Gallery 路由使用私有只读 78 路由元数据；记录的完整配置构建 7→1 次，应用独立持有配置。
+  热态 RegisterViews 分配 241,708→157,476 B；ViewLocator.Map 累积复制仍保留，没有真实 Gallery 整体启动 A/B。
+- 图片 scheduler 在首次入队时启动 worker pool，空闲 Task 数 26→0；保留构造时 ExecutionContext、
+  取消/销毁和部分启动失败清理，首次请求仍要支付 worker 启动成本。
+- 语言标签生成、Semantic Part 解析、配置 owner 合并和 Window 的一次无用反射读取也有定向减量。
+  Window 的该项没有独立计时收益；不能把结构减量换算为启动毫秒数。
+- Icon attach relay、Media 默认主题惰性 hook、部分缓存与调色板原型因兼容性或测量结果未保留，
+  不作为待直接推广的成功模式。
+
+## 下一轮的研究顺序与完成边界
+
+1. 以已经优化的 Windows 产物重新固定基线，保留纯 Avalonia 对照；
+   分清初始化、根 Render、真实呈现、首次交互，真实 Gallery 与空窗口分别采样。
+2. 优先细分候选插桩中仍较重的包注册、资源挂载、首次主题应用。
+   全部第二轮样本与嵌套关系见[分析文档](2026-10-10-startup-performance-analysis.md)，不能只挑较快两次或把父子区间相加。
+3. 先证明成本来源与等价减量，再单因素 A/B；同时测首次资源查找、主题/语言切换、导航与弹层，
+   避免把成本从启动挪到首次使用。原方案的各项固定毫秒收益预测全部撤下。
+4. 保留公共 API、应用隔离、资源查找优先级、失败/诊断时机、AOT 与裁剪契约。
+   按项目规范使用临时差分验证并清理，再做所改模块 focused 验证和必要真实发布；无收益或回归时撤回性能改动。
+
+Windows 性能改善已被该场景样本支持；原生 Gallery 视觉验收、Windows NativeAOT 链接/运行、
+3 项符号链接权限测试和原基线同样失败的 24 B 分配断言仍无补齐证据。
+原 Windows 环境的临时证据目录清理状态见结果报告，本次未重新核实。
+这些是验收范围限制，不表示本轮没有收益，也不能因提交已存在就宣布所有验收完成。

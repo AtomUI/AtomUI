@@ -494,7 +494,7 @@ public partial class TypeMapIntegrationTests
         var registration = generated.Single(tree => tree.FilePath.EndsWith("GeneratedTypeMapRegistration.g.cs", StringComparison.Ordinal));
         var invalidRegistration = System.Text.RegularExpressions.Regex.Replace(
             registration.ToString(),
-            @"(?<=CompiledGlobalTokenNames, )0x[0-9A-F]+UL",
+            @"(?<=CompiledResourceKeyFingerprintPrefix\), )0x[0-9A-F]+UL",
             "0x0UL");
         invalidRegistration.ShouldNotBe(registration.ToString());
         var trees = generated.Select(tree => tree == registration

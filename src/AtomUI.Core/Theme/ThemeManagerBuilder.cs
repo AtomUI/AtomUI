@@ -273,6 +273,21 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             }
             themeManager.StageControlThemeResources(package.ControlThemesProvider, packageResources);
         }
+        // All-fingerprinted package sets let the startup registry compose its Revision from the
+        // compile-time constants; any hand-registered package falls the whole set back to the
+        // full-walk algorithm.
+        var packageFingerprints = new List<PackageSchemaFingerprint>(_controlPackages.Count);
+        var allFingerprinted = true;
+        foreach (var package in _controlPackages)
+        {
+            if (package.SchemaFingerprint is not { } schemaFingerprint)
+            {
+                allFingerprinted = false;
+                break;
+            }
+            packageFingerprints.Add(new PackageSchemaFingerprint(package.Id, schemaFingerprint));
+        }
+        themeManager.SetPackageSchemaFingerprints(allFingerprinted ? packageFingerprints : null);
         themeManager.PrepareRegistrationSchema();
         return themeManager;
     }

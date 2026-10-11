@@ -15,6 +15,7 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<ThemeAlgorithm, ThemeAlgorithmDescriptor> _algorithmsByAlgorithm;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
+    private readonly SchemaPrefixState _resourceKeySchemaPrefix;
     private ConcurrentDictionary<(int ControlSlot, SharedTokenKind Kind), object>? _controlSharedResourceKeys;
 
     internal ThemeSchemaRegistry(
@@ -22,22 +23,79 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<ControlTokenDescriptor> controls,
         IEnumerable<ThemeAlgorithmDescriptor> algorithms,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets = null)
+        : this(globalTokens, controls, algorithms, themeAssets, null)
+    {
+    }
+
+    /// <summary>
+    /// 全部输入均携带编译期包指纹的启动路径：Revision 由常量组合而来，不再逐字段遍历。
+    /// 内容构建与公共入口完全一致，仅 Revision 计算走组合域。
+    /// </summary>
+    internal ThemeSchemaRegistry(
+        IEnumerable<TokenDescriptor> globalTokens,
+        IEnumerable<ControlTokenDescriptor> controls,
+        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
+        ulong globalSchemaFingerprint,
+        IReadOnlyList<PackageSchemaFingerprint> packageFingerprints)
+        : this(globalTokens, controls, algorithms, themeAssets, (globalSchemaFingerprint, packageFingerprints))
+    {
+    }
+
+    private ThemeSchemaRegistry(
+        IEnumerable<TokenDescriptor> globalTokens,
+        IEnumerable<ControlTokenDescriptor> controls,
+        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
+        (ulong GlobalSchemaFingerprint, IReadOnlyList<PackageSchemaFingerprint> Packages)? combinedRevisionEvidence)
     {
         ArgumentNullException.ThrowIfNull(globalTokens);
         ArgumentNullException.ThrowIfNull(controls);
         ArgumentNullException.ThrowIfNull(algorithms);
         themeAssets ??= Array.Empty<ControlThemeAssetDescriptor>();
 
-        var globalArray = globalTokens.OrderBy(static descriptor => descriptor.Slot).ToArray();
-        var controlInputs = controls.OrderBy(static descriptor => descriptor.Identity.Catalog, StringComparer.Ordinal)
-                                    .ThenBy(static descriptor => descriptor.Identity.Id, StringComparer.Ordinal)
-                                    .ToArray();
-        var algorithmArray = algorithms.OrderBy(static descriptor => descriptor.Algorithm).ToArray();
-        var assetArray = themeAssets.OrderBy(
+        // Generated registrations already arrive canonically ordered; the O(n) check lets that input
+        // skip the sort while any other input keeps the original OrderBy behavior unchanged.
+        var globalArray = ToOrderedArray(
+            globalTokens,
+            static descriptor => descriptor.Slot,
+            Comparer<int>.Default,
+            static source => source.OrderBy(static descriptor => descriptor.Slot).ToArray());
+        var controlInputs = ToOrderedArray(
+            controls,
+            static descriptor => descriptor.Identity,
+            ControlIdentityKeyComparer.Instance,
+            static source => source.OrderBy(static descriptor => descriptor.Identity.Catalog, StringComparer.Ordinal)
+                                   .ThenBy(static descriptor => descriptor.Identity.Id, StringComparer.Ordinal)
+                                   .ToArray());
+        var algorithmArray = ToOrderedArray(
+            algorithms,
+            static descriptor => (int)descriptor.Algorithm,
+            Comparer<int>.Default,
+            static source => source.OrderBy(static descriptor => descriptor.Algorithm).ToArray());
+        var assetArray = ToOrderedArray(
+            themeAssets,
             static descriptor => descriptor.AssetUri.ToString(),
-            StringComparer.Ordinal).ToArray();
+            StringComparer.Ordinal,
+            static source => source.OrderBy(
+                    static descriptor => descriptor.AssetUri.ToString(),
+                    StringComparer.Ordinal)
+                .ToArray());
 
         ValidateDenseSlots(globalArray, static descriptor => descriptor.Slot, "global Token");
+
+        // Capture the [version head + count + names] prefix once; per-asset registered
+        // fingerprints continue from it instead of re-hashing the global names per asset.
+        {
+            var prefix = new SchemaFingerprintBuilder();
+            prefix.Add(1); // Typed asset schema format, independent of the generated registration ABI.
+            prefix.Add(globalArray.Length);
+            foreach (var descriptor in globalArray)
+            {
+                prefix.Add(descriptor.Name);
+            }
+            _resourceKeySchemaPrefix = prefix.Save();
+        }
 
         var globalMap = BuildUniqueMap(
             globalArray,
@@ -82,7 +140,15 @@ internal sealed class ThemeSchemaRegistry
         Controls              = Array.AsReadOnly(controlArray);
         Algorithms            = Array.AsReadOnly(algorithmArray);
         ThemeAssets           = Array.AsReadOnly(assetArray);
-        Revision              = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
+        if (combinedRevisionEvidence is { } evidence)
+        {
+            ArgumentNullException.ThrowIfNull(evidence.Packages);
+            Revision = ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages);
+        }
+        else
+        {
+            Revision = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
+        }
         _globalTokensByName   = globalMap.ToFrozenDictionary(StringComparer.Ordinal);
         _controlsByIdentity   = controlInputMap.ToFrozenDictionary();
         _controlsByType       = BuildUniqueMap(
@@ -116,8 +182,11 @@ internal sealed class ThemeSchemaRegistry
     internal ulong ComputeRegisteredResourceKeySchemaFingerprint(ControlThemeAssetDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
-        // Registry construction already validated and ordered the global slot table.
-        return ComputeResourceKeySchemaFingerprintCore(descriptor, GlobalTokens.Count, GlobalTokens);
+        // Registry construction captured the [version head + global names] prefix from the
+        // validated, slot-ordered global table; continue from it instead of re-hashing per asset.
+        var fingerprint = SchemaFingerprintBuilder.Restore(_resourceKeySchemaPrefix);
+        AddAssetSchemaCore(ref fingerprint, descriptor);
+        return fingerprint.Value;
     }
 
     private static ulong ComputeResourceKeySchemaFingerprintCore(
@@ -125,13 +194,16 @@ internal sealed class ThemeSchemaRegistry
         int globalTokenCount,
         IEnumerable<TokenDescriptor> orderedGlobalTokens)
     {
+        // Field order must stay byte-identical to the generated variant below and to the
+        // prefix produced by HashGlobalTokenNames: [version head] → [global names] → [asset schema].
         var fingerprint = new SchemaFingerprintBuilder();
-        AddAssetSchema(ref fingerprint, descriptor);
+        fingerprint.Add(1); // Typed asset schema format, independent of the generated registration ABI.
         fingerprint.Add(globalTokenCount);
         foreach (var token in orderedGlobalTokens)
         {
             fingerprint.Add(token.Name);
         }
+        AddAssetSchemaCore(ref fingerprint, descriptor);
         return fingerprint.Value;
     }
 
@@ -140,22 +212,68 @@ internal sealed class ThemeSchemaRegistry
         ControlThemeAssetDescriptor descriptor, IReadOnlyList<string> compiledGlobalTokenNames)
     {
         var fingerprint = new SchemaFingerprintBuilder();
-        AddAssetSchema(ref fingerprint, descriptor);
+        fingerprint.Add(1); // Typed asset schema format, independent of the generated registration ABI.
         fingerprint.Add(compiledGlobalTokenNames.Count);
         foreach (var name in compiledGlobalTokenNames)
         {
             fingerprint.Add(name);
         }
+        AddAssetSchemaCore(ref fingerprint, descriptor);
 
         return fingerprint.Value;
     }
 
+    // Field order must stay byte-identical to AtomUI.Generator RegistrationFingerprint.ComputeContract:
+    // [contract version head] → [global names shared prefix] → [asset-specific fields].
     internal static ulong ComputeGeneratedContractFingerprint(
         ControlThemeAssetDescriptor descriptor, IReadOnlyList<string> compiledGlobalTokenNames)
     {
         var fingerprint = new SchemaFingerprintBuilder();
         fingerprint.Add("AtomUI.GeneratedControlThemeAssetContract");
         fingerprint.Add(1);
+        fingerprint.Add(compiledGlobalTokenNames.Count);
+        foreach (var name in compiledGlobalTokenNames)
+        {
+            fingerprint.Add(name);
+        }
+        AddGeneratedContractAssetSchema(ref fingerprint, descriptor);
+
+        return fingerprint.Value;
+    }
+
+    /// <summary>
+    /// 对编译期全局 Token 名列表计算两个生成指纹（契约 / 资源键）的公共前缀中间状态，
+    /// 供差分测试核对与生成代码的前缀续算使用。
+    /// </summary>
+    internal static (SchemaPrefixState ContractPrefix, SchemaPrefixState ResourceKeyPrefix) HashGlobalTokenNames(
+        IReadOnlyList<string> globalTokenNames)
+    {
+        ArgumentNullException.ThrowIfNull(globalTokenNames);
+
+        var contract = new SchemaFingerprintBuilder();
+        contract.Add("AtomUI.GeneratedControlThemeAssetContract");
+        contract.Add(1);
+        contract.Add(globalTokenNames.Count);
+        foreach (var name in globalTokenNames)
+        {
+            contract.Add(name);
+        }
+
+        var resourceKey = new SchemaFingerprintBuilder();
+        resourceKey.Add(1); // Typed asset schema format, independent of the generated registration ABI.
+        resourceKey.Add(globalTokenNames.Count);
+        foreach (var name in globalTokenNames)
+        {
+            resourceKey.Add(name);
+        }
+
+        return (contract.Save(), resourceKey.Save());
+    }
+
+    internal static void AddGeneratedContractAssetSchema(
+        ref SchemaFingerprintBuilder fingerprint,
+        ControlThemeAssetDescriptor descriptor)
+    {
         fingerprint.Add(descriptor.AssetId);
         fingerprint.Add(descriptor.AssetUri.ToString());
         fingerprint.Add(descriptor.ExportedThemes.Count);
@@ -187,13 +305,6 @@ internal sealed class ThemeSchemaRegistry
             fingerprint.Add(binding.PropertyName);
             fingerprint.Add(binding.TargetType.FullName!);
         }
-        fingerprint.Add(compiledGlobalTokenNames.Count);
-        foreach (var name in compiledGlobalTokenNames)
-        {
-            fingerprint.Add(name);
-        }
-
-        return fingerprint.Value;
     }
 
 
@@ -399,6 +510,62 @@ internal sealed class ThemeSchemaRegistry
         }
     }
 
+    private static TDescriptor[] ToOrderedArray<TDescriptor, TKey>(
+        IEnumerable<TDescriptor> source,
+        Func<TDescriptor, TKey> keySelector,
+        IComparer<TKey> comparer,
+        Func<TDescriptor[], TDescriptor[]> sortFallback)
+    {
+        var array = source.ToArray();
+        if (array.Length == 0)
+        {
+            return array;
+        }
+        var previous = keySelector(array[0]);
+        for (var index = 1; index < array.Length; index++)
+        {
+            var current = keySelector(array[index]);
+            if (comparer.Compare(previous, current) > 0)
+            {
+                return sortFallback(array);
+            }
+            previous = current;
+        }
+        return array;
+    }
+
+    private sealed class ControlIdentityKeyComparer : IComparer<ControlTokenIdentity>
+    {
+        internal static readonly ControlIdentityKeyComparer Instance = new();
+
+        public int Compare(ControlTokenIdentity left, ControlTokenIdentity right)
+        {
+            var result = string.CompareOrdinal(left.Catalog, right.Catalog);
+            return result != 0 ? result : string.CompareOrdinal(left.Id, right.Id);
+        }
+    }
+
+    // Combined domain: startup registries whose inputs are entirely compile-time fingerprinted
+    // compose the revision from the package constants instead of re-walking every schema field.
+    // In-process determinism and content discrimination are the only requirements; combined
+    // values never mix with full-walk values in a comparable way.
+    private static ThemeSchemaRevision ComputeCombinedRevision(
+        ulong globalSchemaFingerprint,
+        IReadOnlyList<PackageSchemaFingerprint> packageFingerprints)
+    {
+        var fingerprint = new SchemaFingerprintBuilder();
+        fingerprint.Add("AtomUI.PackageSchemaRevision");
+        fingerprint.Add(2); // Combined schema format version, independent of the full-walk format.
+        fingerprint.Add(globalSchemaFingerprint);
+        fingerprint.Add(packageFingerprints.Count);
+        foreach (var package in packageFingerprints)
+        {
+            fingerprint.Add(package.PackageId);
+            fingerprint.Add(package.Fingerprint);
+        }
+        return new ThemeSchemaRevision(fingerprint.Value);
+    }
+
     private static ThemeSchemaRevision ComputeRevision(
         IReadOnlyList<TokenDescriptor> globalTokens,
         IReadOnlyList<ControlTokenDescriptor> controls,
@@ -449,6 +616,11 @@ internal sealed class ThemeSchemaRegistry
     private static void AddAssetSchema(ref SchemaFingerprintBuilder fingerprint, ControlThemeAssetDescriptor asset)
     {
         fingerprint.Add(1); // Typed asset schema format, independent of the generated registration ABI.
+        AddAssetSchemaCore(ref fingerprint, asset);
+    }
+
+    internal static void AddAssetSchemaCore(ref SchemaFingerprintBuilder fingerprint, ControlThemeAssetDescriptor asset)
+    {
         fingerprint.Add(asset.AssetId);
         fingerprint.Add(asset.AssetUri.ToString());
         fingerprint.Add(asset.ExportedThemes.Count);
@@ -520,72 +692,6 @@ internal sealed class ThemeSchemaRegistry
             default:
                 throw new ThemeSchemaException(
                     $"Resource key type '{keyType.FullName}' must be an enum or string to participate in a deterministic schema.");
-        }
-    }
-
-    private struct SchemaFingerprintBuilder
-    {
-        private const ulong Offset = 14695981039346656037UL;
-        private const ulong Prime = 1099511628211UL;
-        private const ulong Prime2 = unchecked(Prime * Prime);
-        private const ulong Prime4 = unchecked(Prime2 * Prime2);
-        private const ulong Prime6 = unchecked(Prime4 * Prime2);
-        private const ulong Prime7 = unchecked(Prime6 * Prime);
-        private ulong _value;
-
-        internal ulong Value => _value == 0 ? Offset : _value;
-
-        internal void Add(string value)
-        {
-            Add(value.Length);
-            foreach (var character in value)
-            {
-                Add((ushort)character);
-            }
-        }
-
-        internal void Add(int value)
-        {
-            var unsigned = unchecked((uint)value);
-            unchecked
-            {
-                _value = (Value ^ (byte)unsigned) * Prime;
-                _value = (_value ^ (byte)(unsigned >> 8)) * Prime;
-                _value = (_value ^ (byte)(unsigned >> 16)) * Prime;
-                _value = (_value ^ (byte)(unsigned >> 24)) * Prime * Prime4;
-            }
-        }
-
-        internal void Add(byte value)
-        {
-            // The existing format always encodes eight bytes, including seven zero suffix bytes.
-            _value = unchecked((Value ^ value) * Prime * Prime7);
-        }
-
-        internal void Add(ushort value)
-        {
-            unchecked
-            {
-                _value = (Value ^ (byte)value) * Prime;
-                _value = (_value ^ (byte)(value >> 8)) * Prime * Prime6;
-            }
-        }
-
-        internal void Add(ulong value)
-        {
-            if (_value == 0)
-            {
-                _value = Offset;
-            }
-
-            unchecked
-            {
-                for (var shift = 0; shift < 64; shift += 8)
-                {
-                    _value ^= (byte)(value >> shift);
-                    _value *= Prime;
-                }
-            }
         }
     }
 }

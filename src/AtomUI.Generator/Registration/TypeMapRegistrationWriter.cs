@@ -90,6 +90,7 @@ internal static class TypeMapRegistrationWriter
         if (supportsTypeMap)
         {
             source.AppendLine("    private static void Collect(global::AtomUI.Registration.ControlPackageRegistrationBuilder builder)\n    {");
+            source.AppendLine("        builder.PackageSchemaFingerprint = GeneratedRegistrationFactories.PackageSchemaFingerprint;");
             source.AppendLine("        if (global::AtomUI.Registration.ControlRegistrationRuntime.IsTrimmed)\n        {");
             source.AppendLine("            global::AtomUI.Registration.ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeys);");
             source.AppendLine("        }\n        else\n        {");
@@ -157,16 +158,20 @@ internal static class TypeMapRegistrationWriter
             source.AppendLine("    }\n}");
         }
         source.AppendLine("internal static class GeneratedRegistrationFactories\n{");
+        // Compile-time schema identity of this package's registered controls and assets. Core combines
+        // the per-package constants into the startup registry revision without re-walking the schema;
+        // a hand-registered package carries no constant and falls the revision back to the full walk.
+        source.Append("    internal const ulong PackageSchemaFingerprint = 0x")
+              .Append(package.PackageSchemaFingerprint.ToString("X16")).AppendLine("UL;");
         if (package.Assets.Any(asset => asset.Exports.Count != 0))
         {
-            source.AppendLine("    // Compile-time global schema evidence: strings only, no Type or factory roots.");
-            source.AppendLine("    private static readonly string[] CompiledGlobalTokenNames = new string[]\n    {");
-            foreach (var name in package.CompiledGlobalTokenNames)
-            {
-                source.Append("        ").Append(L(name)).AppendLine(",");
-            }
-
-            source.AppendLine("    };");
+            // Compile-time global schema evidence: FNV-1a prefix states over the compiled global token
+            // names, precomputed here so runtime asset materialization continues from the prefix instead
+            // of re-hashing the names per asset. Values must match Core HashGlobalTokenNames bit-for-bit.
+            source.Append("    internal const ulong CompiledContractFingerprintPrefix = 0x")
+                  .Append(package.CompiledContractFingerprintPrefix.ToString("X16")).AppendLine("UL;");
+            source.Append("    internal const ulong CompiledResourceKeyFingerprintPrefix = 0x")
+                  .Append(package.CompiledResourceKeyFingerprintPrefix.ToString("X16")).AppendLine("UL;");
         }
         foreach (var asset in package.Assets)
         {
@@ -194,7 +199,10 @@ internal static class TypeMapRegistrationWriter
             {
                 source.Append("() => new ").Append(asset.Wrapper).AppendLine("();");
             }
-            source.Append("    internal static global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor ").Append(RegistrationNames.AssetDescriptor(asset.Id)).AppendLine("() => global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor.CreateGenerated(");
+            // The model builder emits exports/owners/bindings in the exact canonical order the runtime
+        // descriptor's public constructor would establish, so the generated factory uses the presorted
+        // entry: the runtime asserts the order in O(n) instead of re-sorting every asset.
+        source.Append("    internal static global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor ").Append(RegistrationNames.AssetDescriptor(asset.Id)).AppendLine("() => global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor.CreateGeneratedPreSorted(");
             source.Append("        ").Append(L(asset.Id)).Append(", new global::System.Uri(").Append(L(asset.Uri)).AppendLine("),");
             source.AppendLine("        new global::AtomUI.Theme.Schema.ControlThemeExportDescriptor[]\n        {");
             foreach (var export in asset.Exports)
@@ -214,7 +222,7 @@ internal static class TypeMapRegistrationWriter
                 source.Append("            new(").Append(Identity(binding.Owner)).Append(", ").Append(L(binding.Property)).Append(", typeof(").Append(binding.Target.Name).AppendLine(")),");
             }
 
-            source.Append("        }, CompiledGlobalTokenNames, 0x").Append(asset.CompiledContractFingerprint.ToString("X16")).AppendLine("UL);");
+            source.Append("        }, new global::AtomUI.Theme.Schema.SchemaPrefixState(CompiledContractFingerprintPrefix), new global::AtomUI.Theme.Schema.SchemaPrefixState(CompiledResourceKeyFingerprintPrefix), 0x").Append(asset.CompiledContractFingerprint.ToString("X16")).AppendLine("UL);");
             source.Append("    private static class CachedAsset_").Append(RegistrationNames.Hash(asset.Id)).AppendLine("\n    {");
             WriteCachedDescriptor(source, "Descriptor", "global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor",
                 RegistrationNames.AssetDescriptor(asset.Id) + "()");

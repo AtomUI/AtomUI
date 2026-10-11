@@ -42,7 +42,8 @@ internal sealed record RegistrationControl(RegistrationType Type, string? TokenF
 internal sealed record RegistrationTrigger(RegistrationType Type, string Kind);
 internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, string Namespace,
     ValueArray<RegistrationControl> Controls, ValueArray<RegistrationAsset> Assets, ValueArray<string> CompiledGlobalTokenNames,
-    RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null);
+    ulong CompiledContractFingerprintPrefix, ulong CompiledResourceKeyFingerprintPrefix,
+    RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null, ulong PackageSchemaFingerprint = 0);
 
 internal readonly struct ValueArray<T> : IEquatable<ValueArray<T>>, IEnumerable<T>
 {

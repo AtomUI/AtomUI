@@ -121,7 +121,9 @@ public class TypeMapRegistrationGeneratorTests
             "Demo.Generated",
             new ValueArray<RegistrationControl>([control]),
             new ValueArray<RegistrationAsset>([]),
-            new ValueArray<string>([]));
+            new ValueArray<string>([]),
+            RegistrationFingerprint.ComputeContractPrefix([]),
+            RegistrationFingerprint.ComputeResourceKeyPrefix([]));
         var output = new GenerationOutput();
 
         TypeMapRegistrationWriter.Write(output, package, static _ => "0000000000000000");
@@ -148,7 +150,9 @@ public class TypeMapRegistrationGeneratorTests
             "Demo.Generated",
             new ValueArray<RegistrationControl>([Control("Alpha"), Control("Beta"), Control("Gamma")]),
             new ValueArray<RegistrationAsset>([]),
-            new ValueArray<string>([]));
+            new ValueArray<string>([]),
+            RegistrationFingerprint.ComputeContractPrefix([]),
+            RegistrationFingerprint.ComputeResourceKeyPrefix([]));
         var output = new GenerationOutput();
 
         TypeMapRegistrationWriter.Write(output, package, static _ => "0000000000000000");

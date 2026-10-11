@@ -24,6 +24,9 @@ internal static class ConditionalRegistrationWriter
         const string parameter = "global::AtomUI.Registration.ControlPackageRegistrationBuilder builder";
         source.Append("    private static void Collect(").Append(parameter).AppendLine(") => CollectFull(builder);");
         source.Append("    private static void CollectFull(").Append(parameter).AppendLine(")\n    {");
+        // 本方法体受 net8 ILLink/ILC8 后端的精确 IL 模板绑定（仅允许逐片段调用）：
+        // 禁止加入指纹赋值等任何非调用语句。包级指纹只属于 TypeMap 路径；条件路径保持
+        // PackageSchemaFingerprint = null，运行时按全有或全无语义回退全量 Revision 计算。
         foreach (var control in package.Controls)
         {
             source.Append("        ").Append(RegistrationMethodName(control)).AppendLine("(builder);");

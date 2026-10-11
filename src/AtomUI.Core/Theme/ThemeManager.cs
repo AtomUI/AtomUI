@@ -1749,9 +1749,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
             GeneratedThemeSchema.GetAlgorithms(),
             _controlThemeAssetDescriptors);
         ValidateSemanticContracts(registry);
-        _startupControlThemeAssetManifest = new ControlThemeAssetManifest(
-            registry,
-            _controlThemeAssetDescriptors);
+        _startupControlThemeAssetManifest = new ControlThemeAssetManifest(registry);
         return registry;
     }
 

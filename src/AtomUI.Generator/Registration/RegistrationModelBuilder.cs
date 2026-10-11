@@ -221,13 +221,25 @@ internal sealed class RegistrationModelBuilder
             var orderedBindings = bindings.Distinct().OrderBy(b => b.Owner.Catalog, StringComparer.Ordinal).ThenBy(b => b.Owner.Id, StringComparer.Ordinal)
                 .ThenBy(b => b.Property, StringComparer.Ordinal).ThenBy(b => b.Target.AssemblyQualifiedName, StringComparer.Ordinal).ToArray();
             var id = _packageId + ":" + input.AssetPath;
+            var directClass = DirectResourceClass(input);
+            var deferredTarget = directClass is not null && input.IsDefaultTypedControlTheme &&
+                                 orderedExports.Length == 1 && orderedExports[0].KeyType == orderedExports[0].Target
+                ? orderedExports[0].Target : null;
+            var factoryType = directClass is not null && (input.IsResourceDictionary || deferredTarget is not null)
+                ? directClass
+                : "global::" + GeneratedCodeNamespace.ForAssembly(_compilation.AssemblyName) + "." +
+                  ThemeAssetInfo.GetGeneratedResourceClassName(input.AssetPath);
             var asset = new RegistrationAsset(id, new Uri("avares://" + _compilation.AssemblyName + "/" + input.AssetPath).ToString(),
-                "global::" + GeneratedCodeNamespace.ForAssembly(_compilation.AssemblyName) + "." + ThemeAssetInfo.GetGeneratedResourceClassName(input.AssetPath),
+                factoryType,
                 assets.Count, new(orderedExports), new(orderedOwners), new(orderedBindings), 0,
                 new(AssetAvailability(input, pair.Value.Root, orderedExports, orderedOwners, symbols).Guards()),
                 new(pair.Value.Root.DescendantsAndSelf().Where(e => e.Name.LocalName is "ResourceInclude" or "MergeResourceInclude").Select(e => e.Attribute("Source")?.Value ?? "").OrderBy(v => v, StringComparer.Ordinal)),
                 new(pair.Value.Root.DescendantsAndSelf().Attributes().SelectMany(a => MarkupResourceKeys(a.Value, "DynamicResource")).Distinct().OrderBy(v => v, StringComparer.Ordinal)));
-            assets.Add(asset with { CompiledContractFingerprint = RegistrationFingerprint.ComputeContract(asset, globalNames) });
+            assets.Add(asset with
+            {
+                DeferredThemeTarget = deferredTarget,
+                CompiledContractFingerprint = RegistrationFingerprint.ComputeContract(asset, globalNames)
+            });
         }
         foreach (var token in tokens.Where(t => t.HasDescriptor))
         {
@@ -342,6 +354,72 @@ internal sealed class RegistrationModelBuilder
         }
         return domain;
     }
+
+    private string? DirectResourceClass(ThemeAssetInfo input)
+    {
+        if (input.ResourceClassName is { } name)
+        {
+            var type = _compilation.Assembly.GetTypeByMetadataName(name) ??
+                _types.SingleOrDefault(candidate => candidate.ToDisplayString() == name);
+            if (type is not null && IsAccessible(type) && !type.IsAbstract && !HasConstructionDiagnosticAttribute(type))
+            {
+                // Qualifying a nested type also references its containing types in C#.
+                // The compiled include need not expose their C# call-site diagnostics.
+                for (var containing = type.ContainingType; containing is not null; containing = containing.ContainingType)
+                {
+                    if (HasConstructionDiagnosticAttribute(containing))
+                    {
+                        return null;
+                    }
+                }
+
+                var constructor = type.InstanceConstructors.FirstOrDefault(candidate =>
+                    candidate.Parameters.Length == 0 &&
+                    _compilation.IsSymbolAccessibleWithin(candidate, _compilation.Assembly));
+                // ResourceAvailability validates the type, not C# construction. Keep the
+                // compiled include fallback when a direct new expression is not legal.
+                if (constructor is not null && !HasConstructionDiagnosticAttribute(constructor))
+                {
+                    var canConstruct = true;
+                    var setsRequiredMembers = constructor.GetAttributes().Any(attribute =>
+                        attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute");
+                    for (var current = type; current is not null; current = current.BaseType)
+                    {
+                        if (HasObsoleteAttribute(current) || (!setsRequiredMembers && current.GetMembers().Any(member =>
+                                member is IPropertySymbol { IsRequired: true } or IFieldSymbol { IsRequired: true })))
+                        {
+                            canConstruct = false;
+                            break;
+                        }
+
+                        // The typed path reproduces only the generated wrapper's inherited
+                        // ControlTheme.TargetType assignment, never arbitrary XAML properties.
+                        if (input.IsDefaultTypedControlTheme && current.ToDisplayString() != "Avalonia.Styling.ControlTheme" &&
+                            current.GetMembers("TargetType").Length != 0)
+                        {
+                            canConstruct = false;
+                            break;
+                        }
+                    }
+
+                    if (canConstruct)
+                    {
+                        return type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool HasObsoleteAttribute(ISymbol symbol) => symbol.GetAttributes().Any(attribute =>
+        attribute.AttributeClass?.ToDisplayString() == "System.ObsoleteAttribute");
+
+    private static bool HasConstructionDiagnosticAttribute(ISymbol symbol) => symbol.GetAttributes().Any(attribute =>
+        attribute.AttributeClass?.ToDisplayString() is "System.ObsoleteAttribute" or
+            "System.Diagnostics.CodeAnalysis.ExperimentalAttribute" or
+            "System.Runtime.Versioning.RequiresPreviewFeaturesAttribute");
 
     private PlatformAvailability ResourceAvailability(ThemeAssetInfo input, XElement root)
     {

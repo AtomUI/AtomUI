@@ -34,7 +34,7 @@ Control 注册调用。
 `CaseNavigation` 工厂和 Browser 字体。导航分组、默认页面、路由、OverlayLayer、media breakpoint、footer 和
 ShowCase 生命周期由 `AtomUI.Toolkits.GalleryBase` 与 `AtomUIGalleryModule` 统一维护。
 
-Browser 启动通过 ReactiveUI Avalonia 集成注册同一份 ViewLocator：
+Browser 启动通过 ReactiveUI Avalonia 集成使用与 Desktop 相同的路由登记入口：
 
 ```csharp
 AppBuilder.Configure<BrowserGalleryApplication>()
@@ -44,6 +44,9 @@ AppBuilder.Configure<BrowserGalleryApplication>()
 ```
 
 Browser 不缓存、预热或手工创建 ShowCase 页面，也不维护独立页面枚举和 `switch` 工厂。
+`AtomUIGalleryModule.RegisterViews` 复用私有固定路由元数据，仅向传入 locator 登记延迟工厂；完整配置仍由
+应用的 `UseGalleryBase(AtomUIGalleryModule.Configure)` 独立构建。该复用不会保存 Browser 应用、页面实例、字体或本地化结果，
+也不会把 ReactiveUI 默认的 locator 工厂变为单例。详见 [路由登记边界](../../modules/toolkits-gallery-base/navigation-routing.md)。
 
 ## 3. 生成式 Control 包注册
 

@@ -178,7 +178,22 @@ internal static class TypeMapRegistrationWriter
 
             WriteAssetRegistration(source, asset, "        ");
             source.AppendLine("    }");
-            source.Append("    internal static global::Avalonia.Controls.IResourceProvider ").Append(RegistrationNames.AssetFactory(asset.Id)).Append("() => new ").Append(asset.Wrapper).AppendLine("();");
+            source.Append("    internal static global::Avalonia.Controls.IResourceProvider ").Append(RegistrationNames.AssetFactory(asset.Id));
+            if (asset.DeferredThemeTarget is { } target)
+            {
+                source.AppendLine("()\n    {");
+                source.AppendLine("        var resources = new global::Avalonia.Controls.ResourceDictionary();");
+                // Equivalent to the compiled keyed typed-theme entry: its constructor loads
+                // authored AXAML with its own root services, then the wrapper sets TargetType.
+                // AddDeferred retains first-lookup construction and per-dictionary caching.
+                source.Append("        resources.AddDeferred(typeof(").Append(target.Name).Append("), static _ => new ")
+                    .Append(asset.Wrapper).Append(" { TargetType = typeof(").Append(target.Name).AppendLine(") });");
+                source.AppendLine("        return resources;\n    }");
+            }
+            else
+            {
+                source.Append("() => new ").Append(asset.Wrapper).AppendLine("();");
+            }
             source.Append("    internal static global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor ").Append(RegistrationNames.AssetDescriptor(asset.Id)).AppendLine("() => global::AtomUI.Theme.Schema.ControlThemeAssetDescriptor.CreateGenerated(");
             source.Append("        ").Append(L(asset.Id)).Append(", new global::System.Uri(").Append(L(asset.Uri)).AppendLine("),");
             source.AppendLine("        new global::AtomUI.Theme.Schema.ControlThemeExportDescriptor[]\n        {");

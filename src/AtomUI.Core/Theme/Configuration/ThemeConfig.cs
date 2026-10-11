@@ -22,12 +22,18 @@ public sealed class ThemeConfig
         Algorithms = algorithms is null ? null : Array.AsReadOnly(algorithms.ToArray());
         Tokens     = new ReadOnlyDictionary<string, string>(
             new Dictionary<string, string>(tokens, StringComparer.Ordinal));
-        var canonicalControls = new Dictionary<ControlTokenIdentity, ControlThemeConfig>();
-        foreach (var entry in controls)
+        // Builder maps already hold canonical owner evidence; copy their values without rebuilding it.
+        var canonicalControls = controls as CanonicalControlTokenMap<ControlThemeConfig>;
+        if (canonicalControls is null)
         {
-            ControlTokenIdentityCanonicalizer.Set(canonicalControls, entry.Key, entry.Value);
+            canonicalControls = new CanonicalControlTokenMap<ControlThemeConfig>();
+            foreach (var entry in controls)
+            {
+                canonicalControls.Set(entry.Key, entry.Value);
+            }
         }
-        Controls = new ReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig>(canonicalControls);
+        Controls = new ReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig>(
+            canonicalControls.ToDictionary(static entry => entry.Key, static entry => entry.Value));
     }
 
     public bool Inherit { get; }

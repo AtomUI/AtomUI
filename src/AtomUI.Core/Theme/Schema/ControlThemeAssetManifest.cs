@@ -2,16 +2,35 @@ namespace AtomUI.Theme.Schema;
 
 internal sealed class ControlThemeAssetManifest
 {
+    internal ControlThemeAssetManifest(ThemeSchemaRegistry registry)
+        : this(registry, registry?.ThemeAssets ?? throw new ArgumentNullException(nameof(registry)), true)
+    {
+    }
+
     internal ControlThemeAssetManifest(
+        ThemeSchemaRegistry registry,
+        IEnumerable<ControlThemeAssetDescriptor> descriptors)
+        : this(registry, OrderDescriptors(registry, descriptors), false)
+    {
+    }
+
+    private static IReadOnlyList<ControlThemeAssetDescriptor> OrderDescriptors(
         ThemeSchemaRegistry registry,
         IEnumerable<ControlThemeAssetDescriptor> descriptors)
     {
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(descriptors);
-
-        var ordered = descriptors.OrderBy(
+        return Array.AsReadOnly(descriptors.OrderBy(
             static descriptor => descriptor.AssetUri.ToString(),
-            StringComparer.Ordinal).ToArray();
+            StringComparer.Ordinal).ToArray());
+    }
+
+    private ControlThemeAssetManifest(
+        ThemeSchemaRegistry registry,
+        IReadOnlyList<ControlThemeAssetDescriptor> ordered,
+        bool ownersValidated)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
         var uris = new HashSet<string>(StringComparer.Ordinal);
         var ids = new HashSet<string>(StringComparer.Ordinal);
         var exports = new Dictionary<object, string>();
@@ -51,25 +70,24 @@ internal sealed class ControlThemeAssetManifest
                     throw new ThemeSchemaException($"Theme export '{export.ResourceKey}' conflicts between '{exports[export.ResourceKey]}' and '{descriptor.AssetId}'.");
                 }
             }
-            var identities = new HashSet<ControlTokenIdentity>();
-            foreach (var identity in descriptor.RequiredTokenOwners)
+            // The startup path shares the registry's frozen descriptors and prior owner validation.
+            // Standalone inputs still validate their owners against this registry.
+            if (!ownersValidated)
             {
-                if (!identities.Add(identity))
+                foreach (var identity in descriptor.RequiredTokenOwners)
                 {
-                    throw new ThemeSchemaException(
-                        $"Control theme asset '{descriptor.AssetUri}' declares duplicate Control identity " +
-                        $"'{identity}'.");
-                }
-                if (!registry.TryGetControl(identity, out _))
-                {
-                    throw new ThemeSchemaException(
-                        $"Control theme asset '{descriptor.AssetUri}' references unregistered identity " +
-                        $"'{identity}'.");
+                    // Descriptor construction already canonicalizes and deduplicates owners.
+                    if (!registry.TryGetControl(identity, out _))
+                    {
+                        throw new ThemeSchemaException(
+                            $"Control theme asset '{descriptor.AssetUri}' references unregistered identity " +
+                            $"'{identity}'.");
+                    }
                 }
             }
         }
 
-        Descriptors = Array.AsReadOnly(ordered);
+        Descriptors = ordered;
     }
 
     internal IReadOnlyList<ControlThemeAssetDescriptor> Descriptors { get; }

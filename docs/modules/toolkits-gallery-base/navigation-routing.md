@@ -158,6 +158,15 @@ AppBuilder.Configure<GalleryApplication>()
             AtomUIGalleryModule.RegisterViews(locator)));
 ```
 
+> **【已更新】** AtomUI Gallery 的 `RegisterViews` 只登记路由，不构建品牌、导航、源码展示或完整应用配置。
+> 模块私有的 `Lazy` 只读列表复用固定的类型与延迟工厂；不保存应用、控件实例或本地化结果。应用仍通过
+> `UseGalleryBase(AtomUIGalleryModule.Configure)` 创建自己的配置和路由快照。登记不依赖
+> `GalleryBaseConfigurationProvider.Current`，因此提前解析或其他产品的当前配置不会改变 AtomUI 的路由集合。
+
+`ConfigureViewLocator` 注册的是 locator 工厂，默认解析时会再次执行登记回调，后续导航也可能产生新的 locator。
+当前 ReactiveUI 的 `Map` 每次复制已有映射；私有元数据复用保留每个传入 locator 的全部登记和覆盖语义，
+不改变 locator 的生命周期或宿主自定义解析优先级。Desktop 与 Browser 使用相同的产品登记入口。
+
 ## 导航 ViewModel
 
 `GalleryNavigationViewModel` 替代产品硬编码的导航 ViewModel。AtomUI Gallery 保留的 `CaseNavigationViewModel` 只是产品类型别名，实际导航逻辑由 GalleryBase 提供：

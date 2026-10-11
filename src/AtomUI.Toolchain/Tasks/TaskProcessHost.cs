@@ -51,6 +51,7 @@ internal static class TaskProcessHost
             nameof(VerifyTypeMapReceiptTask) => new VerifyTypeMapReceiptTask(),
             nameof(ResolveRegistrationToolsTask) => new ResolveRegistrationToolsTask(),
             nameof(GenerateThemeAssetWrappersTask) => new GenerateThemeAssetWrappersTask(),
+            nameof(GenerateBuiltInThemeDocumentTask) => new GenerateBuiltInThemeDocumentTask(),
             nameof(ExportLanguageTemplatesTask) => new ExportLanguageTemplatesTask(),
             nameof(PrepareLanguagePackageAssetsTask) => new PrepareLanguagePackageAssetsTask(),
             nameof(PrepareLanguagePackageTask) => new PrepareLanguagePackageTask(),

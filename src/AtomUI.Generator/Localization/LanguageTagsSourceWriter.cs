@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using AtomUI.Build.Tasks.LocalizationBuild;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -32,10 +33,17 @@ internal static class LanguageTagsSourceWriter
 
         foreach (var entry in entries.OrderBy(static entry => entry.Identifier, StringComparer.Ordinal))
         {
+            // Data-file casing validation leaves deprecated language aliases unchanged.
+            if (!Bcp47LanguageTagParser.TryParse(entry.Tag, out var canonicalTag))
+            {
+                throw new InvalidOperationException(
+                    $"Validated language data tag '{entry.Tag}' cannot be canonicalized.");
+            }
+
             source.Append("        public static global::AtomUI.Localization.LanguageTag ");
             source.Append(entry.Identifier);
-            source.Append(" { get; } = global::AtomUI.Localization.LanguageTag.Parse(");
-            source.Append(ToStringLiteral(entry.Tag));
+            source.Append(" => global::AtomUI.Localization.LanguageTag.FromCanonical(");
+            source.Append(ToStringLiteral(canonicalTag));
             source.AppendLine(");");
         }
 

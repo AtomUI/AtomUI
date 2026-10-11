@@ -89,6 +89,9 @@ namespace AtomUIGallery;
 
 public static class AtomUIGalleryModule
 {
+    // Only fixed types and deferred factories are shared; application configuration stays application-owned.
+    private static readonly Lazy<IReadOnlyList<GalleryRouteDescriptor>> ViewRegistrations = new(CreateViewRegistrations);
+
     public static GalleryBaseConfiguration CreateConfiguration()
     {
         var options = new GalleryBaseOptions();
@@ -111,7 +114,17 @@ public static class AtomUIGalleryModule
 
     public static void RegisterViews(DefaultViewLocator locator)
     {
-        CreateConfiguration().Routes.RegisterViews(locator);
+        foreach (var route in ViewRegistrations.Value)
+        {
+            route.RegisterView(locator);
+        }
+    }
+
+    private static IReadOnlyList<GalleryRouteDescriptor> CreateViewRegistrations()
+    {
+        var routes = new GalleryRouteRegistry();
+        ConfigureRoutes(routes);
+        return routes.Routes;
     }
 
     private static void ConfigureBranding(GalleryBrandingOptions branding)

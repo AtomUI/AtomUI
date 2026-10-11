@@ -6,9 +6,21 @@ internal static class CoreThemeDefinitionResolver
 
     internal static IThemeDefinitionResolver Create()
     {
-        return new AvaloniaAssetThemeDefinitionResolver(
-            ResolverId,
-            [new Uri("avares://AtomUI.Core/Assets/Themes/DaybreakBlue.theme.xml")],
-            typeof(CoreThemeDefinitionResolver).Assembly.GetName().Version?.ToString() ?? "0");
+        return new BuiltInResolver();
+    }
+
+    private sealed class BuiltInResolver : IThemeDefinitionResolver
+    {
+        private readonly IThemeDefinitionSource[] _sources = [new BuiltInThemeDefinitionSource(
+            typeof(CoreThemeDefinitionResolver).Assembly.GetName().Version?.ToString() ?? "0")];
+
+        public string Id => ResolverId;
+        public bool SupportsReload => false;
+
+        public ThemeDefinitionResolveResult Resolve(ThemeDefinitionResolveContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            return new ThemeDefinitionResolveResult(_sources, Array.Empty<ThemeDiagnostic>());
+        }
     }
 }

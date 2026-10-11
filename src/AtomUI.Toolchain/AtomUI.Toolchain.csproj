@@ -32,6 +32,12 @@
         <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />
         <Compile Include="Tasks/**/*.cs;Common/Localization/**/*.cs;Common/SourceGeneration/**/*.cs;Common/Registration/*.cs" />
         <Compile Include="../../build/AtomUI.Build.Tasks.Process.cs" Link="Tasks/Isolation/TaskProtocol.cs" />
+        <!-- Core owns the XML dialect. Compile its exact BCL-only reader in the worker,
+             without a runtime Core reference or a second parser/schema. -->
+        <Compile Include="../AtomUI.Core/Theme/Definitions/ThemeDocumentReader.cs;../AtomUI.Core/Theme/Definitions/ThemeDocumentReaderOptions.cs;../AtomUI.Core/Theme/Definitions/ThemeDocument.cs;../AtomUI.Core/Theme/Definitions/ThemeDefinitionDiagnostic.cs;../AtomUI.Core/Theme/ThemeAppearance.cs;../AtomUI.Core/Theme/Configuration/ControlAlgorithmMode.cs;../AtomUI.Core/Theme/Algorithms/ThemeAlgorithm.cs;../AtomUI.Core/Utils/ThemeAlgorithmTypeConverter.cs"
+                 Link="CoreThemeReader/%(Filename)%(Extension)" />
+        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v1.xsd"
+                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd" />
         <InternalsVisibleTo Include="AtomUI.Build.Tasks.Tests" />
     </ItemGroup>
 

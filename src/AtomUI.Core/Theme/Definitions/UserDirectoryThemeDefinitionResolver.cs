@@ -67,14 +67,21 @@ internal sealed class UserDirectoryThemeDefinitionResolver : IThemeDefinitionRes
                 $"The user theme directory could not be prepared: {exception.GetBaseException().Message}");
         }
 
-        string[] paths;
+        var paths = new List<string>();
+        long fileCount = 0;
         try
         {
-            paths = Directory
-                    .EnumerateFiles(directory, "*.theme.xml", SearchOption.TopDirectoryOnly)
-                    .Select(Path.GetFullPath)
-                    .OrderBy(static path => path, StringComparer.Ordinal)
-                    .ToArray();
+            foreach (var entry in Directory.EnumerateFiles(directory, "*.theme.xml", SearchOption.TopDirectoryOnly))
+            {
+                // Continue enumeration and normalization past the cap so later errors
+                // retain precedence, and the limit diagnostic retains the exact count.
+                var path = Path.GetFullPath(entry);
+                fileCount++;
+                if (fileCount <= _maxFiles)
+                {
+                    paths.Add(path);
+                }
+            }
         }
         catch (Exception exception)
         {
@@ -84,20 +91,21 @@ internal sealed class UserDirectoryThemeDefinitionResolver : IThemeDefinitionRes
                 $"The user theme directory could not be enumerated: {exception.GetBaseException().Message}");
         }
 
-        if (paths.Length > _maxFiles)
+        if (fileCount > _maxFiles)
         {
             return Failed(
                 "ATMTHM4104",
                 directory,
-                $"The user theme directory contains {paths.Length} theme files; the limit is {_maxFiles}.");
+                $"The user theme directory contains {fileCount} theme files; the limit is {_maxFiles}.");
         }
+        paths.Sort(StringComparer.Ordinal);
 
         var rootPrefix = directory.EndsWith(Path.DirectorySeparatorChar)
             ? directory
             : directory + Path.DirectorySeparatorChar;
-        var files = new FileInfo[paths.Length];
+        var files = new FileInfo[paths.Count];
         long totalBytes = 0;
-        for (var index = 0; index < paths.Length; index++)
+        for (var index = 0; index < paths.Count; index++)
         {
             var path = paths[index];
             try

@@ -1211,7 +1211,7 @@ public partial class Window : AvaloniaWindow,
             WindowDecorationMargin,
             IsCsdEnabled,
             IsTitleBarVisible,
-            this.GetDrawnDecorationsTitleBarHeight());
+            IsCsdEnabled && !IsTitleBarVisible ? this.GetDrawnDecorationsTitleBarHeight() : 0);
     }
 
     private void EnsureWindowsCsdMinimumHeight(double measuredTitleBarHeight = 0)

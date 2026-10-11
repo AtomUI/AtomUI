@@ -85,8 +85,7 @@ internal sealed class LanguageCatalogRegistry
                                  .ThenByDescending(static bundle => bundle.SourceKind)
                                  .ThenBy(static bundle => bundle.SourceIdentity, StringComparer.Ordinal)
                                  .ToArray();
-            ValidateConflicts(catalog, orderedBundles);
-            ValidateEnglishSource(catalog, orderedBundles);
+            ValidateTranslations(catalog, orderedBundles);
             readOnlyBundles[catalogSlot] = Array.AsReadOnly(orderedBundles);
         }
 
@@ -115,11 +114,12 @@ internal sealed class LanguageCatalogRegistry
         return _bundlesByCatalog[catalogSlot];
     }
 
-    private static void ValidateConflicts(
+    private static void ValidateTranslations(
         LanguageCatalogDescriptor catalog,
         IReadOnlyList<TranslationBundleDescriptor> bundles)
     {
         var owners = new Dictionary<(LanguageTag, TranslationSourceKind, int), TranslationBundleDescriptor>();
+        var englishCoverage = new bool[catalog.Units.Count];
         foreach (var bundle in bundles)
         {
             for (var unitSlot = 0; unitSlot < bundle.Values.Count; unitSlot++)
@@ -130,8 +130,9 @@ internal sealed class LanguageCatalogRegistry
                 }
 
                 var key = (bundle.Language, bundle.SourceKind, unitSlot);
-                if (owners.TryGetValue(key, out var existing))
+                if (!owners.TryAdd(key, bundle))
                 {
+                    var existing = owners[key];
                     var unit = catalog.Units[unitSlot];
                     throw new LanguageCatalogException(
                         $"Catalog '{catalog.CatalogId}' unit '{unit.Key}' has conflicting " +
@@ -140,20 +141,16 @@ internal sealed class LanguageCatalogRegistry
                         "explicit application override.");
                 }
 
-                owners.Add(key, bundle);
+                if (bundle.Language == LanguageTags.EnUS)
+                {
+                    englishCoverage[unitSlot] = true;
+                }
             }
         }
-    }
-
-    private static void ValidateEnglishSource(
-        LanguageCatalogDescriptor catalog,
-        IReadOnlyList<TranslationBundleDescriptor> bundles)
-    {
+        // Report conflicts before missing source text, preserving deterministic validation order.
         for (var unitSlot = 0; unitSlot < catalog.Units.Count; unitSlot++)
         {
-            var hasEnglishValue = bundles.Any(bundle =>
-                bundle.Language == LanguageTags.EnUS && bundle.Values[unitSlot] is not null);
-            if (!hasEnglishValue)
+            if (!englishCoverage[unitSlot])
             {
                 var unit = catalog.Units[unitSlot];
                 throw new LanguageCatalogException(

@@ -27,18 +27,49 @@ internal static class ControlTokenIdentityCanonicalizer
                                .ThenBy(static identity => identity.Id, StringComparer.Ordinal).ToArray();
     }
 
-    internal static void Set<T>(Dictionary<ControlTokenIdentity, T> entries, ControlTokenIdentity identity, T value)
-    {
-        if (entries.ContainsKey(identity))
-        {
-            // Dictionary value replacement preserves its original key. Upgrade the key before replacing the value.
-            var previous = entries.Keys.First(key => key == identity);
-            identity = Merge(previous, identity);
-            entries.Remove(previous);
-        }
-        entries.Add(identity, value);
-    }
-
     internal static bool Matches(ControlTokenIdentity identity, Type controlType) =>
         identity.OwnerType is null || identity.OwnerType == controlType;
+}
+
+// Canonical owner evidence lives in the value because Dictionary replacement retains its original key.
+// Enumeration exposes those canonical identities to immutable configuration snapshots.
+internal sealed class CanonicalControlTokenMap<T> : IReadOnlyDictionary<ControlTokenIdentity, T>
+{
+    private readonly Dictionary<ControlTokenIdentity, (ControlTokenIdentity Identity, T Value)> _entries = new();
+
+    internal void Set(ControlTokenIdentity identity, T value)
+    {
+        if (_entries.TryGetValue(identity, out var previous))
+        {
+            identity = ControlTokenIdentityCanonicalizer.Merge(previous.Identity, identity);
+        }
+        _entries[identity] = (identity, value);
+    }
+
+    public int Count => _entries.Count;
+    public T this[ControlTokenIdentity key] => _entries[key].Value;
+    public IEnumerable<ControlTokenIdentity> Keys => _entries.Values.Select(static entry => entry.Identity);
+    public IEnumerable<T> Values => _entries.Values.Select(static entry => entry.Value);
+    public bool ContainsKey(ControlTokenIdentity key) => _entries.ContainsKey(key);
+
+    public bool TryGetValue(ControlTokenIdentity key, out T value)
+    {
+        if (_entries.TryGetValue(key, out var entry))
+        {
+            value = entry.Value;
+            return true;
+        }
+        value = default!;
+        return false;
+    }
+
+    public IEnumerator<KeyValuePair<ControlTokenIdentity, T>> GetEnumerator()
+    {
+        foreach (var entry in _entries.Values)
+        {
+            yield return new KeyValuePair<ControlTokenIdentity, T>(entry.Identity, entry.Value);
+        }
+    }
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 }

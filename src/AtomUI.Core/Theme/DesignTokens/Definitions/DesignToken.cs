@@ -1,4 +1,4 @@
-﻿using AtomUI.Media;
+using AtomUI.Media;
 using AtomUI.Theme.Algorithms;
 using Avalonia;
 using Avalonia.Media;
@@ -14,6 +14,8 @@ public partial class DesignToken : AbstractDesignToken
     private static readonly Color s_defaultColorSuccess = Color.Parse("#52c41a");
     private static readonly Color s_defaultColorWarning = Color.Parse("#faad14");
     private static readonly Color s_defaultColorError = Color.Parse("#ff4d4f");
+    // FontFamily parsing creates an immutable description; font resolution remains with FontManager.
+    private static readonly FontFamily DefaultFontFamily = FontFamily.Parse("fonts:AlibabaSans#Alibaba Sans, Segoe UI, Segoe UI Symbol, Helvetica Neue, Noto Sans, Noto Sans CJK SC, 文泉驿正黑, Microsoft YaHei, PingFang SC, $Default");
 
     /// <summary>
     /// 现在这里的实现是写死的主色，后面是不是可以读取配置
@@ -21,9 +23,16 @@ public partial class DesignToken : AbstractDesignToken
 
     [NotTokenDefinition] public IDictionary<PresetPrimaryColor, ColorMap> ColorPalettes { get; set; }
 
-    public DesignToken()
+    public DesignToken() : this(initializeSeed: true)
     {
-        InitSeedTokenValues();
+    }
+
+    internal DesignToken(bool initializeSeed)
+    {
+        if (initializeSeed)
+        {
+            InitSeedTokenValues();
+        }
         ColorPalettes = new Dictionary<PresetPrimaryColor, ColorMap>(PresetColorCount);
     }
 
@@ -34,7 +43,7 @@ public partial class DesignToken : AbstractDesignToken
         ColorWarning     = s_defaultColorWarning;
         ColorError       = s_defaultColorError;
         ColorInfo        = s_defaultColorPrimary;
-        FontFamily       = FontFamily.Parse("fonts:AlibabaSans#Alibaba Sans, Segoe UI, Segoe UI Symbol, Helvetica Neue, Noto Sans, Noto Sans CJK SC, 文泉驿正黑, Microsoft YaHei, PingFang SC, $Default");
+        FontFamily       = DefaultFontFamily;
         BorderRadius     = new CornerRadius(6);
         ColorTransparent = Colors.Transparent;
     }

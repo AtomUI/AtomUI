@@ -8,7 +8,7 @@ public sealed class ThemeConfigBuilder
     private bool _inherit = true;
     private List<ThemeAlgorithm>? _algorithms;
     private readonly Dictionary<string, string> _tokens = new(StringComparer.Ordinal);
-    private readonly Dictionary<ControlTokenIdentity, ControlThemeConfig> _controls = new();
+    private readonly CanonicalControlTokenMap<ControlThemeConfig> _controls = new();
 
     public ThemeConfigBuilder WithInherit(bool inherit)
     {
@@ -34,7 +34,7 @@ public sealed class ThemeConfigBuilder
     public ThemeConfigBuilder WithControl(ControlTokenIdentity identity, ControlThemeConfig config)
     {
         ArgumentNullException.ThrowIfNull(config);
-        ControlTokenIdentityCanonicalizer.Set(_controls, identity, config);
+        _controls.Set(identity, config);
         return this;
     }
 

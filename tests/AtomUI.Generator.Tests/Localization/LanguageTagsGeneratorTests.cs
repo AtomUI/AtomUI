@@ -42,11 +42,11 @@ public class LanguageTagsGeneratorTests
         var languageTags = GetGeneratedSource(execution.Result, "LanguageTags.g.cs");
         languageTags.ShouldContain("public static class LanguageTags");
         languageTags.ShouldContain(
-            "public static global::AtomUI.Localization.LanguageTag EnUS { get; } = " +
-            "global::AtomUI.Localization.LanguageTag.Parse(\"en-US\");");
+            "public static global::AtomUI.Localization.LanguageTag EnUS => " +
+            "global::AtomUI.Localization.LanguageTag.FromCanonical(\"en-US\");");
         languageTags.ShouldContain(
-            "public static global::AtomUI.Localization.LanguageTag ArSA { get; } = " +
-            "global::AtomUI.Localization.LanguageTag.Parse(\"ar-SA\");");
+            "public static global::AtomUI.Localization.LanguageTag ArSA => " +
+            "global::AtomUI.Localization.LanguageTag.FromCanonical(\"ar-SA\");");
 
         var definitions = GetGeneratedSource(
             execution.Result,
@@ -217,6 +217,7 @@ public class LanguageTagsGeneratorTests
                 {
                     public string Value => string.Empty;
                     public static LanguageTag Parse(string value) => default;
+                    internal static LanguageTag FromCanonical(string value) => default;
                 }
 
                 public enum LanguageTextDirection : byte

@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Security.Cryptography;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Schema;
@@ -354,47 +355,56 @@ internal sealed class CompiledThemeCatalog
         ThemeDocument document;
         string contentDigest;
         var diagnostics = new List<ThemeDiagnostic>();
-        byte[] bytes;
-        try
+        if (source is BuiltInThemeDefinitionSource builtIn)
         {
-            using var stream = source.OpenRead() ??
-                               throw new InvalidOperationException(
-                                   $"Theme definition source '{identity}' returned a null stream.");
-            bytes = ReadBounded(stream, ThemeDocumentReaderOptions.DefaultMaxDocumentBytes);
-        }
-        catch (Exception exception)
-        {
-            return ThemeSourceLoadResult.Failed(
-                [Error(
-                    "ATMTHM4003",
-                    identity,
-                    "$",
-                    $"Theme definition source '{identity}' could not be read: " +
-                    exception.GetBaseException().Message)],
-                exception);
-        }
-
-        contentDigest = Convert.ToHexString(SHA256.HashData(bytes));
-        var sourceKey = new ThemeSourceCacheKey(identity, contentDigest);
-        if (loadCache?.TryGetRead(sourceKey, out var cachedRead) == true)
-        {
-            document = cachedRead!.Document;
-            diagnostics.AddRange(cachedRead.Diagnostics);
+            document = builtIn.ReadResult.Document!;
+            contentDigest = builtIn.ContentDigest;
+            diagnostics.AddRange(ConvertDiagnostics(builtIn.ReadResult.Diagnostics));
         }
         else
         {
-            using var input = new MemoryStream(bytes, writable: false);
-            var read = ThemeDocumentReader.Read(input, identity);
-            diagnostics.AddRange(ConvertDiagnostics(read.Diagnostics));
-            if (!read.Success)
+            byte[] bytes;
+            try
             {
-                return ThemeSourceLoadResult.Failed(diagnostics);
+                using var stream = source.OpenRead() ??
+                                   throw new InvalidOperationException(
+                                       $"Theme definition source '{identity}' returned a null stream.");
+                bytes = ReadBounded(stream, ThemeDocumentReaderOptions.DefaultMaxDocumentBytes);
+            }
+            catch (Exception exception)
+            {
+                return ThemeSourceLoadResult.Failed(
+                    [Error(
+                        "ATMTHM4003",
+                        identity,
+                        "$",
+                        $"Theme definition source '{identity}' could not be read: " +
+                        exception.GetBaseException().Message)],
+                    exception);
             }
 
-            document = read.Document!;
-            loadCache?.StoreRead(
-                sourceKey,
-                new ThemeSourceReadCacheEntry(document, diagnostics.ToArray()));
+            contentDigest = Convert.ToHexString(SHA256.HashData(bytes));
+            var sourceKey = new ThemeSourceCacheKey(identity, contentDigest);
+            if (loadCache?.TryGetRead(sourceKey, out var cachedRead) == true)
+            {
+                document = cachedRead!.Document;
+                diagnostics.AddRange(cachedRead.Diagnostics);
+            }
+            else
+            {
+                using var input = new MemoryStream(bytes, writable: false);
+                var read = ThemeDocumentReader.Read(input, identity);
+                diagnostics.AddRange(ConvertDiagnostics(read.Diagnostics));
+                if (!read.Success)
+                {
+                    return ThemeSourceLoadResult.Failed(diagnostics);
+                }
+
+                document = read.Document!;
+                loadCache?.StoreRead(
+                    sourceKey,
+                    new ThemeSourceReadCacheEntry(document, diagnostics.ToArray()));
+            }
         }
 
         BoundThemeDefinition definition;
@@ -445,22 +455,29 @@ internal sealed class CompiledThemeCatalog
 
     private static byte[] ReadBounded(Stream stream, long maxBytes)
     {
-        const int bufferSize = 81920;
         using var output = new MemoryStream();
-        var buffer = new byte[bufferSize];
-        while (true)
+        // Do not query Length/CanSeek: external streams need only support Read to EOF.
+        var buffer = ArrayPool<byte>.Shared.Rent(4096);
+        try
         {
-            var read = stream.Read(buffer, 0, buffer.Length);
-            if (read == 0)
+            while (true)
             {
-                return output.ToArray();
+                var read = stream.Read(buffer, 0, buffer.Length);
+                if (read == 0)
+                {
+                    return output.ToArray();
+                }
+                if (output.Length + read > maxBytes)
+                {
+                    throw new InvalidDataException(
+                        $"Theme definition exceeds the {maxBytes}-byte input limit.");
+                }
+                output.Write(buffer, 0, read);
             }
-            if (output.Length + read > maxBytes)
-            {
-                throw new InvalidDataException(
-                    $"Theme definition exceeds the {maxBytes}-byte input limit.");
-            }
-            output.Write(buffer, 0, read);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 

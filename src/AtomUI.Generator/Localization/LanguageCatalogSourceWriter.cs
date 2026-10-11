@@ -152,7 +152,8 @@ internal static class LanguageCatalogSourceWriter
                 source,
                 compiledCatalog.Catalog,
                 bundle,
-                "            ");
+                "            ",
+                assemblyName);
         }
         source.AppendLine("        }");
         source.AppendLine("    }");

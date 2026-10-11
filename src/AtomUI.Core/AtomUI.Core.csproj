@@ -51,4 +51,19 @@
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport"/>
     </ItemGroup>
 
+    <!-- Always validate when compiling Core; write-if-changed keeps compiler inputs stable.
+         This covers XML, XSD and reader/emitter changes without a stale input timestamp list. -->
+    <Target Name="GenerateAtomUIBuiltInThemeDocument" BeforeTargets="CoreCompile" DependsOnTargets="ResolveProjectReferences">
+        <PropertyGroup>
+            <_AtomUIBuiltInThemeCode>$(IntermediateOutputPath)BuiltInThemeDocument.g.cs</_AtomUIBuiltInThemeCode>
+        </PropertyGroup>
+        <AtomUI.Build.Tasks.GenerateBuiltInThemeDocumentTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            SourcePath="$(MSBuildProjectDirectory)/Assets/Themes/DaybreakBlue.theme.xml"
+            SourceIdentity="avares://atomui.core/Assets/Themes/DaybreakBlue.theme.xml"
+            GeneratedCodePath="$(_AtomUIBuiltInThemeCode)" />
+        <ItemGroup>
+            <Compile Include="$(_AtomUIBuiltInThemeCode)" />
+            <FileWrites Include="$(_AtomUIBuiltInThemeCode)" />
+        </ItemGroup>
+    </Target>
 </Project>

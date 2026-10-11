@@ -77,7 +77,8 @@ internal static class ApplicationLanguageBootstrapWriter
                     source,
                     catalog.Catalog,
                     bundle,
-                    bodyIndent);
+                    bodyIndent,
+                    assemblyName);
             }
         }
 

@@ -14,6 +14,17 @@
 - `Common` 提供共同的数据格式和校验逻辑；应用可达性仍由实际 ILLink/ILC 计算。
 - Repository 构建入口准备和分发工具；NuGet 消费应用使用包内工具，不构建编译器源码。
 
+Core 固定内置主题 XML 的 syntax document 由 Tasks worker 在 Core 编译前生成。Tasks 显式链接 Core 拥有的
+`ThemeDocumentReader` 及其 BCL 数据模型依赖，嵌入同一权威 XSD，不引用 Core 程序集，也不维护第二种 XML
+方言。任务从同一有界原始字节快照生成完整语法树、位置、diagnostics 和 SHA-256；无效输入阻止构建。Core-only
+target 每次编译重新验证、内容未变时不重写输出，输出按 configuration/framework 隔离。运行时 Binder/Compiler
+仍使用应用真实 registry；外部 XML 继续在运行时严格校验。原 XML 保留为 Core 的 AvaloniaResource。
+
+`GenerateThemeAssetWrappersTask` 保留编译型资源与 deferred wrapper 输出，作为生成器不能直接静态构造时的 fallback；
+不重写作者的 classless AXAML，不改变 AvaloniaXaml/AdditionalFiles 的 URI、Link 或源身份。Generator 可为已绑定且
+可合法构造的作者字典、精确默认 typed theme 选择直接或 `AddDeferred` 工厂；此选择属于生成器，不由任务猜测 C#
+构造函数可访问性。字典与主题的延迟语义见[控件注册契约](../../architecture/foundations/control-registration-contracts.md)。
+
 ## 源码职责
 
 以下路径均相对于 `src/AtomUI.Toolchain/`：

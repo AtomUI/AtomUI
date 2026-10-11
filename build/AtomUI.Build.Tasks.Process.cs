@@ -457,6 +457,12 @@ namespace AtomUI.Build.Tasks
         [Output] public string BackendAssembly { get; set; } = string.Empty;
         [Output] public string Net8BackendAssembly { get; set; } = string.Empty;
     }
+    public sealed class GenerateBuiltInThemeDocumentTask : IsolatedBuildTask
+    {
+        [Required] public string SourcePath { get; set; } = string.Empty;
+        [Required] public string SourceIdentity { get; set; } = string.Empty;
+        [Required] public string GeneratedCodePath { get; set; } = string.Empty;
+    }
     public sealed class GenerateThemeAssetWrappersTask : IsolatedBuildTask
     {
         [Required] public ITaskItem[] ThemeAssets { get; set; } = new ITaskItem[0];

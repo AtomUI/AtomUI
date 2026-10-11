@@ -72,7 +72,7 @@ internal presenter 可以只拥有主题资源，不要求 ControlTokenDescripto
 
 - ResourceDictionary 顶层 ControlTheme，或语义上继承 ControlTheme 的具体实例，读取其 key 与 TargetType。
 - 顶层命名主题与 `{x:Type ...}` 主题均有效，不能只保留默认 type key。
-- standalone 默认 typed theme 按默认主题契约生成 deferred wrapper。
+- standalone 默认 typed theme 按默认主题契约保留 deferred 字典；可静态构造时由生成工厂通过 `AddDeferred` 注册，其他情况使用编译型 deferred wrapper。
 - 嵌套 ControlTemplate.TargetType、局部定制主题不建立全局反向关联。
 - standalone 非默认 theme class 通过实际构造引用保留；需要独立 metadata 时使用 theme-class 对应的 asset-only fragment，
   不把它挂到无关 Control 的默认片段。
@@ -222,8 +222,14 @@ full/trimmed 等价性以相同宿主输入契约得到满足为前提；未使�
 Order 来自正常包资源契约和显式包含次序，不能来自 TypeMap 查询次序、candidate key 字母序、程序集扫描次序或所选控件数量。
 嵌套 MergedDictionaries 的声明次序保存在 factory 内。默认主题 export key 冲突必须有明确覆盖契约，否则构建诊断。
 
-同 AssetId 只挂一次；同 AssetId 对应不同 metadata/factory 必须失败。deferred wrappers 保留，防止收集阶段解析尚未挂载的
-依赖资源。包内资源排序不等于 Control 类型拓扑排序，不能重新引入运行时依赖图。
+同 AssetId 只挂一次；同 AssetId 对应不同 metadata/factory 必须失败。片段收集阶段不调用资源工厂，默认 typed theme
+仍延迟到首次资源查找才构造，并按字典缓存。可静态调用的作者资源字典直接构造；精确默认 typed theme 的静态回调只
+构造既有编译主题类并赋原 `TargetType`，不解释 AXAML 或提前物化主题。无资源类字典与不满足直接构造条件的资源继续
+使用编译型 wrapper。包内资源排序不等于 Control 类型拓扑排序，不能重新引入运行时依赖图。
+
+不为消除转发层而给作者的 classless 字典添加生成 `x:Class`：markup extension 可以观察原始字典根，替换根 CLR 类型
+可能改变资源值。原始 AXAML、URI、Link、词法作用域、owner 生命周期与合并优先级保持不变；工厂构造策略不参与既有
+资源 contract fingerprint，也不改变资产身份和排序。
 
 非裁剪与裁剪执行中，共同保留资产的相对优先级和选中控件的观察结果必须一致；不要求裁剪产物包含全部未用资源。
 跨包收集和冻结的总体时序由 [注册生命周期](aot-and-trimming.md#6-注册生命周期)拥有。

@@ -429,6 +429,11 @@ TypeMap 条件及包引导信息；Runtime 只查询映射和收集记录，官�
 - 保留源码位置并执行 XML 元素总数等 Reader 级资源限制。
 - 输出不依赖当前 Control 注册集合的 `ThemeDocument`。
 
+Core 固定内置 XML 在构建时由 Toolchain Tasks worker 链接同一 Reader 源码和权威 XSD 校验，生成不可变
+syntax document、完整 source location、Reader diagnostics 和原始字节 SHA-256。XML/XSD 或 Reader 变化会重新
+验证；无效输入使构建失败。启动读取这份生成结果，不再打开内置 XML 或初始化运行时 XSD。原始 avares 资源仍随
+Core 打包并可查询；所有外部 XML 仍在运行时经过标准 Reader。
+
 `ThemeDefinitionBinder` 负责：
 
 - 使用 `ThemeSchemaRegistry` 解析 Token，并按 Reader 已转换的 `ThemeAlgorithm` 枚举绑定算法 descriptor。
@@ -548,7 +553,7 @@ Core built-in -> application/package avares -> user directory
 
 ### 6.6 Catalog 构建
 
-Catalog 对所有 Resolver 结果执行同一管线：
+Catalog 对外部 Resolver 结果执行以下管线：
 
 ```text
 Resolver source
@@ -562,6 +567,15 @@ Resolver source
 `ThemeDefinitionRevision.SourceIdentity` 来自 source identity；`SourceRevision` 来自 Resolver 的结构化 revision；
 `ContentDigest` 必须根据本次实际读取的字节计算。文件长度或修改时间只能筛选缓存候选，不能代替内容摘要。
 Catalog 构建期间只使用本次复制的字节，避免文件枚举后修改造成 Reader 与 digest 针对不同内容。
+
+Core 内部 sealed built-in source 使用构建时生成的 syntax document 和同一原始字节摘要进入上述 Binder 阶段。
+它保留原始 avares identity 和运行时程序集版本 revision；Binder/Compiler 仍针对实际冻结 registry 执行，未知
+Token/Algorithm 等错误不能被构建期生成跳过。来源顺序、冲突、唯一默认主题与刷新规则保持统一。该内部入口
+不扩展公开 Resolver/source 合约，也不让外部来源声明自己是可信的已编译 document。
+
+外部 bounded byte copy 使用小型池化 scratch buffer，完整读取到 EOF，不依赖流的 Length/CanSeek/Position；
+实际字节数决定限额和摘要。用户目录完整枚举并规范化路径，只保留上限内的路径；超限保留精确计数和后续枚举
+错误优先级，合法目录仍按 ordinal 顺序处理。
 
 ## 7. 编译器
 
@@ -1538,8 +1552,8 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
   `ActualThemeVariant`；Control custom algorithm 的 appearance 不泄漏到作用域 variant。
 - 无 owner 的静态 Dialog、Notification 等 API 始终使用 Root ThemeContext，并产生可诊断的根主题语义，不能
   根据当前焦点猜测局部作用域。
-- Resolver 只产生 source，不产生 `ThemeConfig`、`ThemeDocument`、Token 或 snapshot；所有来源统一经过标准
-  Reader/Binder/Compiler。
+- 公开 Resolver 只产生 source，不产生 `ThemeConfig`、`ThemeDocument`、Token 或 snapshot；所有来源使用标准
+  Reader/Binder/Compiler。固定内置 XML 的 Reader 阶段在构建时完成，Binder/Compiler 仍在运行时执行。
 - 默认 Application Id 来自具体 Application 类型程序集名，显式 `WithApplicationId` 可稳定覆盖；
   `Application.Name` 不参与路径身份。
 - 用户主题目录固定为应用配置根下 `{ApplicationId}/Themes`，不递归、不跟随链接、不访问网络。

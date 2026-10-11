@@ -39,7 +39,21 @@ public sealed class ControlThemeAssetDescriptor
             throw new ArgumentException("Required Token owners must carry their actual Control type.", nameof(requiredTokenOwners));
         }
         // Validate owner evidence across bindings before any metadata deduplication.
-        ControlTokenIdentityCanonicalizer.Canonicalize(owners.Concat(bindings.Select(static binding => binding.OwnerIdentity)));
+        if (bindings.Length > 0)
+        {
+            var bindingOwners = new Dictionary<ControlTokenIdentity, ControlTokenIdentity>();
+            foreach (var owner in owners)
+            {
+                bindingOwners.Add(owner, owner);
+            }
+            foreach (var binding in bindings)
+            {
+                var owner = binding.OwnerIdentity;
+                bindingOwners[owner] = bindingOwners.TryGetValue(owner, out var existing)
+                    ? ControlTokenIdentityCanonicalizer.Merge(existing, owner)
+                    : owner;
+            }
+        }
         ExportedThemes = Array.AsReadOnly(exports.OrderBy(static export => export.TargetType.AssemblyQualifiedName, StringComparer.Ordinal)
             .ThenBy(static export => export.ResourceKey is Type ? 0 : 1)
             .ThenBy(static export => export.ResourceKey is Type type ? type.AssemblyQualifiedName : (string)export.ResourceKey, StringComparer.Ordinal).ToArray());

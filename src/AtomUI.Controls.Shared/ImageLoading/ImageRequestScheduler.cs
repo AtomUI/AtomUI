@@ -63,18 +63,20 @@ internal sealed class ImageRequestScheduler : IDisposable
         private readonly List<IWorkItem> _queue = [];
         private readonly SemaphoreSlim _signal = new(0);
         private readonly CancellationTokenSource _disposeCancellation = new();
-        private readonly Task[] _workers;
+        private readonly int _concurrency;
         private readonly Func<DateTimeOffset> _clock;
+        private Task[] _workers = [];
+        private ExecutionContext? _workerContext;
         private long _sequence;
         private int _activeCount;
         private bool _disposed;
 
         internal PriorityScheduler(int concurrency, Func<DateTimeOffset>? clock)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(concurrency);
+            _concurrency = concurrency;
             _clock = clock ?? GetUtcNow;
-            _workers = Enumerable.Range(0, concurrency)
-                .Select(_ => Task.Run(WorkerAsync))
-                .ToArray();
+            _workerContext = ExecutionContext.Capture();
         }
 
         internal int ActiveCount => Volatile.Read(ref _activeCount);
@@ -103,13 +105,79 @@ internal sealed class ImageRequestScheduler : IDisposable
                 _clock(),
                 cancellationToken,
                 releaseCanceledResult);
-            lock (_gate)
+            var workerStartFailed = false;
+            try
             {
-                ObjectDisposedException.ThrowIf(_disposed, this);
-                _queue.Add(item);
-                _signal.Release();
+                lock (_gate)
+                {
+                    ObjectDisposedException.ThrowIf(_disposed, this);
+                    if (_workers.Length == 0)
+                    {
+                        try
+                        {
+                            StartWorkersCore();
+                        }
+                        catch
+                        {
+                            // No item is published until the entire pool has started.
+                            _disposed = true;
+                            _workerContext = null;
+                            workerStartFailed = true;
+                            throw;
+                        }
+                    }
+                    _queue.Add(item);
+                    _signal.Release();
+                }
+            }
+            catch
+            {
+                if (workerStartFailed)
+                {
+                    DisposeWorkers();
+                }
+                throw;
             }
             return item.Task;
+        }
+
+        private void StartWorkersCore()
+        {
+            var workers = new Task[_concurrency];
+            // Publish valid task slots before launching: failure cleanup must not allocate
+            // another tracking array, particularly when a worker launch runs out of memory.
+            Array.Fill(workers, Task.CompletedTask);
+            _workers = workers;
+            // Workers retain the constructor snapshot independently of the field.
+            var workerContext = _workerContext;
+            Func<Task> workerEntry = () => StartWorker(workerContext);
+            using var suppressedFlow = ExecutionContext.IsFlowSuppressed()
+                ? (AsyncFlowControl?)null
+                : ExecutionContext.SuppressFlow();
+            try
+            {
+                for (var index = 0; index < workers.Length; index++)
+                {
+                    workers[index] = Task.Run(workerEntry);
+                }
+            }
+            finally
+            {
+                _workerContext = null;
+            }
+        }
+
+        private Task StartWorker(ExecutionContext? workerContext)
+        {
+            if (workerContext is null)
+            {
+                return WorkerAsync();
+            }
+            Task? worker = null;
+            // Restore on the worker thread, so AsyncLocal notifications never run
+            // synchronously on the enqueue caller while the queue gate is held.
+            ExecutionContext.Run(workerContext, _ => worker = WorkerAsync(), null);
+            return worker!;
         }
 
         public void Dispose()
@@ -122,15 +190,25 @@ internal sealed class ImageRequestScheduler : IDisposable
                     return;
                 }
                 _disposed = true;
+                _workerContext = null;
                 queued = [.. _queue];
                 _queue.Clear();
             }
+            DisposeWorkers(queued);
+        }
+
+        private void DisposeWorkers(List<IWorkItem>? queued = null)
+        {
+            // Cancel outside the queue gate: active actions can reenter from callbacks.
+            // Cancellation also wakes workers waiting on the semaphore.
             _disposeCancellation.Cancel();
-            foreach (var item in queued)
+            if (queued is not null)
             {
-                item.Cancel();
+                foreach (var item in queued)
+                {
+                    item.Cancel();
+                }
             }
-            _signal.Release(_workers.Length);
             _ = CompleteDisposalAsync();
         }
 

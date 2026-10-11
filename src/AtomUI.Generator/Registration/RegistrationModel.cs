@@ -32,7 +32,10 @@ internal sealed record RegistrationExport(RegistrationType Target, RegistrationT
 internal sealed record RegistrationBinding(RegistrationOwner Owner, string Property, RegistrationType Target);
 internal sealed record RegistrationAsset(string Id, string Uri, string Wrapper, int Order,
     ValueArray<RegistrationExport> Exports, ValueArray<RegistrationOwner> Owners,
-    ValueArray<RegistrationBinding> Bindings, ulong CompiledContractFingerprint, ValueArray<string> Guards, ValueArray<string> ExplicitIncludes, ValueArray<string> ExternalDynamicKeys);
+    ValueArray<RegistrationBinding> Bindings, ulong CompiledContractFingerprint, ValueArray<string> Guards, ValueArray<string> ExplicitIncludes, ValueArray<string> ExternalDynamicKeys)
+{
+    internal RegistrationType? DeferredThemeTarget { get; init; }
+}
 internal sealed record RegistrationControl(RegistrationType Type, string? TokenFactory, string? SemanticFactory,
     ValueArray<string> Triggers, ValueArray<string> Guards, ValueArray<string> Assets,
     ValueArray<RegistrationTrigger> ConditionalTriggers = default);

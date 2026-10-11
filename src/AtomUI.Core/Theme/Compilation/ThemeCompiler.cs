@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
+using AtomUI.Generated.AtomUICore;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using AtomUI.Theme.Algorithms;
@@ -12,6 +13,8 @@ namespace AtomUI.Theme.Compilation;
 
 internal sealed class ThemeCompiler
 {
+    private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, CanonicalGlobalSchema> GlobalSchemas = new();
+
     private const string CompilerPath = "ThemeCompiler";
     private static readonly ConditionalWeakTable<
         BoundThemeDefinition,
@@ -166,7 +169,7 @@ internal sealed class ThemeCompiler
             {
                 globalBuilder   = CompileGlobalBuilder(input);
                 globalValues    = TokenValueTable.Freeze(globalBuilder, input.Registry.GlobalTokens);
-                globalResources = BuildResourceMap(globalBuilder, input.Registry.GlobalTokens);
+                globalResources = BuildResourceMap(globalBuilder, input.Registry.GlobalTokens, globalValues);
                 palettes        = FreezePresetPalettes(globalBuilder);
             }
 
@@ -406,7 +409,7 @@ internal sealed class ThemeCompiler
         else
         {
             var effectiveGlobalValues = TokenValueTable.Freeze(effectiveGlobalBuilder, globalDescriptors);
-            var effectiveGlobalResources = BuildResourceMap(effectiveGlobalBuilder, globalDescriptors);
+            var effectiveGlobalResources = BuildResourceMap(effectiveGlobalBuilder, globalDescriptors, effectiveGlobalValues);
             globalDelta = BuildTokenDelta(globalValues, effectiveGlobalValues);
             globalResourceDelta = BuildDenseResourceDelta(globalResources, effectiveGlobalResources);
         }
@@ -645,23 +648,52 @@ internal sealed class ThemeCompiler
             "A theme compilation requires at least one algorithm.");
     }
 
+    private sealed class CanonicalGlobalSchema
+    {
+        internal CanonicalGlobalSchema(IReadOnlyList<TokenDescriptor> descriptors)
+        {
+            var canonical = GeneratedThemeSchema.GetGlobalTokens();
+            IsCanonical = descriptors.Count == canonical.Count;
+            for (var index = 0; IsCanonical && index < canonical.Count; index++)
+            {
+                IsCanonical = ReferenceEquals(descriptors[index], canonical[index]);
+            }
+        }
+
+        internal bool IsCanonical { get; }
+    }
+
+    private static bool IsCanonicalGlobalSchema(IReadOnlyList<TokenDescriptor> descriptors)
+    {
+        // Compiler inputs are registry-owned immutable lists. Metadata equality cannot certify callbacks.
+        return GlobalSchemas.GetValue(descriptors, static value => new CanonicalGlobalSchema(value)).IsCanonical;
+    }
+
     private static DesignToken CopyBuilder(
         DesignToken source,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
-        var copy = new DesignToken();
-        foreach (var descriptor in descriptors)
+        var canonical = IsCanonicalGlobalSchema(descriptors);
+        var copy = new DesignToken(initializeSeed: !canonical);
+        if (canonical)
         {
-            var value = descriptor.GetValue(source);
-            if (value is not null &&
-                !value.GetType().IsValueType &&
-                value is not string &&
-                value is not Avalonia.Media.FontFamily)
+            GeneratedThemeSchema.CopyGlobalValues(source, copy);
+        }
+        else
+        {
+            foreach (var descriptor in descriptors)
             {
-                value = descriptor.Parse(descriptor.Format(value));
-            }
+                var value = descriptor.GetValue(source);
+                if (value is not null &&
+                    !value.GetType().IsValueType &&
+                    value is not string &&
+                    value is not Avalonia.Media.FontFamily)
+                {
+                    value = descriptor.Parse(descriptor.Format(value));
+                }
 
-            descriptor.SetValue(copy, value);
+                descriptor.SetValue(copy, value);
+            }
         }
 
         foreach (var palette in source.ColorPalettes)
@@ -701,10 +733,12 @@ internal sealed class ThemeCompiler
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
-        var builder = new DesignToken();
+        var canonical = IsCanonicalGlobalSchema(descriptors);
+        var builder = new DesignToken(initializeSeed: !canonical);
         foreach (var descriptor in descriptors)
         {
-            descriptor.SetValue(builder, ThawValue(descriptor, values.GetValue(descriptor.Slot)));
+            var value = values.GetValue(descriptor.Slot);
+            descriptor.SetValue(builder, canonical && value is FontFamily ? value : ThawValue(descriptor, value));
         }
 
         foreach (var palette in palettes)
@@ -744,14 +778,22 @@ internal sealed class ThemeCompiler
 
     private static IReadOnlyDictionary<object, object?> BuildResourceMap(
         AbstractDesignToken builder,
-        IReadOnlyList<TokenDescriptor> descriptors)
+        IReadOnlyList<TokenDescriptor> descriptors,
+        TokenValueTable? frozenValues = null)
     {
+        var reuseValues = frozenValues is not null && IsCanonicalGlobalSchema(descriptors);
         var resources = new Dictionary<object, object?>(descriptors.Count);
         foreach (var descriptor in descriptors)
         {
+            var value = reuseValues ? frozenValues!.GetValue(descriptor.Slot) : null;
+            // Only exact generated getters/projectors and unchanged immutable values can share this read.
+            // Other references and all custom projectors retain their original ownership/callback boundary.
+            var projected = reuseValues && (descriptor.ValueType.IsValueType || value is FontFamily)
+                ? ThemeResourceValue.Project(value)
+                : descriptor.ProjectResourceValue(builder);
             resources.Add(
                 descriptor.ResourceKey,
-                FreezeResourceValue(descriptor.ProjectResourceValue(builder)));
+                FreezeResourceValue(projected));
         }
 
         return resources.ToFrozenDictionary();
@@ -791,7 +833,20 @@ internal sealed class ThemeCompiler
 
     private static ColorMap CopyColorMap(ColorMap source)
     {
-        return ColorMap.FromColors(GetColors(source));
+        // Preserve the base ColorMap shape even when the source is a derived record.
+        return new ColorMap
+        {
+            Color1 = source.Color1,
+            Color2 = source.Color2,
+            Color3 = source.Color3,
+            Color4 = source.Color4,
+            Color5 = source.Color5,
+            Color6 = source.Color6,
+            Color7 = source.Color7,
+            Color8 = source.Color8,
+            Color9 = source.Color9,
+            Color10 = source.Color10
+        };
     }
 
     private static Avalonia.Media.Color[] GetColors(ColorMap source)

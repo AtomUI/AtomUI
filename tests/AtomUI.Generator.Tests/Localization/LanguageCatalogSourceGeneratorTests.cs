@@ -45,7 +45,7 @@ public class LanguageCatalogSourceGeneratorTests
     {
         var execution = RunGenerator();
 
-        execution.Result.GeneratedSources.Length.ShouldBe(3);
+        execution.Result.GeneratedSources.Length.ShouldBe(4);
         execution.Result.GeneratedSources.ShouldNotContain(source =>
             source.HintName.Contains("LinkedLanguageCatalogRegistration", StringComparison.Ordinal));
         execution.DriverDiagnostics.ShouldBeEmpty();
@@ -431,7 +431,7 @@ public class LanguageCatalogSourceGeneratorTests
                     builder.AddTranslationBundle(
                         new global::AtomUI.Localization.TranslationBundleDescriptor(
                             "Test.Package:TestApp.Localization.LoginLangResourceKind",
-                            global::AtomUI.Localization.LanguageTag.Parse("en-US"),
+                            global::AtomUI.Generated.TestApp.GeneratedModuleLanguageTags.Language_en_US,
                             global::AtomUI.Localization.TranslationSourceKind.ModuleBuiltIn,
                             "Test.Package",
                             new string?[]
@@ -442,7 +442,7 @@ public class LanguageCatalogSourceGeneratorTests
                     builder.AddTranslationBundle(
                         new global::AtomUI.Localization.TranslationBundleDescriptor(
                             "Test.Package:TestApp.Localization.LoginLangResourceKind",
-                            global::AtomUI.Localization.LanguageTag.Parse("zh-CN"),
+                            global::AtomUI.Generated.TestApp.GeneratedModuleLanguageTags.Language_zh_CN,
                             global::AtomUI.Localization.TranslationSourceKind.ModuleBuiltIn,
                             "Test.Package",
                             new string?[]
@@ -453,7 +453,7 @@ public class LanguageCatalogSourceGeneratorTests
                     builder.AddTranslationBundle(
                         new global::AtomUI.Localization.TranslationBundleDescriptor(
                             "Test.Package:TestApp.Localization.LoginLangResourceKind",
-                            global::AtomUI.Localization.LanguageTag.Parse("zh-TW"),
+                            global::AtomUI.Generated.TestApp.GeneratedModuleLanguageTags.Language_zh_TW,
                             global::AtomUI.Localization.TranslationSourceKind.ModuleBuiltIn,
                             "Test.Package",
                             new string?[]

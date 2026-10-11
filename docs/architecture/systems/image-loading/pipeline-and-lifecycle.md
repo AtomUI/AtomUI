@@ -211,6 +211,12 @@ timeout 也是 waiter-local cancellation，计时从请求接纳而非取得 sch
 
 ## 调度与优先级
 
+三个并发池在构造时保留配置校验，各自在第一次入队时才启动 worker Task。启动与工作发布在同一队列锁内完成，
+未使用的池不创建 worker；部分启动失败时拒绝该工作项，并取消、等待已启动的 worker 后释放池资源。Dispose 在锁外取消，
+已启动的 worker 异步完成释放，不能阻塞正在运行的 action；未启动的池直接释放取消源和 semaphore。worker Task 数量不等于 OS 线程数量。
+worker 沿用池构造时的 ExecutionContext（包括抑制 flow 时的空上下文），在 worker 入口恢复；首次请求的环境上下文不进入池。
+快照在完成启动或池销毁时从池字段释放，执行中的 worker 自行持有所需上下文；恢复通知不在入队调用方的队列锁内触发。
+
 HTTP 下载池、本地读取池和 decode 池各自限制并发，排队项共享以下优先级。`MaxConcurrentDownloads` 只约束 HTTP，
 本地 source 不得因远程请求超时、限流或连接失败而发生队首阻塞：
 

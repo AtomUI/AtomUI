@@ -56,7 +56,7 @@ public class ApplicationLanguageBootstrapGeneratorTests
             StaticPackFile());
 
         execution.Result.Diagnostics.ShouldBeEmpty();
-        execution.Result.GeneratedSources.ShouldHaveSingleItem();
+        execution.Result.GeneratedSources.Length.ShouldBe(2);
         var source = GetBootstrapSource(execution.Result);
         source.ShouldNotContain("GeneratedLanguageModuleRegistration.Register(builder)");
         source.ShouldContain("TranslationSourceKind.StaticLanguagePack");

@@ -69,12 +69,8 @@ internal sealed class ThemeSchemaRegistry
         for (var slot = 0; slot < controlInputs.Length; slot++)
         {
             controlArray[slot] = controlInputs[slot].Bind(slot);
+            controlInputMap[controlArray[slot].Identity] = controlArray[slot];
         }
-        var controlMap = BuildUniqueMap(
-            controlArray,
-            static descriptor => descriptor.Identity,
-            EqualityComparer<ControlTokenIdentity>.Default,
-            "Control");
 
         var algorithmMap = BuildUniqueMap(
             algorithmArray,
@@ -85,9 +81,10 @@ internal sealed class ThemeSchemaRegistry
         GlobalTokens          = globalTokensView;
         Controls              = Array.AsReadOnly(controlArray);
         Algorithms            = Array.AsReadOnly(algorithmArray);
+        ThemeAssets           = Array.AsReadOnly(assetArray);
         Revision              = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
         _globalTokensByName   = globalMap.ToFrozenDictionary(StringComparer.Ordinal);
-        _controlsByIdentity   = controlMap.ToFrozenDictionary();
+        _controlsByIdentity   = controlInputMap.ToFrozenDictionary();
         _controlsByType       = BuildUniqueMap(
                                     controlArray,
                                     static descriptor => descriptor.ControlType,
@@ -103,6 +100,7 @@ internal sealed class ThemeSchemaRegistry
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
     public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
     public ThemeSchemaRevision Revision { get; }
+    internal IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
 
     internal static ulong ComputeResourceKeySchemaFingerprint(
         ControlThemeAssetDescriptor descriptor,
@@ -408,10 +406,12 @@ internal sealed class ThemeSchemaRegistry
         IReadOnlyList<ControlThemeAssetDescriptor> themeAssets)
     {
         var fingerprint = new SchemaFingerprintBuilder();
+        // Only this revision calculation owns the cache; no runtime Types are retained globally.
+        var typeNames = new Dictionary<Type, (string AssemblyName, string TypeName)>();
         fingerprint.Add(globalTokens.Count);
         foreach (var token in globalTokens)
         {
-            AddToken(ref fingerprint, token);
+            AddToken(ref fingerprint, token, typeNames);
         }
 
         fingerprint.Add(controls.Count);
@@ -424,7 +424,7 @@ internal sealed class ThemeSchemaRegistry
             fingerprint.Add(control.OwnTokens.Count);
             foreach (var token in control.OwnTokens)
             {
-                AddToken(ref fingerprint, token);
+                AddToken(ref fingerprint, token, typeNames);
             }
         }
 
@@ -476,21 +476,39 @@ internal sealed class ThemeSchemaRegistry
         }
     }
 
-    private static void AddToken(ref SchemaFingerprintBuilder fingerprint, TokenDescriptor token)
+    private static void AddToken(
+        ref SchemaFingerprintBuilder fingerprint,
+        TokenDescriptor token,
+        Dictionary<Type, (string AssemblyName, string TypeName)> typeNames)
     {
         fingerprint.Add(token.Name);
         fingerprint.Add(token.Slot);
         fingerprint.Add((byte)token.Stage);
-        fingerprint.Add(token.ValueType.Assembly.GetName().Name ?? string.Empty);
-        fingerprint.Add(token.ValueType.FullName ?? token.ValueType.Name);
-        AddResourceKey(ref fingerprint, token.ResourceKey);
+        AddTypeName(ref fingerprint, token.ValueType, typeNames);
+        AddResourceKey(ref fingerprint, token.ResourceKey, typeNames);
     }
 
-    private static void AddResourceKey(ref SchemaFingerprintBuilder fingerprint, object resourceKey)
+    private static void AddTypeName(
+        ref SchemaFingerprintBuilder fingerprint,
+        Type type,
+        Dictionary<Type, (string AssemblyName, string TypeName)> typeNames)
+    {
+        if (!typeNames.TryGetValue(type, out var names))
+        {
+            names = (type.Assembly.GetName().Name ?? string.Empty, type.FullName ?? type.Name);
+            typeNames.Add(type, names);
+        }
+        fingerprint.Add(names.AssemblyName);
+        fingerprint.Add(names.TypeName);
+    }
+
+    private static void AddResourceKey(
+        ref SchemaFingerprintBuilder fingerprint,
+        object resourceKey,
+        Dictionary<Type, (string AssemblyName, string TypeName)> typeNames)
     {
         var keyType = resourceKey.GetType();
-        fingerprint.Add(keyType.Assembly.GetName().Name ?? string.Empty);
-        fingerprint.Add(keyType.FullName ?? keyType.Name);
+        AddTypeName(ref fingerprint, keyType, typeNames);
         switch (resourceKey)
         {
             case Enum enumValue:
@@ -509,6 +527,10 @@ internal sealed class ThemeSchemaRegistry
     {
         private const ulong Offset = 14695981039346656037UL;
         private const ulong Prime = 1099511628211UL;
+        private const ulong Prime2 = unchecked(Prime * Prime);
+        private const ulong Prime4 = unchecked(Prime2 * Prime2);
+        private const ulong Prime6 = unchecked(Prime4 * Prime2);
+        private const ulong Prime7 = unchecked(Prime6 * Prime);
         private ulong _value;
 
         internal ulong Value => _value == 0 ? Offset : _value;
@@ -522,11 +544,32 @@ internal sealed class ThemeSchemaRegistry
             }
         }
 
-        internal void Add(int value) => Add(unchecked((ulong)(uint)value));
+        internal void Add(int value)
+        {
+            var unsigned = unchecked((uint)value);
+            unchecked
+            {
+                _value = (Value ^ (byte)unsigned) * Prime;
+                _value = (_value ^ (byte)(unsigned >> 8)) * Prime;
+                _value = (_value ^ (byte)(unsigned >> 16)) * Prime;
+                _value = (_value ^ (byte)(unsigned >> 24)) * Prime * Prime4;
+            }
+        }
 
-        internal void Add(byte value) => Add((ulong)value);
+        internal void Add(byte value)
+        {
+            // The existing format always encodes eight bytes, including seven zero suffix bytes.
+            _value = unchecked((Value ^ value) * Prime * Prime7);
+        }
 
-        internal void Add(ushort value) => Add((ulong)value);
+        internal void Add(ushort value)
+        {
+            unchecked
+            {
+                _value = (Value ^ (byte)value) * Prime;
+                _value = (_value ^ (byte)(value >> 8)) * Prime * Prime6;
+            }
+        }
 
         internal void Add(ulong value)
         {

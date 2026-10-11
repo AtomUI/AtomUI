@@ -40,11 +40,10 @@ internal static class LanguageSnapshotBuilder
             var catalog = registry.Catalogs[catalogSlot];
             var bundles = registry.GetBundles(catalogSlot);
             var catalogEntries = new LanguageSnapshotEntry[catalog.Units.Count];
+            var resolver = new MatchedBundleResolver(bundles, candidates);
             for (var unitSlot = 0; unitSlot < catalog.Units.Count; unitSlot++)
             {
-                if (!TryResolveValue(
-                        bundles,
-                        candidates,
+                if (!resolver.TryResolveValue(
                         unitSlot,
                         out var text,
                         out var resolvedLanguage,
@@ -94,80 +93,125 @@ internal static class LanguageSnapshotBuilder
         return new LanguageSnapshot(requestedLanguage, entries);
     }
 
-    private static bool TryResolveValue(
+    // Expand the ordered match prefix only when a unit cannot use a previously matched bundle.
+    // The first match stays inline: immediate hits need neither a list nor scans of later bundles.
+    private struct MatchedBundleResolver(
         IReadOnlyList<TranslationBundleDescriptor> bundles,
-        IReadOnlyList<LanguageTag> candidates,
-        int unitSlot,
-        out string text,
-        out LanguageTag resolvedLanguage,
-        out string sourceIdentity)
+        IReadOnlyList<LanguageTag> candidates)
     {
-        foreach (var sourceKind in s_sourcePriorities)
+        private readonly IReadOnlyList<TranslationBundleDescriptor> _bundles = bundles;
+        private readonly IReadOnlyList<LanguageTag> _candidates = candidates;
+        private TranslationBundleDescriptor? _firstMatch;
+        private List<TranslationBundleDescriptor>? _additionalMatches;
+        private int _sourceIndex;
+        private int _candidateIndex;
+        private int _bundleIndex;
+        private bool _isEnglishFallback;
+
+        internal bool TryResolveValue(
+            int unitSlot,
+            out string text,
+            out LanguageTag resolvedLanguage,
+            out string sourceIdentity)
         {
-            foreach (var candidate in candidates)
+            if (_firstMatch is { } first && first.Values[unitSlot] is { } firstValue)
             {
-                if (candidate == LanguageTags.EnUS)
+                text = firstValue;
+                resolvedLanguage = first.Language;
+                sourceIdentity = first.SourceIdentity;
+                return true;
+            }
+
+            if (_additionalMatches is { } matches)
+            {
+                for (var index = 0; index < matches.Count; index++)
                 {
-                    continue;
+                    var bundle = matches[index];
+                    if (bundle.Values[unitSlot] is { } value)
+                    {
+                        text = value;
+                        resolvedLanguage = bundle.Language;
+                        sourceIdentity = bundle.SourceIdentity;
+                        return true;
+                    }
+                }
+            }
+
+            while (TryGetNextMatch() is { } next)
+            {
+                if (_firstMatch is null)
+                {
+                    _firstMatch = next;
+                }
+                else
+                {
+                    (_additionalMatches ??= []).Add(next);
                 }
 
-                if (TryFindBundleValue(
-                        bundles,
-                        candidate,
-                        sourceKind,
-                        unitSlot,
-                        out text,
-                        out sourceIdentity))
+                if (next.Values[unitSlot] is { } value)
                 {
-                    resolvedLanguage = candidate;
+                    text = value;
+                    resolvedLanguage = next.Language;
+                    sourceIdentity = next.SourceIdentity;
                     return true;
                 }
             }
+
+            text = string.Empty;
+            resolvedLanguage = default;
+            sourceIdentity = string.Empty;
+            return false;
         }
 
-        foreach (var sourceKind in s_sourcePriorities)
+        private TranslationBundleDescriptor? TryGetNextMatch()
         {
-            if (TryFindBundleValue(
-                    bundles,
-                    LanguageTags.EnUS,
-                    sourceKind,
-                    unitSlot,
-                    out text,
-                    out sourceIdentity))
+            while (true)
             {
-                resolvedLanguage = LanguageTags.EnUS;
-                return true;
+                if (_sourceIndex == s_sourcePriorities.Length)
+                {
+                    if (_isEnglishFallback)
+                    {
+                        return null;
+                    }
+                    _isEnglishFallback = true;
+                    _sourceIndex = 0;
+                    _candidateIndex = 0;
+                }
+
+                if (!_isEnglishFallback && _candidateIndex == _candidates.Count)
+                {
+                    _sourceIndex++;
+                    _candidateIndex = 0;
+                    continue;
+                }
+
+                var language = _isEnglishFallback ? LanguageTags.EnUS : _candidates[_candidateIndex];
+                if (!_isEnglishFallback && language == LanguageTags.EnUS)
+                {
+                    _candidateIndex++;
+                    continue;
+                }
+
+                var sourceKind = s_sourcePriorities[_sourceIndex];
+                while (_bundleIndex < _bundles.Count)
+                {
+                    var bundle = _bundles[_bundleIndex++];
+                    if (bundle.Language == language && bundle.SourceKind == sourceKind)
+                    {
+                        return bundle;
+                    }
+                }
+
+                _bundleIndex = 0;
+                if (_isEnglishFallback)
+                {
+                    _sourceIndex++;
+                }
+                else
+                {
+                    _candidateIndex++;
+                }
             }
         }
-
-        text = string.Empty;
-        resolvedLanguage = default;
-        sourceIdentity = string.Empty;
-        return false;
-    }
-
-    private static bool TryFindBundleValue(
-        IReadOnlyList<TranslationBundleDescriptor> bundles,
-        LanguageTag language,
-        TranslationSourceKind sourceKind,
-        int unitSlot,
-        out string text,
-        out string sourceIdentity)
-    {
-        foreach (var bundle in bundles)
-        {
-            if (bundle.Language == language &&
-                bundle.SourceKind == sourceKind &&
-                bundle.Values[unitSlot] is { } value)
-            {
-                text = value;
-                sourceIdentity = bundle.SourceIdentity;
-                return true;
-            }
-        }
-
-        text = string.Empty;
-        sourceIdentity = string.Empty;
-        return false;
     }
 }

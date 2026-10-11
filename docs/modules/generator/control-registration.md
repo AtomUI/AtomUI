@@ -86,7 +86,15 @@ DynamicResource 按开放宿主资源记录，不扫描所有私有字典找同�
 生成器检查程序集可解析性，不声称证明外部二进制内的 URI/key 或跨二进制循环；具体内容由 Avalonia 普通编译/加载验证。
 跨程序集 include 的 NativeAOT/Browser 执行与未使用类型缺失仍需实际发布测试。
 
-`GenerateThemeAssetWrappersTask` 和 deferred wrapper 继续使用。片段收集阶段不执行资源 factory；所有包收集完成后，
+`GenerateThemeAssetWrappersTask` 继续提供编译型 fallback，原 AXAML 与 AdditionalFiles 身份不变。生成器在当前程序集
+绑定资源类并检查可访问的无参构造函数：作者 ResourceDictionary 可以直接构造；精确默认 typed theme 单项导出可以使用
+`ResourceDictionary.AddDeferred` 的静态回调，回调只构造原编译主题类并赋导出的 `TargetType`。构造不可访问、required
+成员未由构造函数满足、obsolete 或隐藏 `TargetType` 等不满足直接 C# 构造条件的情况保留 wrapper。
+资源类型、构造函数或外层类型上的 `ExperimentalAttribute`、`RequiresPreviewFeaturesAttribute` 同样保留 wrapper，
+避免新增 C# 调用点的编译器或 SDK 分析器诊断；不抑制原 AXAML 诊断。此路径不使用反射或
+运行时 URI 加载，主题构造仍在首次查找发生；不将任意 AXAML 属性转换为 C# 初始化器。
+
+片段收集阶段不执行资源 factory；所有包收集完成后，
 按真实 PackageCommitOrdinal 与包内 `(Phase, Order, AssetId)` 统一处理。显式嵌套 include 的顺序留在 factory 内。
 
 平台限制生成在片段的真实代码分支中，先判断平台，再引用 descriptor/semantic/resource factory。
@@ -113,7 +121,7 @@ Control 与资源 CLR 类型读取标准 `SupportedOSPlatformAttribute` / `Unsup
 
 表中路径相对于 `src/AtomUI.Generator/`。资源类身份提取不得把任意 `x:Class` 字典误判成默认 typed ControlTheme，
 也不得因新增资源类改变资源归属。已有强类型主题复用其类；新建资源类必须由普通 Avalonia 资源加载路径实际使用。
-普通默认主题仍通过既有 deferred wrapper 构造，收集期间不加载字典。MSBuild 接线见
+普通默认主题仍使用 deferred 资源契约，收集期间不加载字典。MSBuild 接线见
 [构建与打包](../../architecture/foundations/build-and-packaging.md#主题资产的平台输入)。
 
 ## 5. 包入口与引用引导

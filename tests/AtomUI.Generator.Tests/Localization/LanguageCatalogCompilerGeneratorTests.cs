@@ -80,7 +80,7 @@ public class LanguageCatalogCompilerGeneratorTests
                                       StringComparison.Ordinal))
                               .SourceText
                               .ToString();
-        generated.ShouldContain("LanguageTag.Parse(\"zh-CN\")");
+        generated.ShouldContain("GeneratedModuleLanguageTags.Language_zh_CN");
         generated.Split("            \"\",", StringSplitOptions.None).Length.ShouldBe(3);
     }
 

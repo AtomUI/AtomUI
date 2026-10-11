@@ -55,6 +55,7 @@ internal sealed class GeneratedThemeSchemaWriter
         WriteAlgorithms(source);
         source.AppendLine();
         source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<TokenDescriptor> GetGlobalTokens() => s_globalTokens;");
+        WriteGlobalCopy(source);
 
         source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<ThemeAlgorithmDescriptor> GetAlgorithms() => s_algorithms;");
         source.AppendLine("}");
@@ -74,6 +75,31 @@ internal sealed class GeneratedThemeSchemaWriter
                   .AppendLine("(),");
         }
         source.AppendLine("    };");
+    }
+
+    private void WriteGlobalCopy(StringBuilder source)
+    {
+        if (_globalTokens.Count == 0)
+        {
+            return;
+        }
+        source.AppendLine("    internal static void CopyGlobalValues(global::AtomUI.Theme.DesignTokens.AbstractDesignToken source, global::AtomUI.Theme.DesignTokens.AbstractDesignToken target)");
+        source.AppendLine("    {");
+        foreach (var token in _globalTokens)
+        {
+            source.Append("        ((").Append(token.DeclaringType).Append(")target).").Append(token.Name)
+                  .Append(" = CopyGlobalValue(((").Append(token.DeclaringType).Append(")source).")
+                  .Append(token.Name).AppendLine(");");
+        }
+        source.AppendLine("    }");
+        source.AppendLine("    private static T CopyGlobalValue<T>(T value)");
+        source.AppendLine("    {");
+        source.AppendLine("        if (typeof(T).IsValueType || value is null || value is string || value is global::Avalonia.Media.FontFamily || value.GetType().IsValueType)");
+        source.AppendLine("        {");
+        source.AppendLine("            return value;");
+        source.AppendLine("        }");
+        source.AppendLine("        return ThemeTokenValueParser.Parse<T>(ThemeTokenValueFormatter.Format(value));");
+        source.AppendLine("    }");
     }
 
     private void WriteDescriptorFactory(StringBuilder source)

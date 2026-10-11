@@ -18,19 +18,21 @@ public sealed class ControlPackageRegistrationBuilder
 
     internal ControlPackageRegistrationBuilder() { }
 
-    public void AddControl(ControlTokenDescriptor descriptor) => Mutate(() =>
+    public void AddControl(ControlTokenDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) =>
     {
         ArgumentNullException.ThrowIfNull(descriptor);
-        _controls.Add(descriptor);
+        builder._controls.Add(descriptor);
     });
 
-    public void AddSemanticControl(ControlSemanticDescriptor descriptor) => Mutate(() =>
+    public void AddSemanticControl(ControlSemanticDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) =>
     {
         ArgumentNullException.ThrowIfNull(descriptor);
-        _semantics.Add(descriptor);
+        builder._semantics.Add(descriptor);
     });
 
-    public void AddThemeAsset(ControlThemeAssetDescriptor descriptor) => Mutate(() =>
+    public void AddThemeAsset(ControlThemeAssetDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) => builder.AddThemeAssetCore(descriptor));
+
+    private void AddThemeAssetCore(ControlThemeAssetDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         if (_assets.TryGetValue(descriptor.AssetId, out var existing))
@@ -42,9 +44,11 @@ public sealed class ControlPackageRegistrationBuilder
             return;
         }
         _assets.Add(descriptor.AssetId, descriptor);
-    });
+    }
 
-    public void AddResource(ControlThemeResourceRegistration registration) => Mutate(() =>
+    public void AddResource(ControlThemeResourceRegistration registration) => Mutate(registration, static (builder, registration) => builder.AddResourceCore(registration));
+
+    private void AddResourceCore(ControlThemeResourceRegistration registration)
     {
         ArgumentNullException.ThrowIfNull(registration);
         if (_resources.TryGetValue(registration.AssetId, out var existing))
@@ -56,26 +60,27 @@ public sealed class ControlPackageRegistrationBuilder
             return;
         }
         _resources.Add(registration.AssetId, registration);
-    });
+    }
 
-    public void AddThemeAsset(ControlThemeAssetDescriptor descriptor, ControlThemeResourceRegistration registration) => Mutate(() =>
+    public void AddThemeAsset(ControlThemeAssetDescriptor descriptor, ControlThemeResourceRegistration registration) => Mutate((descriptor, registration), static (builder, state) =>
     {
+        var (descriptor, registration) = state;
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(registration);
         if (descriptor.AssetId != registration.AssetId)
         {
             throw new ArgumentException("Theme asset and resource registration must have the same AssetId.");
         }
-        AddThemeAsset(descriptor);
-        AddResource(registration);
+        builder.AddThemeAssetCore(descriptor);
+        builder.AddResourceCore(registration);
     });
 
-    public void AddFragment(ControlRegistrationFragmentAttribute fragment) => Mutate(() =>
+    public void AddFragment(ControlRegistrationFragmentAttribute fragment) => Mutate(fragment, static (builder, fragment) =>
     {
         ArgumentNullException.ThrowIfNull(fragment);
         ArgumentException.ThrowIfNullOrWhiteSpace(fragment.FragmentId);
         var type = fragment.GetType();
-        if (_fragments.TryGetValue(fragment.FragmentId, out var existing))
+        if (builder._fragments.TryGetValue(fragment.FragmentId, out var existing))
         {
             if (existing != type)
             {
@@ -83,8 +88,8 @@ public sealed class ControlPackageRegistrationBuilder
             }
             return;
         }
-        _fragments.Add(fragment.FragmentId, type);
-        fragment.Add(this);
+        builder._fragments.Add(fragment.FragmentId, type);
+        fragment.Add(builder);
     });
 
     internal ControlPackageRegistration Build(string id, IControlThemesProvider provider)
@@ -103,10 +108,13 @@ public sealed class ControlPackageRegistrationBuilder
 
     internal void Fail(Exception exception) => _failure ??= exception;
 
-    private void Mutate(Action action)
+    private void Mutate<TState>(TState state, Action<ControlPackageRegistrationBuilder, TState> action)
     {
         ThrowIfUnavailable();
-        try { action(); }
+        try
+        {
+            action(this, state);
+        }
         catch (Exception exception)
         {
             _failure ??= exception;

@@ -253,6 +253,13 @@ public class ThemeSchemaGeneratorTests
         """;
 
     private const string AtomUIStubs = """
+        namespace Avalonia.Media
+        {
+            public sealed class FontFamily
+            {
+            }
+        }
+
         namespace Avalonia.Controls
         {
             public class Control

@@ -150,7 +150,7 @@ public sealed class SemanticPartDescriptor
     private static void ValidatePartName(string value, string parameterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
-        if (value.Split('.').Any(static segment => !IsCamelCaseSegment(segment)))
+        if (!IsValidPartSegments(value))
         {
             throw new ArgumentException(
                 $"'{value}' is not a valid dot-separated camelCase Semantic Part name.",
@@ -161,7 +161,7 @@ public sealed class SemanticPartDescriptor
     private static void ValidatePartPath(string value, string parameterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
-        if (value.Split('.').Any(static segment => !IsCamelCaseSegment(segment)))
+        if (!IsValidPartSegments(value))
         {
             throw new ArgumentException(
                 $"'{value}' is not a valid Semantic Part path.",
@@ -169,27 +169,42 @@ public sealed class SemanticPartDescriptor
         }
     }
 
-    private static bool IsCamelCaseSegment(string value)
+    private static bool IsValidPartSegments(ReadOnlySpan<char> value)
+    {
+        var start = 0;
+        for (var index = 0; index <= value.Length; index++)
+        {
+            if (index == value.Length || value[index] == '.')
+            {
+                if (!IsCamelCaseSegment(value[start..index]))
+                {
+                    return false;
+                }
+                start = index + 1;
+            }
+        }
+        return true;
+    }
+
+    private static bool IsCamelCaseSegment(ReadOnlySpan<char> value)
     {
         if (value.Length == 0 || value[0] is < 'a' or > 'z')
         {
             return false;
         }
-
-        return value.Skip(1).All(static character =>
-            character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9');
+        for (var index = 1; index < value.Length; index++)
+        {
+            if (value[index] is not (>= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9'))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void ValidateSelectorClass(string? value, string parameterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
-        const string prefix = "semantic-";
-        if (!value!.StartsWith(prefix, StringComparison.Ordinal) || value.Length == prefix.Length)
-        {
-            throw new ArgumentException(
-                $"'{value}' is not a valid Semantic Part selector class.",
-                parameterName);
-        }
         if (string.Equals(value, "semantic-root", StringComparison.Ordinal))
         {
             throw new ArgumentException(
@@ -197,29 +212,11 @@ public sealed class SemanticPartDescriptor
                 parameterName);
         }
 
-        var previousWasHyphen = false;
-        for (var index = prefix.Length; index < value.Length; index++)
+        if (!IsValidSelectorClass(value.AsSpan()))
         {
-            var character = value[index];
-            if (character == '-')
-            {
-                if (previousWasHyphen || index == value.Length - 1)
-                {
-                    throw new ArgumentException(
-                        $"'{value}' is not a valid Semantic Part selector class.",
-                        parameterName);
-                }
-                previousWasHyphen = true;
-                continue;
-            }
-
-            if (character is not (>= 'a' and <= 'z') and not (>= '0' and <= '9'))
-            {
-                throw new ArgumentException(
-                    $"'{value}' is not a valid Semantic Part selector class.",
-                    parameterName);
-            }
-            previousWasHyphen = false;
+            throw new ArgumentException(
+                $"'{value}' is not a valid Semantic Part selector class.",
+                parameterName);
         }
     }
 
@@ -253,67 +250,90 @@ public sealed class SemanticPartDescriptor
 
     private static bool IsValidSelectorRoute(string value, string selectorClass)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            !string.Equals(value, value.Trim(), StringComparison.Ordinal))
+        if (value.Length == 0 || char.IsWhiteSpace(value[0]) || char.IsWhiteSpace(value[^1]))
         {
             return false;
         }
 
-        var tokens = value.Split(' ');
-        if (tokens.Length < 2)
-        {
-            return false;
-        }
-
+        var remaining = value.AsSpan();
         // 可选的首段自锚点：owner 节点自身携带的过滤类（方向限定等场景）。
-        var index = 0;
-        if (tokens[0].StartsWith(".", StringComparison.Ordinal))
+        if (remaining[0] == '.')
         {
-            if (!IsValidRouteClassToken(tokens[0]))
+            var separator = remaining.IndexOf(' ');
+            if (separator < 0 || !IsValidRouteClassToken(remaining[..separator]))
             {
                 return false;
             }
 
-            index = 1;
+            remaining = remaining[(separator + 1)..];
         }
 
-        if ((tokens.Length - index) < 2 || (tokens.Length - index) % 2 != 0)
+        while (remaining.Length > 0)
         {
-            return false;
-        }
-
-        for (; index < tokens.Length; index += 2)
-        {
-            if (tokens[index] is not ("/template/" or ">" or ">>"))
+            var separator = remaining.IndexOf(' ');
+            if (separator < 0)
             {
                 return false;
             }
-
-            if (!IsValidRouteClassToken(tokens[index + 1]))
+            var combinator = remaining[..separator];
+            if (!combinator.SequenceEqual("/template/") &&
+                !combinator.SequenceEqual(">") && !combinator.SequenceEqual(">>"))
             {
                 return false;
             }
+            remaining = remaining[(separator + 1)..];
+            separator = remaining.IndexOf(' ');
+            var target = separator < 0 ? remaining : remaining[..separator];
+            if (!IsValidRouteClassToken(target))
+            {
+                return false;
+            }
+            if (separator < 0)
+            {
+                return target[1..].SequenceEqual(selectorClass);
+            }
+            remaining = remaining[(separator + 1)..];
         }
-
-        return string.Equals(tokens[^1], $".{selectorClass}", StringComparison.Ordinal);
+        return false;
     }
 
-    private static bool IsValidRouteClassToken(string token)
+    private static bool IsValidRouteClassToken(ReadOnlySpan<char> token)
     {
         if (token.Length < 2 || token[0] != '.')
         {
             return false;
         }
 
-        try
-        {
-            ValidateSelectorClass(token.Substring(1), nameof(token));
-        }
-        catch (ArgumentException)
+        return IsValidSelectorClass(token[1..]);
+    }
+
+    private static bool IsValidSelectorClass(ReadOnlySpan<char> value)
+    {
+        const string prefix = "semantic-";
+        if (!value.StartsWith(prefix, StringComparison.Ordinal) || value.Length == prefix.Length ||
+            value.SequenceEqual("semantic-root"))
         {
             return false;
         }
-
+        var previousWasHyphen = false;
+        for (var index = prefix.Length; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character == '-')
+            {
+                if (previousWasHyphen || index == value.Length - 1)
+                {
+                    return false;
+                }
+                previousWasHyphen = true;
+                continue;
+            }
+            if (character is not (>= 'a' and <= 'z') and not (>= '0' and <= '9'))
+            {
+                return false;
+            }
+            previousWasHyphen = false;
+        }
         return true;
     }
 }

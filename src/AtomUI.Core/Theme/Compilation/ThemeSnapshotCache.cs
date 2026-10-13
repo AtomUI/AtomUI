@@ -25,8 +25,17 @@ internal sealed class ThemeSnapshotCache
             options.SnapshotRetainedBytesLimit,
             static result => result.Success
                 ? result.Snapshot!.EstimatedRetainedBytes
-                : long.MaxValue);
-        _controlCompilations = new ControlCompilationCache(options);
+                : long.MaxValue,
+            static key => key.EstimatedRetainedBytes);
+        // cell 可能比所属 cache 活得久；通知闭包不能反向保活整个快照缓存。
+        var owner = new WeakReference<ThemeSnapshotCache>(this);
+        _controlCompilations = new ControlCompilationCache(options, () =>
+        {
+            if (owner.TryGetTarget(out var cache))
+            {
+                cache._entries.RefreshRetainedBytes();
+            }
+        });
     }
 
     internal int Count => _entries.Count;

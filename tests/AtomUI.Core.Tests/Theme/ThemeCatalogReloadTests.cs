@@ -15,8 +15,10 @@ namespace AtomUI.Core.Tests.Theme;
 [Collection(ThemeConfigProviderTestCollection.Name)]
 public class ThemeCatalogReloadTests
 {
-    [Fact]
-    public async Task Reload_Commits_A_New_User_Theme_And_Publishes_An_Atomic_Catalog_Event()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Catalog_Changes_Publish_An_Atomic_Catalog_Event(bool staged)
     {
         await HeadlessTestApp.RunAsync(async () =>
         {
@@ -26,24 +28,38 @@ public class ThemeCatalogReloadTests
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
             ThemeCatalogChangedEventArgs? observed = null;
+            var observedAtomicState = false;
             manager.ThemeCatalogChanged += (_, args) =>
             {
                 observed = args;
-                manager.AvailableThemes.ShouldBe(args.AvailableThemes);
-                manager.CurrentTheme.ShouldBeSameAs(args.CurrentTheme);
-                manager.RootContext.Snapshot.ShouldBeSameAs(manager.CurrentSnapshot);
+                observedAtomicState = manager.AvailableThemes.SequenceEqual(args.AvailableThemes) &&
+                                      ReferenceEquals(manager.CurrentTheme, args.CurrentTheme) &&
+                                      ReferenceEquals(manager.RootContext.Snapshot, manager.CurrentSnapshot);
             };
             WriteTheme(directory.Path, "green.theme.xml", "PolarGreen", "#52C41A");
 
-            var result = await manager.ReloadThemesAsync();
-
-            result.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
-            result.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
+            ThemeCatalogReloadResult? result = null;
+            if (staged)
+            {
+                await manager.ExecuteRegistrationEvolutionAsync();
+            }
+            else
+            {
+                result = await manager.ReloadThemesAsync();
+                result.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
+                result.AvailableThemes.ShouldBe(manager.AvailableThemes);
+            }
+            manager.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
                 IThemeManager.DEFAULT_THEME_ID,
                 "PolarGreen"
             ]);
             observed.ShouldNotBeNull();
-            observed!.Generation.ShouldBe(result.Generation);
+            observedAtomicState.ShouldBeTrue();
+            observed!.Generation.ShouldBeGreaterThan(0);
+            if (result is not null)
+            {
+                observed.Generation.ShouldBe(result.Generation);
+            }
         });
     }
 

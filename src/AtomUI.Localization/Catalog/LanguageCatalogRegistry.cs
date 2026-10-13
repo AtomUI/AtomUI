@@ -23,9 +23,17 @@ internal sealed class LanguageCatalogRegistry
 
     internal IReadOnlyList<LanguageCatalogDescriptor> Catalogs => _catalogs;
 
+    /// <summary>
+    /// 构建注册表。<paramref name="allowUnresolvedBundles"/> 为 true 时（仅分级启动的 Stage 1
+    /// 中间态）跳过目标 catalog 尚未注册的 bundle——该 catalog 在 Stage 1 不存在，任何按 catalog
+    /// 的查询都不可达，故跳过不改变 Stage 1 的可观测取值；终态（非分级 Stage 1、Stage 2 演化）恒为
+    /// false，跨包引用必须闭合，否则照旧抛出。
+    /// </summary>
     internal static LanguageCatalogRegistry Create(
         IReadOnlyList<LanguageCatalogDescriptor> catalogInputs,
-        IReadOnlyList<TranslationBundleDescriptor> bundleInputs)
+        IReadOnlyList<TranslationBundleDescriptor> bundleInputs,
+        bool allowUnresolvedBundles = false,
+        LanguageCatalogRegistry? previous = null)
     {
         ArgumentNullException.ThrowIfNull(catalogInputs);
         ArgumentNullException.ThrowIfNull(bundleInputs);
@@ -60,6 +68,10 @@ internal sealed class LanguageCatalogRegistry
         {
             if (!slotsById.TryGetValue(bundle.CatalogId, out var catalogSlot))
             {
+                if (allowUnresolvedBundles)
+                {
+                    continue;
+                }
                 throw new LanguageCatalogException(
                     $"Translation bundle from '{bundle.SourceIdentity}' targets Catalog " +
                     $"'{bundle.CatalogId}', which is not registered.");
@@ -85,7 +97,11 @@ internal sealed class LanguageCatalogRegistry
                                  .ThenByDescending(static bundle => bundle.SourceKind)
                                  .ThenBy(static bundle => bundle.SourceIdentity, StringComparer.Ordinal)
                                  .ToArray();
-            ValidateTranslations(catalog, orderedBundles);
+            // Descriptor 和 Bundle 在构造时已冻结。相同输入无需再次逐 unit 验证冲突/en-US 覆盖。
+            if (previous is null || !previous.HasSameCatalog(catalog, orderedBundles, out _))
+            {
+                ValidateTranslations(catalog, orderedBundles);
+            }
             readOnlyBundles[catalogSlot] = Array.AsReadOnly(orderedBundles);
         }
 
@@ -112,6 +128,14 @@ internal sealed class LanguageCatalogRegistry
         }
 
         return _bundlesByCatalog[catalogSlot];
+    }
+
+    internal bool HasSameCatalog(LanguageCatalogDescriptor catalog,
+        IReadOnlyList<TranslationBundleDescriptor> bundles, out int slot)
+    {
+        return TryGetCatalogSlot(catalog.CatalogId, out slot) &&
+               ReferenceEquals(Catalogs[slot], catalog) &&
+               _bundlesByCatalog[slot].SequenceEqual(bundles);
     }
 
     private static void ValidateTranslations(

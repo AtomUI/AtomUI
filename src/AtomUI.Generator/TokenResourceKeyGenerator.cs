@@ -116,8 +116,22 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 {
                     if (RegistrationFrameworkResolver.TryResolve(compilation, options.GlobalOptions, out var framework, out var error))
                     {
+                        // 分级启动分区：控件包项目以 AtomUICriticalControls（逗号分隔的控件类型名；
+                        // 同时兼容直接 analyzer options 中的分号，MSBuild CompilerVisibleProperty
+                        // 会经 .editorconfig 传值，分号在该格式中是注释起始符），
+                        // 需 CompilerVisibleProperty 暴露。生成器据此分区发射收集方法。
+                        HashSet<string>? criticalControls = null;
+                        if (options.GlobalOptions.TryGetValue("build_property.AtomUICriticalControls", out var criticalList) &&
+                            !string.IsNullOrWhiteSpace(criticalList))
+                        {
+                            criticalControls = new HashSet<string>(
+                                criticalList.Split([',', ';']).Select(static name => name.Trim())
+                                    .Where(static name => name.Length > 0),
+                                StringComparer.Ordinal);
+                        }
                         TypeMapRegistrationWriter.Write(context, package,
-                            supportsTypeMap: framework == AtomUI.Build.Tasks.Registration.RegistrationFrameworkFamily.OfficialTypeMap);
+                            supportsTypeMap: framework == AtomUI.Build.Tasks.Registration.RegistrationFrameworkFamily.OfficialTypeMap,
+                            criticalControls: criticalControls);
                     }
                     else
                     {

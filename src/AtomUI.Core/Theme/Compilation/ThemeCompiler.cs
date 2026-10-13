@@ -182,10 +182,10 @@ internal sealed class ThemeCompiler
         }
     }
 
-    internal readonly record struct GlobalCompileOutcome(
+    private readonly record struct GlobalCompileOutcome(
         ThemeAppearance Appearance,
         bool ReuseGlobal,
-        DesignToken Builder,
+        DesignToken? Builder,
         TokenValueTable Values,
         IReadOnlyDictionary<object, object?> Resources,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> Palettes);
@@ -194,7 +194,7 @@ internal sealed class ThemeCompiler
     {
         var appearance = ResolveAppearance(input.EffectiveConfig.Algorithms);
         var reuseGlobal = CanReuseGlobal(input, appearance);
-        DesignToken globalBuilder;
+        DesignToken? globalBuilder;
         TokenValueTable globalValues;
         IReadOnlyDictionary<object, object?> globalResources;
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes;
@@ -204,7 +204,7 @@ internal sealed class ThemeCompiler
             globalValues    = parent.GlobalTokenValues;
             globalResources = parent.GlobalResources;
             palettes        = parent.PresetColorPalettes;
-            globalBuilder   = CreateBuilder(globalValues, palettes, input.Registry.GlobalTokens);
+            globalBuilder   = null;
         }
         else
         {
@@ -227,8 +227,7 @@ internal sealed class ThemeCompiler
     {
         var parent = input.ReusableParent;
         if (parent is null ||
-            parent.DefinitionRevision != input.DefinitionRevision ||
-            parent.RegistryRevision != input.Registry.Revision ||
+            !input.Registry.HasSameGlobalSchema(parent.Registry) ||
             parent.Appearance != appearance)
         {
             return false;
@@ -247,22 +246,18 @@ internal sealed class ThemeCompiler
                    input.EffectiveConfig.GlobalTokens);
     }
 
-    // 惰性编译：每槽位急切解析状态（FindControlConfig / IsControlChanged / CanReuseControl 廉价
-    // 配置比较，实测 ~9.5ms），只推迟昂贵的 CompileControl（~62ms，87 个控件 1032 个派生公式）。
-    // 空窗口首帧前对控件快照的查询次数为零——急切预编译换零查询是纯启动损耗。
+    // 先按有序游标解析配置和复用状态，仅在首次查询时计算控件值与差量。
     private static LazyControlSnapshots CompileControls(
         ThemeCompileInput input,
         GlobalCompileOutcome global,
         ControlCompilationCache? controlCompilationCache)
     {
         var count = input.Registry.Controls.Count;
-        var states = new ControlSlotState[count];
-        var preMaterialized = new ControlThemeSnapshot?[count];
-        var configs = new NormalizedControlThemeConfig?[count];
+        var cells = new ControlSnapshotCell[count];
         var configIndex = 0;
         var parentConfigIndex = 0;
         var changedControlIndex = 0;
-        var hasUncompiled = false;
+        LazyControlSnapshotSource? source = null;
         for (var slot = 0; slot < count; slot++)
         {
             var descriptor = input.Registry.Controls[slot];
@@ -284,141 +279,64 @@ internal sealed class ThemeCompiler
                     ref changedControlIndex);
             if (CanReuseControl(
                     input.ReusableParent,
+                    input.Registry,
                     descriptor,
                     config,
                     parentConfig,
                     global.ReuseGlobal,
+                    global.Appearance,
                     controlChanged))
             {
-                // 主题切换复用：切换期零编译；首访时物化父槽并共享同一对象。
-                states[slot] = ControlSlotState.ReuseParent;
+                cells[slot] = input.ReusableParent!.Controls.GetCell(slot);
                 continue;
             }
             if (config is null && !descriptor.HasOwnTokens)
             {
-                states[slot] = ControlSlotState.Materialized;
-                preMaterialized[slot] = new ControlThemeSnapshot(
+                cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(
                     descriptor.Slot,
                     global.Appearance,
                     FrozenDictionary<int, object?>.Empty,
                     FrozenDictionary<object, object?>.Empty,
                     TokenValueTable.Empty,
-                    FrozenDictionary<object, object?>.Empty);
+                    FrozenDictionary<object, object?>.Empty));
                 continue;
             }
 
-            states[slot] = ControlSlotState.Uncompiled;
-            configs[slot] = config;
-            hasUncompiled = true;
-        }
-
-        var source = hasUncompiled
-            ? new LazyControlSnapshotSource(
+            source ??= new LazyControlSnapshotSource(
                 input,
-                configs,
                 global.Appearance,
                 global.Builder,
                 global.Values,
                 global.Resources,
-                controlCompilationCache)
-            : null;
-        return new LazyControlSnapshots(states, preMaterialized, input.ReusableParent, source);
-    }
-
-    // 仅供差分测试的急切参考路径：与惰性 CompileControls 在相同输入下逐位等价（同一 CompileControl、
-    // 同一缓存键）。生产编译一律走惰性路径；保留本入口用于等价性验证与未来回归对照。
-    internal IReadOnlyList<ControlThemeSnapshot> CompileControlsEagerForTest(
-        ThemeCompileInput input,
-        ControlCompilationCache? controlCompilationCache = null)
-    {
-        var global = CompileGlobal(input);
-        var controls = new ControlThemeSnapshot[input.Registry.Controls.Count];
-        GlobalCompilationCacheKey? globalCompilationCacheKey = null;
-        var configIndex = 0;
-        var parentConfigIndex = 0;
-        var changedControlIndex = 0;
-        for (var slot = 0; slot < controls.Length; slot++)
-        {
-            var descriptor = input.Registry.Controls[slot];
-            var config = FindControlConfig(
-                input.EffectiveConfig.Controls,
-                descriptor.Identity,
-                ref configIndex);
-            var parentConfig = input.ReusableParent is null
-                ? null
-                : FindControlConfig(
-                    input.ReusableParent.EffectiveConfig.Controls,
-                    descriptor.Identity,
-                    ref parentConfigIndex);
-            bool? controlChanged = input.ChangesFromReusableParent is null
-                ? null
-                : IsControlChanged(
-                    input.ChangesFromReusableParent.ChangedControls,
-                    descriptor.Identity,
-                    ref changedControlIndex);
-            if (CanReuseControl(
-                    input.ReusableParent,
-                    descriptor,
-                    config,
-                    parentConfig,
-                    global.ReuseGlobal,
-                    controlChanged))
-            {
-                // 惰性父快照在此物化对应槽位，与惰性子快照共享同一对象，差分语义不变。
-                controls[slot] = input.ReusableParent!.Controls[slot];
-                continue;
-            }
-            if (config is null && !descriptor.HasOwnTokens)
-            {
-                controls[slot] = new ControlThemeSnapshot(
-                    descriptor.Slot,
-                    global.Appearance,
-                    FrozenDictionary<int, object?>.Empty,
-                    FrozenDictionary<object, object?>.Empty,
-                    TokenValueTable.Empty,
-                    FrozenDictionary<object, object?>.Empty);
-                continue;
-            }
-
-            ControlThemeSnapshot CompileCurrentControl()
-            {
-                return CompileControl(
-                    descriptor,
-                    config,
-                    input.EffectiveConfig.Algorithms,
-                    global.Appearance,
-                    global.Builder,
-                    global.Values,
-                    global.Resources,
-                    input.Registry.GlobalTokens);
-            }
-
-            controls[slot] = controlCompilationCache is null
-                ? CompileCurrentControl()
-                : controlCompilationCache.GetOrCompile(
-                    globalCompilationCacheKey ??= GlobalCompilationCacheKey.Create(input),
-                    descriptor,
-                    config,
-                    global.Appearance,
-                    CompileCurrentControl);
+                global.Palettes,
+                controlCompilationCache);
+            cells[slot] = new ControlSnapshotCell(source, descriptor, config);
         }
-
-        return Array.AsReadOnly(controls);
+        return new LazyControlSnapshots(cells);
     }
 
     private static bool CanReuseControl(
         ThemeSnapshot? parent,
+        ThemeSchemaRegistry registry,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
         NormalizedControlThemeConfig? parentConfig,
         bool reuseGlobal,
+        ThemeAppearance appearance,
         bool? controlChanged)
     {
-        if (parent is null)
+        // slot 仅在当前 schema 内有效；演化重排后不能按旧数组下标复用其他控件的差量。
+        if (parent is null || parent.RegistryRevision != registry.Revision)
         {
             return false;
         }
         if ((uint)descriptor.Slot >= (uint)parent.Controls.Count)
+        {
+            return false;
+        }
+        var previousDescriptor = parent.Registry.Controls[descriptor.Slot];
+        if (previousDescriptor.Identity != descriptor.Identity ||
+            previousDescriptor.ControlType != descriptor.ControlType)
         {
             return false;
         }
@@ -429,7 +347,7 @@ internal sealed class ThemeCompiler
         }
         if (config is null && parentConfig is null && !descriptor.HasOwnTokens)
         {
-            return true;
+            return parent.Appearance == appearance;
         }
 
         if (!reuseGlobal)
@@ -441,8 +359,7 @@ internal sealed class ThemeCompiler
                (config is null ? parentConfig is null : config.Equals(parentConfig));
     }
 
-    // private → internal：LazyControlSnapshotSource 在首访物化时直调本函数（同一编译路径，
-    // 惰性与急切逐位等价的依据）。仅程序集内与 IVT 测试项目可见。
+    // 由独立 lazy source 在首次查询时执行，不依赖历史快照。
     internal static ControlThemeSnapshot CompileControl(
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
@@ -820,7 +737,7 @@ internal sealed class ThemeCompiler
         }
     }
 
-    private static DesignToken CreateBuilder(
+    internal static DesignToken CreateBuilder(
         TokenValueTable values,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes,
         IReadOnlyList<TokenDescriptor> descriptors)

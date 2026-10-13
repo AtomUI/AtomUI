@@ -6,19 +6,24 @@ namespace AtomUI.Theme.Compilation;
 internal sealed class ControlCompilationCache
 {
     private readonly BoundedLruCache<ControlCompilationCacheKey, ControlThemeSnapshot> _entries;
+    private readonly Action? _onMaterialized;
 
-    internal ControlCompilationCache(ThemeCacheOptions options)
+    internal ControlCompilationCache(ThemeCacheOptions options, Action? onMaterialized = null)
     {
         ArgumentNullException.ThrowIfNull(options);
+        _onMaterialized = onMaterialized;
         _entries = new BoundedLruCache<ControlCompilationCacheKey, ControlThemeSnapshot>(
             options.ControlEntryLimit,
             options.ControlRetainedBytesLimit,
-            static snapshot => snapshot.EstimatedRetainedBytes);
+            static snapshot => snapshot.EstimatedRetainedBytes,
+            static key => key.EstimatedRetainedBytes);
     }
 
     internal int Count => _entries.Count;
     internal long RetainedBytes => _entries.RetainedBytes;
     internal int InFlightCount => _entries.InFlightCount;
+
+    internal void NotifyMaterialized() => _onMaterialized?.Invoke();
 
     internal ControlThemeSnapshot GetOrCompile(
         GlobalCompilationCacheKey globalKey,

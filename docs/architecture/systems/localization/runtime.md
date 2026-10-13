@@ -29,7 +29,7 @@ LanguageManager
 | `LanguageManager` | 验证并提交全局语言变化，发布状态和事件 | 主题事务、下载语言包 |
 | `LanguageResourceProvider` | 把当前 Snapshot 投影为 Avalonia 动态资源 | 保存第二份翻译状态 |
 | `Localizer` | 为 C# 调用提供强类型查询和格式化 | 字符串 Catalog 路径解析 |
-| `LocalizationHost` | 持有构建完成的 Manager、Localizer、Provider 和 Snapshot 集合并管理释放 | 执行查询或语言切换算法 |
+| `LocalizationHost` | 持有 Manager、Localizer、Provider 并管理释放；Registry/Snapshots 委托当前 Manager | 执行查询或语言切换算法 |
 
 ## 启动构建
 
@@ -48,11 +48,39 @@ LanguageManager
 9. 由 `LocalizationHost` 持有构建完成的本地化服务和生命周期，在完整初始资源可用后再让应用进入首帧，
    不在首帧后补做默认语言切换。
 
-Builder 只收集输入，`Build()` 后全部注册表冻结。运行时不允许追加 Catalog 或 Translation Bundle。
+默认同步路径在 `Build()` 后冻结全部注册。opt-in 分级启动有一次受控 Stage 2 收集窗口，结束后永久冻结；
+这不开放一般运行期动态追加 Catalog/Bundle 或下载语言包。分期实现与目标差异见下节。
+
+### 分级构建与增量演化
+
+Stage 1 对已注册 Catalog/全部支持语言构建 Snapshot。Stage 2 冻结输入后构建新 registry，按 Catalog identity
+映射复用 descriptor、Bundle 引用和语言候选链均未变的行；变更行重新验证和解析。
+Manager 用 `PrepareEvolution/ValidateEvolution/CommitEvolutionCore` 协调准备和提交。
+应用级协调由 Core 的[分级启动演化](../../foundations/staged-startup-evolution.md)负责，本地化仍拥有自己的
+数据模型和普通语言切换事务。
+
+增量准备按以下边界执行：
+
+- 复用单位是不可变 Catalog 行及其源/覆盖证据；只重建新增、schema 变化或收到相关新 Bundle/Override 的 Catalog。
+- 语言候选链、来源优先级、`en-US` 覆盖、格式化参数及 Culture/方向相关输入均进入失效判定；不能因 Catalog ID
+  相同就复用。受影响的父语言 Bundle 要使使用其回退结果的语言行失效。
+- 所有已声明支持语言在框架完成时仍具备完整 Snapshot，语言切换继续是已构建结果的引用交换；不以首次切换
+  惰性解析取代既有覆盖契约。
+- registry 增补后的 slot 可以重排，旧行按 Catalog identity 映射到新槽；禁止通过旧数组下标猜测新身份。
+- 一次查询捕获匹配的 Catalog registry、Snapshot 与 State。演化不能先单独交换 registry、再交换 revision，
+  导致后台 `Get/Format` 在两者之间读取混代状态。
+- 支持语言/定义与所有语言 Snapshot 一并准备；提交时复核当前语言版本。当前语言已变化则重验/重准备，
+  不得在主题已经发布后才发现语言提交不能完成。
+- `LocalizationHost`、Manager、Localizer、Provider 身份稳定；宿主不再持有一份已过期的 Stage 1 Snapshot
+  集作为永久备份。旧读取视图结束且缓存无用途后应可回收。
+- 框架统一 CommitCore 完成前不发布语言资源/事件。普通 `ChangeLanguage` 仍独立运行，不进入主题事务。
+
+验证比较 staged 与同步构建的全部支持语言结果，覆盖 slot 重排、父语言翻译追加、应用覆盖、RTL、格式化、
+准备期间语言切换和失败后继续切换。增量目标是减少重复 Catalog 解析，不承诺省去完整覆盖校验或所有 O(C) 索引工作。
 
 ## Catalog registry
 
-Registry 为每个 Catalog 分配进程内稳定 slot，并记录：
+Registry 为每个 Catalog 分配在该 registry revision 内稳定的 slot，并记录：
 
 - 生成式 Catalog ID、enum CLR 类型和稳定 Key 到 slot 的映射。
 - 稳定 unit Key、enum member 到 Catalog 内部 slot 的生成式映射。

@@ -18,7 +18,6 @@ AtomUI/
 │   │   ├── Controls/Icon         # Icon base types and rendering contracts
 │   │   ├── Data                  # Resource and binding support infrastructure
 │   │   ├── Media                 # Text/media helpers
-│   │   ├── Reactive              # Reactive integration helpers
 │   │   ├── Reflection            # Explicit compatibility boundary for reflection helpers
 │   │   └── Utils                 # Shared low-level utilities
 │   ├── AtomUI.Controls.Shared    # Shared contracts and data infrastructure

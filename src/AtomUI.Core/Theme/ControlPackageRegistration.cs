@@ -86,6 +86,17 @@ public sealed class ControlPackageRegistration
     public long PackageCommitOrdinal { get; internal set; } = -1;
     /// <summary>生成器 emit 的包级 schema 指纹常量；手工注册为空，启动 Revision 回退全量计算。</summary>
     public ulong? SchemaFingerprint { get; internal set; }
+
+    /// <summary>
+    /// 分区收集（分级启动）的余量收集委托：关键集已随包主体注册；本委托由
+    /// ThemeManagerBuilder 在非 staged 应用 Build 前内联执行，或由 Stage 2 注册窗口执行。
+    /// </summary>
+    internal Action<AtomUI.Registration.ControlPackageRegistrationBuilder>? DeferredCollect { get; init; }
+
+    // 余量收集是否已执行（非 staged 内联执行或 Stage 2 窗口执行后置真）。
+    // 未消费时包内容不完整，Revision 不允许使用全量 schema 指纹（v1/v2 注册表内容不同
+    // 必须得到不同 Revision，否则快照缓存键碰撞）。
+    internal bool DeferredCollectConsumed { get; set; }
     public string Id { get; }
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
     public IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }

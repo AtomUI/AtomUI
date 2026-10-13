@@ -5,6 +5,7 @@
 - [项目依赖关系](dependency-graph.md)：解决方案项目、主要项目引用和内部可见性。
 - [运行平台策略](runtime-platforms.md)：Desktop、Browser、Native 和 Mobile 的能力边界。
 - [启动与注册链路](startup-and-registration.md)：AppBuilder、Application、Builder、Provider 和生成池的注册顺序。
+- [分级启动演化与提交边界](staged-startup-evolution.md)：分期准备、统一提交、宿主就绪、线程与生命周期契约。
 - [构建与打包](build-and-packaging.md)：Target Framework、版本、Analyzer、生成输出和 NuGet 包边界。
 - [AOT 与裁剪架构](aot-and-trimming.md)：TypeMap 架构、本地实现与验证状态及发布门槛。
 - [TypeMap 注册管线](aot-typemap-registration.md)：普通生成器、包引导、条件映射与启动收集。

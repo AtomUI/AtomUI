@@ -6,10 +6,12 @@ using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase.Shell;
 using AtomUIGallery.Workspace.ViewModels;
 using Avalonia;
+using AtomUI;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using DesktopMenu = AtomUI.Desktop.Controls.Menu;
 using MenuItem = AtomUI.Desktop.Controls.MenuItem;
 
@@ -42,29 +44,84 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
     private const string TitleBarMenuResourceKey = "WorkspaceTitleBarMenu";
     private const string ThemeColorGroupName = "ThemeColor";
     private GalleryShellView? _shellView;
+    private DispatcherOperation? _deferredContentOperation;
+    private readonly CancellationTokenSource _startupWaitingCancellation = new();
+    private bool _closed;
+    private Avalonia.Controls.TextBlock? _loadingPlaceholder;
     private MenuItem? _themeMenuItem;
     private readonly List<MenuItem> _themeMenuItems = new();
     private PropertyChangedEventHandler? _viewModelPropertyChangedHandler;
 
     public WorkspaceWindow()
     {
+        // 分级启动：窗口只搭骨架（含加载占位），真实 shell 等框架就绪后构建。
         ViewModel = new WorkspaceWindowViewModel();
         InitializeComponent();
-        ConfigureThemeMenu();
+        AddLoadingPlaceholder();
+        _ = WaitForStartupAsync();
+    }
 
-        if (ViewModel is not null)
+    private async Task WaitForStartupAsync()
+    {
+        var cancellation = _startupWaitingCancellation.Token;
+        try
         {
-            var showCaseNavigation = new CaseNavigation
-            {
-                Name      = "ShowCaseNavigation",
-                ViewModel = ViewModel.CaseNavigation
-            };
-            _shellView = new GalleryShellView(
-                AtomUIGalleryModule.GetConfiguration(),
-                showCaseNavigation,
-                ViewModel.Router);
-            ShellHost.Children.Add(_shellView);
+            var application = Application.Current ?? throw new InvalidOperationException("Application is unavailable.");
+            await application.GetStartup().Completion.WaitAsync(cancellation);
+            cancellation.ThrowIfCancellationRequested();
+            // 晚创建窗口读取相同终态；等待就绪后再调度 shell，取消覆盖排队和运行前窗口。
+            _deferredContentOperation = Dispatcher.UIThread.InvokeAsync(BuildDeferredContent, DispatcherPriority.Background);
+            await _deferredContentOperation;
         }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            if (!_closed && _loadingPlaceholder is { } placeholder)
+            {
+                placeholder.Text = "Startup failed: " + exception.Message;
+            }
+        }
+    }
+
+    // 占位符只服务首帧到 shell 就绪之间的空窗；静态无动画，避免与后置构建抢渲染。
+    private void AddLoadingPlaceholder()
+    {
+        _loadingPlaceholder = new Avalonia.Controls.TextBlock
+        {
+            Text = "...",
+            FontSize = 18,
+            Opacity = 0.45,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        ShellHost.Children.Add(_loadingPlaceholder);
+    }
+
+    private void BuildDeferredContent()
+    {
+        _deferredContentOperation = null;
+        if (_closed || ViewModel is null || _shellView is not null)
+        {
+            return;
+        }
+        ConfigureThemeMenu();
+        var showCaseNavigation = new CaseNavigation
+        {
+            Name      = "ShowCaseNavigation",
+            ViewModel = ViewModel.CaseNavigation
+        };
+        _shellView = new GalleryShellView(
+            AtomUIGalleryModule.GetConfiguration(),
+            showCaseNavigation,
+            ViewModel.Router);
+        if (_loadingPlaceholder is { } placeholder)
+        {
+            ShellHost.Children.Remove(placeholder);
+            _loadingPlaceholder = null;
+        }
+        ShellHost.Children.Add(_shellView);
     }
 
     protected override WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
@@ -91,8 +148,23 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         AddHandler(MenuItem.ClickEvent, HandleMenuItemClick);
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override void OnClosed(EventArgs e)
     {
+        ReleaseWorkspace();
+        base.OnClosed(e);
+    }
+
+    private void ReleaseWorkspace()
+    {
+        if (_closed)
+        {
+            return;
+        }
+        _closed = true;
+        _startupWaitingCancellation.Cancel();
+        _startupWaitingCancellation.Dispose();
+        _deferredContentOperation?.Abort();
+        _deferredContentOperation = null;
         RemoveHandler(MenuItem.ClickEvent, HandleMenuItemClick);
         if (ViewModel is not null && _viewModelPropertyChangedHandler is not null)
         {
@@ -102,6 +174,11 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         _shellView?.Dispose();
         _shellView = null;
         ViewModel?.Dispose();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseWorkspace();
         base.OnDetachedFromVisualTree(e);
     }
 

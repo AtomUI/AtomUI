@@ -9,6 +9,7 @@ internal static class AtomUIDiagnosticIds
     public const string RegistrationIdentityConflict = "ATOMUIREG005";
     public const string RegistrationUnsupportedBackend = "ATOMUIREG006";
     public const string RegistrationUnloweredTypeMapAccessor = "ATOMUIREG007";
+    public const string RegistrationStagingFallback = "ATOMUIREG009";
     public const string AotMissingGeneratedAccessor = "ATOMUIAOT001";
     public const string AotMissingGeneratedPath = "ATOMUIAOT002";
     public const string AotUnverifiableDataMemberPath = "ATOMUIAOT003";

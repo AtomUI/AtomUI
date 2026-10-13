@@ -342,6 +342,81 @@ public class ControlRegistrationRuntimeTests
         });
     }
 
+    [Fact]
+    public async Task Stage_Two_Partitioned_Package_Mounts_Each_Resource_Once_In_Global_Order()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var application = Application.Current!;
+            var builder = new AtomUIBuilder(application);
+            var stageOneProvider = new Provider("StageOne.Package");
+            var sharedAsset = ControlThemeAssetContractTests.Asset(
+                [],
+                globals: GeneratedThemeSchema.GetGlobalTokens());
+            var sharedResource = new ControlThemeResourceRegistration(
+                sharedAsset.AssetId,
+                ControlResourcePhase.Control,
+                15,
+                CreateResource);
+            ControlRegistrationRuntime.RegisterPartitionedPackage(
+                builder,
+                stageOneProvider.Id,
+                () => stageOneProvider,
+                critical =>
+                {
+                    critical.AddThemeAsset(sharedAsset, sharedResource);
+                    critical.AddResource(CreateOrderedResource("stage-one-critical", 20, "high"));
+                },
+                deferred =>
+                {
+                    deferred.AddThemeAsset(sharedAsset, sharedResource);
+                    deferred.AddResource(CreateOrderedResource("stage-one-deferred", 10, "low"));
+                });
+            using var manager = builder.ThemeManagerBuilder.Build(deferPackageCollects: true);
+            manager.InitializeApplication(application);
+            var stageTwoProvider = new Provider("StageTwo.Package");
+            var stageTwoSemanticIdentity = ControlTokenIdentity.ForControl(
+                typeof(Button),
+                "StageTwo",
+                "Button");
+
+            builder.ThemeManagerBuilder.OpenStageTwoWindow();
+            ControlRegistrationRuntime.RegisterPartitionedPackage(
+                builder,
+                stageTwoProvider.Id,
+                () => stageTwoProvider,
+                critical =>
+                {
+                    critical.AddResource(CreateOrderedResource("critical", 10, "low"));
+                    critical.AddSemanticControl(new ControlSemanticDescriptor(
+                        typeof(Button),
+                        stageTwoSemanticIdentity,
+                        [new SemanticPartDescriptor(
+                            "root",
+                            "root",
+                            null,
+                            typeof(Button),
+                            SemanticPartCardinality.Single,
+                            SemanticPartCustomization.Root,
+                            null,
+                            false,
+                            null,
+                            false)]));
+                },
+                deferred => deferred.AddResource(CreateOrderedResource("deferred", 20, "high")));
+            builder.ThemeManagerBuilder.CloseStageTwoWindow();
+            builder.ThemeManagerBuilder.RunDeferredCollects();
+            builder.ThemeManagerBuilder.MergeStageTwoInto(manager);
+            await manager.ExecuteRegistrationEvolutionAsync();
+
+            AssertOrderedResources(stageOneProvider, expectedResourceCount: 3);
+            AssertOrderedResources(stageTwoProvider, expectedResourceCount: 2);
+            manager.SemanticParts.TryGetControl(stageTwoSemanticIdentity, out _).ShouldBeTrue();
+            manager.Resources.TryGetResource("priority", null, out var effective).ShouldBeTrue();
+            effective.ShouldBe("high");
+        });
+    }
+
     private static AtomUIBuilder BuildSemanticBinding(Type declaredTarget, Type boundTarget)
     {
         var builder = new AtomUIBuilder(new Application());
@@ -405,5 +480,23 @@ public class ControlRegistrationRuntimeTests
 
     private static IResourceProvider CreateResource() => new ResourceDictionary();
     private static IResourceProvider OtherResource() => new ResourceDictionary();
+    private static ControlThemeResourceRegistration CreateOrderedResource(
+        string id,
+        int order,
+        string value) => new(
+        id,
+        ControlResourcePhase.Control,
+        order,
+        () => new ResourceDictionary { ["priority"] = value });
+    private static void AssertOrderedResources(Provider provider, int expectedResourceCount)
+    {
+        provider.ControlThemes.Count.ShouldBe(expectedResourceCount);
+        provider.ControlThemes
+            .Select(resource => resource.TryGetResource("priority", null, out var value)
+                ? value
+                : null)
+            .Where(static value => value is not null)
+            .ShouldBe(["low", "high"]);
+    }
     private sealed class Provider : ControlThemesProvider { internal Provider(string id) { Id = id; } }
 }

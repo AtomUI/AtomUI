@@ -22,6 +22,18 @@ internal sealed class AtomUIBuilder : IAtomUIBuilder
 
     public ILocalizationBuilder Localization => LocalizationBuilder;
 
+    private readonly List<Action> _deferredRegistrations = [];
+
+    internal IReadOnlyList<Action> DeferredRegistrations => _deferredRegistrations;
+
+    internal IAtomUIBuilder Deferred(Action registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
+        _deferredRegistrations.Add(registration);
+        return this;
+    }
+
     internal ThemeManagerBuilder ThemeManagerBuilder { get; }
 
     internal LocalizationBuilder LocalizationBuilder { get; }
@@ -35,6 +47,7 @@ internal sealed class AtomUIBuilder : IAtomUIBuilder
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(factory);
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         if (_extensionStates.TryGetValue(id, out var current))
         {
             return (TState)current;
@@ -51,6 +64,7 @@ internal sealed class AtomUIBuilder : IAtomUIBuilder
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(factory);
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         if (!_ownedServiceIds.Add(id))
         {
             return;

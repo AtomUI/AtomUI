@@ -1,11 +1,12 @@
-﻿using System.Reactive.Threading.Tasks;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
-using Avalonia.Threading;
 
 namespace AtomUI.MotionScene;
 
@@ -19,6 +20,8 @@ public class AbstractMotion : IMotion
     public FillMode PropertyValueFillMode { get; set; }
     public MotionSpiritType SpiritType { get; set; } = MotionSpiritType.Transition;
 
+    private Animation? _builtInAnimation;
+
     public AbstractMotion(TimeSpan? duration = null, Easing? easing = null, FillMode fillMode = FillMode.Forward)
     {
         Animations            = new List<Animation>();
@@ -30,180 +33,216 @@ public class AbstractMotion : IMotion
     
     public void Run(BaseMotionActor actor, Action? aboutToStart = null, Action? completedAction = null)
     {
-        if (actor.IsFollowMode())
-        {
-            throw new InvalidOperationException("The Actor is in follow mode and cannot perform animations.");
-        }
-        if (SpiritType == MotionSpiritType.Transition)
-        {
-            RunTransitions(actor, aboutToStart, completedAction);
-            return;
-        }
-        RunAnimations(actor, aboutToStart, completedAction);
+        VerifyActor(actor);
+        _ = ObserveRunAsync(actor, aboutToStart, completedAction);
     }
 
     public async Task RunAsync(BaseMotionActor actor,
                                Action? aboutToStart = null,
                                CancellationToken cancellationToken = default)
     {
+        VerifyActor(actor);
+        await RunCoreAsync(actor, aboutToStart, null, cancellationToken);
+    }
+
+    private static void VerifyActor(BaseMotionActor actor)
+    {
         if (actor.IsFollowMode())
         {
             throw new InvalidOperationException("The Actor is in follow mode and cannot perform animations.");
         }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (SpiritType == MotionSpiritType.Transition)
-        {
-            await RunTransitionsAsync(actor, aboutToStart, cancellationToken);
-            return;
-        }
-
-        await RunAnimationsAsync(actor, aboutToStart, cancellationToken);
     }
 
-    private void RunAnimations(BaseMotionActor actor,
-                               Action? aboutToStart = null,
-                               Action? completedAction = null)
+    private async Task ObserveRunAsync(BaseMotionActor actor, Action? aboutToStart, Action? completedAction)
     {
-        ConfigureAnimation();
-        var originRenderTransformOrigin = actor.RenderTransformOrigin;
-        
-        actor.RenderTransformOrigin = RenderTransformOrigin;
-        actor.NotifyMotionPreStart();
-        NotifyPreStart(actor);
-        aboutToStart?.Invoke();
-        
-        Dispatcher.UIThread.Post(() =>
-        {
-            Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                foreach (var animation in Animations)
-                {
-                    await animation.RunAsync(actor);
-                }
-                actor.NotifyMotionCompleted();
-                NotifyCompleted(actor);
-                completedAction?.Invoke();
-                actor.RenderTransformOrigin = originRenderTransformOrigin;
-            });
-        });
-    }
-    
-    private void RunTransitions(BaseMotionActor actor,
-                                Action? aboutToStart = null,
-                                Action? completedAction = null)
-    {
-        ConfigureTransitions();
-        var originRenderTransformOrigin = actor.RenderTransformOrigin;
-        actor.NotifyMotionPreStart();
-        NotifyPreStart(actor);
-        aboutToStart?.Invoke();
-
-        actor.RenderTransformOrigin = RenderTransformOrigin;
-        actor.Transitions           = null;
-        ConfigureMotionStartValue(actor);
-        
-        Dispatcher.UIThread.InvokeAsync(async () =>
-        {
-            var tasks = new List<Task<bool>>();
-            var transitions = new Transitions();
-            // 暂时先不保存 actor 原有的 transitions
-            TimeSpan maxDuration = TimeSpan.Zero;
-            foreach (var transition in Transitions)
-            {
-                transitions.Add(transition);
-                tasks.Add(transition.CompletedObservable.ToTask());
-                if (transition.Duration > maxDuration)
-                {
-                    maxDuration = transition.Duration;
-                }
-            }
-
-            var delta = maxDuration * 0.1;
-            if (delta > TimeSpan.FromMilliseconds(100))
-            {
-                delta = TimeSpan.FromMilliseconds(100);
-            }
-
-            maxDuration += delta;
-            actor.Transitions = transitions;
-            ConfigureMotionEndValue(actor);
-            // A motion owns all configured transitions.  Waiting for the first
-            // transition lets the caller tear down the actor while another
-            // property is still being animated, which can leave composition
-            // children visible after the surface has disappeared.
-            await Task.WhenAny(Task.WhenAll(tasks), Task.Delay(maxDuration));
-            actor.NotifyMotionCompleted();
-            NotifyCompleted(actor);
-            completedAction?.Invoke();
-            actor.RenderTransformOrigin = originRenderTransformOrigin;
-            actor.MotionTransform       = null;
-            // Dispose all transitions to release Subject<bool> subscriptions,
-            // regardless of whether they completed normally or were timed-out.
-            foreach (var t in Transitions)
-            {
-                t.Dispose();
-            }
-        });
-    }
-
-    private async Task RunAnimationsAsync(BaseMotionActor actor,
-                                          Action? aboutToStart = null,
-                                          CancellationToken cancellationToken = default)
-    {
-        ConfigureAnimation();
-        var originRenderTransformOrigin = actor.RenderTransformOrigin;
-
-        actor.RenderTransformOrigin = RenderTransformOrigin;
-        actor.NotifyMotionPreStart();
-        NotifyPreStart(actor);
-        aboutToStart?.Invoke();
-
         try
         {
-            foreach (var animation in Animations)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await animation.RunAsync(actor, cancellationToken);
-            }
-
-            actor.NotifyMotionCompleted();
-            NotifyCompleted(actor);
+            await RunCoreAsync(actor, aboutToStart, completedAction, CancellationToken.None);
         }
         catch (OperationCanceledException)
         {
+            // A newer motion on the same actor supersedes this fire-and-forget run.
+        }
+        catch (Exception exception)
+        {
+            Logger.TryGet(LogEventLevel.Error, AtomUILogArea.Control)?.Log(
+                actor, "Motion execution failed: {Exception}", exception);
+        }
+    }
+
+    private async Task RunCoreAsync(BaseMotionActor actor,
+                                    Action? aboutToStart,
+                                    Action? completedAction,
+                                    CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var previousRun = actor.ActiveMotionRun;
+        using var run = new MotionRun(previousRun?.OriginalOrigin ?? actor.RenderTransformOrigin, cancellationToken);
+        actor.ActiveMotionRun = run;
+        var isTransition = SpiritType == MotionSpiritType.Transition;
+        INotifyTransitionCompleted[] transitions = [];
+        Exception? executionFailure = null;
+
+        try
+        {
+            // Publish ownership before canceling: an old continuation must never reset this run's actor.
+            previousRun?.Cancel();
+            Animation[] animations = [];
+            if (isTransition)
+            {
+                try
+                {
+                    ConfigureTransitions();
+                }
+                finally
+                {
+                    transitions = Transitions.ToArray();
+                }
+            }
+            else
+            {
+                ConfigureAnimation();
+                animations = Animations.ToArray();
+            }
+
+            var origin = RenderTransformOrigin;
+            if (!isTransition)
+            {
+                actor.RenderTransformOrigin = origin;
+            }
+            actor.NotifyMotionPreStart();
+            run.Token.ThrowIfCancellationRequested();
+            NotifyPreStart(actor);
+            run.Token.ThrowIfCancellationRequested();
+            aboutToStart?.Invoke();
+            run.Token.ThrowIfCancellationRequested();
+
+            if (isTransition)
+            {
+                actor.RenderTransformOrigin = origin;
+                await RunTransitionsAsync(actor, transitions, run.Token);
+            }
+            else
+            {
+                foreach (var animation in animations)
+                {
+                    run.Token.ThrowIfCancellationRequested();
+                    await animation.RunAsync(actor, run.Token);
+                }
+            }
+
+            // Avalonia Animation.RunAsync completes normally on cancellation; our contract propagates it.
+            run.Token.ThrowIfCancellationRequested();
+            actor.NotifyMotionCompleted();
+            run.Token.ThrowIfCancellationRequested();
+            NotifyCompleted(actor);
+            run.Token.ThrowIfCancellationRequested();
+            completedAction?.Invoke();
+        }
+        catch (Exception exception)
+        {
+            executionFailure = exception;
             throw;
         }
         finally
         {
-            actor.RenderTransformOrigin = originRenderTransformOrigin;
+            List<Exception>? cleanupFailures = null;
+            if (ReferenceEquals(actor.ActiveMotionRun, run))
+            {
+                actor.Animating = false;
+                if (isTransition)
+                {
+                    try
+                    {
+                        actor.Transitions = null;
+                    }
+                    catch (Exception exception)
+                    {
+                        (cleanupFailures ??= []).Add(exception);
+                    }
+                    if (ReferenceEquals(actor.ActiveMotionRun, run))
+                    {
+                        try
+                        {
+                            actor.MotionTransform = null;
+                        }
+                        catch (Exception exception)
+                        {
+                            (cleanupFailures ??= []).Add(exception);
+                        }
+                    }
+                }
+                // Property notifications may throw or start another run. Neither permits this run to
+                // skip releasing its resources or to reset state now owned by the replacement.
+                if (ReferenceEquals(actor.ActiveMotionRun, run))
+                {
+                    try
+                    {
+                        actor.RenderTransformOrigin = run.OriginalOrigin;
+                    }
+                    catch (Exception exception)
+                    {
+                        (cleanupFailures ??= []).Add(exception);
+                    }
+                }
+                if (ReferenceEquals(actor.ActiveMotionRun, run))
+                {
+                    actor.ActiveMotionRun = null;
+                }
+                try
+                {
+                    actor.InvalidateMeasure();
+                }
+                catch (Exception exception)
+                {
+                    (cleanupFailures ??= []).Add(exception);
+                }
+            }
+
+            foreach (var transition in transitions)
+            {
+                try
+                {
+                    transition.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    (cleanupFailures ??= []).Add(exception);
+                }
+            }
+
+            if (cleanupFailures != null)
+            {
+                if (executionFailure != null)
+                {
+                    cleanupFailures.Insert(0, executionFailure);
+                }
+                throw new AggregateException("Motion execution cleanup failed.", cleanupFailures);
+            }
         }
     }
 
     private async Task RunTransitionsAsync(BaseMotionActor actor,
-                                           Action? aboutToStart = null,
-                                           CancellationToken cancellationToken = default)
+                                           INotifyTransitionCompleted[] transitions,
+                                           CancellationToken cancellationToken)
     {
-        ConfigureTransitions();
-        var originRenderTransformOrigin = actor.RenderTransformOrigin;
-        actor.NotifyMotionPreStart();
-        NotifyPreStart(actor);
-        aboutToStart?.Invoke();
-
-        actor.RenderTransformOrigin = RenderTransformOrigin;
-        actor.Transitions           = null;
+        actor.Transitions = null;
         ConfigureMotionStartValue(actor);
+        cancellationToken.ThrowIfCancellationRequested();
 
+        using var completionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        // Merge propagates one transition's failure immediately, even if another never completes.
+        var completion = transitions.Select(transition => transition.CompletedObservable.LastAsync())
+                                    .Merge()
+                                    .All(status => status)
+                                    .ToTask(completionCancellation.Token);
         try
         {
-            var tasks       = new List<Task<bool>>();
-            var transitions = new Transitions();
-            TimeSpan maxDuration = TimeSpan.Zero;
-            foreach (var transition in Transitions)
+            var actorTransitions = new Transitions();
+            var maxDuration = TimeSpan.Zero;
+            foreach (var transition in transitions)
             {
-                transitions.Add(transition);
-                tasks.Add(transition.CompletedObservable.ToTask());
+                actorTransitions.Add(transition);
                 if (transition.Duration > maxDuration)
                 {
                     maxDuration = transition.Duration;
@@ -216,33 +255,39 @@ public class AbstractMotion : IMotion
                 delta = TimeSpan.FromMilliseconds(100);
             }
 
-            maxDuration       += delta;
-            actor.Transitions =  transitions;
+            actor.Transitions = actorTransitions;
             ConfigureMotionEndValue(actor);
-            // Do not complete a motion when only one of its transitions has
-            // finished.  The timeout remains a safety net for transitions
-            // whose property value does not produce a completion callback.
-            await Task.WhenAny(Task.WhenAll(tasks), Task.Delay(maxDuration, cancellationToken));
-
-            if (!cancellationToken.IsCancellationRequested)
+            cancellationToken.ThrowIfCancellationRequested();
+            // Retain the timeout for unchanged properties that never produce a transition callback.
+            var winner = await Task.WhenAny(completion, Task.Delay(maxDuration + delta, completionCancellation.Token));
+            await winner;
+            cancellationToken.ThrowIfCancellationRequested();
+            if (completion.IsCompleted && !await completion)
             {
-                actor.NotifyMotionCompleted();
-                NotifyCompleted(actor);
+                throw new InvalidOperationException("A motion transition did not complete successfully.");
             }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         finally
         {
-            actor.RenderTransformOrigin = originRenderTransformOrigin;
-            actor.MotionTransform       = null;
-            foreach (var t in Transitions)
-            {
-                t.Dispose();
-            }
+            completionCancellation.Cancel();
         }
+    }
+
+    internal sealed class MotionRun : IDisposable
+    {
+        private readonly CancellationTokenSource _cancellation;
+
+        internal RelativePoint OriginalOrigin { get; }
+        internal CancellationToken Token => _cancellation.Token;
+
+        internal MotionRun(RelativePoint originalOrigin, CancellationToken cancellationToken)
+        {
+            OriginalOrigin = originalOrigin;
+            _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        }
+
+        internal void Cancel() => _cancellation.Cancel();
+        public void Dispose() => _cancellation.Dispose();
     }
 
     protected virtual void ConfigureAnimation()
@@ -251,11 +296,7 @@ public class AbstractMotion : IMotion
 
     protected virtual void ConfigureTransitions()
     {
-        // Dispose existing transitions before rebuilding to release Subject<bool> resources.
-        foreach (var t in Transitions)
-        {
-            t.Dispose();
-        }
+        // Each execution owns and disposes its snapshot; another actor may still be using the old list.
         Transitions.Clear();
         var opacityTransition             = new NotifiableDoubleTransition()
         {
@@ -352,6 +393,20 @@ public class AbstractMotion : IMotion
         builder.AppendScale(scaleX, scaleY);
         builder.AppendTranslate(offsetX, offsetY);
         return builder.Build();
+    }
+
+    internal void SetBuiltInAnimation(Animation animation)
+    {
+        var index = _builtInAnimation == null ? -1 : Animations.IndexOf(_builtInAnimation);
+        if (index >= 0)
+        {
+            Animations[index] = animation;
+        }
+        else
+        {
+            Animations.Add(animation);
+        }
+        _builtInAnimation = animation;
     }
 
     protected Animation CreateAnimation()

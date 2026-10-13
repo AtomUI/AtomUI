@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -85,6 +86,9 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     internal bool Animating = false;
 
     private BaseMotionActor? _followTarget;
+    private IDisposable? _followBindings;
+
+    internal AbstractMotion.MotionRun? ActiveMotionRun;
 
     static BaseMotionActor()
     {
@@ -202,8 +206,8 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
 
     public virtual void NotifyMotionPreStart()
     {
-        RaiseEvent(new RoutedEventArgs(PreStartEvent, this));
         Animating = true;
+        RaiseEvent(new RoutedEventArgs(PreStartEvent, this));
     }
 
     public virtual void NotifyMotionCompleted()
@@ -232,15 +236,33 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
 
     public void Follow(BaseMotionActor target)
     {
-        this[!MotionTransformProperty]           = target[!MotionTransformProperty];
-        this[!MotionTransformOperationsProperty] = target[!MotionTransformOperationsProperty];
-        this[!OpacityProperty]                   = target[!OpacityProperty];
-        this[!RenderTransformOriginProperty]     = target[!RenderTransformOriginProperty];
+        UnFollow();
+        // These bindings follow a runtime-selected actor; ControlTheme cannot express that source.
+        _followBindings = new CompositeDisposable(
+            Bind(MotionTransformProperty, target.GetObservable(MotionTransformProperty)),
+            Bind(MotionTransformOperationsProperty, target.GetObservable(MotionTransformOperationsProperty)),
+            Bind(OpacityProperty, target.GetObservable(OpacityProperty)),
+            Bind(RenderTransformOriginProperty, target.GetObservable(RenderTransformOriginProperty)));
         _followTarget = target;
     }
 
     public void UnFollow()
     {
-        _followTarget = this;
+        if (_followTarget == null)
+        {
+            return;
+        }
+
+        var transform = MotionTransform;
+        var operations = MotionTransformOperations;
+        var opacity = Opacity;
+        var origin = RenderTransformOrigin;
+        _followTarget = null;
+        _followBindings?.Dispose();
+        _followBindings = null;
+        MotionTransform = transform;
+        MotionTransformOperations = operations;
+        Opacity = opacity;
+        RenderTransformOrigin = origin;
     }
 }

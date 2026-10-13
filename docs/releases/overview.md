@@ -3,6 +3,11 @@
 本目录按版本维护公共 API 变化和迁移示例。正式发布摘要继续由仓库根目录的 `CHANGELOG.md` 与
 `CHANGELOG.zh-CN.md` 维护。
 
+## 待发布
+
+- [Startup API migration](unreleased-startup-api-changes.md)
+- [启动 API 迁移](unreleased-startup-api-changes.zh-CN.md)
+
 ## 6.2.5
 
 - [API Change Examples](6.2.5-api-changes.md)

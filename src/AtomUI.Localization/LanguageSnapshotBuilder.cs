@@ -14,7 +14,8 @@ internal static class LanguageSnapshotBuilder
     internal static LanguageSnapshot Build(
         LanguageCatalogRegistry registry,
         LanguageTag requestedLanguage,
-        LanguageDefinition definition)
+        LanguageDefinition definition,
+        LanguageSnapshot? previous = null)
     {
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(definition);
@@ -34,11 +35,21 @@ internal static class LanguageSnapshotBuilder
         var requiresTranslatedCoverage =
             !LanguageFallbackResolver.HasEnglishPrimaryLanguage(requestedLanguage);
         var entries = new LanguageSnapshotEntry[registry.Catalogs.Count][];
+        var canReuse = previous?.RequestedLanguage == requestedLanguage &&
+                       previous.FallbackCandidates is { } previousCandidates &&
+                       previousCandidates.SequenceEqual(candidates);
 
         for (var catalogSlot = 0; catalogSlot < registry.Catalogs.Count; catalogSlot++)
         {
             var catalog = registry.Catalogs[catalogSlot];
             var bundles = registry.GetBundles(catalogSlot);
+            if (canReuse && previous!.Registry is { } previousRegistry &&
+                previousRegistry.HasSameCatalog(catalog, bundles, out var previousSlot))
+            {
+                // 行是不可变数组；按身份映射旧 slot，只共享该行，不保留整张旧快照。
+                entries[catalogSlot] = previous.GetCatalogEntries(previousSlot);
+                continue;
+            }
             var catalogEntries = new LanguageSnapshotEntry[catalog.Units.Count];
             var resolver = new MatchedBundleResolver(bundles, candidates);
             for (var unitSlot = 0; unitSlot < catalog.Units.Count; unitSlot++)
@@ -90,7 +101,7 @@ internal static class LanguageSnapshotBuilder
             entries[catalogSlot] = catalogEntries;
         }
 
-        return new LanguageSnapshot(requestedLanguage, entries);
+        return new LanguageSnapshot(requestedLanguage, entries, registry, candidates);
     }
 
     // Expand the ordered match prefix only when a unit cannot use a previously matched bundle.

@@ -64,6 +64,8 @@ public class ThemeStartupTests
             var asset = ControlThemeAssetContractTests.Asset([new ControlThemeExportDescriptor(descriptor.ControlType, descriptor.ControlType)],
                 [ControlTokenIdentity.ForControl(descriptor.ControlType, descriptor.Identity.Catalog, descriptor.Identity.Id)], globals: AtomUI.Generated.AtomUICore.GeneratedThemeSchema.GetGlobalTokens());
             var provider = new TestControlThemesProvider("Tests.Controls");
+            var packageResource = new object();
+            ((ResourceDictionary)provider.ControlThemes.Single())["PackageThemeResource"] = packageResource;
             var semanticDescriptor = new ControlSemanticDescriptor(
                 descriptor.ControlType,
                 descriptor.Identity,
@@ -97,7 +99,8 @@ public class ThemeStartupTests
             manager.SemanticParts.TryGetControl(descriptor.ControlType, out var registeredSemanticDescriptor)
                    .ShouldBeTrue();
             registeredSemanticDescriptor.ShouldBeSameAs(semanticDescriptor);
-            manager.Resources.MergedDictionaries.ShouldContain(provider.ControlThemes.Single());
+            manager.Resources.TryGetResource("PackageThemeResource", ThemeVariant.Light, out var resource).ShouldBeTrue();
+            resource.ShouldBeSameAs(packageResource);
             Should.Throw<InvalidOperationException>(() => builder.AddControlPackage(package));
         });
     }

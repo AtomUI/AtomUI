@@ -21,7 +21,12 @@ public class TypeMapRegistrationGeneratorTests
             public class Button : Avalonia.Controls.Control { }
             public class Empty : Button { }
             public class Container { internal class Presenter : Avalonia.Controls.Control { } }
-            """, Asset("Button", "<ControlTheme x:Key=\"{x:Type local:Button}\" TargetType=\"local:Button\" />"),
+            """,
+            new Options(globalOptions: new Dictionary<string, string>
+            {
+                ["build_property.AtomUICriticalControls"] = "Button,Unused"
+            }),
+            Asset("Button", "<ControlTheme x:Key=\"{x:Type local:Button}\" TargetType=\"local:Button\" />"),
             Asset("Presenter", "<ControlTheme x:Key=\"{x:Type local:Container.Presenter}\" TargetType=\"local:Container.Presenter\" />"));
         var source = Source(result, "GeneratedTypeMapRegistration.g.cs");
         source.ShouldContain("typeof(global::Demo.Container.Presenter)");
@@ -29,7 +34,8 @@ public class TypeMapRegistrationGeneratorTests
         source.ShouldContain("ControlPackageMarker(");
         source.ShouldContain("GeneratedTypeMapAccessor(typeof(");
         source.ShouldContain("GetOrCreateExternalTypeMapping<");
-        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeys)");
+        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeysCritical)");
+        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeysDeferred)");
         source.ShouldNotContain("UnitId");
         source.ShouldNotContain("AotTrim");
         AssertCompiles(result);
@@ -167,6 +173,45 @@ public class TypeMapRegistrationGeneratorTests
     }
 
     [Fact]
+    public void Critical_Registration_Falls_Back_To_One_Stage_On_The_Conditional_Backend()
+    {
+        var package = CreateStagingPackage();
+        var fallbackOutput = new GenerationOutput();
+
+        TypeMapRegistrationWriter.Write(
+            fallbackOutput,
+            package,
+            supportsTypeMap: false,
+            criticalControls: new HashSet<string>(["Button"], StringComparer.Ordinal));
+
+        var fallbackResult = fallbackOutput.Freeze();
+        var diagnostic = fallbackResult.Diagnostics.ShouldHaveSingleItem();
+        diagnostic.Descriptor.Id.ShouldBe("ATOMUIREG009");
+        diagnostic.Descriptor.DefaultSeverity.ShouldBe(DiagnosticSeverity.Warning);
+        fallbackResult.Files.Single(file => file.HintName == "GeneratedTypeMapRegistration.g.cs")
+            .Text.ShouldContain("private static void Collect(");
+
+        var ordinaryConditionalOutput = new GenerationOutput();
+        TypeMapRegistrationWriter.Write(
+            ordinaryConditionalOutput,
+            package,
+            supportsTypeMap: false);
+        ordinaryConditionalOutput.Freeze().Diagnostics.ShouldBeEmpty();
+
+        var typeMapOutput = new GenerationOutput();
+        TypeMapRegistrationWriter.Write(
+            typeMapOutput,
+            package,
+            supportsTypeMap: true,
+            criticalControls: new HashSet<string>(["Button"], StringComparer.Ordinal));
+        var typeMapResult = typeMapOutput.Freeze();
+        typeMapResult.Diagnostics.ShouldBeEmpty();
+        var typeMapSource = typeMapResult.Files.ShouldHaveSingleItem().Text;
+        typeMapSource.ShouldContain("private static void CollectCritical");
+        typeMapSource.ShouldContain("private static void CollectDeferred");
+    }
+
+    [Fact]
     public void Exports_Respect_Lexical_Scope_Named_Keys_And_Multiple_Targets()
     {
         var result = Run("""
@@ -214,6 +259,45 @@ public class TypeMapRegistrationGeneratorTests
     }
 
     internal static string RuntimeDirectory => Path.GetDirectoryName(typeof(TypeMapRegistrationGeneratorTests).Assembly.Location)!;
+
+    private static RegistrationPackage CreateStagingPackage()
+    {
+        const string demoAssembly = "Demo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
+        static RegistrationControl Control(string name)
+        {
+            var type = new RegistrationType(
+                "global::Demo." + name,
+                "Demo." + name,
+                "Demo." + name + ", " + demoAssembly);
+            return new RegistrationControl(
+                type,
+                null,
+                null,
+                new ValueArray<string>([type.Name]),
+                new ValueArray<string>([]),
+                new ValueArray<string>([]),
+                new ValueArray<RegistrationTrigger>([new RegistrationTrigger(type, "control")]));
+        }
+
+        return new RegistrationPackage(
+            "Demo.Controls",
+            demoAssembly,
+            "Demo.Generated",
+            new ValueArray<RegistrationControl>([Control("Button"), Control("Deferred")]),
+            new ValueArray<RegistrationAsset>([]),
+            new ValueArray<string>([]),
+            RegistrationFingerprint.ComputeContractPrefix([]),
+            RegistrationFingerprint.ComputeResourceKeyPrefix([]),
+            new RegistrationType(
+                "global::Demo.RegistrationBuilder",
+                "Demo.RegistrationBuilder",
+                "Demo.RegistrationBuilder, " + demoAssembly),
+            new RegistrationType(
+                "global::Demo.Void",
+                "Demo.Void",
+                "Demo.Void, " + demoAssembly));
+    }
+
     private static readonly Dictionary<string, string> RuntimeDependencies = ReadRuntimeDependencies();
     private static Dictionary<string, string> ReadRuntimeDependencies()
     {

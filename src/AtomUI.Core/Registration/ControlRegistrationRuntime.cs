@@ -25,6 +25,19 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collect, prepare, complete, ensure: false);
 
+    // 分区收集（分级启动）：关键集先行，余量以委托暂存在包注册上（见 ControlPackageRegistration
+    // .DeferredCollect 注释）。使用独立方法名，保持既有 RegisterPackage 的源码重载解析与二进制兼容。
+    public static IAtomUIBuilder RegisterPartitionedPackage(
+        IAtomUIBuilder builder,
+        string packageId,
+        Func<IControlThemesProvider> createProvider,
+        Action<ControlPackageRegistrationBuilder> collectCritical,
+        Action<ControlPackageRegistrationBuilder> collectDeferred,
+        Action<IAtomUIBuilder>? prepare = null,
+        Action<IAtomUIBuilder>? complete = null) =>
+        Register(builder, packageId, createProvider, collectCritical, prepare, complete, ensure: false,
+            collectDeferred: collectDeferred);
+
     public static IAtomUIBuilder EnsurePackage(
         IAtomUIBuilder builder,
         string packageId,
@@ -33,6 +46,18 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? prepare = null,
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collect, prepare, complete, ensure: true);
+
+    // 分区收集（分级启动）Ensure 变体，独立方法名避免改变既有 EnsurePackage 的重载解析。
+    public static IAtomUIBuilder EnsurePartitionedPackage(
+        IAtomUIBuilder builder,
+        string packageId,
+        Func<IControlThemesProvider> createProvider,
+        Action<ControlPackageRegistrationBuilder> collectCritical,
+        Action<ControlPackageRegistrationBuilder> collectDeferred,
+        Action<IAtomUIBuilder>? prepare = null,
+        Action<IAtomUIBuilder>? complete = null) =>
+        Register(builder, packageId, createProvider, collectCritical, prepare, complete, ensure: true,
+            collectDeferred: collectDeferred);
 
     public static void CollectFragments(
         ControlPackageRegistrationBuilder builder,
@@ -77,7 +102,8 @@ public static class ControlRegistrationRuntime
         Action<ControlPackageRegistrationBuilder> collect,
         Action<IAtomUIBuilder>? prepare,
         Action<IAtomUIBuilder>? complete,
-        bool ensure)
+        bool ensure,
+        Action<ControlPackageRegistrationBuilder>? collectDeferred = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         if (builder is not AtomUIBuilder root)
@@ -102,7 +128,8 @@ public static class ControlRegistrationRuntime
             var collection = new ControlPackageRegistrationBuilder();
             collect(collection);
             state.ThrowIfUnavailable();
-            builder.Theme.AddControlPackage(collection.Build(packageId, provider));
+            var package = collection.Build(packageId, provider, collectDeferred);
+            builder.Theme.AddControlPackage(package);
             complete?.Invoke(builder);
             state.Stage(packageId);
             return builder;

@@ -100,6 +100,17 @@ public sealed class ControlPackageRegistrationBuilder
 
     internal ControlPackageRegistration Build(string id, IControlThemesProvider provider)
     {
+        return Build(id, provider, deferredCollect: null);
+    }
+
+    // 分区收集（分级启动）：关键集已收集进本 builder，余量收集以委托暂存在包注册上——
+    // 非 staged 应用在 ThemeManagerBuilder.Build 前内联执行（终态与全量收集等价）；
+    // staged 应用由 Stage 2 注册窗口执行（registry v2 增补）。
+    internal ControlPackageRegistration Build(
+        string id,
+        IControlThemesProvider provider,
+        Action<ControlPackageRegistrationBuilder>? deferredCollect)
+    {
         ThrowIfUnavailable();
         _sealed = true;
         foreach (var asset in _assets.Values)
@@ -111,7 +122,8 @@ public sealed class ControlPackageRegistrationBuilder
         }
         return new(id, _controls, _assets.Values, _semantics, provider, _resources.Values)
         {
-            SchemaFingerprint = PackageSchemaFingerprint
+            SchemaFingerprint = PackageSchemaFingerprint,
+            DeferredCollect = deferredCollect
         };
     }
 

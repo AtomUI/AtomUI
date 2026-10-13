@@ -63,7 +63,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `XAML` | AXAML | AXAML 静态结构、绑定、资源引用 |
 | `TOKEN` | Theme / Token | Token 定义、注册、资源键、主题约束 |
 | `LOC` | Localization | Language Catalog、XLIFF、语言元数据和静态语言包 |
-| `REG` | Control Registration | TypeMap 控件/资源契约、Package bootstrap、工具链和浏览器后端诊断；已分配 `001`–`007` |
+| `REG` | Control Registration | TypeMap 控件/资源契约、Package bootstrap、工具链和浏览器后端诊断；已分配 `001`–`009` |
 | `LINK` | 历史 Linked Registration | Deprecated / reserved，仅保留已发布 ID 的历史语义，不用于新注册体系 |
 
 新增领域前缀前必须先更新本文档，说明用途和 owner。
@@ -87,6 +87,8 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIREG005` | Registration | Error | package、Group、Token owner、资产或生成符号身份冲突 | 保留唯一且一致的完整身份 | Registration generator / TypeMap linker |
 | `ATOMUIREG006` | Registration | Error | marker ABI/Group 无效、目标框架不受支持或与官方 TypeMap API/实际工具版本不匹配、平台字符串/资源域不兼容，或链接后端不受支持 | 重新构建匹配 ABI 的包/后端并修正平台或链接配置 | Registration generator / TypeMap linker |
 | `ATOMUIREG007` | Registration | Error | 可达 TypeMap accessor 未正确转换，或 Sweep/输出产物与转换结果不一致 | 启用匹配后端，重新链接并验证生成 accessor/helper | TypeMap linker |
+| `ATOMUIREG008` | Registration | Error | Native8 发布的隔离输出、SDK/runtime、trim 或 whole-program 输入不满足已验收边界 | 使用受支持的 Native8 发布参数并保持 registration scope 输出隔离 | Native8 build backend |
+| `ATOMUIREG009` | Registration | Warning | 控件包声明了分级关键集，但当前条件注册后端不支持分区，生成器将该包降级为单阶段完整注册 | 将 `AtomUICriticalControls` 限定到支持官方 TypeMap 的目标框架；net8 不声明关键集，正常执行完整单阶段注册 | Registration generator |
 | `ATOMUIAOT001` | AOT | Warning | 已知 data member path 的 model type，但找不到 generated accessor | 给类型、接口或基类添加 `[GenerateDataMemberAccessors]`，或显式传入 `IDataMemberAccessorDescriptor` | DataMemberAccessors |
 | `ATOMUIAOT002` | AOT | Warning | model type 有 generated accessor，但目标 path 不会被生成 | 改成可访问实例属性、修正 path，或显式传入 descriptor | DataMemberAccessors |
 | `ATOMUIAOT003` | AOT | Warning | 使用字符串常量 path，编译期无法确认 model type | 使用 `nameof(Type.Property)`，或显式传入 descriptor | DataMemberAccessors |
@@ -136,7 +138,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 
 ## TypeMap 注册诊断
 
-`REG` 是当前控件注册领域的诊断前缀。以下语义依次对应已实现的 `ATOMUIREG001`–`ATOMUIREG007`，
+`REG` 是当前控件注册领域的诊断前缀。以下语义依次对应已实现的 `ATOMUIREG001`–`ATOMUIREG009`，
 精确编号见上表；Core 启动时才可判断的冲突使用运行时异常。旧 `LINK` ID 不复用。
 类型与资源行为以 [控件注册契约](../../architecture/foundations/control-registration-contracts.md)为准，
 发布 ABI 以 [TypeMap 契约](../../reference/aot/typemap-contract.md)为准。

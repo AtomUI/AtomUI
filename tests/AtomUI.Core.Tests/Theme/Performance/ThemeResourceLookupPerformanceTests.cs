@@ -27,7 +27,7 @@ public class ThemeResourceLookupPerformanceTests
         var snapshot = ThemeTestSnapshotFactory.Compile(config, button);
         var provider = new ThemeTokenResourceProvider(snapshot);
         object globalKey = SharedTokenKind.ColorPrimary;
-        var controlSharedKey = snapshot.Registry.GetControlSharedResourceKey(
+        var controlSharedKey = ControlTokenResourceKey.Global(
             button.Identity,
             SharedTokenKind.ColorPrimary);
         var controlOwnKey = button.OwnTokens.ShouldHaveSingleItem().ResourceKey;

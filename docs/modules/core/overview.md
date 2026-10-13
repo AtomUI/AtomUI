@@ -31,6 +31,7 @@
 | `Theme/Resources/` | Snapshot-backed ResourceProvider、全局 SharedTokenResource、生成式 XxxTokenResource、ControlTheme asset manifest、resolver 和样式加载辅助 |
 | `Theme/DesignTokens/` | 仅供编译阶段使用的 DesignToken、ControlToken builder、定义和 value converter |
 | `Localization/` | 根 Builder 的本地化扩展；Catalog、Snapshot、Manager 和资源扩展位于 `AtomUI.Localization` 项目 |
+| `Collections/` | ItemsSource 集合适配与弱事件转发 |
 | `Animations/` | Avalonia Transition 扩展 |
 | `MotionScene/` | 进入、离开、移动、折叠等 Motion 抽象，以及供上层控件复用的 internal 动效执行生命周期词汇 |
 | `Assets/Themes/` | 内置主题定义 |
@@ -48,6 +49,21 @@ Core 拥有 `AbstractControlDesignToken`、`ControlDesignTokenAttribute` 和终�
 Control 家族的共享视觉语义。跨 Desktop/Mobile 的抽象 Control Token 定义属于 `AtomUI.Controls`；Generator 在编译期
 扁平化这些定义，Core 运行时不遍历继承链。完整契约见
 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。
+
+## 集合与 Motion 生命周期
+
+`ItemCollection` 使用 Avalonia 的静态集合弱事件订阅外部 ItemsSource。适配器存活期间持续转发集合变更与 Reset，
+换源时解除旧源订阅，且不要求消费控件通过清空用户数据释放引用；长寿命源不会反向保留适配器及其订阅控件。
+
+`AbstractMotion.Run` 和 `RunAsync` 共用执行内核。每次执行持有独立的 animation/transition 快照和取消状态，同一 actor
+的新运行取消旧运行；旧执行只能释放自己的 transition，不能重置新执行的 origin、transform 或 Animating 状态。
+正常完成才通知 Completed；取消以 `OperationCanceledException` 传播，失败直接传播给异步调用者。无返回任务的 `Run`
+观察取消和异常，并将执行失败记录到 Control 日志。Transition 等待所有完成信号，任意失败立即传播，保留无属性变化时的
+有限超时兜底；成功、失败、取消均释放订阅并清理执行状态。清理中的属性观察者或 transition 释放抛错时，
+仍继续其余清理并释放当前运行的所有权；多个失败以聚合异常报告，同时保留原始执行异常。
+
+Move Motion 原位替换自身动画配置，复用实例不会累计旧动画，也不移除或重排调用者加入 `Animations` 的动画。`Follow` 的绑定由 actor 持有，`UnFollow` 成对释放绑定并退出
+跟随模式，保留解绑瞬间的可见值。上述执行状态均为内部实现，不增加公开生命周期 API。
 
 ## 图片加载生命周期职责
 

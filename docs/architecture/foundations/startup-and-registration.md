@@ -123,6 +123,113 @@ this.UseAtomUI(builder =>
 Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification TopLevel 必须从显式 owner 获得
 `ThemeContextLease` 和宿主私有 ResourceBridge；无 owner 静态 API 使用根主题。
 
+## 分级启动（Staged Startup）
+
+> 状态：2026-10-12 工作树已完成算法与提交边界重构，保持 opt-in；性能和平台证据单独验收。
+> 资源优先级、跨代缓存身份、快照生命周期及跨主题/语言发布的职责见[分级启动演化与提交边界](staged-startup-evolution.md)。
+
+`UseAtomUI()` 默认把全部注册与初始化在窗口出现前同步完成。对于注册面较大的应用（如 Gallery 的全部
+可选包），可以通过**分级启动**把"完整 AtomUI chrome 首帧"与"框架完备初始化"拆成两个阶段：窗口出现
+只等待 chrome 闭包（分区关键集 + 公共语言 + 关键字体）。指定宿主的可见根完成 compositor rendered batch，
+且普通前台窗口收到请求的激活事件后，调度剩余注册。
+这不证明显示器实际呈现。机制是**纯 opt-in**——不调用 `Deferred` 的应用走同步构建路径。
+
+```csharp
+this.UseAtomUI(builder =>
+{
+    builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS, LanguageTags.ZhCN]);
+    builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+    builder.UseDesktopControls();            // Stage 1：分区包按关键集注册（见下节）
+
+    builder.Deferred(() =>                   // Stage 2 注册块（按声明序执行）
+    {
+        builder.UseDesktopColorPicker();
+        builder.UseDesktopDataGrid();
+    });
+});
+```
+
+`Deferred` 支持控件包、主题定义来源、本地化 Catalog/Bundle 和语言配置。服务、初始主题、FollowSystem 模板、
+字体、应用标识、initializer 与 Deferred 声明只能在初始配置窗口调用；后置或晚期调用立即抛错。
+主题 initializer 的任意副作用不能参加 Stage 2 原子提交。成功封存统一检查包失败状态与未完成注册。
+
+### 统一启动结果
+
+`Application.GetStartup()` 返回该应用唯一的 `IAtomUIStartup`，同步与分阶段模式共用契约。
+尚未调用 `UseAtomUI()` 时抛出明确的初始化错误。`State` 描述当前状态：
+
+| 路径 | 状态顺序 |
+| --- | --- |
+| 同步 | `Configuring → Ready` |
+| 分阶段 | `Configuring → WaitingForHost → Initializing → Ready` |
+| 失败或宿主取消 | 从进行中的状态进入 `Failed` 或 `Canceled`，终态不可覆盖 |
+
+`Completion` 是可重复等待的框架就绪任务。成功为 `RanToCompletion`；失败保留原始异常；应用启动取消为
+`Canceled`。发布终态前先关闭注册输入、释放宿主等待者及 staging hooks。启动已成功后释放应用服务不会
+把结果改成取消。晚创建窗口、single-view 与多个观察者都能读取同一个结果。
+
+```csharp
+var startup = Application.Current!.GetStartup();
+await startup.Completion.WaitAsync(windowCancellation);
+// 在 UI 线程安排实际页面或 shell 构建。
+```
+
+`WaitAsync` 的调用者取消只结束自身等待；应用启动只受自身宿主生命周期控制。运行期间取消先关闭注册
+能力与等待订阅，待准备任务退出并完成清理后，`Completion` 才以取消结束。
+
+`ProgressChanged` 提供可选的 UI 线程进度，参数含 `State` 和 `Detail`。订阅不会重放，处理器异常逐个隔离并
+记录 System warning；读取终态必须使用 `State`/`Completion`。同步模式不增加后台工作或 Dispatcher 调度。
+旧 `IAtomUIStartupEvents`、`AtomUIStartupEvents`、`StartupStage`、`StartupStageEventArgs` 及两处
+`GetStartupEvents()` 已移除，迁移见[待发布启动 API 迁移](../../releases/unreleased-startup-api-changes.zh-CN.md)。
+
+Gallery 构造加载态后等待 `Completion`，成功后将 Shell 构建排入 Background，失败展示异常信息。
+窗口关闭或卸载取消自身等待和未执行的构建操作；晚创建窗口同样构建内容。Shell 构建/布局自身仍不可抢占，
+其成本单独测量。框架 Ready 不代表 Shell 已绘制，宿主就绪证据见
+[就绪、取消与重入](staged-startup-evolution.md#4-就绪取消与重入)。
+
+### 控件粒度分区
+
+`builder.UseDesktopControls()` 的包可以由生成器按**关键集**分区：csproj 声明
+`AtomUICriticalControls`（逗号分隔的控件简单名，如 `Window,WindowTitleBar,Menu,Icon,Popup`；该值通过
+`.editorconfig` 暴露给生成器，不能使用会被解释为注释起始符的分号），
+生成器发射 `CollectCritical/CollectDeferred` 两段收集，并调用独立 ABI 入口
+`RegisterPartitionedPackage` / `EnsurePartitionedPackage`。Stage 1 只执行关键集收集
+（chrome 闭包先行），余量在 Stage 2 注册窗口由 `RunDeferredCollects` 收集为与包同 id/provider 的
+「余量段」，经 `MergeStageTwoInto` 并入后重建 registry（v2）并按当前请求重应用主题（控件快照零
+物化——首查编译，见 runtime.md §7/§8）。
+
+- 未声明 `AtomUICriticalControls` 的包不分区，发射保持 6 参调用原样；使用匹配 schema 协议的老生成包在分期应用
+  中回退为整包 `Deferred` 粒度（保留旧入口 ABI，历史指纹协议边界见[注册契约](control-registration-contracts.md#71-分级演化的身份和资源顺序)）。**方向是单向的**：分区包（新生成器产出，独立分区入口调用）
+  必须配新 AtomUI.Core（含 `RegisterPartitionedPackage` / `EnsurePartitionedPackage`）——旧 Core 上加载会以 MissingMethodException 失败，同 F2
+  陈旧包先例方向；条件（net8）后端不支持分区，声明了 `AtomUICriticalControls` 的 net8 兼容包会被
+  生成器显式降级为不分区并给出 `ATOMUIREG009` warning；该回退保持完整注册和可构建性。
+  仓库 Desktop 项目仅对兼容 net10.0 的目标声明关键集；net8 构建不传入该配置，直接生成完整单阶段入口，
+  正常多目标构建不产生回退警告。该条件按目标框架兼容性判断，保留现代平台后缀目标的分区配置。
+- 关键集必须同时覆盖 descriptor、窗口装饰资产、标题栏、菜单和真实平台依赖。仅统计 headless 查询过的
+  `{Window, WindowTitleBar}` token 槽位不能证明完整 chrome 闭包；应联合资产断言和原生首帧视觉/交互证据。
+- 裁剪路径的等价性由生成器保证：`CandidateKeysCritical ∪ CandidateKeysDeferred` 与未分区的全量
+  `CandidateKeys` 逐项一致。
+
+### Stage 2 演化与失败语义
+
+- **主题**：注册窗口（受控重开/再冻结）内完成 Deferred 块 → 冻结本地化输入 → 余量段收集与并入 →
+  准备 registry、目录、根/局部快照、Semantic registry 和静态资源表。已有 provider/owner 保持稳定。
+- **本地化**：增量准备 Catalog 行、全部支持语言 Snapshot 和定义，以匹配的 registry/revision 读取视图交换
+  （manager/provider/localizer 与订阅者零身份变化）；未被覆盖的既有键值不变，新键即时可查，Stage 2 后切换
+  语言不会退回 Stage 1 Snapshot。Stage 1 是中间态：应用级语言包
+  bundle 可能先于其目标包的 catalog 到达（catalog 随包后置），未解析引用在 Stage 1 被容忍、在
+  Stage 2 终态严格校验。
+- **提交与失败**：`StageTwoEvolutionPlan` 先校验主题/作用域与语言版本，再无回调交换双方有效状态，最后统一发布。
+  提交前失败后继续使用 Stage 1；一次性输入在成功、失败或取消后释放。详见[提交边界](staged-startup-evolution.md#3-capturepreparecommitcorepublish)。
+
+### 已知约束
+
+- 同步模式共用启动结果对象，`UseAtomUI()` 返回时任务已经完成，不引入后台初始化或调度。
+- 分区包的余量资源按 provider 以 `(Phase, Order, AssetId)` 全局归并落地——合并字典查找自尾向头
+  扫描，资源序不得按段拼接（否则既有资源首查被迫构造余量段全部字典，非分期路径也会变慢）。
+- AOT：分期不引入反射/表达式树；`Deferred` 只存 `Action` 委托。发布门（Gallery staged +
+  StartupPerformance 非 staged 双 AOT 冒烟）为常规验收项。
+
 ## ThemeManagerBuilder 收集内容
 
 `ThemeManagerBuilder` 在构建前收集以下内容：

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Collections;
+using Avalonia.Utilities;
 
 namespace AtomUI.Collections;
 
@@ -9,9 +10,11 @@ public class ItemCollection : IList, INotifyCollectionChanged
 {
     private Mode _mode;
     private IList _source;
+    private readonly TargetWeakEventSubscriber<ItemCollection, NotifyCollectionChangedEventArgs> _sourceSubscriber;
 
     public ItemCollection()
     {
+        _sourceSubscriber = new(this, static (collection, sender, _, args) => collection.OnSourceCollectionChanged(sender, args));
         _source = CreateDefaultCollection();
         SubscribeToChanges();
     }
@@ -112,7 +115,7 @@ public class ItemCollection : IList, INotifyCollectionChanged
     {
         if (_source is INotifyCollectionChanged incc)
         {
-            incc.CollectionChanged += OnSourceCollectionChanged;
+            WeakEvents.CollectionChanged.Subscribe(incc, _sourceSubscriber);
         }
     }
 
@@ -120,7 +123,7 @@ public class ItemCollection : IList, INotifyCollectionChanged
     {
         if (source is INotifyCollectionChanged incc)
         {
-            incc.CollectionChanged -= OnSourceCollectionChanged;
+            WeakEvents.CollectionChanged.Unsubscribe(incc, _sourceSubscriber);
         }
     }
 

@@ -29,12 +29,14 @@ internal sealed record RegistrationType(string Name, string MetadataName, string
 
 internal sealed record RegistrationOwner(RegistrationType Type, string Catalog, string Id);
 internal sealed record RegistrationExport(RegistrationType Target, RegistrationType? KeyType, string? Key);
+internal sealed record RegistrationResourceKey(RegistrationType? Type, string? Key);
 internal sealed record RegistrationBinding(RegistrationOwner Owner, string Property, RegistrationType Target);
 internal sealed record RegistrationAsset(string Id, string Uri, string Wrapper, int Order,
     ValueArray<RegistrationExport> Exports, ValueArray<RegistrationOwner> Owners,
     ValueArray<RegistrationBinding> Bindings, ulong CompiledContractFingerprint, ValueArray<string> Guards, ValueArray<string> ExplicitIncludes, ValueArray<string> ExternalDynamicKeys)
 {
     internal RegistrationType? DeferredThemeTarget { get; init; }
+    internal ValueArray<RegistrationResourceKey>? ResourceKeys { get; init; }
 }
 internal sealed record RegistrationControl(RegistrationType Type, string? TokenFactory, string? SemanticFactory,
     ValueArray<string> Triggers, ValueArray<string> Guards, ValueArray<string> Assets,
@@ -43,7 +45,10 @@ internal sealed record RegistrationTrigger(RegistrationType Type, string Kind);
 internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, string Namespace,
     ValueArray<RegistrationControl> Controls, ValueArray<RegistrationAsset> Assets, ValueArray<string> CompiledGlobalTokenNames,
     ulong CompiledContractFingerprintPrefix, ulong CompiledResourceKeyFingerprintPrefix,
-    RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null, ulong PackageSchemaFingerprint = 0);
+    RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null, ulong PackageSchemaFingerprint = 0)
+{
+    internal bool SupportsResourceKeys { get; init; }
+}
 
 internal readonly struct ValueArray<T> : IEquatable<ValueArray<T>>, IEnumerable<T>
 {

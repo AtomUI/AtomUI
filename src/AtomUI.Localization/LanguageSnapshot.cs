@@ -8,13 +8,20 @@ public sealed class LanguageSnapshot
 
     internal LanguageSnapshot(
         LanguageTag requestedLanguage,
-        LanguageSnapshotEntry[][] entries)
+        LanguageSnapshotEntry[][] entries,
+        LanguageCatalogRegistry? registry = null,
+        IReadOnlyList<LanguageTag>? fallbackCandidates = null)
     {
         RequestedLanguage = requestedLanguage;
         _entries = entries;
+        Registry = registry;
+        FallbackCandidates = fallbackCandidates;
     }
 
     public LanguageTag RequestedLanguage { get; }
+    internal LanguageCatalogRegistry? Registry { get; }
+    internal IReadOnlyList<LanguageTag>? FallbackCandidates { get; }
+    internal LanguageSnapshotEntry[] GetCatalogEntries(int catalogSlot) => _entries[catalogSlot];
 
     internal LanguageSnapshotEntry GetEntry(int catalogSlot, int unitSlot)
     {

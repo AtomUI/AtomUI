@@ -234,6 +234,31 @@ Order 来自正常包资源契约和显式包含次序，不能来自 TypeMap �
 非裁剪与裁剪执行中，共同保留资产的相对优先级和选中控件的观察结果必须一致；不要求裁剪产物包含全部未用资源。
 跨包收集和冻结的总体时序由 [注册生命周期](aot-and-trimming.md#6-注册生命周期)拥有。
 
+### 7.1 分级演化的身份和资源顺序
+
+分级注册不改变上述顺序与冲突语义。跨阶段资源/查询目标由
+[惰性物化与资源查询](../systems/theming/lazy-materialization.md)拥有；统一提交由
+[分级启动演化](staged-startup-evolution.md)拥有。
+
+- 每代 registry 的 Revision 证据必须覆盖该代实际贡献集合。空包集合、全指纹非分区包、分区包以及混合
+  手写包均适用；清除 request 去重键不能代替更新 schema Revision 和快照缓存身份。
+- 当证据无法描述新增贡献时，先回退实际 schema 的完整计算；不得继续使用 Stage 1 的包列表生成 Stage 2 Revision。
+- 分区指纹方案需分别表达关键集和最终集合，并保留裁剪/平台选中集合的正确性。完整收集后的非 staged 路径
+  不应因为包支持分区就永久失去安全的组合快路径。
+- 数字 slot 只在单代 registry 内稳定，跨代共享必须校验 exact identity、CLR type、schema 与计算输入。
+- 同一资产跨片段/跨阶段只挂一次；新段按完整排序键合并，且静态层相对根 Token provider 的优先级保持不变。
+- 分区 ABI 使用独立方法名以保留既有位置 lambda 的源码重载解析；旧 generated package 的支持边界必须包含
+  实际 descriptor/fingerprint 协议版本，不能仅根据方法仍存在就宣称所有旧二进制免重编。
+
+构建期紧凑完整 schema/稳定身份表是后续候选，不是当前契约的既成实现；采用前必须证明没有把全部运行时
+descriptor 构造重新搬回首帧，也没有破坏官方 TypeMap/条件后端的精细选择。
+
+兼容边界（2026-10-12 验证）：本次资源键工厂是增量 ABI；同 schema 协议的消费端没有该工厂时，生成器回退
+旧四参构造函数。它不扩展为任意历史 Generator/Core 混用承诺。以当前生成器直接引用已发布 Core 6.2.4
+会缺少此前优化已经引入的 `SchemaPrefixState`、`CreateGeneratedPreSorted` 和 `PackageSchemaFingerprint`，
+构建无法通过。Generator/Core 应使用匹配版本；pre-b355 生成资产的指纹协议和第三方包须分别核对、必要时重编，
+不能仅凭旧构造函数仍在就宣称免重编。
+
 ## 8. 关键反例与验证
 
 - Button 不因为 SearchButtonTheme 保留 SearchEdit；增加同目录无关控件不扩大集合。

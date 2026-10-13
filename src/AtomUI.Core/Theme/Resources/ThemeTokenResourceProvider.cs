@@ -56,11 +56,11 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
                 return false;
             }
 
-            var control = snapshot.Controls[controlSlot];
-            var found = control.TryGetSharedResource(
-                snapshot.Registry.GetSharedResourceKey(controlKey.Kind),
-                snapshot.GlobalResources,
-                out value);
+            var resourceKey = snapshot.Registry.GetSharedResourceKey(controlKey.Kind);
+            var cell = snapshot.Controls.GetCell(controlSlot);
+            var found = cell.UsesRootSharedResources
+                ? snapshot.GlobalResources.TryGetValue(resourceKey, out value)
+                : cell.GetValue().TryGetSharedResource(resourceKey, snapshot.GlobalResources, out value);
             value = ThemeResourceValue.CloneForConsumer(value);
             return found;
         }

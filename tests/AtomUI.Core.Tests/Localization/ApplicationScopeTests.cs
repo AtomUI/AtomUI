@@ -1,7 +1,15 @@
 using AtomUI.Localization;
+using AtomUI.Registration;
+using AtomUI.Theme;
+using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Resources;
+using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Shouldly;
 using Xunit;
 
@@ -54,6 +62,148 @@ public class ApplicationScopeTests
             scope.ResourceProvider.ShouldBeSameAs(provider);
             window.FlowDirection.ShouldBe(FlowDirection.LeftToRight);
             window.Close();
+        });
+    }
+
+    [Fact]
+    public async Task Staged_Startup_Waits_For_The_Startup_TopLevel_First_Frame()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var application = Application.Current!;
+            using var scope = CreateScope(application);
+            var runCount = 0;
+            scope.ConfigureStartup([() => runCount++]);
+            var window = new Window { Width = 320, Height = 200 };
+            window.Show();
+
+            scope.ScheduleStageTwoAfterFirstFrame(window);
+            int? runCountObservedByBackgroundMarker = null;
+            Dispatcher.UIThread.Post(
+                () => runCountObservedByBackgroundMarker = runCount,
+                DispatcherPriority.Background);
+
+            runCount.ShouldBe(0);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            await scope.Startup.Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+            runCountObservedByBackgroundMarker.ShouldBe(0);
+            runCount.ShouldBe(1);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public async Task Stage_Two_Localization_Preparation_Failure_Preserves_Stage_One_Theme_State()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var application = Application.Current!;
+            var identity = ControlTokenIdentity.ForControl(typeof(Button), "Deferred", "Button");
+            application.UseAtomUI(builder =>
+            {
+                builder.Deferred(() =>
+                {
+                    RegisterSemanticPackage(builder, identity);
+                    builder.Localization.AddTranslationBundle(
+                        new TranslationBundleDescriptor(
+                            "Missing:Catalog",
+                            LanguageTags.EnUS,
+                            TranslationSourceKind.ModuleBuiltIn,
+                            "AtomUI.Core.Tests",
+                            ["unreachable"]));
+                });
+            });
+            var themeManager = application.GetThemeManager().ShouldBeOfType<ThemeManager>();
+            var stageOneSnapshot = themeManager.CurrentSnapshot;
+            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
+
+            await Assert.ThrowsAnyAsync<Exception>(() => application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
+
+            application.GetStartup().State.ShouldBe(AtomUIStartupState.Failed);
+            themeManager.CurrentSnapshot.ShouldBeSameAs(stageOneSnapshot);
+            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
+        });
+    }
+
+    [Fact]
+    public async Task Stage_Two_Theme_Preparation_Failure_Does_Not_Publish_Staged_Semantics()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var application = Application.Current!;
+            var identity = ControlTokenIdentity.ForControl(typeof(Button), "Deferred", "Button");
+            application.UseAtomUI(builder =>
+            {
+                builder.Deferred(() =>
+                {
+                    RegisterSemanticPackage(builder, identity);
+                    builder.Theme.AddThemeDefinitionResolver(new FailingResolver());
+                });
+            });
+            var themeManager = application.GetThemeManager().ShouldBeOfType<ThemeManager>();
+            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
+
+            await Assert.ThrowsAnyAsync<Exception>(() => application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
+
+            application.GetStartup().State.ShouldBe(AtomUIStartupState.Failed);
+            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
+            var recovery = themeManager.ApplyThemeAsync(new ThemeRequest(
+                    IThemeManager.DEFAULT_THEME_ID,
+                    new ThemeConfigBuilder().Build(),
+                    ThemeTransitionReason.UserRequest))
+                .GetAwaiter()
+                .GetResult();
+            recovery.Status.ShouldBeOneOf(
+                ThemeTransitionStatus.Committed,
+                ThemeTransitionStatus.NoOp);
+        });
+    }
+
+    [Fact]
+    public async Task Stage_Two_Rejects_Deferred_Initializer_Before_It_Can_Run()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var application = Application.Current!;
+            var initializerRan = false;
+            application.UseAtomUI(builder =>
+            {
+                builder.Deferred(() =>
+                    builder.Theme.AddInitializer(_ => initializerRan = true));
+            });
+            var themeManager = application.GetThemeManager().ShouldBeOfType<ThemeManager>();
+            var stageOneSnapshot = themeManager.CurrentSnapshot;
+
+            await Assert.ThrowsAnyAsync<Exception>(() => application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
+
+            application.GetStartup().State.ShouldBe(AtomUIStartupState.Failed);
+            initializerRan.ShouldBeFalse();
+            themeManager.CurrentSnapshot.ShouldBeSameAs(stageOneSnapshot);
+        });
+    }
+
+    [Fact]
+    public async Task Startup_Progress_Subscriber_Failure_Does_Not_Reclassify_The_Framework_Commit()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var application = Application.Current!;
+            var laterSubscriberCalled = false;
+            application.UseAtomUI(builder => builder.Deferred(static () => { }));
+            var startup = application.GetStartup();
+            startup.ProgressChanged += (_, _) => throw new TestSubscriberException();
+            startup.ProgressChanged += (_, args) =>
+            {
+                if (args.State == AtomUIStartupState.Ready)
+                {
+                    laterSubscriberCalled = true;
+                }
+            };
+
+            await startup.Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+            laterSubscriberCalled.ShouldBeTrue();
+            startup.State.ShouldBe(AtomUIStartupState.Ready);
         });
     }
 
@@ -254,6 +404,56 @@ public class ApplicationScopeTests
             builder.LocalizationBuilder.Build(),
             ownedServices ?? []);
     }
+
+    private static void RegisterSemanticPackage(IAtomUIBuilder builder, ControlTokenIdentity identity)
+    {
+        ControlRegistrationRuntime.RegisterPackage(
+            builder,
+            "Deferred.Package",
+            static () => new DeferredProvider("Deferred.Package"),
+            collection => collection.AddSemanticControl(new ControlSemanticDescriptor(
+                typeof(Button),
+                identity,
+                [new SemanticPartDescriptor(
+                    "root",
+                    "root",
+                    null,
+                    typeof(Button),
+                    SemanticPartCardinality.Single,
+                    SemanticPartCustomization.Root,
+                    null,
+                    false,
+                    null,
+                    false)])));
+    }
+
+    private sealed class FailingResolver : IThemeDefinitionResolver
+    {
+        public string Id => nameof(FailingResolver);
+        public bool SupportsReload => false;
+
+        public ThemeDefinitionResolveResult Resolve(ThemeDefinitionResolveContext context)
+        {
+            return new ThemeDefinitionResolveResult(
+                [],
+                [new ThemeDiagnostic(
+                    "TEST-STAGE-TWO",
+                    ThemeDiagnosticSeverity.Error,
+                    Id,
+                    "$",
+                    "Stage 2 preparation failure")]);
+        }
+    }
+
+    private sealed class DeferredProvider : ControlThemesProvider
+    {
+        internal DeferredProvider(string id)
+        {
+            Id = id;
+        }
+    }
+
+    private sealed class TestSubscriberException : Exception;
 
     private sealed class TrackingOwnedService : IAtomUIOwnedService
     {

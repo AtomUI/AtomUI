@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Styling;
@@ -86,7 +86,7 @@ public class MoveDownInMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0.0, 0.0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -188,7 +188,7 @@ public class MoveDownOutMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -278,7 +278,7 @@ public class MoveUpInMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0.0, 0.0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -382,7 +382,7 @@ public class MoveUpOutMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -475,7 +475,7 @@ public class MoveLeftInMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0.0, 0.0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -575,7 +575,7 @@ public class MoveLeftOutMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -666,7 +666,7 @@ public class MoveRightInMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0.0, 0.0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)
@@ -767,7 +767,7 @@ public class MoveRightOutMotion : AbstractMotion
         animation.Children.Add(endFrame);
         RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative);
 
-        Animations.Add(animation);
+        SetBuiltInAnimation(animation);
     }
 
     internal override Size CalculateSceneSize(Size actorSize)

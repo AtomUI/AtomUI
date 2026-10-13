@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -16,7 +15,6 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
     private readonly SchemaPrefixState _resourceKeySchemaPrefix;
-    private ConcurrentDictionary<(int ControlSlot, SharedTokenKind Kind), object>? _controlSharedResourceKeys;
 
     internal ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
@@ -167,6 +165,35 @@ internal sealed class ThemeSchemaRegistry
     public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
     public ThemeSchemaRevision Revision { get; }
     internal IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
+
+    // 全局编译只依赖这些不可变描述符，不依赖控件/资产的 registry Revision。
+    // 使用精确对象身份也覆盖自定义 setter/factory 的行为，不能仅比较名字或版本号。
+    internal bool HasSameGlobalSchema(ThemeSchemaRegistry other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+        if (GlobalTokens.Count != other.GlobalTokens.Count || Algorithms.Count != other.Algorithms.Count)
+        {
+            return false;
+        }
+        for (var index = 0; index < GlobalTokens.Count; index++)
+        {
+            if (!ReferenceEquals(GlobalTokens[index], other.GlobalTokens[index]))
+            {
+                return false;
+            }
+        }
+        for (var index = 0; index < Algorithms.Count; index++)
+        {
+            if (!ReferenceEquals(Algorithms[index], other.Algorithms[index]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     internal static ulong ComputeResourceKeySchemaFingerprint(
         ControlThemeAssetDescriptor descriptor,
@@ -357,35 +384,6 @@ internal sealed class ThemeSchemaRegistry
             throw new ArgumentOutOfRangeException(nameof(kind));
         }
         return key;
-    }
-
-    internal object GetControlSharedResourceKey(int controlSlot, SharedTokenKind kind)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(controlSlot);
-        if ((uint)controlSlot >= (uint)Controls.Count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(controlSlot));
-        }
-
-        if (!Enum.IsDefined(kind))
-        {
-            throw new ArgumentOutOfRangeException(nameof(kind));
-        }
-
-        // Production lookup resolves unbound keys directly; allocate bound keys only on request.
-        var keys = LazyInitializer.EnsureInitialized(ref _controlSharedResourceKeys);
-        return keys.GetOrAdd((controlSlot, kind), static key => new ControlTokenResourceKey(key.ControlSlot, key.Kind));
-    }
-
-    internal object GetControlSharedResourceKey(
-        ControlTokenIdentity identity,
-        SharedTokenKind kind)
-    {
-        if (!TryGetControl(identity, out var descriptor))
-        {
-            throw new KeyNotFoundException($"Control Token identity '{identity}' is not registered.");
-        }
-        return GetControlSharedResourceKey(descriptor.Slot, kind);
     }
 
     private static object?[] CreateSharedResourceKeys(

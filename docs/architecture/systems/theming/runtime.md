@@ -594,8 +594,9 @@ ThemeCompileInput
   -> ThemeSnapshot (control slots compile on first query)
 ```
 
-编译阶段允许使用可变 builder，因为算法天然需要逐步派生。builder 的生命周期只限于一次编译，不能进入
-snapshot，也不能通过公开 API 返回。
+编译阶段允许使用可变 builder，因为算法天然需要逐步派生。目标是将其生命周期限制在一次编译，并且不通过
+公开 API 返回。惰性 cell 持有独立编译 source；全局结果复用时，仅首次实际编译控件才恢复可变 builder，
+不捕获历史 snapshot。详见[惰性物化设计](lazy-materialization.md)。
 
 全局计算顺序固定为：
 
@@ -623,9 +624,10 @@ Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Glo
 
 控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`
 按槽位惰性编译，首次查询时经同一 `CompileControl` 函数与同一缓存键编译，结果值与急切编译逐位
-相等（急切参考路径 `CompileControlsEagerForTest` 差分锁定）。首帧内首次实例化的控件一次性支付
-内联编译成本（~0.7ms 量级）。主题切换复用同样惰性：子快照槽位记录父快照引用，首访时物化并共享
-同一对象。失败语义同步后移：控件级编译错误（不支持的算法模式、evaluator 抛出等）不再使
+相等；编译结果由现有 Token 值、算法、资源投影与缓存契约测试验证，不保留未被执行的急切参考实现。
+首帧内首次查询的控件一次性支付内联编译成本，具体耗时依赖控件与运行环境。
+跨快照复用独立 cell，物化结果不保留历史 snapshot，见[惰性槽生命周期设计](lazy-materialization.md#2-独立惰性槽与历史快照释放)。
+失败语义同步后移：控件级编译错误（不支持的算法模式、evaluator 抛出等）不再使
 `ApplyTheme` 整体失败，而是在首次查询该槽位时抛出、后续每次查询重复抛出。
 
 任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot——该原子性指
@@ -658,12 +660,13 @@ ThemeSnapshot
 - Control 表按 registry slot 存放引用，`ControlTokenIdentity` 只用于配置边界和诊断。
 - Control 表是按槽位惰性编译的容器（只暴露 Count 与索引器，不实现枚举）；构造期解析槽位状态
   （已物化 / 复用父槽 / 待编译），保留字节估算为构造期基线加首访物化增量。缓存在插入时采样
-  `EstimatedRetainedBytes`，物化增长不回灌——估算漂移上界为全部槽位字节，只影响驱逐时机，
-  不影响正确性。
+  `EstimatedRetainedBytes`，物化增长尚未回灌。单快照槽数有限不构成整个应用的保留上界证明；历史父链与
+  物化输入的目标记账/释放要求见[内存计费与释放](lazy-materialization.md#7-内存计费与释放)。
 - 稀疏覆盖、Control Effective Global Token 差量和 Avalonia 资源投影使用不可变集合或 `FrozenDictionary`。
 - 颜色资源在 snapshot 中已经转换为不可变 Brush。
 - palette、集合和其他引用值必须在冻结前深复制为不可变值。
-- 不保存 `DesignToken`、`IControlDesignToken`、Control、Visual、Provider、事件或订阅。
+- 不保存 Control、Visual、Provider、事件或订阅。目标不长期保存可变 Token builder；当前惰性 source 仍保留
+  全局 builder 作为编译输入，需要按独立 cell 的输入所有权与物化后释放规则收敛。
 - 不提供 `SharedToken`、`ControlToken`、`Clone` 或可变字典查询 API。
 - imperative 消费者通过只读 Token resolver 查询 snapshot 值。
 - `ContentFingerprint` 是规范化内容的快速 hash，不是无碰撞的唯一身份。snapshot 的语义相等性必须比较对应的
@@ -1181,6 +1184,14 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 9. 执行与主题生命周期无关的模块初始化。
 
 不得先挂载空资源层再异步补主题，也不得通过 ThemeLoaded 事件修补 DefaultFont、断点或其他 Token。
+
+**分级启动（staged）状态**：保持 opt-in。Stage 1 注册关键集与先行包；Stage 2 等待指定宿主的 rendered batch
+和其请求的激活，再捕获/冻结输入、后台构建纯数据。自定义回调保留 UI 线程，静态 provider 不重挂载。
+主题与本地化先统一 CommitCore，再 Publish；Shell 由应用单独调度。批次完成不等于显示器实际呈现。
+跨系统职责、失败语义和生命周期统一由
+[分级启动演化与提交边界](../../foundations/staged-startup-evolution.md)定义。
+主题侧资源索引、全局计算身份拆分与惰性 cell 由[惰性物化与资源查询](lazy-materialization.md)定义。
+非 staged 路径继续作为同步语义与性能对照，所有通用优化均需验证它没有回归。
 
 独立 `TopLevel` 的首帧还包括平台窗口在 Avalonia 完成 `ApplyStyling` 前可能展示的客户区表面。宿主必须在调用
 平台 `Show` 前挂载目标 `ThemeContext`、设置与 snapshot 一致的显式 variant，并从当前作用域 Snapshot 同步读取窗口

@@ -1,3 +1,4 @@
+using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Schema;
@@ -5,64 +6,66 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Theme.Compilation;
 
 /// <summary>
-/// 控件快照槽位状态，快照构造期急切解析（见 ThemeCompiler.CompileControls）。
-/// </summary>
-internal enum ControlSlotState : byte
-{
-    /// <summary>构造期已物化（无配置且无 Own Token 的槽位在构造期拿到廉价空快照）。</summary>
-    Materialized,
-
-    /// <summary>复用父快照同槽位对象：切换期零编译，首访时物化父槽并共享同一引用。</summary>
-    ReuseParent,
-
-    /// <summary>编译输入已冻结，首访时经 CompileControl / ControlCompilationCache 编译。</summary>
-    Uncompiled,
-}
-
-/// <summary>
-/// Uncompiled 槽位的冻结编译输入。快照构造期由 ThemeCompiler 填充；CompileControl 纯读这些
-/// 输入构造新对象、无共享突变，因此惰性编译与急切编译逐位等价（同一函数、同一缓存键）。
+/// 惰性槽共享的只读全局编译输入。只保留全局计算所需数据，不持有父快照或整张控件配置表。
 /// </summary>
 internal sealed class LazyControlSnapshotSource
 {
-    private readonly ThemeSchemaRegistry _registry;
-    private readonly NormalizedControlThemeConfig?[] _configs;
+    private readonly IReadOnlyList<TokenDescriptor> _globalDescriptors;
     private readonly IReadOnlyList<ThemeAlgorithmDescriptor> _globalAlgorithms;
     private readonly ThemeAppearance _globalAppearance;
-    private readonly DesignToken _globalBuilder;
+    private readonly object _builderGate = new();
+    private DesignToken? _globalBuilder;
+    private readonly IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> _globalPalettes;
     private readonly TokenValueTable _globalValues;
     private readonly IReadOnlyDictionary<object, object?> _globalResources;
     private readonly ControlCompilationCache? _cache;
-    private readonly GlobalCompilationCacheKey _globalKey;
+    private readonly GlobalCompilationCacheKey? _globalKey;
 
     internal LazyControlSnapshotSource(
         ThemeCompileInput input,
-        NormalizedControlThemeConfig?[] configs,
         ThemeAppearance globalAppearance,
-        DesignToken globalBuilder,
+        DesignToken? globalBuilder,
         TokenValueTable globalValues,
         IReadOnlyDictionary<object, object?> globalResources,
+        IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> globalPalettes,
         ControlCompilationCache? cache)
     {
         ArgumentNullException.ThrowIfNull(input);
-        ArgumentNullException.ThrowIfNull(configs);
-        _registry         = input.Registry;
-        _configs          = configs;
+        _globalDescriptors = input.Registry.GlobalTokens;
         _globalAlgorithms = input.EffectiveConfig.Algorithms;
         _globalAppearance = globalAppearance;
         _globalBuilder    = globalBuilder;
         _globalValues     = globalValues;
         _globalResources  = globalResources;
+        _globalPalettes   = globalPalettes;
         _cache            = cache;
-        // 与急切路径的 globalCompilationCacheKey ??= 语义等价：source 只在存在 Uncompiled 槽位时构造。
-        _globalKey        = GlobalCompilationCacheKey.Create(input);
+        _globalKey        = cache is null ? null : GlobalCompilationCacheKey.Create(input);
+        EstimatedRetainedBytes = ThemeRetainedBytesEstimator.EstimateLazySource(
+            globalValues, globalResources, globalPalettes, _globalAlgorithms.Count, _globalKey?.EstimatedRetainedBytes ?? 0);
     }
 
-    internal ControlThemeSnapshot Compile(int slot)
-    {
-        var descriptor = _registry.Controls[slot];
-        var config = _configs[slot];
+    internal long EstimatedRetainedBytes { get; }
 
+    private DesignToken GetGlobalBuilder()
+    {
+        if (Volatile.Read(ref _globalBuilder) is { } builder)
+        {
+            return builder;
+        }
+        lock (_builderGate)
+        {
+            if (_globalBuilder is null)
+            {
+                // 只捕获当前 source 的冻结值；不捕获 input、父 snapshot 或历史 source。
+                Volatile.Write(ref _globalBuilder,
+                    ThemeCompiler.CreateBuilder(_globalValues, _globalPalettes, _globalDescriptors));
+            }
+            return _globalBuilder;
+        }
+    }
+
+    internal ControlThemeSnapshot Compile(ControlTokenDescriptor descriptor, NormalizedControlThemeConfig? config)
+    {
         ControlThemeSnapshot Factory()
         {
             return ThemeCompiler.CompileControl(
@@ -70,126 +73,121 @@ internal sealed class LazyControlSnapshotSource
                 config,
                 _globalAlgorithms,
                 _globalAppearance,
-                _globalBuilder,
+                GetGlobalBuilder(),
                 _globalValues,
                 _globalResources,
-                _registry.GlobalTokens);
+                _globalDescriptors);
         }
 
         return _cache is null
             ? Factory()
-            : _cache.GetOrCompile(_globalKey, descriptor, config, _globalAppearance, Factory);
+            : _cache.GetOrCompile(_globalKey!, descriptor, config, _globalAppearance, Factory);
+    }
+
+    internal void NotifyMaterialized() => _cache?.NotifyMaterialized();
+}
+
+/// <summary>
+/// 独立惰性计算单元。跨快照直接共享 cell，不沿完整父快照链递归查找。
+/// </summary>
+internal sealed class ControlSnapshotCell
+{
+    private readonly object _gate = new();
+    private LazyControlSnapshotSource? _source;
+    private ControlTokenDescriptor? _descriptor;
+    private NormalizedControlThemeConfig? _config;
+    private ControlThemeSnapshot? _value;
+
+    internal ControlSnapshotCell(ControlThemeSnapshot value)
+    {
+        _value = value;
+        UsesRootSharedResources = value.EffectiveGlobalTokenDelta.Count == 0;
+    }
+
+    internal ControlSnapshotCell(LazyControlSnapshotSource source, ControlTokenDescriptor descriptor,
+        NormalizedControlThemeConfig? config)
+    {
+        _source = source;
+        _descriptor = descriptor;
+        _config = config;
+        // 与 CompileControl 在 Own evaluator 之前冻结差量的分支相同。
+        // Own evaluator 不参与 Shared 值计算，Global/Custom 算法仍走完整路径。
+        UsesRootSharedResources = config is null ||
+            (config.GlobalTokens.Count == 0 && config.AlgorithmMode is ControlAlgorithmMode.Unspecified or ControlAlgorithmMode.Disabled);
+    }
+
+    internal bool UsesRootSharedResources { get; }
+    internal ControlThemeSnapshot? MaterializedValue => Volatile.Read(ref _value);
+    internal LazyControlSnapshotSource? Source => Volatile.Read(ref _source);
+    internal long EstimatedConfigBytes => _config is { } config
+        ? NormalizedControlConfigCacheKey.Create(config).EstimatedInputRetainedBytes
+        : 0;
+
+    internal ControlThemeSnapshot GetValue()
+    {
+        if (MaterializedValue is { } value)
+        {
+            return value;
+        }
+        LazyControlSnapshotSource source;
+        ControlThemeSnapshot snapshot;
+        lock (_gate)
+        {
+            if (_value is { } existing)
+            {
+                return existing;
+            }
+            // 失败不写缓存，也不丢弃输入，保留后续查询重新计算的既有语义。
+            source = _source!;
+            snapshot = source.Compile(_descriptor!, _config);
+            Volatile.Write(ref _value, snapshot);
+            _descriptor = null;
+            _config = null;
+            Volatile.Write(ref _source, null);
+        }
+        // cache 扫描只读已发布值，不持有 cell 锁执行驱逐，避免锁反转。
+        source.NotifyMaterialized();
+        return snapshot;
     }
 }
 
 /// <summary>
-/// 控件主题快照的按槽位惰性容器。只暴露 Count 与索引器，刻意不实现 IEnumerable——
-/// 枚举即全量物化，正是快照保留字节估算要避免的形态（见 ThemeRetainedBytesEstimator）。
-/// 状态与编译输入在快照构造期急切解析并冻结；昂贵的 CompileControl 推迟到首访
-/// （空窗口首帧前对控件快照的查询次数为零，急切预编译是纯启动损耗）。
-/// 线程契约：索引器可从任意线程进入；未物化槽位经 _gate 双检单飞物化，无锁快读命中
-/// 已物化槽位（引用写入原子、无撕裂；读到过期 null 只是多进一次锁，双检兜底）。
+/// 槽位数组只共享独立 cell；读取不会物化或保活前代 ThemeSnapshot。
 /// </summary>
 internal sealed class LazyControlSnapshots
 {
-    // 与 ThemeRetainedBytesEstimator.ReferenceBytes 对齐：复用槽共享父对象，只计引用字节。
-    private const long SharedSlotReferenceBytes = 8;
+    private readonly ControlSnapshotCell[] _cells;
 
-    private readonly ControlSlotState[] _states;
-    private readonly ControlThemeSnapshot?[] _materialized;
-    private readonly ThemeSnapshot? _reusableParent;
-    private readonly LazyControlSnapshotSource? _source;
-    private readonly object _gate = new();
-    private long _materializedBytes;
-    private int _materializedCount;
-
-    internal LazyControlSnapshots(
-        ControlSlotState[] states,
-        ControlThemeSnapshot?[] preMaterialized,
-        ThemeSnapshot? reusableParent,
-        LazyControlSnapshotSource? source)
+    internal LazyControlSnapshots(ControlSnapshotCell[] cells)
     {
-        ArgumentNullException.ThrowIfNull(states);
-        ArgumentNullException.ThrowIfNull(preMaterialized);
-        if (states.Length != preMaterialized.Length)
-        {
-            throw new ArgumentException("The state and pre-materialized arrays must have the same length.");
-        }
-        if (source is null && Array.IndexOf(states, ControlSlotState.Uncompiled) >= 0)
-        {
-            throw new ArgumentException("Uncompiled slots require a compilation source.");
-        }
-        if (reusableParent is null && Array.IndexOf(states, ControlSlotState.ReuseParent) >= 0)
-        {
-            throw new ArgumentException("ReuseParent slots require a reusable parent snapshot.");
-        }
-
-        _states         = states;
-        _materialized   = preMaterialized;
-        _reusableParent = reusableParent;
-        _source         = source;
-        // 构造期已物化的 Empty 槽位计入估算基线；Materialize 只累计首访物化的增量
-        // （设计文档 §4：急切基线 + 增量回填）。
-        foreach (var snapshot in preMaterialized)
-        {
-            if (snapshot is not null)
-            {
-                _materializedBytes += snapshot.EstimatedRetainedBytes;
-            }
-        }
+        _cells = cells;
     }
 
-    internal int Count => _states.Length;
+    internal int Count => _cells.Length;
+    internal ControlSnapshotCell GetCell(int slot) => _cells[slot];
+    internal ControlThemeSnapshot this[int slot] => _cells[slot].GetValue();
 
-    // 测试观测口：首访物化（ReuseParent + Uncompiled）的槽位计数，不含构造期 Empty 实例。
-    internal int MaterializedCount => Volatile.Read(ref _materializedCount);
-
-    internal long MaterializedBytes => Interlocked.Read(ref _materializedBytes);
-
-    internal ControlThemeSnapshot this[int slot]
+    internal long EstimatedRetainedBytes
     {
         get
         {
-            if ((uint)slot >= (uint)Count)
+            var bytes = 0L;
+            HashSet<LazyControlSnapshotSource>? sources = null;
+            foreach (var cell in _cells)
             {
-                throw new ArgumentOutOfRangeException(nameof(slot));
+                // source 先读；并发物化至多重复计费，不会遗漏编译输入与新发布的值。
+                if (cell.Source is { } source)
+                {
+                    sources ??= new HashSet<LazyControlSnapshotSource>();
+                    if (sources.Add(source))
+                    {
+                        bytes = ThemeRetainedBytesEstimator.Add(bytes, source.EstimatedRetainedBytes);
+                    }
+                    bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.EstimatedConfigBytes);
+                }
+                bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.MaterializedValue?.EstimatedRetainedBytes ?? 0);
             }
-            return _materialized[slot] ?? Materialize(slot);
-        }
-    }
-
-    private ControlThemeSnapshot Materialize(int slot)
-    {
-        lock (_gate)
-        {
-            if (_materialized[slot] is { } existing)
-            {
-                return existing;
-            }
-
-            ControlThemeSnapshot snapshot;
-            if (_states[slot] == ControlSlotState.ReuseParent)
-            {
-                // 物化父槽（父槽未物化则级联物化）并共享同一对象——复用语义本就是同一引用。
-                snapshot = _reusableParent!.Controls[slot];
-            }
-            else
-            {
-                snapshot = _source!.Compile(slot);
-            }
-
-            _materialized[slot] = snapshot;
-            var delta = _states[slot] == ControlSlotState.ReuseParent
-                ? SharedSlotReferenceBytes
-                : snapshot.EstimatedRetainedBytes;
-            // 饱和语义与估算器 Add 对齐：溢出回绕（需 ~9.2e18 保留字节，物理不可达）不允许
-            // 产生负值——负尺寸会让 BoundedLruCache 的容量记账抛异常。
-            if (Interlocked.Add(ref _materializedBytes, delta) < 0)
-            {
-                Interlocked.Exchange(ref _materializedBytes, long.MaxValue);
-            }
-            Interlocked.Increment(ref _materializedCount);
-            return snapshot;
+            return bytes;
         }
     }
 }

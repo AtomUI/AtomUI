@@ -75,7 +75,10 @@ public partial class TypeMapIntegrationTests
         var providerType = core.GetType("AtomUI.Theme.Resources.ControlThemesProvider")!;
         var provider = Activator.CreateInstance(providerType)!;
         providerType.GetProperty("Id")!.SetValue(provider, "Probe");
-        var package = collectionType.GetMethod("Build", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(collection, ["Probe", provider])!;
+        // 分级启动为 Build 增加了余量收集重载；本测试按精确 2 参签名解析原路径。
+        var buildMethod = collectionType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+            .Single(method => method.Name == "Build" && method.GetParameters().Length == 2);
+        var package = buildMethod.Invoke(collection, ["Probe", provider])!;
         var semantics = ((IEnumerable)package.GetType().GetProperty("SemanticControls")!.GetValue(package)!).Cast<object>().Single();
         var part = ((IEnumerable)semantics.GetType().GetProperty("Parts")!.GetValue(semantics)!).Cast<object>()
             .Single(item => Equals(item.GetType().GetProperty("Name")!.GetValue(item), "action"));

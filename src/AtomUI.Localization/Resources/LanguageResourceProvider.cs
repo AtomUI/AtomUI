@@ -22,7 +22,8 @@ internal sealed class LanguageResourceProvider : ResourceProvider
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        var revision = _context.Current;
+        var view = _context.Capture();
+        var revision = view.Revision;
         if (ReferenceEquals(key, LanguageResourceKeys.FlowDirection))
         {
             value = revision.State.TextDirection == LanguageTextDirection.RightToLeft
@@ -30,13 +31,13 @@ internal sealed class LanguageResourceProvider : ResourceProvider
                 : FlowDirection.LeftToRight;
             return true;
         }
-        if (!_context.Registry.TryGetCatalogSlot(key.GetType(), out var catalogSlot))
+        if (!view.Registry.TryGetCatalogSlot(key.GetType(), out var catalogSlot))
         {
             value = null;
             return false;
         }
 
-        var catalog = _context.Registry.Catalogs[catalogSlot];
+        var catalog = view.Registry.Catalogs[catalogSlot];
         if (!catalog.TryGetUnitSlot(key, out var unitSlot))
         {
             value = null;

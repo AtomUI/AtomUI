@@ -7,6 +7,7 @@ internal sealed class BoundedLruCache<TKey, TValue>
     private readonly int _entryLimit;
     private readonly long _retainedBytesLimit;
     private readonly Func<TValue, long> _retainedBytesEstimator;
+    private readonly Func<TKey, long>? _keyRetainedBytesEstimator;
     private readonly Dictionary<TKey, LinkedListNode<CacheEntry>> _entries = new();
     private readonly LinkedList<CacheEntry> _lru = new();
     private readonly Dictionary<TKey, Task<TValue>> _inFlight = new();
@@ -15,7 +16,8 @@ internal sealed class BoundedLruCache<TKey, TValue>
     internal BoundedLruCache(
         int entryLimit,
         long retainedBytesLimit,
-        Func<TValue, long> retainedBytesEstimator)
+        Func<TValue, long> retainedBytesEstimator,
+        Func<TKey, long>? keyRetainedBytesEstimator = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(entryLimit, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(retainedBytesLimit, 1);
@@ -24,6 +26,7 @@ internal sealed class BoundedLruCache<TKey, TValue>
         _entryLimit             = entryLimit;
         _retainedBytesLimit     = retainedBytesLimit;
         _retainedBytesEstimator = retainedBytesEstimator;
+        _keyRetainedBytesEstimator = keyRetainedBytesEstimator;
     }
 
     internal int Count
@@ -110,11 +113,11 @@ internal sealed class BoundedLruCache<TKey, TValue>
         try
         {
             var value = await factory(CancellationToken.None).ConfigureAwait(false);
-            var retainedBytes = _retainedBytesEstimator(value);
-            ArgumentOutOfRangeException.ThrowIfNegative(retainedBytes);
-
             lock (_gate)
             {
+                // 与物化后的重新计费使用同一锁，避免插入旧尺寸覆盖先到达的物化通知。
+                var retainedBytes = EstimateEntry(key, value);
+                ArgumentOutOfRangeException.ThrowIfNegative(retainedBytes);
                 if (retainedBytes <= _retainedBytesLimit)
                 {
                     Add(key, value, retainedBytes);
@@ -145,12 +148,42 @@ internal sealed class BoundedLruCache<TKey, TValue>
         }
     }
 
+    private long EstimateEntry(TKey key, TValue value)
+    {
+        var valueBytes = _retainedBytesEstimator(value);
+        var keyBytes = _keyRetainedBytesEstimator?.Invoke(key) ?? 0;
+        ArgumentOutOfRangeException.ThrowIfNegative(valueBytes);
+        ArgumentOutOfRangeException.ThrowIfNegative(keyBytes);
+        return ThemeRetainedBytesEstimator.Add(valueBytes, keyBytes);
+    }
+
     private void Add(TKey key, TValue value, long retainedBytes)
     {
         var node = _lru.AddFirst(new CacheEntry(key, value, retainedBytes));
         _entries.Add(key, node);
         _retainedBytes += retainedBytes;
 
+        Trim();
+    }
+
+    internal void RefreshRetainedBytes()
+    {
+        lock (_gate)
+        {
+            _retainedBytes = 0;
+            foreach (var entry in _lru)
+            {
+                var bytes = EstimateEntry(entry.Key, entry.Value);
+                ArgumentOutOfRangeException.ThrowIfNegative(bytes);
+                entry.RetainedBytes = bytes;
+                _retainedBytes = ThemeRetainedBytesEstimator.Add(_retainedBytes, bytes);
+            }
+            Trim();
+        }
+    }
+
+    private void Trim()
+    {
         while (_entries.Count > _entryLimit || _retainedBytes > _retainedBytesLimit)
         {
             var oldest = _lru.Last!;
@@ -169,5 +202,10 @@ internal sealed class BoundedLruCache<TKey, TValue>
         }
     }
 
-    private sealed record CacheEntry(TKey Key, TValue Value, long RetainedBytes);
+    private sealed class CacheEntry(TKey key, TValue value, long retainedBytes)
+    {
+        internal TKey Key { get; } = key;
+        internal TValue Value { get; } = value;
+        internal long RetainedBytes { get; set; } = retainedBytes;
+    }
 }

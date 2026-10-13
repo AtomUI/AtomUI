@@ -228,7 +228,7 @@ public partial class TypeMapIntegrationTests
         var package = ((System.Collections.IEnumerable)themeBuilder.GetType().GetProperty("ControlPackages", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(themeBuilder)!).Cast<object>().Single();
         ((System.Collections.IEnumerable)package.GetType().GetProperty("Controls")!.GetValue(package)!).Cast<object>().ShouldBeEmpty();
         ((System.Collections.IEnumerable)package.GetType().GetProperty("ThemeAssets")!.GetValue(package)!).Cast<object>().ShouldHaveSingleItem();
-        using var manager = (IDisposable)themeBuilder.GetType().GetMethod("Build", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(themeBuilder, null)!;
+        using var manager = (IDisposable)themeBuilder.GetType().GetMethod("Build", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null)!.Invoke(themeBuilder, null)!;
     }
 
     [Theory]
@@ -467,7 +467,7 @@ public partial class TypeMapIntegrationTests
         var provider = probe.GetField("Last")!.GetValue(null)!;
         ((System.Collections.ICollection)provider.GetType().GetProperty("ControlThemes")!.GetValue(provider)!).Count.ShouldBe(0);
         var themeBuilder = builder.GetType().GetProperty("ThemeManagerBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(builder)!;
-        using var manager = (IDisposable)themeBuilder.GetType().GetMethod("Build", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(themeBuilder, null)!;
+        using var manager = (IDisposable)themeBuilder.GetType().GetMethod("Build", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null)!.Invoke(themeBuilder, null)!;
         ((System.Collections.ICollection)provider.GetType().GetProperty("ControlThemes")!.GetValue(provider)!).Count.ShouldBe(0);
         Should.Throw<TargetInvocationException>(() => register.Invoke(null, new[] { builder })).InnerException.ShouldBeOfType<InvalidOperationException>();
         probe.GetField("Providers")!.GetValue(null).ShouldBe(1);

@@ -33,10 +33,9 @@ internal sealed class ThemeSnapshot
         GlobalResources = globalResources;
         PresetColorPalettes = presetColorPalettes;
         Controls = controlSlots;
-        // 全局部分 + 槽位表开销在构造期冻结；控件快照字节随首访物化增量累计。
-        // 已知取舍（设计文档 §4）：ThemeSnapshotCache / ControlCompilationCache 在插入时采样本值，
-        // 物化增长不回灌——估算是启发式容量阀，漂移上界 = 实消费槽位字节（≤187 槽位 × 单槽 KB 级），
-        // 驱逐只影响性能不影响正确性。
+        // 全局输入和槽位表尺寸在构造期冻结；控件部分包含冷 source/config 或已物化值。
+        // cell 首次发布后通知缓存重新计费，避免插入期尺寸永久忽略后续物化。
+        // 共享 cell 保守重复计费；估算仍不是 GC 堆的精确字节统计。
         _estimatedRetainedBytesBase = ThemeRetainedBytesEstimator.EstimateSnapshotBase(this);
     }
 
@@ -55,5 +54,5 @@ internal sealed class ThemeSnapshot
     private readonly long _estimatedRetainedBytesBase;
 
     internal long EstimatedRetainedBytes =>
-        ThemeRetainedBytesEstimator.Add(_estimatedRetainedBytesBase, Controls.MaterializedBytes);
+        ThemeRetainedBytesEstimator.Add(_estimatedRetainedBytesBase, Controls.EstimatedRetainedBytes);
 }

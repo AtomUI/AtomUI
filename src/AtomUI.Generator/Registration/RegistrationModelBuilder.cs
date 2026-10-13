@@ -238,6 +238,9 @@ internal sealed class RegistrationModelBuilder
             assets.Add(asset with
             {
                 DeferredThemeTarget = deferredTarget,
+                ResourceKeys = deferredTarget is not null
+                    ? new ValueArray<RegistrationResourceKey>([new(deferredTarget, null)])
+                    : CollectCompleteResourceKeys(input, pair.Value.Root),
                 CompiledContractFingerprint = RegistrationFingerprint.ComputeContract(asset, globalNames)
             });
         }
@@ -312,7 +315,106 @@ internal sealed class RegistrationModelBuilder
         return new(_packageId, _compilation.Assembly.Identity.GetDisplayName(), GeneratedCodeNamespace.ForAssembly(_compilation.AssemblyName), new(controls), new(assets), new(globalNames),
             RegistrationFingerprint.ComputeContractPrefix(globalNames), RegistrationFingerprint.ComputeResourceKeyPrefix(globalNames),
             builderType is null ? null : RegistrationType.From(builderType), RegistrationType.From(_compilation.GetSpecialType(SpecialType.System_Void)),
-            RegistrationFingerprint.ComputePackageSchema(_packageId, _catalog, controls, tokens, assets));
+            RegistrationFingerprint.ComputePackageSchema(_packageId, _catalog, controls, tokens, assets))
+        {
+            // 新生成器引用旧 Core 时保留旧构造入口，不要求旧 Core 含新增工厂 ABI。
+            SupportsResourceKeys = _compilation.GetTypeByMetadataName("AtomUI.Registration.ControlThemeResourceRegistration")?
+                .GetMembers("CreateGenerated").OfType<IMethodSymbol>().Any(static method =>
+                    method.IsStatic && method.DeclaredAccessibility == Accessibility.Public && method.Parameters.Length == 5) == true
+        };
+    }
+
+    private ValueArray<RegistrationResourceKey>? CollectCompleteResourceKeys(ThemeAssetInfo input, XElement root)
+    {
+        // 手写字典可能在构造/重写中增加任意键；导出主题表并不是完整资源键集合。
+        if (!input.IsResourceDictionary || DirectResourceClass(input) is not null)
+        {
+            return null;
+        }
+        var keys = new HashSet<RegistrationResourceKey>();
+        return CollectDictionaryKeys(root, input.AssetPath, keys, new HashSet<string>(StringComparer.Ordinal))
+            ? new ValueArray<RegistrationResourceKey>(keys.OrderBy(static key => key.Type is null ? 1 : 0)
+                .ThenBy(static key => key.Type?.AssemblyQualifiedName ?? key.Key, StringComparer.Ordinal))
+            : null;
+    }
+
+    private bool CollectDictionaryKeys(XElement root, string assetPath,
+        HashSet<RegistrationResourceKey> keys, HashSet<string> includes)
+    {
+        if (root.Name.LocalName != "ResourceDictionary" ||
+            root.Name.NamespaceName != "https://github.com/avaloniaui" ||
+            root.Attribute(Xaml + "Class") is not null || root.Attribute(Xaml + "FactoryMethod") is not null)
+        {
+            return false;
+        }
+        foreach (var element in root.Elements())
+        {
+            if (element.Name.LocalName is "ResourceDictionary.MergedDictionaries" or "ResourceDictionary.ThemeDictionaries")
+            {
+                foreach (var nested in element.Elements())
+                {
+                    if (nested.Name.LocalName is "ResourceInclude" or "MergeResourceInclude")
+                    {
+                        // 同名自定义 provider 可以增加任意键，不能把它的 Source 当作完整键证据。
+                        // 非标准 XML 命名空间的 include 保持开放查找。
+                        if (nested.Name.NamespaceName != "https://github.com/avaloniaui")
+                        {
+                            return false;
+                        }
+                        var source = nested.Attribute("Source")?.Value;
+                        var uri = source is null ? null : ResolveInclude(assetPath, source);
+                        if (uri is null || !string.Equals(uri.Host, _compilation.AssemblyName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return false;
+                        }
+                        var path = Uri.UnescapeDataString(uri.AbsolutePath).TrimStart('/');
+                        if (!_parsed.TryGetValue(path, out var included) || !includes.Add(path))
+                        {
+                            return false;
+                        }
+                        var complete = CollectDictionaryKeys(included.Root, path, keys, includes);
+                        includes.Remove(path);
+                        if (!complete)
+                        {
+                            return false;
+                        }
+                    }
+                    else if (!CollectDictionaryKeys(nested, assetPath, keys, includes))
+                    {
+                        return false;
+                    }
+                }
+                continue;
+            }
+            var key = element.Attribute(Xaml + "Key")?.Value;
+            if (key is null || element.Name.LocalName.Contains('.'))
+            {
+                return false;
+            }
+            if (key.StartsWith("{x:Type", StringComparison.Ordinal))
+            {
+                var type = Resolve(element, key);
+                if (type is null || !IsAccessible(type))
+                {
+                    return false;
+                }
+                keys.Add(new RegistrationResourceKey(RegistrationType.From(type), null));
+            }
+            else if (key.StartsWith("{}", StringComparison.Ordinal))
+            {
+                keys.Add(new RegistrationResourceKey(null, key.Substring(2)));
+            }
+            else if (key.StartsWith("{", StringComparison.Ordinal))
+            {
+                return false;
+            }
+            else
+            {
+                keys.Add(new RegistrationResourceKey(null, key));
+            }
+            // 不遍历资源值的内部 Resources；它们具有自己的词法作用域。
+        }
+        return true;
     }
 
     private PlatformAvailability Availability(INamedTypeSymbol type)

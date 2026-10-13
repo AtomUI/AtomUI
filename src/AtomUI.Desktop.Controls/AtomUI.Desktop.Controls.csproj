@@ -1,5 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup Condition="'$(TargetFramework)' != '' and
+                              $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+        <!-- 仅官方 TypeMap 目标启用控件分区；net8 条件后端按完整单阶段注册配置构建。 -->
+        <!-- 分级启动关键集（chrome 闭包，实证法维护）：Stage 1 仅注册这些控件 + 其主题资产，
+             余量由 Stage 2 注册窗口收集。改动此列表须以 headless 骨架窗重证闭包覆盖——
+             骨架窗已查询的控件槽位集合必须 ⊆ 本关键集（方法见
+             docs/superpowers/progress/2026-10-12-startup-optimization-rd-log.md §2.3）。 -->
+        <AtomUICriticalControls>Window,WindowDrawnDecorations,WindowVisualLayerClip,WindowResizer,MacStandardWindowButtons,MediaBreakPointIndicator,FullscreenPopoverLayer,WindowTitleBar,WindowTitleBarHostContext,WindowTitleBarLayoutPanel,WindowTitleBarButton,WindowTitleBarToggleButton,CaptionButtonGroup,Menu,MenuItem,MenuItemGroup,MenuSeparator,MenuFlyoutPresenter,MenuPopupScrollHost,Icon,IconPresenter,IconButton,Popup,PopupRoot,PopupMotionActor,BaseMotionActor,OverlayPopupHost,ShadowsAwareContainer,ScrollViewer,ScrollBar,ScrollBarThumb,CheckBox,RadioButton,CheckBoxGroup,RadioButtonGroup,PixelAlignedBorder,TextBlock,SelectableTextBlock,HyperLinkTextBlock,ToggleIconButton</AtomUICriticalControls>
+    </PropertyGroup>
+
     <PropertyGroup>
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>

@@ -18,7 +18,7 @@ internal sealed class LazyControlSnapshotSource
     private readonly IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> _globalPalettes;
     private readonly TokenValueTable _globalValues;
     private readonly IReadOnlyDictionary<object, object?> _globalResources;
-    private readonly ControlCompilationCache? _cache;
+    private readonly WeakReference<ControlCompilationCache>? _cache;
     private readonly GlobalCompilationCacheKey? _globalKey;
 
     internal LazyControlSnapshotSource(
@@ -38,7 +38,7 @@ internal sealed class LazyControlSnapshotSource
         _globalValues     = globalValues;
         _globalResources  = globalResources;
         _globalPalettes   = globalPalettes;
-        _cache            = cache;
+        _cache            = cache is null ? null : new WeakReference<ControlCompilationCache>(cache);
         _globalKey        = cache is null ? null : GlobalCompilationCacheKey.Create(input);
         EstimatedRetainedBytes = ThemeRetainedBytesEstimator.EstimateLazySource(
             globalValues, globalResources, globalPalettes, _globalAlgorithms.Count, _globalKey?.EstimatedRetainedBytes ?? 0);
@@ -79,12 +79,18 @@ internal sealed class LazyControlSnapshotSource
                 _globalDescriptors);
         }
 
-        return _cache is null
-            ? Factory()
-            : _cache.GetOrCompile(_globalKey!, descriptor, config, _globalAppearance, Factory);
+        return _cache?.TryGetTarget(out var cache) == true
+            ? cache.GetOrCompile(_globalKey!, descriptor, config, _globalAppearance, Factory, EstimatedRetainedBytes)
+            : Factory();
     }
 
-    internal void NotifyMaterialized() => _cache?.NotifyMaterialized();
+    internal void NotifyMaterialized()
+    {
+        if (_cache?.TryGetTarget(out var cache) == true)
+        {
+            cache.NotifyMaterialized();
+        }
+    }
 }
 
 /// <summary>
@@ -97,6 +103,7 @@ internal sealed class ControlSnapshotCell
     private ControlTokenDescriptor? _descriptor;
     private NormalizedControlThemeConfig? _config;
     private ControlThemeSnapshot? _value;
+    private bool _isCompiling;
 
     internal ControlSnapshotCell(ControlThemeSnapshot value)
     {
@@ -137,9 +144,21 @@ internal sealed class ControlSnapshotCell
             {
                 return existing;
             }
+            if (_isCompiling)
+            {
+                throw new InvalidOperationException("A recursive theme Control snapshot query is not supported.");
+            }
             // 失败不写缓存，也不丢弃输入，保留后续查询重新计算的既有语义。
             source = _source!;
-            snapshot = source.Compile(_descriptor!, _config);
+            _isCompiling = true;
+            try
+            {
+                snapshot = source.Compile(_descriptor!, _config);
+            }
+            finally
+            {
+                _isCompiling = false;
+            }
             Volatile.Write(ref _value, snapshot);
             _descriptor = null;
             _config = null;

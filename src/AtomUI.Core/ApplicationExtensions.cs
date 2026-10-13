@@ -79,7 +79,7 @@ public static class ApplicationExtensions
                     themeBuilder.MergeStageTwoInto(themeManager);
                     // Deferred 块内新增的 Theme Definition Resolver 随演化一起提交，目录以当前集合为来源。
                     await themeManager.ExecuteRegistrationEvolutionAsync(
-                        themeBuilder.CreateThemeDefinitionResolvers(),
+                        themeBuilder.CreateThemeDefinitionRegistrations(),
                         themeEvolution =>
                         {
                             cancellation.ThrowIfCancellationRequested();

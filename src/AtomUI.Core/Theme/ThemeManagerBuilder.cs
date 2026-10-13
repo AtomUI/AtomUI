@@ -1,6 +1,7 @@
 using AtomUI.Registration;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Definitions.Compiled;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia;
@@ -10,7 +11,7 @@ namespace AtomUI.Theme;
 
 internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 {
-    private readonly List<IThemeDefinitionResolver> _themeDefinitionResolvers = new();
+    private readonly List<ThemeDefinitionRegistration> _themeDefinitionResolvers = new();
     private readonly List<Action<IThemeManager>> _initializers = new();
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
     private readonly HashSet<ControlTokenIdentity> _registeredSemanticControlIdentities = new();
@@ -29,7 +30,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             IThemeManager.DEFAULT_THEME_ID,
             null,
             ThemeTransitionReason.Startup);
-        AddThemeDefinitionResolver(CoreThemeDefinitionResolver.Create());
+        Generated.AtomUICore.GeneratedThemePackageRegistration.Register(this);
     }
 
     internal ControlRegistrationState ControlRegistrationState { get; } = new();
@@ -57,7 +58,18 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
                 $"Theme definition resolver '{resolver.Id}' is already registered.");
         }
 
-        _themeDefinitionResolvers.Add(resolver);
+        _themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(resolver));
+    }
+
+    public void AddCompiledThemePackage(CompiledThemePackage package)
+    {
+        ArgumentNullException.ThrowIfNull(package);
+        ControlRegistrationState.ThrowIfUnavailable();
+        if (!_registeredThemeDefinitionResolvers.Add(package.Id))
+        {
+            throw new ThemeResourceRegisterException($"Theme definition registration '{package.Id}' is already registered.");
+        }
+        _themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(package));
     }
 
     public void AddControlPackage(ControlPackageRegistration package)
@@ -393,9 +405,9 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     }
 
     // 两阶段必须使用同一套有效来源，包括 UseUserThemeDirectory 配置生成的 resolver。
-    internal IReadOnlyList<IThemeDefinitionResolver> CreateThemeDefinitionResolvers()
+    internal IReadOnlyList<ThemeDefinitionRegistration> CreateThemeDefinitionRegistrations()
     {
-        var themeDefinitionResolvers = new List<IThemeDefinitionResolver>(_themeDefinitionResolvers);
+        var themeDefinitionResolvers = new List<ThemeDefinitionRegistration>(_themeDefinitionResolvers);
         if (_useUserThemeDirectory)
         {
             if (themeDefinitionResolvers.Any(static resolver =>
@@ -407,14 +419,14 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
                 throw new ThemeResourceRegisterException(
                     $"Theme definition resolver '{UserDirectoryThemeDefinitionResolver.ResolverId}' is already registered.");
             }
-            themeDefinitionResolvers.Add(new UserDirectoryThemeDefinitionResolver(_userThemeDirectory));
+            themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(new UserDirectoryThemeDefinitionResolver(_userThemeDirectory)));
         }
         return themeDefinitionResolvers.AsReadOnly();
     }
 
     private ThemeManager BuildCore()
     {
-        var themeDefinitionResolvers = CreateThemeDefinitionResolvers();
+        var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
         var themeManager = new ThemeManager { FontFamily = FontFamily };
         themeManager.ConfigureStartup(InitialRequest, FollowSystemLightRequest, FollowSystemDarkRequest);
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,

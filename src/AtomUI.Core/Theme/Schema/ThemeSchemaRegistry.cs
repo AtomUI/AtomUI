@@ -164,6 +164,9 @@ internal sealed class ThemeSchemaRegistry
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
     public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
     public ThemeSchemaRevision Revision { get; }
+    // A structural revision does not identify descriptor callbacks or binding ownership.
+    // The key carries this small identity instead of retaining the entire registry.
+    internal object BindingIdentity { get; } = new();
     internal IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
 
     // 全局编译只依赖这些不可变描述符，不依赖控件/资产的 registry Revision。

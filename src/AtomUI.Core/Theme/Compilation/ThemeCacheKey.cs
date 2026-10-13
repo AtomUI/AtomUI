@@ -9,14 +9,16 @@ namespace AtomUI.Theme.Compilation;
 internal readonly record struct AlgorithmCacheKey(
     ThemeAlgorithm Algorithm,
     int Revision,
-    ThemeAppearanceEffect AppearanceEffect)
+    ThemeAppearanceEffect AppearanceEffect,
+    object CompilationIdentity)
 {
     internal static AlgorithmCacheKey Create(ThemeAlgorithmDescriptor descriptor)
     {
         return new AlgorithmCacheKey(
             descriptor.Algorithm,
             descriptor.Revision,
-            descriptor.AppearanceEffect);
+            descriptor.AppearanceEffect,
+            descriptor.CompilationIdentity);
     }
 }
 
@@ -41,7 +43,7 @@ internal readonly record struct TokenCacheKey(
             token.Descriptor.Name,
             token.Descriptor.Slot,
             token.Descriptor.Stage,
-            token.Descriptor.Format(token.Value));
+            token.CanonicalValue);
     }
 }
 
@@ -243,13 +245,13 @@ internal sealed class ControlDefinitionCacheKey : IEquatable<ControlDefinitionCa
 internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheKey>
 {
     // Bound definition 是绑定阶段封存的输入，后续修订必须创建新实例。
-    private static readonly ConditionalWeakTable<BoundThemeDefinition, ThemeDefinitionCacheKey> s_keys = new();
+    private static readonly ConditionalWeakTable<PreparedThemeDefinition, ThemeDefinitionCacheKey> s_keys = new();
     private readonly AlgorithmCacheKey[] _algorithms;
     private readonly TokenCacheKey[] _tokens;
     private readonly ControlDefinitionCacheKey[] _controls;
     private readonly int _hashCode;
 
-    private ThemeDefinitionCacheKey(BoundThemeDefinition definition)
+    private ThemeDefinitionCacheKey(PreparedThemeDefinition definition)
     {
         Id                  = definition.Id;
         Name                = definition.Name;
@@ -281,7 +283,7 @@ internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheK
     internal ThemeAppearance EffectiveAppearance { get; }
     internal bool IsDefault { get; }
 
-    internal static ThemeDefinitionCacheKey Create(BoundThemeDefinition definition)
+    internal static ThemeDefinitionCacheKey Create(PreparedThemeDefinition definition)
     {
         return s_keys.GetValue(definition, static value => new ThemeDefinitionCacheKey(value));
     }
@@ -347,6 +349,7 @@ internal sealed class GlobalCompilationCacheKey : IEquatable<GlobalCompilationCa
     private GlobalCompilationCacheKey(ThemeCompileInput input)
     {
         RegistryRevision = input.Registry.Revision;
+        RegistryIdentity = input.Registry.BindingIdentity;
         var configKey     = NormalizedThemeConfigCacheKey.Create(input.EffectiveConfig);
         _algorithms       = configKey.AlgorithmKeys;
         _globalTokens     = configKey.GlobalTokenKeys;
@@ -356,6 +359,7 @@ internal sealed class GlobalCompilationCacheKey : IEquatable<GlobalCompilationCa
 
     internal long EstimatedRetainedBytes { get; }
     internal ThemeSchemaRevision RegistryRevision { get; }
+    private object RegistryIdentity { get; }
 
     internal static GlobalCompilationCacheKey Create(ThemeCompileInput input)
     {
@@ -367,6 +371,7 @@ internal sealed class GlobalCompilationCacheKey : IEquatable<GlobalCompilationCa
         return ReferenceEquals(this, other) ||
                other is not null &&
                RegistryRevision == other.RegistryRevision &&
+               ReferenceEquals(RegistryIdentity, other.RegistryIdentity) &&
                _algorithms.AsSpan().SequenceEqual(other._algorithms) &&
                _globalTokens.AsSpan().SequenceEqual(other._globalTokens);
     }
@@ -379,6 +384,7 @@ internal sealed class GlobalCompilationCacheKey : IEquatable<GlobalCompilationCa
     {
         var hash = new HashCode();
         hash.Add(RegistryRevision);
+        hash.Add(RegistryIdentity);
         CacheKeyArray.Add(ref hash, _algorithms);
         CacheKeyArray.Add(ref hash, _globalTokens);
         return hash.ToHashCode();
@@ -389,6 +395,7 @@ internal readonly struct ThemeSnapshotCacheKey : IEquatable<ThemeSnapshotCacheKe
 {
     private readonly ThemeDefinitionCacheKey _definition;
     private readonly NormalizedThemeConfigCacheKey _effectiveConfig;
+    private readonly object _registryIdentity;
 
     private ThemeSnapshotCacheKey(ThemeCompileInput input)
     {
@@ -400,12 +407,15 @@ internal readonly struct ThemeSnapshotCacheKey : IEquatable<ThemeSnapshotCacheKe
             appearance);
         DefinitionRevision = input.DefinitionRevision;
         RegistryRevision   = input.Registry.Revision;
+        _registryIdentity  = input.Registry.BindingIdentity;
         _definition        = ThemeDefinitionCacheKey.Create(input.Definition);
         _effectiveConfig   = NormalizedThemeConfigCacheKey.Create(input.EffectiveConfig);
     }
 
     internal long EstimatedRetainedBytes => ThemeRetainedBytesEstimator.Add(
         ThemeRetainedBytesEstimator.Add(64, _definition.EstimatedRetainedBytes), _effectiveConfig.EstimatedRetainedBytes);
+    internal long EstimatedInputRetainedBytes => ThemeRetainedBytesEstimator.Add(
+        _definition.EstimatedInputRetainedBytes, _effectiveConfig.EstimatedInputRetainedBytes);
     internal ThemeContentFingerprint Fingerprint { get; }
     internal ThemeDefinitionRevision DefinitionRevision { get; }
     internal ThemeSchemaRevision RegistryRevision { get; }
@@ -420,6 +430,7 @@ internal readonly struct ThemeSnapshotCacheKey : IEquatable<ThemeSnapshotCacheKe
         return Fingerprint == other.Fingerprint &&
                DefinitionRevision == other.DefinitionRevision &&
                RegistryRevision == other.RegistryRevision &&
+               ReferenceEquals(_registryIdentity, other._registryIdentity) &&
                _definition.Equals(other._definition) &&
                _effectiveConfig.Equals(other._effectiveConfig);
     }
@@ -431,7 +442,7 @@ internal readonly struct ThemeSnapshotCacheKey : IEquatable<ThemeSnapshotCacheKe
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Fingerprint, RegistryRevision, _definition, _effectiveConfig);
+        return HashCode.Combine(Fingerprint, RegistryRevision, _registryIdentity, _definition, _effectiveConfig);
     }
 
     private static ThemeAppearance ResolveAppearance(
@@ -455,6 +466,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 {
     private readonly GlobalCompilationCacheKey _global;
     private readonly NormalizedControlConfigCacheKey? _controlConfig;
+    private readonly object _compilationIdentity;
 
     private ControlCompilationCacheKey(
         GlobalCompilationCacheKey global,
@@ -465,6 +477,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
         ArgumentNullException.ThrowIfNull(global);
 
         _global       = global;
+        _compilationIdentity = descriptor.CompilationIdentity;
         Identity      = descriptor.Identity;
         ControlSlot   = descriptor.Slot;
         Appearance    = appearance;
@@ -477,6 +490,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
     internal long EstimatedRetainedBytes => ThemeRetainedBytesEstimator.Add(
         ThemeRetainedBytesEstimator.Add(64 + CacheKeyArray.EstimateIdentity(Identity), _global.EstimatedRetainedBytes),
         _controlConfig?.EstimatedRetainedBytes ?? 0);
+    internal long EstimatedInputRetainedBytes => _controlConfig?.EstimatedInputRetainedBytes ?? 0;
     internal int ControlSlot { get; }
     internal ThemeAppearance Appearance { get; }
 
@@ -494,6 +508,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
         return ControlSlot == other.ControlSlot &&
                Appearance == other.Appearance &&
                Identity == other.Identity &&
+               ReferenceEquals(_compilationIdentity, other._compilationIdentity) &&
                _global.Equals(other._global) &&
                Equals(_controlConfig, other._controlConfig);
     }
@@ -505,7 +520,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_global, Identity, ControlSlot, Appearance, _controlConfig);
+        return HashCode.Combine(_global, Identity, ControlSlot, Appearance, _compilationIdentity, _controlConfig);
     }
 }
 
@@ -553,7 +568,7 @@ internal static class CacheKeyArray
     internal static long Estimate(AlgorithmCacheKey[] algorithms, TokenCacheKey[] tokens,
         TokenCacheKey[]? ownTokens = null)
     {
-        var bytes = 96L + algorithms.Length * 16L;
+        var bytes = 96L + algorithms.Length * 56L;
         bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateTokens(tokens));
         if (ownTokens is not null)
         {

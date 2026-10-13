@@ -39,6 +39,7 @@
                  Link="LocalizationBuild/%(RecursiveDir)%(Filename)%(Extension)" />
         <Compile Include="../AtomUI.Toolchain/Common/SourceGeneration/GeneratedCodeNamespace.cs"
                  Link="SourceGeneration/GeneratedCodeNamespace.cs" />
+        <Compile Include="../AtomUI.Toolchain/Common/ThemeDefinitions/**/*.cs" Link="ThemeDefinitions/Shared/%(Filename)%(Extension)" />
         <InternalsVisibleTo Include="AtomUI.Generator.Tests" />
     </ItemGroup>
 

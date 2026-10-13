@@ -64,6 +64,10 @@ public class ThemeInitialModeTests
         {
         }
 
+        public void AddCompiledThemePackage(AtomUI.Theme.Definitions.Compiled.CompiledThemePackage package)
+        {
+        }
+
         public void AddControlPackage(ControlPackageRegistration package)
         {
             ControlPackages.Add(package);

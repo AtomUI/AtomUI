@@ -14,11 +14,11 @@
 - `Common` 提供共同的数据格式和校验逻辑；应用可达性仍由实际 ILLink/ILC 计算。
 - Repository 构建入口准备和分发工具；NuGet 消费应用使用包内工具，不构建编译器源码。
 
-Core 固定内置主题 XML 的 syntax document 由 Tasks worker 在 Core 编译前生成。Tasks 显式链接 Core 拥有的
-`ThemeDocumentReader` 及其 BCL 数据模型依赖，嵌入同一权威 XSD，不引用 Core 程序集，也不维护第二种 XML
-方言。任务从同一有界原始字节快照生成完整语法树、位置、diagnostics 和 SHA-256；无效输入阻止构建。Core-only
-target 每次编译重新验证、内容未变时不重写输出，输出按 configuration/framework 隔离。运行时 Binder/Compiler
-仍使用应用真实 registry；外部 XML 继续在运行时严格校验。原 XML 保留为 Core 的 AvaloniaResource。
+包内 `AtomUIThemeDefinition` 由 Tasks worker 在编译前以权威 Reader/XSD 校验并生成中立 AdditionalFile，Generator
+据 Token 契约生成类型化主题程序。Core 的 syntax-document 特例已由此共同路径替代，原 XML 仍可作为 AvaloniaResource
+显式读取。Tasks 只源链接 Core 中依赖 BCL 的 Reader/XSD 及必要语法模型，校验有界原始 XML；私有版本 3
+中间输入只传输声明文本、位置、摘要与诊断。Tasks 不执行主题算法或复制运行时配置/快照模型；静态字面量解析与
+C# 生成归 Generator。产物身份与校验见[编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md)。
 
 `GenerateThemeAssetWrappersTask` 保留编译型资源与 deferred wrapper 输出，作为生成器不能直接静态构造时的 fallback；
 不重写作者的 classless AXAML，不改变 AvaloniaXaml/AdditionalFiles 的 URI、Link 或源身份。Generator 可为已绑定且
@@ -34,6 +34,7 @@ target 每次编译重新验证、内容未变时不重写输出，输出按 con
 | `Tasks/` | 隔离任务进程、资源与语言包任务、工具解析、SDK 输入准备和最终产物校验 |
 | `Common/Registration/` | 候选记录读取、严格协议、内容身份、输入快照和调用域校验 |
 | `Common/Registration/Cecil/` | Cecil 实体绑定、类型转发、方法体模板和 Core 发布视图校验 |
+| `Common/ThemeDefinitions/` | XML 声明与诊断的私有构建传输，供 Tasks 与 Generator 协作 |
 | `Common/Localization/` | 与 Generator 共用的 XLIFF、语言包和中立诊断模型 |
 | `Common/SourceGeneration/` | 构建期代码身份与命名等中立辅助逻辑 |
 | `Backends/ILLink8/` | 在真实 ILLink8 Mark 闭包中选择片段，Sweep 前物化选中调用 |
@@ -46,12 +47,13 @@ target 每次编译重新验证、内容未变时不重写输出，输出按 con
 | --- | --- |
 | [设计思路与职责边界](design.md) | 为什么建设 Toolchain、单工程多产物的理由、Generator 边界、Avalonia 借鉴和保精度约束 |
 | [按目标框架选择注册后端](framework-routing.md) | net8/现代框架分流、实际能力门禁及独立的旧包 ABI 桥接 |
-| [构建、交付与验证](build-and-verification.md) | profile、构建命令、输出隔离、工具准备时序、维护入口与验证要求 |
+| [构建、交付与验证](build-and-verification.md) | Tasks/ILLink/ILC 构建配置、构建命令、输出隔离、工具准备时序、维护入口与验证要求 |
 | [构建与打包架构](../../architecture/foundations/build-and-packaging.md) | 跨项目 Repository/NuGet 接线、唯一资产白名单和运行时隔离 |
 | [ILLink10 后端详解](../typemap-linker/overview.md) | Browser 标记后物化、工具身份和回执 |
 | [.NET 8 条件后端](../../architecture/foundations/aot-net8-conditional-backends.md) | ILLink8/ILC8 机制、SDK 接线与现行支持范围 |
 | [条件注册协议](../../reference/aot/conditional-registration-contract.md) | ConditionalRecord ABI、输入快照和输出协议 |
 | [本地化构建](../../architecture/systems/localization/generation-and-build.md) | XLIFF、静态语言包和 Generator/Tasks 的语义分工 |
+| [编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md) | 有界 XML 校验、声明传输、产物身份与校验 |
 
 构建成功、单元测试通过和特定平台的实际发布是不同层次的证据。Toolchain 的工程组织不扩大既有平台支持；
 当前能力边界由 [AOT 与裁剪架构](../../architecture/foundations/aot-and-trimming.md)及各后端文档记录。

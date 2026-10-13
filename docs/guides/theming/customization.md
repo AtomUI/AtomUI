@@ -332,11 +332,23 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 
 ### 8.1 让主题进入 ThemeCatalog
 
-主题定义只有经过 Resolver、Reader 和 Binder 后才会进入 ThemeCatalog。来源分为三类：
+主题定义通过两种明确入口进入同一个 ThemeCatalog：
 
-- AtomUI 内置主题，由内置 Resolver 显式注册。
-- 应用或 Control 包中的 `avares://` 主题资源，由包级注册入口显式提供 URI。
-- 用户主题目录中的 `*.theme.xml`，只在应用主动启用后读取。
+- 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。Core 默认主题使用此路径。
+- 动态 XML 通过 Resolver、Reader 和 Binder 加载；包括显式 avares URI 与主动启用的用户主题目录。
+
+例如程序集 `Acme.Themes` 可声明：
+
+```xml
+<ItemGroup>
+  <AtomUIThemeDefinition Include="Themes/Brand.theme.xml" />
+</ItemGroup>
+```
+
+应用显式调用 `AtomUI.Generated.AcmeThemes.GeneratedThemePackageRegistration.Register(builder.Theme)`。
+构建时只解析静态声明并生成注册与默认值赋值；运行时合并应用配置并执行现有算法，支持主色、暗色与紧凑设置变化。
+注册不自动启用控件包；XML 中显式覆盖的 Control 必须已登记在当前阶段 registry。静态主题与动态 XML 的 Id
+不能重复。完整支持域、生成协议与验收状态见[编译主题包架构](../../architecture/systems/theming/compiled-theme-packages/overview.md)。
 
 应用启用用户主题目录时必须提供稳定 Application Id：
 

@@ -1,7 +1,7 @@
-using AtomUI.Media;
-using AtomUI.Theme.Algorithms;
 using Avalonia;
 using Avalonia.Media;
+using AtomUI.Media;
+using AtomUI.Theme.Algorithms;
 
 namespace AtomUI.Theme.DesignTokens;
 
@@ -10,12 +10,12 @@ public partial class DesignToken : AbstractDesignToken
     private const int PresetColorCount = 14;
     private static readonly IReadOnlyDictionary<PresetColorType, PresetPrimaryColor> s_defaultPresetColors =
         BuildDefaultPresetColors();
-    private static readonly Color s_defaultColorPrimary = Color.Parse("#1677ff");
-    private static readonly Color s_defaultColorSuccess = Color.Parse("#52c41a");
-    private static readonly Color s_defaultColorWarning = Color.Parse("#faad14");
-    private static readonly Color s_defaultColorError = Color.Parse("#ff4d4f");
+    private static readonly Color s_defaultColorPrimary = Color.FromUInt32(0xFF1677ffu);
+    private static readonly Color s_defaultColorSuccess = Color.FromUInt32(0xFF52c41au);
+    private static readonly Color s_defaultColorWarning = Color.FromUInt32(0xFFfaad14u);
+    private static readonly Color s_defaultColorError = Color.FromUInt32(0xFFff4d4fu);
     // FontFamily parsing creates an immutable description; font resolution remains with FontManager.
-    private static readonly FontFamily DefaultFontFamily = FontFamily.Parse("fonts:AlibabaSans#Alibaba Sans, Segoe UI, Segoe UI Symbol, Helvetica Neue, Noto Sans, Noto Sans CJK SC, 文泉驿正黑, Microsoft YaHei, PingFang SC, $Default");
+    private static readonly FontFamily DefaultFontFamily = new FontFamily("fonts:AlibabaSans#Alibaba Sans, Segoe UI, Segoe UI Symbol, Helvetica Neue, Noto Sans, Noto Sans CJK SC, 文泉驿正黑, Microsoft YaHei, PingFang SC, $Default");
 
     /// <summary>
     /// 现在这里的实现是写死的主色，后面是不是可以读取配置
@@ -315,6 +315,22 @@ public partial class DesignToken : AbstractDesignToken
             }]);
     }
     
+    internal void NormalizeFinalBehavior()
+    {
+        if (!EnableMotion)
+        {
+            MotionDurationFast     = TimeSpan.Zero;
+            MotionDurationMid      = TimeSpan.Zero;
+            MotionDurationSlow     = TimeSpan.Zero;
+            MotionDurationVerySlow = TimeSpan.Zero;
+        }
+        if (!EnableWaveSpirit)
+        {
+            WaveAnimationRange = 0;
+            WaveStartOpacity   = 0;
+        }
+    }
+
     private static IReadOnlyDictionary<PresetColorType, PresetPrimaryColor> BuildDefaultPresetColors()
     {
         var colors = new Dictionary<PresetColorType, PresetPrimaryColor>(PresetColorCount);

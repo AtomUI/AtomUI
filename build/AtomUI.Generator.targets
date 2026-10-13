@@ -2,5 +2,6 @@
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.Localization.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
     <PropertyGroup><AtomUIGeneratorTargetsImported>true</AtomUIGeneratorTargetsImported></PropertyGroup>
 </Project>

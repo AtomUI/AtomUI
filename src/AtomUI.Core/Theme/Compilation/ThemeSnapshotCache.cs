@@ -1,6 +1,6 @@
 namespace AtomUI.Theme.Compilation;
 
-internal sealed class ThemeSnapshotCache
+internal sealed class ThemeSnapshotCache : IDisposable
 {
     internal const int DefaultInactiveCapacity = 32;
 
@@ -26,7 +26,9 @@ internal sealed class ThemeSnapshotCache
             static result => result.Success
                 ? result.Snapshot!.EstimatedRetainedBytes
                 : long.MaxValue,
-            static key => key.EstimatedRetainedBytes);
+            static key => key.EstimatedRetainedBytes,
+            options.ProductionEntryLimit,
+            options.ProductionRetainedBytesLimit);
         // cell 可能比所属 cache 活得久；通知闭包不能反向保活整个快照缓存。
         var owner = new WeakReference<ThemeSnapshotCache>(this);
         _controlCompilations = new ControlCompilationCache(options, () =>
@@ -44,6 +46,18 @@ internal sealed class ThemeSnapshotCache
     internal int ControlCount => _controlCompilations.Count;
     internal long ControlRetainedBytes => _controlCompilations.RetainedBytes;
     internal int ControlInFlightCount => _controlCompilations.InFlightCount;
+
+    public void Dispose()
+    {
+        try
+        {
+            _entries.Dispose();
+        }
+        finally
+        {
+            _controlCompilations.Dispose();
+        }
+    }
 
     internal ThemeCompileResult GetOrCompile(ThemeCompileInput input, ThemeCompiler compiler)
     {
@@ -97,6 +111,7 @@ internal sealed class ThemeSnapshotCache
         return _entries.GetOrCreateAsync(
             key,
             _ => ValueTask.FromResult(compiler.Compile(input, _controlCompilations)),
-            callerCancellation);
+            callerCancellation,
+            productionInputRetainedBytesEstimator: () => ThemeRetainedBytesEstimator.EstimateSnapshotProductionInput(input, key));
     }
 }

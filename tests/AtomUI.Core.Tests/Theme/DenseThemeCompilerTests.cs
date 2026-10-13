@@ -42,7 +42,7 @@ public class DenseThemeCompilerTests
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var algorithm = registry.Algorithms.Single(static item => item.Algorithm == ThemeAlgorithm.Default);
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new BoundThemeDefinition(
+        var definition = new PreparedThemeDefinition(
             "TestTheme",
             "Test Theme",
             ThemeAppearance.Light,
@@ -488,7 +488,7 @@ public class DenseThemeCompilerTests
         var effectiveAlgorithms = algorithms ??
             [registry.Algorithms.Single(static algorithm => algorithm.Algorithm == ThemeAlgorithm.Default)];
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new BoundThemeDefinition(
+        var definition = new PreparedThemeDefinition(
             "TestTheme",
             "Test Theme",
             ThemeAppearance.Light,

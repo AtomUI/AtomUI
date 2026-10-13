@@ -72,8 +72,8 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
-    private IReadOnlyList<IThemeDefinitionResolver> _themeDefinitionResolvers =
-        Array.AsReadOnly(new[] { CoreThemeDefinitionResolver.Create() });
+    private IReadOnlyList<ThemeDefinitionRegistration> _themeDefinitionResolvers =
+        Array.AsReadOnly(new[] { new ThemeDefinitionRegistration(Generated.AtomUICore.GeneratedThemePackageRegistration.CreatePackage()) });
     private string _applicationId = typeof(ThemeManager).Assembly.GetName().Name!;
     private string _applicationDataRoot = string.Empty;
     private IReadOnlyList<ThemeDiagnostic> _themeCatalogDiagnostics = Array.Empty<ThemeDiagnostic>();
@@ -127,7 +127,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     internal void ConfigureThemeDefinitions(
-        IReadOnlyList<IThemeDefinitionResolver> resolvers,
+        IReadOnlyList<ThemeDefinitionRegistration> resolvers,
         string applicationId,
         string applicationDataRoot)
     {
@@ -187,7 +187,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     internal async Task ExecuteRegistrationEvolutionAsync(
-        IReadOnlyList<IThemeDefinitionResolver>? resolvers = null,
+        IReadOnlyList<ThemeDefinitionRegistration>? resolvers = null,
         Action<ThemeRegistrationEvolution>? commitAndPublish = null,
         CancellationToken cancellation = default)
     {
@@ -238,7 +238,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     private ThemeRegistrationEvolution PrepareRegistrationEvolutionCore(
-        IReadOnlyList<IThemeDefinitionResolver>? resolvers,
+        IReadOnlyList<ThemeDefinitionRegistration>? resolvers,
         ThemeSchemaRegistry registry,
         SemanticPartRegistry semanticRegistry)
     {
@@ -1189,10 +1189,14 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         DisposeBoundary(Clear);
 
         _themeDefinitionLoadCache.Dispose();
+        if (_themeSnapshotCache is { } snapshotCache)
+        {
+            DisposeBoundary(snapshotCache.Dispose);
+        }
         _controlTokenDescriptors.Clear();
         _controlThemeAssetDescriptors.Clear();
         _controlThemesProviders.Clear();
-        _themeDefinitionResolvers = Array.Empty<IThemeDefinitionResolver>();
+        _themeDefinitionResolvers = Array.Empty<ThemeDefinitionRegistration>();
         _pendingScopeUpdates.Clear();
         _scopeUpdateProcessorRunning = false;
 
@@ -1834,7 +1838,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     private (ThemeConfigNormalizeResult Runtime, ThemeConfigNormalizeResult Initial, ThemeCatalogLoadResult Catalog)
-        PrepareRegistrationThemeInputs(ThemeSchemaRegistry registry, IReadOnlyList<IThemeDefinitionResolver> resolvers)
+        PrepareRegistrationThemeInputs(ThemeSchemaRegistry registry, IReadOnlyList<ThemeDefinitionRegistration> resolvers)
     {
         var runtimeConfig = ThemeConfigNormalizer.Normalize(AddDefaultFont(null) ?? ThemeConfig.Empty, registry);
         var initialConfig = _initialRequest.Config is null

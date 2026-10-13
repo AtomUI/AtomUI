@@ -1,6 +1,5 @@
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Animation.Easings;
 
 namespace AtomUI.Theme.Schema;
 
@@ -23,23 +22,17 @@ public static class ThemeResourceValue
 
     internal static object? CloneForConsumer(object? value)
     {
-        return value switch
+        // Ownership boundaries already copied BoxShadows' private backing array. Its public
+        // indexer/enumerator return value copies, so reading the owned collection stays allocation-free.
+        if (value is BoxShadows)
         {
-            SolidColorBrush brush => CloneSolidColorBrush(brush),
-            IBrush brush => brush.ToImmutable(),
-            SplineEasing easing => new SplineEasing(
-                easing.X1,
-                easing.Y1,
-                easing.X2,
-                easing.Y2),
-            SpringEasing easing => new SpringEasing(
-                easing.Mass,
-                easing.Stiffness,
-                easing.Damping,
-                easing.InitialVelocity),
-            _ => value
-        };
+            return value;
+        }
+        return TokenValueOperations.TryCopy(value, out var copy) ? copy : value;
     }
+
+    internal static object? Freeze(object? value) =>
+        TokenValueOperations.TryCopy(value, out var copy) ? copy : value;
 
     internal static SolidColorBrush? CloneSolidColorBrush(SolidColorBrush? value)
     {

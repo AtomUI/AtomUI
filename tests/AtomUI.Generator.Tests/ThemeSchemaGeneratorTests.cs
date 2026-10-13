@@ -337,6 +337,7 @@ public class ThemeSchemaGeneratorTests
             public sealed class TokenValueCodec<T> : TokenValueCodec
             {
                 public static readonly TokenValueCodec<T> Instance = new();
+                public static T Copy(T value) => value;
             }
 
             public abstract class TokenValueAccessor

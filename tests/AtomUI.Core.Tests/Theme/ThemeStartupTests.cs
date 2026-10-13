@@ -20,19 +20,22 @@ public class ThemeStartupTests
     [InlineData(true)]
     public void Direct_Package_Collection_Failure_Poisons_Builder_Without_Partial_Staging(bool descriptorConflict)
     {
-        var builder = new ThemeManagerBuilder();
-        var descriptor = ThemeCompilerTests.CreateCompilerButtonDescriptor();
-        var first = new TestControlThemesProvider("Tests.Direct");
-        builder.AddControlPackage(new(first.Id, [descriptor], [], [], first, []));
-        var second = new TestControlThemesProvider(descriptorConflict ? "Tests.Conflict" : first.Id);
-        Should.Throw<ThemeResourceRegisterException>(() => builder.AddControlPackage(new(second.Id, [descriptor], [], [], second, [])));
-        builder.ControlPackages.ShouldHaveSingleItem().Id.ShouldBe(first.Id);
-        Should.Throw<InvalidOperationException>(() => builder.Build());
-        var third = new TestControlThemesProvider("Tests.AfterFailure");
-        Should.Throw<InvalidOperationException>(() => builder.AddControlPackage(new(third.Id, [], [], [], third, [])));
-        var independent = new ThemeManagerBuilder();
-        independent.AddControlPackage(new(third.Id, [], [], [], third, []));
-        using var manager = independent.Build();
+        HeadlessTestApp.Run(() =>
+        {
+            var builder = new ThemeManagerBuilder();
+            var descriptor = ThemeCompilerTests.CreateCompilerButtonDescriptor();
+            var first = new TestControlThemesProvider("Tests.Direct");
+            builder.AddControlPackage(new(first.Id, [descriptor], [], [], first, []));
+            var second = new TestControlThemesProvider(descriptorConflict ? "Tests.Conflict" : first.Id);
+            Should.Throw<ThemeResourceRegisterException>(() => builder.AddControlPackage(new(second.Id, [descriptor], [], [], second, [])));
+            builder.ControlPackages.ShouldHaveSingleItem().Id.ShouldBe(first.Id);
+            Should.Throw<InvalidOperationException>(() => builder.Build());
+            var third = new TestControlThemesProvider("Tests.AfterFailure");
+            Should.Throw<InvalidOperationException>(() => builder.AddControlPackage(new(third.Id, [], [], [], third, [])));
+            var independent = new ThemeManagerBuilder();
+            independent.AddControlPackage(new(third.Id, [], [], [], third, []));
+            using var manager = independent.Build();
+        });
     }
 
     [Fact]

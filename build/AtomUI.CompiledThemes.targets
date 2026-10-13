@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
+    <!-- Execute every build: Reader/XSD, codec, generator and referenced contracts are inputs too.
+         Write-if-changed keeps the compiler incremental; an invalid source deletes its old input. -->
+    <Target Name="GenerateAtomUICompiledThemeInputs" BeforeTargets="GenerateMSBuildEditorConfigFile;CoreCompile"
+            Condition="'@(AtomUIThemeDefinition)' != ''">
+        <ItemGroup>
+            <_AtomUIThemeInputSource Include="@(AtomUIThemeDefinition)">
+                <LogicalPath Condition="'%(AtomUIThemeDefinition.Link)' != ''">%(AtomUIThemeDefinition.Link)</LogicalPath>
+                <LogicalPath Condition="'%(AtomUIThemeDefinition.Link)' == ''">%(AtomUIThemeDefinition.Identity)</LogicalPath>
+            </_AtomUIThemeInputSource>
+            <_AtomUIThemeInputSource Update="@(_AtomUIThemeInputSource)">
+                <SourceIdentity>$(AssemblyName)/%(_AtomUIThemeInputSource.LogicalPath)</SourceIdentity>
+                <InputPath>$(IntermediateOutputPath)AtomUICompiledThemes/$([MSBuild]::StableStringHash('%(_AtomUIThemeInputSource.FullPath)'))-$([MSBuild]::StableStringHash('%(_AtomUIThemeInputSource.LogicalPath)')).atomuithemeinput</InputPath>
+            </_AtomUIThemeInputSource>
+        </ItemGroup>
+        <Error Condition="!Exists('$(AtomUIBuildTasksAssembly)')" Text="AtomUI.Build.Tasks could not be found at '$(AtomUIBuildTasksAssembly)'." />
+        <Error Condition="$([System.IO.Path]::IsPathRooted('%(_AtomUIThemeInputSource.LogicalPath)'))" Text="AtomUIThemeDefinition with an absolute path requires a relative Link logical path." />
+        <AtomUI.Build.Tasks.GenerateCompiledThemeInputTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ThemeInputs="@(_AtomUIThemeInputSource)" />
+        <ItemGroup>
+            <AdditionalFiles Include="@(_AtomUIThemeInputSource->'%(InputPath)')" />
+            <FileWrites Include="@(_AtomUIThemeInputSource->'%(InputPath)')" />
+        </ItemGroup>
+    </Target>
+</Project>

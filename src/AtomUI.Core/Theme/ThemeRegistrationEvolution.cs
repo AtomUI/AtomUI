@@ -12,7 +12,7 @@ internal sealed record ThemeRegistrationEvolution(
     CompiledThemeCatalog Catalog,
     IReadOnlyList<ThemeDiagnostic> CatalogDiagnostics,
     long CatalogChangeGeneration,
-    IReadOnlyList<IThemeDefinitionResolver> Resolvers,
+    IReadOnlyList<ThemeDefinitionRegistration> Resolvers,
     ThemeConfigNormalizeResult RuntimeConfig,
     ThemeConfigNormalizeResult InitialConfig,
     SemanticPartRegistry SemanticParts,

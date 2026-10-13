@@ -7,6 +7,7 @@
 - 提供 `AppBuilder.WithAtomUIDefaultOptions()` 和 `Application.UseAtomUI()` 两个主要入口。
 - 管理唯一运行时 `ThemeManager`、五阶段主题事务、稳定 ThemeContext、局部作用域图以及独立 TopLevel 的
   context lease/resource bridge。
+- 承接类型化主题包注册与默认赋值；保留动态 XML Reader/Binder，派生算法仅由现有运行时执行。
 - 定义生成式全局/Control Own Token schema、所有 Control 可覆盖完整 Global Token 的规则、不可变
   `ThemeSnapshot`、稳定资源键，以及 `SharedTokenResource`/`XxxTokenResource` 强类型资源扩展。
 - 定义 Semantic Part 声明、不可变 descriptor、冻结 registry 与 `IThemeManager.SemanticParts` 运行时查询入口；
@@ -24,7 +25,7 @@
 | `Theme/` | 唯一运行时 ThemeManager、五阶段事务、ThemeContext、作用域图、TopLevel lease/bridge 及公开主题入口 |
 | `Theme/Algorithms/` | 算法契约、默认/暗色/紧凑计算器、调色板和颜色计算辅助 |
 | `Theme/Configuration/` | ThemeConfig、ControlThemeConfig、配置规范化、继承与覆盖合并 |
-| `Theme/Definitions/` | 主题来源、默认选择、XML v1、文件读取、语法模型、Schema 绑定和 diagnostics |
+| `Theme/Definitions/` | 编译主题包 ABI/注册、主题来源、默认选择、动态 XML v1 读取、语法模型、Schema 绑定和 diagnostics |
 | `Theme/Schema/` | 生成式 Token schema、Control/算法 descriptor、ControlTheme asset descriptor 与 manifest 契约 |
 | `Theme/SemanticParts/` | Semantic Part Attribute、数量/定制枚举、Control descriptor 与冻结 registry |
 | `Theme/Compilation/` | 纯 ThemeCompiler、不可变 ThemeSnapshot 和 Snapshot 缓存 |
@@ -80,6 +81,7 @@ Application 映射由 Shared 的 `ImageLoaderStore` 管理；Core 不增加 `App
 
 - [内容展开与收起动效设计](../../architecture/systems/control-infrastructure/content-expansion.md)：共享动效职责与上层控件接入契约，实现证据由各控件维护。
 - [主题系统架构](../../architecture/systems/theming/runtime.md)
+- [编译主题包](../../architecture/systems/theming/compiled-theme-packages/overview.md)：Core 拥有统一执行语义、生成 ABI 与生命周期，不依赖构建工具程序集。
 - [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)
 - [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)
 - [AtomUI 本地化系统架构](../../architecture/systems/localization/overview.md)

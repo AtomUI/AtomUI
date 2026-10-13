@@ -26,8 +26,13 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 return new ThemeAssetInput(input.Left.Path, input.Left.GetText(token)?.ToString() ?? "", directory, link);
             }).Collect();
         var inputs = initContext.CompilationProvider.Combine(initContext.AnalyzerConfigOptionsProvider).Combine(declarations).Combine(assets);
-        var output = inputs.Select(static (input, cancellationToken) =>
+        var themeInputs = initContext.AdditionalTextsProvider
+            .Where(static file => file.Path.EndsWith(AtomUI.Theme.Build.CompiledThemeInput.Extension, StringComparison.OrdinalIgnoreCase))
+            .Select(static (file, token) => (file.Path, Text: file.GetText(token)?.ToString() ?? "")).Collect();
+        var output = inputs.Combine(themeInputs).Select(static (combined, cancellationToken) =>
         {
+            var input = combined.Left;
+            var themeInputs = combined.Right;
             var compilation = input.Left.Left.Left;
             var options = input.Left.Left.Right;
             var declarations = input.Left.Right;
@@ -140,11 +145,21 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                     }
                 }
             }
+            if (ThemeBuildContracts.HasAbi(compilation))
+            {
+                var contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, context);
+                contracts.Write(context);
+                CompiledThemePackageWriter.Write(context, compilation, contracts, themeInputs, assemblyName, packageId);
+            }
+            else if (themeInputs.Length != 0)
+            {
+                CompiledThemePackageWriter.Error(context, null, 0, 0, "Compiled theme inputs require generated ABI v1.");
+            }
             info.ControlThemeInfos.AddRange(controlInfos);
             ThemeControlCatalogMetadataWriter.Write(context, catalog);
             if (info.SchemaTokens.Count > 0 || controlInfos.Count > 0 || algorithms.Length > 0)
             {
-                new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, algorithms).Write();
+                new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, algorithms, ThemeBuildContracts.HasAbi(compilation)).Write();
             }
 
             if (hasSemanticRuntime)

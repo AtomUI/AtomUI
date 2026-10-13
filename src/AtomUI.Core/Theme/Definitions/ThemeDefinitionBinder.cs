@@ -40,7 +40,7 @@ internal static class ThemeDefinitionBinder
         }
 
         return new ThemeDefinitionBindResult(
-            new BoundThemeDefinition(
+            new PreparedThemeDefinition(
                 document.Id,
                 document.Name,
                 document.Appearance,
@@ -231,7 +231,7 @@ internal static class ThemeDefinitionBinder
         return (Nullable.GetUnderlyingType(expectedType) ?? expectedType).IsInstanceOfType(value);
     }
 
-    private static ThemeAppearance ResolveAppearance(
+    internal static ThemeAppearance ResolveAppearance(
         IReadOnlyList<ThemeAlgorithmDescriptor> algorithms)
     {
         var appearance = ThemeAppearance.Light;

@@ -1,7 +1,6 @@
 using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 using AtomUI.Generated.AtomUICore;
-using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
@@ -17,14 +16,14 @@ internal sealed class ThemeCompiler
 
     private const string CompilerPath = "ThemeCompiler";
     private static readonly ConditionalWeakTable<
-        BoundThemeDefinition,
+        PreparedThemeDefinition,
         ConditionalWeakTable<ThemeSchemaRegistry, NormalizedThemeConfig>> s_definitionDefaults = new();
     private static readonly ConditionalWeakTable<
         ThemeSchemaRegistry,
         NormalizedThemeConfig> s_libraryDefaults = new();
 
     internal static NormalizedThemeConfig CreateDefinitionDefaults(
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeSchemaRegistry registry)
     {
         ArgumentNullException.ThrowIfNull(definition);
@@ -39,7 +38,7 @@ internal sealed class ThemeCompiler
     }
 
     private static NormalizedThemeConfig CreateDefinitionDefaultsCore(
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeSchemaRegistry registry)
     {
         IReadOnlyList<ThemeAlgorithmDescriptor> algorithms = definition.Algorithms;
@@ -60,7 +59,7 @@ internal sealed class ThemeCompiler
             globalTokens[index] = new NormalizedTokenValue(
                 token.Descriptor,
                 token.Value,
-                token.Descriptor.Format(token.Value));
+                token.CanonicalValue);
         }
         Array.Sort(
             globalTokens,
@@ -123,7 +122,7 @@ internal sealed class ThemeCompiler
             result[index] = new NormalizedTokenValue(
                 token.Descriptor,
                 token.Value,
-                token.Descriptor.Format(token.Value));
+                token.CanonicalValue);
         }
         Array.Sort(
             result,
@@ -336,7 +335,8 @@ internal sealed class ThemeCompiler
         }
         var previousDescriptor = parent.Registry.Controls[descriptor.Slot];
         if (previousDescriptor.Identity != descriptor.Identity ||
-            previousDescriptor.ControlType != descriptor.ControlType)
+            previousDescriptor.ControlType != descriptor.ControlType ||
+            !ReferenceEquals(previousDescriptor.CompilationIdentity, descriptor.CompilationIdentity))
         {
             return false;
         }
@@ -581,8 +581,7 @@ internal sealed class ThemeCompiler
 
         for (var index = 0; index < left.Count; index++)
         {
-            if (left[index].Algorithm != right[index].Algorithm ||
-                left[index].Revision != right[index].Revision)
+            if (!ReferenceEquals(left[index].CompilationIdentity, right[index].CompilationIdentity))
             {
                 return false;
             }
@@ -692,16 +691,7 @@ internal sealed class ThemeCompiler
         {
             foreach (var descriptor in descriptors)
             {
-                var value = descriptor.GetValue(source);
-                if (value is not null &&
-                    !value.GetType().IsValueType &&
-                    value is not string &&
-                    value is not Avalonia.Media.FontFamily)
-                {
-                    value = descriptor.Parse(descriptor.Format(value));
-                }
-
-                descriptor.SetValue(copy, value);
+                descriptor.SetValue(copy, descriptor.CopyValue(descriptor.GetValue(source)));
             }
         }
 
@@ -722,7 +712,7 @@ internal sealed class ThemeCompiler
         {
             if (value.Descriptor.Stage == stage)
             {
-                value.Descriptor.SetValue(builder, value.Value);
+                value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
             }
         }
     }
@@ -733,7 +723,7 @@ internal sealed class ThemeCompiler
     {
         foreach (var value in values)
         {
-            value.Descriptor.SetValue(builder, value.Value);
+            value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
         }
     }
 
@@ -747,7 +737,7 @@ internal sealed class ThemeCompiler
         foreach (var descriptor in descriptors)
         {
             var value = values.GetValue(descriptor.Slot);
-            descriptor.SetValue(builder, canonical && value is FontFamily ? value : ThawValue(descriptor, value));
+            descriptor.SetValue(builder, descriptor.CopyValue(value));
         }
 
         foreach (var palette in palettes)
@@ -758,32 +748,7 @@ internal sealed class ThemeCompiler
         return builder;
     }
 
-    private static object? ThawValue(TokenDescriptor descriptor, object? value)
-    {
-        if (value is null || value.GetType().IsValueType || value is string)
-        {
-            return value;
-        }
-
-        return descriptor.Parse(descriptor.Format(value));
-    }
-
-    private static void NormalizeFinalBehavior(DesignToken builder)
-    {
-        if (!builder.EnableMotion)
-        {
-            builder.MotionDurationFast     = TimeSpan.Zero;
-            builder.MotionDurationMid      = TimeSpan.Zero;
-            builder.MotionDurationSlow     = TimeSpan.Zero;
-            builder.MotionDurationVerySlow = TimeSpan.Zero;
-        }
-
-        if (!builder.EnableWaveSpirit)
-        {
-            builder.WaveAnimationRange = 0;
-            builder.WaveStartOpacity   = 0;
-        }
-    }
+    private static void NormalizeFinalBehavior(DesignToken builder) => builder.NormalizeFinalBehavior();
 
     private static IReadOnlyDictionary<object, object?> BuildResourceMap(
         AbstractDesignToken builder,
@@ -808,21 +773,7 @@ internal sealed class ThemeCompiler
         return resources.ToFrozenDictionary();
     }
 
-    private static object? FreezeResourceValue(object? value)
-    {
-        return value switch
-        {
-            SolidColorBrush brush => ThemeResourceValue.CloneSolidColorBrush(brush),
-            IBrush brush => brush.ToImmutable(),
-            SplineEasing easing => new SplineEasing(easing.X1, easing.Y1, easing.X2, easing.Y2),
-            SpringEasing easing => new SpringEasing(
-                easing.Mass,
-                easing.Stiffness,
-                easing.Damping,
-                easing.InitialVelocity),
-            _ => value
-        };
-    }
+    private static object? FreezeResourceValue(object? value) => ThemeResourceValue.Freeze(value);
 
     private static IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> FreezePresetPalettes(
         DesignToken builder)

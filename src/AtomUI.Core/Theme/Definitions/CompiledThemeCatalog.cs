@@ -65,8 +65,18 @@ internal sealed class CompiledThemeCatalog
     }
 
     internal static ThemeCatalogLoadResult LoadInitial(
+        ThemeSchemaRegistry registry, IReadOnlyList<IThemeDefinitionResolver> resolvers,
+        ThemeDefinitionResolveContext context, ThemeDefinitionLoadCache? loadCache = null) =>
+        LoadInitial(registry, resolvers.Select(static resolver => new ThemeDefinitionRegistration(resolver)).ToArray(), context, loadCache);
+
+    internal static ThemeCatalogLoadResult LoadReload(
+        ThemeSchemaRegistry registry, CompiledThemeCatalog currentCatalog, IReadOnlyList<IThemeDefinitionResolver> resolvers,
+        ThemeDefinitionResolveContext context, ThemeDefinitionLoadCache? loadCache = null) =>
+        LoadReload(registry, currentCatalog, resolvers.Select(static resolver => new ThemeDefinitionRegistration(resolver)).ToArray(), context, loadCache);
+
+    internal static ThemeCatalogLoadResult LoadInitial(
         ThemeSchemaRegistry registry,
-        IReadOnlyList<IThemeDefinitionResolver> resolvers,
+        IReadOnlyList<ThemeDefinitionRegistration> resolvers,
         ThemeDefinitionResolveContext context,
         ThemeDefinitionLoadCache? loadCache = null)
     {
@@ -84,7 +94,7 @@ internal sealed class CompiledThemeCatalog
             var sliceResult = LoadResolverSlice(registry, resolver, context, loadCache);
             if (!sliceResult.Success)
             {
-                if (resolver is UserDirectoryThemeDefinitionResolver)
+                if (resolver.IsUserDirectory)
                 {
                     diagnostics.AddRange(sliceResult.Diagnostics);
                     continue;
@@ -113,7 +123,7 @@ internal sealed class CompiledThemeCatalog
 
             if (conflict is not null)
             {
-                if (resolver is UserDirectoryThemeDefinitionResolver)
+                if (resolver.IsUserDirectory)
                 {
                     diagnostics.Add(conflict);
                     continue;
@@ -154,7 +164,7 @@ internal sealed class CompiledThemeCatalog
     internal static ThemeCatalogLoadResult LoadReload(
         ThemeSchemaRegistry registry,
         CompiledThemeCatalog currentCatalog,
-        IReadOnlyList<IThemeDefinitionResolver> resolvers,
+        IReadOnlyList<ThemeDefinitionRegistration> resolvers,
         ThemeDefinitionResolveContext context,
         ThemeDefinitionLoadCache? loadCache = null)
     {
@@ -244,14 +254,37 @@ internal sealed class CompiledThemeCatalog
 
     private static ThemeResolverSliceLoadResult LoadResolverSlice(
         ThemeSchemaRegistry registry,
-        IThemeDefinitionResolver resolver,
+        ThemeDefinitionRegistration resolver,
         ThemeDefinitionResolveContext context,
         ThemeDefinitionLoadCache? loadCache)
     {
+        if (resolver.Package is { } package)
+        {
+            var entries = new List<CompiledThemeDefinition>(package.Programs.Count);
+            foreach (var program in package.Programs)
+            {
+                try
+                {
+                    var definition = program.Bind(registry);
+                    entries.Add(new CompiledThemeDefinition(program.Info, definition,
+                        new ThemeDefinitionRevision(program.SourceIdentity, program.SourceRevision,
+                            program.ContentDigest, program.ProgramDigest)));
+                }
+                catch (Exception exception) when (exception is not OutOfMemoryException)
+                {
+                    return ThemeResolverSliceLoadResult.Failed(
+                        [Error("ATMTHM4010", program.SourceIdentity, "/Theme", exception.Message)], exception);
+                }
+            }
+            return ThemeResolverSliceLoadResult.Succeeded(
+                new ThemeResolverCatalogSlice(resolver.Id, false, Array.AsReadOnly(entries.ToArray()), Array.Empty<ThemeDiagnostic>()),
+                Array.Empty<ThemeDiagnostic>());
+        }
+
         ThemeDefinitionResolveResult resolved;
         try
         {
-            resolved = resolver.Resolve(context) ??
+            resolved = resolver.Resolver!.Resolve(context) ??
                        throw new InvalidOperationException(
                            $"Theme definition resolver '{resolver.Id}' returned null.");
         }
@@ -355,60 +388,51 @@ internal sealed class CompiledThemeCatalog
         ThemeDocument document;
         string contentDigest;
         var diagnostics = new List<ThemeDiagnostic>();
-        if (source is BuiltInThemeDefinitionSource builtIn)
+        byte[] bytes;
+        try
         {
-            document = builtIn.ReadResult.Document!;
-            contentDigest = builtIn.ContentDigest;
-            diagnostics.AddRange(ConvertDiagnostics(builtIn.ReadResult.Diagnostics));
+            using var stream = source.OpenRead() ??
+                               throw new InvalidOperationException(
+                                   $"Theme definition source '{identity}' returned a null stream.");
+            bytes = ReadBounded(stream, ThemeDocumentReaderOptions.DefaultMaxDocumentBytes);
+        }
+        catch (Exception exception)
+        {
+            return ThemeSourceLoadResult.Failed(
+                [Error(
+                    "ATMTHM4003",
+                    identity,
+                    "$",
+                    $"Theme definition source '{identity}' could not be read: " +
+                    exception.GetBaseException().Message)],
+                exception);
+        }
+
+        contentDigest = Convert.ToHexString(SHA256.HashData(bytes));
+        var sourceKey = new ThemeSourceCacheKey(identity, contentDigest);
+        if (loadCache?.TryGetRead(sourceKey, out var cachedRead) == true)
+        {
+            document = cachedRead!.Document;
+            diagnostics.AddRange(cachedRead.Diagnostics);
         }
         else
         {
-            byte[] bytes;
-            try
+            using var input = new MemoryStream(bytes, writable: false);
+            var read = ThemeDocumentReader.Read(input, identity);
+            diagnostics.AddRange(ConvertDiagnostics(read.Diagnostics));
+            if (!read.Success)
             {
-                using var stream = source.OpenRead() ??
-                                   throw new InvalidOperationException(
-                                       $"Theme definition source '{identity}' returned a null stream.");
-                bytes = ReadBounded(stream, ThemeDocumentReaderOptions.DefaultMaxDocumentBytes);
-            }
-            catch (Exception exception)
-            {
-                return ThemeSourceLoadResult.Failed(
-                    [Error(
-                        "ATMTHM4003",
-                        identity,
-                        "$",
-                        $"Theme definition source '{identity}' could not be read: " +
-                        exception.GetBaseException().Message)],
-                    exception);
+                return ThemeSourceLoadResult.Failed(diagnostics);
             }
 
-            contentDigest = Convert.ToHexString(SHA256.HashData(bytes));
-            var sourceKey = new ThemeSourceCacheKey(identity, contentDigest);
-            if (loadCache?.TryGetRead(sourceKey, out var cachedRead) == true)
-            {
-                document = cachedRead!.Document;
-                diagnostics.AddRange(cachedRead.Diagnostics);
-            }
-            else
-            {
-                using var input = new MemoryStream(bytes, writable: false);
-                var read = ThemeDocumentReader.Read(input, identity);
-                diagnostics.AddRange(ConvertDiagnostics(read.Diagnostics));
-                if (!read.Success)
-                {
-                    return ThemeSourceLoadResult.Failed(diagnostics);
-                }
-
-                document = read.Document!;
-                loadCache?.StoreRead(
-                    sourceKey,
-                    new ThemeSourceReadCacheEntry(document, diagnostics.ToArray()));
-            }
+            document = read.Document!;
+            loadCache?.StoreRead(
+                sourceKey,
+                new ThemeSourceReadCacheEntry(document, diagnostics.ToArray()));
         }
 
-        BoundThemeDefinition definition;
-        var bindingKey = new ThemeBindingCacheKey(identity, contentDigest, registry.Revision);
+        PreparedThemeDefinition definition;
+        var bindingKey = new ThemeBindingCacheKey(identity, contentDigest, registry.Revision, registry.BindingIdentity);
         if (loadCache?.TryGetBinding(bindingKey, out var cachedBinding) == true)
         {
             definition = cachedBinding!.Definition;
@@ -514,7 +538,7 @@ internal sealed class CompiledThemeCatalog
 
 internal sealed record CompiledThemeDefinition(
     ThemeInfo Info,
-    BoundThemeDefinition Definition,
+    PreparedThemeDefinition Definition,
     ThemeDefinitionRevision Revision);
 
 internal sealed record ThemeResolverCatalogSlice(

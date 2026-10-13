@@ -1,10 +1,13 @@
 # AtomUI 主题系统架构
 
-本文是 AtomUI 主题系统唯一的长期架构设计文档。它定义当前运行时模型、公开配置语义、主题来源解析、主题文件
+本文定义 AtomUI 主题系统的运行时模型、公开配置语义、主题来源解析、主题文件
 处理、Catalog 刷新、Token 编译、动态作用域、资源发布、事件契约、AOT 边界和验收标准。
 
 本文定义当前架构。既有兼容对象不得成为绕过这些约束的旁路。面向主题作者和 Control 开发者的分层讲解与定制
 示例见 [AtomUI 主题定制指南](../../../guides/theming/customization.md)。
+
+包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。派生算法统一在运行时执行，
+并遵守本文的配置、Snapshot、事务与资源语义；当前验证状态由编译主题包文档维护，已发布能力以对应发布记录为准。
 
 ## 1. 设计目标
 
@@ -429,10 +432,9 @@ TypeMap 条件及包引导信息；Runtime 只查询映射和收集记录，官�
 - 保留源码位置并执行 XML 元素总数等 Reader 级资源限制。
 - 输出不依赖当前 Control 注册集合的 `ThemeDocument`。
 
-Core 固定内置 XML 在构建时由 Toolchain Tasks worker 链接同一 Reader 源码和权威 XSD 校验，生成不可变
-syntax document、完整 source location、Reader diagnostics 和原始字节 SHA-256。XML/XSD 或 Reader 变化会重新
-验证；无效输入使构建失败。启动读取这份生成结果，不再打开内置 XML 或初始化运行时 XSD。原始 avares 资源仍随
-Core 打包并可查询；所有外部 XML 仍在运行时经过标准 Reader。
+显式编译的包内 XML 在构建时由 Toolchain Tasks worker 链接同一 Reader 源码和权威 XSD 校验，向 Generator 提供
+有界中立输入、source location 和原始字节 SHA-256；无效输入阻止构建。运行时使用生成的类型化程序，
+不创建 syntax document 或初始化运行时 XSD。原始 avares 资源仍可保留；显式动态 XML 继续经过标准 Reader。
 
 `ThemeDefinitionBinder` 负责：
 
@@ -445,12 +447,12 @@ Reader 不得因为某个可选控件包没有安装而修改或过滤语法树�
 定义是否可用于当前 registry。`ThemeDefinitionRevision` 是由 Catalog 生成的结构化值，至少包含稳定 source
 identity、source revision 和内容摘要：文件来源使用实际字节内容摘要，不能只使用时间戳；包内资源包含包版本、
 资源路径和内容摘要；程序化来源必须显式提供 revision。来源字节或程序化定义语义变化时 revision 必须变化。
-同一 definition revision 在进程中最多成功读取一次；同一 `(definition revision, registry revision)` 最多成功
-绑定一次。更换 registry revision 只重新绑定已有 `ThemeDocument`，不重复解析来源 XML。
+有效缓存可复用同一内容摘要的解析结果，以及同一真实 registry 实例上的绑定结果；驱逐后允许重新准备，不能承诺
+进程生命周期内只执行一次。更换 registry 时不能复用旧 slot；可在有界缓存命中时复用已有 `ThemeDocument`。
 
 ### 6.3 Theme Definition Resolver
 
-主题来源统一通过 Resolver 发现。Resolver 只描述“有哪些来源以及如何读取原始字节”，不得自行执行 XML 解析、
+动态 XML 来源通过 Resolver 发现。Resolver 只描述“有哪些来源以及如何读取原始字节”，不得自行执行 XML 解析、
 Token 绑定、算法求值或资源发布。公开契约使用 `Definition` 而不是 `Config` 术语，因为 `ThemeConfig` 已经专指
 运行时 Token/Algorithm 覆盖；主题 XML 是包含 Id、Name、Appearance、默认标记和 revision 的完整 definition。
 
@@ -483,7 +485,6 @@ public interface IThemeDefinitionSource
 
 标准 Resolver 分为：
 
-- `BuiltInThemeDefinitionResolver`：显式列出 AtomUI Core 的 `avares://` 主题，必须成功，不支持刷新。
 - `AvaloniaAssetThemeDefinitionResolver`：由应用或控件包显式列出 `avares://` 主题，必须成功，不支持刷新。
 - `UserDirectoryThemeDefinitionResolver`：读取应用用户配置目录中的 `*.theme.xml`，允许启动降级，支持手动刷新。
 
@@ -491,12 +492,14 @@ Builder 公开注册入口为：
 
 ```csharp
 void AddThemeDefinitionResolver(IThemeDefinitionResolver resolver);
+void AddCompiledThemePackage(CompiledThemePackage package);
 void WithApplicationId(string applicationId);
 void UseUserThemeDirectory();
 void UseUserThemeDirectory(string directory);
 ```
 
-Resolver Id 在一次 Builder 中必须非空且唯一。内置 Resolver 总是最先注册，应用 Resolver 按显式注册顺序追加；
+Resolver 与编译包使用显式来源联合；注册 Id 在一次 Builder 中必须非空且唯一。Core 生成的默认主题包最先注册，
+应用 Resolver/编译包按显式注册顺序追加。编译包不伪造 OpenRead 字节流；两者共用 Catalog 的冲突、唯一默认与刷新规则。
 不执行程序集扫描、资源目录枚举或基于命名约定的类型发现。
 
 ### 6.4 Application Id 与用户主题目录
@@ -536,7 +539,7 @@ Resolver 在枚举前冻结规范化后的目录真实路径；打开文件时�
 来源顺序只决定 `AvailableThemes` 的稳定展示顺序，不提供覆盖语义：
 
 ```text
-Core built-in -> application/package avares -> user directory
+Core compiled package -> application compiled packages / XML resolvers -> user directory
 ```
 
 - 任意来源之间重复 `Theme.Id` 都是错误，不使用 first-wins、last-wins 或静默覆盖。
@@ -560,7 +563,7 @@ Resolver source
     -> bounded byte copy + SHA-256
     -> ThemeDocumentReader + v1 XSD
     -> ThemeDefinitionBinder + frozen ThemeSchemaRegistry
-    -> BoundThemeDefinition + ThemeDefinitionRevision
+    -> PreparedThemeDefinition + ThemeDefinitionRevision
     -> immutable CompiledThemeCatalog
 ```
 
@@ -568,10 +571,10 @@ Resolver source
 `ContentDigest` 必须根据本次实际读取的字节计算。文件长度或修改时间只能筛选缓存候选，不能代替内容摘要。
 Catalog 构建期间只使用本次复制的字节，避免文件枚举后修改造成 Reader 与 digest 针对不同内容。
 
-Core 内部 sealed built-in source 使用构建时生成的 syntax document 和同一原始字节摘要进入上述 Binder 阶段。
-它保留原始 avares identity 和运行时程序集版本 revision；Binder/Compiler 仍针对实际冻结 registry 执行，未知
-Token/Algorithm 等错误不能被构建期生成跳过。来源顺序、冲突、唯一默认主题与刷新规则保持统一。该内部入口
-不扩展公开 Resolver/source 合约，也不让外部来源声明自己是可信的已编译 document。
+包内 `AtomUIThemeDefinition` 使用构建期类型化入口，直接在实际 registry 校验契约并产生同一 PreparedThemeDefinition，
+不创建 ThemeDocument 或重复解析静态值。Core 默认主题与 Gallery 产品主题已按此路径接线，原始 avares XML 仍可显式
+读取。程序摘要和实际 registry 身份共同限定复用边界；生成 ABI 与实施验收状态见
+[编译主题包](compiled-theme-packages/overview.md)及[生成 ABI](../../../reference/theming/compiled-theme-abi-v1.md)。
 
 外部 bounded byte copy 使用小型池化 scratch buffer，完整读取到 EOF，不依赖流的 Length/CanSeek/Position；
 实际字节数决定限额和摘要。用户目录完整枚举并规范化路径，只保留上限内的路径；超限保留精确计数和后续枚举
@@ -659,14 +662,16 @@ ThemeSnapshot
   object-key 字典保存每个值。
 - Control 表按 registry slot 存放引用，`ControlTokenIdentity` 只用于配置边界和诊断。
 - Control 表是按槽位惰性编译的容器（只暴露 Count 与索引器，不实现枚举）；构造期解析槽位状态
-  （已物化 / 复用父槽 / 待编译），保留字节估算为构造期基线加首访物化增量。缓存在插入时采样
-  `EstimatedRetainedBytes`，物化增长尚未回灌。单快照槽数有限不构成整个应用的保留上界证明；历史父链与
-  物化输入的目标记账/释放要求见[内存计费与释放](lazy-materialization.md#7-内存计费与释放)。
+  （已物化 / 复用独立 cell / 待编译），保留字节估算为构造期基线加首访物化增量。缓存在插入时采样
+  `EstimatedRetainedBytes`，物化后通过弱 cache 通知回灌增量并重新检查预算。单快照槽数有限不构成整个应用的
+  保留上界证明；完整计费与释放契约见[内存计费与释放](lazy-materialization.md#7-内存计费与释放)。
 - 稀疏覆盖、Control Effective Global Token 差量和 Avalonia 资源投影使用不可变集合或 `FrozenDictionary`。
 - 颜色资源在 snapshot 中已经转换为不可变 Brush。
 - palette、集合和其他引用值必须在冻结前深复制为不可变值。
-- 不保存 Control、Visual、Provider、事件或订阅。目标不长期保存可变 Token builder；当前惰性 source 仍保留
-  全局 builder 作为编译输入，需要按独立 cell 的输入所有权与物化后释放规则收敛。
+- 不保存 Control、Visual、Provider、事件或订阅。独立 source 保留当前全局输入及按需 workspace；复用全局值时
+  不急切恢复 builder，非复用路径可持有已有 builder。cell 物化成功后释放 source 引用；最后依赖 cell 释放后，
+  source/builder 可回收，不保留父 snapshot 链。source 弱引用 control cache，合法旧视图不会经缓存保活其他历史输入；
+  关闭与纯值首查边界见[生命周期契约](compiled-theme-packages/execution-and-lifetime.md#8-实现边界与后续变更要求)。
 - 不提供 `SharedToken`、`ControlToken`、`Clone` 或可变字典查询 API。
 - imperative 消费者通过只读 Token resolver 查询 snapshot 值。
 - `ContentFingerprint` 是规范化内容的快速 hash，不是无碰撞的唯一身份。snapshot 的语义相等性必须比较对应的
@@ -681,7 +686,7 @@ ThemeSnapshot
 - 完整的不可变 `ThemeDefinition` 结构化 key，包括 definition revision 和 typed 内容。
 - 完整的不可变 `NormalizedThemeConfig` 结构化 key。
 - 有序算法 descriptor `(id, revision)`。
-- `ThemeSchemaRegistry` revision。
+- `ThemeSchemaRegistry` revision 与实际绑定身份；相同元数据的不同委托实现不能共享结果。
 
 父主题的影响已经包含在合并后的有效配置中，因此 cache key 不包含父 snapshot 的发布序号。
 
@@ -1304,7 +1309,8 @@ Child snapshot C (Button override only)
 ### 18.3 编译分配
 
 - 编译前根据 schema 中已知的 Token 和 Control 数量预分配数组及稀疏字典容量。
-- 临时 builder 使用 copy-on-write global token overlay，Control 计算不得深克隆完整 `DesignToken` 对象图。
+- 减少临时 builder 的完整复制是优化目标；当前 Control 计算仍调用 `CopyBuilder`，尚未实现 copy-on-write global
+  token overlay。编译主题包的类型化复制必须保持值隔离，不能把这个目标当作现有零复制保证。
 - 大型临时数组可以由有界 workspace pool 复用，但 pooled buffer 绝不进入 snapshot。
 - 取消、异常和 stale generation 路径必须在 `finally` 中归还 workspace。
 - 同一 ThemeManager 同时只运行一个根事务准备管线；后续请求合并，避免并发编译造成内存峰值。
@@ -1351,11 +1357,13 @@ ThemeScopeGraph 在注册有效期间强持有 ScopeNode 和对应 ThemeConfigPr
 - imperative Token 订阅返回 `IDisposable`，由控件在 detach、re-template 或 owner 变化时释放。
 - 非 Visual `AvaloniaObject` 使用 DynamicResource 时必须有 scoped `IResourceHost` 和对称 release 路径。
 - 普通 Popup、Flyout 和逻辑树内 overlay 不额外创建 ThemeContext 传播订阅；仅独立资源根使用 lease/bridge。
-- static cache 只能持有 schema、descriptor 和不可变无 UI 值，不得持有 ThemeContext、Provider、Control 或 Visual。
+- static cache 不得持有 ThemeContext、Provider、Control 或 Visual。schema、descriptor、Type 与无捕获委托也可能
+  保活可卸载程序集；相关绑定应由所属注册域/合法视图持有或使用可回收结构，不得建立进程级强根。
 - 事件 dispatcher 不保留已完成 transaction、event args 或 invocation list。
 
-旧 snapshot 的可达数量上界必须由“活动 context 数量 + 有界 cache entry + 当前事务 staged snapshot”解释。
-无法解释的额外存活 snapshot 视为内存泄漏。
+旧 snapshot 的存活必须由活动 context、有界 cache、当前事务候选或调用者合法持有的读取视图解释。
+cache 预算不限制调用者主动保留的视图；这些视图不能经父链或缓存额外保活无关历史版本。无法解释的额外存活
+snapshot 视为内存泄漏。
 
 ### 18.6 性能验证
 

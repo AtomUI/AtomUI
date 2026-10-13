@@ -19,6 +19,7 @@ internal readonly record struct ThemeContentFingerprint(ulong Value)
         builder.Add(definitionRevision.SourceIdentity);
         builder.Add(definitionRevision.SourceRevision);
         builder.Add(definitionRevision.ContentDigest);
+        builder.Add(definitionRevision.ProgramDigest ?? string.Empty);
         builder.Add(effectiveConfig.Fingerprint.Value);
         builder.Add(registryRevision.Value);
         builder.Add((byte)appearance);

@@ -8,6 +8,7 @@ namespace AtomUI.Generator;
 internal sealed class GeneratedThemeSchemaWriter
 {
     private readonly GenerationOutput _context;
+    private readonly bool _compiledAbi;
     private readonly string _generatedNamespace;
     private readonly string _controlCatalog;
     private readonly IReadOnlyList<SchemaTokenInfo> _globalTokens;
@@ -20,9 +21,10 @@ internal sealed class GeneratedThemeSchemaWriter
         string controlCatalog,
         IEnumerable<SchemaTokenInfo> globalTokens,
         IEnumerable<ControlThemeInfo> controls,
-        IEnumerable<ThemeAlgorithmInfo> algorithms)
+        IEnumerable<ThemeAlgorithmInfo> algorithms, bool compiledAbi = false)
     {
         _context = context;
+        _compiledAbi = compiledAbi;
         _generatedNamespace = GeneratedCodeNamespace.ForAssembly(assemblyName);
         _controlCatalog = controlCatalog;
         _globalTokens = globalTokens.OrderBy(static token => token.Name, StringComparer.Ordinal).ToArray();
@@ -102,14 +104,7 @@ internal sealed class GeneratedThemeSchemaWriter
                   .Append(token.Name).AppendLine(");");
         }
         source.AppendLine("    }");
-        source.AppendLine("    private static T CopyGlobalValue<T>(T value)");
-        source.AppendLine("    {");
-        source.AppendLine("        if (typeof(T).IsValueType || value is null || value is string || value is global::Avalonia.Media.FontFamily || value.GetType().IsValueType)");
-        source.AppendLine("        {");
-        source.AppendLine("            return value;");
-        source.AppendLine("        }");
-        source.AppendLine("        return ThemeTokenValueParser.Parse<T>(ThemeTokenValueFormatter.Format(value));");
-        source.AppendLine("    }");
+        source.AppendLine("    private static T CopyGlobalValue<T>(T value) => TokenValueCodec<T>.Copy(value);");
     }
 
     private void WriteDescriptorFactory(StringBuilder source)
@@ -264,7 +259,7 @@ internal sealed class GeneratedThemeSchemaWriter
         source.AppendLine("    };");
     }
 
-    private static void WriteToken(
+    private void WriteToken(
         StringBuilder source,
         SchemaTokenInfo token,
         int slot,
@@ -277,7 +272,9 @@ internal sealed class GeneratedThemeSchemaWriter
         source.Append(indentation).Append("TokenDescriptor.CreateGenerated(").Append(name).Append(", ").Append(slot)
               .Append(", TokenStage.").Append(token.Stage)
               .Append(", TokenValueCodec<").Append(token.ValueType).Append(">.Instance, ")
-              .Append(resourceKey).Append(", ").Append(accessor).Append(".Instance)").AppendLine(suffix);
+              .Append(resourceKey).Append(", ").Append(accessor).Append(".Instance");
+        if (_compiledAbi && ThemeLiteralCodec.Supports(token.ValueType)) { source.Append(", 1"); }
+        source.Append(")").AppendLine(suffix);
     }
 
     private static IReadOnlyList<SchemaTokenInfo> OrderedOwnTokens(ControlThemeInfo control) =>

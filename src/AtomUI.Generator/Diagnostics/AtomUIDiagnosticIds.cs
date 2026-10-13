@@ -2,6 +2,7 @@ namespace AtomUI.Generator.Diagnostics;
 
 internal static class AtomUIDiagnosticIds
 {
+    public const string CompiledThemeBindingFailed = "ATOMUITOKEN002";
     public const string RegistrationAmbiguousThemeExport = "ATOMUIREG001";
     public const string RegistrationInvalidTokenOwner = "ATOMUIREG002";
     public const string RegistrationInaccessibleType = "ATOMUIREG003";

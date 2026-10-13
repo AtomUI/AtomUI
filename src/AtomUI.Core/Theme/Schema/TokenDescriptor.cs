@@ -76,6 +76,24 @@ public sealed class TokenDescriptor
         TokenValueAccessor accessor) =>
         new(name, slot, stage, codec, resourceKey, accessor);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static TokenDescriptor CreateGenerated(
+        string name, int slot, TokenStage stage, TokenValueCodec codec, object resourceKey,
+        TokenValueAccessor accessor, int valueContractVersion)
+    {
+        ArgumentNullException.ThrowIfNull(codec);
+        if (valueContractVersion != 1 || !codec.SupportsCompiledValues)
+        {
+            throw new ArgumentException("The codec does not support the generated value contract.", nameof(valueContractVersion));
+        }
+        return new TokenDescriptor(name, slot, stage, codec, resourceKey, accessor)
+        {
+            GeneratedValueContractVersion = valueContractVersion
+        };
+    }
+
+    internal int GeneratedValueContractVersion { get; private init; }
+
     public string Name { get; }
     public int Slot { get; }
     public TokenStage Stage { get; }
@@ -85,6 +103,23 @@ public sealed class TokenDescriptor
     public object? Parse(string value) => _codec.Parse(value);
 
     public string Format(object? value) => _codec.Format(value);
+
+    internal object? CopyValue(object? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+        // A runtime brush/easing subtype does not certify its declared codec contract.
+        // Dynamic descriptors must retain concrete types their accessors can accept.
+        if (TokenValueOperations.IsCompiledType(ValueType) &&
+            TokenValueOperations.TryCopy(value, out var copy) &&
+            (copy is null || ValueType.IsInstanceOfType(copy)))
+        {
+            return copy;
+        }
+        return _codec.Parse(_codec.Format(value));
+    }
 
     public object? GetValue(AbstractDesignToken token)
     {

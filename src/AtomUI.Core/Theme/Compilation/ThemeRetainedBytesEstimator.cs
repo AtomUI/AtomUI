@@ -37,12 +37,36 @@ internal static class ThemeRetainedBytesEstimator
         return retainedBytes;
     }
 
+    internal static long EstimateSnapshotProductionInput(ThemeCompileInput input, ThemeSnapshotCacheKey key)
+    {
+        // Keys retain normalized identity data; the factory additionally captures the original
+        // definition/configuration and a reusable parent, including its cold sources and cells.
+        // Invoke only on new production admission: parent size can walk all its controls.
+        var bytes = Add(128, key.EstimatedInputRetainedBytes);
+        if (input.ReusableParent is { } parent)
+        {
+            bytes = Add(bytes, parent.EstimatedRetainedBytes);
+        }
+        if (input.ChangesFromReusableParent is { } changes)
+        {
+            bytes = Add(bytes, 64L + changes.ChangedControls.Count * 32L);
+            foreach (var identity in changes.ChangedControls)
+            {
+                bytes = Add(bytes, CacheKeyArray.EstimateIdentity(identity));
+            }
+        }
+        // Registry descriptors and arbitrary user callback graphs remain shared metadata;
+        // do not invoke or reflect over user objects to estimate a production closure.
+        return bytes;
+    }
+
     internal static long EstimateSnapshotBase(ThemeSnapshot snapshot)
     {
         var retainedBytes = Add(ObjectOverhead, EstimateValue(snapshot.ThemeId));
         retainedBytes = Add(retainedBytes, EstimateValue(snapshot.DefinitionRevision.SourceIdentity));
         retainedBytes = Add(retainedBytes, EstimateValue(snapshot.DefinitionRevision.SourceRevision));
         retainedBytes = Add(retainedBytes, EstimateValue(snapshot.DefinitionRevision.ContentDigest));
+        retainedBytes = Add(retainedBytes, EstimateValue(snapshot.DefinitionRevision.ProgramDigest));
         retainedBytes = Add(retainedBytes, snapshot.GlobalTokenValues.EstimatedRetainedBytes);
         retainedBytes = Add(retainedBytes, EstimateRootResources(snapshot.GlobalResources));
         retainedBytes = Add(retainedBytes, EstimateRootPalettes(snapshot.PresetColorPalettes));
@@ -86,7 +110,7 @@ internal static class ThemeRetainedBytesEstimator
         return bytes;
     }
 
-    internal static long EstimateDefinition(BoundThemeDefinition definition)
+    internal static long EstimateDefinition(PreparedThemeDefinition definition)
     {
         var bytes = 192L + definition.Algorithms.Count * ReferenceBytes + definition.Controls.Count * ReferenceBytes;
         bytes = Add(bytes, EstimateValue(definition.Id));

@@ -80,6 +80,8 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 
 | ID | Category | Severity | Trigger | Fix | Owner |
 |---|---|---|---|---|---|
+| `ATOMUITOKEN001` | Token | Error | 编译主题输入无效、超限，或构建中间产物不能可靠生成 | 修正 XML/输入路径及容量，清理失效输出后重建 | Compiled theme input task |
+| `ATOMUITOKEN002` | Token | Error | 编译主题的 Token/owner/算法契约、元数据或静态字面量不受支持或不匹配 | 按带源位置的诊断修正定义与依赖；显式选择支持的编译值域或动态来源 | Compiled theme generator |
 | `ATOMUIREG001` | Registration | Error | 顶层主题导出目标、key 不明确或重复 | 声明可解析的 target 和唯一 Type/string key | Registration generator |
 | `ATOMUIREG002` | Registration | Error | TokenResource 没有唯一且可访问的实际 owner | 修正 namespace 或 Token 契约 | Registration generator |
 | `ATOMUIREG003` | Registration | Error | 主题目标不可访问、开放泛型或不是 StyledElement；资源 x:Class 不能绑定到本程序集的可访问具体资源类 | 使用可访问的具体主题目标 | Registration generator |

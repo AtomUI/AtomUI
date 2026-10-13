@@ -38,6 +38,7 @@
                                          $(MSBuildThisFileDirectory)AtomUI.Localization.props;
                                          $(MSBuildThisFileDirectory)AtomUI.Localization.targets;
                                          $(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets;
                                          $(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs">
             <PackagePath>buildTransitive/%(Filename)%(Extension)</PackagePath>
         </AtomUINuGetBuildAsset>

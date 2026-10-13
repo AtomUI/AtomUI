@@ -30,7 +30,7 @@
     </PropertyGroup>
     <ItemGroup Condition="'$(AtomUIToolchainProfile)' == 'Tasks'">
         <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />
-        <Compile Include="Tasks/**/*.cs;Common/Localization/**/*.cs;Common/SourceGeneration/**/*.cs;Common/Registration/*.cs" />
+        <Compile Include="Tasks/**/*.cs;Common/ThemeDefinitions/**/*.cs;Common/Localization/**/*.cs;Common/SourceGeneration/**/*.cs;Common/Registration/*.cs" />
         <Compile Include="../../build/AtomUI.Build.Tasks.Process.cs" Link="Tasks/Isolation/TaskProtocol.cs" />
         <!-- Core owns the XML dialect. Compile its exact BCL-only reader in the worker,
              without a runtime Core reference or a second parser/schema. -->
@@ -40,6 +40,7 @@
                           LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd" />
         <InternalsVisibleTo Include="AtomUI.Build.Tasks.Tests" />
     </ItemGroup>
+
 
     <PropertyGroup Condition="'$(AtomUIToolchainProfile)' == 'ILLink8'">
         <AssemblyName>AtomUI.Registration.ILLink8</AssemblyName>

@@ -9,7 +9,7 @@ internal sealed class ThemeSnapshot
 {
     internal ThemeSnapshot(
         string themeId,
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeDefinitionRevision definitionRevision,
         ThemeContentFingerprint contentFingerprint,
         ThemeAppearance appearance,
@@ -40,7 +40,7 @@ internal sealed class ThemeSnapshot
     }
 
     internal string ThemeId { get; }
-    internal BoundThemeDefinition Definition { get; }
+    internal PreparedThemeDefinition Definition { get; }
     internal ThemeDefinitionRevision DefinitionRevision { get; }
     internal ThemeContentFingerprint ContentFingerprint { get; }
     internal ThemeAppearance Appearance { get; }

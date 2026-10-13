@@ -138,6 +138,17 @@ public class BoundedThemeCacheTests
         failedAttempts.ShouldBe(2);
         canceledAttempts.ShouldBe(2);
         cache.Count.ShouldBe(0);
+
+        var late = new TaskCompletionSource<CacheValue>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pending = GetOrCreateAsync(cache, new CollisionKey("Closed"), _ => new ValueTask<CacheValue>(late.Task)).AsTask();
+        cache.Dispose();
+        cache.InFlightCount.ShouldBe(1);
+        late.SetResult(new CacheValue(3, 10));
+        await Should.ThrowAsync<OperationCanceledException>(async () => await pending);
+        cache.InFlightCount.ShouldBe(0);
+        cache.Count.ShouldBe(0);
+        await Should.ThrowAsync<ObjectDisposedException>(async () => await GetOrCreateAsync(cache,
+            new CollisionKey("New"), _ => ValueTask.FromResult(new CacheValue(4, 10))));
     }
 
     [Fact]
@@ -203,7 +214,8 @@ public class BoundedThemeCacheTests
     [Fact]
     public async Task Caller_Cancellation_Only_Cancels_That_Waiter_Not_The_Shared_Production()
     {
-        var cache = CreateCache(entryLimit: 4, bytesLimit: 100);
+        using var cache = new BoundedLruCache<CollisionKey, CacheValue>(4, 100,
+            static value => value.RetainedBytes, productionRetainedBytesLimit: 512);
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var attempts = 0;
@@ -213,21 +225,31 @@ public class BoundedThemeCacheTests
             new CollisionKey("Shared"),
             async token =>
             {
-                token.ShouldBe(CancellationToken.None);
+                token.IsCancellationRequested.ShouldBeFalse();
                 Interlocked.Increment(ref attempts);
                 started.SetResult();
                 await release.Task;
                 return new CacheValue(1, 10);
             },
-            cancellation.Token).AsTask();
+            cancellation.Token, productionInputRetainedBytesEstimator: static () => 384).AsTask();
         var survivingWaiter = GetOrCreateAsync(cache,
             new CollisionKey("Shared"),
             _ => throw new InvalidOperationException("The shared producer must be reused.")).AsTask();
 
-        await started.Task;
-        cancellation.Cancel();
-        await Should.ThrowAsync<OperationCanceledException>(async () => await canceledWaiter);
-        release.SetResult();
+        try
+        {
+            await started.Task;
+            cancellation.Cancel();
+            await Should.ThrowAsync<OperationCanceledException>(async () => await canceledWaiter);
+            cache.InFlightCount.ShouldBe(1);
+            await Should.ThrowAsync<InvalidOperationException>(async () => await cache.GetOrCreateAsync(
+                new CollisionKey("Other"), _ => ValueTask.FromResult(new CacheValue(2, 10)),
+                CancellationToken.None, productionInputRetainedBytesEstimator: static () => 384));
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
 
         (await survivingWaiter).Id.ShouldBe(1);
         attempts.ShouldBe(1);

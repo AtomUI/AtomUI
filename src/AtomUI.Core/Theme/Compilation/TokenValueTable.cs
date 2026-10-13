@@ -1,8 +1,5 @@
 using AtomUI.Theme.Schema;
 using AtomUI.Theme.DesignTokens;
-using Avalonia.Animation.Easings;
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
 
 namespace AtomUI.Theme.Compilation;
 
@@ -64,7 +61,7 @@ internal sealed class TokenValueTable
         var values = new object?[GetRequiredLength(descriptors)];
         foreach (var descriptor in descriptors)
         {
-            values[descriptor.Slot] = FreezeValue(descriptor, descriptor.GetValue(builder));
+            values[descriptor.Slot] = descriptor.CopyValue(descriptor.GetValue(builder));
         }
 
         return new TokenValueTable(values);
@@ -81,48 +78,4 @@ internal sealed class TokenValueTable
         return length;
     }
 
-    private static object? FreezeValue(TokenDescriptor descriptor, object? value)
-    {
-        if (value is SolidColorBrush solidColorBrush)
-        {
-            return ThemeResourceValue.CloneSolidColorBrush(solidColorBrush);
-        }
-
-        if (value is IBrush brush)
-        {
-            return brush.ToImmutable();
-        }
-
-        if (value is SplineEasing splineEasing)
-        {
-            return new SplineEasing(
-                splineEasing.X1,
-                splineEasing.Y1,
-                splineEasing.X2,
-                splineEasing.Y2);
-        }
-
-        if (value is SpringEasing springEasing)
-        {
-            return new SpringEasing(
-                springEasing.Mass,
-                springEasing.Stiffness,
-                springEasing.Damping,
-                springEasing.InitialVelocity);
-        }
-
-        if (value is Easing easing)
-        {
-            return descriptor.Parse(easing.GetType().Name);
-        }
-
-        if (value is null || value.GetType().IsValueType || value is string ||
-            value is FontFamily or ImmutableTransform)
-        {
-            return value;
-        }
-
-        // Descriptor conversion is the schema-owned copy boundary for other reference values.
-        return descriptor.Parse(descriptor.Format(value));
-    }
 }

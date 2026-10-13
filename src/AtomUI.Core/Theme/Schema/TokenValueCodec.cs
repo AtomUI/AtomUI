@@ -14,6 +14,7 @@ public abstract class TokenValueCodec
     internal abstract object? Parse(string value);
 
     internal abstract string Format(object? value);
+    internal virtual bool SupportsCompiledValues => false;
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -25,7 +26,23 @@ public sealed class TokenValueCodec<T> : TokenValueCodec
     {
     }
 
+    /// <summary>Copies a supported generated value without formatting or parsing a literal.</summary>
+    public static T Copy(T value)
+    {
+        if ((typeof(T).IsValueType && typeof(T) != typeof(Avalonia.Media.BoxShadows) &&
+             typeof(T) != typeof(Avalonia.Media.BoxShadows?)) || value is null || value is string)
+        {
+            return value;
+        }
+        if (TokenValueOperations.TryCopy(value, out var copy) && copy is T typed)
+        {
+            return typed;
+        }
+        throw new NotSupportedException($"Token type '{typeof(T).FullName}' does not support generated typed copies.");
+    }
+
     internal override Type ValueType => typeof(T);
+    internal override bool SupportsCompiledValues => TokenValueOperations.IsCompiledType(typeof(T));
 
     internal override object? Parse(string value) => ThemeTokenValueParser.Parse<T>(value);
 

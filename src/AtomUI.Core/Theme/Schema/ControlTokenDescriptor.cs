@@ -67,6 +67,7 @@ public sealed class ControlTokenDescriptor
         }
 
         ControlType = controlType;
+        CompilationIdentity = new object();
         Identity    = identity;
         Slot        = slot;
         OwnTokens   = Array.AsReadOnly(ownTokenArray);
@@ -77,6 +78,7 @@ public sealed class ControlTokenDescriptor
     private ControlTokenDescriptor(ControlTokenDescriptor source, int slot)
     {
         ControlType = source.ControlType;
+        CompilationIdentity = source.CompilationIdentity;
         Identity    = source.Identity;
         Slot        = slot;
         // Public construction already copied, ordered and sealed this metadata.
@@ -86,6 +88,7 @@ public sealed class ControlTokenDescriptor
     }
 
     public Type ControlType { get; }
+    internal object CompilationIdentity { get; }
     public ControlTokenIdentity Identity { get; }
     public int Slot { get; }
     public IReadOnlyList<TokenDescriptor> OwnTokens { get; }

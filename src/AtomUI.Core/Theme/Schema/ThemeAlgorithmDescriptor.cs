@@ -12,6 +12,7 @@ public enum ThemeAppearanceEffect : byte
 public sealed class ThemeAlgorithmDescriptor
 {
     private readonly Func<IThemeAlgorithm> _factory;
+    internal object CompilationIdentity { get; } = new();
 
     public ThemeAlgorithmDescriptor(
         ThemeAlgorithm algorithm,

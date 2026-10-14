@@ -218,6 +218,7 @@ full/trimmed 等价性以相同宿主输入契约得到满足为前提；未使�
 
 隐藏资源记录包含 AssetId、Phase、Order、factory。各包只暂存记录；全部包收集后统一校验，再创建和挂载。
 跨包按真实 `PackageCommitOrdinal`，包内按 `(Phase, Order, AssetId)` 固定排序。
+Bootstrap 补齐替换原包快照并保留 provider/ordinal；partial 包无完整 SchemaFingerprint。详见[注册分期](lazy-control-registration.md)。
 
 Order 来自正常包资源契约和显式包含次序，不能来自 TypeMap 查询次序、candidate key 字母序、程序集扫描次序或所选控件数量。
 嵌套 MergedDictionaries 的声明次序保存在 factory 内。默认主题 export key 冲突必须有明确覆盖契约，否则构建诊断。
@@ -240,18 +241,18 @@ Order 来自正常包资源契约和显式包含次序，不能来自 TypeMap �
 [惰性物化与资源查询](../systems/theming/lazy-materialization.md)拥有；统一提交由
 [分级启动演化](staged-startup-evolution.md)拥有。
 
-- 每代 registry 的 Revision 证据必须覆盖该代实际贡献集合。空包集合、全指纹非分区包、分区包以及混合
+- 每代 registry 的 Revision 证据必须覆盖该代实际贡献集合。空包集合、全指纹包以及混合
   手写包均适用；清除 request 去重键不能代替更新 schema Revision 和快照缓存身份。
 - 当证据无法描述新增贡献时，先回退实际 schema 的完整计算；不得继续使用 Stage 1 的包列表生成 Stage 2 Revision。
-- 分区指纹方案需分别表达关键集和最终集合，并保留裁剪/平台选中集合的正确性。完整收集后的非 staged 路径
-  不应因为包支持分区就永久失去安全的组合快路径。
+- 包完整收集后提供完整指纹；真实裁剪路径根据实际 schema 计算，保留裁剪/平台选中集合的正确性。
 - 数字 slot 只在单代 registry 内稳定，跨代共享必须校验 exact identity、CLR type、schema 与计算输入。
-- 同一资产跨片段/跨阶段只挂一次；新段按完整排序键合并，且静态层相对根 Token provider 的优先级保持不变。
-- 分区 ABI 使用独立方法名以保留既有位置 lambda 的源码重载解析；旧 generated package 的支持边界必须包含
+- 同一资产跨片段/跨阶段只挂一次；新增资源按完整排序键合并，且静态层相对根 Token provider 的优先级保持不变。
+- 旧分区 ABI 保留签名，但两段在同次注册中完整收集，失败不发布半包；新生成代码使用 RegisterPackage，阶段选择在片段 Add 前执行。
+  旧 generated package 的支持边界必须包含
   实际 descriptor/fingerprint 协议版本，不能仅根据方法仍存在就宣称所有旧二进制免重编。
 
-构建期紧凑完整 schema/稳定身份表是后续候选，不是当前契约的既成实现；采用前必须证明没有把全部运行时
-descriptor 构造重新搬回首帧，也没有破坏官方 TypeMap/条件后端的精细选择。
+注册优化优先复用现有 descriptor 和不可变集合。最终保留集合与 registry slot 由运行期实际组合确定；
+不得用包级全控件 Type/factory 表破坏官方 TypeMap/条件后端的精细选择。
 
 兼容边界（2026-10-12 验证）：本次资源键工厂是增量 ABI；同 schema 协议的消费端没有该工厂时，生成器回退
 旧四参构造函数。它不扩展为任意历史 Generator/Core 混用承诺。以当前生成器直接引用已发布 Core 6.2.4

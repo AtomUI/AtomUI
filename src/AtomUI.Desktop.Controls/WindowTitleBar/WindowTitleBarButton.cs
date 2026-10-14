@@ -1,3 +1,4 @@
+using AtomUI.Registration;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
@@ -5,6 +6,7 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// An icon button intended for application-owned actions in a window title bar add-on.
 /// </summary>
+[BootstrapRegistration]
 public class WindowTitleBarButton : IconButton
 {
     internal static readonly AttachedProperty<bool> IsWindowActiveProperty =

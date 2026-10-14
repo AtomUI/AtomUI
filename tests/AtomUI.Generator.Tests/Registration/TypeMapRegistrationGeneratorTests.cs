@@ -34,8 +34,9 @@ public class TypeMapRegistrationGeneratorTests
         source.ShouldContain("ControlPackageMarker(");
         source.ShouldContain("GeneratedTypeMapAccessor(typeof(");
         source.ShouldContain("GetOrCreateExternalTypeMapping<");
-        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeysCritical)");
-        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeysDeferred)");
+        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeys)");
+        source.ShouldNotContain("CollectCritical");
+        source.ShouldNotContain("CollectDeferred");
         source.ShouldNotContain("UnitId");
         source.ShouldNotContain("AotTrim");
         AssertCompiles(result);
@@ -173,42 +174,32 @@ public class TypeMapRegistrationGeneratorTests
     }
 
     [Fact]
-    public void Critical_Registration_Falls_Back_To_One_Stage_On_The_Conditional_Backend()
+    public void Both_Backends_Emit_A_Single_Collector_With_Bootstrap_Fragment_Metadata()
     {
-        var package = CreateStagingPackage();
-        var fallbackOutput = new GenerationOutput();
-
-        TypeMapRegistrationWriter.Write(
-            fallbackOutput,
-            package,
-            supportsTypeMap: false,
-            criticalControls: new HashSet<string>(["Button"], StringComparer.Ordinal));
-
-        var fallbackResult = fallbackOutput.Freeze();
-        var diagnostic = fallbackResult.Diagnostics.ShouldHaveSingleItem();
-        diagnostic.Descriptor.Id.ShouldBe("ATOMUIREG009");
-        diagnostic.Descriptor.DefaultSeverity.ShouldBe(DiagnosticSeverity.Warning);
-        fallbackResult.Files.Single(file => file.HintName == "GeneratedTypeMapRegistration.g.cs")
-            .Text.ShouldContain("private static void Collect(");
-
-        var ordinaryConditionalOutput = new GenerationOutput();
-        TypeMapRegistrationWriter.Write(
-            ordinaryConditionalOutput,
-            package,
-            supportsTypeMap: false);
-        ordinaryConditionalOutput.Freeze().Diagnostics.ShouldBeEmpty();
-
-        var typeMapOutput = new GenerationOutput();
-        TypeMapRegistrationWriter.Write(
-            typeMapOutput,
-            package,
-            supportsTypeMap: true,
-            criticalControls: new HashSet<string>(["Button"], StringComparer.Ordinal));
-        var typeMapResult = typeMapOutput.Freeze();
-        typeMapResult.Diagnostics.ShouldBeEmpty();
-        var typeMapSource = typeMapResult.Files.ShouldHaveSingleItem().Text;
-        typeMapSource.ShouldContain("private static void CollectCritical");
-        typeMapSource.ShouldContain("private static void CollectDeferred");
+        foreach (var supportsTypeMap in new[] { false, true })
+        {
+            var output = new GenerationOutput();
+            var package = CreateStagingPackage();
+            package = package with { Controls = new(package.Controls.Select((control, index) => control with { IsBootstrap = index == 0 })) };
+            TypeMapRegistrationWriter.Write(output, package, supportsTypeMap: supportsTypeMap);
+            var result = output.Freeze();
+            result.Diagnostics.ShouldBeEmpty();
+            var source = result.Files.Single(file => file.HintName == "GeneratedTypeMapRegistration.g.cs").Text;
+            source.ShouldContain("private static void Collect(");
+            source.ShouldContain("ControlRegistrationRuntime.RegisterPackage(");
+            source.ShouldNotContain("CollectCritical");
+            source.ShouldNotContain("CollectDeferred");
+            source.ShouldContain("public override bool IsBootstrap => true;");
+            source.ShouldContain("public override bool IsBootstrap => false;");
+            if (!supportsTypeMap)
+            {
+                var tree = CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken);
+                var full = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
+                    .Single(method => method.Identifier.ValueText == "CollectFull");
+                full.Body!.Statements.ShouldAllBe(statement => statement is Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax);
+                full.Body.Statements.Count.ShouldBe(2);
+            }
+        }
     }
 
     [Fact]

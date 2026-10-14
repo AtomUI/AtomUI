@@ -334,14 +334,14 @@ public sealed class ControlThemeAssetDescriptor
     }
 
     internal bool HasSameMetadata(ControlThemeAssetDescriptor other) =>
-        AssetId == other.AssetId && AssetUri == other.AssetUri &&
+        ReferenceEquals(this, other) || (AssetId == other.AssetId && AssetUri == other.AssetUri &&
         ResourceKeySchemaFingerprint == other.ResourceKeySchemaFingerprint &&
         ExportedThemes.SequenceEqual(other.ExportedThemes) &&
         RequiredTokenOwners.Select(static identity => (identity, identity.OwnerType))
             .SequenceEqual(other.RequiredTokenOwners.Select(static identity => (identity, identity.OwnerType))) &&
         SemanticThemeBindings.SequenceEqual(other.SemanticThemeBindings) &&
         SemanticThemeBindings.Select(static binding => binding.OwnerIdentity.OwnerType)
-            .SequenceEqual(other.SemanticThemeBindings.Select(static binding => binding.OwnerIdentity.OwnerType));
+            .SequenceEqual(other.SemanticThemeBindings.Select(static binding => binding.OwnerIdentity.OwnerType)));
 
     public string AssetId { get; }
     public IReadOnlyList<ControlThemeExportDescriptor> ExportedThemes { get; }

@@ -28,8 +28,7 @@ public partial class GalleryApplication : BaseGalleryApplication
                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
             builder.UseAlibabaSansFont();
-            // Stage 1：Desktop 包按 AtomUICriticalControls 关键集分区注册（chrome 闭包先行，
-            // 余量 fragments 由 Stage 2 注册窗口收集——生成器分区发射，见 Desktop.Controls.csproj）。
+            // Stage 1：注册 Desktop 的 BootstrapRegistration 片段；其余在 Stage 2 补齐。
             builder.UseDesktopControls();
             // Stage 1：GalleryBase 含 GalleryWindowTitleBar（窗口 chrome），必须先行。
             builder.UseGalleryBase(AtomUIGalleryModule.Configure);

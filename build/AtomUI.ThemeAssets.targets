@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <CompilerVisibleProperty Include="AtomUIRegistrationPackageId" />
-        <CompilerVisibleProperty Include="AtomUICriticalControls" />
         <CompilerVisibleProperty Include="AtomUIThemeAssetProjectDirectory" />
         <CompilerVisibleProperty Include="AtomUIThemeControlCatalog" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Link" />

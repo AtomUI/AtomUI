@@ -23,13 +23,12 @@ public static class ApplicationExtensions
         {
             bootstrap.RegisterApplicationLanguages(builder.Localization);
         }
-        configure?.Invoke(builder);
-
         LocalizationHost? localizationHost = null;
         ApplicationScope? applicationScope = null;
         List<IAtomUIOwnedService>? ownedServices = null;
         try
         {
+            configure?.Invoke(builder);
             // staged 判定须先于本地化构建：Stage 1 是中间态，应用级语言包可能先于其目标包的
             // catalog 到达（catalog 随包注册被后置），此时允许未解析引用，由 Stage 2 演化闭合。
             var staged = builder.DeferredRegistrations.Count > 0;
@@ -64,7 +63,7 @@ public static class ApplicationExtensions
                 applicationScope.StageTwoRegistrationCompleted = async cancellation =>
                 {
                     // 成功封存与 finally 关闭分开：被捕获的包注册异常仍会在 Freeze 拒绝。
-                    themeBuilder.RunDeferredCollects();
+                    themeBuilder.CompletePendingRegistrations();
                     themeBuilder.ControlRegistrationState.Freeze();
                     localizationBuilder.CloseStageTwoWindow();
                     // 先准备本地化终态；任何 catalog/bundle/语言配置错误都必须在主题注册并入和
@@ -109,6 +108,7 @@ public static class ApplicationExtensions
         }
         catch (Exception initializationException)
         {
+            builder.ThemeManagerBuilder.DiscardPendingRegistrations();
             try
             {
                 if (applicationScope is not null)

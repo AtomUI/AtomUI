@@ -372,7 +372,7 @@ public class ControlRegistrationRuntimeTests
                     deferred.AddThemeAsset(sharedAsset, sharedResource);
                     deferred.AddResource(CreateOrderedResource("stage-one-deferred", 10, "low"));
                 });
-            using var manager = builder.ThemeManagerBuilder.Build(deferPackageCollects: true);
+            using var manager = builder.ThemeManagerBuilder.Build();
             manager.InitializeApplication(application);
             var stageTwoProvider = new Provider("StageTwo.Package");
             var stageTwoSemanticIdentity = ControlTokenIdentity.ForControl(
@@ -405,7 +405,6 @@ public class ControlRegistrationRuntimeTests
                 },
                 deferred => deferred.AddResource(CreateOrderedResource("deferred", 20, "high")));
             builder.ThemeManagerBuilder.CloseStageTwoWindow();
-            builder.ThemeManagerBuilder.RunDeferredCollects();
             builder.ThemeManagerBuilder.MergeStageTwoInto(manager);
             await manager.ExecuteRegistrationEvolutionAsync();
 

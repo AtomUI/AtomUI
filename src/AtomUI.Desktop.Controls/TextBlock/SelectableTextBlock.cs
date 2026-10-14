@@ -1,4 +1,5 @@
 using AtomUI.Media.TextFormatting;
+using AtomUI.Registration;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -12,6 +13,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+[BootstrapRegistration]
 public class SelectableTextBlock : TextBlock
 {
     #region 公共属性定义

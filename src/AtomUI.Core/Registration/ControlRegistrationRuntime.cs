@@ -25,8 +25,7 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collect, prepare, complete, ensure: false);
 
-    // 分区收集（分级启动）：关键集先行，余量以委托暂存在包注册上（见 ControlPackageRegistration
-    // .DeferredCollect 注释）。使用独立方法名，保持既有 RegisterPackage 的源码重载解析与二进制兼容。
+    // Legacy generated ABI: both collectors now contribute to one complete package before publication.
     public static IAtomUIBuilder RegisterPartitionedPackage(
         IAtomUIBuilder builder,
         string packageId,
@@ -36,7 +35,7 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? prepare = null,
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collectCritical, prepare, complete, ensure: false,
-            collectDeferred: collectDeferred);
+            collectRemaining: collectDeferred);
 
     public static IAtomUIBuilder EnsurePackage(
         IAtomUIBuilder builder,
@@ -47,7 +46,7 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collect, prepare, complete, ensure: true);
 
-    // 分区收集（分级启动）Ensure 变体，独立方法名避免改变既有 EnsurePackage 的重载解析。
+    // Legacy Ensure ABI uses the same complete collection and idempotency checks.
     public static IAtomUIBuilder EnsurePartitionedPackage(
         IAtomUIBuilder builder,
         string packageId,
@@ -57,7 +56,7 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? prepare = null,
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collectCritical, prepare, complete, ensure: true,
-            collectDeferred: collectDeferred);
+            collectRemaining: collectDeferred);
 
     public static void CollectFragments(
         ControlPackageRegistrationBuilder builder,
@@ -103,7 +102,7 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? prepare,
         Action<IAtomUIBuilder>? complete,
         bool ensure,
-        Action<ControlPackageRegistrationBuilder>? collectDeferred = null)
+        Action<ControlPackageRegistrationBuilder>? collectRemaining = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         if (builder is not AtomUIBuilder root)
@@ -111,6 +110,7 @@ public static class ControlRegistrationRuntime
             throw new ArgumentException("Generated control packages require the application AtomUI builder.", nameof(builder));
         }
         var state = root.ControlRegistrationState;
+        ControlPackageRegistrationBuilder? collection = null;
         try
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
@@ -125,10 +125,17 @@ public static class ControlRegistrationRuntime
             state.ThrowIfUnavailable();
             var provider = createProvider();
             ArgumentNullException.ThrowIfNull(provider);
-            var collection = new ControlPackageRegistrationBuilder();
+            collection = new ControlPackageRegistrationBuilder(state.CanDeferFragments);
             collect(collection);
             state.ThrowIfUnavailable();
-            var package = collection.Build(packageId, provider, collectDeferred);
+            if (collectRemaining is not null)
+            {
+                // A collector can catch a mutation error; never run another callback on a failed collection.
+                collection.ThrowIfUnavailable();
+                collectRemaining(collection);
+                state.ThrowIfUnavailable();
+            }
+            var package = collection.Build(packageId, provider);
             builder.Theme.AddControlPackage(package);
             complete?.Invoke(builder);
             state.Stage(packageId);
@@ -136,7 +143,9 @@ public static class ControlRegistrationRuntime
         }
         catch (Exception exception)
         {
+            collection?.Fail(exception);
             state.Fail(exception);
+            root.ThemeManagerBuilder.DiscardPendingRegistrations();
             throw;
         }
     }

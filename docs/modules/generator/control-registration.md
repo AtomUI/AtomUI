@@ -62,6 +62,14 @@ delegate；Group 和共享生成类不能通过静态初始化保留全部控件
 
 条件 TypeMap 声明预期产生的裁剪诊断只在对应生成代码位置局部处理并说明理由；不得全局关闭 IL2026/IL3050。
 
+注册 helper 对各后端统一发射单个 `Collect`，不读取首帧关键集配置、不按简单控件名分区。
+`[BootstrapRegistration]` 读取真实控件或导出资源类 Symbol；仅在存在标记的包内生成逐片段 `IsBootstrap` 常量。
+既有 asset export、Token owner 与语义 owner 关系在生成期闭合。无标记包使用旧默认完整执行；无贡献标记报告
+`ATOMUIREG010`。普通和裁剪路径均先经 `AddFragment` 再访问 descriptor 工厂；net8 `CollectFull` 精确模板不变。
+阶段选择不增加 TypeMap/ConditionalRecord 条件，不把未保留片段重新引入。
+生成 descriptor 缓存与资源/快照惰性创建保留；Core 在同步 Build 或 Stage 2 补齐同一包快照，详见
+[注册分期](../../architecture/foundations/lazy-control-registration.md)。
+
 ## 4. 主题导出与资源
 
 Control 到资产的关联来自顶层导出的 ControlTheme key/TargetType。嵌套模板 TargetType、局部定制主题或 standalone 非默认

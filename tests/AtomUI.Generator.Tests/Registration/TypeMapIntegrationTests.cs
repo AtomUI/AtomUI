@@ -593,9 +593,9 @@ public partial class TypeMapIntegrationTests
             internal class ChromeTheme : Avalonia.Controls.ResourceDictionary { }
             """, Asset("Chrome", "<ControlTheme x:Key=\"Chrome\" TargetType=\"local:Chrome\" />", "Demo.ChromeTheme"));
         var source = Source(result, "GeneratedTypeMapRegistration.g.cs");
-        source.ShouldContain("if (global::System.OperatingSystem.IsBrowser()) return;");
+        source.ShouldContain("if (global::System.OperatingSystem.IsBrowser()) { return; }");
         source.ShouldContain("internal static void AddAsset_");
-        source.IndexOf("if (global::System.OperatingSystem.IsBrowser()) return;", StringComparison.Ordinal)
+        source.IndexOf("if (global::System.OperatingSystem.IsBrowser()) { return; }", StringComparison.Ordinal)
             .ShouldBeLessThan(source.IndexOf("builder.AddThemeAsset(", StringComparison.Ordinal));
     }
 

@@ -296,6 +296,8 @@ internal sealed class RegistrationModelBuilder
                 semantic is null ? null : SemanticPartManifestWriter.GetFactoryName(semantic), new(triggers.Select(t => t.Type.Name).Distinct().OrderBy(t => t, StringComparer.Ordinal)),
                 new(Availability(symbol).Guards()), new(refs), new(triggers.Distinct().OrderBy(t => t.Type.Name, StringComparer.Ordinal))));
         }
+        ApplyBootstrapRegistration(controls, assets);
+
         foreach (var conflict in tokens.Where(t => t.HasDescriptor).GroupBy(t => t.ControlName, StringComparer.Ordinal).Where(g => g.Select(t => t.ControlTypeName).Distinct().Count() > 1))
         {
             _report(Diagnostic.Create(AtomUIDiagnosticDescriptors.RegistrationIdentityConflict, Location.None, _catalog + ":" + conflict.Key));
@@ -322,6 +324,84 @@ internal sealed class RegistrationModelBuilder
                 .GetMembers("CreateGenerated").OfType<IMethodSymbol>().Any(static method =>
                     method.IsStatic && method.DeclaredAccessibility == Accessibility.Public && method.Parameters.Length == 5) == true
         };
+    }
+
+    private void ApplyBootstrapRegistration(List<RegistrationControl> controls, IReadOnlyList<RegistrationAsset> assets)
+    {
+        var marked = _types.Where(type => type.GetAttributes().Any(attribute =>
+            attribute.AttributeClass?.ToDisplayString() == "AtomUI.Registration.BootstrapRegistrationAttribute")).ToArray();
+        if (marked.Length == 0)
+        {
+            return;
+        }
+
+        var byType = controls.ToDictionary(control => control.Type.AssemblyQualifiedName, StringComparer.Ordinal);
+        var byAsset = assets.ToDictionary(asset => asset.Id, StringComparer.Ordinal);
+        var selected = new HashSet<string>(StringComparer.Ordinal);
+        var pending = new Queue<RegistrationControl>();
+        void Select(RegistrationType type)
+        {
+            if (byType.TryGetValue(type.AssemblyQualifiedName, out var control) && selected.Add(type.AssemblyQualifiedName))
+            {
+                pending.Enqueue(control);
+            }
+        }
+        void SelectAsset(RegistrationAsset asset)
+        {
+            // Reuse registration ownership facts. This is not a template or application call graph.
+            foreach (var export in asset.Exports)
+            {
+                Select(export.Target);
+            }
+            foreach (var owner in asset.Owners)
+            {
+                Select(owner.Type);
+            }
+            foreach (var binding in asset.Bindings)
+            {
+                Select(binding.Owner.Type);
+            }
+        }
+
+        foreach (var symbol in marked)
+        {
+            var type = RegistrationType.From(symbol);
+            if (byType.ContainsKey(type.AssemblyQualifiedName))
+            {
+                Select(type);
+                continue;
+            }
+            var resourceAssets = _parsed.Values.Where(document =>
+                    document.Input.ResourceClassName == symbol.ToDisplayString())
+                .Select(document => _packageId + ":" + document.Input.AssetPath)
+                .Where(byAsset.ContainsKey).Select(id => byAsset[id]).ToArray();
+            if (resourceAssets.Length == 0)
+            {
+                _report(Diagnostic.Create(AtomUIDiagnosticDescriptors.RegistrationInvalidBootstrap,
+                    symbol.Locations.FirstOrDefault(), type.Name));
+                continue;
+            }
+            foreach (var asset in resourceAssets)
+            {
+                SelectAsset(asset);
+            }
+        }
+
+        var visitedAssets = new HashSet<string>(StringComparer.Ordinal);
+        while (pending.Count != 0)
+        {
+            foreach (var assetId in pending.Dequeue().Assets)
+            {
+                if (visitedAssets.Add(assetId))
+                {
+                    SelectAsset(byAsset[assetId]);
+                }
+            }
+        }
+        for (var index = 0; index < controls.Count; index++)
+        {
+            controls[index] = controls[index] with { IsBootstrap = selected.Contains(controls[index].Type.AssemblyQualifiedName) };
+        }
     }
 
     private ValueArray<RegistrationResourceKey>? CollectCompleteResourceKeys(ThemeAssetInfo input, XElement root)

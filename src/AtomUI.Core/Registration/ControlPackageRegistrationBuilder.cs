@@ -13,16 +13,30 @@ public sealed class ControlPackageRegistrationBuilder
     private readonly Dictionary<string, ControlThemeAssetDescriptor> _assets = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ControlThemeResourceRegistration> _resources = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Type> _fragments = new(StringComparer.Ordinal);
+    private readonly bool _deferFragments;
+    private List<ControlRegistrationFragmentAttribute>? _pendingFragments;
     private Exception? _failure;
     private bool _sealed;
+    private ulong? _packageSchemaFingerprint;
 
-    internal ControlPackageRegistrationBuilder() { }
+    internal ControlPackageRegistrationBuilder() : this(false)
+    {
+    }
+
+    internal ControlPackageRegistrationBuilder(bool deferFragments)
+    {
+        _deferFragments = deferFragments;
+    }
 
     /// <summary>
     /// 生成注册 Collect 写入的包级 schema 指纹常量（编译期预计算）。手工收集留空，
     /// 启动 registry 的 Revision 随之回退到全量遍历算法。
     /// </summary>
-    public ulong? PackageSchemaFingerprint { get; set; }
+    public ulong? PackageSchemaFingerprint
+    {
+        get => _packageSchemaFingerprint;
+        set => Mutate(value, static (builder, fingerprint) => builder._packageSchemaFingerprint = fingerprint);
+    }
 
     public void AddControl(ControlTokenDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) =>
     {
@@ -95,21 +109,15 @@ public sealed class ControlPackageRegistrationBuilder
             return;
         }
         builder._fragments.Add(fragment.FragmentId, type);
+        if (builder._deferFragments && !fragment.IsBootstrap)
+        {
+            (builder._pendingFragments ??= []).Add(fragment);
+            return;
+        }
         fragment.Add(builder);
     });
 
     internal ControlPackageRegistration Build(string id, IControlThemesProvider provider)
-    {
-        return Build(id, provider, deferredCollect: null);
-    }
-
-    // 分区收集（分级启动）：关键集已收集进本 builder，余量收集以委托暂存在包注册上——
-    // 非 staged 应用在 ThemeManagerBuilder.Build 前内联执行（终态与全量收集等价）；
-    // staged 应用由 Stage 2 注册窗口执行（registry v2 增补）。
-    internal ControlPackageRegistration Build(
-        string id,
-        IControlThemesProvider provider,
-        Action<ControlPackageRegistrationBuilder>? deferredCollect)
     {
         ThrowIfUnavailable();
         _sealed = true;
@@ -120,14 +128,50 @@ public sealed class ControlPackageRegistrationBuilder
                 throw new InvalidOperationException($"Theme asset '{asset.AssetId}' has no resource factory.");
             }
         }
+        var pending = _pendingFragments;
+        _pendingFragments = null;
         return new(id, _controls, _assets.Values, _semantics, provider, _resources.Values)
         {
-            SchemaFingerprint = PackageSchemaFingerprint,
-            DeferredCollect = deferredCollect
+            SchemaFingerprint = pending is null ? PackageSchemaFingerprint : null,
+            CompleteRegistration = pending is null ? null : () => Complete(id, provider, pending)
         };
     }
 
-    internal void Fail(Exception exception) => _failure ??= exception;
+    private ControlPackageRegistration Complete(string id, IControlThemesProvider provider,
+        IReadOnlyList<ControlRegistrationFragmentAttribute> pending)
+    {
+        // The published snapshot and original collection stay sealed. Complete in a fresh collection;
+        // shared assets are validated against the original contributions before a replacement is published.
+        var completion = new ControlPackageRegistrationBuilder
+        {
+            PackageSchemaFingerprint = PackageSchemaFingerprint
+        };
+        completion._controls.AddRange(_controls);
+        completion._semantics.AddRange(_semantics);
+        foreach (var (key, value) in _assets)
+        {
+            completion._assets.Add(key, value);
+        }
+        foreach (var (key, value) in _resources)
+        {
+            completion._resources.Add(key, value);
+        }
+        foreach (var (key, value) in _fragments)
+        {
+            completion._fragments.Add(key, value);
+        }
+        foreach (var fragment in pending)
+        {
+            completion.Mutate(fragment, static (builder, value) => value.Add(builder));
+        }
+        return completion.Build(id, provider);
+    }
+
+    internal void Fail(Exception exception)
+    {
+        _failure ??= exception;
+        _pendingFragments = null;
+    }
 
     private void Mutate<TState>(TState state, Action<ControlPackageRegistrationBuilder, TState> action)
     {
@@ -138,12 +182,12 @@ public sealed class ControlPackageRegistrationBuilder
         }
         catch (Exception exception)
         {
-            _failure ??= exception;
+            Fail(exception);
             throw;
         }
     }
 
-    private void ThrowIfUnavailable()
+    internal void ThrowIfUnavailable()
     {
         if (_failure is not null || _sealed)
         {

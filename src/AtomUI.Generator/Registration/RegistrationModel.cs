@@ -40,7 +40,10 @@ internal sealed record RegistrationAsset(string Id, string Uri, string Wrapper, 
 }
 internal sealed record RegistrationControl(RegistrationType Type, string? TokenFactory, string? SemanticFactory,
     ValueArray<string> Triggers, ValueArray<string> Guards, ValueArray<string> Assets,
-    ValueArray<RegistrationTrigger> ConditionalTriggers = default);
+    ValueArray<RegistrationTrigger> ConditionalTriggers = default)
+{
+    internal bool? IsBootstrap { get; init; }
+}
 internal sealed record RegistrationTrigger(RegistrationType Type, string Kind);
 internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, string Namespace,
     ValueArray<RegistrationControl> Controls, ValueArray<RegistrationAsset> Assets, ValueArray<string> CompiledGlobalTokenNames,

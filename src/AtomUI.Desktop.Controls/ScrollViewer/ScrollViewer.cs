@@ -1,9 +1,11 @@
 using AtomUI.Controls.Commons;
+using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
+[BootstrapRegistration]
 public class ScrollViewer : AbstractScrollViewer
 {
     #region 公共属性定义

@@ -53,7 +53,7 @@ slot 仅在单个 registry revision 内稳定。增加一个按身份排序靠�
 ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有不可变的有序资源表，在演化时交换表引用：
 
 - 静态层相对 Token provider 的优先级始终不变；重建静态集合不能使普通 Token 查询先遍历整个静态链。
-- 已存在真实字典不因 Stage 2 再次 detach/attach；包主体和余量段只贡献资源事实，不重复注册宿主。
+- 已存在真实字典不因 Stage 2 再次 detach/attach；后置包只贡献新的资源事实，不重复挂载已存在的宿主。
 - 同 AssetId/同 metadata 的资源只出现一次，冲突在 Prepare 失败；已有与增量有序序列线性归并。
 - 交换准备好的查询表不调用工厂、用户代码或 owner 回调。统一 Publish 阶段只发出一次该资源根的变更通知。
 - owner 关系由代理统一管理，加载前后语义一致；RemoveOwner 必须清理代理与内层关系。

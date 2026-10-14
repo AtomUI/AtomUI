@@ -1,4 +1,5 @@
 using AtomUI.Media;
+using AtomUI.Registration;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Layout;
@@ -8,6 +9,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaSeparator = Avalonia.Controls.Separator;
 
+[BootstrapRegistration]
 public class MenuSeparator : AvaloniaSeparator
 {
     #region 公共属性定义

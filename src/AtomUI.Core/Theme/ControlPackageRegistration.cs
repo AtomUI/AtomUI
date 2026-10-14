@@ -21,8 +21,8 @@ public sealed class ControlPackageRegistration
             throw new ArgumentException("Resource registrations cannot contain null.", nameof(resources));
         }
         EnsureUnique(resourceArray, static resource => resource.AssetId, StringComparer.Ordinal, "resource AssetId");
-        Resources = Array.AsReadOnly(resourceArray.OrderBy(static resource => resource.Phase)
-            .ThenBy(static resource => resource.Order).ThenBy(static resource => resource.AssetId, StringComparer.Ordinal).ToArray());
+        SortIfNeeded(resourceArray, ControlThemeResourceRegistration.CompareOrder);
+        Resources = Array.AsReadOnly(resourceArray);
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(controls);
         ArgumentNullException.ThrowIfNull(themeAssets);
@@ -35,35 +35,29 @@ public sealed class ControlPackageRegistration
                 nameof(controlThemesProvider));
         }
 
-        var controlArray = controls.OrderBy(static control => control.Identity.Catalog, StringComparer.Ordinal)
-                                   .ThenBy(static control => control.Identity.Id, StringComparer.Ordinal)
-                                   .ToArray();
+        var controlArray = controls.ToArray();
+        SortIfNeeded(controlArray, static (left, right) => CompareIdentity(left.Identity, right.Identity));
         EnsureUnique(
             controlArray,
             static control => control.Identity,
             EqualityComparer<ControlTokenIdentity>.Default,
             "Control identity");
-        var assetArray = themeAssets.OrderBy(
-            static asset => asset.AssetUri.ToString(),
-            StringComparer.Ordinal).ToArray();
+        var assetArray = themeAssets.ToArray();
+        SortIfNeeded(assetArray, static (left, right) => StringComparer.Ordinal.Compare(left.AssetUri.ToString(), right.AssetUri.ToString()));
         EnsureUnique(assetArray, static asset => asset.AssetId, StringComparer.Ordinal, "theme AssetId");
         EnsureUnique(
             assetArray,
             static asset => asset.AssetUri.ToString(),
             StringComparer.Ordinal,
             "theme asset URI");
-        ControlSemanticDescriptor?[] nullableSemanticControls = semanticControls.ToArray();
-        if (nullableSemanticControls.Any(static descriptor => descriptor is null))
+        var semanticArray = semanticControls.ToArray();
+        if (semanticArray.Any(static descriptor => descriptor is null))
         {
             throw new ArgumentException(
                 "Semantic Control descriptors cannot contain null.",
                 nameof(semanticControls));
         }
-        var semanticArray = nullableSemanticControls
-                            .Select(static descriptor => descriptor!)
-                            .OrderBy(static descriptor => descriptor.Identity.Catalog, StringComparer.Ordinal)
-                            .ThenBy(static descriptor => descriptor.Identity.Id, StringComparer.Ordinal)
-                            .ToArray();
+        SortIfNeeded(semanticArray, static (left, right) => CompareIdentity(left.Identity, right.Identity));
         EnsureUnique(
             semanticArray,
             static descriptor => descriptor.Identity,
@@ -87,21 +81,33 @@ public sealed class ControlPackageRegistration
     /// <summary>生成器 emit 的包级 schema 指纹常量；手工注册为空，启动 Revision 回退全量计算。</summary>
     public ulong? SchemaFingerprint { get; internal set; }
 
-    /// <summary>
-    /// 分区收集（分级启动）的余量收集委托：关键集已随包主体注册；本委托由
-    /// ThemeManagerBuilder 在非 staged 应用 Build 前内联执行，或由 Stage 2 注册窗口执行。
-    /// </summary>
-    internal Action<AtomUI.Registration.ControlPackageRegistrationBuilder>? DeferredCollect { get; init; }
+    // Only the configuration builder owns this continuation. It is cleared on completion or cancellation.
+    internal Func<ControlPackageRegistration>? CompleteRegistration { get; set; }
 
-    // 余量收集是否已执行（非 staged 内联执行或 Stage 2 窗口执行后置真）。
-    // 未消费时包内容不完整，Revision 不允许使用全量 schema 指纹（v1/v2 注册表内容不同
-    // 必须得到不同 Revision，否则快照缓存键碰撞）。
-    internal bool DeferredCollectConsumed { get; set; }
     public string Id { get; }
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
     public IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
     public IReadOnlyList<ControlSemanticDescriptor> SemanticControls { get; }
     public IControlThemesProvider ControlThemesProvider { get; }
+
+    private static int CompareIdentity(ControlTokenIdentity left, ControlTokenIdentity right)
+    {
+        var result = StringComparer.Ordinal.Compare(left.Catalog, right.Catalog);
+        return result != 0 ? result : StringComparer.Ordinal.Compare(left.Id, right.Id);
+    }
+
+    // Inputs are copied before sorting. Reuse that owned array, including for arbitrary public inputs.
+    private static void SortIfNeeded<T>(T[] values, Comparison<T> comparison)
+    {
+        for (var index = 1; index < values.Length; index++)
+        {
+            if (comparison(values[index - 1], values[index]) > 0)
+            {
+                Array.Sort(values, comparison);
+                return;
+            }
+        }
+    }
 
     private static void EnsureUnique<TItem, TKey>(
         IEnumerable<TItem> items,

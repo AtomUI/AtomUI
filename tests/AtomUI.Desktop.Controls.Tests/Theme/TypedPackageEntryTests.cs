@@ -70,16 +70,15 @@ public class TypedPackageEntryTests
         {
             stageOneAssets.ShouldContain(chromeAsset);
         }
-        // 分区包：余量段须先收集，才能看到包的完整贡献（关键集 + 余量）。
-        firstBuilder.ThemeManagerBuilder.RunDeferredCollects();
-        secondBuilder.ThemeManagerBuilder.RunDeferredCollects();
 
+        firstBuilder.ThemeManagerBuilder.CompletePendingRegistrations();
+        secondBuilder.ThemeManagerBuilder.CompletePendingRegistrations();
         var firstContributions = firstBuilder.ThemeManagerBuilder
-            .EnumerateContributions()
+            .ControlPackages
             .Where(package => package.Id == "AtomUI.Desktop.Controls")
             .ToArray();
         var secondContributions = secondBuilder.ThemeManagerBuilder
-            .EnumerateContributions()
+            .ControlPackages
             .Where(package => package.Id == "AtomUI.Desktop.Controls")
             .ToArray();
         var firstPackage = firstContributions[0];

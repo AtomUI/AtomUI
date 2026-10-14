@@ -6,6 +6,8 @@ internal sealed class ControlRegistrationState
     private Exception? _failure;
     private bool _frozen;
 
+    internal bool CanDeferFragments => !_stageTwoWindowUsed;
+
     internal void ThrowIfInitialConfigurationUnavailable()
     {
         ThrowIfUnavailable();

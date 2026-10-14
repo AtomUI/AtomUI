@@ -35,9 +35,8 @@ public class NumericUpDownRootSurfaceTests
         {
             var builder = new AtomUIBuilder(new Application());
             builder.UseDesktopControls();
-            // 分区包：余量段须先收集，才能看到包的完整贡献（关键集 + 余量）。
-            builder.ThemeManagerBuilder.RunDeferredCollects();
-            var registration = builder.ThemeManagerBuilder.EnumerateContributions()
+            builder.ThemeManagerBuilder.CompletePendingRegistrations();
+            var registration = builder.ThemeManagerBuilder.ControlPackages
                 .Where(p => p.Id == "AtomUI.Desktop.Controls")
                 .SelectMany(p => p.Resources)
                 .Single(r => r.AssetId.EndsWith("NumericUpDown/Themes/NumericUpDownSpinnerTheme.axaml", StringComparison.Ordinal));

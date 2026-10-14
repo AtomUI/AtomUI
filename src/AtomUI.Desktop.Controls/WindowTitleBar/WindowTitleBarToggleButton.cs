@@ -1,3 +1,4 @@
+using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Input;
 
@@ -6,6 +7,7 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// A checked/unchecked icon button intended for application-owned actions in a window title bar add-on.
 /// </summary>
+[BootstrapRegistration]
 public class WindowTitleBarToggleButton : ToggleIconButton
 {
     internal static readonly AttachedProperty<bool> IsWindowActiveProperty =

@@ -56,7 +56,7 @@ flowchart LR
 - Builder 按操作能力校验阶段：初始主题、FollowSystem 模板、应用标识、字体、owned services、initializer 和
   Deferred 声明仅在初始配置窗口可用；包、Resolver、用户目录和本地化声明可在各自注册窗口收集。
   不支持的晚期变更在入口拒绝，不允许接受后静默失效。
-- 成功路径收集余量后通过同一 `Freeze` 检查失败或未完成包；失败回调内捕获异常不能解除失败标记。
+- 成功路径完成后置包注册及 bootstrap 包补齐后通过同一 `Freeze` 检查失败或未完成包；失败回调内捕获异常不能解除失败标记。
   `CloseStageTwoWindow` 仅负责异常/取消路径的幂等关闭，不替代成功校验。
 
 ### Prepare
@@ -131,12 +131,12 @@ single-view 等待已声明 MainView 挂载到 TopLevel。显式 OnExplicitShutd
 优先复用已经验证的不变部分：全局 schema、全局 Token 计算结果、未变化 Catalog 的语言行、已创建资产与独立控件槽。
 完整 registry 改变不能简单迫使全局计算重跑，也不能因为“全局值应不变”而错误复用跨代控件 slot。
 
-分区未完成和真实裁剪路径按实际 schema 计算；非裁剪完整 Collect 提供包完整指纹，余量全部消费后才允许组合。
+真实裁剪路径按实际 schema 计算；非裁剪完整 Collect 提供包完整指纹。包在注册入口返回前已经完整，不存在余量未消费状态。
 Stage 2 刷新所有实际包证据，不能继续使用 Stage 1 的包清单。
 
 ## 6. 生命周期与复杂度预算
 
-- Stage 2 结束后清除 `_deferredRegistrations`、协调 hooks、builder 和段收集输入。应用服务只保留最终运行时状态。
+- Stage 2 结束后清除 `_deferredRegistrations`、协调 hooks、builder 和后置注册输入。应用服务只保留最终运行时状态。
 - LocalizationHost 不额外长期保留已被替代的 Stage 1 registry/snapshot 集；活动读取捕获的旧代引用自然存活到读取结束。
 - 已发布快照的可达性只能由活动 context、调用方合法读取视图、有界 cache 和进行中的提交解释，不能由历史父链保活。
 - 有序资源旧集与增量优先使用线性 merge；合并已排序包时保留完整排序键与冲突校验，不能把有序分段直接拼接。

@@ -130,7 +130,7 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
 
 `UseAtomUI()` 默认把全部注册与初始化在窗口出现前同步完成。对于注册面较大的应用（如 Gallery 的全部
 可选包），可以通过**分级启动**把"完整 AtomUI chrome 首帧"与"框架完备初始化"拆成两个阶段：窗口出现
-只等待 chrome 闭包（分区关键集 + 公共语言 + 关键字体）。指定宿主的可见根完成 compositor rendered batch，
+等待已启用包的 bootstrap 注册、初始主题、公共语言与关键字体；主题字典和控件快照按实际使用创建。指定宿主的可见根完成 compositor rendered batch，
 且普通前台窗口收到请求的激活事件后，调度剩余注册。
 这不证明显示器实际呈现。机制是**纯 opt-in**——不调用 `Deferred` 的应用走同步构建路径。
 
@@ -139,7 +139,7 @@ this.UseAtomUI(builder =>
 {
     builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS, LanguageTags.ZhCN]);
     builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
-    builder.UseDesktopControls();            // Stage 1：分区包按关键集注册（见下节）
+    builder.UseDesktopControls();            // Stage 1：注册 Desktop 的 bootstrap 片段，资源与快照按需创建
 
     builder.Deferred(() =>                   // Stage 2 注册块（按声明序执行）
     {
@@ -187,32 +187,20 @@ Gallery 构造加载态后等待 `Completion`，成功后将 Shell 构建排入 
 其成本单独测量。框架 Ready 不代表 Shell 已绘制，宿主就绪证据见
 [就绪、取消与重入](staged-startup-evolution.md#4-就绪取消与重入)。
 
-### 控件粒度分区
+### Bootstrap 注册与按需创建
 
-`builder.UseDesktopControls()` 的包可以由生成器按**关键集**分区：csproj 声明
-`AtomUICriticalControls`（逗号分隔的控件简单名，如 `Window,WindowTitleBar,Menu,Icon,Popup`；该值通过
-`.editorconfig` 暴露给生成器，不能使用会被解释为注释起始符的分号），
-生成器发射 `CollectCritical/CollectDeferred` 两段收集，并调用独立 ABI 入口
-`RegisterPartitionedPackage` / `EnsurePartitionedPackage`。Stage 1 只执行关键集收集
-（chrome 闭包先行），余量在 Stage 2 注册窗口由 `RunDeferredCollects` 收集为与包同 id/provider 的
-「余量段」，经 `MergeStageTwoInto` 并入后重建 registry（v2）并按当前请求重应用主题（控件快照零
-物化——首查编译，见 runtime.md §7/§8）。
+控件包通过声明旁的 `[BootstrapRegistration]` 指定首阶段所需的片段。生成器复用既有资源关系补齐本包
+owner/export；不维护 `.csproj` 字符串名单，也不要求应用传控件枚举。详见[注册分期与按需创建](lazy-control-registration.md)。
 
-- 未声明 `AtomUICriticalControls` 的包不分区，发射保持 6 参调用原样；使用匹配 schema 协议的老生成包在分期应用
-  中回退为整包 `Deferred` 粒度（保留旧入口 ABI，历史指纹协议边界见[注册契约](control-registration-contracts.md#71-分级演化的身份和资源顺序)）。**方向是单向的**：分区包（新生成器产出，独立分区入口调用）
-  必须配新 AtomUI.Core（含 `RegisterPartitionedPackage` / `EnsurePartitionedPackage`）——旧 Core 上加载会以 MissingMethodException 失败，同 F2
-  陈旧包先例方向；条件（net8）后端不支持分区，声明了 `AtomUICriticalControls` 的 net8 兼容包会被
-  生成器显式降级为不分区并给出 `ATOMUIREG009` warning；该回退保持完整注册和可构建性。
-  仓库 Desktop 项目仅对兼容 net10.0 的目标声明关键集；net8 构建不传入该配置，直接生成完整单阶段入口，
-  正常多目标构建不产生回退警告。该条件按目标框架兼容性判断，保留现代平台后缀目标的分区配置。
-- 关键集必须同时覆盖 descriptor、窗口装饰资产、标题栏、菜单和真实平台依赖。仅统计 headless 查询过的
-  `{Window, WindowTitleBar}` token 槽位不能证明完整 chrome 闭包；应联合资产断言和原生首帧视觉/交互证据。
-- 裁剪路径的等价性由生成器保证：`CandidateKeysCritical ∪ CandidateKeysDeferred` 与未分区的全量
-  `CandidateKeys` 逐项一致。
+- `AtomUICriticalControls` 已退役，`ATOMUIREG009` 不再产生；net8 与 net10 通过同一片段执行边界分期。
+- 未标记包保持完整注册；无 `Deferred` 的应用在 Build 内补齐全部片段。
+- Stage 1 的部分包保持同一 provider 与提交序号；Stage 2 补齐为完整快照并走现有 theme/language 原子演化。
+- 标记只影响实际选中片段的执行阶段，不改变 AOT 保留关系；无效标记报告 `ATOMUIREG010`。
+
 
 ### Stage 2 演化与失败语义
 
-- **主题**：注册窗口（受控重开/再冻结）内完成 Deferred 块 → 冻结本地化输入 → 余量段收集与并入 →
+- **主题**：注册窗口（受控重开/再冻结）内完成 Deferred 块和原包余量 → 冻结本地化输入 → 完整包贡献并入 →
   准备 registry、目录、根/局部快照、Semantic registry 和静态资源表。已有 provider/owner 保持稳定。
 - **本地化**：增量准备 Catalog 行、全部支持语言 Snapshot 和定义，以匹配的 registry/revision 读取视图交换
   （manager/provider/localizer 与订阅者零身份变化）；未被覆盖的既有键值不变，新键即时可查，Stage 2 后切换
@@ -225,8 +213,8 @@ Gallery 构造加载态后等待 `Completion`，成功后将 Shell 构建排入 
 ### 已知约束
 
 - 同步模式共用启动结果对象，`UseAtomUI()` 返回时任务已经完成，不引入后台初始化或调度。
-- 分区包的余量资源按 provider 以 `(Phase, Order, AssetId)` 全局归并落地——合并字典查找自尾向头
-  扫描，资源序不得按段拼接（否则既有资源首查被迫构造余量段全部字典，非分期路径也会变慢）。
+- 包资源按 `(Phase, Order, AssetId)` 规范顺序挂载。跨包遵循提交顺序，同一资产去重；合并字典查找自尾向头，
+  已知键候选与开放资源回退必须遵循同一优先级。
 - AOT：分期不引入反射/表达式树；`Deferred` 只存 `Action` 委托。发布门（Gallery staged +
   StartupPerformance 非 staged 双 AOT 冒烟）为常规验收项。
 

@@ -66,7 +66,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
         _controlThemeProviderBaseResources = new(ReferenceEqualityComparer.Instance);
     private StaticThemeResourceProvider? _staticResourceProvider;
-    // 语义部件描述符登记表（Stage 1 全量 + Stage 2 增量并入）：SemanticParts 由其按需重建。
+    // 语义部件描述符登记表（初始包 + Stage 2 后置包）：SemanticParts 由其按需重建。
     private readonly List<ControlSemanticDescriptor> _stagedSemanticControls = [];
     private ThemeSchemaRegistry? _startupRegistry;
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
@@ -1285,7 +1285,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     /// <summary>
     /// 语义部件描述符登记：Stage 1 由 BuildCore 一次登记全量；分级启动的 Stage 2 并入新包与
-    /// 分区包余量段时增量追加，SemanticParts 随之重建（含全部已登记项）。
+    /// 后置包注册时增量追加，SemanticParts 随之重建（含全部已登记项）。
     /// </summary>
     internal void StageSemanticControlDescriptors(IReadOnlyList<ControlSemanticDescriptor> descriptors)
     {
@@ -1927,19 +1927,21 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal void StageControlThemeResources(IControlThemesProvider provider, IReadOnlyList<ControlThemeResourceRegistration> resources)
     {
+        // Existing providers also need a new static-resource table when a package is completed.
+        RegisterControlThemesProvider(provider);
         if (!_stagedThemeResources.TryGetValue(provider, out var staged))
         {
             _stagedThemeResources.Add(provider, resources.ToList());
             return;
         }
-        // 两个输入均由 Builder 按完整排序键准备。线性归并保留分区间的相对优先级，
+        // 两个输入均由 Builder 按完整排序键准备。线性归并保留新旧资源间的相对优先级，
         // 避免每次演化重新排序所有既有资产。
         var merged = new List<ControlThemeResourceRegistration>(staged.Count + resources.Count);
         var oldIndex = 0;
         var newIndex = 0;
         while (oldIndex < staged.Count && newIndex < resources.Count)
         {
-            if (CompareThemeResources(staged[oldIndex], resources[newIndex]) <= 0)
+            if (ControlThemeResourceRegistration.CompareOrder(staged[oldIndex], resources[newIndex]) <= 0)
             {
                 merged.Add(staged[oldIndex++]);
             }
@@ -1957,16 +1959,6 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
             merged.Add(resources[newIndex++]);
         }
         _stagedThemeResources[provider] = merged;
-    }
-
-    private static int CompareThemeResources(ControlThemeResourceRegistration left, ControlThemeResourceRegistration right)
-    {
-        var result = left.Phase.CompareTo(right.Phase);
-        if (result == 0)
-        {
-            result = left.Order.CompareTo(right.Order);
-        }
-        return result == 0 ? StringComparer.Ordinal.Compare(left.AssetId, right.AssetId) : result;
     }
 
     private void MountStaticResources()

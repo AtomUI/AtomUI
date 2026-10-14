@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -15,6 +16,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed)]
+[BootstrapRegistration]
 public class HyperLinkTextBlock : TemplatedControl, IMotionAwareControl
 {
     #region 公共属性定义

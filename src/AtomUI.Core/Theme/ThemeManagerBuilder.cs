@@ -83,27 +83,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
                 throw new ThemeResourceRegisterException(
                     $"Control package '{package.Id}' is already registered.");
             }
-            foreach (var descriptor in package.Controls)
-            {
-                if (_registeredControlTokenIdentities.Contains(descriptor.Identity))
-                {
-                    throw new ThemeResourceRegisterException(
-                        $"Control Token descriptor '{descriptor.Identity}' is already registered.");
-                }
-            }
-            foreach (var descriptor in package.SemanticControls)
-            {
-                if (_registeredSemanticControlIdentities.Contains(descriptor.Identity))
-                {
-                    throw new ThemeResourceRegisterException(
-                        $"Semantic Control descriptor '{descriptor.Identity}' is already registered.");
-                }
-                if (_registeredSemanticControlTypes.Contains(descriptor.ControlType))
-                {
-                    throw new ThemeResourceRegisterException(
-                        $"Semantic Control type '{descriptor.ControlType.FullName}' is already registered.");
-                }
-            }
+            ValidateNewDescriptors(package, null);
             if (_registeredControlThemeProviders.Contains(package.ControlThemesProvider.Id))
             {
                 throw new ThemeResourceRegisterException(
@@ -112,20 +92,74 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             _registeredControlPackageIds.Add(package.Id);
             package.PackageCommitOrdinal = _controlPackages.Count;
             _controlPackages.Add(package);
-            foreach (var descriptor in package.Controls)
-            {
-                _registeredControlTokenIdentities.Add(descriptor.Identity);
-            }
-            foreach (var descriptor in package.SemanticControls)
-            {
-                _registeredSemanticControlIdentities.Add(descriptor.Identity);
-                _registeredSemanticControlTypes.Add(descriptor.ControlType);
-            }
+            TrackDescriptors(package);
             _registeredControlThemeProviders.Add(package.ControlThemesProvider.Id);
         }
         catch (Exception exception)
         {
             ControlRegistrationState.Fail(exception);
+            DiscardPendingRegistrations();
+            throw;
+        }
+    }
+
+    private void ValidateNewDescriptors(ControlPackageRegistration package, ControlPackageRegistration? previous)
+    {
+        foreach (var descriptor in package.Controls.Except(previous?.Controls ?? []))
+        {
+            if (_registeredControlTokenIdentities.Contains(descriptor.Identity))
+            {
+                throw new ThemeResourceRegisterException($"Control Token descriptor '{descriptor.Identity}' is already registered.");
+            }
+        }
+        foreach (var descriptor in package.SemanticControls.Except(previous?.SemanticControls ?? []))
+        {
+            if (_registeredSemanticControlIdentities.Contains(descriptor.Identity) ||
+                _registeredSemanticControlTypes.Contains(descriptor.ControlType))
+            {
+                throw new ThemeResourceRegisterException($"Semantic Control descriptor '{descriptor.Identity}' is already registered.");
+            }
+        }
+    }
+
+    private void TrackDescriptors(ControlPackageRegistration package)
+    {
+        foreach (var descriptor in package.Controls)
+        {
+            _registeredControlTokenIdentities.Add(descriptor.Identity);
+        }
+        foreach (var descriptor in package.SemanticControls)
+        {
+            _registeredSemanticControlIdentities.Add(descriptor.Identity);
+            _registeredSemanticControlTypes.Add(descriptor.ControlType);
+        }
+    }
+
+    internal void CompletePendingRegistrations()
+    {
+        try
+        {
+            ControlRegistrationState.ThrowIfUnavailable();
+            for (var index = 0; index < _controlPackages.Count; index++)
+            {
+                var previous = _controlPackages[index];
+                if (previous.CompleteRegistration is not { } complete)
+                {
+                    continue;
+                }
+                previous.CompleteRegistration = null;
+                var package = complete();
+                ControlRegistrationState.ThrowIfUnavailable();
+                ValidateNewDescriptors(package, previous);
+                TrackDescriptors(package);
+                package.PackageCommitOrdinal = previous.PackageCommitOrdinal;
+                _controlPackages[index] = package;
+            }
+        }
+        catch (Exception exception)
+        {
+            ControlRegistrationState.Fail(exception);
+            DiscardPendingRegistrations();
             throw;
         }
     }
@@ -190,21 +224,15 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         FontFamily = FontFamily.Parse(fontFamily);
     }
 
-    internal ThemeManager Build()
-    {
-        return Build(deferPackageCollects: false);
-    }
+    internal ThemeManager Build() => Build(staged: false);
 
-    internal ThemeManager Build(bool deferPackageCollects)
+    internal ThemeManager Build(bool staged)
     {
         try
         {
-            // 非 staged 应用：分区包的余量收集在此内联执行，终态与旧全量 Collect 等价
-            //（关键集先行 + 余量追补，registry 构建按 identity 排序，顺序无关）。
-            // staged 应用（deferPackageCollects）由 Stage 2 注册窗口执行（分级启动）。
-            if (!deferPackageCollects)
+            if (!staged)
             {
-                RunDeferredCollects();
+                CompletePendingRegistrations();
             }
             ControlRegistrationState.Freeze();
             return BuildCore();
@@ -212,12 +240,12 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         catch (Exception exception)
         {
             ControlRegistrationState.Fail(exception);
+            DiscardPendingRegistrations();
             throw;
         }
     }
 
-    private int _mergedPackageCount;
-    private int _mergedSegmentCount;
+    private readonly List<ControlPackageRegistration> _mergedPackages = [];
     private readonly Dictionary<string, ControlThemeAssetDescriptor> _mergedThemeAssets =
         new(StringComparer.Ordinal);
     private readonly Dictionary<string, ControlThemeResourceRegistration> _mergedThemeResources =
@@ -235,10 +263,19 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal void CloseStageTwoWindow()
     {
         ControlRegistrationState.CloseStageTwoWindow();
+        DiscardPendingRegistrations();
+    }
+
+    internal void DiscardPendingRegistrations()
+    {
+        foreach (var package in _controlPackages)
+        {
+            package.CompleteRegistration = null;
+        }
     }
 
     /// <summary>
-    /// Stage 2 注册块的包与分区包余量段并入已构建的 ThemeManager：逐项走与 BuildCore 相同的
+    /// Stage 2 注册块的完整包并入已构建的 ThemeManager：逐项走与 BuildCore 相同的
     /// 贡献合并路径（provider/描述符/语义/资产/资源），随后由
     /// ThemeManager.ExecuteRegistrationEvolutionAsync 重建 registry 并重应用主题。
     /// </summary>
@@ -248,31 +285,23 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private void MergeContributionsInto(ThemeManager themeManager)
     {
         ArgumentNullException.ThrowIfNull(themeManager);
-        var contributions = new List<(ControlPackageRegistration Registration, bool IsSegment)>();
-        for (var index = _mergedPackageCount; index < _controlPackages.Count; index++)
-        {
-            contributions.Add((_controlPackages[index], false));
-        }
-        for (var index = _mergedSegmentCount; index < _deferredPackageSegments.Count; index++)
-        {
-            contributions.Add((_deferredPackageSegments[index], true));
-        }
-
         var resourcesByProvider = new Dictionary<
             IControlThemesProvider,
             List<ControlThemeResourceRegistration>>(ReferenceEqualityComparer.Instance);
-        var registeredProviders = new HashSet<IControlThemesProvider>(ReferenceEqualityComparer.Instance);
-        foreach (var (contribution, _) in contributions
-                     .OrderBy(static item => item.Registration.PackageCommitOrdinal)
-                     .ThenBy(static item => item.IsSegment))
+        // Packages are appended only after nested preparation commits, so list order is commit order.
+        for (var index = 0; index < _controlPackages.Count; index++)
         {
-            if (registeredProviders.Add(contribution.ControlThemesProvider))
+            var contribution = _controlPackages[index];
+            var previous = index < _mergedPackages.Count ? _mergedPackages[index] : null;
+            if (ReferenceEquals(previous, contribution))
             {
-                // Stage 1 provider 需要重新进入挂载队列以追加余量资源；Stage 2 分区包的包主体与
-                // 余量段共享 provider，只登记一次，避免同一批 staged resources 被重复挂载。
+                continue;
+            }
+            if (previous is null)
+            {
                 themeManager.RegisterControlThemesProvider(contribution.ControlThemesProvider);
             }
-            MergeContributionMetadata(themeManager, contribution);
+            MergeContributionMetadata(themeManager, contribution, previous);
             foreach (var resource in contribution.Resources)
             {
                 if (_mergedThemeResources.TryGetValue(resource.AssetId, out var existing))
@@ -295,28 +324,27 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         }
         foreach (var (provider, resources) in resourcesByProvider)
         {
+            resources.Sort(ControlThemeResourceRegistration.CompareOrder);
             themeManager.StageControlThemeResources(
                 provider,
-                resources.OrderBy(static resource => resource.Phase)
-                         .ThenBy(static resource => resource.Order)
-                         .ThenBy(static resource => resource.AssetId, StringComparer.Ordinal)
-                         .ToArray());
+                resources.ToArray());
         }
 
-        _mergedPackageCount = _controlPackages.Count;
-        _mergedSegmentCount = _deferredPackageSegments.Count;
+        _mergedPackages.Clear();
+        _mergedPackages.AddRange(_controlPackages);
         UpdatePackageSchemaFingerprints(themeManager);
     }
 
     private void MergeContributionMetadata(
         ThemeManager themeManager,
-        ControlPackageRegistration contribution)
+        ControlPackageRegistration contribution,
+        ControlPackageRegistration? previous)
     {
-        foreach (var descriptor in contribution.Controls)
+        foreach (var descriptor in contribution.Controls.Except(previous?.Controls ?? []))
         {
             themeManager.RegisterControlTokenDescriptor(descriptor);
         }
-        themeManager.StageSemanticControlDescriptors(contribution.SemanticControls);
+        themeManager.StageSemanticControlDescriptors(contribution.SemanticControls.Except(previous?.SemanticControls ?? []).ToArray());
         foreach (var asset in contribution.ThemeAssets)
         {
             if (_mergedThemeAssets.TryGetValue(asset.AssetId, out var existing))
@@ -330,77 +358,6 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             }
             _mergedThemeAssets.Add(asset.AssetId, asset);
             themeManager.RegisterControlThemeAssetDescriptor(asset);
-        }
-    }
-
-    // 分区收集的余量执行：fresh builder 收集增量，产出一个与包同 id、同 provider 的「余量段」。
-    // 段与包主体共同构成该包的完整贡献，BuildCore（Stage 1）与 MergeStageTwoInto（Stage 2）消费
-    // 同一贡献集合——余量段的描述符/语义/资产/资源对两条路径同等可见。
-    internal void RunDeferredCollects()
-    {
-        foreach (var package in _controlPackages)
-        {
-            if (package.DeferredCollect is not { } deferredCollect || package.DeferredCollectConsumed)
-            {
-                continue;
-            }
-            var delta = new ControlPackageRegistrationBuilder();
-            deferredCollect(delta);
-            var segment = delta.Build(package.Id, package.ControlThemesProvider);
-            segment.PackageCommitOrdinal = package.PackageCommitOrdinal;
-            // 增量复用 AddControlPackage 的校验语义，跳过包 id / provider 重复检查（同一包的补充段）。
-            foreach (var descriptor in segment.Controls)
-            {
-                if (_registeredControlTokenIdentities.Contains(descriptor.Identity))
-                {
-                    throw new ThemeResourceRegisterException(
-                        $"Control Token descriptor '{descriptor.Identity}' is already registered.");
-                }
-            }
-            foreach (var descriptor in segment.SemanticControls)
-            {
-                if (_registeredSemanticControlIdentities.Contains(descriptor.Identity))
-                {
-                    throw new ThemeResourceRegisterException(
-                        $"Semantic Control descriptor '{descriptor.Identity}' is already registered.");
-                }
-                if (_registeredSemanticControlTypes.Contains(descriptor.ControlType))
-                {
-                    throw new ThemeResourceRegisterException(
-                        $"Semantic Control type '{descriptor.ControlType.FullName}' is already registered.");
-                }
-            }
-            foreach (var descriptor in segment.Controls)
-            {
-                _registeredControlTokenIdentities.Add(descriptor.Identity);
-            }
-            foreach (var descriptor in segment.SemanticControls)
-            {
-                _registeredSemanticControlIdentities.Add(descriptor.Identity);
-                _registeredSemanticControlTypes.Add(descriptor.ControlType);
-            }
-            _deferredPackageSegments.Add(segment);
-            package.DeferredCollectConsumed = true;
-        }
-    }
-
-    // 分区包的余量段：与包同 id、同 provider 的补充贡献（RunDeferredCollects 产出）。
-    private readonly List<ControlPackageRegistration> _deferredPackageSegments = new();
-
-    /// <summary>
-    /// 包的完整贡献集合：包主体（Stage 1 关键集）+ 分区包余量段（<see cref="RunDeferredCollects"/> 产出）。
-    /// BuildCore（Stage 1 构建）与 MergeStageTwoInto（Stage 2 并入）都按本集合逐项消费——审查与
-    /// 契约测试须用本视图，直接用 ControlPackages 只能看到包主体的关键集部分。
-    /// </summary>
-    internal IEnumerable<ControlPackageRegistration> EnumerateContributions()
-    {
-        foreach (var package in _controlPackages)
-        {
-            yield return package;
-        }
-        foreach (var segment in _deferredPackageSegments)
-        {
-            yield return segment;
         }
     }
 
@@ -432,7 +389,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         themeManager.EnsureRegistrationCapacity(_registeredControlTokenIdentities.Count,
-            EnumerateContributions().Sum(static contribution => contribution.ThemeAssets.Count),
+            _controlPackages.Sum(static contribution => contribution.ThemeAssets.Count),
             _registeredControlThemeProviders.Count);
         MergeContributionsInto(themeManager);
         themeManager.PrepareRegistrationSchema();
@@ -448,10 +405,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         var allFingerprinted = true;
         foreach (var package in _controlPackages)
         {
-            // 余量未消费 = 包内容不完整，全量指纹不可用（见 ControlPackageRegistration 注释）；
-            // 仅约束分区包，普通包（DeferredCollect == null）不受影响。
-            if (package.SchemaFingerprint is not { } schemaFingerprint ||
-                (package.DeferredCollect is not null && !package.DeferredCollectConsumed))
+            if (package.SchemaFingerprint is not { } schemaFingerprint)
             {
                 allFingerprinted = false;
                 break;

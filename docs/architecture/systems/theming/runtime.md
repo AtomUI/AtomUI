@@ -1190,7 +1190,7 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 
 不得先挂载空资源层再异步补主题，也不得通过 ThemeLoaded 事件修补 DefaultFont、断点或其他 Token。
 
-**分级启动（staged）状态**：保持 opt-in。Stage 1 注册关键集与先行包；Stage 2 等待指定宿主的 rendered batch
+**分级启动（staged）状态**：保持 opt-in。Stage 1 注册先行包的 bootstrap 片段，未声明分期的包完整注册；资源字典与控件快照按需创建；Stage 2 等待指定宿主的 rendered batch
 和其请求的激活，再捕获/冻结输入、后台构建纯数据。自定义回调保留 UI 线程，静态 provider 不重挂载。
 主题与本地化先统一 CommitCore，再 Publish；Shell 由应用单独调度。批次完成不等于显示器实际呈现。
 跨系统职责、失败语义和生命周期统一由

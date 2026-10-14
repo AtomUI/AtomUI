@@ -56,7 +56,17 @@ public sealed class ControlThemeResourceRegistration
         };
     }
 
+    internal static int CompareOrder(ControlThemeResourceRegistration left, ControlThemeResourceRegistration right)
+    {
+        var result = left.Phase.CompareTo(right.Phase);
+        if (result == 0)
+        {
+            result = left.Order.CompareTo(right.Order);
+        }
+        return result == 0 ? StringComparer.Ordinal.Compare(left.AssetId, right.AssetId) : result;
+    }
+
     internal bool HasSameMetadata(ControlThemeResourceRegistration other) =>
-        AssetId == other.AssetId && Phase == other.Phase && Order == other.Order && Factory.Equals(other.Factory) &&
-        (ResourceKeys is null ? other.ResourceKeys is null : other.ResourceKeys is not null && ResourceKeys.SetEquals(other.ResourceKeys));
+        ReferenceEquals(this, other) || (AssetId == other.AssetId && Phase == other.Phase && Order == other.Order && Factory.Equals(other.Factory) &&
+        (ResourceKeys is null ? other.ResourceKeys is null : other.ResourceKeys is not null && ResourceKeys.SetEquals(other.ResourceKeys)));
 }

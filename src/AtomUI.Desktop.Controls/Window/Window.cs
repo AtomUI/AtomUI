@@ -6,6 +6,7 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Native;
 using AtomUI.Native.MacOS;
+using AtomUI.Registration;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
@@ -27,6 +28,7 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaWindow = Avalonia.Controls.Window;
 
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
+[BootstrapRegistration]
 public partial class Window : AvaloniaWindow,
                               IOperationSystemAware,
                               IMediaBreakAwareControl

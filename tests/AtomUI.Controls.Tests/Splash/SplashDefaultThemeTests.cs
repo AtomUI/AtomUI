@@ -63,7 +63,7 @@ public class SplashDefaultThemeTests
             new ThemeManagerBuilder(typeof(Avalonia.Application)).CaptureStartupInputs());
         var window = new SplashWindow();
         window.Initialize(prepared.GlobalResources(ThemeAppearance.Light),
-            new AtomUISplashContent(null, null, "Title", "Message", null));
+            new SplashContent(null, null, "Title", "Message", null));
         window.Show();
         try
         {

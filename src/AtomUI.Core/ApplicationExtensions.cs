@@ -33,7 +33,7 @@ public static class ApplicationExtensions
     }
 
     /// <summary>获取应用唯一的启动状态与框架就绪结果。须在 UseAtomUI 注册后调用。</summary>
-    public static IAtomUIStartup GetStartup(this Application application)
+    public static IStartup GetStartup(this Application application)
     {
         ArgumentNullException.ThrowIfNull(application);
         return ApplicationScopeRegistry.Get(application)?.Startup ??

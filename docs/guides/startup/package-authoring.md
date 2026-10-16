@@ -70,7 +70,7 @@ public partial class App : Application
 ```
 
 顶层、非泛型 `partial Application` 自动获得 `RegisterServices` 挂接与 `IGeneratedStartupImageHost`。
-已有手写 `RegisterServices` 时保留 `base.RegisterServices()`，随后调用 `AtomUIStartup.Attach(this)`；生成器仍提供
+已有手写 `RegisterServices` 时保留 `base.RegisterServices()`，随后调用 `ApplicationStartup.Attach(this)`；生成器仍提供
 镜像接口。缺少 `Attach` 是编译错误。
 
 无法使用这种类形态时，保留手动 `Attach`，并在 `UseAtomUI` 配置中调用

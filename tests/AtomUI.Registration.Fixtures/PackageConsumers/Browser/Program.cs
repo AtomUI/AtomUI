@@ -17,7 +17,7 @@ public sealed class ConsumerApp : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 
     public override void OnFrameworkInitializationCompleted()

@@ -13,8 +13,11 @@ public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBui
 
 - **应用类型**取 `appBuilder.ApplicationType`（`Configure<TApp>()` 与 `Configure<TApp>(Func<TApp>)` 都会设置），
   用于推导默认应用标识。
-- **提前执行**：在主线程、平台初始化之前执行配置回调；主题输入符合后台资格时启动 Prepare。执行前先读取 `Dispatcher.UIThread`，
-  把 UI 线程固定为主线程：后台代码若误触 Dispatcher 会立即抛出，而不是抢走 UI 线程身份导致平台初始化失败。
+- **提前执行**：在主线程、平台初始化之前执行配置回调，并捕获符合后台资格的 Prepare 不可变输入；此阶段不访问
+  `Dispatcher`、不创建 `AvaloniaObject`、不启动后台 Prepare。Dispatcher 的线程身份与计时基准由平台初始化建立。
+- **后台启动点**：在 `AfterPlatformServicesSetup` 中确认 UI Dispatcher 已就绪，再启动 Prepare，与后续 Application
+  创建并行。提前捕获的配置、主题输入和包 definition 继续复用，不重复声明或准备。平台初始化之前的并行区间不再用于
+  Prepare；启动收益须以相同测量口径复核，不以提前创建 Dispatcher 换取这段重叠。
 - **回调只做声明**：回调执行时 Avalonia 平台尚未初始化，不能访问 `FontManager`、`Application`、`TopLevel`，也不能
   创建位图。字体注册与应用级语言注册推迟到提交时执行。回调抛出的异常原样同步抛出。
 - **不提前执行的情况**：设计模式（`Design.IsDesignMode`，预览器在调用 `BuildAvaloniaApp` 之前设置）与单线程运行时
@@ -57,7 +60,7 @@ public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBui
 ## 3. `Attach`
 
 ```csharp
-public static void AtomUIStartup.Attach(Application application);
+public static void ApplicationStartup.Attach(Application application);
 ```
 
 在 `base.RegisterServices()` 之后调用（通常由生成器生成，见 §8）。对同一实例幂等；没有 `UseAtomUI` 配置时直接返回，
@@ -87,6 +90,9 @@ public static void AtomUIStartup.Attach(Application application);
 5. `ApplicationScope.InitializeApplication`：挂载资源与样式、初始化主题（复用全局层）、注册作用域、挂接自有服务。
 6. 执行 initializer（`UseAlibabaSansFont` 等字体注册在此执行：字体在文字排版时才解析，提交期间不排版主窗体内容）。
 
+包索引仅从已选中的登记项建立资产候选关系，不在索引构造期物化片段或资源。候选限定在所属包内并保持登记顺序；
+追加包继续复用已有 entry/asset 对象。运行期 Type 身份键可以按弱类型键复用字符串，缓存值不得反向引用 Type、程序集或应用。
+
 包的生命周期 context 在服务 Attach 前对所有新包就绪。Attach、initializer 或其他包的 `OnCommit` 若实际消费
 控件/语义/资源，目标包先完成自己的 `OnCommit`，再执行一次 `OnFirstUse`，不会把未初始化 descriptor 返回。
 尚未建立 scope 的服务 Factory 若尝试消费包会明确失败；同包重入及跨包提交循环也会失败并回滚。
@@ -101,25 +107,25 @@ public static void AtomUIStartup.Attach(Application application);
 `Attach` 在提交后向 Dispatcher 投递一个回调，它在主循环开始后执行（此时 `OnFrameworkInitializationCompleted` 已返回、
 生命周期已启动）。不是经典桌面生命周期（headless、single-view）时不投递，直接进入 `Ready`。判定主窗体：
 
-1. 配置了 `UseMainWindow`：在 UI 线程执行工厂（可 await，经 `AtomUIMainWindowContext.Progress` 汇报进度），把返回的
+1. 配置了 `UseMainWindow`：在 UI 线程执行工厂（可 await，经 `MainWindowContext.Progress` 汇报进度），把返回的
    窗口赋给 `desktop.MainWindow` 并显示；主窗体首个合成批次完成后才隐藏并关闭 Splash。应用同时自行给
    `desktop.MainWindow` 赋值视为配置错误。
 2. 否则 `desktop.MainWindow` 已赋值（传统写法、Prism）：就是它。
 3. 否则视为没有主窗体：立即关闭 Splash，状态 → `Ready`。
 
 主窗体确定后状态 → `Presenting`；等它 `Opened`（上限 3 s）后的首个渲染批次（上限 3 s），然后立即隐藏并关闭 Splash，
-状态 → `Ready`。传统宿主自行显示的主窗体在该首帧后才淡出 Splash。两个主窗体等待超时只写 Warning 并直接交接，防止最小化或被遮挡的窗口让 Splash 永不关闭。没有 Splash 时同样按
+状态 → `Ready`。传统宿主自行显示的主窗体在该首帧后才隐藏并关闭 Splash。两个主窗体等待超时只写 Warning 并直接交接，防止最小化或被遮挡的窗口让 Splash 永不关闭。没有 Splash 时同样按
 此规则推进状态。主窗体在等待期间关闭、或用户关闭 Splash 触发启动取消时，关闭/取消信号会立即中断
 `Opened` 与合成批次等待，不继续消耗 3 秒超时，也不记作成功首帧或 Ready。
 
 ## 6. 状态与进度
 
 ```csharp
-public interface IAtomUIStartup
+public interface IStartup
 {
-    AtomUIStartupState State { get; }
+    StartupState State { get; }
     Task Completion { get; }
-    event EventHandler<AtomUIStartupProgressEventArgs>? ProgressChanged;
+    event EventHandler<StartupProgressEventArgs>? ProgressChanged;
 }
 ```
 
@@ -148,7 +154,7 @@ Preparing → Committed → Presenting → Ready
 | Splash 首帧等待超过 5 s | Warning 日志，启动继续。 |
 | 提交失败 | 回滚（§4）。有 Splash：切换错误态并驱动 Dispatcher 直到用户关闭，然后从 `Attach` 重抛原异常，传到应用 `Main`。无 Splash：立即重抛。 |
 | `UseMainWindow` 工厂抛错 | 状态 → `Failed`；有 Splash 时切换错误态，用户关闭后把原异常投递到 Dispatcher 抛出，传到 `Main`。 |
-| 交接前用户关闭 Splash | 状态 → `Canceled`，取消 `AtomUIMainWindowContext.CancellationToken`，调用 `Shutdown()`。提交期间的关闭请求在主循环开始后处理。 |
+| 交接前用户关闭 Splash | 状态 → `Canceled`，取消 `MainWindowContext.CancellationToken`，调用 `Shutdown()`。提交期间的关闭请求在主循环开始后处理。 |
 | 主窗体在首帧前被关闭 | 状态 → `Canceled`。 |
 | 主窗体首帧超过 3 s 未到 | Warning 日志，直接交接。 |
 
@@ -163,12 +169,12 @@ Preparing → Committed → Presenting → Ready
 public override void RegisterServices()
 {
     base.RegisterServices();
-    global::AtomUI.AtomUIStartup.Attach(this);
+    global::AtomUI.ApplicationStartup.Attach(this);
 }
 ```
 
-- 编译中不存在 `AtomUI.AtomUIStartup` 时不生成。
-- 类中已手写 `RegisterServices` 重写：方法体调用了 `AtomUIStartup.Attach` 时不生成；没有调用时报错误诊断
+- 编译中不存在 `AtomUI.ApplicationStartup` 时不生成。
+- 类中已手写 `RegisterServices` 重写：方法体调用了 `ApplicationStartup.Attach` 时不生成；没有调用时报错误诊断
   `ATOMUIGEN039`，提示在 `base.RegisterServices()` 之后调用。抽象类自身不报（无法实例化也无法自行修复，由派生类挂接）。
 - 抽象、泛型、嵌套、非 partial 的类不生成，由运行时守卫给出修复说明。
 - 同一程序集可以有多个应用类（测试工程常见），每个都生成。
@@ -177,7 +183,7 @@ public override void RegisterServices()
 
 **守卫**：`UseAtomUI` 注册的 `AfterApplicationSetup` 回调在 `Initialize` 之后、`OnFrameworkInitializationCompleted` 之前
 执行；本实例没有执行 `Attach` 即抛出 `InvalidOperationException`，说明"把应用类声明为 partial，或在
-`base.RegisterServices()` 之后调用 `AtomUIStartup.Attach(this)`"。
+`base.RegisterServices()` 之后调用 `ApplicationStartup.Attach(this)`"。
 
 **约束**：不要在应用构造函数中创建控件或访问主题——构造函数早于 `RegisterServices`，此时内核尚未提交。
 
@@ -192,5 +198,5 @@ public override void RegisterServices()
 
 ## 10. 内部入口 `AttachWith`
 
-`AtomUIStartup.AttachWith(Application, Action<IAtomUIBuilder>)`（internal）按显式配置直接提交：不提前执行、不做 Prepare、
+`ApplicationStartup.AttachWith(Application, Action<IAtomUIBuilder>)`（internal）按显式配置直接提交：不提前执行、不做 Prepare、
 不显示 Splash，同一实例重复调用抛出。只供测试与仓库内部工具使用；应用一律走 `UseAtomUI` + `Attach`。

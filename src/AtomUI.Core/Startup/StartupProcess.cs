@@ -3,18 +3,16 @@ using Avalonia.Threading;
 
 namespace AtomUI;
 
-internal sealed class AtomUIStartupProcess : IAtomUIStartup
+internal sealed class StartupProcess : IStartup
 {
     private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private int _state = (int)AtomUIStartupState.Preparing;
+    private int _state = (int)StartupState.Preparing;
 
-    public AtomUIStartupState State => (AtomUIStartupState)Volatile.Read(ref _state);
+    public StartupState State => (StartupState)Volatile.Read(ref _state);
     public Task Completion => _completion.Task;
-    public event EventHandler<AtomUIStartupProgressEventArgs>? ProgressChanged;
+    public event EventHandler<StartupProgressEventArgs>? ProgressChanged;
 
-    internal bool IsTerminal => IsTerminalState(State);
-
-    internal void MoveTo(AtomUIStartupState next)
+    internal void MoveTo(StartupState next)
     {
         while (true)
         {
@@ -25,7 +23,7 @@ internal sealed class AtomUIStartupProcess : IAtomUIStartup
             }
             if (Interlocked.CompareExchange(ref _state, (int)next, (int)current) == (int)current)
             {
-                AtomUIStartupEventSource.Log.StateChanged(next.ToString());
+                StartupEventSource.Log.StateChanged(next);
                 ReportProgress(next.ToString());
                 return;
             }
@@ -34,32 +32,32 @@ internal sealed class AtomUIStartupProcess : IAtomUIStartup
 
     internal void CompleteReady()
     {
-        if (TryEnterTerminal(AtomUIStartupState.Ready))
+        if (TryEnterTerminal(StartupState.Ready))
         {
             _completion.TrySetResult();
-            Finish(AtomUIStartupState.Ready);
+            Finish(StartupState.Ready);
         }
     }
 
     internal void Fail(Exception failure)
     {
         ArgumentNullException.ThrowIfNull(failure);
-        if (TryEnterTerminal(AtomUIStartupState.Failed))
+        if (TryEnterTerminal(StartupState.Failed))
         {
             LogError(failure);
             _completion.TrySetException(failure);
             // 公开任务保留原始异常；没有观察者时也不产生未观察任务异常。失败已写 Error 日志，不是静默的。
             _ = _completion.Task.Exception;
-            Finish(AtomUIStartupState.Failed);
+            Finish(StartupState.Failed);
         }
     }
 
     internal void Cancel()
     {
-        if (TryEnterTerminal(AtomUIStartupState.Canceled))
+        if (TryEnterTerminal(StartupState.Canceled))
         {
             _completion.TrySetCanceled();
-            Finish(AtomUIStartupState.Canceled);
+            Finish(StartupState.Canceled);
         }
     }
 
@@ -70,7 +68,7 @@ internal sealed class AtomUIStartupProcess : IAtomUIStartup
         {
             return;
         }
-        var args = new AtomUIStartupProgressEventArgs(State, detail);
+        var args = new StartupProgressEventArgs(State, detail);
         if (Dispatcher.UIThread.CheckAccess())
         {
             Dispatch(handlers, args);
@@ -81,7 +79,7 @@ internal sealed class AtomUIStartupProcess : IAtomUIStartup
         }
     }
 
-    private bool TryEnterTerminal(AtomUIStartupState terminal)
+    private bool TryEnterTerminal(StartupState terminal)
     {
         while (true)
         {
@@ -97,19 +95,19 @@ internal sealed class AtomUIStartupProcess : IAtomUIStartup
         }
     }
 
-    private void Finish(AtomUIStartupState terminal)
+    private void Finish(StartupState terminal)
     {
-        AtomUIStartupEventSource.Log.StateChanged(terminal.ToString());
+        StartupEventSource.Log.StateChanged(terminal);
         ReportProgress(terminal.ToString());
         ProgressChanged = null;
     }
 
-    private static bool IsTerminalState(AtomUIStartupState state) =>
-        state is AtomUIStartupState.Ready or AtomUIStartupState.Failed or AtomUIStartupState.Canceled;
+    private static bool IsTerminalState(StartupState state) =>
+        state is StartupState.Ready or StartupState.Failed or StartupState.Canceled;
 
-    private void Dispatch(EventHandler<AtomUIStartupProgressEventArgs> handlers, AtomUIStartupProgressEventArgs args)
+    private void Dispatch(EventHandler<StartupProgressEventArgs> handlers, StartupProgressEventArgs args)
     {
-        foreach (EventHandler<AtomUIStartupProgressEventArgs> handler in handlers.GetInvocationList())
+        foreach (EventHandler<StartupProgressEventArgs> handler in handlers.GetInvocationList())
         {
             try
             {
@@ -132,7 +130,7 @@ internal sealed class AtomUIStartupProcess : IAtomUIStartup
     {
         try
         {
-            Logger.TryGet(level, AtomUILogArea.System)?.Log(typeof(AtomUIStartupProcess), message);
+            Logger.TryGet(level, AtomUILogArea.System)?.Log(typeof(StartupProcess), message);
         }
         catch
         {

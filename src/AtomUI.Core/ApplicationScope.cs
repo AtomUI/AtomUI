@@ -27,7 +27,7 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
         ThemeManager themeManager,
         LocalizationHost localizationHost,
         IReadOnlyList<IAtomUIOwnedService> ownedServices,
-        AtomUIStartupProcess startup,
+        StartupProcess startup,
         IEnumerable<string>? ownedServiceIds = null)
     {
         _application = application ?? throw new ArgumentNullException(nameof(application));
@@ -56,7 +56,7 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
     internal Style FlowDirectionStyle { get; }
 
     // 启动状态和可等待结果由同一个对象拥有；状态由启动编排推进。
-    internal AtomUIStartupProcess Startup { get; }
+    internal StartupProcess Startup { get; }
 
     internal void ReleaseStartupInputs()
     {

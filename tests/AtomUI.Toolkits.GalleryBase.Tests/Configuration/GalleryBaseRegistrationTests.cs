@@ -22,7 +22,7 @@ public class GalleryBaseRegistrationTests
         GalleryBaseConfiguration? firstConfiguration = null;
         try
         {
-            Should.Throw<Exception>(() => AtomUIStartup.AttachWith(new Application(), builder =>
+            Should.Throw<Exception>(() => ApplicationStartup.AttachWith(new Application(), builder =>
             {
                 builder.UseGalleryBase(options =>
                 {

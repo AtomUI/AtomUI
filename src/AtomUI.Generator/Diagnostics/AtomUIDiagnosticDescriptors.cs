@@ -286,7 +286,7 @@ internal static partial class AtomUIDiagnosticDescriptors
     public static readonly DiagnosticDescriptor StartupHookMissingAttach = new(
         AtomUIDiagnosticIds.StartupHookMissingAttach,
         "Application overrides RegisterServices without the AtomUI startup hook",
-        "Application '{0}' overrides RegisterServices without calling AtomUIStartup.Attach(this); call it after base.RegisterServices()",
+        "Application '{0}' overrides RegisterServices without calling ApplicationStartup.Attach(this); call it after base.RegisterServices()",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,

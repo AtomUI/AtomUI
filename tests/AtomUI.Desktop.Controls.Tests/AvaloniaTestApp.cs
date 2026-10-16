@@ -58,6 +58,6 @@ internal sealed class TestApplication : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 }

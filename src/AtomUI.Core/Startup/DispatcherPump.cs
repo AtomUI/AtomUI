@@ -2,7 +2,7 @@ using Avalonia.Threading;
 
 namespace AtomUI;
 
-internal static class AtomUIDispatcherPump
+internal static class DispatcherPump
 {
     /// <summary>
     /// 主循环开始前驱动 Dispatcher，直到 <paramref name="task"/> 完成或超时。超时由线程池计时器

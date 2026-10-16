@@ -24,6 +24,10 @@
 | 普通包身份 | 包资源身份及程序集身份，不包含入口方法名 |
 | 已解析程序集引用 | `ControlPackageMarkerAttribute` 及其具体 Group/ABI |
 
+启动清单读取同时支持编译后 DLL 的 PE 元数据引用和 IDE 的 `CompilationReference` 项目引用。后者直接读取被引用
+编译的程序集符号 Attribute，两种输入共用包、主题与语言清单的归一化及错误检查，按不可变引用增量缓存。
+不得为了取得项目清单执行 Emit，也不得通过跳过设计时校验掩盖缺失或不兼容的语言 Bundle。
+
 只为至少拥有主题资源、Token 或语义内容的 Control 创建片段。public/internal 及可访问的 nested 类型均参与；
 没有独立契约的派生控件不生成空片段。internal presenter 可以只拥有资源，不要求公开 Token descriptor。
 可访问且非泛型的 `StyledElement` 主题目标也可形成资源独占片段：使用真实类型条件且仅注册导出资产；

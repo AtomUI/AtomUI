@@ -50,14 +50,14 @@ AtomUI 内核在 `Initialize()` 之前提交，`App.axaml` 可以直接引用 At
 
 ### 应用类必须挂接
 
-应用类声明为 `partial` 即可，AtomUI 生成器生成 `RegisterServices` 重写并调用 `AtomUIStartup.Attach(this)`。不能声明为
+应用类声明为 `partial` 即可，AtomUI 生成器生成 `RegisterServices` 重写并调用 `ApplicationStartup.Attach(this)`。不能声明为
 partial 时手写：
 
 ```csharp
 public override void RegisterServices()
 {
     base.RegisterServices();
-    AtomUIStartup.Attach(this);
+    ApplicationStartup.Attach(this);
 }
 ```
 
@@ -84,7 +84,7 @@ builder.UseSplash(SplashMode.Auto, splash => splash
     .WithTitle("My App"));
 ```
 
-- Splash 在内核提交之前显示，主窗体首个渲染批次完成后自动淡出，不再需要手动关闭，也不再有最短显示时长。
+- Splash 在内核提交之前显示，主窗体首个渲染批次完成后自动隐藏并关闭，不再需要手动关闭，也不再有最短显示时长。
 - 启动期间的应用自有加载（原先在 Splash 显示期间手动更新进度的流程）改用 `builder.UseMainWindow(async context => …)`，
   经 `context.Progress` 汇报进度。
 - 外观定制改用 `WithControlTheme<TTheme>()`：只能使用 Splash 控件、Avalonia 基础元素与全局 Token。
@@ -120,10 +120,14 @@ builder.UseSplash(SplashMode.Auto, splash => splash
 
 ## 新增 API
 
-- `AppBuilderExtensions.UseAtomUI(this AppBuilder, Action<IAtomUIBuilder>)`、`AtomUIStartup.Attach(Application)`。
-- `Application.GetStartup()` 与 `IAtomUIStartup`：`State`（`Preparing`、`Committed`、`Presenting`、`Ready`、`Failed`、
+启动类型按职责命名，统一去掉 `AtomUI` 前缀：`ApplicationStartup`、`IStartup`、`StartupState`、
+`StartupProgressEventArgs`、`StartupProgress`、`MainWindowContext`、`StartupBuilderExtensions`。
+这些 API 尚未在 6.2.5 中发布；使用过早期启动预览版的应用需要更新显式类型引用，并使用匹配的 Core 与 Generator 重新构建。
+
+- `AppBuilderExtensions.UseAtomUI(this AppBuilder, Action<IAtomUIBuilder>)`、`ApplicationStartup.Attach(Application)`。
+- `Application.GetStartup()` 与 `IStartup`：`State`（`Preparing`、`Committed`、`Presenting`、`Ready`、`Failed`、
   `Canceled`）、`Completion`、`ProgressChanged`。
-- `UseMainWindow(Func<AtomUIMainWindowContext, Task<Window>>)`、`AtomUIMainWindowContext`、`AtomUIStartupProgress`。
+- `UseMainWindow(Func<MainWindowContext, Task<Window>>)`、`MainWindowContext`、`StartupProgress`。
 - `SplashMode`；`AtomUI.Controls` 中的 `UseSplash`、`SplashOptionsBuilder`、`Splash`、`SplashWindow`、`SplashProgressBar`、
   `SplashStatus`、`SplashDefaultTheme`。
 - `AtomUI-Startup` EventSource（默认关闭）。

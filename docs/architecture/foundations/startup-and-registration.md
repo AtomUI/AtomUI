@@ -127,11 +127,12 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
 
 ## 启动生命周期
 
-配置回调在 `AppBuilder` 阶段执行，全局 Token 在平台初始化期间于后台准备，内核在 `RegisterServices` 中一次性提交，早于
+配置回调在 `AppBuilder` 阶段执行；平台服务就绪后，全局 Token 在后台准备并与 Application 创建并行。
+内核在 `RegisterServices` 中一次性提交，早于
 `Application.Initialize()`；可选的 Splash 覆盖提交与主窗体构建。状态、出错与取消、宿主差异见
 [启动生命周期](../systems/startup/lifecycle.md)，Splash 见 [Splash](../systems/startup/splash.md)。
 
-`Application.GetStartup()` 返回该应用唯一的 `IAtomUIStartup`（`Preparing → Committed → Presenting → Ready`，另有
+`Application.GetStartup()` 返回该应用唯一的 `IStartup`（`Preparing → Committed → Presenting → Ready`，另有
 `Failed`、`Canceled`）；`Completion` 在 `Ready` 时成功完成，失败保留原始异常，取消为已取消。
 
 ## ThemeManagerBuilder 收集内容

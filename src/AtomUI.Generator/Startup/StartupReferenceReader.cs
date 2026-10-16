@@ -21,21 +21,22 @@ internal static class StartupReferenceReader
 
     private static StartupReferenceData? Read(MetadataReference reference, CancellationToken token)
     {
-        if (reference is not PortableExecutableReference portable || portable.GetMetadata() is not AssemblyMetadata metadata)
-        {
-            return null;
-        }
         try
         {
+            // IDE project references can expose a live compilation instead of a PE image.
+            // Read its assembly attributes directly; emitting it would add build work to editing.
+            if (reference is CompilationReference compilationReference)
+            {
+                return ReadCompilation(compilationReference.Compilation.Assembly, token);
+            }
+            if (reference is not PortableExecutableReference portable || portable.GetMetadata() is not AssemblyMetadata metadata)
+            {
+                return null;
+            }
             var reader = metadata.GetModules()[0].GetMetadataReader();
             var definition = reader.GetAssemblyDefinition();
             var assemblyName = reader.GetString(definition.Name);
-            string? packageId = null;
-            string? packageData = null;
-            var version = 0;
-            var languages = new List<StartupLanguageReference>();
-            var themes = new List<StartupThemeReference>();
-            var hasPackageMarker = false;
+            ManifestCollector? manifests = null;
             foreach (var handle in definition.GetCustomAttributes())
             {
                 token.ThrowIfCancellationRequested();
@@ -43,7 +44,7 @@ internal static class StartupReferenceReader
                 var name = AttributeName(reader, attribute.Constructor);
                 if (name == "AtomUI.Registration.ControlPackageMarkerAttribute")
                 {
-                    hasPackageMarker = true;
+                    (manifests ??= new ManifestCollector(assemblyName)).HasPackageMarker = true;
                     continue;
                 }
                 if (name is not ("AtomUI.Registration.ControlPackageManifestAttribute" or
@@ -64,37 +65,90 @@ internal static class StartupReferenceReader
                 {
                     throw new InvalidDataException("Startup manifest contains unsupported named fields.");
                 }
-                if (name == "AtomUI.Registration.ControlPackageManifestAttribute")
-                {
-                    if (packageId is not null)
-                    {
-                        throw new InvalidDataException("Assembly contains multiple Control package manifests.");
-                    }
-                    packageId = id;
-                    packageData = data;
-                    version = format;
-                }
-                else if (name == "AtomUI.Theme.Definitions.Compiled.CompiledThemeManifestAttribute")
-                {
-                    themes.Add(new StartupThemeReference(format, id, data));
-                }
-                else
-                {
-                    languages.Add(new StartupLanguageReference(format, id, data));
-                }
+                (manifests ??= new ManifestCollector(assemblyName)).Add(name, format, id, data);
             }
-            if (hasPackageMarker && packageId is null)
-            {
-                return new StartupReferenceData(assemblyName, 0, null, null, default,
-                    "Control package has no startup manifest; rebuild it with the current AtomUI generator.");
-            }
-            return packageId is null && languages.Count == 0 && themes.Count == 0 ? null :
-                new StartupReferenceData(assemblyName, version, packageId, packageData, new(languages), null, new(themes));
+            return manifests?.Complete();
         }
         catch (Exception error) when (error is BadImageFormatException || error is InvalidDataException || error is ArgumentException || error is EndOfStreamException)
         {
             return new StartupReferenceData(reference.Display ?? "reference", 0, null, null, default, error.Message);
         }
+    }
+
+    private static StartupReferenceData? ReadCompilation(IAssemblySymbol assembly, CancellationToken token)
+    {
+        ManifestCollector? manifests = null;
+        foreach (var attribute in assembly.GetAttributes())
+        {
+            token.ThrowIfCancellationRequested();
+            var name = attribute.AttributeClass?.ToDisplayString();
+            if (name == "AtomUI.Registration.ControlPackageMarkerAttribute")
+            {
+                (manifests ??= new ManifestCollector(assembly.Name)).HasPackageMarker = true;
+                continue;
+            }
+            if (name is not ("AtomUI.Registration.ControlPackageManifestAttribute" or
+                "AtomUI.Localization.LanguageModuleManifestAttribute" or
+                "AtomUI.Theme.Definitions.Compiled.CompiledThemeManifestAttribute"))
+            {
+                continue;
+            }
+            if (attribute.NamedArguments.Length != 0)
+            {
+                throw new InvalidDataException("Startup manifest contains unsupported named fields.");
+            }
+            var arguments = attribute.ConstructorArguments;
+            if (arguments.Length != 3 || arguments[0].Kind != TypedConstantKind.Primitive ||
+                arguments[0].Value is not int format || arguments[1].Kind != TypedConstantKind.Primitive ||
+                arguments[2].Kind != TypedConstantKind.Primitive)
+            {
+                throw new InvalidDataException("Invalid startup manifest attribute encoding.");
+            }
+            var id = arguments[1].Value as string ?? throw new InvalidDataException("Missing startup manifest identity.");
+            var data = arguments[2].Value as string ?? throw new InvalidDataException("Missing startup manifest data.");
+            (manifests ??= new ManifestCollector(assembly.Name)).Add(name, format, id, data);
+        }
+        return manifests?.Complete();
+    }
+
+    // Both reference forms share the same duplicate/marker checks and immutable output.
+    // Allocate only for assemblies that actually contribute startup contracts.
+    private sealed class ManifestCollector(string assemblyName)
+    {
+        private string? _packageId;
+        private string? _packageData;
+        private int _version;
+        private readonly List<StartupLanguageReference> _languages = new();
+        private readonly List<StartupThemeReference> _themes = new();
+
+        internal bool HasPackageMarker { get; set; }
+
+        internal void Add(string name, int format, string id, string data)
+        {
+            if (name == "AtomUI.Registration.ControlPackageManifestAttribute")
+            {
+                if (_packageId is not null)
+                {
+                    throw new InvalidDataException("Assembly contains multiple Control package manifests.");
+                }
+                _packageId = id;
+                _packageData = data;
+                _version = format;
+            }
+            else if (name == "AtomUI.Theme.Definitions.Compiled.CompiledThemeManifestAttribute")
+            {
+                _themes.Add(new StartupThemeReference(format, id, data));
+            }
+            else
+            {
+                _languages.Add(new StartupLanguageReference(format, id, data));
+            }
+        }
+
+        internal StartupReferenceData Complete() => HasPackageMarker && _packageId is null
+            ? new StartupReferenceData(assemblyName, 0, null, null, default,
+                "Control package has no startup manifest; rebuild it with the current AtomUI generator.")
+            : new StartupReferenceData(assemblyName, _version, _packageId, _packageData, new(_languages), null, new(_themes));
     }
 
     private static string? AttributeName(MetadataReader reader, EntityHandle constructor)

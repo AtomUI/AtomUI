@@ -45,11 +45,11 @@ internal sealed class AtomUIBuilder : IAtomUIBuilder
 
     internal void AddPackageDeclaration(EnabledControlPackage declaration) => ThemeManagerBuilder.AddPackageDeclaration(declaration);
 
-    internal Func<AtomUIMainWindowContext, Task<Avalonia.Controls.Window>>? MainWindowFactory { get; private set; }
+    internal Func<MainWindowContext, Task<Avalonia.Controls.Window>>? MainWindowFactory { get; private set; }
 
-    internal AtomUISplashRegistration? Splash { get; private set; }
+    internal SplashRegistration? Splash { get; private set; }
 
-    internal void SetMainWindowFactory(Func<AtomUIMainWindowContext, Task<Avalonia.Controls.Window>> factory)
+    internal void SetMainWindowFactory(Func<MainWindowContext, Task<Avalonia.Controls.Window>> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
@@ -60,7 +60,7 @@ internal sealed class AtomUIBuilder : IAtomUIBuilder
         MainWindowFactory = factory;
     }
 
-    internal void SetSplash(AtomUISplashRegistration registration)
+    internal void SetSplash(SplashRegistration registration)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();

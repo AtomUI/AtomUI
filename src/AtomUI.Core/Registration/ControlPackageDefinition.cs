@@ -89,7 +89,7 @@ public sealed class ControlPackageDefinition
         {
             return builder;
         }
-        var started = AtomUIStartupEventSource.Log.IsEnabled() ? Stopwatch.GetTimestamp() : 0;
+        var started = StartupEventSource.Log.IsEnabled() ? Stopwatch.GetTimestamp() : 0;
         try
         {
             state.Enter(Id);
@@ -113,7 +113,7 @@ public sealed class ControlPackageDefinition
         {
             if (started != 0)
             {
-                AtomUIStartupEventSource.Log.PackageTiming(Id, "Enable", Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+                StartupEventSource.Log.PackageTiming(Id, PackagePhase.Enable, Stopwatch.GetElapsedTime(started).TotalMilliseconds);
             }
         }
     }
@@ -241,7 +241,7 @@ internal sealed class EnabledControlPackage
                 throw new InvalidOperationException("Recursive control package commit: " + Definition.Id);
             }
             _committing = true;
-            var started = AtomUIStartupEventSource.Log.IsEnabled() ? Stopwatch.GetTimestamp() : 0;
+            var started = StartupEventSource.Log.IsEnabled() ? Stopwatch.GetTimestamp() : 0;
             try
             {
                 foreach (var initialize in _commit)
@@ -260,7 +260,7 @@ internal sealed class EnabledControlPackage
                 _committing = false;
                 if (started != 0)
                 {
-                    AtomUIStartupEventSource.Log.PackageTiming(Definition.Id, "Commit", Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+                    StartupEventSource.Log.PackageTiming(Definition.Id, PackagePhase.Commit, Stopwatch.GetElapsedTime(started).TotalMilliseconds);
                 }
             }
         }
@@ -292,7 +292,7 @@ internal sealed class EnabledControlPackage
             }
             Commit(new ControlPackageContext(application, themeManager));
             _initializing = true;
-            var started = AtomUIStartupEventSource.Log.IsEnabled() ? Stopwatch.GetTimestamp() : 0;
+            var started = StartupEventSource.Log.IsEnabled() ? Stopwatch.GetTimestamp() : 0;
             try
             {
                 foreach (var initialize in _firstUse)
@@ -311,7 +311,7 @@ internal sealed class EnabledControlPackage
                 _initializing = false;
                 if (started != 0)
                 {
-                    AtomUIStartupEventSource.Log.PackageTiming(Definition.Id, "FirstUse", Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+                    StartupEventSource.Log.PackageTiming(Definition.Id, PackagePhase.FirstUse, Stopwatch.GetElapsedTime(started).TotalMilliseconds);
                 }
             }
         }

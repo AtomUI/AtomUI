@@ -45,7 +45,7 @@ public class ProductApp : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 
     private static IAtomUIBuilder? s_configuredBuilder;

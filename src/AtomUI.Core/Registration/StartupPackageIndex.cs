@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using AtomUI.Startup.Data;
 using AtomUI.Theme.Schema;
 
@@ -8,6 +9,7 @@ namespace AtomUI.Registration;
 /// <summary>Application-owned indexes; metadata queries never activate registration proxies.</summary>
 internal sealed class StartupPackageIndex
 {
+    private static readonly ConditionalWeakTable<Type, TypeResourceKeys> s_typeKeys = new();
     private readonly Dictionary<string, StartupControlEntry> _byIdentity = new(StringComparer.Ordinal);
     private readonly Dictionary<string, StartupControlEntry> _byType = new(StringComparer.Ordinal);
     private readonly Dictionary<string, StartupControlEntry> _ownKeyTypes = new(StringComparer.Ordinal);
@@ -119,6 +121,7 @@ internal sealed class StartupPackageIndex
             }
         }
         SemanticEntries = all.Where(entry => entry.Data.HasSemantic).ToArray();
+        var candidatesByAsset = IndexAssetCandidates(all);
         var assets = new List<StartupAssetEntry>();
         var oldAssets = previous?.Assets.ToDictionary(asset => asset.Data);
         for (var ordinal = 0; ordinal < data.Length; ordinal++)
@@ -127,11 +130,9 @@ internal sealed class StartupPackageIndex
                 .ThenBy(asset => asset.Order).ThenBy(asset => asset.Id, StringComparer.Ordinal).ToArray();
             foreach (var asset in orderedAssets)
             {
-                var candidates = all.Where(entry => ReferenceEquals(entry.Package, packages[ordinal]) &&
-                    entry.Data.Assets.Contains(asset.Id, StringComparer.Ordinal)).ToArray();
                 // Real TypeMap reachability, including Token-only/Semantic-only triggers, selects
                 // the registration proxy. A data string can never make a missing proxy executable.
-                if (candidates.Length != 0)
+                if (candidatesByAsset.TryGetValue((packages[ordinal], asset.Id), out var candidates))
                 {
                     foreach (var owner in asset.Owners)
                     {
@@ -142,11 +143,40 @@ internal sealed class StartupPackageIndex
                         }
                     }
                     assets.Add(oldAssets is not null && oldAssets.TryGetValue(asset, out var existingAsset)
-                        ? existingAsset : new StartupAssetEntry(asset, candidates, packages[ordinal]));
+                        ? existingAsset : new StartupAssetEntry(asset, candidates.ToArray(), packages[ordinal]));
                 }
             }
         }
         Assets = assets.ToArray();
+    }
+
+    private static Dictionary<(EnabledControlPackage Package, string AssetId), List<StartupControlEntry>> IndexAssetCandidates(
+        IReadOnlyList<StartupControlEntry> entries)
+    {
+        var result = new Dictionary<(EnabledControlPackage, string), List<StartupControlEntry>>();
+        foreach (var entry in entries)
+        {
+            if (entry.Package is not { } package)
+            {
+                continue;
+            }
+            foreach (var assetId in entry.Data.Assets)
+            {
+                var key = (package, assetId);
+                if (!result.TryGetValue(key, out var candidates))
+                {
+                    candidates = [];
+                    result.Add(key, candidates);
+                }
+                // Preserve registration order and the old Contains semantics if one
+                // manifest entry repeats an asset. Its previous addition is still last.
+                if (candidates.Count == 0 || !ReferenceEquals(candidates[^1], entry))
+                {
+                    candidates.Add(entry);
+                }
+            }
+        }
+        return result;
     }
 
     internal static StartupPackageIndex Create(IReadOnlyList<EnabledControlPackage> packages, StartupImage? image = null,
@@ -322,13 +352,30 @@ internal sealed class StartupPackageIndex
         return false;
     }
 
-    internal static string TypeKey(Type type) => type.Assembly.GetName().Name + "|" + type.FullName;
+    private static TypeResourceKeys GetTypeKeys(Type type) =>
+        s_typeKeys.GetValue(type, static owner => new TypeResourceKeys(owner));
+
+    internal static string TypeKey(Type type) => GetTypeKeys(type).Key;
     internal static string? ResourceKey(object key) => key switch
     {
-        Type type => "t:" + TypeKey(type),
+        Type type => GetTypeKeys(type).ResourceKey,
         string name => "s:" + name,
         _ => null
     };
+
+    // Values contain only strings: the weak Type key must remain collectible together
+    // with its assembly. Do not retain the Type or an application in this cache value.
+    private sealed class TypeResourceKeys
+    {
+        internal TypeResourceKeys(Type type)
+        {
+            Key = type.Assembly.GetName().Name + "|" + type.FullName;
+            ResourceKey = "t:" + Key;
+        }
+
+        internal string Key { get; }
+        internal string ResourceKey { get; }
+    }
 
     private static StartupOwnerData OwnerData(ControlTokenIdentity identity, Type type) =>
         new(identity.ToString(), type.Assembly.GetName().Name!, type.FullName!);
@@ -452,9 +499,9 @@ internal sealed class StartupControlEntry
                 var builder = new ControlPackageRegistrationBuilder();
                 fragment.Add(builder);
                 _fragment = builder.CompleteFragment();
-                if (AtomUIStartupEventSource.Log.IsEnabled())
+                if (StartupEventSource.Log.IsEnabled())
                 {
-                    AtomUIStartupEventSource.Log.FragmentMaterialized(package.Definition.Id, Data.TypeName);
+                    StartupEventSource.Log.FragmentMaterialized(package.Definition.Id, Data.TypeName);
                 }
                 return _fragment;
             }

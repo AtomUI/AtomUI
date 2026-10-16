@@ -24,21 +24,22 @@ public class ApplicationStartupHookGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         var generated = string.Join("\n", output.SyntaxTrees.Skip(3).Select(tree => tree.ToString()));
-        CountOccurrences(generated, "global::AtomUI.AtomUIStartup.Attach(this);").ShouldBe(2);
+        CountOccurrences(generated, "global::AtomUI.ApplicationStartup.Attach(this);").ShouldBe(2);
         generated.ShouldNotContain("class AppBase");
-        output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
     }
 
     // 判定必须按符号而不是文本：同一个 Attach 可能经别名或限定名调用，
     // 文本匹配会把别名写法误报成「缺少 Attach」。
     [Theory]
-    [InlineData("AtomUI.AtomUIStartup.Attach(this);")]
-    [InlineData("global::AtomUI.AtomUIStartup.Attach(this);")]
+    [InlineData("AtomUI.ApplicationStartup.Attach(this);")]
+    [InlineData("global::AtomUI.ApplicationStartup.Attach(this);")]
     [InlineData("Startup.Attach(this);")]
     public void Skips_an_application_that_already_calls_Attach_however_it_is_written(string call)
     {
         var alias = call.StartsWith("Startup.", StringComparison.Ordinal)
-            ? "using Startup = AtomUI.AtomUIStartup;\n"
+            ? "using Startup = AtomUI.ApplicationStartup;\n"
             : string.Empty;
         Run("public partial class App : Avalonia.Application { }", out var diagnostics, additionalSources: [alias + $$"""
             public partial class App
@@ -108,7 +109,7 @@ public class ApplicationStartupHookGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         var generated = string.Join("\n", output.SyntaxTrees.Skip(2).Select(tree => tree.ToString()));
-        CountOccurrences(generated, "global::AtomUI.AtomUIStartup.Attach(this);").ShouldBe(1);
+        CountOccurrences(generated, "global::AtomUI.ApplicationStartup.Attach(this);").ShouldBe(1);
         generated.ShouldNotContain("class AppBase");
     }
 
@@ -182,7 +183,7 @@ public class ApplicationStartupHookGeneratorTests
     private const string AtomUIStubs = """
         namespace AtomUI
         {
-            public static class AtomUIStartup
+            public static class ApplicationStartup
             {
                 public static void Attach(Avalonia.Application application) { }
             }

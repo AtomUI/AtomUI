@@ -16,7 +16,7 @@ public class SplashWindow : Window
     // SplashWindow 为键的隐式主题，显式指定的 SplashWindow 主题也会因 TargetType 与样式键不匹配而不生效。
     protected override Type StyleKeyOverride => typeof(SplashWindow);
 
-    internal void Initialize(IReadOnlyDictionary<object, object?> globalResources, AtomUISplashContent content)
+    internal void Initialize(IReadOnlyDictionary<object, object?> globalResources, SplashContent content)
     {
         var tokens = new ResourceDictionary();
         foreach (var (key, value) in globalResources)

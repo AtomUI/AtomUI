@@ -1,3 +1,4 @@
+using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Headless.XUnit;
 using Shouldly;
@@ -11,25 +12,27 @@ public class TypedPackageEntryTests
     [InlineData("DataGrid", true)]
     [InlineData("ColorPicker", true)]
     [InlineData("Extras", false)]
-    public void Optional_entry_stages_only_its_package_and_rejects_duplicate_before_completion(string name, bool hasLanguage)
+    public void Optional_entry_declares_dependencies_and_rejects_duplicate_without_mutating_state(string name, bool hasLanguage)
     {
         var builder = new AtomUIBuilder(typeof(Application));
         Register(builder, name);
-        var package = builder.ThemeManagerBuilder.ControlPackages.ShouldHaveSingleItem();
-        package.Id.ShouldBe("AtomUI.Desktop.Controls." + name);
-        package.ControlThemesProvider.Id.ShouldBe(package.Id);
+        var packageId = "AtomUI.Desktop.Controls." + name;
+        builder.PackageDeclarations.Select(package => package.Definition.Id)
+            .ShouldBe(["AtomUI.Controls.Common", "AtomUI.Desktop.Controls", packageId]);
+        var package = builder.PackageDeclarations[^1];
         var catalogs = builder.LocalizationBuilder.Catalogs.Count;
-        (catalogs > 0).ShouldBe(hasLanguage);
-        builder.ThemeManagerBuilder.Initializers.Count.ShouldBe(0);
+        builder.LocalizationBuilder.ModuleData.ContainsKey(packageId).ShouldBe(hasLanguage);
         Should.Throw<InvalidOperationException>(() => Register(builder, name));
         builder.LocalizationBuilder.Catalogs.Count.ShouldBe(catalogs);
-        builder.ThemeManagerBuilder.ControlPackages.ShouldHaveSingleItem().ShouldBeSameAs(package);
+        builder.PackageDeclarations.Count.ShouldBe(3);
+        builder.PackageDeclarations[^1].ShouldBeSameAs(package);
     }
 
     [AvaloniaFact]
     public void Common_dependency_runs_services_and_localization_once_before_desktop_commit()
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        var tooltip = AvaloniaLocator.Current.GetService<ToolTipService>();
         AtomUI.Controls.ThemeManagerBuilderExtensions.UseCommonControls(builder);
         var services = builder.OwnedServiceRegistrations.Count;
         var catalogs = builder.LocalizationBuilder.Catalogs.Count;
@@ -39,13 +42,15 @@ public class TypedPackageEntryTests
         builder.OwnedServiceRegistrations.Count.ShouldBe(services);
         builder.LocalizationBuilder.Catalogs.Count.ShouldBe(catalogs);
         builder.UseDesktopControls();
-        builder.ThemeManagerBuilder.ControlPackages.Select(p => p.Id).ShouldBe(new[] { "AtomUI.Controls.Common", "AtomUI.Desktop.Controls" });
+        builder.PackageDeclarations.Select(package => package.Definition.Id)
+            .ShouldBe(["AtomUI.Controls.Common", "AtomUI.Desktop.Controls"]);
         builder.OwnedServiceRegistrations.Count.ShouldBe(services);
-        builder.ThemeManagerBuilder.Initializers.Count.ShouldBe(1);
+        AvaloniaLocator.Current.GetService<ToolTipService>().ShouldBeSameAs(tooltip);
         var desktopCatalogs = builder.LocalizationBuilder.Catalogs.Count;
         Should.Throw<InvalidOperationException>(() => builder.UseDesktopControls());
         builder.LocalizationBuilder.Catalogs.Count.ShouldBe(desktopCatalogs);
-        builder.ThemeManagerBuilder.Initializers.Count.ShouldBe(1);
+        builder.PackageDeclarations.Count.ShouldBe(2);
+        AvaloniaLocator.Current.GetService<ToolTipService>().ShouldBeSameAs(tooltip);
     }
 
     [AvaloniaFact]
@@ -55,24 +60,17 @@ public class TypedPackageEntryTests
         var secondBuilder = new AtomUIBuilder(typeof(Application));
         firstBuilder.UseDesktopControls();
         secondBuilder.UseDesktopControls();
-        firstBuilder.ThemeManagerBuilder.CompletePendingRegistrations();
-        secondBuilder.ThemeManagerBuilder.CompletePendingRegistrations();
-        var firstContributions = firstBuilder.ThemeManagerBuilder
-            .ControlPackages
-            .Where(package => package.Id == "AtomUI.Desktop.Controls")
-            .ToArray();
-        var secondContributions = secondBuilder.ThemeManagerBuilder
-            .ControlPackages
-            .Where(package => package.Id == "AtomUI.Desktop.Controls")
-            .ToArray();
-        var firstPackage = firstContributions[0];
-        var secondPackage = secondContributions[0];
+        var firstPackage = firstBuilder.PackageDeclarations.Single(package => package.Definition.Id == "AtomUI.Desktop.Controls");
+        var secondPackage = secondBuilder.PackageDeclarations.Single(package => package.Definition.Id == "AtomUI.Desktop.Controls");
 
         firstPackage.ShouldNotBeSameAs(secondPackage);
-        firstPackage.ControlThemesProvider.ShouldNotBeSameAs(secondPackage.ControlThemesProvider);
-        var assetPaths = firstContributions
-            .SelectMany(package => package.ThemeAssets)
-            .Select(asset => asset.AssetUri.AbsolutePath)
+        firstPackage.Definition.ShouldBeSameAs(secondPackage.Definition);
+        var firstIndex = StartupPackageIndex.Create(firstBuilder.PackageDeclarations);
+        var secondIndex = StartupPackageIndex.Create(secondBuilder.PackageDeclarations);
+        var firstAssets = firstIndex.Assets.Where(asset => ReferenceEquals(asset.Package, firstPackage)).ToArray();
+        var secondAssets = secondIndex.Assets.Where(asset => ReferenceEquals(asset.Package, secondPackage)).ToArray();
+        var assetPaths = firstAssets
+            .Select(asset => new Uri(asset.Data.Uri).AbsolutePath)
             .ToHashSet(StringComparer.Ordinal);
         foreach (var leafAsset in new[]
                  {
@@ -84,19 +82,23 @@ public class TypedPackageEntryTests
         {
             assetPaths.ShouldContain(leafAsset);
         }
-        AssertSharedDescriptors(
-            firstContributions.SelectMany(package => package.Controls).ToArray(),
-            secondContributions.SelectMany(package => package.Controls).ToArray());
-        AssertSharedDescriptors(
-            firstContributions.SelectMany(package => package.SemanticControls).ToArray(),
-            secondContributions.SelectMany(package => package.SemanticControls).ToArray());
-        AssertSharedDescriptors(
-            firstContributions.SelectMany(package => package.ThemeAssets).ToArray(),
-            secondContributions.SelectMany(package => package.ThemeAssets).ToArray());
-        AssertSharedDescriptors(
-            firstContributions.SelectMany(package => package.Resources).ToArray(),
-            secondContributions.SelectMany(package => package.Resources).ToArray());
-        firstPackage.Resources[0].Factory().ShouldNotBeSameAs(secondPackage.Resources[0].Factory());
+        firstIndex.Controls.Count.ShouldBeGreaterThan(0);
+        firstIndex.Controls.Count.ShouldBe(secondIndex.Controls.Count);
+        for (var index = 0; index < firstIndex.Controls.Count; index++)
+        {
+            firstIndex.Controls[index].ShouldNotBeSameAs(secondIndex.Controls[index]);
+            var first = firstIndex.Controls[index].GetDescriptor();
+            var second = secondIndex.Controls[index].GetDescriptor();
+            first.CompilationIdentity.ShouldBeSameAs(second.CompilationIdentity);
+            first.OwnTokens.ShouldBeSameAs(second.OwnTokens);
+            first.Slot.ShouldBe(second.Slot);
+        }
+        AssertSharedDescriptors(firstIndex.SemanticEntries.Select(entry => entry.GetSemantic()).ToArray(),
+            secondIndex.SemanticEntries.Select(entry => entry.GetSemantic()).ToArray());
+        var firstResources = firstAssets.Select(asset => asset.GetRegistration()).ToArray();
+        var secondResources = secondAssets.Select(asset => asset.GetRegistration()).ToArray();
+        AssertSharedDescriptors(firstResources, secondResources);
+        firstResources[0].Factory().ShouldNotBeSameAs(secondResources[0].Factory());
         using var firstManager = firstBuilder.ThemeManagerBuilder.Build();
         using var secondManager = secondBuilder.ThemeManagerBuilder.Build();
         firstManager.ShouldNotBeSameAs(secondManager);
@@ -107,12 +109,17 @@ public class TypedPackageEntryTests
     public void All_optional_packages_initialize_and_freeze_with_desktop_enabled_explicitly()
     {
         var app = new Application();
+        var tooltipBeforeCommit = AvaloniaLocator.Current.GetService<ToolTipService>();
         IAtomUIBuilder? saved = null;
-        AtomUIStartup.AttachWith(app, builder =>
+        ApplicationStartup.AttachWith(app, builder =>
         {
             saved = builder;
             builder.UseDesktopControls().UseDesktopDataGrid().UseDesktopColorPicker().UseDesktopExtras();
         });
+        using var scope = ApplicationScopeRegistry.Get(app);
+        var tooltipAfterCommit = AvaloniaLocator.Current.GetService<ToolTipService>();
+        tooltipAfterCommit.ShouldNotBeNull();
+        tooltipAfterCommit.ShouldNotBeSameAs(tooltipBeforeCommit);
         app.GetThemeManager().ShouldNotBeNull().CurrentTheme.ShouldNotBeNull();
         Should.Throw<InvalidOperationException>(() => saved!.UseDesktopDataGrid()).Message.ShouldContain("frozen");
     }

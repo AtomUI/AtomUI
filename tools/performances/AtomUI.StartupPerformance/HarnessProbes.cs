@@ -84,8 +84,8 @@ internal static class UiGapTracker
         {
             return;
         }
-        // Dispatcher.UIThread 首次访问必须在 UI 线程上完成：从后台线程访问会触发平台
-        // dispatcher 初始化并以"不同线程拥有该对象"失败。这里先捕获实例再交给工作线程。
+        // 平台服务就绪后在 UI 线程捕获 Dispatcher，再交给工作线程。不能为了探针在
+        // 平台初始化前创建 Dispatcher，否则会改变其计时基准并污染被测应用的定时器。
         _dispatcher = Dispatcher.UIThread;
         _running = true;
         _start = StartupTimeline.Now();
@@ -115,6 +115,7 @@ internal static class UiGapTracker
                         // 首个探针被服务：UI 线程此前根本没泵消息（主循环尚未开始），
                         // 这段等待属于"界面还没反应"，不算阻塞卡顿，单独记为 Mark.FirstUiPump。
                         _firstPump = now;
+                        StartupTimeline.Mark("Mark.FirstUiPump");
                     }
                     else if (postedAt >= _firstPump)
                     {
@@ -141,10 +142,6 @@ internal static class UiGapTracker
         _worker = null;
         lock (Gate)
         {
-            if (_firstPump != 0)
-            {
-                StartupTimeline.Set("Mark.FirstUiPump", StartupTimeline.ToMilliseconds(_firstPump - _start));
-            }
             StartupTimeline.Set("Mark.MaxUiGap", _maxGap);
             StartupTimeline.Set("Diag.UiGapProbes", _probeCount);
         }

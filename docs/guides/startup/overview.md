@@ -153,9 +153,9 @@ Splash 在内核提交之前显示，自定义主题必须遵守：
     builder.UseSplash();
     builder.UseMainWindow(async context =>
     {
-        context.Progress.Report(new AtomUIStartupProgress("Loading projects…", 0.3));
+        context.Progress.Report(new StartupProgress("Loading projects…", 0.3));
         var projects = await ProjectStore.LoadAsync(context.CancellationToken);
-        context.Progress.Report(new AtomUIStartupProgress("Preparing workspace…", 0.8));
+        context.Progress.Report(new StartupProgress("Preparing workspace…", 0.8));
         return new MainWindow(projects);
     });
 })
@@ -170,7 +170,7 @@ Splash 在内核提交之前显示，自定义主题必须遵守：
 
 Prism 的应用类同样声明为 `partial`。Prism 在 `base.Initialize()` 中创建 Shell 并在 `OnInitialized()` 中显示它，此时内核
 已经提交，Shell 可以直接使用 AtomUI 控件；Prism 随后把 Shell 设为 `desktop.MainWindow`，Splash 在 Shell 首个渲染批次完成后
-淡出。
+立即隐藏并关闭。
 
 ```csharp
 using Avalonia;
@@ -199,7 +199,7 @@ public partial class App : PrismApplication
 ## 6. 手写挂接
 
 应用类不能声明为 `partial`，或者需要自己重写 `RegisterServices` 时，在 `base.RegisterServices()` 之后调用
-`AtomUIStartup.Attach(this)`：
+`ApplicationStartup.Attach(this)`：
 
 ```csharp
 public sealed class App : Application
@@ -207,7 +207,7 @@ public sealed class App : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 }
 ```
@@ -218,6 +218,10 @@ public sealed class App : Application
 
 手写了 `RegisterServices` 却没有调用 `Attach` 时，编译报 `ATOMUIGEN039`；既没有挂接也不是 partial 时，启动在
 `Initialize()` 之后抛出带修复说明的异常。
+
+源码调试时，修改启动挂接 API 后，应一并重建目标配置使用的 Core、Generator 与应用宿主。
+应用已正确声明为 partial 却仍提示未调用 Attach 时，检查实际使用的生成器是否与 Core 匹配；
+旧生成器可能因查找旧入口类型而跳过挂接生成。重建 Release 不会更新 Debug 目录中的生成器。
 
 ## 7. 等待启动结果
 

@@ -4,7 +4,7 @@
 
 ## 职责
 
-- 提供 `AppBuilder.WithAtomUIDefaultOptions()` 与 `AppBuilder.UseAtomUI()` 两个主要入口，以及 `AtomUIStartup.Attach`
+- 提供 `AppBuilder.WithAtomUIDefaultOptions()` 与 `AppBuilder.UseAtomUI()` 两个主要入口，以及 `ApplicationStartup.Attach`
   挂接点和启动编排（见[启动系统](../../architecture/systems/startup/overview.md)）。
 - 管理唯一运行时 `ThemeManager`、五阶段主题事务、稳定 ThemeContext、局部作用域图以及独立 TopLevel 的
   context lease/resource bridge。

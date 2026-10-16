@@ -6,21 +6,21 @@ using Avalonia;
 
 namespace AtomUI;
 
-internal static class AtomUIStartupCommit
+internal static class StartupCommit
 {
     /// <summary>
     /// 单次提交：本地化、主题、自有服务、初始化器。<paramref name="initialSystemAppearance"/> 与选取
     /// <paramref name="startupGlobalParent"/> 用的是同一次系统外观读取，避免两次读取之间外观切换导致不一致。
     /// </summary>
     internal static ApplicationScope Commit(Application application, AtomUIBuilder builder,
-        AtomUIStartupProcess process, ThemeAppearance? initialSystemAppearance, ThemeSnapshot? startupGlobalParent)
+        StartupProcess process, ThemeAppearance? initialSystemAppearance, ThemeSnapshot? startupGlobalParent)
     {
         if (ApplicationScopeRegistry.Get(application) is not null)
         {
             throw new InvalidOperationException(
                 $"AtomUI is already initialized for Application '{application.GetType().FullName}'.");
         }
-        AtomUIStartupEventSource.Log.PhaseStart("Commit");
+        StartupEventSource.Log.PhaseStart(StartupPhase.Commit);
         var image = builder.ThemeManagerBuilder.StartupImage ?? (application as Registration.IGeneratedStartupImageHost)?.GetStartupImage();
         if (image is not null)
         {
@@ -41,14 +41,14 @@ internal static class AtomUIStartupCommit
             {
                 builder.LocalizationBuilder.ApplyBuildProof(image.VerifiedLanguages, image.LanguageModules);
             }
-            AtomUIStartupEventSource.Log.PhaseStart("Commit.Localization");
+            StartupEventSource.Log.PhaseStart(StartupPhase.CommitLocalization);
             localizationHost = builder.LocalizationBuilder.Build();
-            AtomUIStartupEventSource.Log.PhaseStop("Commit.Localization");
-            AtomUIStartupEventSource.Log.PhaseStart("Commit.Theme");
+            StartupEventSource.Log.PhaseStop(StartupPhase.CommitLocalization);
+            StartupEventSource.Log.PhaseStart(StartupPhase.CommitTheme);
             themeManager = builder.ThemeManagerBuilder.Build();
-            AtomUIStartupEventSource.Log.PhaseStart("Commit.OwnedServices");
+            StartupEventSource.Log.PhaseStart(StartupPhase.CommitOwnedServices);
             ownedServices = BuildOwnedServices(application, builder.OwnedServiceRegistrations);
-            AtomUIStartupEventSource.Log.PhaseStop("Commit.OwnedServices");
+            StartupEventSource.Log.PhaseStop(StartupPhase.CommitOwnedServices);
             foreach (var package in builder.PackageDeclarations)
             {
                 package.PrepareContext(application, themeManager);
@@ -58,8 +58,8 @@ internal static class AtomUIStartupCommit
             ownedServices = null;
             AvaloniaLocator.CurrentMutable.BindToSelf(themeManager);
             applicationScope.InitializeApplication(initialSystemAppearance, startupGlobalParent);
-            AtomUIStartupEventSource.Log.PhaseStop("Commit.Theme");
-            AtomUIStartupEventSource.Log.PhaseStart("Commit.Initializers");
+            StartupEventSource.Log.PhaseStop(StartupPhase.CommitTheme);
+            StartupEventSource.Log.PhaseStart(StartupPhase.CommitInitializers);
             foreach (var initializer in builder.ThemeManagerBuilder.Initializers)
             {
                 initializer(themeManager);
@@ -68,7 +68,7 @@ internal static class AtomUIStartupCommit
             {
                 package.Commit(new Registration.ControlPackageContext(application, themeManager));
             }
-            AtomUIStartupEventSource.Log.PhaseStop("Commit.Initializers");
+            StartupEventSource.Log.PhaseStop(StartupPhase.CommitInitializers);
             applicationScope.ReleaseStartupInputs();
             return applicationScope;
         }
@@ -114,7 +114,7 @@ internal static class AtomUIStartupCommit
         }
         finally
         {
-            AtomUIStartupEventSource.Log.PhaseStop("Commit");
+            StartupEventSource.Log.PhaseStop(StartupPhase.Commit);
         }
     }
 

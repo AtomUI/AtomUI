@@ -14,6 +14,8 @@
   测量探针，记录主窗体首个渲染批次、完整 Shell 首个渲染批次与主窗体首帧之后的最长 UI 阻塞，交错采样后比较。探针只用于
   测量，不进入仓库。
 - **时刻定义**：渲染批次时刻指合成批次在渲染线程完成，不是显示器实际呈现；需要确认上屏时结合录屏或窗口列表。
+- **探针初始化边界**：UI 间隔探针在 `AfterPlatformServicesSetup` 中捕获 Dispatcher，再启动探针线程；不得为了测量
+  在平台初始化之前访问 Dispatcher，避免探针本身改变动画与定时器的时钟基准。比较两侧必须使用相同的探针启动点。
 
 ## 2. 验收线
 
@@ -49,8 +51,21 @@ dotnet run --project tools/validation/AtomUI.ThemeAssetsValidation/AtomUI.ThemeA
 
 ## 3. `AtomUI-Startup` 事件
 
-`AtomUIStartupEventSource`（名称 `AtomUI-Startup`），默认关闭，`IsEnabled()` 之外零开销。测量程序用进程内
+`StartupEventSource`（名称 `AtomUI-Startup`），默认关闭；关闭时不映射枚举或构造事件负载。测量程序用进程内
 `EventListener` 订阅；NativeAOT 默认裁掉 EventSource（`EventSourceSupport=false`），AOT 测量依赖测量程序自身打点。
+
+打点入口使用内部枚举：全局分段为 `StartupPhase`，包阶段为 `PackagePhase`，状态沿用 `StartupState`。
+调用方直接传枚举，禁止自行拼接阶段名或使用 `ToString()` 生成诊断负载：
+
+```csharp
+StartupEventSource.Log.PhaseStart(StartupPhase.CommitInitializers);
+// 执行初始化
+StartupEventSource.Log.PhaseStop(StartupPhase.CommitInitializers);
+```
+
+`[NonEvent]` 包装先检查 `IsEnabled()`，再通过显式 switch 映射固定字符串，交给私有 `[Event]` 方法写出。
+事件源名称、事件 Id、事件名、字段名与字符串负载共同构成测量契约。新增枚举成员时须补齐映射；
+枚举的 C# 名称与数值不是输出格式，重命名枚举成员时仍保持既有负载字符串。
 
 | 事件 | Id | 负载 | 含义 |
 |---|---|---|---|
@@ -87,9 +102,9 @@ dotnet run --project tools/validation/AtomUI.ThemeAssetsValidation/AtomUI.ThemeA
 |---|---|
 | 生成器为每个具体 partial 应用生成挂接；手写重写漏调 `Attach` 报 `ATOMUIGEN039`；抽象、非 partial 不生成；同名应用的生成文件不冲突 | `tests/AtomUI.Generator.Tests/Startup/ApplicationStartupHookGeneratorTests.cs` |
 | 默认主题只依赖全局 Token 与 Splash 自有类型；模板只描述结构、外观值在样式中（可被 BasedOn 局部覆盖）；`SplashWindow` 从自带资源应用窗口主题与 Splash 模板 | `tests/AtomUI.Controls.Tests/Splash/SplashDefaultThemeTests.cs` |
-| 经生成的挂接，内核在 `Initialize` 之前提交并进入 `Ready` | `tests/AtomUI.Core.Tests/Startup/AtomUIStartupContractTests.cs` |
+| 经生成的挂接，内核在 `Initialize` 之前提交并进入 `Ready` | `tests/AtomUI.Core.Tests/Startup/StartupContractTests.cs` |
 
-宿主侧行为（Splash 先出现、交接淡出、提交期间进度动画、交接前关闭即退出）依赖真实窗口与合成器，按平台实机检查：
+宿主侧行为（Splash 先出现、主窗体首帧后隐藏关闭、提交期间进度动画、交接前关闭即退出）依赖真实窗口与合成器，按平台实机检查：
 macOS、Windows、Linux X11 与 Wayland 各执行一次，检查 Gallery 与一个 Prism 应用。
 
 ## 5. 已知不一致

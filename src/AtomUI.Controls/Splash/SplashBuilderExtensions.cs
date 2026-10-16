@@ -10,7 +10,7 @@ public static class SplashBuilderExtensions
         var options = new SplashOptionsBuilder();
         configure?.Invoke(options);
         ((AtomUIBuilder)builder).SetSplash(
-            new AtomUISplashRegistration(mode, static () => new SplashPresenter(), options.Build()));
+            new SplashRegistration(mode, static () => new SplashPresenter(), options.Build()));
         return builder;
     }
 }

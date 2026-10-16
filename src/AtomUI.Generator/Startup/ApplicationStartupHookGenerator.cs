@@ -10,7 +10,7 @@ namespace AtomUI.Generator.Startup;
 
 /// <summary>
 /// 为每个具体的 partial Avalonia Application 生成 RegisterServices 重写，在 base.RegisterServices() 之后
-/// 调用 AtomUIStartup.Attach(this)。已手写重写且调用了 Attach 的跳过；具体类手写重写未调用 Attach 的报
+/// 调用 ApplicationStartup.Attach(this)。已手写重写且调用了 Attach 的跳过；具体类手写重写未调用 Attach 的报
 /// ATOMUIGEN039。抽象、泛型、嵌套类不生成，由运行时守卫给出修复说明；抽象类自身也不报缺少 Attach，
 /// 它无法实例化也无法自行修复，其派生类由本生成器补齐挂接。
 /// </summary>
@@ -18,7 +18,7 @@ namespace AtomUI.Generator.Startup;
 public sealed class ApplicationStartupHookGenerator : IIncrementalGenerator
 {
     private const string ApplicationMetadataName = "Avalonia.Application";
-    private const string StartupMetadataName = "AtomUI.AtomUIStartup";
+    private const string StartupMetadataName = "AtomUI.ApplicationStartup";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -165,7 +165,7 @@ public sealed class ApplicationStartupHookGenerator : IIncrementalGenerator
             source.Append(indent).AppendLine("    public override void RegisterServices()");
             source.Append(indent).AppendLine("    {");
             source.Append(indent).AppendLine("        base.RegisterServices();");
-            source.Append(indent).AppendLine("        global::AtomUI.AtomUIStartup.Attach(this);");
+            source.Append(indent).AppendLine("        global::AtomUI.ApplicationStartup.Attach(this);");
             source.Append(indent).AppendLine("    }");
         }
         if (target.ImageClassName is { } image)

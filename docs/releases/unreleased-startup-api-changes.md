@@ -53,13 +53,13 @@ AtomUI is committed before `Initialize()`, so `App.axaml` can reference AtomUI r
 ### The application class must be hooked
 
 Declare the application class `partial`; the AtomUI generator emits a `RegisterServices` override that calls
-`AtomUIStartup.Attach(this)`. When the class cannot be partial, write the override yourself:
+`ApplicationStartup.Attach(this)`. When the class cannot be partial, write the override yourself:
 
 ```csharp
 public override void RegisterServices()
 {
     base.RegisterServices();
-    AtomUIStartup.Attach(this);
+    ApplicationStartup.Attach(this);
 }
 ```
 
@@ -88,7 +88,7 @@ builder.UseSplash(SplashMode.Auto, splash => splash
     .WithTitle("My App"));
 ```
 
-- The Splash appears before AtomUI is committed and fades out automatically after the main window's first rendered
+- The Splash appears before AtomUI is committed and hides and closes automatically after the main window's first rendered
   batch. Manual closing and the minimum display duration are gone.
 - Application-owned loading during startup (previously done while updating a manually shown Splash) moves to
   `builder.UseMainWindow(async context => …)`, which reports progress through `context.Progress`.
@@ -128,10 +128,15 @@ Update code that matches theme diagnostics by these strings.
 
 ## New APIs
 
-- `AppBuilderExtensions.UseAtomUI(this AppBuilder, Action<IAtomUIBuilder>)` and `AtomUIStartup.Attach(Application)`.
-- `Application.GetStartup()` and `IAtomUIStartup`: `State` (`Preparing`, `Committed`, `Presenting`, `Ready`, `Failed`,
+Startup types use role names without the `AtomUI` prefix: `ApplicationStartup`, `IStartup`, `StartupState`,
+`StartupProgressEventArgs`, `StartupProgress`, `MainWindowContext` and `StartupBuilderExtensions`.
+These APIs have not been released in 6.2.5. Applications built against an earlier startup preview must update explicit
+type references and rebuild with the matching Core and Generator.
+
+- `AppBuilderExtensions.UseAtomUI(this AppBuilder, Action<IAtomUIBuilder>)` and `ApplicationStartup.Attach(Application)`.
+- `Application.GetStartup()` and `IStartup`: `State` (`Preparing`, `Committed`, `Presenting`, `Ready`, `Failed`,
   `Canceled`), `Completion` and `ProgressChanged`.
-- `UseMainWindow(Func<AtomUIMainWindowContext, Task<Window>>)`, `AtomUIMainWindowContext` and `AtomUIStartupProgress`.
+- `UseMainWindow(Func<MainWindowContext, Task<Window>>)`, `MainWindowContext` and `StartupProgress`.
 - `SplashMode`; in `AtomUI.Controls`: `UseSplash`, `SplashOptionsBuilder`, `Splash`, `SplashWindow`, `SplashProgressBar`,
   `SplashStatus` and `SplashDefaultTheme`.
 - The `AtomUI-Startup` EventSource (disabled by default).

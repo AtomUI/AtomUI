@@ -124,7 +124,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN036` | Generator | Error | 已声明 Part 的 `Classes.semantic-*` marker 使用了 false 或动态值 | 使用静态 `Classes.semantic-*="True"`；状态变化通过属性或伪类表达 | SemanticParts |
 | `ATOMUIGEN037` | Generator | Error | Semantic Style 的完整 CLR identity 与另一生成候选、当前程序集已有类型或 canonical XML namespace 下可见的引用程序集 public 类型冲突 | 调整 Control 或 Part path 命名，或移除占用 `AtomUI.Theme.Styling` 生成 identity 的类型 | SemanticParts |
 | `ATOMUIGEN038` | Generator | Error | Semantic Part 的 `Since` 不是 `major.minor.patch` 三段式发布版本（例如写成版本线 `6.0` / `6.2`，或带 `v` 前缀、预发布后缀、段数不符） | 写成具体发布版本，例如 `6.2.0` | SemanticParts |
-| `ATOMUIGEN039` | Generator | Error | 具体 Application 手写了 `RegisterServices` 重写，但方法体内没有调用 `AtomUIStartup.Attach` | 在 `base.RegisterServices()` 之后调用 `AtomUIStartup.Attach(this)`，或删除手写重写让生成器生成 | ApplicationStartupHook |
+| `ATOMUIGEN039` | Generator | Error | 具体 Application 手写了 `RegisterServices` 重写，但方法体内没有调用 `ApplicationStartup.Attach` | 在 `base.RegisterServices()` 之后调用 `ApplicationStartup.Attach(this)`，或删除手写重写让生成器生成 | ApplicationStartupHook |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
 | `ATOMUILOC001` | Localization | Error | AtomUI 固定语言数据记录的 schema、标识符、BCP 47 标签或元数据无效 | 按数据 schema 修正发生错误的具体记录 | LanguageTags |
 | `ATOMUILOC002` | Localization | Error | AtomUI 固定语言数据包含重复的属性标识符或规范 BCP 47 标签 | 删除重复记录并为每个属性和标签保留唯一映射 | LanguageTags |

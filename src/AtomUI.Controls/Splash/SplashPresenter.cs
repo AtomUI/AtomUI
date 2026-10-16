@@ -7,7 +7,7 @@ namespace AtomUI.Controls;
 /// Splash 呈现器：创建并显示 SplashWindow，汇报启动进度，错误态等待用户确认，交接时先隐藏、后关闭。
 /// 全部成员在 UI 线程调用（由 Core 的启动编排保证）。
 /// </summary>
-internal sealed class SplashPresenter : IAtomUISplashPresenter
+internal sealed class SplashPresenter : ISplashPresenter
 {
     private readonly TaskCompletionSource _firstFrame = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _errorAcknowledged = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -20,7 +20,7 @@ internal sealed class SplashPresenter : IAtomUISplashPresenter
 
     public event EventHandler? ClosedByUser;
 
-    public bool Show(IReadOnlyDictionary<object, object?> globalResources, AtomUISplashContent content)
+    public bool Show(IReadOnlyDictionary<object, object?> globalResources, SplashContent content)
     {
         try
         {
@@ -35,13 +35,13 @@ internal sealed class SplashPresenter : IAtomUISplashPresenter
         }
         catch (Exception exception)
         {
-            AtomUIStartupProcess.LogError(exception);
+            StartupProcess.LogError(exception);
             Close();
             return false;
         }
     }
 
-    public void ReportProgress(AtomUIStartupProgress progress)
+    public void ReportProgress(StartupProgress progress)
     {
         if (_window?.Splash is not { } splash)
         {
@@ -67,7 +67,7 @@ internal sealed class SplashPresenter : IAtomUISplashPresenter
         }
         splash.Status = SplashStatus.Error;
         splash.Message = exception.GetBaseException().Message;
-        // 主窗体呈现失败可能发生在 Splash 已透明之后；错误态必须重新可见、可操作。
+        // 交接隐藏失败时，错误态必须重新可见、可操作。
         if (_window is { } window)
         {
             window.Opacity = 1;
@@ -88,10 +88,6 @@ internal sealed class SplashPresenter : IAtomUISplashPresenter
     public Task HideAsync()
     {
         if (_window is not { } window)
-        {
-            return Task.CompletedTask;
-        }
-        if (!ReferenceEquals(_window, window))
         {
             return Task.CompletedTask;
         }
@@ -124,7 +120,7 @@ internal sealed class SplashPresenter : IAtomUISplashPresenter
         visual.Compositor.RequestCompositionBatchCommitAsync().Rendered.ContinueWith(
             static (_, state) =>
             {
-                AtomUIStartupEventSource.Log.SplashFirstFrame();
+                StartupEventSource.Log.SplashFirstFrame();
                 ((TaskCompletionSource)state!).TrySetResult();
             },
             _firstFrame, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);

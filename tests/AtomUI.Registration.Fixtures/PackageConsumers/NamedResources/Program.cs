@@ -32,6 +32,6 @@ public class ResourceApp : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 }

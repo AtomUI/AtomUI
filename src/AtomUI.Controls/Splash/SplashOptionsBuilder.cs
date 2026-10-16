@@ -69,5 +69,5 @@ public sealed class SplashOptionsBuilder
         return this;
     }
 
-    internal AtomUISplashContent Build() => new(Logo, BackgroundImage, Title, Message, CreateControlTheme);
+    internal SplashContent Build() => new(Logo, BackgroundImage, Title, Message, CreateControlTheme);
 }

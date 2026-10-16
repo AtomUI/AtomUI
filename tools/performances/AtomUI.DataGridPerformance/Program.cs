@@ -437,6 +437,6 @@ public sealed class PerformanceApplication : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 }

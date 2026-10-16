@@ -230,7 +230,7 @@ public class ApplicationScopeTests
             var first = new TrackingOwnedService("first", log);
             var second = new TrackingOwnedService("second", log);
 
-            var exception = Should.Throw<InvalidOperationException>(() => AtomUIStartup.AttachWith(application, builder =>
+            var exception = Should.Throw<InvalidOperationException>(() => ApplicationStartup.AttachWith(application, builder =>
             {
                 var atomBuilder = (AtomUIBuilder)builder;
                 atomBuilder.AddOwnedService("first", _ => first);
@@ -261,7 +261,7 @@ public class ApplicationScopeTests
             builder.ThemeManagerBuilder.Build(),
             builder.LocalizationBuilder.Build(),
             ownedServices ?? [],
-            new AtomUIStartupProcess());
+            new StartupProcess());
     }
 
     private static void RegisterSemanticPackage(IAtomUIBuilder builder, ControlTokenIdentity identity)

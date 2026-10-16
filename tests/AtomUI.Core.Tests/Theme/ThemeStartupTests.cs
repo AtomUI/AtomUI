@@ -209,7 +209,7 @@ public class ThemeStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            AtomUIStartup.AttachWith(application, static _ => { });
+            ApplicationStartup.AttachWith(application, static _ => { });
             var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
                                          .ShouldBeOfType<ThemeManager>();
             var provider = new ThemeConfigProvider
@@ -238,7 +238,7 @@ public class ThemeStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            AtomUIStartup.AttachWith(application, static _ => { });
+            ApplicationStartup.AttachWith(application, static _ => { });
             var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
                                          .ShouldBeOfType<ThemeManager>();
             var content = new Border();

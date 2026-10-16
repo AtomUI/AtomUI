@@ -30,7 +30,6 @@ internal static class Program
             ProfileOptimization.StartProfile("atomui-startup.jitprofile");
             StartupTimeline.Flag("MultiCoreJit");
         }
-        UiGapTracker.Start();
         var builder = options.Scenario == HarnessScenario.Plain
             ? AppBuilder.Configure<PlainHarnessApplication>()
             : AppBuilder.Configure<AtomUIHarnessApplication>();
@@ -43,6 +42,9 @@ internal static class Program
         {
             builder = builder.UseAtomUI(AtomUIHarnessApplication.Configure);
         }
+        // Capturing the dispatcher before platform setup gives its timers a different
+        // clock origin from the native dispatcher and changes the behavior being measured.
+        builder = builder.AfterPlatformServicesSetup(static _ => UiGapTracker.Start());
         builder.StartWithClassicDesktopLifetime(args);
         StartupTimeline.Report();
         return 0;

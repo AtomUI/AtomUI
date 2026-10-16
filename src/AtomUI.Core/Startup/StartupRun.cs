@@ -9,19 +9,19 @@ using Avalonia.Threading;
 
 namespace AtomUI;
 
-internal sealed class AtomUIStartupRun
+internal sealed class StartupRun
 {
     private static readonly TimeSpan PrepareTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MainWindowFirstFrameTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan SplashFirstFrameTimeout = TimeSpan.FromSeconds(5);
 
     private readonly Application _application;
-    private readonly AtomUIStartupConfiguration _configuration;
-    private readonly AtomUIStartupProcess _process = new();
+    private readonly StartupConfiguration _configuration;
+    private readonly StartupProcess _process = new();
     private readonly CancellationTokenSource _cancellation = new();
-    private IAtomUISplashPresenter? _splash;
+    private ISplashPresenter? _splash;
 
-    internal AtomUIStartupRun(Application application, AtomUIStartupConfiguration configuration)
+    internal StartupRun(Application application, StartupConfiguration configuration)
     {
         _application = application;
         _configuration = configuration;
@@ -58,7 +58,7 @@ internal sealed class AtomUIStartupRun
 
         try
         {
-            AtomUIStartupCommit.Commit(_application, builder, _process, appearance, prepared?.Select(appearance));
+            StartupCommit.Commit(_application, builder, _process, appearance, prepared?.Select(appearance));
         }
         catch (Exception exception)
         {
@@ -67,7 +67,7 @@ internal sealed class AtomUIStartupRun
             throw;
         }
 
-        _process.MoveTo(AtomUIStartupState.Committed);
+        _process.MoveTo(StartupState.Committed);
         SchedulePresentation(builder);
     }
 
@@ -85,16 +85,16 @@ internal sealed class AtomUIStartupRun
             ? ThemeAppearance.Light
             : ThemeManager.ResolveSystemAppearance(_application);
 
-    private PreparedThemeStartup? ResolvePrepared(AtomUIEarlyStartup? early, AtomUIBuilder builder)
+    private PreparedThemeStartup? ResolvePrepared(EarlyStartup? early, AtomUIBuilder builder)
     {
         if (early?.Prepare is { } prepare)
         {
-            AtomUIStartupEventSource.Log.PhaseStart("PrepareWait");
+            StartupEventSource.Log.PhaseStart(StartupPhase.PrepareWait);
             try
             {
                 if (!prepare.Wait(PrepareTimeout))
                 {
-                    AtomUIStartupProcess.LogWarning(
+                    StartupProcess.LogWarning(
                         "AtomUI startup Prepare did not finish within 30 s (background work may be waiting on the UI thread); " +
                         "the Splash is skipped and startup continues.");
                     return null;
@@ -103,12 +103,12 @@ internal sealed class AtomUIStartupRun
             }
             catch (AggregateException exception)
             {
-                AtomUIStartupProcess.LogWarning(exception.GetBaseException());
+                StartupProcess.LogWarning(exception.GetBaseException());
                 return null;
             }
             finally
             {
-                AtomUIStartupEventSource.Log.PhaseStop("PrepareWait");
+                StartupEventSource.Log.PhaseStop(StartupPhase.PrepareWait);
             }
         }
         if (!IsSplashEligible(builder) || !builder.ThemeManagerBuilder.CanPrepareBeforeApplication)
@@ -121,7 +121,7 @@ internal sealed class AtomUIStartupRun
         }
         catch (Exception exception)
         {
-            AtomUIStartupProcess.LogWarning(exception);
+            StartupProcess.LogWarning(exception);
             return null;
         }
     }
@@ -141,7 +141,7 @@ internal sealed class AtomUIStartupRun
         };
     }
 
-    private IAtomUISplashPresenter? TryShowSplash(AtomUIBuilder builder, PreparedThemeStartup? prepared,
+    private ISplashPresenter? TryShowSplash(AtomUIBuilder builder, PreparedThemeStartup? prepared,
         ThemeAppearance appearance)
     {
         if (prepared is null || builder.Splash is null || !IsSplashEligible(builder))
@@ -149,27 +149,27 @@ internal sealed class AtomUIStartupRun
             return null;
         }
         var presenter = builder.Splash.CreatePresenter();
-        AtomUIStartupEventSource.Log.PhaseStart("Splash");
+        StartupEventSource.Log.PhaseStart(StartupPhase.Splash);
         var shown = false;
         presenter.ClosedByUser += HandleSplashClosedByUser;
         try
         {
-            var content = builder.Splash?.Content ?? new AtomUISplashContent(null, null, null, null, null);
+            var content = builder.Splash?.Content ?? new SplashContent(null, null, null, null, null);
             var resources = prepared?.GlobalResources(appearance) ?? new Dictionary<object, object?>();
             if (!presenter.Show(resources, content))
             {
                 return null;
             }
-            if (!AtomUIDispatcherPump.PumpUntil(presenter.FirstFrameRendered, SplashFirstFrameTimeout))
+            if (!DispatcherPump.PumpUntil(presenter.FirstFrameRendered, SplashFirstFrameTimeout))
             {
-                AtomUIStartupProcess.LogWarning("Splash first frame did not render within 5 s; startup continues.");
+                StartupProcess.LogWarning("Splash first frame did not render within 5 s; startup continues.");
             }
             shown = true;
             return presenter;
         }
         catch (PlatformNotSupportedException exception)
         {
-            AtomUIStartupProcess.LogWarning(exception);
+            StartupProcess.LogWarning(exception);
             return null;
         }
         finally
@@ -179,7 +179,7 @@ internal sealed class AtomUIStartupRun
                 presenter.ClosedByUser -= HandleSplashClosedByUser;
                 presenter.Close();
             }
-            AtomUIStartupEventSource.Log.PhaseStop("Splash");
+            StartupEventSource.Log.PhaseStop(StartupPhase.Splash);
         }
     }
 
@@ -190,7 +190,7 @@ internal sealed class AtomUIStartupRun
             return;
         }
         splash.ShowError(exception);
-        AtomUIDispatcherPump.PumpUntil(splash.ErrorAcknowledged, Timeout.InfiniteTimeSpan);
+        DispatcherPump.PumpUntil(splash.ErrorAcknowledged, Timeout.InfiniteTimeSpan);
     }
 
     private void HandleSplashClosedByUser(object? sender, EventArgs e)
@@ -227,8 +227,8 @@ internal sealed class AtomUIStartupRun
                 {
                     throw new InvalidOperationException("UseMainWindow cannot be combined with assigning MainWindow manually.");
                 }
-                var progress = new Progress<AtomUIStartupProgress>(value => _splash?.ReportProgress(value));
-                mainWindow = await factory(new AtomUIMainWindowContext(progress, _cancellation.Token));
+                var progress = new Progress<StartupProgress>(value => _splash?.ReportProgress(value));
+                mainWindow = await factory(new MainWindowContext(progress, _cancellation.Token));
                 _cancellation.Token.ThrowIfCancellationRequested();
                 desktop.MainWindow = mainWindow;
             }
@@ -244,11 +244,11 @@ internal sealed class AtomUIStartupRun
                 return;
             }
 
-            _process.MoveTo(AtomUIStartupState.Presenting);
+            _process.MoveTo(StartupState.Presenting);
             // 主窗体在首帧前被关闭视为用户取消：不再等待首帧，也不再走正常交接。
             void HandleMainWindowClosed(object? sender, EventArgs args)
             {
-                if (_process.State == AtomUIStartupState.Presenting)
+                if (_process.State == StartupState.Presenting)
                 {
                     _process.Cancel();
                     _cancellation.Cancel();
@@ -269,13 +269,13 @@ internal sealed class AtomUIStartupRun
             {
                 mainWindow.Closed -= HandleMainWindowClosed;
             }
-            AtomUIStartupEventSource.Log.MainWindowFirstFrame();
+            StartupEventSource.Log.MainWindowFirstFrame();
             // 主窗体已经完成首个合成批次后才隐藏 Splash，避免 Splash 提前消失后主窗体长时间尚未上屏。
             await CloseSplashAsync();
             _process.CompleteReady();
         }
         catch (OperationCanceledException) when (_cancellation.IsCancellationRequested ||
-                                                 _process.State == AtomUIStartupState.Canceled)
+                                                 _process.State == StartupState.Canceled)
         {
             _process.Cancel();
             await CloseSplashAsync();
@@ -315,7 +315,7 @@ internal sealed class AtomUIStartupRun
                 }
                 catch (TimeoutException)
                 {
-                    AtomUIStartupProcess.LogWarning("Main window did not open within 3 s; handing off without waiting.");
+                    StartupProcess.LogWarning("Main window did not open within 3 s; handing off without waiting.");
                     return;
                 }
                 finally
@@ -337,7 +337,7 @@ internal sealed class AtomUIStartupRun
             }
             catch (TimeoutException)
             {
-                AtomUIStartupProcess.LogWarning("Main window first frame did not render within 3 s; handing off without waiting.");
+                StartupProcess.LogWarning("Main window first frame did not render within 3 s; handing off without waiting.");
             }
         }
         finally

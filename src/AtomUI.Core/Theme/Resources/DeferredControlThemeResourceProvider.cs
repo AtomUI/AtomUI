@@ -131,9 +131,9 @@ internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
         {
             _isLoading = false;
         }
-        if (AtomUIStartupEventSource.Log.IsEnabled())
+        if (StartupEventSource.Log.IsEnabled())
         {
-            AtomUIStartupEventSource.Log.ThemeAssetMaterialized(_packageId, _assetId);
+            StartupEventSource.Log.ThemeAssetMaterialized(_packageId, _assetId);
         }
         return _inner!;
     }

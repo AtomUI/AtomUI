@@ -31,6 +31,6 @@ public sealed class RenderingTestApp : Application
     public override void RegisterServices()
     {
         base.RegisterServices();
-        AtomUIStartup.Attach(this);
+        ApplicationStartup.Attach(this);
     }
 }

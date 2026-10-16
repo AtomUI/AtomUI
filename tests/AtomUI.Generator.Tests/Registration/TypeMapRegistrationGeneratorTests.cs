@@ -4,6 +4,7 @@ using System.Runtime.Loader;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
@@ -34,7 +35,7 @@ public class TypeMapRegistrationGeneratorTests
         source.ShouldContain("ControlPackageMarker(");
         source.ShouldContain("GeneratedTypeMapAccessor(typeof(");
         source.ShouldContain("GetOrCreateExternalTypeMapping<");
-        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetTypeMap(), CandidateKeys)");
+        source.ShouldContain("ControlRegistrationRuntime.CollectFragments(builder, GetSelectionMap(), CandidateKeys)");
         source.ShouldNotContain("CollectCritical");
         source.ShouldNotContain("CollectDeferred");
         source.ShouldNotContain("UnitId");
@@ -98,13 +99,14 @@ public class TypeMapRegistrationGeneratorTests
             }
             """);
         var source = Source(result, "GeneratedTypeMapRegistration.g.cs");
-        var candidateBlock = source.Split("CandidateKeys = new string[]", StringSplitOptions.None)[1]
-            .Split("};", StringSplitOptions.None)[0];
-        var keys = candidateBlock.Split('\n')
-            .Select(line => line.Trim().TrimEnd(','))
-            .Where(line => line.StartsWith("\"", StringComparison.Ordinal))
-            .Select(line => line.Trim('"'))
-            .ToArray();
+        var candidateDeclaration = CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)
+            .GetRoot(TestContext.Current.CancellationToken).DescendantNodes()
+            .Single(node => node is MethodDeclarationSyntax { Identifier.ValueText: "CreateCandidateKeys" } or
+                            VariableDeclaratorSyntax { Identifier.ValueText: "CandidateKeys" });
+        var initializer = candidateDeclaration.DescendantNodes().OfType<ArrayCreationExpressionSyntax>().Single().Initializer!;
+        initializer.Expressions.ShouldAllBe(expression => expression.IsKind(SyntaxKind.StringLiteralExpression));
+        var candidateBlock = initializer.ToString();
+        var keys = initializer.Expressions.Cast<LiteralExpressionSyntax>().Select(expression => expression.Token.ValueText).ToArray();
 
         keys.ShouldNotBeEmpty();
         keys.ShouldAllBe(key => key.StartsWith("v1:", StringComparison.Ordinal) && key.Length == 19);
@@ -174,13 +176,12 @@ public class TypeMapRegistrationGeneratorTests
     }
 
     [Fact]
-    public void Both_Backends_Emit_A_Single_Collector_With_Bootstrap_Fragment_Metadata()
+    public void Both_Backends_Emit_A_Single_Collector()
     {
         foreach (var supportsTypeMap in new[] { false, true })
         {
             var output = new GenerationOutput();
             var package = CreateStagingPackage();
-            package = package with { Controls = new(package.Controls.Select((control, index) => control with { IsBootstrap = index == 0 })) };
             TypeMapRegistrationWriter.Write(output, package, supportsTypeMap: supportsTypeMap);
             var result = output.Freeze();
             result.Diagnostics.ShouldBeEmpty();
@@ -189,8 +190,6 @@ public class TypeMapRegistrationGeneratorTests
             source.ShouldContain("ControlRegistrationRuntime.RegisterPackage(");
             source.ShouldNotContain("CollectCritical");
             source.ShouldNotContain("CollectDeferred");
-            source.ShouldContain("public override bool IsBootstrap => true;");
-            source.ShouldContain("public override bool IsBootstrap => false;");
             if (!supportsTypeMap)
             {
                 var tree = CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken);

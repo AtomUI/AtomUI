@@ -16,9 +16,11 @@
 
 包内 `AtomUIThemeDefinition` 由 Tasks worker 在编译前以权威 Reader/XSD 校验并生成中立 AdditionalFile，Generator
 据 Token 契约生成类型化主题程序。Core 的 syntax-document 特例已由此共同路径替代，原 XML 仍可作为 AvaloniaResource
-显式读取。Tasks 只源链接 Core 中依赖 BCL 的 Reader/XSD 及必要语法模型，校验有界原始 XML；私有版本 3
-中间输入只传输声明文本、位置、摘要与诊断。Tasks 不执行主题算法或复制运行时配置/快照模型；静态字面量解析与
-C# 生成归 Generator。产物身份与校验见[编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md)。
+显式读取。Tasks 源链接 Core Reader/XSD、内置字面量 codec、converter 和必要值类型，
+以同一运行时语义生成有界类型候选。私有版本 4 中间输入传输声明位置、摘要、规范值及 primitive payload。
+Tasks 不执行主题算法或用户 codec，不复制运行时配置/快照模型；Generator 只做符号校验与类型化 C# 生成。
+worker 的 Avalonia 托管依赖随工具资产白名单发布，不进入应用运行时闭包。
+产物身份与校验见[编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md)。
 
 `GenerateThemeAssetWrappersTask` 保留编译型资源与 deferred wrapper 输出，作为生成器不能直接静态构造时的 fallback；
 不重写作者的 classless AXAML，不改变 AvaloniaXaml/AdditionalFiles 的 URI、Link 或源身份。Generator 可为已绑定且

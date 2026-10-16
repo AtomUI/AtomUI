@@ -239,9 +239,9 @@ public class GalleryShowCaseHeader : TemplatedControl
     IntroducedVersion="{gallery:SplashShowCaseLangResource ComponentIntroducedVersion}"
     Subtitle="{gallery:SplashShowCaseLangResource PageSubtitle}"
     Description="{gallery:SplashShowCaseLangResource PageDescription}"
-    Namespace="AtomUI.Desktop.Controls"
-    Package="AtomUI.Desktop.Controls.Extras"
-    BaseClass="ContentControl"
+    Namespace="AtomUI.Controls"
+    Package="AtomUI.Controls"
+    BaseClass="TemplatedControl"
     MetadataValueWidth="240" />
 ```
 

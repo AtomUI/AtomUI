@@ -51,26 +51,8 @@
         </ProjectReference>
     </ItemGroup>
 
-    <!-- NuGet's path walk rebuilds ProjectReference items from strings, dropping their
-         metadata. Reapply the tool boundary before it schedules those restore projects. -->
-    <Target Name="AtomUIIsolateToolchainRestore" AfterTargets="_GenerateRestoreProjectPathItems">
-        <ItemGroup>
-            <_CurrentRestoreProjectPathItems Update="@(_CurrentRestoreProjectPathItems->WithMetadataValue('Filename', 'AtomUI.Toolchain'))">
-                <UndefineProperties>%(_CurrentRestoreProjectPathItems.UndefineProperties);$(AtomUIToolchainGlobalPropertiesToRemove)</UndefineProperties>
-            </_CurrentRestoreProjectPathItems>
-        </ItemGroup>
-    </Target>
-
-    <Target Name="AtomUIIsolateToolchainRestoreGraph" BeforeTargets="_GenerateRestoreGraph">
-        <ItemGroup>
-            <_RestoreProjectPathItems Update="@(_RestoreProjectPathItems->WithMetadataValue('Filename', 'AtomUI.Toolchain'))">
-                <UndefineProperties>%(_RestoreProjectPathItems.UndefineProperties);$(AtomUIToolchainGlobalPropertiesToRemove)</UndefineProperties>
-            </_RestoreProjectPathItems>
-            <FilteredRestoreGraphProjectInputItems Update="@(FilteredRestoreGraphProjectInputItems->WithMetadataValue('Filename', 'AtomUI.Toolchain'))">
-                <UndefineProperties>%(FilteredRestoreGraphProjectInputItems.UndefineProperties);$(AtomUIToolchainGlobalPropertiesToRemove)</UndefineProperties>
-            </FilteredRestoreGraphProjectInputItems>
-        </ItemGroup>
-    </Target>
+    <!-- Toolchain owns its portable restore properties through TreatAsLocalProperty.
+         Mutating NuGet's path/graph items here also stripped the application's RID. -->
 
     <Target Name="AtomUICleanTestResultsBeforeRun"
             BeforeTargets="VSTest"

@@ -117,8 +117,8 @@ AtomUI Gallery 的 `WorkspaceWindow` 保留产品窗口菜单和标题栏事件�
 var shellView = new GalleryShellView(configuration, navigationView, viewModel.Router);
 ```
 
-产品宿主可以在框架完备后单独调度这一步；GalleryBase 不拥有 Core 的分级启动状态机。
-当前 Desktop Gallery 的加载态、Completion 等待及窗口取消策略见 [Desktop 分级启动](../../gallery/platforms/overview.md#desktop-分级启动)。
+AtomUI 内核在 `Application.Initialize()` 之前提交，产品宿主可以在窗口构造时直接创建 Shell；GalleryBase 不拥有 Core 的
+启动状态机。当前 Desktop Gallery 的启动方式见 [Desktop 启动](../../gallery/platforms/overview.md#desktop-启动)。
 共享 Workspace/Navigation 构造函数保持即时行为，未增加隐式延迟工厂。
 
 职责：

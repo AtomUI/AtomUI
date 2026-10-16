@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
 
@@ -291,9 +292,9 @@ public partial class Upload : ContentControl,
     private INotifyCollectionChanged? _attachedFileCollection;
     private EventHandler? _formValueChanged;
 
-    static Upload()
+    internal static void RegisterTaskRemoveRequestEvent(RoutedEvent<TaskRemoveRequestEventArgs> requestEvent)
     {
-        AbstractUploadListItem.TaskRemoveRequestEvent.AddClassHandler<Upload>(
+        requestEvent.AddClassHandler<Upload>(
             (upload, args) => upload.HandleTaskRemoveRequest(args));
     }
 

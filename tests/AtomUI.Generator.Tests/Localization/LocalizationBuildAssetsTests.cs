@@ -427,13 +427,13 @@ public class LocalizationBuildAssetsTests
             result.ExitCode.ShouldBe(0, result.Output);
             var generatedBootstrap = Directory.EnumerateFiles(
                                                   Path.Combine(consumerDirectory, "obj", "Generated"),
-                                                  "GeneratedApplicationLanguageBootstrap.g.cs",
+                                                  "GeneratedApplicationLanguageData.g.cs",
                                                   SearchOption.AllDirectories)
                                               .ShouldHaveSingleItem();
             var generatedSource = await File.ReadAllTextAsync(
                 generatedBootstrap,
                 TestContext.Current.CancellationToken);
-            generatedSource.ShouldContain("TranslationSourceKind.StaticLanguagePack");
+            generatedSource.ShouldContain("builder.AddModuleData(");
             generatedSource.ShouldContain("Fixture.Module.I18n.PtBR");
             generatedSource.ShouldContain("Cancelar");
         }
@@ -971,8 +971,15 @@ public class LocalizationBuildAssetsTests
                 void RegisterApplicationLanguages(ILocalizationBuilder builder);
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
+            public sealed class LanguageModuleManifestAttribute : System.Attribute
+            {
+                public LanguageModuleManifestAttribute(int version, string moduleId, string data) { }
+            }
+
             public interface ILocalizationBuilder
             {
+                void AddModuleData(string moduleId, string data);
                 void AddCatalog(LanguageCatalogDescriptor descriptor);
                 void AddTranslationBundle(TranslationBundleDescriptor descriptor);
             }

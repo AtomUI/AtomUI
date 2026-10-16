@@ -6,24 +6,30 @@
 ## 1. 设计结论
 
 Browser Gallery 继续复用 Desktop Gallery 的产品模块、导航、路由和 ShowCase。应用侧使用与 Desktop 相同的
-Control 包入口：
+Control 包入口，在 `AppBuilder` 链上登记配置（`.UseAtomUI(BrowserGalleryApplication.Configure)`）：
 
 ```csharp
-this.UseAtomUI(builder =>
+public static void Configure(IAtomUIBuilder builder)
 {
     builder.UseLanguages(
         GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
-        [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+        [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
     builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
     builder.UseAlibabaSansFont();
     builder.UseAlibabaPuHuiTiFont();
+    builder.WithDefaultFontFamily(FontFamily.Parse(
+        $"fonts:AlibabaSans#Alibaba Sans, {AlibabaPuHuiTiFontConstants.FontFamily}, $Default"));
     builder.UseDesktopControls();
     builder.UseDesktopExtras();
     builder.UseDesktopColorPicker();
     builder.UseDesktopDataGrid();
+    builder.UseGalleryBase(AtomUIGalleryModule.Configure);
     builder.UseGalleryControls();
-});
+}
 ```
+
+浏览器是单线程运行时，配置回调不提前执行，内核在 `Attach` 中同步提交（见
+[宿主差异](../../architecture/systems/startup/lifecycle.md#9-宿主差异)）。
 
 平台差异由 Control 包内部处理。Browser 项目不维护 Control Token 类型列表、主题 ResourceInclude 清单或逐
 Control 注册调用。

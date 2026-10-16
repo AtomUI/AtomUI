@@ -483,6 +483,12 @@ public interface IThemeDefinitionSource
 线程调用同一同步合约，再进入统一 Reader/Binder/Compiler；不为了运行时刷新把应用启动改成先挂载空主题的异步
 流程。
 
+启动期只有实现 `IBackgroundThemeDefinitionResolver` 的自定义来源才参与提前后台 Prepare；普通来源在需要 Splash
+时先于 UI 线程同步 Prepare，否则随初始提交解析。该可选接口声明 `Resolve` 和返回来源的 `OpenRead` 可在后台调用，
+且可与超时后的 UI 回退并发。
+运行时刷新仍在后台调用 `SupportsReload=true` 的来源，因此可刷新来源也必须具备相应线程安全性；只能在 UI 线程
+访问的来源应返回 `SupportsReload=false`。
+
 标准 Resolver 分为：
 
 - `AvaloniaAssetThemeDefinitionResolver`：由应用或控件包显式列出 `avares://` 主题，必须成功，不支持刷新。
@@ -1056,6 +1062,10 @@ TokenResourceBinder.CreateControlTokenBinding(
 `ControlTokenAccessor.Capture(owner)` 获取同一 snapshot 中的 `GetEffectiveGlobal<T>()` 与经过 owner 校验的
 `GetOwn<T>()`。Binding 跟随 ThemeContext 发布自动更新；命令式路径在通知后重新 capture。实现不得创建只用于
 转运 Token 的隐藏 StyledProperty，也不得在运行时观察资源访问来推导 schema。
+非 Visual `AvaloniaObject` 的程序化绑定优先使用它自己的 scoped `IResourceHost`，其次使用其
+`IResourceProvider` owner；没有局部资源宿主时才使用应用全局资源。所有路径都兑现传入的 converter 与
+`BindingPriority`，调用方持有并释放返回的 `IDisposable`。全局资源 observable 省略 `ThemeVariant` 时跟随应用
+实际变体变化；显式传入变体才固定到该变体。
 
 基类代码读取 Effective Global Token 时按实例 exact CLR type 解析，因此注册的派生 Control 使用自己的 identity。
 Own Token 始终显式属于某一终端 Control，不随 Control CLR 继承或 Token 定义继承动态替换。在目标继承模型中，Token
@@ -1170,7 +1180,7 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 
 ## 16. 启动时序
 
-`Application.UseAtomUI()` 的主题启动顺序固定为：
+内核提交（见[启动生命周期](../startup/lifecycle.md#4-提交一次)）时的主题启动顺序固定为：
 
 1. Builder 解析并冻结 Application Id，收集 Theme Definition Resolver、算法 descriptor、Control theme asset
    manifest、不可变初始 root request 模板和语言配置。
@@ -1181,7 +1191,8 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
    保存 diagnostics。
 4. 如果启用 FollowSystem，先同步读取初始系统 appearance，再从 Light/Dark 不可变 request 模板中选择首帧
    request；不得先按 Default 编译后再补一次 Dark/Light 切换。
-5. 同步完成初始 request 的 Capture/Prepare，生成第一个完整根 `ThemeSnapshot`。
+5. 同步完成初始 request 的 Capture/Prepare，生成第一个完整根 `ThemeSnapshot`；启动前后台 Prepare 产出的全局层
+   作为可复用父层传入，不重复编译全局层。
 6. 使用该 snapshot 创建 Root ThemeContext、稳定 Provider 和唯一 ThemeManager；Manager 的 Styles 同时预装
    Control themes、语言资源入口以及向全部 TopLevel 注入 Root ThemeContext 的全局 style。
 7. 将同一个已完整初始化的 ThemeManager 实例挂载到 Application Styles，并绑定为 `IThemeManager` 服务。
@@ -1190,13 +1201,8 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 
 不得先挂载空资源层再异步补主题，也不得通过 ThemeLoaded 事件修补 DefaultFont、断点或其他 Token。
 
-**分级启动（staged）状态**：保持 opt-in。Stage 1 注册先行包的 bootstrap 片段，未声明分期的包完整注册；资源字典与控件快照按需创建；Stage 2 等待指定宿主的 rendered batch
-和其请求的激活，再捕获/冻结输入、后台构建纯数据。自定义回调保留 UI 线程，静态 provider 不重挂载。
-主题与本地化先统一 CommitCore，再 Publish；Shell 由应用单独调度。批次完成不等于显示器实际呈现。
-跨系统职责、失败语义和生命周期统一由
-[分级启动演化与提交边界](../../foundations/staged-startup-evolution.md)定义。
-主题侧资源索引、全局计算身份拆分与惰性 cell 由[惰性物化与资源查询](lazy-materialization.md)定义。
-非 staged 路径继续作为同步语义与性能对照，所有通用优化均需验证它没有回归。
+全部包片段在提交时一次补齐；资源字典与控件快照按需创建。主题侧资源索引、全局计算身份拆分与惰性 cell 由
+[惰性物化与资源查询](lazy-materialization.md)定义。
 
 独立 `TopLevel` 的首帧还包括平台窗口在 Avalonia 完成 `ApplyStyling` 前可能展示的客户区表面。宿主必须在调用
 平台 `Show` 前挂载目标 `ThemeContext`、设置与 snapshot 一致的显式 variant，并从当前作用域 Snapshot 同步读取窗口

@@ -9,6 +9,19 @@ namespace AtomUI;
 public static class AppBuilderExtensions
 {
     /// <summary>
+    /// 启用 AtomUI。配置回调只做声明（不访问 Avalonia 平台对象与 Application），在此提前执行；
+    /// 全局 Token 在平台初始化期间于后台准备；内核在生成的 RegisterServices 重写（AtomUIStartup.Attach）中提交。
+    /// </summary>
+    public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(appBuilder);
+        ArgumentNullException.ThrowIfNull(configure);
+        var configuration = AtomUIStartupConfiguration.Register(appBuilder, configure);
+        return appBuilder.With(configuration)
+                         .AfterApplicationSetup(AtomUIStartupConfiguration.VerifyAttached);
+    }
+
+    /// <summary>
     /// 应用 AtomUI 推荐的平台默认配置。主要用途是规避当前 Avalonia 上游尚未修复、
     /// 对 AtomUI 体验影响较大的平台问题，让框架使用者默认就拿到最佳表现，无需自行配置。
     /// </summary>
@@ -23,10 +36,10 @@ public static class AppBuilderExtensions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///     <b>macOS</b>：<see cref="AvaloniaNativePlatformOptions.RenderingMode"/> 把
-    ///     <see cref="AvaloniaNativeRenderingMode.OpenGl"/> 排在 <see cref="AvaloniaNativeRenderingMode.Metal"/>
-    ///     之前。Avalonia 12 的 Metal 后端在 live resize 时会让窗体内容可见抖动，
-    ///     切换到 OpenGL 渲染路径可完全规避。上游修复后可移除此默认。
+    ///     <b>macOS</b>：<see cref="AvaloniaNativePlatformOptions.RenderingMode"/> 固定
+    ///     <see cref="AvaloniaNativeRenderingMode.Metal"/> 优先。Metal 由渲染线程直接呈现，UI 线程忙于启动提交时
+    ///     合成层动画（如启动 Splash 的进度）仍能上屏；OpenGL 与 Software 经 IOSurface 呈现，需要主线程设置图层内容。
+    ///     早先 Metal 在 live resize 时窗体内容抖动的问题已由 Avalonia 12.1.0 修复（#21588，缩放帧同步呈现）。
     ///     </description>
     ///   </item>
     ///   <item>
@@ -56,8 +69,8 @@ public static class AppBuilderExtensions
             {
                 RenderingMode =
                 [
-                    AvaloniaNativeRenderingMode.OpenGl,
                     AvaloniaNativeRenderingMode.Metal,
+                    AvaloniaNativeRenderingMode.OpenGl,
                     AvaloniaNativeRenderingMode.Software
                 ]
             });

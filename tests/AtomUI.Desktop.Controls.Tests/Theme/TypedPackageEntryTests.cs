@@ -13,7 +13,7 @@ public class TypedPackageEntryTests
     [InlineData("Extras", false)]
     public void Optional_entry_stages_only_its_package_and_rejects_duplicate_before_completion(string name, bool hasLanguage)
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         Register(builder, name);
         var package = builder.ThemeManagerBuilder.ControlPackages.ShouldHaveSingleItem();
         package.Id.ShouldBe("AtomUI.Desktop.Controls." + name);
@@ -29,7 +29,7 @@ public class TypedPackageEntryTests
     [AvaloniaFact]
     public void Common_dependency_runs_services_and_localization_once_before_desktop_commit()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         AtomUI.Controls.ThemeManagerBuilderExtensions.UseCommonControls(builder);
         var services = builder.OwnedServiceRegistrations.Count;
         var catalogs = builder.LocalizationBuilder.Catalogs.Count;
@@ -51,26 +51,10 @@ public class TypedPackageEntryTests
     [AvaloniaFact]
     public void Generated_descriptors_are_reused_without_sharing_application_state()
     {
-        var firstBuilder = new AtomUIBuilder(new Application());
-        var secondBuilder = new AtomUIBuilder(new Application());
+        var firstBuilder = new AtomUIBuilder(typeof(Application));
+        var secondBuilder = new AtomUIBuilder(typeof(Application));
         firstBuilder.UseDesktopControls();
         secondBuilder.UseDesktopControls();
-        var stageOneAssets = firstBuilder.ThemeManagerBuilder.ControlPackages
-            .Single(package => package.Id == "AtomUI.Desktop.Controls")
-            .ThemeAssets
-            .Select(asset => asset.AssetUri.AbsolutePath)
-            .ToArray();
-        foreach (var chromeAsset in new[]
-                 {
-                     "/Window/Themes/WindowDrawnDecorationsTheme.axaml",
-                     "/WindowTitleBar/Themes/WindowTitleBarTheme.axaml",
-                     "/Menu/Themes/MenuTheme.axaml",
-                     "/Menu/Themes/MenuItemTheme.axaml"
-                 })
-        {
-            stageOneAssets.ShouldContain(chromeAsset);
-        }
-
         firstBuilder.ThemeManagerBuilder.CompletePendingRegistrations();
         secondBuilder.ThemeManagerBuilder.CompletePendingRegistrations();
         var firstContributions = firstBuilder.ThemeManagerBuilder
@@ -124,7 +108,7 @@ public class TypedPackageEntryTests
     {
         var app = new Application();
         IAtomUIBuilder? saved = null;
-        app.UseAtomUI(builder =>
+        AtomUIStartup.AttachWith(app, builder =>
         {
             saved = builder;
             builder.UseDesktopControls().UseDesktopDataGrid().UseDesktopColorPicker().UseDesktopExtras();

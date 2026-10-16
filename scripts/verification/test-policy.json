@@ -61,7 +61,7 @@
       ],
       "depth": 1,
       "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/Splash/**/*.cs"
+        "tests/AtomUI.Desktop.Controls.Tests/Theme/TypedPackageEntryTests.cs"
       ]
     },
     {
@@ -131,7 +131,8 @@
     {
       "id": "gallery",
       "roots": [
-        "controlgallery/AtomUIGallery"
+        "controlgallery/AtomUIGallery",
+        "tools/validation/AtomUI.ThemeAssetsValidation"
       ],
       "depth": 3,
       "tests": [

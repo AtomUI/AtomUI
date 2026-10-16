@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -8,7 +7,6 @@ using Avalonia.Input;
 namespace AtomUI.Desktop.Controls;
 
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
-[BootstrapRegistration]
 internal class WindowResizer : TemplatedControl
 {
     public static readonly StyledProperty<Thickness> GripThicknessProperty =

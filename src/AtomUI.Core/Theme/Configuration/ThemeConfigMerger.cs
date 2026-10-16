@@ -31,7 +31,7 @@ internal static class ThemeConfigMerger
     {
         if (!current.AlgorithmsSpecified &&
             current.GlobalTokens.Count == 0 &&
-            current.Controls.Count == 0)
+            current.ControlIdentities.Count == 0)
         {
             return effectiveBase;
         }
@@ -40,6 +40,18 @@ internal static class ThemeConfigMerger
             ? ThemeConfigArray.Copy(current.Algorithms)
             : ThemeConfigArray.Copy(effectiveBase.Algorithms);
         var globalTokens = MergeTokens(effectiveBase.GlobalTokens, current.GlobalTokens);
+        if (effectiveBase.HasDeferredControls || current.HasDeferredControls)
+        {
+            var identities = effectiveBase.ControlIdentities.Concat(current.ControlIdentities).Distinct().ToArray();
+            return NormalizedThemeConfig.CreateDeferred(false, true, algorithms, globalTokens, identities, identity =>
+            {
+                effectiveBase.TryGetControl(identity, out var inherited);
+                return current.TryGetControl(identity, out var local)
+                    ? MergeControl(inherited, local)
+                    : inherited is null ? null : ResolveInheritedControl(inherited);
+            }, "merge:" + effectiveBase.Fingerprint + ":" + current.Fingerprint,
+                (effectiveBase, current));
+        }
         var controls = MergeControls(effectiveBase.Controls, current.Controls);
         return NormalizedThemeConfig.CreateCanonical(false, true, algorithms, globalTokens, controls);
     }
@@ -202,7 +214,11 @@ internal static class ThemeConfigMerger
 
         var algorithmsChanged = !AlgorithmSequenceEqual(previous.Algorithms, current.Algorithms);
         var globalTokensChanged = !TokenSequenceEqual(previous.GlobalTokens, current.GlobalTokens);
-        var changedControls = FindChangedControls(previous.Controls, current.Controls);
+        var changedControls = previous.HasDeferredControls || current.HasDeferredControls
+            ? previous.ControlRevision == current.ControlRevision && Equals(previous.ControlBindingIdentity, current.ControlBindingIdentity)
+                ? Array.Empty<ControlTokenIdentity>()
+                : previous.ControlIdentities.Concat(current.ControlIdentities).Distinct().ToArray()
+            : FindChangedControls(previous.Controls, current.Controls);
         return new ThemeConfigChangeSet(algorithmsChanged, globalTokensChanged, changedControls);
     }
 

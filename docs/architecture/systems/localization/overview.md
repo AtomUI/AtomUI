@@ -107,7 +107,7 @@ flowchart TD
 | `LocalizationHost` | 应用拥有的本地化服务组合和生命周期边界 |
 | `LanguageContext` | 原子持有并发布当前 `LanguageRevision` 的共享上下文 |
 | `LanguageRevision` | 同一次提交中的不可分割 `LanguageSnapshot` 与 `LanguageState` 组合 |
-| `LanguageSnapshot` | 某个当前语言已经完成回退解析的不可变资源快照 |
+| `LanguageSnapshot` | 某个语言的不可变查询视图，目录行首次查询完成回退解析并缓存 |
 | `LanguageState` | 当前语言、格式化 Culture、文字方向和 revision |
 
 ## 不可违反的不变量
@@ -116,7 +116,7 @@ flowchart TD
 2. `LanguageTag` 是开放值类型；不得重新引入只能表达固定语言集合的 locale enum。
 3. `LanguageTags.JaJP` 只表示标签已知，不表示日语翻译已经安装。
 4. 每个 Catalog 都必须拥有完整 `en-US` 源文本；`zh-CN` 和 `zh-TW` 不互相回退。
-5. 运行时只消费生成的 descriptor 和编译后字符串表，不解析 XLIFF、不扫描程序集。
+5. 运行时消费版本化模块数据与显式手工 descriptor，不解析 XLIFF、不扫描程序集；生成路径只建当前语言索引，目录首次查询才物化。
 6. 资源 Provider 生命周期稳定；语言切换只发布完整 Snapshot，不暴露半更新状态。
 7. 应用支持语言是一项覆盖契约；缺失翻译不能通过最终 `en-US` 回退伪装成完整支持。
 8. 翻译包没有运行时 DLL、初始化类或隐式加载代码；重复翻译不按注册顺序覆盖。

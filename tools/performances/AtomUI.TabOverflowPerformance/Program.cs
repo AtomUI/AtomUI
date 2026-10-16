@@ -31,6 +31,7 @@ internal static class Program
         var options = Options.Parse(args);
         AppBuilder.Configure<PerformanceApplication>()
                   .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                  .UseAtomUI(builder => builder.UseDesktopControls())
                   .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime());
 
         if (options.CreationOnly)
@@ -431,11 +432,10 @@ internal static class Program
 
 public sealed class PerformanceApplication : Application
 {
-    public override void Initialize()
+    // 本工程不引用 AtomUI 生成器，按公开契约手写挂接。
+    public override void RegisterServices()
     {
-        this.UseAtomUI(builder =>
-        {
-            builder.UseDesktopControls();
-        });
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
     }
 }

@@ -48,6 +48,49 @@ internal sealed class PreparedThemeDefinition
     private PreparedThemeValues? _values;
     private Func<PreparedThemeValues>? _createValues;
     private bool _creatingValues;
+    private readonly Func<ControlTokenIdentity, ControlThemeDefinition>? _createControl;
+    private readonly Dictionary<ControlTokenIdentity, ControlThemeDefinition> _controlValues = new();
+    private IReadOnlyList<ControlTokenIdentity>? _controlIdentities;
+    internal string? ControlRevision { get; }
+
+    internal PreparedThemeDefinition(string id, string name, ThemeAppearance declaredAppearance,
+        ThemeAppearance effectiveAppearance, bool isDefault, IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        ThemeSourceLocation location, Func<IReadOnlyList<BoundTokenValue>> createGlobals,
+        IReadOnlyList<ControlTokenIdentity> controlIdentities,
+        Func<ControlTokenIdentity, ControlThemeDefinition> createControl, string controlRevision)
+        : this(id, name, declaredAppearance, effectiveAppearance, isDefault, algorithms, location,
+            () => new PreparedThemeValues(createGlobals(), Array.Empty<ControlThemeDefinition>()))
+    {
+        _controlIdentities = Array.AsReadOnly(controlIdentities.ToArray());
+        _createControl = createControl;
+        ControlRevision = controlRevision;
+    }
+
+    internal IReadOnlyList<ControlTokenIdentity> ControlIdentities
+    {
+        get
+        {
+            if (_controlIdentities is { } identities) { return identities; }
+            lock (_valuesGate)
+            {
+                return _controlIdentities ??= Array.AsReadOnly(GetValues().Controls.Select(control => control.Descriptor.Identity).ToArray());
+            }
+        }
+    }
+
+    internal ControlThemeDefinition GetControl(ControlTokenIdentity identity)
+    {
+        if (_createControl is null) { return GetValues().Controls.Single(control => control.Descriptor.Identity == identity); }
+        lock (_valuesGate)
+        {
+            if (!_controlValues.TryGetValue(identity, out var value))
+            {
+                value = _createControl(identity);
+                _controlValues.Add(identity, value);
+            }
+            return value;
+        }
+    }
 
     internal PreparedThemeDefinition(
         string id, string name, ThemeAppearance declaredAppearance, ThemeAppearance effectiveAppearance,
@@ -83,7 +126,7 @@ internal sealed class PreparedThemeDefinition
     public bool IsDefault { get; }
     public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
     public IReadOnlyList<BoundTokenValue> Tokens => GetValues().Tokens;
-    public IReadOnlyList<ControlThemeDefinition> Controls => GetValues().Controls;
+    public IReadOnlyList<ControlThemeDefinition> Controls => _createControl is null ? GetValues().Controls : ControlIdentities.Select(GetControl).ToArray();
     public ThemeSourceLocation Location { get; }
 
     private PreparedThemeValues GetValues()

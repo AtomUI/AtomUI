@@ -1,5 +1,6 @@
 using System.Globalization;
 using AtomUI;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
 using AtomUI.Theme;
@@ -16,31 +17,32 @@ public partial class GalleryApplication : BaseGalleryApplication
         Name = "AtomUI Desktop Gallery";
     }
 
+    /// <summary>宿主在 AppBuilder 链上登记 Gallery 的 AtomUI 配置。</summary>
+    public static void Configure(IAtomUIBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.WithApplicationId("AtomUIGallery");
+        builder.UseUserThemeDirectory();
+        builder.UseLanguages(
+            GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
+            [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
+        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+        builder.UseAlibabaSansFont();
+        builder.UseDesktopControls();
+        builder.UseGalleryBase(AtomUIGalleryModule.Configure);
+        builder.UseDesktopExtras();
+        builder.UseDesktopColorPicker();
+        builder.UseDesktopDataGrid();
+        builder.UseGalleryControls();
+        // Auto：动态代码编译（JIT/ReadyToRun）时显示，NativeAOT 下不显示。图片在显示 Splash 时才加载。
+        builder.UseSplash(SplashMode.Auto, splash => splash
+            .WithLogo(new Uri("avares://AtomUIGallery.Desktop/Assets/Images/AppLogo.iconset/icon_128x128@2x.png"))
+            .WithTitle("AtomUI Gallery"));
+    }
+
     public override void Initialize()
     {
         base.Initialize();
-        this.UseAtomUI(builder =>
-        {
-            builder.WithApplicationId("AtomUIGallery");
-            builder.UseUserThemeDirectory();
-            builder.UseLanguages(
-                GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
-            builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont();
-            // Stage 1：注册 Desktop 的 BootstrapRegistration 片段；其余在 Stage 2 补齐。
-            builder.UseDesktopControls();
-            // Stage 1：GalleryBase 含 GalleryWindowTitleBar（窗口 chrome），必须先行。
-            builder.UseGalleryBase(AtomUIGalleryModule.Configure);
-            // Stage 2（分级启动参照模式）：非 chrome 包与 Gallery 语言模块后置到主窗体出现后。
-            builder.Deferred(() =>
-            {
-                builder.UseDesktopExtras();
-                builder.UseDesktopColorPicker();
-                builder.UseDesktopDataGrid();
-                builder.UseGalleryControls();
-            });
-        });
     }
 
     public override void OnFrameworkInitializationCompleted()

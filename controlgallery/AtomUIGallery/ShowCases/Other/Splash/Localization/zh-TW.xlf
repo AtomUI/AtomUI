@@ -1,30 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" trgLang="zh-TW" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.SplashShowCaseLangResourceKind">
-    <unit id="ApiMethodSetProgress">
-      <segment>
-        <source>Updates progress, message and detail on the splash instance.</source>
-        <target state="translated">更新 Splash 實例的進度、訊息和詳情。</target>
-      </segment>
-    </unit>
-    <unit id="ApiOptionMinimumShowDuration">
-      <segment>
-        <source>Minimum display time before the splash window may close.</source>
-        <target state="translated">Splash 視窗允許關閉前的最短展示時間。</target>
-      </segment>
-    </unit>
-    <unit id="ApiServiceShowAsync">
-      <segment>
-        <source>Instance service API for applications that want dependency-injected startup flow control.</source>
-        <target state="translated">實例服務 API，適用於希望透過依賴注入控制啟動流程的應用。</target>
-      </segment>
-    </unit>
-    <unit id="ApiStaticShowAsync">
-      <segment>
-        <source>Static convenience API that delegates to Splash.DefaultService.</source>
-        <target state="translated">靜態便捷 API，委託給 Splash.DefaultService。</target>
-      </segment>
-    </unit>
     <unit id="BasicDescription">
       <segment>
         <source>Use the visual Splash control to show startup copy with an indeterminate loading indicator.</source>
@@ -55,18 +31,6 @@
         <target state="translated">預覽</target>
       </segment>
     </unit>
-    <unit id="ComposedDescription">
-      <segment>
-        <source>Template the logo and footer when a product needs richer startup metadata.</source>
-        <target state="translated">當產品需要更豐富的啟動元資訊時，可以模板化 Logo 和頁腳。</target>
-      </segment>
-    </unit>
-    <unit id="ComposedTitle">
-      <segment>
-        <source>Logo, content and footer</source>
-        <target state="translated">Logo、內容與頁腳</target>
-      </segment>
-    </unit>
     <unit id="DeterminateDescription">
       <segment>
         <source>Set Progress and disable IsIndeterminate when startup has measurable phases.</source>
@@ -79,76 +43,22 @@
         <target state="translated">確定進度</target>
       </segment>
     </unit>
-    <unit id="P2ContentModuleCore">
+    <unit id="ErrorDescription">
       <segment>
-        <source>Core</source>
-        <target state="translated">核心</target>
+        <source>Set Status to Error to switch the splash to its failure presentation; the user can then dismiss it.</source>
+        <target state="translated">將 Status 設為 Error 可切換到失敗呈現，之後使用者可關閉該啟動頁。</target>
       </segment>
     </unit>
-    <unit id="P2ContentModuleGallery">
-      <segment>
-        <source>Gallery</source>
-        <target state="translated">Gallery</target>
-      </segment>
-    </unit>
-    <unit id="P2ContentModuleTheme">
-      <segment>
-        <source>Theme</source>
-        <target state="translated">主題</target>
-      </segment>
-    </unit>
-    <unit id="P2ContentShowWindowSplash">
-      <segment>
-        <source>Show window Splash</source>
-        <target state="translated">顯示視窗 Splash</target>
-      </segment>
-    </unit>
-    <unit id="P2DetailError">
-      <segment>
-        <source>Use SetErrorAsync to surface a blocking startup error before closing.</source>
-        <target state="translated">可透過 SetErrorAsync 在關閉前呈現阻塞型啟動錯誤。</target>
-      </segment>
-    </unit>
-    <unit id="P2DetailLoadingThemeAndResources">
-      <segment>
-        <source>Loading theme, language resources and cached state.</source>
-        <target state="translated">正在載入主題、語言資源和快取狀態。</target>
-      </segment>
-    </unit>
-    <unit id="P2DetailProgress">
-      <segment>
-        <source>Theme, icons and route catalog are ready. Optional packages are being initialized.</source>
-        <target state="translated">主題、圖示和路由目錄已就緒，正在初始化可選套件。</target>
-      </segment>
-    </unit>
-    <unit id="P2DetailReady">
-      <segment>
-        <source>The main window can be shown after the minimum splash duration.</source>
-        <target state="translated">滿足最短展示時長後即可顯示主視窗。</target>
-      </segment>
-    </unit>
-    <unit id="P2FooterDesktopOnly">
-      <segment>
-        <source>Window service is intended for desktop startup.</source>
-        <target state="translated">視窗服務面向桌面啟動流程。</target>
-      </segment>
-    </unit>
-    <unit id="P2FooterStaticPreview">
-      <segment>
-        <source>Static Gallery preview</source>
-        <target state="translated">Gallery 靜態預覽</target>
-      </segment>
-    </unit>
-    <unit id="P2MessageError">
+    <unit id="ErrorMessage">
       <segment>
         <source>Startup failed</source>
         <target state="translated">啟動失敗</target>
       </segment>
     </unit>
-    <unit id="P2MessageLoadingModules">
+    <unit id="ErrorTitle">
       <segment>
-        <source>Loading modules</source>
-        <target state="translated">正在載入模組</target>
+        <source>Error state</source>
+        <target state="translated">錯誤狀態</target>
       </segment>
     </unit>
     <unit id="P2MessagePreparingShell">
@@ -157,130 +67,10 @@
         <target state="translated">正在準備工作區</target>
       </segment>
     </unit>
-    <unit id="P2MessageReady">
-      <segment>
-        <source>Workspace ready</source>
-        <target state="translated">工作區已就緒</target>
-      </segment>
-    </unit>
-    <unit id="P2SemanticContentTag">
-      <segment>
-        <source>core</source>
-        <target state="translated">核心</target>
-      </segment>
-    </unit>
-    <unit id="P2SemanticDetailProgress">
-      <segment>
-        <source>68%</source>
-        <target state="translated">68%</target>
-      </segment>
-    </unit>
-    <unit id="P2SemanticFooter">
-      <segment>
-        <source>v6</source>
-        <target state="translated">v6</target>
-      </segment>
-    </unit>
-    <unit id="P2SemanticMessageLoading">
-      <segment>
-        <source>Loading</source>
-        <target state="translated">載入中</target>
-      </segment>
-    </unit>
-    <unit id="P2SemanticMessageModules">
-      <segment>
-        <source>Modules</source>
-        <target state="translated">模組</target>
-      </segment>
-    </unit>
-    <unit id="P2SemanticSubtitle">
-      <segment>
-        <source>Boot</source>
-        <target state="translated">啟動</target>
-      </segment>
-    </unit>
-    <unit id="P2SubtitleDesktopBoot">
-      <segment>
-        <source>Desktop boot sequence</source>
-        <target state="translated">桌面啟動流程</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashDetailComplete">
-      <segment>
-        <source>The fake startup flow has completed and the window will close.</source>
-        <target state="translated">模擬啟動流程已完成，視窗即將關閉。</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashDetailProgress">
-      <segment>
-        <source>This is a fake loading step for the Gallery demo.</source>
-        <target state="translated">這是 Gallery 範例裡的模擬載入步驟。</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashDetailStarting">
-      <segment>
-        <source>A temporary Splash window is showing a mocked five-second startup.</source>
-        <target state="translated">臨時 Splash 視窗正在展示 5 秒模擬啟動流程。</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashFooter">
-      <segment>
-        <source>Desktop Extras package / window-hosted startup surface</source>
-        <target state="translated">Desktop Extras 套件 / 視窗託管啟動面板</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageComplete">
-      <segment>
-        <source>Gallery ready</source>
-        <target state="translated">Gallery 已就緒</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageFinalizing">
-      <segment>
-        <source>Finalizing workspace</source>
-        <target state="translated">正在完成工作區準備</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageLoadingControls">
-      <segment>
-        <source>Registering control packages</source>
-        <target state="translated">正在註冊控件套件</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageLoadingRoutes">
-      <segment>
-        <source>Preparing route catalog</source>
-        <target state="translated">正在準備路由目錄</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageLoadingTheme">
-      <segment>
-        <source>Loading theme resources</source>
-        <target state="translated">正在載入主題資源</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageStarting">
-      <segment>
-        <source>Starting Gallery workspace</source>
-        <target state="translated">正在啟動 Gallery 工作區</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageWarmingCache">
-      <segment>
-        <source>Warming Gallery cache</source>
-        <target state="translated">正在預熱 Gallery 快取</target>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashSubtitle">
-      <segment>
-        <source>Desktop startup simulation</source>
-        <target state="translated">桌面啟動模擬</target>
-      </segment>
-    </unit>
     <unit id="PageDescription">
       <segment>
-        <source>Splash combines a compact branded surface, loading indicator, determinate progress, status copy, and optional footer. The service API can host it in a borderless startup window, while the visual control can be previewed directly in Gallery.</source>
-        <target state="translated">Splash 組合緊湊的品牌面板、載入指示、確定進度、狀態文案和可選頁腳。服務 API 可將它託管在無邊框啟動視窗中，視覺控件也可以直接在 Gallery 中預覽。</target>
+        <source>Splash draws the startup surface shown before the main window appears: brand logo, loading indicator or determinate progress, and status copy. Enable it with UseSplash on the AtomUIBuilder.</source>
+        <target state="translated">Splash 繪製主視窗出現之前的啟動呈現：品牌徽標、載入指示或確定進度、狀態文案。透過 AtomUIBuilder 上的 UseSplash 啟用。</target>
       </segment>
     </unit>
     <unit id="PageSubtitle">
@@ -293,102 +83,6 @@
       <segment>
         <source>Examples</source>
         <target state="translated">範例</target>
-      </segment>
-    </unit>
-    <unit id="SemanticContentDescription">
-      <segment>
-        <source>Content element hosting custom startup content with its padding and alignment</source>
-        <target state="translated">內容元素，承載自訂啟動內容及其內距與對齊方式</target>
-      </segment>
-    </unit>
-    <unit id="SemanticDetailDescription">
-      <segment>
-        <source>Detail text element with font size, color and wrapping</source>
-        <target state="translated">詳情文字元素，包含字號、顏色與換行等樣式</target>
-      </segment>
-    </unit>
-    <unit id="SemanticFooterDescription">
-      <segment>
-        <source>Footer element hosting version info, copyright info or retry actions for a failed startup</source>
-        <target state="translated">底部元素，承載版本資訊、版權資訊或啟動失敗時的重試操作入口</target>
-      </segment>
-    </unit>
-    <unit id="SemanticLogoDescription">
-      <segment>
-        <source>Logo element carrying the brand mark with its size and alignment</source>
-        <target state="translated">品牌標識元素，包含標識尺寸與對齊方式</target>
-      </segment>
-    </unit>
-    <unit id="SemanticMessageDescription">
-      <segment>
-        <source>Status message text element, including the success and error state colors</source>
-        <target state="translated">狀態訊息文字元素，包含成功與失敗狀態的顏色</target>
-      </segment>
-    </unit>
-    <unit id="SemanticPartStyleDescription">
-      <segment>
-        <source>Use owner-scoped selectors and generated Semantic Part styles to customize the published parts of Splash.</source>
-        <target state="translated">使用 owner 作用域選擇器與生成的語意部件 Style 自訂 Splash 已發布的語意部件。</target>
-      </segment>
-    </unit>
-    <unit id="SemanticPartStyleTitle">
-      <segment>
-        <source>Custom Semantic Part styling</source>
-        <target state="translated">自訂語義結構的樣式</target>
-      </segment>
-    </unit>
-    <unit id="SemanticProgressBarDescription">
-      <segment>
-        <source>Determinate progress element with its height and color</source>
-        <target state="translated">確定進度元素，包含進度條高度與顏色</target>
-      </segment>
-    </unit>
-    <unit id="SemanticRootDescription">
-      <segment>
-        <source>Root element with background, corner radius, padding and window sizing that control the overall startup surface</source>
-        <target state="translated">根元素，包含啟動頁背景、圓角、內距和視窗尺寸等控制整體外觀的樣式</target>
-      </segment>
-    </unit>
-    <unit id="SemanticSpinDescription">
-      <segment>
-        <source>Loading indicator element for the indeterminate state with its size and color</source>
-        <target state="translated">不確定載入指示器元素，包含指示器尺寸與顏色</target>
-      </segment>
-    </unit>
-    <unit id="SemanticSubtitleDescription">
-      <segment>
-        <source>Subtitle text element with its font size and color</source>
-        <target state="translated">副標題文字元素，包含字號與顏色</target>
-      </segment>
-    </unit>
-    <unit id="SemanticTitleDescription">
-      <segment>
-        <source>Title text element with its font size, weight, line height and color</source>
-        <target state="translated">主標題文字元素，包含字號、字重、行高與顏色</target>
-      </segment>
-    </unit>
-    <unit id="StatusDescription">
-      <segment>
-        <source>Switch Status to Success or Error when the startup flow reaches a terminal state.</source>
-        <target state="translated">啟動流程進入終態後，將 Status 切換為 Success 或 Error。</target>
-      </segment>
-    </unit>
-    <unit id="StatusTitle">
-      <segment>
-        <source>Status</source>
-        <target state="translated">狀態</target>
-      </segment>
-    </unit>
-    <unit id="WindowServiceDescription">
-      <segment>
-        <source>Open a real desktop Splash window, run a five-second mock startup flow, then close it automatically.</source>
-        <target state="translated">開啟真實桌面 Splash 視窗，執行 5 秒模擬啟動流程，然後自動關閉。</target>
-      </segment>
-    </unit>
-    <unit id="WindowServiceTitle">
-      <segment>
-        <source>Window service</source>
-        <target state="translated">視窗服務</target>
       </segment>
     </unit>
   </file>

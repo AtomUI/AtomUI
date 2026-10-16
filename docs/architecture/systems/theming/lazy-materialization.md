@@ -2,7 +2,7 @@
 
 状态：2026-10-12 工作树已实现下述 cell、稳定资源层、键索引和增量复用；最终裁剪与测量验收见实施记录。
 本页定义查询、缓存和所有权边界，不把单测通过等同于全部平台验收。
-主题基础语义见[主题运行时](runtime.md)，跨系统提交见[分级启动演化](../../foundations/staged-startup-evolution.md)。
+主题基础语义见[主题运行时](runtime.md)，启动时的一次性提交见[启动生命周期](../startup/lifecycle.md)。
 
 ## 1. 两类惰性的成本边界
 
@@ -23,7 +23,10 @@ Snapshot A: [Cell(Button), Cell(Input-v1), Cell(Menu)]
 Snapshot B: [Cell(Button), Cell(Input-v2), Cell(Menu)]
 ```
 
-- 未变化的控件直接共享相同 cell；cell 保存自身所需的不可变编译输入或已物化结果。
+- 同一 registry 下未变化的控件直接共享相同 cell；追加包跨 registry 时已物化的旧 cell 继续共享，
+  冷 cell 则以最新 registry 重建惰性入口，避免旧 cell 的未执行工厂保活历代完整包索引。
+- 索引路径收到稀疏变更集时直接共享未变化槽；deferred 变更集保守包含已物化槽时，新 cell 只保存上次的
+  值与单控件配置，在该槽下次被查询时比较配置再决定复用或重新计算。未访问的冷控件不会为复用判定提前运行 resolver。
 - cell 不持有整个前代 ThemeSnapshot，不沿历史版本递归寻找值。新快照不承担为旧快照保活的责任。
 - 编译输入包含 exact 控件身份、配置、有效全局输入与算法证据；同一 cell 的首次物化采用安全发布和 single-flight。
 - 不把“引用写入不会撕裂”等同于完整的跨线程发布证明。锁、Volatile 或成熟 lazy primitive 的选择由并发验收锁定。
@@ -53,7 +56,7 @@ slot 仅在单个 registry revision 内稳定。增加一个按身份排序靠�
 ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有不可变的有序资源表，在演化时交换表引用：
 
 - 静态层相对 Token provider 的优先级始终不变；重建静态集合不能使普通 Token 查询先遍历整个静态链。
-- 已存在真实字典不因 Stage 2 再次 detach/attach；后置包只贡献新的资源事实，不重复挂载已存在的宿主。
+- 已存在真实字典不再次 detach/attach，不重复挂载已存在的宿主。
 - 同 AssetId/同 metadata 的资源只出现一次，冲突在 Prepare 失败；已有与增量有序序列线性归并。
 - 交换准备好的查询表不调用工厂、用户代码或 owner 回调。统一 Publish 阶段只发出一次该资源根的变更通知。
 - owner 关系由代理统一管理，加载前后语义一致；RemoveOwner 必须清理代理与内层关系。
@@ -107,7 +110,7 @@ ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有�
 全局复用通过 `HasSameGlobalSchema` 比较不可变 descriptor 引用，并比较有效编译输入；其范围限于全局 Token schema、算法、有效 seed/覆盖、appearance、
 字体及全部影响全局值的配置。完整 registry 身份仍用于完整快照、控件 schema 和资产绑定。
 
-- 只新增控件或静态资产时，如果全局计算输入相等，可共享 Stage 1 的全局值、资源和 palette。
+- 如果全局计算输入相等（例如启动前 Prepare 的全局层），可共享已有的全局值、资源和 palette。
 - 全局算法、全局 schema、主题有效全局值或相关配置变化必须使全局结果失效。
 - 完整 ThemeDefinition 的修订若仅改变控件配置，是否允许细化比较要由结构化输入证明，不能只比较主题 ID。
 - 配置能证明无控件级全局差量时，Shared Token 查询可直接使用根资源；Own Token 仍在第一次 Own 查询时编译。
@@ -133,6 +136,8 @@ source 不捕获 ThemeCompileInput 或父快照；全部消费者物化后，cel
 cell 的配置与独立 source。每个快照内相同 source 计一次；source 预留恢复全局 builder 的值槽与 palette
 成本。缓存 entry 将结构键和结果共同计费，过大输入即使尚未查询 Own Token 也不能绕过字节预算。冻结的根
 资源/palette 与不可变输入的尺寸按对象身份复用，避免每次快照复用都重新扫描全局数据。
+deferred merge 由框架自己保留的规范化父/当前配置也属于已知输入：按对象身份计费其冷控件 Token 值，
+而不调用控件 resolver 或遍历任意用户闭包；嵌套合并对同一配置只计一次。
 
 计费是保守估算，不是整个保留对象图的硬上限：共享值可能重复计费；registry 共享的 descriptor、算法与
 委托闭包不递归计费。任意自定义对象只计固定壳体，内部数组、原生资源、可变 brush 内容和自定义闭包的实际
@@ -141,19 +146,19 @@ cell 的配置与独立 source。每个快照内相同 source 计一次；source
 共享 cell 可保守重复计费；不能仅用“单个 snapshot 的槽数有限”推出整个应用保留字节有界。固定 187 等控件数量
 不属于内存契约，第三方注册、活动 scope 和历史配置数量均须参与模型。
 
-Stage 2 结束后丢弃只供构建的指纹集合、余量委托、builder 和旧代 catalog/registry 引用。运行时保留的描述符或
+启动提交完成后丢弃只供构建的指纹集合、builder 和 Prepare 的 catalog/registry 引用。运行时保留的描述符或
 索引必须有后续查询用途；不要把临时 staging 集合作为第二套永久运行时数据库。
 
 ## 8. 验收矩阵
 
 | 场景 | 必须证明 |
 |---|---|
-| 普通 Token 查询跨 Stage 2 | 不构造无关静态资产，Token provider 优先级不变 |
+| 普通 Token 查询 | 不构造无关静态资产，Token provider 优先级不变 |
 | 已知 typed/string key 和未知 key | 命中、覆盖、variant、include 与旧解析路径等价 |
 | 已加载/未加载资产的 owner 生命周期 | 挂载/解绑对称，解绑后不再报告旧 owner，无按资产广播风暴 |
 | registry slot 重排 | 新控件不会取得旧控件差量；身份与位置分开验证 |
 | 连续唯一主题配置 | 缓存外不再需要的旧 snapshot 可回收，首次槽查询不随历史长度递归 |
 | 并发首次查询和失败 evaluator | single-flight、安全发布、异常语义与资源所有权符合契约 |
-| staged / 非 staged / 裁剪产物 | 相同输入的查询结果、冲突诊断和共同保留资产的优先级一致 |
+| 非裁剪 / 裁剪产物 | 相同输入的查询结果、冲突诊断和共同保留资产的优先级一致 |
 
 这些是目标门禁，已有构建、普通单测或 NativeAOT 进程存活证据不能替代原始 macOS UX 和生命周期验证。

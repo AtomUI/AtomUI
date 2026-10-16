@@ -10,7 +10,7 @@ public class ThemeDefinitionResolverRegistrationTests
     [Fact]
     public void Builder_Uses_The_Concrete_Application_Assembly_As_The_Default_Id()
     {
-        var builder = new ThemeManagerBuilder(new TestApplication());
+        var builder = new ThemeManagerBuilder(typeof(TestApplication));
 
         builder.ApplicationId.ShouldBe(typeof(TestApplication).Assembly.GetName().Name);
     }
@@ -18,7 +18,7 @@ public class ThemeDefinitionResolverRegistrationTests
     [Fact]
     public void Explicit_Application_Id_Overrides_The_Default()
     {
-        var builder = new ThemeManagerBuilder(new TestApplication());
+        var builder = new ThemeManagerBuilder(typeof(TestApplication));
 
         builder.WithApplicationId("AtomUIGallery");
 
@@ -36,7 +36,7 @@ public class ThemeDefinitionResolverRegistrationTests
     [InlineData("画廊")]
     public void Builder_Rejects_Application_Ids_That_Are_Not_Safe_Path_Segments(string id)
     {
-        var builder = new ThemeManagerBuilder(new TestApplication());
+        var builder = new ThemeManagerBuilder(typeof(TestApplication));
 
         Should.Throw<ArgumentException>(() => builder.WithApplicationId(id));
     }
@@ -44,7 +44,7 @@ public class ThemeDefinitionResolverRegistrationTests
     [Fact]
     public void Builder_Rejects_Empty_And_Duplicate_Resolver_Ids()
     {
-        var builder = new ThemeManagerBuilder(new TestApplication());
+        var builder = new ThemeManagerBuilder(typeof(TestApplication));
         builder.AddThemeDefinitionResolver(new StubResolver("Gallery"));
 
         Should.Throw<ArgumentException>(() =>

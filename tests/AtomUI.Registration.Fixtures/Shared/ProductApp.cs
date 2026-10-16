@@ -41,26 +41,42 @@ public class ProductApp : Application
     private OtpLineEdit _otp = null!;
 #endif
 #endif
+    // 本夹具工程不引用 AtomUI 生成器，按公开契约手写挂接。
+    public override void RegisterServices()
+    {
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
+    }
+
+    private static IAtomUIBuilder? s_configuredBuilder;
+
+    /// <summary>宿主在 BuildAvaloniaApp 链末尾登记产品配置。</summary>
+    public static void Configure(IAtomUIBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        // 配置回调早于 Application 实例创建，因此经静态字段转交，由 Initialize 取用。
+        s_configuredBuilder = builder;
+        builder.UseDesktopControls();
+#if COMPLEX
+        GC.KeepAlive(new TokenOnlyToken());
+        GC.KeepAlive(IdentityOnlyTokens.Identity);
+        GC.KeepAlive(EnumOnlyTokenKind.FixtureValue);
+        GC.KeepAlive(TokenKeyOnlyTokenKey.FixtureValue);
+        // Both stock ILC10 and ILC8 may remove KeepAlive of a boxed enum constant in no-scanner
+        // builds. Exercise the enum observably so this scenario actually requires its CLR type.
+        Console.WriteLine(TokenKeyOnlyTokenKey.FixtureValue);
+        GC.KeepAlive(new ExtensionOnlyTokenResourceExtension());
+        Styles.Add(new SemanticOnlyLeafStyle());
+        builder.UseFixtureControls();
+#endif
+    }
+
     public override void Initialize()
     {
-        this.UseAtomUI(builder =>
-        {
-            _builder = builder;
-            builder.UseDesktopControls();
-#if COMPLEX
-            GC.KeepAlive(new TokenOnlyToken());
-            GC.KeepAlive(IdentityOnlyTokens.Identity);
-            GC.KeepAlive(EnumOnlyTokenKind.FixtureValue);
-            GC.KeepAlive(TokenKeyOnlyTokenKey.FixtureValue);
-            // Both stock ILC10 and ILC8 may remove KeepAlive of a boxed enum constant in no-scanner
-            // builds. Exercise the enum observably so this scenario actually requires its CLR type.
-            Console.WriteLine(TokenKeyOnlyTokenKey.FixtureValue);
-            GC.KeepAlive(new ExtensionOnlyTokenResourceExtension());
-            Styles.Add(new SemanticOnlyLeafStyle());
-            builder.UseFixtureControls();
-#endif
-            _packages = ((ThemeManagerBuilder)builder.Theme).ControlPackages;
-        });
+        // Configure 在 Attach 之前同步执行，此时 builder 已就绪。
+        _builder = s_configuredBuilder ?? throw new InvalidOperationException(
+            "PRODUCT_FAIL the host did not register AtomUI configuration before startup.");
+        _packages = ((ThemeManagerBuilder)_builder.Theme).ControlPackages;
 #if COMPLEX
         if (!this.TryFindResource(typeof(ButtonSpinner), out var spinnerBase) || spinnerBase is not Avalonia.Styling.ControlTheme original)
             throw new InvalidOperationException("PRODUCT_FAIL ButtonSpinner base theme missing");

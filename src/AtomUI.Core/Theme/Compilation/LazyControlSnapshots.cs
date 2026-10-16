@@ -101,7 +101,11 @@ internal sealed class ControlSnapshotCell
     private readonly object _gate = new();
     private LazyControlSnapshotSource? _source;
     private ControlTokenDescriptor? _descriptor;
+    private Func<ControlTokenDescriptor>? _descriptorFactory;
+    private Func<NormalizedControlThemeConfig?>? _configFactory;
     private NormalizedControlThemeConfig? _config;
+    private ControlThemeSnapshot? _reuseValue;
+    private NormalizedControlThemeConfig? _reuseConfig;
     private ControlThemeSnapshot? _value;
     private bool _isCompiling;
 
@@ -123,12 +127,25 @@ internal sealed class ControlSnapshotCell
             (config.GlobalTokens.Count == 0 && config.AlgorithmMode is ControlAlgorithmMode.Unspecified or ControlAlgorithmMode.Disabled);
     }
 
+    internal ControlSnapshotCell(LazyControlSnapshotSource source, Func<ControlTokenDescriptor> descriptorFactory,
+        Func<NormalizedControlThemeConfig?> configFactory, bool usesRootSharedResources,
+        ControlThemeSnapshot? reuseValue = null, NormalizedControlThemeConfig? reuseConfig = null)
+    {
+        _source = source;
+        _descriptorFactory = descriptorFactory;
+        _configFactory = configFactory;
+        _reuseValue = reuseValue;
+        _reuseConfig = reuseConfig;
+        UsesRootSharedResources = usesRootSharedResources;
+    }
+
     internal bool UsesRootSharedResources { get; }
     internal ControlThemeSnapshot? MaterializedValue => Volatile.Read(ref _value);
     internal LazyControlSnapshotSource? Source => Volatile.Read(ref _source);
-    internal long EstimatedConfigBytes => _config is { } config
+    internal long EstimatedConfigBytes => (_config ?? _reuseConfig) is { } config
         ? NormalizedControlConfigCacheKey.Create(config).EstimatedInputRetainedBytes
         : 0;
+    internal ControlThemeSnapshot? ReuseCandidateValue => Volatile.Read(ref _reuseValue);
 
     internal ControlThemeSnapshot GetValue()
     {
@@ -153,7 +170,10 @@ internal sealed class ControlSnapshotCell
             _isCompiling = true;
             try
             {
-                snapshot = source.Compile(_descriptor!, _config);
+                var config = _configFactory?.Invoke() ?? _config;
+                snapshot = _reuseValue is { } reusable && Equals(config, _reuseConfig)
+                    ? reusable
+                    : source.Compile(_descriptor ?? _descriptorFactory!(), config);
             }
             finally
             {
@@ -161,7 +181,11 @@ internal sealed class ControlSnapshotCell
             }
             Volatile.Write(ref _value, snapshot);
             _descriptor = null;
+            _descriptorFactory = null;
+            _configFactory = null;
             _config = null;
+            _reuseValue = null;
+            _reuseConfig = null;
             Volatile.Write(ref _source, null);
         }
         // cache 扫描只读已发布值，不持有 cell 锁执行驱逐，避免锁反转。
@@ -205,6 +229,7 @@ internal sealed class LazyControlSnapshots
                     bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.EstimatedConfigBytes);
                 }
                 bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.MaterializedValue?.EstimatedRetainedBytes ?? 0);
+                bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.ReuseCandidateValue?.EstimatedRetainedBytes ?? 0);
             }
             return bytes;
         }

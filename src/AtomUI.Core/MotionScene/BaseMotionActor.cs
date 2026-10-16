@@ -74,6 +74,8 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     protected Matrix Transformation = Matrix.Identity;
 
     private IDisposable? _transformChangedEventDisposable;
+    private Transform? _observedTransform;
+    private bool _detachedAfterAttachment;
 
     /// <summary>
     /// Number of decimals to round the Matrix to.
@@ -95,10 +97,10 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
         ClipToBoundsProperty.OverrideDefaultValue<BaseMotionActor>(true);
 
         MotionTransformProperty.Changed
-                               .AddClassHandler<BaseMotionActor>((x, e) => x.HandleLayoutTransformChanged(e));
+                               .AddClassHandler<BaseMotionActor>((x, _) => x.HandleTransformSourceChanged());
         
         MotionTransformOperationsProperty.Changed
-                                         .AddClassHandler<BaseMotionActor>((x, e) => x.HandleLayoutTransformOperationsChanged(e));
+                                         .AddClassHandler<BaseMotionActor>((x, _) => x.HandleTransformSourceChanged());
 
         ContentProperty.Changed
                        .AddClassHandler<BaseMotionActor>((x, _) => x.HandleContentChanged());
@@ -151,38 +153,30 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
         }
     }
 
-    private void HandleLayoutTransformChanged(AvaloniaPropertyChangedEventArgs change)
+    private void HandleTransformSourceChanged()
     {
-        var newTransform = change.NewValue as Transform;
-
-        _transformChangedEventDisposable?.Dispose();
-        _transformChangedEventDisposable = null;
-
-        if (newTransform != null)
-        {
-            _transformChangedEventDisposable = Observable.FromEventPattern(
-                                                             v => newTransform.Changed += v, v => newTransform.Changed -= v)
-                                                         .Subscribe(_ => ApplyMotionTransform());
-        }
-
+        UpdateActiveTransformSubscription();
         ApplyMotionTransform();
     }
 
-    private void HandleLayoutTransformOperationsChanged(AvaloniaPropertyChangedEventArgs change)
+    private void UpdateActiveTransformSubscription()
     {
-        var newTransform = change.NewValue as Transform;
-
+        // MotionTransform wins over TransformOperations in ApplyMotionTransform. Only
+        // the active mutable source may drive its copied matrix.
+        var active = _detachedAfterAttachment ? null : MotionTransform as Transform;
+        if (ReferenceEquals(active, _observedTransform))
+        {
+            return;
+        }
         _transformChangedEventDisposable?.Dispose();
         _transformChangedEventDisposable = null;
-
-        if (newTransform != null)
+        _observedTransform = active;
+        if (active is not null)
         {
             _transformChangedEventDisposable = Observable.FromEventPattern(
-                                                             v => newTransform.Changed += v, v => newTransform.Changed -= v)
+                                                             v => active.Changed += v, v => active.Changed -= v)
                                                          .Subscribe(_ => ApplyMotionTransform());
         }
-
-        ApplyMotionTransform();
     }
 
     private void HandleContentChanged()
@@ -197,11 +191,21 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
         ApplyMotionTransform();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _detachedAfterAttachment = false;
+        UpdateActiveTransformSubscription();
+        ApplyMotionTransform();
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        _detachedAfterAttachment = true;
         _transformChangedEventDisposable?.Dispose();
         _transformChangedEventDisposable = null;
+        _observedTransform = null;
     }
 
     public virtual void NotifyMotionPreStart()

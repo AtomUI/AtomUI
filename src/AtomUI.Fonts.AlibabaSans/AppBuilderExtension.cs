@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using AtomUI.Media;
 
 namespace AtomUI.Fonts.AlibabaSans;
 
@@ -8,7 +9,8 @@ public static class AppBuilderExtension
     {
         return appBuilder.ConfigureFonts(fontManager =>
         {
-            fontManager.AddFontCollection(new AlibabaSansFontCollection());
+            FontCollectionLifetime.RegisterPersistent(fontManager, new Uri("fonts:AlibabaSans"),
+                static () => new AlibabaSansFontCollection());
         });
     }
 }

@@ -15,7 +15,7 @@ public class AtomUIBuilderTests
                          .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                          .OrderBy(static property => property.Name, StringComparer.Ordinal)
                          .ToArray();
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
 
         properties.Select(static property => property.Name)
                   .ShouldBe([nameof(IAtomUIBuilder.Localization), nameof(IAtomUIBuilder.Theme)]);
@@ -32,7 +32,7 @@ public class AtomUIBuilderTests
             LanguageTags.EnUS,
             LanguageTags.ZhCN
         };
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
 
         var returned = builder.UseLanguages(LanguageTags.ZhCN, languages);
         languages[0] = LanguageTags.FrFR;
@@ -47,7 +47,7 @@ public class AtomUIBuilderTests
     [Fact]
     public void UseLanguages_Preserves_Runtime_Default_Membership_Validation()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         builder.UseLanguages(LanguageTags.ZhCN, [LanguageTags.EnUS]);
 
         Should.Throw<LanguageConfigurationException>(() =>
@@ -57,7 +57,7 @@ public class AtomUIBuilderTests
     [Fact]
     public void Root_Theme_Extensions_Forward_To_The_Theme_SubBuilder_Fluently()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
 
         var returned = builder.WithApplicationId("Acme.App")
                               .WithInitialTheme("atomui-default")

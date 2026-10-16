@@ -12,7 +12,13 @@ internal static class AtomUIDiagnosticIds
     public const string RegistrationUnloweredTypeMapAccessor = "ATOMUIREG007";
     // Retired diagnostic: package collection no longer has backend-specific startup partitions.
     public const string RegistrationStagingFallback = "ATOMUIREG009";
+    // Retired diagnostic: control fragments no longer have a bootstrap phase; all fragments defer to the startup commit.
     public const string RegistrationInvalidBootstrap = "ATOMUIREG010";
+    public const string StartupManifestInvalid = "ATOMUIREG011";
+    public const string StartupPackageConflict = "ATOMUIREG012";
+    public const string StartupThemeContractMismatch = "ATOMUIREG013";
+    public const string StartupLanguageContractMismatch = "ATOMUIREG014";
+    public const string StartupImageManualHost = "ATOMUIREG015";
     public const string AotMissingGeneratedAccessor = "ATOMUIAOT001";
     public const string AotMissingGeneratedPath = "ATOMUIAOT002";
     public const string AotUnverifiableDataMemberPath = "ATOMUIAOT003";
@@ -44,6 +50,7 @@ internal static class AtomUIDiagnosticIds
     public const string SemanticPartTemplateMarkerNotStatic = "ATOMUIGEN036";
     public const string SemanticPartStyleTypeConflict = "ATOMUIGEN037";
     public const string SemanticPartInvalidSince = "ATOMUIGEN038";
+    public const string StartupHookMissingAttach = "ATOMUIGEN039";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";
     public const string LocalizationInvalidCatalog = "ATOMUILOC003";

@@ -33,6 +33,7 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | `LocalizationGenerator` / `LanguageTagsGenerator` | 编译语言契约和固定语言数据，生成模块注册、应用 bootstrap 与标准语言元数据 |
 | `DataMemberAccessorGenerator` | 生成 AOT 友好的数据访问器，不属于控件注册选择后端 |
 | `ScopedResourceHostGenerator` | 生成非 Visual `AvaloniaObject` 的资源宿主生命周期代码 |
+| `ApplicationStartupHookGenerator` | 为 partial Application 生成 `RegisterServices` 启动挂接，手写重写漏调 `Attach` 时报 `ATOMUIGEN039`；见[挂接生成器与守卫](../../architecture/systems/startup/lifecycle.md#8-挂接生成器与守卫) |
 
 ## 代码所有权
 
@@ -48,6 +49,7 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | `Localization/` | Catalog/XLIFF/Bundle 编译、语言模块与应用 bootstrap |
 | `DataMemberAccessors/` | 数据成员访问器 Generator、Analyzer 和 Writer |
 | `ResourceHost/` | scoped resource host Generator、类型模型和 Writer |
+| `Startup/` | Application 启动挂接 Generator |
 
 ## 专题导航
 

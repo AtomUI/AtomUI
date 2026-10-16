@@ -1,3 +1,4 @@
+using AtomUI;
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -32,14 +33,16 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         .UseAtomUI(builder => builder.UseCommonControls());
     }
 }
 
 internal sealed class TestApplication : Application
 {
-    public override void Initialize()
+    public override void RegisterServices()
     {
-        this.UseAtomUI(builder => builder.UseCommonControls());
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
     }
 }

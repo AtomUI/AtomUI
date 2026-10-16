@@ -62,15 +62,12 @@ Core 的隐藏生成 ABI 采用以下形态：
 ```csharp
 public abstract class ControlRegistrationFragmentAttribute : Attribute
 {
-    public virtual bool IsBootstrap => true;
     public abstract string FragmentId { get; }
     public abstract void Add(ControlPackageRegistrationBuilder builder);
 }
 ```
 
-`IsBootstrap` 是兼容增量：旧片段默认在初始配置执行；含 `[BootstrapRegistration]` 的包由生成器覆写常量。
-`AddFragment` 在 Add/descriptor factory 前选择阶段；标记不增加 TypeMap key、条件或链接根。net8 固定 collector
-模板保持不变。仅新生成包依赖新 Core 属性，不能把它用于未提供该成员的旧运行时。
+片段在启动提交时由 Core 统一执行，不分阶段；net8 固定 collector 模板保持不变。
 
 代理是带自身 Attribute 的 sealed 派生类型。查询到目标 Type 后，注册代码读取已知基类的 Attribute；
 不对未知类型进行构造函数搜索或运行时程序集发现。

@@ -109,6 +109,11 @@ internal static class ThemeDefinitionBinder
         ThemeSchemaRegistry registry,
         List<ThemeDefinitionDiagnostic> diagnostics)
     {
+        if (registry.IsGlobalOnly)
+        {
+            return Array.Empty<ControlThemeDefinition>();
+        }
+
         var controls = new List<ControlThemeDefinition>(documents.Count);
         foreach (var document in documents)
         {

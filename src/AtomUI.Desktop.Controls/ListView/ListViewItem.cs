@@ -191,6 +191,9 @@ public class ListViewItem : ContentControl,
     
     static ListViewItem()
     {
+        // ListViewItem may be initialized first by a deferred theme. Register only after
+        // both types' static fields are ready to avoid a ListView/ListViewItem cctor cycle.
+        ListView.RegisterItemClickedEvent(ClickedEvent);
         SelectableMixin.Attach<ListViewItem>(IsSelectedProperty);
         PressedMixin.Attach<ListViewItem>();
         FocusableProperty.OverrideDefaultValue<ListViewItem>(true);

@@ -1,3 +1,4 @@
+using AtomUI;
 using AtomUI.Localization;
 using AtomUI.Toolkits.GalleryBase;
 using AtomUIGallery;
@@ -15,16 +16,21 @@ public sealed class RenderingTestApp : Application
 {
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<RenderingTestApp>()
         .UseSkia()
-        .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
+        .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
+        .UseAtomUI(builder =>
+        {
+            builder.UseDesktopControls();
+            builder.UseDesktopExtras();
+            builder.UseDesktopColorPicker();
+            builder.UseDesktopDataGrid();
+            builder.UseGalleryBase(AtomUIGalleryModule.Configure);
+            builder.UseGalleryControls();
+            builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS]);
+        });
 
-    public override void Initialize() => this.UseAtomUI(builder =>
+    public override void RegisterServices()
     {
-        builder.UseDesktopControls();
-        builder.UseDesktopExtras();
-        builder.UseDesktopColorPicker();
-        builder.UseDesktopDataGrid();
-        builder.UseGalleryBase(AtomUIGalleryModule.Configure);
-        builder.UseGalleryControls();
-        builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS]);
-    });
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
+    }
 }

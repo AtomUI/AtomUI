@@ -36,3 +36,12 @@ public sealed class ThemeBuildTokenAttribute(
     public int Stage { get; } = stage;
     public int ValueContractVersion { get; } = valueContractVersion;
 }
+
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class CompiledThemeManifestAttribute(int version, string packageId, string data) : Attribute
+{
+    public int Version { get; } = version;
+    public string PackageId { get; } = packageId;
+    public string Data { get; } = data;
+}

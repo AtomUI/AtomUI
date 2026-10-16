@@ -1,10 +1,8 @@
 using AtomUI.Controls.Commons;
-using AtomUI.Registration;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[BootstrapRegistration]
 public class ScrollBarThumb : AbstractScrollBarThumb
 {
     #region 公共属性定义

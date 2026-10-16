@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="../AtomUI.Toolchain/Common/Startup/**/*.cs" Link="Startup/Data/%(Filename)%(Extension)" />
         <ProjectReference Include="../AtomUI.Localization/AtomUI.Localization.csproj" />
         <ProjectReference Include="../AtomUI.Generator/AtomUI.Generator.csproj"
                           OutputItemType="Analyzer"
@@ -32,7 +33,10 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Controls"/>
+        <InternalsVisibleTo Include="AtomUI.Fonts.AlibabaSans"/>
+        <InternalsVisibleTo Include="AtomUI.Fonts.AlibabaPuHuiTi"/>
         <InternalsVisibleTo Include="AtomUI.Controls.Shared"/>
+        <InternalsVisibleTo Include="AtomUI.Controls.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker"/>
@@ -40,7 +44,10 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.ThemeAssetsValidation"/>
         <InternalsVisibleTo Include="AtomUI.Registration.Fixtures"/>
+        <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.Localization.IntegrationTests"/>
     </ItemGroup>
 
     <ItemGroup>

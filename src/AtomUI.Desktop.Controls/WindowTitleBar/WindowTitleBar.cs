@@ -1,7 +1,6 @@
 using System.Windows.Input;
 using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -18,7 +17,6 @@ namespace AtomUI.Desktop.Controls;
 [PseudoClasses(StdPseudoClass.Active)]
 [PseudoClasses(StdPseudoClass.Normal, StdPseudoClass.Minimized, StdPseudoClass.Maximized, StdPseudoClass.Fullscreen)]
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
-[BootstrapRegistration]
 public class WindowTitleBar : TemplatedControl, 
                               IMotionAwareControl, 
                               IOperationSystemAware

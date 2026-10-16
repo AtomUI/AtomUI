@@ -1,4 +1,5 @@
 using AtomUI.Generated.AtomUIDesktopControlsExtras;
+
 namespace AtomUI.Desktop.Controls;
 
 public static class ExtrasThemeManagerBuilderExtensions
@@ -8,8 +9,7 @@ public static class ExtrasThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseDesktopExtras(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Register(
-            builder,
-            static () => new AtomUIExtrasThemesProvider());
+        return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
+            .DependsOn(static builder => builder.UseDesktopControls()));
     }
 }

@@ -1,14 +1,36 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
+using AtomUI.Registration;
 
 namespace AtomUI.Theme.Schema;
 
 public sealed class SemanticPartRegistry
 {
+    private readonly StartupPackageIndex? _startupIndex;
     public static SemanticPartRegistry Empty { get; } = new(Array.Empty<ControlSemanticDescriptor>());
 
     private readonly FrozenDictionary<Type, ControlSemanticDescriptor> _controlsByType;
     private readonly FrozenDictionary<ControlTokenIdentity, ControlSemanticDescriptor> _controlsByIdentity;
+
+    internal SemanticPartRegistry(StartupPackageIndex index) : this(Array.Empty<ControlSemanticDescriptor>())
+    {
+        _startupIndex = index;
+        Controls = new StartupSemanticList(index);
+    }
+
+    private sealed class StartupSemanticList(StartupPackageIndex index) : IReadOnlyList<ControlSemanticDescriptor>
+    {
+        public int Count => index.SemanticEntries.Count;
+        public ControlSemanticDescriptor this[int slot] => index.GetSemanticAt(slot);
+        public IEnumerator<ControlSemanticDescriptor> GetEnumerator()
+        {
+            for (var slot = 0; slot < Count; slot++)
+            {
+                yield return this[slot];
+            }
+        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
 
     public SemanticPartRegistry(IEnumerable<ControlSemanticDescriptor> controls)
     {
@@ -46,6 +68,10 @@ public sealed class SemanticPartRegistry
         [NotNullWhen(true)] out ControlSemanticDescriptor? descriptor)
     {
         ArgumentNullException.ThrowIfNull(controlType);
+        if (_startupIndex is not null)
+        {
+            return _startupIndex.TryGetSemantic(controlType, out descriptor);
+        }
         return _controlsByType.TryGetValue(controlType, out descriptor);
     }
 
@@ -53,6 +79,10 @@ public sealed class SemanticPartRegistry
         ControlTokenIdentity identity,
         [NotNullWhen(true)] out ControlSemanticDescriptor? descriptor)
     {
+        if (_startupIndex is not null)
+        {
+            return _startupIndex.TryGetSemantic(identity, out descriptor);
+        }
         if (_controlsByIdentity.TryGetValue(identity, out descriptor) &&
             ControlTokenIdentityCanonicalizer.Matches(identity, descriptor.ControlType))
         {
@@ -61,6 +91,11 @@ public sealed class SemanticPartRegistry
         descriptor = null;
         return false;
     }
+
+    internal bool TryGetControlMetadata(ControlTokenIdentity identity,
+        [NotNullWhen(true)] out ControlSemanticDescriptor? descriptor) => _startupIndex is not null
+        ? _startupIndex.TryGetSemantic(identity, out descriptor, notifyFirstUse: false)
+        : TryGetControl(identity, out descriptor);
 
     private static Dictionary<TKey, ControlSemanticDescriptor> BuildUniqueMap<TKey>(
         IEnumerable<ControlSemanticDescriptor> controls,

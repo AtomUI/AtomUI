@@ -8,7 +8,7 @@ namespace AtomUI.Generator.Tests.Localization;
 public class LocalizationGeneratorDeterminismTests
 {
     [Fact]
-    public void Reordered_Catalogs_Files_And_Units_Produce_Byte_Identical_Sources()
+    public void Reordered_Catalogs_Files_And_Units_Preserve_Translations_And_Update_Enum_Mappings()
     {
         var first = Run(
             RuntimeSource + CatalogAThenBSource,
@@ -21,11 +21,26 @@ public class LocalizationGeneratorDeterminismTests
 
         first.Diagnostics.ShouldBeEmpty();
         second.Diagnostics.ShouldBeEmpty();
-        GetSources(second).ShouldBe(GetSources(first));
+        var before = GetSources(first);
+        var after = GetSources(second);
+        before.Remove("GeneratedLanguageModuleRegistration.g.cs");
+        after.Remove("GeneratedLanguageModuleRegistration.g.cs");
+        after.ShouldBe(before);
+        var firstData = ReadModule(first);
+        var secondData = ReadModule(second);
+        for (var index = 0; index < firstData.Catalogs.Length; index++)
+        {
+            secondData.Catalogs[index].CatalogId.ShouldBe(firstData.Catalogs[index].CatalogId);
+            secondData.Catalogs[index].Units.Select(static unit => unit.Key)
+                .ShouldBe(firstData.Catalogs[index].Units.Select(static unit => unit.Key));
+            secondData.Catalogs[index].Units.Select(static unit => unit.EnumValue)
+                .ShouldBe(firstData.Catalogs[index].Units.Select(static unit => 1 - unit.EnumValue));
+            secondData.Bundles[index].Values.ShouldBe(firstData.Bundles[index].Values);
+        }
     }
 
     [Fact]
-    public void Updating_One_Xliff_Changes_Only_Its_Catalog_Registration_Source()
+    public void Updating_One_Xliff_Changes_Only_The_Module_Data_Source()
     {
         var original = LanguageFile("Localization/A/en-US.xlf", CatalogAXliff);
         var replacement = LanguageFile(
@@ -46,10 +61,8 @@ public class LocalizationGeneratorDeterminismTests
         var changedHints = before.Keys.Where(hint => before[hint] != after[hint]).ToArray();
 
         changedHints.ShouldBe([
-            "TestApp.Localization.CatalogALangResourceKind.LanguageCatalogRegistration.g.cs"
+            "GeneratedLanguageModuleRegistration.g.cs"
         ]);
-        after["GeneratedLanguageModuleRegistration.g.cs"]
-            .ShouldBe(before["GeneratedLanguageModuleRegistration.g.cs"]);
         after["GeneratedApplicationLanguageBootstrap.g.cs"]
             .ShouldBe(before["GeneratedApplicationLanguageBootstrap.g.cs"]);
 
@@ -64,6 +77,17 @@ public class LocalizationGeneratorDeterminismTests
               .SelectMany(static step => step.Outputs)
               .Select(static output => output.Reason)
               .ShouldContain(IncrementalStepRunReason.Modified);
+    }
+
+    private static AtomUI.Localization.Data.LanguageModuleData ReadModule(GeneratorRunResult result)
+    {
+        var tree = result.GeneratedSources.Single(static source =>
+            source.HintName == "GeneratedLanguageModuleRegistration.g.cs").SyntaxTree;
+        var value = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax>()
+            .Single(static variable => variable.Identifier.ValueText == "Data").Initializer!.Value;
+        return AtomUI.Localization.Data.LanguageModuleDataCodec.Read("Test.Package",
+            ((Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax)value).Token.ValueText);
     }
 
     private static SortedDictionary<string, string> GetSources(GeneratorRunResult result)

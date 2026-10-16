@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Concurrent;
 
 namespace AtomUI.Localization;
 
@@ -8,6 +9,8 @@ internal sealed class LanguageCatalogRegistry
     private readonly IReadOnlyList<TranslationBundleDescriptor>[] _bundlesByCatalog;
     private readonly Dictionary<Type, int> _catalogSlotsByResourceType;
     private readonly Dictionary<string, int> _catalogSlotsById;
+    private readonly Dictionary<(string Assembly, string Name), int> _dataSlots = new();
+    private readonly ConcurrentDictionary<Type, int> _resolvedDataTypes = new();
 
     private LanguageCatalogRegistry(
         LanguageCatalogDescriptor[] catalogs,
@@ -19,27 +22,42 @@ internal sealed class LanguageCatalogRegistry
         _bundlesByCatalog = bundlesByCatalog;
         _catalogSlotsByResourceType = catalogSlotsByResourceType;
         _catalogSlotsById = catalogSlotsById;
+        for (var slot = 0; slot < catalogs.Length; slot++)
+        {
+            if (catalogs[slot] is LanguageDataCatalogDescriptor data)
+            {
+                if (!_dataSlots.TryAdd((data.AssemblyName, data.MetadataName), slot))
+                {
+                    throw new LanguageCatalogException($"Resource enum '{data.MetadataName}' is registered more than once.");
+                }
+            }
+        }
+        foreach (var resourceType in catalogSlotsByResourceType.Keys)
+        {
+            if (resourceType.FullName is { } name && resourceType.Assembly.GetName().Name is { } assembly &&
+                _dataSlots.ContainsKey((assembly, name)))
+            {
+                throw new LanguageCatalogException(
+                    $"Resource enum type '{name}' is registered by both a manual Catalog and module data.");
+            }
+        }
     }
 
     internal IReadOnlyList<LanguageCatalogDescriptor> Catalogs => _catalogs;
 
-    /// <summary>
-    /// 构建注册表。<paramref name="allowUnresolvedBundles"/> 为 true 时（仅分级启动的 Stage 1
-    /// 中间态）跳过目标 catalog 尚未注册的 bundle——该 catalog 在 Stage 1 不存在，任何按 catalog
-    /// 的查询都不可达，故跳过不改变 Stage 1 的可观测取值；终态（非分级 Stage 1、Stage 2 演化）恒为
-    /// false，跨包引用必须闭合，否则照旧抛出。
-    /// </summary>
+    /// <summary>构建注册表。跨包引用必须闭合：bundle 指向未注册的 catalog 时抛出。</summary>
     internal static LanguageCatalogRegistry Create(
         IReadOnlyList<LanguageCatalogDescriptor> catalogInputs,
         IReadOnlyList<TranslationBundleDescriptor> bundleInputs,
-        bool allowUnresolvedBundles = false,
-        LanguageCatalogRegistry? previous = null)
+        LanguageCatalogRegistry? previous = null, bool generatedDataVerified = false)
     {
         ArgumentNullException.ThrowIfNull(catalogInputs);
         ArgumentNullException.ThrowIfNull(bundleInputs);
 
-        var catalogs = catalogInputs.OrderBy(static catalog => catalog.CatalogId, StringComparer.Ordinal)
-                                    .ToArray();
+        var catalogs = previous is null
+            ? catalogInputs.OrderBy(static catalog => catalog.CatalogId, StringComparer.Ordinal).ToArray()
+            : catalogInputs.OrderBy(catalog => previous.TryGetCatalogSlot(catalog.CatalogId, out var slot) ? slot : int.MaxValue)
+                .ThenBy(catalog => catalog.CatalogId, StringComparer.Ordinal).ToArray();
         var slotsByType = new Dictionary<Type, int>();
         var slotsById = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var slot = 0; slot < catalogs.Length; slot++)
@@ -51,7 +69,7 @@ internal sealed class LanguageCatalogRegistry
                     $"Catalog ID '{catalog.CatalogId}' is registered more than once. " +
                     "Each generated Catalog ID must be unique.");
             }
-            if (!slotsByType.TryAdd(catalog.ResourceKindType, slot))
+            if (catalog is not LanguageDataCatalogDescriptor && !slotsByType.TryAdd(catalog.ResourceKindType, slot))
             {
                 throw new LanguageCatalogException(
                     $"Resource enum type '{catalog.ResourceKindType.FullName}' is registered by more than one Catalog.");
@@ -68,10 +86,6 @@ internal sealed class LanguageCatalogRegistry
         {
             if (!slotsById.TryGetValue(bundle.CatalogId, out var catalogSlot))
             {
-                if (allowUnresolvedBundles)
-                {
-                    continue;
-                }
                 throw new LanguageCatalogException(
                     $"Translation bundle from '{bundle.SourceIdentity}' targets Catalog " +
                     $"'{bundle.CatalogId}', which is not registered.");
@@ -98,7 +112,8 @@ internal sealed class LanguageCatalogRegistry
                                  .ThenBy(static bundle => bundle.SourceIdentity, StringComparer.Ordinal)
                                  .ToArray();
             // Descriptor 和 Bundle 在构造时已冻结。相同输入无需再次逐 unit 验证冲突/en-US 覆盖。
-            if (previous is null || !previous.HasSameCatalog(catalog, orderedBundles, out _))
+            if ((!generatedDataVerified || catalog is not LanguageDataCatalogDescriptor || orderedBundles.Any(static bundle => !bundle.IsModuleData)) &&
+                (previous is null || !previous.HasSameCatalog(catalog, orderedBundles, out _)))
             {
                 ValidateTranslations(catalog, orderedBundles);
             }
@@ -111,7 +126,19 @@ internal sealed class LanguageCatalogRegistry
     internal bool TryGetCatalogSlot(Type resourceKindType, out int catalogSlot)
     {
         ArgumentNullException.ThrowIfNull(resourceKindType);
-        return _catalogSlotsByResourceType.TryGetValue(resourceKindType, out catalogSlot);
+        if (_catalogSlotsByResourceType.TryGetValue(resourceKindType, out catalogSlot) ||
+            _resolvedDataTypes.TryGetValue(resourceKindType, out catalogSlot))
+        {
+            return true;
+        }
+        if (resourceKindType.FullName is { } name &&
+            resourceKindType.Assembly.GetName().Name is { } assembly &&
+            _dataSlots.TryGetValue((assembly, name), out catalogSlot))
+        {
+            _resolvedDataTypes.TryAdd(resourceKindType, catalogSlot);
+            return true;
+        }
+        return false;
     }
 
     internal bool TryGetCatalogSlot(string catalogId, out int catalogSlot)
@@ -148,7 +175,7 @@ internal sealed class LanguageCatalogRegistry
         {
             for (var unitSlot = 0; unitSlot < bundle.Values.Count; unitSlot++)
             {
-                if (bundle.Values[unitSlot] is null)
+                if (!bundle.HasValue(unitSlot))
                 {
                     continue;
                 }

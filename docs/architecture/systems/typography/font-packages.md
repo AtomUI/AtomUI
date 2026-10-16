@@ -65,29 +65,21 @@ public static class AlibabaPuHuiTiFontConstants
 每个包给出两个注册方法，对应 Avalonia 与 AtomUI 两个配置阶段：
 
 ```csharp
-// AppBuilder 阶段
-public static AppBuilder WithAlibabaSansFont(this AppBuilder appBuilder)
-{
-    return appBuilder.ConfigureFonts(fontManager =>
-    {
-        fontManager.AddFontCollection(new AlibabaSansFontCollection());
-    });
-}
+// AppBuilder 阶段：WithAlibabaSansFont() 经 ConfigureFonts 使用统一的进程级登记。
+AppBuilder.Configure<App>().WithAlibabaSansFont();
 
-// IAtomUIBuilder 阶段
-public static IAtomUIBuilder UseAlibabaSansFont(this IAtomUIBuilder builder)
-{
-    ArgumentNullException.ThrowIfNull(builder);
-    FontManager.Current.AddFontCollection(new AlibabaSansFontCollection());
-    return builder;
-}
+// IAtomUIBuilder 阶段：只声明包；OnCommit 经同一进程级登记入口执行。
+AppBuilder.Configure<App>().UseAtomUI(builder => builder.UseAlibabaSansFont());
 ```
 
-两者最终都只做一次 `AddFontCollection`，都不碰 Token，也都不设置默认字体族。选哪个入口对运行时行为没有影响，
-差别仅在于代码写在 `AppBuilder` 链上还是写在 `UseAtomUI` 回调里。
+两个官方入口共享 `FontCollectionLifetime` 的同一 `FontManager`/URI 登记，不碰 Token，也不设置默认字体族。
+同时调用、多个 AtomUI 应用 scope 或重复配置不会替换已有官方字体集合。Avalonia 的 `FontManager` 只提供
+按 URI 的公开移除 API，无法确认该 URI 当前仍指向哪个实例；因此应用 scope 释放只放弃租约，不按 URI 删除。
+集合由进程级 `FontManager` 持有并在其 Dispose 时释放。宿主后来显式替换同 URI 时，旧 AtomUI 租约的释放也
+不会误删新实例；宿主自行直接使用同 URI 的任意第三方集合属于 URI 所有权冲突，应避免。
 
-注册必须在首个视觉帧之前完成，并且不参与主题事务——`FontManager` 的集合表在应用生命周期内单向增长，不支持在
-主题切换过程中新增或移除。
+注册必须在首个视觉帧之前完成，并且不参与主题切换事务。字体集合在 `FontManager` 生命周期内至多按官方 URI
+登记一次，应用 scope 的销毁不撤销其他应用仍可能使用的字体。
 
 ## 引用一个包不等于注册它
 
@@ -103,11 +95,11 @@ Avalonia 静默跳过继续往后回退，全过程没有任何异常或诊断�
 Desktop 宿主只注册拉丁字族，中文交给系统：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseAlibabaSansFont();
     // ...
-});
+})
 ```
 
 Browser 宿主注册两个包，并显式覆盖默认字体族——浏览器里没有可依赖的中文系统字族，不覆盖就会缺字：

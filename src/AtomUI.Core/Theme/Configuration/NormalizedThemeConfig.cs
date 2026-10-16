@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Configuration;
@@ -154,6 +155,52 @@ internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
     private readonly ThemeAlgorithmDescriptor[] _algorithms;
     private readonly NormalizedTokenValue[] _globalTokens;
     private readonly NormalizedControlThemeConfig[] _controls;
+    private readonly Func<ControlTokenIdentity, NormalizedControlThemeConfig?>? _resolveControl;
+    private readonly IReadOnlyList<ControlTokenIdentity> _controlIdentities;
+    private readonly IReadOnlyList<NormalizedControlThemeConfig> _controlView;
+    private readonly Dictionary<ControlTokenIdentity, NormalizedControlThemeConfig?> _controlCache = new();
+    internal string? ControlRevision { get; }
+    internal object? ControlBindingIdentity { get; }
+    internal bool HasDeferredControls => _resolveControl is not null;
+    internal IReadOnlyList<ControlTokenIdentity> ControlIdentities => _controlIdentities;
+
+    internal static NormalizedThemeConfig CreateDeferred(bool inherit, bool algorithmsSpecified,
+        ThemeAlgorithmDescriptor[] algorithms, NormalizedTokenValue[] globalTokens,
+        IReadOnlyList<ControlTokenIdentity> identities,
+        Func<ControlTokenIdentity, NormalizedControlThemeConfig?> resolveControl, string revision, object bindingIdentity) =>
+        new(inherit, algorithmsSpecified, algorithms, globalTokens, identities, resolveControl, revision, bindingIdentity);
+
+    private NormalizedThemeConfig(bool inherit, bool algorithmsSpecified,
+        ThemeAlgorithmDescriptor[] algorithms, NormalizedTokenValue[] globalTokens,
+        IReadOnlyList<ControlTokenIdentity> identities,
+        Func<ControlTokenIdentity, NormalizedControlThemeConfig?> resolveControl, string revision, object bindingIdentity)
+        : this(inherit, algorithmsSpecified, algorithms, globalTokens, Array.Empty<NormalizedControlThemeConfig>(), true)
+    {
+        _controlIdentities = identities.OrderBy(identity => identity.Catalog, StringComparer.Ordinal)
+            .ThenBy(identity => identity.Id, StringComparer.Ordinal).Distinct().ToArray();
+        _resolveControl = resolveControl;
+        ControlRevision = revision;
+        ControlBindingIdentity = bindingIdentity;
+        Fingerprint = ThemeConfigFingerprintBuilder.Compute(this);
+    }
+
+    internal bool TryGetControl(ControlTokenIdentity identity, [NotNullWhen(true)] out NormalizedControlThemeConfig? control)
+    {
+        if (_resolveControl is null)
+        {
+            control = Array.Find(_controls, value => value.Identity == identity);
+            return control is not null;
+        }
+        lock (_controlCache)
+        {
+            if (!_controlCache.TryGetValue(identity, out control))
+            {
+                control = ControlIdentities.Contains(identity) ? _resolveControl(identity) : null;
+                _controlCache.Add(identity, control);
+            }
+            return control is not null;
+        }
+    }
 
     internal NormalizedThemeConfig(
         bool inherit,
@@ -173,9 +220,10 @@ internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
         _controls            = ThemeConfigArray.Copy(controls);
         Array.Sort(_globalTokens, static (left, right) => left.Descriptor.Slot.CompareTo(right.Descriptor.Slot));
         Array.Sort(_controls, static (left, right) => CompareIdentity(left.Identity, right.Identity));
+        _controlView = Array.AsReadOnly(_controls);
+        _controlIdentities = Array.AsReadOnly(_controls.Select(control => control.Identity).ToArray());
         Algorithms  = Array.AsReadOnly(_algorithms);
         GlobalTokens = Array.AsReadOnly(_globalTokens);
-        Controls     = Array.AsReadOnly(_controls);
         Fingerprint  = ThemeConfigFingerprintBuilder.Compute(this);
     }
 
@@ -192,9 +240,10 @@ internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
         _algorithms          = algorithms;
         _globalTokens        = globalTokens;
         _controls            = controls;
+        _controlView = Array.AsReadOnly(_controls);
+        _controlIdentities = Array.AsReadOnly(_controls.Select(control => control.Identity).ToArray());
         Algorithms           = Array.AsReadOnly(_algorithms);
         GlobalTokens         = Array.AsReadOnly(_globalTokens);
-        Controls             = Array.AsReadOnly(_controls);
         Fingerprint          = ThemeConfigFingerprintBuilder.Compute(this);
     }
 
@@ -221,7 +270,7 @@ internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
     public bool AlgorithmsSpecified { get; }
     public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
     public IReadOnlyList<NormalizedTokenValue> GlobalTokens { get; }
-    public IReadOnlyList<NormalizedControlThemeConfig> Controls { get; }
+    public IReadOnlyList<NormalizedControlThemeConfig> Controls => _resolveControl is null ? _controlView : ControlIdentities.Select(identity => { TryGetControl(identity, out var control); return control!; }).ToArray();
     public ThemeConfigFingerprint Fingerprint { get; }
 
     public bool Equals(NormalizedThemeConfig? other)
@@ -233,6 +282,8 @@ internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
                AlgorithmsSpecified == other.AlgorithmsSpecified &&
                SequenceEqual(_algorithms, other._algorithms) &&
                SequenceEqual(_globalTokens, other._globalTokens) &&
+               ControlRevision == other.ControlRevision &&
+               Equals(ControlBindingIdentity, other.ControlBindingIdentity) &&
                SequenceEqual(_controls, other._controls);
     }
 
@@ -295,6 +346,16 @@ internal struct ThemeConfigFingerprintBuilder
             builder.Add(token.CanonicalValue);
         }
 
+        if (config.HasDeferredControls)
+        {
+            builder.Add(config.ControlRevision!);
+            builder.Add(config.ControlIdentities.Count);
+            foreach (var identity in config.ControlIdentities)
+            {
+                builder.Add(identity.Catalog); builder.Add(identity.Id);
+            }
+            return new ThemeConfigFingerprint(builder._value);
+        }
         builder.Add(config.Controls.Count);
         foreach (var control in config.Controls)
         {

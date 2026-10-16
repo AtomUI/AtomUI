@@ -1,6 +1,5 @@
 using AtomUI.Generated.AtomUIToolkitsGalleryBase;
 using AtomUI.Toolkits.GalleryBase.Configuration;
-using AtomUI.Toolkits.GalleryBase.Controls;
 
 namespace AtomUI.Toolkits.GalleryBase;
 
@@ -12,18 +11,17 @@ public static class ThemeManagerBuilderExtensions
                                                 Action<GalleryBaseOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Register(
-            builder,
-            static () => new GalleryControlThemesProvider(),
-            prepare: _ =>
+        return GeneratedControlPackageRegistration.Definition.Register(builder, package =>
+        {
+            package.DependsOn(static root => Desktop.Controls.ThemeManagerBuilderExtensions.UseDesktopControls(root));
+            if (configure is not null)
             {
-                if (configure is not null)
-                {
-                    var options = new GalleryBaseOptions();
-                    configure(options);
-                    GalleryBaseConfigurationProvider.SetCurrent(options.BuildConfiguration());
-                }
-            },
-            complete: static builder => GeneratedLanguageModuleRegistration.Register(builder.Localization));
+                var options = new GalleryBaseOptions();
+                configure(options);
+                var configuration = options.BuildConfiguration();
+                package.OnCommit(context => context.Own(
+                    GalleryBaseConfigurationProvider.Register(context.Application, configuration)));
+            }
+        });
     }
 }

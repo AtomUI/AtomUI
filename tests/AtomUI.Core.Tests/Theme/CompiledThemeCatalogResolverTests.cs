@@ -25,7 +25,7 @@ public class CompiledThemeCatalogResolverTests
                 "memory://orange",
                 "3",
                 ThemeXml("SunsetOrange", "Sunset Orange", "#FA8C16"));
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new MemoryResolver("Gallery", green, orange));
             var manager = builder.Build();
 
@@ -63,7 +63,7 @@ public class CompiledThemeCatalogResolverTests
                 "memory://reload-cache",
                 "1",
                 ThemeXml("ReloadCache", "Reload Cache", "#52C41A"));
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new ReloadableMemoryResolver(source));
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -190,7 +190,7 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new MemoryResolver(
                 "Gallery",
                 new MemorySource(
@@ -212,7 +212,7 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new MemoryResolver(
                 "Gallery",
                 new MemorySource(
@@ -238,7 +238,7 @@ public class CompiledThemeCatalogResolverTests
                 "1",
                 ThemeXml("Valid", "Valid", "#52C41A"));
             var invalid = new MemorySource("memory://invalid", "1", "<Theme>");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new MemoryResolver("Gallery", valid, invalid));
             var manager = builder.Build();
 
@@ -255,7 +255,7 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new WarningResolver(
                 new MemorySource(
                     "memory://warning-theme",
@@ -276,7 +276,7 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(new MemoryResolver(
                 "NoAccent",
                 new MemorySource(

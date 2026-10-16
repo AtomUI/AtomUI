@@ -1,0 +1,102 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    x:Class="AtomUI.Controls.SplashDefaultTheme">
+    <!-- 只使用全局 Token 与基础元素：本主题在内核提交之前加载。不要在此引用 AtomUI 控件或控件 Token。
+         模板只描述结构，尺寸、颜色、字号等外观值一律写在样式里：模板内的本地值优先级高于样式，
+         写在模板里的值无法被"合并本字典 + BasedOn"的自定义主题覆盖。 -->
+    <ControlTheme x:Key="{x:Type atom:SplashWindow}" TargetType="atom:SplashWindow">
+        <Setter Property="WindowDecorations" Value="None"/>
+        <Setter Property="SizeToContent" Value="WidthAndHeight"/>
+        <Setter Property="CanResize" Value="False"/>
+        <Setter Property="WindowStartupLocation" Value="CenterScreen"/>
+        <Setter Property="Topmost" Value="True"/>
+        <Setter Property="TransparencyLevelHint" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Content="{TemplateBinding Content}"/>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+            <!-- 给卡片阴影留出的透明边距。 -->
+            <Setter Property="Margin" Value="24"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type atom:Splash}" TargetType="atom:Splash">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Card" ClipToBounds="True">
+                    <Panel>
+                        <Image Name="BackgroundImage" Source="{TemplateBinding BackgroundImage}" Stretch="UniformToFill"
+                               IsVisible="{TemplateBinding BackgroundImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                        <StackPanel Name="Content">
+                            <Image Name="Logo" Source="{TemplateBinding Logo}" HorizontalAlignment="Center"
+                                   IsVisible="{TemplateBinding Logo, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                            <TextBlock Name="Title" Text="{TemplateBinding Title}" HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Name="Message" Text="{TemplateBinding Message}" HorizontalAlignment="Center"
+                                       TextWrapping="Wrap" TextAlignment="Center"/>
+                            <atom:SplashProgressBar Name="Progress"
+                                                    Value="{TemplateBinding Progress}"
+                                                    IsIndeterminate="{TemplateBinding IsIndeterminate}"/>
+                        </StackPanel>
+                        <Path Name="PART_CloseButton" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top"
+                              Stretch="Uniform" Cursor="Hand" Data="M0,0 L10,10 M10,0 L0,10"/>
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^ /template/ Border#Card">
+            <Setter Property="Width" Value="420"/>
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}"/>
+            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}"/>
+            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}"/>
+        </Style>
+        <Style Selector="^ /template/ StackPanel#Content">
+            <Setter Property="Margin" Value="{atom:SharedTokenResource PaddingLG}"/>
+            <Setter Property="Spacing" Value="12"/>
+        </Style>
+        <Style Selector="^ /template/ Image#Logo">
+            <Setter Property="Width" Value="64"/>
+            <Setter Property="Height" Value="64"/>
+        </Style>
+        <Style Selector="^ /template/ TextBlock#Title">
+            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeHeading4}"/>
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}"/>
+        </Style>
+        <Style Selector="^ /template/ TextBlock#Message">
+            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}"/>
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+        </Style>
+        <Style Selector="^ /template/ atom|SplashProgressBar#Progress">
+            <Setter Property="Height" Value="4"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="IndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}"/>
+            <Setter Property="TrackBrush" Value="{atom:SharedTokenResource ColorFillSecondary}"/>
+        </Style>
+        <Style Selector="^ /template/ Path#PART_CloseButton">
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Margin" Value="16"/>
+            <Setter Property="Stroke" Value="{atom:SharedTokenResource ColorIcon}"/>
+            <Setter Property="StrokeThickness" Value="1.5"/>
+        </Style>
+        <Style Selector="^:error /template/ TextBlock#Message">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}"/>
+        </Style>
+        <Style Selector="^:error /template/ atom|SplashProgressBar#Progress">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector="^:error /template/ Path#PART_CloseButton">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="^:opaque /template/ Border#Card">
+            <!-- BoxShadows 是结构体，不能设为 null；用透明零阴影表示"无阴影"。 -->
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="BoxShadow" Value="0 0 0 0 Transparent"/>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

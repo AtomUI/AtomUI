@@ -6,7 +6,7 @@ Catalog 和 XLIFF 的源文件规则见 [catalog-and-xliff.md](catalog-and-xliff
 
 ## 根 Builder
 
-`Application.UseAtomUI(...)` 的配置参数由主题专用的 `IThemeManagerBuilder` 升级为根级 `IAtomUIBuilder`。
+`AppBuilder.UseAtomUI(...)` 的配置参数是根级 `IAtomUIBuilder`。
 根 Builder 组合主题、本地化、控件包和运行时初始化，不把本地化重新塞进主题 Builder。
 
 ```text
@@ -19,7 +19,7 @@ IAtomUIBuilder
 常用能力继续通过根 Builder 扩展方法暴露，避免调用方依赖内部子 Builder：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseLanguages(
         defaultLanguage: LanguageTags.ZhCN,
@@ -31,7 +31,7 @@ this.UseAtomUI(builder =>
         ]);
 
     builder.UseDesktopControls();
-});
+})
 ```
 
 命名必须保持以下层次：
@@ -44,6 +44,11 @@ this.UseAtomUI(builder =>
 
 `UseLanguages()` 不接收包名、程序集、Descriptor 或语言包列表。应用 Catalog、组件 Catalog 和静态语言包
 通过生成链注册，Builder 配置顺序不得影响最终结果。
+
+`ILocalizationBuilder.AddModuleData(string moduleId, string data)` 是生成代码登记版本化模块数据的入口；每个模块只登记一次，
+重复模块或无效数据会失败。`LanguageModuleManifestAttribute(int version, string moduleId, string data)` 仅携带构建期
+链接元数据，允许运行时保持声明式登记。手工 `AddCatalog`、`AddTranslationBundle`、`AddLanguageDefinition` 与
+`ConfigureLanguages` 契约继续有效。协议见[生成与构建](../../architecture/systems/localization/generation-and-build.md#模块数据传输协议-v1)。
 
 ## LanguageTag
 

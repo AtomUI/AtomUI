@@ -34,6 +34,11 @@ PublishAot:
 ## 发布脚本职责
 
 `PublishToLocal.ps1` 统一处理 AOT 和非 AOT 两条路径。
+脚本先检查发布模式与输出路径，再清理旧产物。输出路径不能包含 `.`、`..`、通配符或指向目录的符号链接，
+不能是文件系统根、用户主目录、仓库根及其上级；仓库内仅允许写入 `.artifacts/gallery_published` 或
+`binaries/gallery_published` 的子目录。已有的非空输出目录须包含脚本写入的
+`.atomui-gallery-publish-root` 标记，否则脚本拒绝覆盖。首次发布可使用不存在或为空的目录；
+后续同一路径发布会替换先前由该脚本创建的产物。
 
 当 `publishAot` 为 `true`：
 
@@ -46,8 +51,15 @@ PublishAot:
 
 当 `publishAot` 为 `false`：
 
-- 保留原有普通 self-contained single-file 发布路径。
+- Release 使用 self-contained single-file，并默认启用 ReadyToRun；`-publishReadyToRun false` 可构建对照产物。
+  Debug 非 AOT 发布必须显式传 `-publishReadyToRun false`，避免误以为生成了 R2R。
+- `AtomUIGallery.Desktop.csproj` 仅在 Gallery 发布入口把 `GalleryPublishReadyToRun` 映射到 SDK 属性，Toolchain 仍保持
+  portable net10.0，不继承应用 RID/R2R。
 - 该模式不作为默认正式发布形态。
+
+脚本在两种模式开始前只清理当前 Gallery 应用 RID 中间目录里的 `linked/` 与 `R2R/`。SDK 的普通 `clean` 不会移除这两处；
+从裁剪发布切换到未裁剪 R2R 时，旧的 ReactiveUI 产物曾让新调用方遇到 `MissingMethodException`。这些目录仅含可重建的
+发布中间文件；清理不会触及源码、NuGet 缓存或 Toolchain 的独立输出。
 
 ## 产物校验规则
 

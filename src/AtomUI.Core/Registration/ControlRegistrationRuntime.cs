@@ -16,6 +16,25 @@ public static class ControlRegistrationRuntime
 #endif
     public static bool IsTrimmed => AppContext.TryGetSwitch(TrimmedSwitchName, out var trimmed) && trimmed;
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static ControlRegistrationFragmentAttribute? ResolveFragment(IReadOnlyDictionary<string, Type> map, string key)
+    {
+        if (!map.TryGetValue(key, out var proxy))
+        {
+            return null;
+        }
+        if (!proxy.IsSealed || !typeof(ControlRegistrationFragmentAttribute).IsAssignableFrom(proxy) || proxy.ContainsGenericParameters)
+        {
+            throw new InvalidOperationException($"Invalid control registration proxy '{proxy}'.");
+        }
+        var fragment = proxy.GetCustomAttribute<ControlRegistrationFragmentAttribute>(false);
+        if (fragment is null || fragment.GetType() != proxy)
+        {
+            throw new InvalidOperationException($"Control registration proxy '{proxy}' has no matching fragment Attribute.");
+        }
+        return fragment;
+    }
+
     public static IAtomUIBuilder RegisterPackage(
         IAtomUIBuilder builder,
         string packageId,
@@ -25,18 +44,6 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collect, prepare, complete, ensure: false);
 
-    // Legacy generated ABI: both collectors now contribute to one complete package before publication.
-    public static IAtomUIBuilder RegisterPartitionedPackage(
-        IAtomUIBuilder builder,
-        string packageId,
-        Func<IControlThemesProvider> createProvider,
-        Action<ControlPackageRegistrationBuilder> collectCritical,
-        Action<ControlPackageRegistrationBuilder> collectDeferred,
-        Action<IAtomUIBuilder>? prepare = null,
-        Action<IAtomUIBuilder>? complete = null) =>
-        Register(builder, packageId, createProvider, collectCritical, prepare, complete, ensure: false,
-            collectRemaining: collectDeferred);
-
     public static IAtomUIBuilder EnsurePackage(
         IAtomUIBuilder builder,
         string packageId,
@@ -45,18 +52,6 @@ public static class ControlRegistrationRuntime
         Action<IAtomUIBuilder>? prepare = null,
         Action<IAtomUIBuilder>? complete = null) =>
         Register(builder, packageId, createProvider, collect, prepare, complete, ensure: true);
-
-    // Legacy Ensure ABI uses the same complete collection and idempotency checks.
-    public static IAtomUIBuilder EnsurePartitionedPackage(
-        IAtomUIBuilder builder,
-        string packageId,
-        Func<IControlThemesProvider> createProvider,
-        Action<ControlPackageRegistrationBuilder> collectCritical,
-        Action<ControlPackageRegistrationBuilder> collectDeferred,
-        Action<IAtomUIBuilder>? prepare = null,
-        Action<IAtomUIBuilder>? complete = null) =>
-        Register(builder, packageId, createProvider, collectCritical, prepare, complete, ensure: true,
-            collectRemaining: collectDeferred);
 
     public static void CollectFragments(
         ControlPackageRegistrationBuilder builder,
@@ -101,8 +96,7 @@ public static class ControlRegistrationRuntime
         Action<ControlPackageRegistrationBuilder> collect,
         Action<IAtomUIBuilder>? prepare,
         Action<IAtomUIBuilder>? complete,
-        bool ensure,
-        Action<ControlPackageRegistrationBuilder>? collectRemaining = null)
+        bool ensure)
     {
         ArgumentNullException.ThrowIfNull(builder);
         if (builder is not AtomUIBuilder root)
@@ -125,16 +119,9 @@ public static class ControlRegistrationRuntime
             state.ThrowIfUnavailable();
             var provider = createProvider();
             ArgumentNullException.ThrowIfNull(provider);
-            collection = new ControlPackageRegistrationBuilder(state.CanDeferFragments);
+            collection = new ControlPackageRegistrationBuilder(deferFragments: true);
             collect(collection);
             state.ThrowIfUnavailable();
-            if (collectRemaining is not null)
-            {
-                // A collector can catch a mutation error; never run another callback on a failed collection.
-                collection.ThrowIfUnavailable();
-                collectRemaining(collection);
-                state.ThrowIfUnavailable();
-            }
             var package = collection.Build(packageId, provider);
             builder.Theme.AddControlPackage(package);
             complete?.Invoke(builder);

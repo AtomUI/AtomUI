@@ -8,9 +8,7 @@ public static class ColorPickerThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseDesktopColorPicker(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Register(
-            builder,
-            static () => new AtomUIColorPickerThemesProvider(),
-            complete: static builder => GeneratedLanguageModuleRegistration.Register(builder.Localization));
+        return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
+            .DependsOn(static builder => builder.UseDesktopControls()));
     }
 }

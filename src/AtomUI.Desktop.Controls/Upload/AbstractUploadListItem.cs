@@ -123,6 +123,9 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
 
     static AbstractUploadListItem()
     {
+        // A deferred item theme can initialize this type before Upload. Register the
+        // parent class handler only after both types' static fields are initialized.
+        Upload.RegisterTaskRemoveRequestEvent(TaskRemoveRequestEvent);
         IconButton.ClickEvent.AddClassHandler<AbstractUploadListItem>((o, args) => o.HandleActionButtonClicked((args.Source as IconButton)!));
     }
     

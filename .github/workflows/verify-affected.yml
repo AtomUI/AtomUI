@@ -53,6 +53,12 @@ jobs:
           # run performs the inventory audit and runs tooling regressions when
           # the selector/policy changes; avoid repeating either in separate steps.
           python3 scripts/verification/test.py run "${scope[@]}" --fresh --tests-only
+      - name: Materialize real theme assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/verification
+          dotnet run --project tools/validation/AtomUI.ThemeAssetsValidation/AtomUI.ThemeAssetsValidation.csproj -c Release --no-launch-profile 2>&1 | tee .artifacts/verification/theme-assets.log
       - name: Preserve compact evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -61,5 +67,6 @@ jobs:
           path: |
             .artifacts/verification/latest.json
             .artifacts/verification/history.json
+            .artifacts/verification/theme-assets.log
           if-no-files-found: ignore
           retention-days: 14

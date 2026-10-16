@@ -7,13 +7,12 @@ namespace AtomUI.Theme.Definitions.Compiled;
 public sealed class CompiledThemeValueWriter
 {
     private CompiledThemeBinding? _binding;
-    private BoundTokenValue?[] _values;
+    private readonly Dictionary<int, BoundTokenValue> _values = new();
     private readonly ThemeSourceLocation _location;
 
     internal CompiledThemeValueWriter(CompiledThemeBinding binding, ThemeSourceLocation location)
     {
         _binding = binding;
-        _values = new BoundTokenValue?[binding.Tokens.Length];
         _location = location;
     }
 
@@ -36,12 +35,15 @@ public sealed class CompiledThemeValueWriter
     {
         ObjectDisposedException.ThrowIf(_binding is null, this);
         ArgumentNullException.ThrowIfNull(canonicalValue);
-        if ((uint)tokenId >= (uint)_values.Length)
+        if (!_binding.Tokens.TryGetValue(tokenId, out var token))
         {
-            throw new ArgumentOutOfRangeException(nameof(tokenId));
+            if (_binding.SelectedControl is { } selected && selected != controlId)
+            {
+                return;
+            }
+            throw new ThemeSchemaException("Compiled theme value has no declared destination.");
         }
-        var token = _binding.Tokens[tokenId];
-        if (_values[tokenId] is not null || token.ControlId != controlId || token.Own != own || token.Descriptor.ValueType != typeof(T))
+        if (_values.ContainsKey(tokenId) || token.ControlId != controlId || token.Own != own || token.Descriptor.ValueType != typeof(T))
         {
             throw new ThemeSchemaException("Compiled theme value does not match its unique binding destination.");
         }
@@ -51,37 +53,21 @@ public sealed class CompiledThemeValueWriter
     internal PreparedThemeValues Complete()
     {
         ObjectDisposedException.ThrowIf(_binding is null, this);
-        if (_values.Any(static value => value is null))
+        if (_values.Count != _binding.Tokens.Count)
         {
             throw new ThemeSchemaException("Compiled theme factory did not write every declared Token.");
         }
-        var globals = new List<BoundTokenValue>();
-        var controlGlobals = new List<BoundTokenValue>[_binding.Controls.Length];
-        var controlOwn = new List<BoundTokenValue>[_binding.Controls.Length];
-        for (var index = 0; index < controlGlobals.Length; index++)
-        {
-            controlGlobals[index] = new List<BoundTokenValue>();
-            controlOwn[index] = new List<BoundTokenValue>();
-        }
-        for (var index = 0; index < _values.Length; index++)
-        {
-            var token = _binding.Tokens[index];
-            var values = token.ControlId < 0 ? globals : token.Own ? controlOwn[token.ControlId] : controlGlobals[token.ControlId];
-            values.Add(_values[index]!);
-        }
-        var controls = new ControlThemeDefinition[_binding.Controls.Length];
-        for (var index = 0; index < controls.Length; index++)
-        {
-            var control = _binding.Controls[index];
-            controls[index] = new ControlThemeDefinition(control.Descriptor, control.Mode, control.Algorithms,
-                controlGlobals[index], controlOwn[index], _location);
-        }
-        return new PreparedThemeValues(Array.AsReadOnly(globals.ToArray()), Array.AsReadOnly(controls));
+        var globals = _values.Where(value => _binding.Tokens[value.Key].ControlId < 0).Select(value => value.Value).ToArray();
+        var controls = _binding.Controls.Select(control => new ControlThemeDefinition(control.Value.Descriptor,
+            control.Value.Mode, control.Value.Algorithms,
+            _values.Where(value => _binding.Tokens[value.Key].ControlId == control.Key && !_binding.Tokens[value.Key].Own).Select(value => value.Value),
+            _values.Where(value => _binding.Tokens[value.Key].ControlId == control.Key && _binding.Tokens[value.Key].Own).Select(value => value.Value), _location)).ToArray();
+        return new PreparedThemeValues(Array.AsReadOnly(globals), Array.AsReadOnly(controls));
     }
 
     internal void Close()
     {
         _binding = null;
-        _values = Array.Empty<BoundTokenValue>();
+        _values.Clear();
     }
 }

@@ -68,6 +68,9 @@ internal presenter 可以只拥有主题资源，不要求 ControlTokenDescripto
 
 ### 3.1 Control 到资产的关联
 
+主题资产的 `Themes/` 路径判断使用 MSBuild `Link` 给出的逻辑资源路径；没有 `Link` 时才使用源文件路径。
+物理上位于 `Themes/`、但在包提交前由控件直接实例化的启动资源字典可保留原逻辑路径，避免被自动登记为包主题资产。
+
 默认主题关系来自资产实际导出的 Control；Semantic Theme 属性关系另由已解析的普通 AXAML 赋值证明：
 
 - ResourceDictionary 顶层 ControlTheme，或语义上继承 ControlTheme 的具体实例，读取其 key 与 TargetType。
@@ -97,7 +100,7 @@ TargetType 随片段保留，不需要分析 C# 字符串查找。
 编译期资产模型记录可选资源 CLR 身份、资源自身域与经导出目标校验后的有效域；声明归属与计算规则由
 [平台分支](aot-typemap-registration.md#7-平台分支)拥有。来源收敛已实现，验证状态见
 [AOT 与裁剪架构](aot-and-trimming.md#1-状态与事实边界)。资源类不替代导出 TargetType，不改变主题所有权或保留条件。
-这些编译期事实用于校验和生成 guard，不增加运行时 descriptor 字段、序列化平台清单或新的 ABI/fingerprint 格式。
+这些平台事实用于校验和生成 guard；运行时使用同一生成的资产可用性谓词，不序列化另一套平台表达式。
 
 主题资产以 ExportedThemes 与 RequiredTokenOwners 取代单一 OwnerIdentity：
 
@@ -111,6 +114,11 @@ TargetType 随片段保留，不需要分析 C# 字符串查找。
 
 ControlThemeAssetManifest 与 ThemeSchemaRegistry 的校验、schema fingerprint、revision 必须反映新模型。
 资源键 schema fingerprint 继续承担主题与 schema 一致性检查；它不等于已退役的消费 Sidecar contract hash。
+
+启动清单版本 2 另行导出纯字符串契约：Control 定义程序集/类型、Own Token 键定义程序集、资产所需 Token owner 的
+精确类型、语义声明与绑定的属性/目标类型，以及编译时全局资源键名称。应用链接与运行时追加复用同一校验器；
+语义 owner 可以不提供 Token，但资产显式要求的 Token owner 必须有 descriptor。运行时资产 guard 先于动态链接和索引
+执行，不适用资产不会进入资源候选或触发 factory。旧版清单必须重建，不能依赖首次物化补做缺失契约检查。
 
 普通生成资产通过隐藏的 `ControlThemeAssetDescriptor.CreateGenerated(...)` 分两层验证。编译期 contract fingerprint
 使用独立 domain `AtomUI.GeneratedControlThemeAssetContract` / format `1`，记录资产标识、规范化 URI、导出、owner、
@@ -218,7 +226,6 @@ full/trimmed 等价性以相同宿主输入契约得到满足为前提；未使�
 
 隐藏资源记录包含 AssetId、Phase、Order、factory。各包只暂存记录；全部包收集后统一校验，再创建和挂载。
 跨包按真实 `PackageCommitOrdinal`，包内按 `(Phase, Order, AssetId)` 固定排序。
-Bootstrap 补齐替换原包快照并保留 provider/ordinal；partial 包无完整 SchemaFingerprint。详见[注册分期](lazy-control-registration.md)。
 
 Order 来自正常包资源契约和显式包含次序，不能来自 TypeMap 查询次序、candidate key 字母序、程序集扫描次序或所选控件数量。
 嵌套 MergedDictionaries 的声明次序保存在 factory 内。默认主题 export key 冲突必须有明确覆盖契约，否则构建诊断。
@@ -234,22 +241,6 @@ Order 来自正常包资源契约和显式包含次序，不能来自 TypeMap �
 
 非裁剪与裁剪执行中，共同保留资产的相对优先级和选中控件的观察结果必须一致；不要求裁剪产物包含全部未用资源。
 跨包收集和冻结的总体时序由 [注册生命周期](aot-and-trimming.md#6-注册生命周期)拥有。
-
-### 7.1 分级演化的身份和资源顺序
-
-分级注册不改变上述顺序与冲突语义。跨阶段资源/查询目标由
-[惰性物化与资源查询](../systems/theming/lazy-materialization.md)拥有；统一提交由
-[分级启动演化](staged-startup-evolution.md)拥有。
-
-- 每代 registry 的 Revision 证据必须覆盖该代实际贡献集合。空包集合、全指纹包以及混合
-  手写包均适用；清除 request 去重键不能代替更新 schema Revision 和快照缓存身份。
-- 当证据无法描述新增贡献时，先回退实际 schema 的完整计算；不得继续使用 Stage 1 的包列表生成 Stage 2 Revision。
-- 包完整收集后提供完整指纹；真实裁剪路径根据实际 schema 计算，保留裁剪/平台选中集合的正确性。
-- 数字 slot 只在单代 registry 内稳定，跨代共享必须校验 exact identity、CLR type、schema 与计算输入。
-- 同一资产跨片段/跨阶段只挂一次；新增资源按完整排序键合并，且静态层相对根 Token provider 的优先级保持不变。
-- 旧分区 ABI 保留签名，但两段在同次注册中完整收集，失败不发布半包；新生成代码使用 RegisterPackage，阶段选择在片段 Add 前执行。
-  旧 generated package 的支持边界必须包含
-  实际 descriptor/fingerprint 协议版本，不能仅根据方法仍存在就宣称所有旧二进制免重编。
 
 注册优化优先复用现有 descriptor 和不可变集合。最终保留集合与 registry slot 由运行期实际组合确定；
 不得用包级全控件 Type/factory 表破坏官方 TypeMap/条件后端的精细选择。

@@ -2,7 +2,6 @@ using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Reflection;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -17,7 +16,6 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaMenuItem = Avalonia.Controls.MenuItem;
 
 [PseudoClasses(MenuItemPseudoClass.TopLevel)]
-[BootstrapRegistration]
 public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
 {
     #region 公共属性定义

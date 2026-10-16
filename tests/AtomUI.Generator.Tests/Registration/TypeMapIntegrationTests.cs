@@ -212,23 +212,23 @@ public partial class TypeMapIntegrationTests
         var (_, assembly) = Emit("""
             namespace Demo;
             public class Chrome : Avalonia.StyledElement { }
-            public sealed class Provider : AtomUI.Theme.Resources.ControlThemesProvider { public Provider() { Id = "Demo.Controls"; } }
             public static class Probe
             {
-                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Register(builder, static () => new Provider());
+                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Definition.Register(builder);
             }
             """, Asset("Chrome", "<ControlTheme x:Key=\"Chrome\" TargetType=\"local:Chrome\" />"));
         var descriptor = GeneratedAsset(assembly);
         AssertRealFingerprintAndManifest(descriptor);
         var core = LoadCore();
-        var application = Activator.CreateInstance(Assembly.Load("Avalonia.Controls").GetType("Avalonia.Application")!);
-        var builder = Activator.CreateInstance(core.GetType("AtomUI.AtomUIBuilder")!, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { application }, null)!;
+        var applicationType = Assembly.Load("Avalonia.Controls").GetType("Avalonia.Application")!;
+        var builder = Activator.CreateInstance(core.GetType("AtomUI.AtomUIBuilder")!, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { (object?)applicationType }, null)!;
         assembly.GetType("Demo.Probe")!.GetMethod("Register")!.Invoke(null, new[] { builder });
         var themeBuilder = builder.GetType().GetProperty("ThemeManagerBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(builder)!;
-        var package = ((System.Collections.IEnumerable)themeBuilder.GetType().GetProperty("ControlPackages", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(themeBuilder)!).Cast<object>().Single();
-        ((System.Collections.IEnumerable)package.GetType().GetProperty("Controls")!.GetValue(package)!).Cast<object>().ShouldBeEmpty();
-        ((System.Collections.IEnumerable)package.GetType().GetProperty("ThemeAssets")!.GetValue(package)!).Cast<object>().ShouldHaveSingleItem();
+        ((System.Collections.IEnumerable)themeBuilder.GetType().GetProperty("ControlPackages", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(themeBuilder)!).Cast<object>().ShouldBeEmpty();
         using var manager = (IDisposable)themeBuilder.GetType().GetMethod("Build", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null)!.Invoke(themeBuilder, null)!;
+        var index = manager.GetType().GetField("_startupPackageIndex", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(manager)!;
+        index.GetType().GetProperty("ControlCount", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(index).ShouldBe(0);
+        ((System.Collections.IEnumerable)index.GetType().GetProperty("Assets", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(index)!).Cast<object>().ShouldHaveSingleItem();
     }
 
     [Theory]
@@ -448,36 +448,34 @@ public partial class TypeMapIntegrationTests
             public class Button : Avalonia.Controls.Control { }
             public sealed class Provider : AtomUI.Theme.Resources.ControlThemesProvider
             {
-                public Provider() { Id = "Demo.Controls"; }
+                public Provider() { Id = "Demo.Controls"; Probe.Providers++; }
             }
             public static class Probe
             {
                 public static int Providers;
-                public static Provider? Last;
-                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Register(builder,
-                    static () => { Providers++; return Last = new Provider(); });
+                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Definition.Register(builder);
             }
             """, Asset("Button", "<ControlTheme x:Key=\"Button\" TargetType=\"local:Button\" />"));
         var core = LoadCore();
-        var application = Activator.CreateInstance(Assembly.Load("Avalonia.Controls").GetType("Avalonia.Application")!);
-        var builder = Activator.CreateInstance(core.GetType("AtomUI.AtomUIBuilder")!, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { application }, null)!;
+        var applicationType = Assembly.Load("Avalonia.Controls").GetType("Avalonia.Application")!;
+        var builder = Activator.CreateInstance(core.GetType("AtomUI.AtomUIBuilder")!, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { (object?)applicationType }, null)!;
         var probe = assembly.GetType("Demo.Probe")!;
         var register = probe.GetMethod("Register")!;
         register.Invoke(null, new[] { builder });
-        var provider = probe.GetField("Last")!.GetValue(null)!;
-        ((System.Collections.ICollection)provider.GetType().GetProperty("ControlThemes")!.GetValue(provider)!).Count.ShouldBe(0);
+        probe.GetField("Providers")!.GetValue(null).ShouldBe(0);
         var themeBuilder = builder.GetType().GetProperty("ThemeManagerBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(builder)!;
         using var manager = (IDisposable)themeBuilder.GetType().GetMethod("Build", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null)!.Invoke(themeBuilder, null)!;
-        ((System.Collections.ICollection)provider.GetType().GetProperty("ControlThemes")!.GetValue(provider)!).Count.ShouldBe(0);
+        probe.GetField("Providers")!.GetValue(null).ShouldBe(0);
         Should.Throw<TargetInvocationException>(() => register.Invoke(null, new[] { builder })).InnerException.ShouldBeOfType<InvalidOperationException>();
-        probe.GetField("Providers")!.GetValue(null).ShouldBe(1);
+        probe.GetField("Providers")!.GetValue(null).ShouldBe(0);
     }
 
     [Fact]
     public void Invalid_Generated_Asset_Reports_Schema_Error_Without_Static_Initializer_Wrapper()
     {
         var source = """
-            namespace Demo;
+            namespace Demo
+            {
             public class Button : Avalonia.Controls.Control { }
             public sealed class Provider : AtomUI.Theme.Resources.ControlThemesProvider
             {
@@ -486,7 +484,16 @@ public partial class TypeMapIntegrationTests
             public static class Probe
             {
                 public static void Register(AtomUI.IAtomUIBuilder builder) =>
-                    AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Register(builder, static () => new Provider());
+                    AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.RegisterManualValidation(builder);
+            }
+            }
+            namespace AtomUI.Generated.TypeMapFixture
+            {
+                internal static partial class GeneratedControlPackageRegistration
+                {
+                    internal static void RegisterManualValidation(AtomUI.IAtomUIBuilder builder) =>
+                        AtomUI.Registration.ControlRegistrationRuntime.RegisterPackage(builder, "Demo.Controls", static () => new Demo.Provider(), Collect);
+                }
             }
             """;
         var asset = Asset("Button", "<ControlTheme x:Key=\"Button\" TargetType=\"local:Button\" />");
@@ -505,12 +512,14 @@ public partial class TypeMapIntegrationTests
         emit.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
         LoadCore();
         var assembly = Assembly.Load(stream.ToArray());
-        var application = Activator.CreateInstance(Assembly.Load("Avalonia.Controls").GetType("Avalonia.Application")!);
+        var applicationType = Assembly.Load("Avalonia.Controls").GetType("Avalonia.Application")!;
         var builder = Activator.CreateInstance(LoadCore().GetType("AtomUI.AtomUIBuilder")!,
-            BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { application }, null)!;
-        var register = assembly.GetType("Demo.Probe")!.GetMethod("Register")!;
+            BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { (object?)applicationType }, null)!;
+        assembly.GetType("Demo.Probe")!.GetMethod("Register")!.Invoke(null, new[] { builder });
+        var themeBuilder = builder.GetType().GetProperty("ThemeManagerBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(builder)!;
+        var complete = themeBuilder.GetType().GetMethod("CompletePendingRegistrations", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-        var failure = Should.Throw<TargetInvocationException>(() => register.Invoke(null, new[] { builder }));
+        var failure = Should.Throw<TargetInvocationException>(() => complete.Invoke(themeBuilder, null));
         failure.InnerException!.GetType().FullName.ShouldBe("AtomUI.Theme.Schema.ThemeSchemaException");
     }
 

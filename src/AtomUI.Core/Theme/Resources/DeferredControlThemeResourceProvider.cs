@@ -10,6 +10,8 @@ namespace AtomUI.Theme.Resources;
 internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
 {
     private readonly string _assetId;
+    private readonly string _packageId;
+    private readonly IReadOnlyList<object>? _exportedKeys;
     private readonly Func<IResourceProvider> _factory;
     private readonly ThemeResourceOwnerBridge _ownerBridge;
     private IResourceProvider? _inner;
@@ -17,12 +19,28 @@ internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
     private bool _isLoading;
 
     internal DeferredControlThemeResourceProvider(string assetId, Func<IResourceProvider> factory,
-        IReadOnlySet<object>? resourceKeys = null)
+        IReadOnlySet<object>? resourceKeys = null, string? packageId = null, IReadOnlyList<object>? exportedKeys = null)
     {
         _assetId = assetId;
+        _packageId = packageId ?? string.Empty;
+        _exportedKeys = exportedKeys;
         _factory = factory;
         ResourceKeys = resourceKeys;
         _ownerBridge = new ThemeResourceOwnerBridge();
+    }
+
+    // Explicit validation uses the same attached owner and factory path, including empty-key
+    // dictionaries. Export lookups also instantiate typed-theme AddDeferred entries.
+    internal void EnsureLoaded(IEnumerable<object>? exportedKeys = null)
+    {
+        var resources = Load();
+        foreach (var key in (ResourceKeys ?? Enumerable.Empty<object>()).Concat(_exportedKeys ?? [])
+            .Concat(exportedKeys ?? []).Distinct())
+        {
+            resources.TryGetResource(key, ThemeVariant.Default, out _);
+            resources.TryGetResource(key, ThemeVariant.Light, out _);
+            resources.TryGetResource(key, ThemeVariant.Dark, out _);
+        }
     }
 
     internal bool IsLoaded => _inner is not null;
@@ -112,6 +130,10 @@ internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
         finally
         {
             _isLoading = false;
+        }
+        if (AtomUIStartupEventSource.Log.IsEnabled())
+        {
+            AtomUIStartupEventSource.Log.ThemeAssetMaterialized(_packageId, _assetId);
         }
         return _inner!;
     }

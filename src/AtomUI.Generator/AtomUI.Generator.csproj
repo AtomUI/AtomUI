@@ -33,13 +33,16 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="../AtomUI.Toolchain/Common/Startup/**/*.cs" Link="Startup/Data/%(Filename)%(Extension)" />
         <Compile Include="../AtomUI.Toolchain/Common/Registration/RegistrationFrameworkPolicy.cs"
                  Link="Registration/RegistrationFrameworkPolicy.cs" />
         <Compile Include="../AtomUI.Toolchain/Common/Localization/**/*.cs"
                  Link="LocalizationBuild/%(RecursiveDir)%(Filename)%(Extension)" />
         <Compile Include="../AtomUI.Toolchain/Common/SourceGeneration/GeneratedCodeNamespace.cs"
                  Link="SourceGeneration/GeneratedCodeNamespace.cs" />
+        <Compile Include="../AtomUI.Core/Theme/Definitions/Compiled/BuiltInThemeLiteralValue.cs;../AtomUI.Core/Theme/Definitions/Compiled/CompiledThemeManifest.cs" Link="ThemeDefinitions/Shared/%(Filename)%(Extension)" />
         <Compile Include="../AtomUI.Toolchain/Common/ThemeDefinitions/**/*.cs" Link="ThemeDefinitions/Shared/%(Filename)%(Extension)" />
+        <EmbeddedResource Include="../AtomUI.Localization/LanguageData/language-tags.tsv" LogicalName="AtomUI.LanguageTags.tsv" />
         <InternalsVisibleTo Include="AtomUI.Generator.Tests" />
     </ItemGroup>
 

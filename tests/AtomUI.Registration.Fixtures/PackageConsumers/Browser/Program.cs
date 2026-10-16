@@ -8,10 +8,18 @@ using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
 using Fixture.NuGetAuthor;
 
-await AppBuilder.Configure<ConsumerApp>().StartBrowserAppAsync("out");
-public sealed partial class ConsumerApp : Application
+await AppBuilder.Configure<ConsumerApp>()
+                .UseAtomUI(builder => builder.UseDesktopControls().UseAuthorControls())
+                .StartBrowserAppAsync("out");
+public sealed class ConsumerApp : Application
 {
-    public override void Initialize() => this.UseAtomUI(builder => builder.UseDesktopControls().UseAuthorControls());
+    // 本工程不引用 AtomUI 生成器，按公开契约手写挂接。
+    public override void RegisterServices()
+    {
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
+    }
+
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is ISingleViewApplicationLifetime single)

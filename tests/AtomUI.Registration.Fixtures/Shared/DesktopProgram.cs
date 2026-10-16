@@ -8,9 +8,9 @@ using Avalonia.VisualTree;
 using AtomUI.Registration.Fixtures;
 
 #if REAL_DESKTOP
-AppBuilder.Configure<ProductApp>().UsePlatformDetect().SetupWithoutStarting();
+AppBuilder.Configure<ProductApp>().UsePlatformDetect().UseAtomUI(ProductApp.Configure).SetupWithoutStarting();
 #else
-AppBuilder.Configure<ProductApp>().UseHeadless(new AvaloniaHeadlessPlatformOptions()).SetupWithoutStarting();
+AppBuilder.Configure<ProductApp>().UseHeadless(new AvaloniaHeadlessPlatformOptions()).UseAtomUI(ProductApp.Configure).SetupWithoutStarting();
 #endif
 var app = (ProductApp)Application.Current!;
 #if REAL_DESKTOP && COMPLEX

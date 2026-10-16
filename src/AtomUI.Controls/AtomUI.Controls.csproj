@@ -37,4 +37,11 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- Splash owns this startup theme before package commit; keep its logical resource path outside Themes
+             so the package theme-asset pipeline does not register or defer it. -->
+        <AvaloniaXaml Update="Splash/Themes/SplashDefaultTheme.axaml"
+                      Link="Splash/SplashDefaultTheme.axaml" />
+    </ItemGroup>
+
 </Project>

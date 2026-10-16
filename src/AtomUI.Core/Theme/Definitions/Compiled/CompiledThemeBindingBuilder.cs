@@ -2,6 +2,7 @@ using System.ComponentModel;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
+using System.Reflection;
 
 namespace AtomUI.Theme.Definitions.Compiled;
 
@@ -10,16 +11,19 @@ public sealed class CompiledThemeBindingBuilder
 {
     private ThemeSchemaRegistry? _registry;
     private Dictionary<object, TokenDescriptor>? _globalTokens;
-    private readonly List<CompiledTokenBinding> _tokens = new();
-    private readonly List<CompiledControlBinding> _controls = new();
+    private readonly Dictionary<int, CompiledTokenBinding> _tokens = new();
+    private readonly int? _selectedControl;
+    private readonly Dictionary<int, ControlTokenIdentity> _declaredControls = new();
+    private readonly Dictionary<int, CompiledControlBinding> _controls = new();
     private readonly HashSet<(int Control, string Name)> _tokenNames = new();
     private readonly HashSet<ControlTokenIdentity> _controlIdentities = new();
     private readonly Dictionary<int, Dictionary<object, TokenDescriptor>> _ownTokens = new();
     private IReadOnlyList<ThemeAlgorithmDescriptor>? _algorithms;
 
-    internal CompiledThemeBindingBuilder(ThemeSchemaRegistry registry)
+    internal CompiledThemeBindingBuilder(ThemeSchemaRegistry registry, int? selectedControl = null)
     {
         _registry = registry;
+        _selectedControl = selectedControl;
     }
 
     public void SetAlgorithms(IReadOnlyList<ThemeAlgorithm> algorithms)
@@ -39,14 +43,12 @@ public sealed class CompiledThemeBindingBuilder
     public void RequireControlGlobal<T>(int controlId, int tokenId, object resourceKey, string expectedTokenName,
         TokenStage stage, int valueContractVersion)
     {
-        GetControl(controlId);
         RequireToken<T>(controlId, tokenId, resourceKey, expectedTokenName, stage, valueContractVersion, false);
     }
 
     public void RequireOwn<T>(int controlId, int tokenId, object resourceKey, string expectedTokenName,
         int valueContractVersion)
     {
-        GetControl(controlId);
         RequireToken<T>(controlId, tokenId, resourceKey, expectedTokenName, TokenStage.Control, valueContractVersion, true);
     }
 
@@ -55,13 +57,41 @@ public sealed class CompiledThemeBindingBuilder
         IReadOnlyList<ThemeAlgorithm> algorithms)
     {
         EnsureOpen();
-        if (controlId != _controls.Count || controlId >= ThemeDocumentReaderOptions.DefaultMaxElements)
+        if (controlId < 0 || controlId >= ThemeDocumentReaderOptions.DefaultMaxElements || !_declaredControls.TryAdd(controlId, identity))
         {
-            throw new ArgumentOutOfRangeException(nameof(controlId), "Compiled control ids must be dense and unique.");
+            throw new ArgumentOutOfRangeException(nameof(controlId), "Compiled control ids must be nonnegative and unique.");
         }
-        if (identity.OwnerType is not { } owner || identity.Catalog != expectedCatalog || identity.Id != expectedId ||
-            owner.FullName != ownerMetadataName || owner.Assembly.FullName != ownerAssemblyIdentity ||
-            !_registry!.TryGetControl(identity, out var descriptor) || descriptor.ControlType != owner)
+        ArgumentNullException.ThrowIfNull(algorithms);
+        if (!Enum.IsDefined(mode) || ((algorithms.Count != 0) != (mode == ControlAlgorithmMode.Custom)))
+        {
+            throw new ThemeSchemaException($"Compiled theme Control '{identity}' has an invalid algorithm policy.");
+        }
+        var owner = identity.OwnerType;
+        var ownerAssemblyName = new AssemblyName(ownerAssemblyIdentity).Name;
+        if (owner is null || identity.Catalog != expectedCatalog || identity.Id != expectedId ||
+            owner.FullName != ownerMetadataName || ownerAssemblyName is null ||
+            !string.Equals(owner.Assembly.GetName().Name, ownerAssemblyName, StringComparison.Ordinal))
+        {
+            throw new ThemeSchemaException($"Compiled theme Control '{expectedCatalog}:{expectedId}' does not match the registered owner.");
+        }
+        if (_selectedControl == -1)
+        {
+            if (!_controlIdentities.Add(identity))
+            {
+                throw new ThemeSchemaException($"Compiled theme Control '{identity}' is duplicated.");
+            }
+            if (!_registry!.IsGlobalOnly &&
+                !_registry.MatchesControlRequirement(identity, owner, ownerAssemblyName, ownerMetadataName))
+            {
+                throw new ThemeSchemaException($"Compiled theme Control '{expectedCatalog}:{expectedId}' is not enabled or does not match the registered owner.");
+            }
+            return;
+        }
+        if (_selectedControl is { } selected && selected != controlId)
+        {
+            return;
+        }
+        if (!_registry!.TryGetControl(identity, out var descriptor) || descriptor.ControlType != owner)
         {
             throw new ThemeSchemaException($"Compiled theme Control '{expectedCatalog}:{expectedId}' does not match the registered owner.");
         }
@@ -69,23 +99,26 @@ public sealed class CompiledThemeBindingBuilder
         {
             throw new ThemeSchemaException($"Compiled theme Control '{identity}' is duplicated.");
         }
-        ArgumentNullException.ThrowIfNull(algorithms);
-        if (!Enum.IsDefined(mode) || ((algorithms.Count != 0) != (mode == ControlAlgorithmMode.Custom)))
-        {
-            throw new ThemeSchemaException($"Compiled theme Control '{identity}' has an invalid algorithm policy.");
-        }
-        _controls.Add(new CompiledControlBinding(descriptor, mode, BindAlgorithms(algorithms)));
+        _controls.Add(controlId, new CompiledControlBinding(descriptor, mode, BindAlgorithms(algorithms)));
     }
 
     private void RequireToken<T>(int controlId, int tokenId, object resourceKey, string name,
         TokenStage stage, int valueContractVersion, bool own)
     {
         EnsureOpen();
+        if (_selectedControl is { } selected && selected != controlId)
+        {
+            return;
+        }
+        if (controlId >= 0)
+        {
+            GetControl(controlId);
+        }
         ArgumentNullException.ThrowIfNull(resourceKey);
         SchemaIdentifier.Validate(name, nameof(name));
-        if (tokenId != _tokens.Count || tokenId >= ThemeDocumentReaderOptions.DefaultMaxElements)
+        if (tokenId < 0 || _tokens.ContainsKey(tokenId) || tokenId >= ThemeDocumentReaderOptions.DefaultMaxElements)
         {
-            throw new ArgumentOutOfRangeException(nameof(tokenId), "Compiled token ids must be dense and unique.");
+            throw new ArgumentOutOfRangeException(nameof(tokenId), "Compiled token ids must be nonnegative and unique.");
         }
         if (!resourceKey.GetType().IsEnum || !Enum.IsDefined(stage) || own != (stage == TokenStage.Control))
         {
@@ -115,13 +148,13 @@ public sealed class CompiledThemeBindingBuilder
         {
             throw new ThemeSchemaException($"Compiled theme Token '{name}' is duplicated.");
         }
-        _tokens.Add(new CompiledTokenBinding(descriptor, controlId, own));
+        _tokens.Add(tokenId, new CompiledTokenBinding(descriptor, controlId, own));
     }
 
     private CompiledControlBinding GetControl(int controlId)
     {
         EnsureOpen();
-        if ((uint)controlId >= (uint)_controls.Count)
+        if (!_controls.ContainsKey(controlId))
         {
             throw new ArgumentOutOfRangeException(nameof(controlId));
         }
@@ -155,22 +188,15 @@ public sealed class CompiledThemeBindingBuilder
         {
             throw new ThemeSchemaException("Compiled theme appearance does not match the registered algorithms.");
         }
-        var hasTokens = new bool[_controls.Count];
-        foreach (var token in _tokens)
+        foreach (var control in _controls)
         {
-            if (token.ControlId >= 0)
-            {
-                hasTokens[token.ControlId] = true;
-            }
-        }
-        for (var index = 0; index < _controls.Count; index++)
-        {
-            if (_controls[index].Mode == ControlAlgorithmMode.Unspecified && !hasTokens[index])
+            if (control.Value.Mode == ControlAlgorithmMode.Unspecified && !_tokens.Values.Any(token => token.ControlId == control.Key))
             {
                 throw new ThemeSchemaException("Compiled Control must declare an algorithm policy or Token.");
             }
         }
-        return new CompiledThemeBinding(algorithms, _tokens.ToArray(), _controls.ToArray());
+        return new CompiledThemeBinding(algorithms, new Dictionary<int, CompiledTokenBinding>(_tokens),
+            new Dictionary<int, CompiledControlBinding>(_controls), new Dictionary<int, ControlTokenIdentity>(_declaredControls), _selectedControl);
     }
 
     internal void Close()
@@ -180,6 +206,7 @@ public sealed class CompiledThemeBindingBuilder
         _algorithms = null;
         _tokens.Clear();
         _controls.Clear();
+        _declaredControls.Clear();
         _tokenNames.Clear();
         _controlIdentities.Clear();
         _ownTokens.Clear();
@@ -192,4 +219,5 @@ internal sealed record CompiledTokenBinding(TokenDescriptor Descriptor, int Cont
 internal sealed record CompiledControlBinding(ControlTokenDescriptor Descriptor, ControlAlgorithmMode Mode,
     IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms);
 internal sealed record CompiledThemeBinding(IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms,
-    CompiledTokenBinding[] Tokens, CompiledControlBinding[] Controls);
+    IReadOnlyDictionary<int, CompiledTokenBinding> Tokens, IReadOnlyDictionary<int, CompiledControlBinding> Controls,
+    IReadOnlyDictionary<int, ControlTokenIdentity> DeclaredControls, int? SelectedControl);

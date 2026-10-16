@@ -4,7 +4,7 @@ namespace AtomUI.Localization;
 
 internal static class LanguageSnapshotBuilder
 {
-    private static readonly TranslationSourceKind[] s_sourcePriorities =
+    private static readonly TranslationSourceKind[] SourcePriorities =
     [
         TranslationSourceKind.ApplicationOverride,
         TranslationSourceKind.StaticLanguagePack,
@@ -15,7 +15,8 @@ internal static class LanguageSnapshotBuilder
         LanguageCatalogRegistry registry,
         LanguageTag requestedLanguage,
         LanguageDefinition definition,
-        LanguageSnapshot? previous = null)
+        LanguageSnapshot? previous = null,
+        bool deferCatalogs = false)
     {
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(definition);
@@ -32,8 +33,6 @@ internal static class LanguageSnapshotBuilder
         var candidates = LanguageFallbackResolver.Resolve(
             requestedLanguage,
             definition.FormattingCulture);
-        var requiresTranslatedCoverage =
-            !LanguageFallbackResolver.HasEnglishPrimaryLanguage(requestedLanguage);
         var entries = new LanguageSnapshotEntry[registry.Catalogs.Count][];
         var canReuse = previous?.RequestedLanguage == requestedLanguage &&
                        previous.FallbackCandidates is { } previousCandidates &&
@@ -47,61 +46,117 @@ internal static class LanguageSnapshotBuilder
                 previousRegistry.HasSameCatalog(catalog, bundles, out var previousSlot))
             {
                 // 行是不可变数组；按身份映射旧 slot，只共享该行，不保留整张旧快照。
-                entries[catalogSlot] = previous.GetCatalogEntries(previousSlot);
+                entries[catalogSlot] = deferCatalogs
+                    ? previous.GetMaterializedCatalogEntries(previousSlot)!
+                    : previous.GetCatalogEntries(previousSlot);
                 continue;
             }
-            var catalogEntries = new LanguageSnapshotEntry[catalog.Units.Count];
-            var resolver = new MatchedBundleResolver(bundles, candidates);
-            for (var unitSlot = 0; unitSlot < catalog.Units.Count; unitSlot++)
+            if (!deferCatalogs)
             {
-                if (!resolver.TryResolveValue(
-                        unitSlot,
-                        out var text,
-                        out var resolvedLanguage,
-                        out var sourceIdentity))
-                {
-                    var unit = catalog.Units[unitSlot];
-                    throw new LanguageCatalogException(
-                        $"Catalog '{catalog.CatalogId}' unit '{unit.Key}' has no value for " +
-                        $"requested language '{requestedLanguage.Value}' or required en-US source.");
-                }
+                entries[catalogSlot] = BuildCatalog(registry, catalogSlot, requestedLanguage, candidates);
+            }
+        }
 
-                var unitDescriptor = catalog.Units[unitSlot];
-                if (requiresTranslatedCoverage && resolvedLanguage == LanguageTags.EnUS)
+        return new LanguageSnapshot(requestedLanguage, entries, registry, candidates);
+    }
+
+    internal static LanguageSnapshotEntry[] BuildCatalog(LanguageCatalogRegistry registry, int catalogSlot,
+        LanguageTag requestedLanguage, IReadOnlyList<LanguageTag> candidates)
+    {
+        var catalog = registry.Catalogs[catalogSlot];
+        var bundles = registry.GetBundles(catalogSlot);
+        var requiresTranslatedCoverage = !LanguageFallbackResolver.HasEnglishPrimaryLanguage(requestedLanguage);
+        var catalogEntries = new LanguageSnapshotEntry[catalog.Units.Count];
+        var resolver = new MatchedBundleResolver(bundles, candidates);
+        for (var unitSlot = 0; unitSlot < catalog.Units.Count; unitSlot++)
+        {
+            if (!resolver.TryResolveValue(
+                    unitSlot,
+                    out var text,
+                    out var resolvedLanguage,
+                    out var sourceIdentity))
+            {
+                var unit = catalog.Units[unitSlot];
+                throw new LanguageCatalogException(
+                    $"Catalog '{catalog.CatalogId}' unit '{unit.Key}' has no value for " +
+                    $"requested language '{requestedLanguage.Value}' or required en-US source.");
+            }
+
+            var unitDescriptor = catalog.Units[unitSlot];
+            if (requiresTranslatedCoverage && resolvedLanguage == LanguageTags.EnUS)
+            {
+                throw new LanguageCoverageException(
+                    $"Supported language '{requestedLanguage.Value}' resolves Catalog '{catalog.CatalogId}' " +
+                    $"unit '{unitDescriptor.Key}' only through final en-US fallback. " +
+                    "Add a translation for the exact language or a valid parent candidate.");
+            }
+
+            CompositeFormat? compositeFormat = null;
+            if (unitDescriptor.IsFormatted)
+            {
+                try
+                {
+                    compositeFormat = CompositeFormat.Parse(text);
+                }
+                catch (FormatException exception)
+                {
+                    throw new LanguageCatalogException(
+                        $"Compiled translation from '{sourceIdentity}' for Catalog '{catalog.CatalogId}' unit " +
+                        $"'{unitDescriptor.Key}' and language " +
+                        $"'{resolvedLanguage.Value}' has an invalid CompositeFormat.",
+                        exception);
+                }
+            }
+
+            catalogEntries[unitSlot] = new LanguageSnapshotEntry(
+                text,
+                resolvedLanguage,
+                compositeFormat);
+        }
+
+        return catalogEntries;
+    }
+
+    internal static void ValidateManualCoverage(LanguageCatalogRegistry registry, LanguageDefinition definition, bool generatedDataVerified = false)
+    {
+        var requiresTranslatedCoverage = !LanguageFallbackResolver.HasEnglishPrimaryLanguage(definition.Tag);
+        var candidates = LanguageFallbackResolver.Resolve(definition.Tag, definition.FormattingCulture);
+        for (var catalogSlot = 0; catalogSlot < registry.Catalogs.Count; catalogSlot++)
+        {
+            var catalog = registry.Catalogs[catalogSlot];
+            var bundles = registry.GetBundles(catalogSlot);
+            // Skip only with a proof for this exact module set and supported languages. A referenced
+            // but disabled language pack must not make missing runtime translations appear covered.
+            if (generatedDataVerified && catalog is LanguageDataCatalogDescriptor && bundles.All(static bundle => bundle.IsModuleData))
+            {
+                continue;
+            }
+            var resolver = new MatchedBundleResolver(bundles, candidates);
+            for (var slot = 0; slot < catalog.Units.Count; slot++)
+            {
+                if (!resolver.TryResolveValue(slot, out var text, out var language, out var sourceIdentity) ||
+                    (requiresTranslatedCoverage && language == LanguageTags.EnUS))
                 {
                     throw new LanguageCoverageException(
-                        $"Supported language '{requestedLanguage.Value}' resolves Catalog '{catalog.CatalogId}' " +
-                        $"unit '{unitDescriptor.Key}' only through final en-US fallback. " +
-                        "Add a translation for the exact language or a valid parent candidate.");
+                        $"Supported language '{definition.Tag.Value}' resolves Catalog '{catalog.CatalogId}' " +
+                        $"unit '{catalog.Units[slot].Key}' only through final en-US fallback.");
                 }
-
-                CompositeFormat? compositeFormat = null;
-                if (unitDescriptor.IsFormatted)
+                if (catalog.Units[slot].IsFormatted)
                 {
                     try
                     {
-                        compositeFormat = CompositeFormat.Parse(text);
+                        CompositeFormat.Parse(text);
                     }
                     catch (FormatException exception)
                     {
                         throw new LanguageCatalogException(
                             $"Compiled translation from '{sourceIdentity}' for Catalog '{catalog.CatalogId}' unit " +
-                            $"'{unitDescriptor.Key}' and language " +
-                            $"'{resolvedLanguage.Value}' has an invalid CompositeFormat.",
+                            $"'{catalog.Units[slot].Key}' and language '{language.Value}' has an invalid CompositeFormat.",
                             exception);
                     }
                 }
-
-                catalogEntries[unitSlot] = new LanguageSnapshotEntry(
-                    text,
-                    resolvedLanguage,
-                    compositeFormat);
             }
-
-            entries[catalogSlot] = catalogEntries;
         }
-
-        return new LanguageSnapshot(requestedLanguage, entries, registry, candidates);
     }
 
     // Expand the ordered match prefix only when a unit cannot use a previously matched bundle.
@@ -178,7 +233,7 @@ internal static class LanguageSnapshotBuilder
         {
             while (true)
             {
-                if (_sourceIndex == s_sourcePriorities.Length)
+                if (_sourceIndex == SourcePriorities.Length)
                 {
                     if (_isEnglishFallback)
                     {
@@ -203,7 +258,7 @@ internal static class LanguageSnapshotBuilder
                     continue;
                 }
 
-                var sourceKind = s_sourcePriorities[_sourceIndex];
+                var sourceKind = SourcePriorities[_sourceIndex];
                 while (_bundleIndex < _bundles.Count)
                 {
                     var bundle = _bundles[_bundleIndex++];

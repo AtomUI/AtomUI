@@ -9,17 +9,12 @@ internal static class ThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseCommonControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        GeneratedControlPackageRegistration.Ensure(
-            builder,
-            static () => RuntimePlatform.Features.SupportsNativeWindow
-                ? new CommonControlThemesProvider()
-                : new BrowserCommonControlThemesProvider(),
-            static builder =>
+        GeneratedControlPackageRegistration.Definition.Ensure(builder, static package => package
+            .DependsOn(static builder =>
             {
                 builder.UseImageLoading();
                 builder.AddImageCodec(static () => new SvgImageCodec());
-            },
-            static builder => GeneratedLanguageModuleRegistration.Register(builder.Localization));
+            }));
 
         return builder;
     }

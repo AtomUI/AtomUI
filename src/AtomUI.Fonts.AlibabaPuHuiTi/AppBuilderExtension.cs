@@ -1,4 +1,5 @@
 using Avalonia;
+using AtomUI.Media;
 
 namespace AtomUI.Fonts.AlibabaPuHuiTi;
 
@@ -8,7 +9,8 @@ public static class AppBuilderExtension
     {
         return appBuilder.ConfigureFonts(fontManager =>
         {
-            fontManager.AddFontCollection(new AlibabaPuHuiTiFontCollection());
+            FontCollectionLifetime.RegisterPersistent(fontManager, new Uri("fonts:AlibabaPuHuiTi"),
+                static () => new AlibabaPuHuiTiFontCollection());
         });
     }
 }

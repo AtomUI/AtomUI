@@ -1,4 +1,4 @@
-# 启动性能优化研发日志（2026-10-11 ~ 2026-10-12）
+# 启动性能优化研发日志（2026-10-11 ~ 2026-10-14）
 
 目的：完整记录本轮流空窗口启动优化（Gallery/AtomUI）的全部改动、机制、实测数据与排错索引，
 供后续审查与问题定位。上游明细见 `2026-10-11-macos-startup-remaining-hotspots.md`（热点方案与
@@ -232,3 +232,167 @@ Spec：`docs/superpowers/specs/2026-10-12-staged-startup-design.md`；计划：
 
 源码复核参考本地 Avalonia 12.1.3 的 `MediaContext` 动画调度与 macOS 激活路径：RAF 在媒体循环内执行，
 不等于目标窗口 presentation；macOS 原生激活还有主队列调度。该结论修正此前时序保证，不替代具体产物的原生验收。
+
+## 7. 2026-10-14 全系列只读审查发现
+
+范围为 `ee1db4001..60dd72afb`，基线 `f0e9b4133`（6.2.5）。方法是逐段阅读源码、生成产物和本地 Avalonia 12.1.3 源码，
+并用并行子审查交叉核对。**本轮未运行构建、测试、性能采样或原生 UI，下列问题均未修复。**
+`g.cs` 指 `src/AtomUI.Desktop.Controls/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs`，
+它是被忽略的生成产物，行号对应 60dd72afb 当次构建。
+
+核实程度：**已核实** 指读源码确认了因果链（静态）；**推断** 指依据代码推导、未运行验证；**子审查** 指子任务报告、未逐项复核。
+
+### 7.1 关键权衡（需产品决策）
+
+- **分级启动提前了窗口，没有提前内容。**
+  [10-12 验证记录](2026-10-12-startup-algorithm-validation.md)使用同一探针、各 10 个进程：
+  - JIT：根 Render 1773.6→1091.6 ms，Main→Shell 绘制 1954.9→2152.7 ms（晚约 200 ms）；
+  - AOT：根 Render 321.5→290.0 ms，Shell 371.3→537.1 ms（晚约 166 ms）。
+
+  这组对比之后没有用 bootstrap 版本重测。AOT 下，分级启动对"内容可见"是净负收益。
+- **首帧后有 UI 长任务。** 同一记录中，JIT 下最大输入间隔 staged 为 527.0 ms，同步为 271.7 ms。
+- **ReadyToRun 未采用。** [恢复调查](2026-10-13-startup-recovery.md)的 ReadyToRun 实验中 Opened −409.7 ms、Ready −470.4 ms，
+  大于分级启动在首帧上的收益，且不增加运行时复杂度。代价是 Core/Desktop DLL 体积分别约为原来的 2.7/2.8 倍。是否采用尚未决定。
+
+### 7.2 P1：发版前须处理
+
+1. **分级启动下，chrome 模板子控件缺 ControlTheme，且 Stage 2 后不会恢复。**（已核实；运行表现为推断）
+   - **缺主题的类型。** `CaptionButtonGroupTheme.axaml:121` 的 Windows 模板使用 `WindowsCaptionButton`，其主题资产只由非 bootstrap 片段注册（g.cs:10127-10132）。
+     生成结果同为 `IsBootstrap => false` 的还有：
+     - `CaptionButton`（macOS Pin 按钮 `:96`、Linux 按钮）；
+     - `CaptionButtonFrame`（`WindowTitleBarButtonTheme.axaml:17`）；
+     - `CheckBoxIndicator`、`RadioIndicator`、`ScrollBarRepeatButton`、`CheckBoxItemsControl`、`ArrowDecoratedBox`、`AdornerLayer`。
+   - **为什么不恢复。** Avalonia 12.1.3 中：
+     - `StyledElement.cs:658-666` 会缓存 InvalidTheme；
+     - `ReevaluateImplicitTheme` 只在挂到逻辑树时调用（`:859`）；
+     - `NotifyResourcesChanged`（`:964`）不会重新取主题。
+
+     Stage 2 只发布资源通知，因此 Stage 1 已附着的实例终生没有模板。
+   - **根因。** 生成器闭包只沿资产导出、Token owner、语义 owner 扩展，`RegistrationModelBuilder.cs:351` 注明它不是模板调用图。
+     旧 `AtomUICriticalControls` 名单也有同样缺口。
+   - **影响。**
+     - Gallery 是唯一的 staged 采用者。在 Windows（固定 CSD）上，最小化/最大化/关闭按钮预计不可见；macOS 的 Pin 按钮同理。
+     - 只在 macOS 实测过，而 macOS 红绿灯是原生按钮，测不出这个问题。
+     - 不调用 `Deferred` 的应用不受影响。
+     - 应用若在 Stage 1 内容中使用任何非 bootstrap 控件（如 Button），同样会静默失效，没有诊断。
+   - **建议。**
+     - 闭包解析已选资产的模板元素、`{x:Type}` 和选择器中引用的本包控件，至少报诊断；
+     - 加常驻生成器测试，锁定"bootstrap 资产引用的本包主题类型 ⊆ Stage 1"；
+     - 在 Windows/Linux 实机验证。
+2. **编译期主题包按含版本号的程序集身份精确匹配。**（代码路径已核实，未复现）
+   - **构建期。**
+     - `ThemeBuildContracts.cs:141` 用 `Identity.ToString()` 全等比较。
+     - 生成的特性写死了 `Avalonia.Base, Version=12.1.3.0` 和 `AtomUI.Desktop.Controls, Version=6.2.5.0`。
+     - 任何引用新 Core 的编译都会执行这项检查（`TokenResourceKeyGenerator.cs:134-139`），失败报 Error。
+     - NuGet 依赖是 ≥12.1.3，以下情形都可能导致整片编译失败：
+       - 消费端升级 Avalonia 补丁版本；
+       - 混用不同版本的 AtomUI 包；
+       - 引用基于旧 Core 构建的第三方控件库。
+     - 仓库内全部是同版本的 ProjectReference，测不到这个问题。
+   - **运行时。** `CompiledThemeBindingBuilder.cs:63` 比较 `Assembly.FullName`。AtomUI 每次补丁升级后，第三方编译主题包都会在启动加载 catalog 时失败。
+   - **建议。**
+     - 身份比较改为简单名加公钥标记，或改为比较 schema digest；
+     - 项目没有 `AtomUIThemeDefinition` 时不执行契约构建，或把诊断降级为 warning。
+
+### 7.3 P2
+
+3. **激活等待没有超时。**（已核实）
+   - `StartupTopLevelReadiness.cs:81,125` 在 `ShowActivated=true` 时必须收到 `Activated`。
+   - 启动期间用户切走窗口时，Windows 前台锁或 macOS 协作激活都可能不激活新窗口，Stage 2 会一直等到用户点回窗口。
+   - 这违背 [就绪要求](../../architecture/foundations/staged-startup-evolution.md#4-就绪取消与重入) 中后台启动"不应被强迫激活，也不能无限等待"的约定。
+   - staged 模式在 Windows 和 Linux/Wayland 上都没有实测。Windows NativeAOT 发布和原生视觉验收自 10-11 起仍未闭环。
+4. **Stage 2 失败是静默的。**（已核实）
+   - `AtomUIStartup.cs:42-44` 把异常标为已观察，且不写日志。未 await `Completion` 的应用无从察觉。
+   - 失败后 pending 片段被丢弃（`ThemeManagerBuilder.cs:263-275`），Desktop 停在 30/319 个片段。
+   - Deferred catalog 的 `Localizer.Get` 会抛错（子审查）。
+5. **主题资源工厂失败推迟到首次查找。**（已核实）
+   - `DeferredControlThemeResourceProvider.cs:43,85-117` 在查找时执行工厂，失败后每次查找都会重试。
+   - 开放键资产的工厂失败时，会在无关 key 的查找中抛出。
+   - tests 中没有物化全部主题资产的检查，冷门控件的主题 XAML 损坏，启动类测试发现不了。
+   - 建议在 CI 中增加全量物化检查。
+6. **首帧后有同步长任务。**（已核实）
+   - Deferred 块逐个同步执行（`ApplicationScope.cs:89-95`），随后同步补齐 pending 片段（`ApplicationExtensions.cs:66`），中间不让出 UI 线程。
+   - 建议在块与块之间、以及分批补齐时让出 UI 线程。
+7. **Gallery 首阶段菜单标签可能为空。**（推断）
+   - `WorkspaceWindow.axaml:20` 起的菜单使用 `WorkspaceWindowLangResource`。
+   - 其 catalog 由 Deferred 中 `UseGalleryControls()` 调用的 `GeneratedLanguageModuleRegistration.Register` 注册（`ThemeManagerBuilderExtensions.cs:16`）。
+8. **staged 应用的放置约束没有诊断。**
+   - DataGrid 资产要求 Pagination 的 Token owner，而 Desktop 中 Pagination 片段是非 bootstrap。staged 应用若在 Stage 1 调用 `UseDesktopDataGrid()`，预计 registry 校验失败。（子审查，未运行）
+   - staged 应用若先开登录窗、迟迟不声明 MainWindow（OnLastWindowClose），Stage 2 会一直等 MainWindow，登录窗里的非 bootstrap 控件同样没有主题。（推断）
+9. **Motion 语义变化引出的回归。**（已核实因果链，未复现）
+   - f55ecf794 让同一 actor 上的新动画取消旧动画，旧的 `RunAsync` 抛出 OCE（`AbstractMotion.cs:89,134`）。
+   - `AbstractBackTopFloatButton.cs:205-210/230-234` 的 `_showAnimating`、`_hideAnimating` 不在 finally 中复位。快速往返越过阈值后，按钮可能永久不再显示或隐藏。
+   - 同一提交还改变了以下行为（子审查）：
+     - `Run()` 被取代或失败时不再调用 `completedAction`；
+     - 过渡结束后 `Transitions=null`；
+     - 清理失败被包成 `AggregateException`。
+   - 这些变化都没有写入提交标题和发布说明。
+10. **编译主题字面量解析没有常驻的一致性测试。**（无测试已核实；分歧为子审查）
+    - 生成器中重写的颜色、阴影、字体等解析约 700 行，tests 中没有任何引用。
+    - 已知分歧：
+      - 生成器先 `Trim` 再判断前缀（`ThemeLiteralCodec.cs:171`），而 Avalonia `Color.TryParse` 按未 Trim 的首字符分派（`Color.cs:162-185`）。
+        带前导空白的 `rgb(`/`hsl(` 能编译通过，动态加载时结果可能不同；运行时 Reader 是否先 Trim 未核实。
+      - 生成器在 Matrix 9 分量、Spline/Spring 缓动、Own/Global 同名 Token 上更严格。
+    - Avalonia 升级若改变解析语义，不会有任何报警。
+11. **本可在构建期发现的主题语义错误推迟到启动。**（运行时检查已核实；生成器缺少检查为子审查）
+    - appearance 与算法不一致、控件既未声明算法策略也没有 Token，这两类错误在 `CompiledThemeBindingBuilder.cs:154-171` 中于启动时才抛出。
+    - 这与 compilation.md 中"静态错误应构建失败"的说法不符。
+
+### 7.4 P3：API、文档与清理
+
+12. **未发布就成了"遗留"的 ABI。**（已核实）
+    - `RegisterPartitionedPackage`/`EnsurePartitionedPackage`（`ControlRegistrationRuntime.cs:29,50`）在 f55ecf794 引入，从未发布。
+    - 60dd72afb 以 "Legacy ABI" 的名义保留了它们，一旦发版就成为永久兼容负担。
+13. **发布说明与事实不符。**（已核实）
+    - `unreleased-startup-api-changes*.md` 记录"移除"的 `IAtomUIStartupEvents` 等类型从未进入任何提交（`git log -S` 为空）。
+    - 真实的破坏性变更没有记录：
+      - `IThemeManagerBuilder.AddCompiledThemePackage`（`IThemeManagerBuilder.cs:13`）；
+      - 内置主题注册 Id 从 `AtomUI.Core.BuiltInThemes` 改为 `AtomUI.Core`；
+      - SourceIdentity 改为逻辑路径（子审查）。
+    - 新增的公开表面也没有记录：6 个 `AtomUI.Theme.Definitions.Compiled` 公开类型，以及 Core 自身生成的公开 `GeneratedThemePackageRegistration`（外部再调用会触发重复注册，子审查）。
+14. **构建期元数据残留在 AOT 产物中。**（存在性已核实；体积为子审查估算）
+    - Desktop 有 183 条 Owner、1032 条 Token 构建期特性，只供生成器读取。
+    - 在 08:33 的 Gallery NativeAOT 产物中抽查的 owner digest 都能找到。子审查估算去重后的字符串约 68 KB。
+15. **生成器开销。**（子审查）
+    - `ThemeBuildContracts.Add` 用 `Tokens.Values.Any` 查重，复杂度 O(n²)，约 1680 条契约在每个消费项目、IDE 每次输入时都会重算。
+    - `AtomUI.CompiledThemes.targets` 没有设置 Inputs/Outputs，每次构建都启动 Tasks worker。
+16. **ABI 文档与实现不符。**（已核实）`compiled-theme-abi-v1.md` §5 声称保留了 payload 摘要校验，而 `CompiledThemeInput.cs:69` 只检查摘要长度。
+17. **本地化演化的边角问题。**
+    - 演化保持 Revision 计数不变，且只发 ResourcesChanged（`StageTwoEvolutionPlan.cs:20`）。（已核实）
+    - 若 Deferred 为当前语言注册了改变 Culture 的显式定义，依赖 LanguageChanged 缓存 Culture 的控件会过期。（子审查，列出的控件为 DatePickerPresenter、RangeDateViewer、Calendar）
+    - Stage 2 中配置的默认语言会被静默丢弃（`LocalizationBuilder.cs:255`）。（已核实）
+18. **死代码。**（已核实）`LocalizationBuilder.BuildStageTwoEvolution`、`BuiltContext`、`LanguageManager.CommitEvolution` 没有调用方。
+19. **资源类方案的副作用。**（已核实）
+    - 为 PopupRoot、OverlayPopupHost、AvaScrollBar、AvaScrollViewer 等加了 x:Class 资源类后，它们失去完整键证据，以开放注册进入 `_unknown`。
+    - Desktop 的 315 个注册中有 8 个是开放注册（g.cs），Stage 1 第一次查不到资源时就会被物化。
+    - 跨程序集的类型只能借本地资源类来标记。
+20. **线程模型不一致。**（已核实）
+    - 控件快照 cell 按"查询可能来自任意线程"设计了锁。
+    - 静态资源层和 `DeferredControlThemeResourceProvider` 没有同步，只假定在 UI 线程访问。
+21. **小项。**（已核实）
+    - `AtomUIStartup.Complete` 的 CAS 失败时直接返回、不重试。目前全部调用都在 UI 线程，暂不会触发。
+    - `Deferred()` 把 builder 硬转型为 `AtomUIBuilder`。
+    - staged 模式下 Stage 1 的部分包指纹为 null，Revision 回退到全量算法。
+    - 应用级启动被取消而窗口未关时，Gallery 会显示 "Startup failed: A task was canceled."，且失败不写日志。
+22. **测量口径。**（已核实）
+    - 多数结论只有 6–8 个进程样本，而性能规范要求冷启动至少 10 个。
+    - 各轮的机器、探针、指标不同，不能串接。
+    - HEAD 与 6.2.5 之间没有同口径 A/B。§0.1 的 −51% 来自使用关键集名单的中间版本。
+    - 60dd72afb 声称 Ready −78 ms，但 6 组中只有 4 组改善。
+23. **提交范围过宽。**（已核实）
+    - f55ecf794 混入了与启动无关的改动：Motion、删除 Reactive、ItemCollection 改弱订阅、Icon 等，增加了回退和审查成本。
+    - 整个系列生产代码净增约 6.2k 行（Core +3.7k、Generator +1.8k），`ThemeManager.cs` 从 1917 行增至 2243 行。
+24. **仓库卫生。**（已核实）
+    - 已提交的文档链接到被忽略的 `docs/superpowers/plans/*` 和本地 `.superpowers/sdd/*`，包括本文开头的计划链接。
+    - 5402 行的 Windows 证据 JSON 里含本机临时路径。
+    - `controlgallery/AtomUIGallery/TemporaryStartupTimeline.cs` 未跟踪、没有引用，却会被编译进 AtomUIGallery 成为 public 类型。删除前先确认没有并行代理在用它。
+
+### 7.5 已核实无问题（避免重复排查）
+
+- Stage 2 已进入事务执行门，审计 §2.1 的重入与旧事件问题不再有触发路径。准备期间的用户主题请求会排在门后，基于新 registry 执行。
+- 准备期间 Dispose 或关窗时，取消令牌先于服务释放，运行中的任务退出后才发布 Canceled。
+- lazy cell 在锁外通知缓存重新计费，没有锁反转；单飞与失败重试符合契约。
+- 后台语言快照只读取冻结输入，不依赖 Avalonia 对象或当前 Culture。（子审查）
+- `ImageRequestScheduler` 的惰性启动、ExecutionContext 恢复与释放正确。（子审查）
+- 静态资源表把已知和未知候选按全局倒序归并，与合并字典的查找顺序一致；owner 桥先回宿主查询，不会压过应用覆盖。
+- Gallery 关窗时会取消等待和排队的构建，没有发现泄漏。

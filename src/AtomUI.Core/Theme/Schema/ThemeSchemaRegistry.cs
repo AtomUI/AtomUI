@@ -3,11 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
+using AtomUI.Registration;
 
 namespace AtomUI.Theme.Schema;
 
 internal sealed class ThemeSchemaRegistry
 {
+    private readonly StartupPackageIndex? _startupIndex;
     private readonly FrozenDictionary<string, TokenDescriptor> _globalTokensByName;
     private readonly FrozenDictionary<ControlTokenIdentity, ControlTokenDescriptor> _controlsByIdentity;
     private readonly FrozenDictionary<Type, ControlTokenDescriptor> _controlsByType;
@@ -15,6 +17,70 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
     private readonly SchemaPrefixState _resourceKeySchemaPrefix;
+
+    internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
+        IEnumerable<ThemeAlgorithmDescriptor> algorithms)
+        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), algorithms)
+    {
+        _startupIndex = index;
+        Controls = new StartupControlList(index);
+        Revision = index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
+            ComputeCombinedRevision(Generated.AtomUICore.GeneratedThemeSchema.GlobalSchemaFingerprint,
+            index.Packages.Select(package => new PackageSchemaFingerprint(package.Definition.Id,
+                package.Definition.Data.SchemaFingerprint)).Concat(index.ManualSchemaStamp is { } manualStamp
+                    ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray());
+    }
+
+    internal bool HasSameControlSlot(ThemeSchemaRegistry previous, int slot)
+    {
+        if ((uint)slot >= (uint)previous.Controls.Count)
+        {
+            return false;
+        }
+        if (_startupIndex is { } current && previous._startupIndex is { } old)
+        {
+            return ReferenceEquals(current.Controls[slot], old.Controls[slot]);
+        }
+        var descriptor = Controls[slot];
+        var previousDescriptor = previous.Controls[slot];
+        return descriptor.Identity == previousDescriptor.Identity && descriptor.ControlType == previousDescriptor.ControlType &&
+            ReferenceEquals(descriptor.CompilationIdentity, previousDescriptor.CompilationIdentity);
+    }
+
+    internal bool UsesStartupIndex => _startupIndex is not null;
+    internal bool MatchesControlRequirement(ControlTokenIdentity identity, Type ownerType,
+        string ownerAssemblyName, string ownerMetadataName)
+    {
+        if (_startupIndex is { } index)
+        {
+            return index.MatchesControlRequirement(identity, ownerType, ownerAssemblyName, ownerMetadataName);
+        }
+        return _controlsByIdentity.TryGetValue(identity, out var descriptor) &&
+               descriptor.ControlType == ownerType &&
+               ControlTokenIdentityCanonicalizer.Matches(identity, ownerType) &&
+               string.Equals(ownerType.FullName, ownerMetadataName, StringComparison.Ordinal) &&
+               string.Equals(ownerType.Assembly.GetName().Name, ownerAssemblyName, StringComparison.Ordinal);
+    }
+
+    internal void NotifyControlFirstUse(int slot) => _startupIndex?.NotifyFirstUse(slot);
+    internal ControlTokenIdentity GetControlIdentity(int slot) =>
+        _startupIndex is { } index ? index.Controls[slot].Identity : Controls[slot].Identity;
+    internal bool ControlHasOwnTokens(int slot) =>
+        _startupIndex is { } index ? index.Controls[slot].Data.OwnTokens.Count != 0 : Controls[slot].HasOwnTokens;
+
+    private sealed class StartupControlList(StartupPackageIndex index) : IReadOnlyList<ControlTokenDescriptor>
+    {
+        public int Count => index.ControlCount;
+        public ControlTokenDescriptor this[int slot] => index.Controls[slot].GetDescriptor();
+        public IEnumerator<ControlTokenDescriptor> GetEnumerator()
+        {
+            for (var slot = 0; slot < Count; slot++)
+            {
+                yield return this[slot];
+            }
+        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
 
     internal ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
@@ -168,6 +234,20 @@ internal sealed class ThemeSchemaRegistry
     // The key carries this small identity instead of retaining the entire registry.
     internal object BindingIdentity { get; } = new();
     internal IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
+
+    /// <summary>
+    /// 启动 Prepare 专用：只含全局 Token 与算法，不含控件描述。主题定义绑定在此模式下跳过控件段，
+    /// 因为控件段只影响控件层 Token，全局层结果与完整 registry 相同。
+    /// </summary>
+    internal bool IsGlobalOnly { get; private init; }
+
+    internal static ThemeSchemaRegistry CreateGlobalOnly() =>
+        new(Generated.AtomUICore.GeneratedThemeSchema.GetGlobalTokens(),
+            Array.Empty<ControlTokenDescriptor>(),
+            Generated.AtomUICore.GeneratedThemeSchema.GetAlgorithms())
+        {
+            IsGlobalOnly = true
+        };
 
     // 全局编译只依赖这些不可变描述符，不依赖控件/资产的 registry Revision。
     // 使用精确对象身份也覆盖自定义 setter/factory 的行为，不能仅比较名字或版本号。
@@ -349,6 +429,10 @@ internal sealed class ThemeSchemaRegistry
         ControlTokenIdentity identity,
         [NotNullWhen(true)] out ControlTokenDescriptor? descriptor)
     {
+        if (_startupIndex is not null)
+        {
+            return _startupIndex.TryGetControl(identity, out descriptor);
+        }
         if (_controlsByIdentity.TryGetValue(identity, out descriptor) &&
             ControlTokenIdentityCanonicalizer.Matches(identity, descriptor.ControlType))
         {
@@ -363,6 +447,10 @@ internal sealed class ThemeSchemaRegistry
         [NotNullWhen(true)] out ControlTokenDescriptor? descriptor)
     {
         ArgumentNullException.ThrowIfNull(controlType);
+        if (_startupIndex is not null)
+        {
+            return _startupIndex.TryGetControl(controlType, out descriptor);
+        }
         return _controlsByType.TryGetValue(controlType, out descriptor);
     }
 
@@ -375,6 +463,10 @@ internal sealed class ThemeSchemaRegistry
 
     internal bool TryGetControlResourceSlot(object resourceKey, out int controlSlot)
     {
+        if (_startupIndex is not null)
+        {
+            return _startupIndex.TryGetOwnResourceSlot(resourceKey, out controlSlot);
+        }
         return _controlResourceSlotsByKey.TryGetValue(resourceKey, out controlSlot);
     }
 

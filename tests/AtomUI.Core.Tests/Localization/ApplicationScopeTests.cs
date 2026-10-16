@@ -66,148 +66,6 @@ public class ApplicationScopeTests
     }
 
     [Fact]
-    public async Task Staged_Startup_Waits_For_The_Startup_TopLevel_First_Frame()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            using var scope = CreateScope(application);
-            var runCount = 0;
-            scope.ConfigureStartup([() => runCount++]);
-            var window = new Window { Width = 320, Height = 200 };
-            window.Show();
-
-            scope.ScheduleStageTwoAfterFirstFrame(window);
-            int? runCountObservedByBackgroundMarker = null;
-            Dispatcher.UIThread.Post(
-                () => runCountObservedByBackgroundMarker = runCount,
-                DispatcherPriority.Background);
-
-            runCount.ShouldBe(0);
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            await scope.Startup.Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
-            runCountObservedByBackgroundMarker.ShouldBe(0);
-            runCount.ShouldBe(1);
-            window.Close();
-        });
-    }
-
-    [Fact]
-    public async Task Stage_Two_Localization_Preparation_Failure_Preserves_Stage_One_Theme_State()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            var identity = ControlTokenIdentity.ForControl(typeof(Button), "Deferred", "Button");
-            application.UseAtomUI(builder =>
-            {
-                builder.Deferred(() =>
-                {
-                    RegisterSemanticPackage(builder, identity);
-                    builder.Localization.AddTranslationBundle(
-                        new TranslationBundleDescriptor(
-                            "Missing:Catalog",
-                            LanguageTags.EnUS,
-                            TranslationSourceKind.ModuleBuiltIn,
-                            "AtomUI.Core.Tests",
-                            ["unreachable"]));
-                });
-            });
-            var themeManager = application.GetThemeManager().ShouldBeOfType<ThemeManager>();
-            var stageOneSnapshot = themeManager.CurrentSnapshot;
-            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
-
-            await Assert.ThrowsAnyAsync<Exception>(() => application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
-
-            application.GetStartup().State.ShouldBe(AtomUIStartupState.Failed);
-            themeManager.CurrentSnapshot.ShouldBeSameAs(stageOneSnapshot);
-            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
-        });
-    }
-
-    [Fact]
-    public async Task Stage_Two_Theme_Preparation_Failure_Does_Not_Publish_Staged_Semantics()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            var identity = ControlTokenIdentity.ForControl(typeof(Button), "Deferred", "Button");
-            application.UseAtomUI(builder =>
-            {
-                builder.Deferred(() =>
-                {
-                    RegisterSemanticPackage(builder, identity);
-                    builder.Theme.AddThemeDefinitionResolver(new FailingResolver());
-                });
-            });
-            var themeManager = application.GetThemeManager().ShouldBeOfType<ThemeManager>();
-            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
-
-            await Assert.ThrowsAnyAsync<Exception>(() => application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
-
-            application.GetStartup().State.ShouldBe(AtomUIStartupState.Failed);
-            themeManager.SemanticParts.TryGetControl(identity, out _).ShouldBeFalse();
-            var recovery = themeManager.ApplyThemeAsync(new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
-                    new ThemeConfigBuilder().Build(),
-                    ThemeTransitionReason.UserRequest))
-                .GetAwaiter()
-                .GetResult();
-            recovery.Status.ShouldBeOneOf(
-                ThemeTransitionStatus.Committed,
-                ThemeTransitionStatus.NoOp);
-        });
-    }
-
-    [Fact]
-    public async Task Stage_Two_Rejects_Deferred_Initializer_Before_It_Can_Run()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            var initializerRan = false;
-            application.UseAtomUI(builder =>
-            {
-                builder.Deferred(() =>
-                    builder.Theme.AddInitializer(_ => initializerRan = true));
-            });
-            var themeManager = application.GetThemeManager().ShouldBeOfType<ThemeManager>();
-            var stageOneSnapshot = themeManager.CurrentSnapshot;
-
-            await Assert.ThrowsAnyAsync<Exception>(() => application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
-
-            application.GetStartup().State.ShouldBe(AtomUIStartupState.Failed);
-            initializerRan.ShouldBeFalse();
-            themeManager.CurrentSnapshot.ShouldBeSameAs(stageOneSnapshot);
-        });
-    }
-
-    [Fact]
-    public async Task Startup_Progress_Subscriber_Failure_Does_Not_Reclassify_The_Framework_Commit()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            var laterSubscriberCalled = false;
-            application.UseAtomUI(builder => builder.Deferred(static () => { }));
-            var startup = application.GetStartup();
-            startup.ProgressChanged += (_, _) => throw new TestSubscriberException();
-            startup.ProgressChanged += (_, args) =>
-            {
-                if (args.State == AtomUIStartupState.Ready)
-                {
-                    laterSubscriberCalled = true;
-                }
-            };
-
-            await startup.Completion.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
-
-            laterSubscriberCalled.ShouldBeTrue();
-            startup.State.ShouldBe(AtomUIStartupState.Ready);
-        });
-    }
-
-    [Fact]
     public void Scope_Rejects_Duplicate_Initialization_For_The_Same_Application()
     {
         HeadlessTestApp.Run(() =>
@@ -217,7 +75,7 @@ public class ApplicationScopeTests
             using var second = CreateScope(application);
             first.InitializeApplication();
 
-            var exception = Should.Throw<InvalidOperationException>(second.InitializeApplication);
+            var exception = Should.Throw<InvalidOperationException>(() => second.InitializeApplication());
 
             exception.Message.ShouldContain("already initialized");
             application.Resources.MergedDictionaries
@@ -285,7 +143,7 @@ public class ApplicationScopeTests
             var third = new TrackingOwnedService("third", log);
             var scope = CreateScope(application, ownedServices: [first, second, third]);
 
-            Should.Throw<InvalidOperationException>(scope.InitializeApplication)
+            Should.Throw<InvalidOperationException>(() => scope.InitializeApplication())
                   .Message.ShouldContain("attach:second");
 
             log.ShouldBe([
@@ -349,7 +207,7 @@ public class ApplicationScopeTests
             var second = new TrackingOwnedService("second", log) { ThrowOnAttach = true };
             var scope = CreateScope(application, ownedServices: [first, second]);
 
-            var exception = Should.Throw<AggregateException>(scope.InitializeApplication);
+            var exception = Should.Throw<AggregateException>(() => scope.InitializeApplication());
 
             exception.InnerExceptions.Count.ShouldBe(2);
             log.ShouldBe([
@@ -372,7 +230,7 @@ public class ApplicationScopeTests
             var first = new TrackingOwnedService("first", log);
             var second = new TrackingOwnedService("second", log);
 
-            var exception = Should.Throw<InvalidOperationException>(() => application.UseAtomUI(builder =>
+            var exception = Should.Throw<InvalidOperationException>(() => AtomUIStartup.AttachWith(application, builder =>
             {
                 var atomBuilder = (AtomUIBuilder)builder;
                 atomBuilder.AddOwnedService("first", _ => first);
@@ -396,13 +254,14 @@ public class ApplicationScopeTests
         Action<IAtomUIBuilder>? configure = null,
         IReadOnlyList<IAtomUIOwnedService>? ownedServices = null)
     {
-        var builder = new AtomUIBuilder(application);
+        var builder = new AtomUIBuilder(application.GetType());
         configure?.Invoke(builder);
         return new ApplicationScope(
             application,
             builder.ThemeManagerBuilder.Build(),
             builder.LocalizationBuilder.Build(),
-            ownedServices ?? []);
+            ownedServices ?? [],
+            new AtomUIStartupProcess());
     }
 
     private static void RegisterSemanticPackage(IAtomUIBuilder builder, ControlTokenIdentity identity)

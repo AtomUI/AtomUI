@@ -9,6 +9,7 @@
 | [AtomUI.Performance](AtomUI.Performance/AtomUI.Performance.csproj) | 控件级基准 | 批量创建单个控件或小组合，观测实例化、布局、visual tree、分配和专项行为验证 | 微基准，不代表 Gallery 页面打开体验 |
 | [AtomUI.Localization.Performance](AtomUI.Localization.Performance/AtomUI.Localization.Performance.csproj) | Localization 基准 | 测量 Registry/Snapshot 构建、`ILocalizer.Get`、语言切换和 Snapshot 内存增长 | 纯 Localization 运行时基线，不加载桌面控件主题 |
 | [AtomUI.GalleryPerformance](AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj) | Gallery 场景复现 | 启动 Gallery Workspace，走真实 route/view/XAML，测量 showcase 从导航触发到视觉树和布局稳定 | 体验路径基准，必须复现 Gallery 真实使用方式 |
+| [AtomUI.StartupPerformance](AtomUI.StartupPerformance/README.md) | 启动基准 | 冷启动进程：平台初始化、AtomUI 初始化、窗口首帧与渲染批次、UI 线程最长阻塞 | 独立进程交错采样；单次运行只作 smoke |
 
 ## AtomUI.Performance 结构
 
@@ -36,6 +37,8 @@
 - Gallery 场景工具必须加载真实 Gallery XAML，不能用合成控件替代真实 showcase。
 - Gallery 场景工具需要在结果里输出源 XAML 形态和运行时视觉树形态，用来证明测量对象一致。
 - `Cold first navigation` 必须用 `--cold-iterations <N>` 做独立进程多样本统计；单样本只用于 smoke，不能作为优化提升或回退结论。
+- 启动结论必须用 `AtomUI.StartupPerformance` 的独立进程交错采样（`run_samples.py`，每变体至少 10 轮）；单次运行只作 smoke。采样期间不得并行构建或测试。
+- 启动期的 UI 卡顿不得用 `DispatcherTimer` 测量：它由平台 runloop 服务，主循环开始前在 macOS 上几乎不触发，会得到恒为 0 的假结果。用 `AtomUI.StartupPerformance` 的后台心跳探针（`Mark.FirstUiPump` / `Mark.MaxUiGap`）。
 - 文档中必须说明触发点、是否包含鼠标事件、是否包含 GPU 上屏、是否是 headless。
 
 ## 当前命令

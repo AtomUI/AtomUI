@@ -30,6 +30,51 @@ internal sealed class CompiledThemeCatalog
     internal IReadOnlyList<ThemeInfo> AvailableThemes { get; }
     internal IReadOnlyList<ThemeResolverCatalogSlice> ResolverSlices => _resolverSlices;
 
+    // Package append does not reload resolvers or rerun committed global-value callbacks.
+    // Existing slots and descriptors are retained; only newly available compiled controls rebind.
+    internal CompiledThemeCatalog AppendRegistry(ThemeSchemaRegistry previous, ThemeSchemaRegistry registry,
+        IReadOnlyList<ThemeDefinitionRegistration> registrations)
+    {
+        var programs = registrations.Where(registration => registration.Package is not null)
+            .SelectMany(registration => registration.Package!.Programs).ToDictionary(program => program.Info.Id);
+        var entries = new Dictionary<string, CompiledThemeDefinition>(StringComparer.Ordinal);
+        foreach (var entry in OrderedDefinitions)
+        {
+            if (!programs.TryGetValue(entry.Info.Id, out var program))
+            {
+                entries.Add(entry.Info.Id, entry);
+                continue;
+            }
+            var old = entry.Definition;
+            var rebound = program.Bind(registry);
+            var oldIdentities = Enumerable.Range(0, previous.Controls.Count).Select(previous.GetControlIdentity).ToHashSet();
+            var currentIdentities = Enumerable.Range(0, registry.Controls.Count).Select(registry.GetControlIdentity).ToHashSet();
+            var added = rebound.ControlIdentities.Where(identity => !oldIdentities.Contains(identity) && currentIdentities.Contains(identity)).ToHashSet();
+            if (added.Count == 0)
+            {
+                entries.Add(entry.Info.Id, entry);
+                continue;
+            }
+            foreach (var identity in added)
+            {
+                // Dynamic contracts are validated before publication, not on their first lookup.
+                _ = rebound.GetControl(identity);
+            }
+            var definition = new PreparedThemeDefinition(old.Id, old.Name, old.DeclaredAppearance,
+                old.EffectiveAppearance, old.IsDefault, old.Algorithms, old.Location,
+                () => old.Tokens, rebound.ControlIdentities,
+                identity => added.Contains(identity) ? rebound.GetControl(identity) : old.GetControl(identity),
+                old.ControlRevision!);
+            entries.Add(entry.Info.Id, entry with { Definition = definition });
+        }
+        var slices = _resolverSlices.Select(slice => slice with
+        {
+            Definitions = slice.Definitions.Select(entry => entries[entry.Info.Id]).ToArray()
+        }).ToArray();
+        return new CompiledThemeCatalog(entries, OrderedDefinitions.Select(entry => entries[entry.Info.Id]).ToArray(),
+            entries[DefaultDefinition.Info.Id], slices);
+    }
+
     internal CompiledThemeDefinition Get(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);

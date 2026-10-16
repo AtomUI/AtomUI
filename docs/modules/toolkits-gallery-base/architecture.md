@@ -136,7 +136,7 @@ xmlns:gallery="https://atomui.net/toolkits/gallery-base"
 产品通过 `UseGalleryBase` 注册 Gallery：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseGalleryBase(options =>
@@ -161,7 +161,7 @@ this.UseAtomUI(builder =>
             screen => new ButtonViewModel(screen),
             () => new ButtonShowCase());
     });
-});
+})
 ```
 
 第一阶段的配置模型如下：

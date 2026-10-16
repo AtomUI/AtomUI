@@ -138,19 +138,15 @@ internal sealed class ThemeBuildContracts
         var name = ThemeLiteralCodec.NormalizeType(expression);
         if (name.StartsWith("System.Nullable<", StringComparison.Ordinal)) { name = name.Substring(16, name.Length - 17); }
         var assemblies = compilation.SourceModule.ReferencedAssemblySymbols.Concat(new[] { compilation.Assembly });
-        var exact = assemblies.Where(a => a.Identity.ToString() == assemblyIdentity).Select(a => a.GetTypeByMetadataName(name)).FirstOrDefault(t => t is not null);
-        if (exact is not null) { return exact; }
-
-        // net8 contract metadata can name System.Runtime 8 while a net10 compilation
-        // retargets its framework types to the current core library. Only these known
-        // BCL value types have that exception; owner and user-defined type evidence
-        // remains bound to its exact assembly identity.
-        if (!AssemblyIdentity.TryParseDisplayName(assemblyIdentity, out var declared) ||
-            declared.Name != "System.Runtime" ||
+        var resolved = assemblies.Where(assembly => MatchesAssembly(assembly.Identity, assemblyIdentity))
+            .Select(assembly => assembly.GetTypeByMetadataName(name)).FirstOrDefault(type => type is not null);
+        if (resolved is not null) { return resolved; }
+        // Runtime compilations may expose forwarded BCL values through the core library,
+        // whereas reference-assembly metadata names System.Runtime. Keep the signed facade
+        // boundary, but never require its assembly version to equal the current target.
+        if (!AssemblyIdentity.TryParseDisplayName(assemblyIdentity, out var declared) || declared.Name != "System.Runtime" ||
             !declared.PublicKeyToken.SequenceEqual(new byte[] { 0xb0, 0x3f, 0x5f, 0x7f, 0x11, 0xd5, 0x0a, 0x3a }))
         { return null; }
-        var currentRuntime = compilation.SourceModule.ReferencedAssemblySymbols.FirstOrDefault(assembly => assembly.Identity.Name == "System.Runtime");
-        if (currentRuntime is null || declared.Version.CompareTo(currentRuntime.Identity.Version) > 0) { return null; }
         var frameworkType = name switch
         {
             "System.String" => compilation.GetSpecialType(SpecialType.System_String),
@@ -163,13 +159,14 @@ internal sealed class ThemeBuildContracts
         };
         return frameworkType?.TypeKind == TypeKind.Error ? null : frameworkType;
     }
-    internal static INamedTypeSymbol? ResolveOwner(Compilation compilation, string expression, string assemblyIdentity)
+    internal static INamedTypeSymbol? ResolveOwner(Compilation compilation, string expression, string assemblyIdentity) =>
+        Resolve(compilation, expression, assemblyIdentity);
+
+    private static bool MatchesAssembly(AssemblyIdentity current, string declaredIdentity)
     {
-        var name = ThemeLiteralCodec.NormalizeType(expression);
-        return compilation.SourceModule.ReferencedAssemblySymbols.Concat(new[] { compilation.Assembly })
-            .Where(assembly => assembly.Identity.ToString() == assemblyIdentity)
-            .Select(assembly => assembly.GetTypeByMetadataName(name))
-            .FirstOrDefault(type => type is not null);
+        return AssemblyIdentity.TryParseDisplayName(declaredIdentity, out var declared) &&
+               current.Name == declared.Name && current.CultureName == declared.CultureName &&
+               current.PublicKeyToken.SequenceEqual(declared.PublicKeyToken);
     }
     private static bool IsPublic(ITypeSymbol type)
     {

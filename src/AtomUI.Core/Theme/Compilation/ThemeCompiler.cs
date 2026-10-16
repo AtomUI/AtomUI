@@ -65,29 +65,23 @@ internal sealed class ThemeCompiler
             globalTokens,
             static (left, right) => left.Descriptor.Slot.CompareTo(right.Descriptor.Slot));
 
-        var controls = new NormalizedControlThemeConfig[definition.Controls.Count];
-        for (var index = 0; index < controls.Length; index++)
+        NormalizedControlThemeConfig ResolveControl(ControlTokenIdentity identity)
         {
-            var control = definition.Controls[index];
+            var control = definition.GetControl(identity);
             var mode = control.AlgorithmMode == ControlAlgorithmMode.Unspecified
-                ? ControlAlgorithmMode.Disabled
-                : control.AlgorithmMode;
-            controls[index] = NormalizedControlThemeConfig.CreateCanonical(
-                control.Descriptor.Identity,
-                mode,
-                mode == ControlAlgorithmMode.Custom
-                    ? ThemeConfigArray.Copy(control.Algorithms)
-                    : Array.Empty<ThemeAlgorithmDescriptor>(),
-                NormalizeBoundTokens(control.GlobalTokens),
-                NormalizeBoundTokens(control.OwnTokens));
+                ? ControlAlgorithmMode.Disabled : control.AlgorithmMode;
+            return NormalizedControlThemeConfig.CreateCanonical(control.Descriptor.Identity, mode,
+                mode == ControlAlgorithmMode.Custom ? ThemeConfigArray.Copy(control.Algorithms) : Array.Empty<ThemeAlgorithmDescriptor>(),
+                NormalizeBoundTokens(control.GlobalTokens), NormalizeBoundTokens(control.OwnTokens));
         }
+        if (definition.ControlRevision is { } revision)
+        {
+            return NormalizedThemeConfig.CreateDeferred(false, true, ThemeConfigArray.Copy(algorithms), globalTokens,
+                definition.ControlIdentities, identity => ResolveControl(identity), revision, (definition, registry));
+        }
+        var controls = definition.ControlIdentities.Select(ResolveControl).ToArray();
         Array.Sort(controls, static (left, right) => CompareIdentity(left.Identity, right.Identity));
-        return NormalizedThemeConfig.CreateCanonical(
-            false,
-            true,
-            ThemeConfigArray.Copy(algorithms),
-            globalTokens,
-            controls);
+        return NormalizedThemeConfig.CreateCanonical(false, true, ThemeConfigArray.Copy(algorithms), globalTokens, controls);
     }
 
     internal static NormalizedThemeConfig CreateLibraryDefaults(
@@ -138,6 +132,15 @@ internal sealed class ThemeCompiler
     internal ThemeCompileResult Compile(
         ThemeCompileInput input,
         ControlCompilationCache? controlCompilationCache)
+        => CompileCore(input, controlCompilationCache, preserveAppendedSlots: false);
+
+    // Only the package transaction calls this: it preserves committed definitions/configuration,
+    // and registry entry identity proves that callbacks and slot assignments did not change.
+    internal ThemeCompileResult CompilePackageAppend(ThemeCompileInput input) =>
+        CompileCore(input, null, preserveAppendedSlots: true);
+
+    private ThemeCompileResult CompileCore(ThemeCompileInput input,
+        ControlCompilationCache? controlCompilationCache, bool preserveAppendedSlots)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -150,8 +153,39 @@ internal sealed class ThemeCompiler
                 return Failed(diagnostics);
             }
 
+            if (preserveAppendedSlots && (input.ReusableParent is not { } previousInput ||
+                previousInput.DefinitionRevision != input.DefinitionRevision ||
+                !CanReuseGlobal(input, ResolveAppearance(input.EffectiveConfig.Algorithms))))
+            {
+                throw new InvalidOperationException("Package append cannot change committed global theme inputs.");
+            }
             var global = CompileGlobal(input);
             var controls = CompileControls(input, global, controlCompilationCache);
+            if (preserveAppendedSlots)
+            {
+                var previous = input.ReusableParent!;
+                if (!global.ReuseGlobal || previous.DefinitionRevision != input.DefinitionRevision)
+                {
+                    throw new InvalidOperationException("Package append cannot change committed global theme inputs.");
+                }
+                var cells = Enumerable.Range(0, controls.Count).Select(controls.GetCell).ToArray();
+                for (var slot = 0; slot < previous.Controls.Count; slot++)
+                {
+                    if (!input.Registry.HasSameControlSlot(previous.Registry, slot))
+                    {
+                        throw new InvalidOperationException("Package append cannot replace an existing Control slot or callback.");
+                    }
+                    var previousCell = previous.Controls.GetCell(slot);
+                    // A materialized cell contains only its value. A cold cell still owns
+                    // lazy factories from the previous registry/index generation; use the
+                    // freshly constructed cell for the new generation instead.
+                    if (previousCell.MaterializedValue is not null)
+                    {
+                        cells[slot] = previousCell;
+                    }
+                }
+                controls = new LazyControlSnapshots(cells);
+            }
             var fingerprint = ThemeContentFingerprint.Compute(
                 input.DefinitionRevision,
                 input.EffectiveConfig,
@@ -252,22 +286,29 @@ internal sealed class ThemeCompiler
         ControlCompilationCache? controlCompilationCache)
     {
         var count = input.Registry.Controls.Count;
+        if (input.Registry.UsesStartupIndex || input.EffectiveConfig.HasDeferredControls ||
+            input.ReusableParent?.EffectiveConfig.HasDeferredControls == true)
+        {
+            return CompileIndexedControls(input, global, controlCompilationCache, count);
+        }
         var cells = new ControlSnapshotCell[count];
         var configIndex = 0;
         var parentConfigIndex = 0;
         var changedControlIndex = 0;
+        var effectiveControls = input.EffectiveConfig.Controls;
+        var previousControls = input.ReusableParent?.EffectiveConfig.Controls;
         LazyControlSnapshotSource? source = null;
         for (var slot = 0; slot < count; slot++)
         {
             var descriptor = input.Registry.Controls[slot];
             var config = FindControlConfig(
-                input.EffectiveConfig.Controls,
+                effectiveControls,
                 descriptor.Identity,
                 ref configIndex);
             var parentConfig = input.ReusableParent is null
                 ? null
                 : FindControlConfig(
-                    input.ReusableParent.EffectiveConfig.Controls,
+                    previousControls!,
                     descriptor.Identity,
                     ref parentConfigIndex);
             bool? controlChanged = input.ChangesFromReusableParent is null
@@ -310,6 +351,56 @@ internal sealed class ThemeCompiler
                 global.Palettes,
                 controlCompilationCache);
             cells[slot] = new ControlSnapshotCell(source, descriptor, config);
+        }
+        return new LazyControlSnapshots(cells);
+    }
+
+    private static LazyControlSnapshots CompileIndexedControls(ThemeCompileInput input, GlobalCompileOutcome global,
+        ControlCompilationCache? cache, int count)
+    {
+        var cells = new ControlSnapshotCell[count];
+        var configured = new HashSet<ControlTokenIdentity>(input.EffectiveConfig.ControlIdentities);
+        var effectiveConfig = input.EffectiveConfig;
+        var parent = input.ReusableParent;
+        var canReuse = parent is not null && ReferenceEquals(parent.Registry, input.Registry) &&
+            parent.Appearance == global.Appearance && global.ReuseGlobal;
+        var allControlsUnchanged = canReuse && effectiveConfig.Equals(parent!.EffectiveConfig);
+        var changedControls = canReuse && input.ChangesFromReusableParent is { } changes
+            ? changes.ChangedControls.ToHashSet()
+            : null;
+        LazyControlSnapshotSource? source = null;
+        for (var slot = 0; slot < count; slot++)
+        {
+            var identity = input.Registry.GetControlIdentity(slot);
+            if (allControlsUnchanged || (canReuse && changedControls is not null && !changedControls.Contains(identity)))
+            {
+                cells[slot] = parent!.Controls.GetCell(slot);
+                continue;
+            }
+            var hasConfig = configured.Contains(identity);
+            if (!hasConfig && !input.Registry.ControlHasOwnTokens(slot))
+            {
+                cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(slot, global.Appearance,
+                    FrozenDictionary<int, object?>.Empty, FrozenDictionary<object, object?>.Empty,
+                    TokenValueTable.Empty, FrozenDictionary<object, object?>.Empty));
+                continue;
+            }
+            source ??= new LazyControlSnapshotSource(input, global.Appearance, global.Builder, global.Values,
+                global.Resources, global.Palettes, cache);
+            ControlThemeSnapshot? previousValue = null;
+            NormalizedControlThemeConfig? previousConfig = null;
+            if (canReuse && parent!.Controls.GetCell(slot).MaterializedValue is { } materialized)
+            {
+                previousValue = materialized;
+                // This control was already read in the parent; its deferred config is cached.
+                // Keep only the per-control value, not the previous full effective config.
+                parent.EffectiveConfig.TryGetControl(identity, out previousConfig);
+            }
+            var controlSlot = slot;
+            var registry = input.Registry;
+            cells[slot] = new ControlSnapshotCell(source, () => registry.Controls[controlSlot],
+                () => effectiveConfig.TryGetControl(identity, out var config) ? config : null, !hasConfig,
+                previousValue, previousConfig);
         }
         return new LazyControlSnapshots(cells);
     }

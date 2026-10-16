@@ -27,10 +27,13 @@
 Core 保留现有 ThemeCompiler、ThemeConfig、ThemeSnapshot、事务及缓存。算法使用既有 Avalonia/Core 类型与
 数学实现，只在运行时求值。动态 XML 继续由原 Reader/Binder 处理。
 
-- Toolchain Tasks 只源链接 Core 中依赖 BCL 的权威 Reader/XSD 及其必要语法模型，用于有界 XML 校验。
-  中间输入仅传输声明文本、位置、原始摘要和诊断；不执行算法，不复制运行时配置或快照模型。
-- Generator 的 `ThemeDefinitions/Literals/` 拥有静态字面量解析和类型化 C# 表达生成；消费 AdditionalFiles 和符号，
-  不加载 Core/控件程序集求值。`ThemeLiteralColorConversion` 只将 HSL/HSV 颜色字面量转换为 ARGB，属于语法转换。
+- Toolchain Tasks 源链接 Core 的 Reader/XSD、`BuiltInThemeLiteralCodec`、运行时 converter 与必要值类型。
+  字面量调用与动态 XML 相同的 converter，再传输规范字符串与类型化 primitive payload；不执行算法或用户 codec。
+- 本工程 Token 类型到 Roslyn 编译时才可见，因此 worker 为每个不同字面量计算有界的内置类型候选集，
+  同一任务内缓存重复文本；传输最多 32 个候选、8 MiB 总字节，并限制复合值深度和元素数。
+  Generator 按已校验的值类型选候选，仅构造 C# 表达式，不再维护字面量解析器。
+- worker 私有依赖 Avalonia 的托管程序集以复用真实值语义；这些依赖随 `tools/net10.0` 分发，
+  不加载产品程序集，不需要桌面宿主，不成为应用运行时依赖，也不建立 Core/Generator 自举循环。
 - 主题算法、调色板派生与颜色明暗调整均留在 Core；工具链不维护第二份算法实现。
 - Tasks/Generator 是构建依赖，不进入应用运行时输出；Core 不引用构建工具程序集。
 
@@ -144,7 +147,7 @@ FontFamily 是经明确授权的构造边界例外：当前依赖只公开字符
 
 - 控件包构建导出契约；主题包引用已解析的版本化契约。
 - 本工程符号生成类型化注册与默认赋值；不依赖本工程先产出可执行 DLL。
-- Tasks 与 Generator 之间的私有传输版本为 3，仅包含声明、位置、摘要与诊断；保留记录/字节限额和 payload 摘要校验。
+- Tasks 与 Generator 之间的私有传输版本为 4，包含声明、位置、摘要、诊断及真实 Core codec 产生的有界类型化候选值；保留记录/字节限额和 payload 摘要校验。
   旧版本输入明确拒绝，重新生成后再编译；此版本不改变运行时生成 ABI v1。
 - Generator 在共同 transform 中校验完整 Token 契约，不读取另一 Generator 的本轮输出。
 - NuGet 同时验证运行入口、契约元数据、必要构建工具和产物摘要；工具程序集不进入运行时输出。
@@ -165,8 +168,8 @@ FontFamily 是经明确授权的构造边界例外：当前依赖只公开字符
 - 显式覆盖某控件本来就是主题的必要依赖。只为这些 owner 产生真实引用，不把其所在包的所有兄弟控件保留。
 - 真实发布视图必须满足所有显式要求；没有注册必要包/owner 时失败，不能忽略 XML 条目。动态 XML 的任意
   字符串本身不成为 root，应用需要按现有动态主题规则确保目标已注册/保留。
-- Stage 1 不满足定义要求时的配置选择由[总览](overview.md#9-控件要求与两阶段启动)规定；AOT 保留与当前阶段
-  是否已注册是两个不同条件，不能混为一谈。
+- 提交时 registry 不满足定义要求的处理由[总览](overview.md#9-控件要求与启动提交)规定；AOT 保留与运行期是否
+  已注册是两个不同条件，不能混为一谈。
 - 平台能力与控件/资产声明共用既有模型；构建宿主不解析字体服务或物化目标平台资源。
 
 验收同时比较同一已保留 schema 下两条编译路径的值，以及加入主题包前后的实际保留集合。不能因值相同就忽略

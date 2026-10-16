@@ -59,13 +59,10 @@ internal sealed class Localizer : ILocalizer
         }
 
         var catalog = view.Registry.Catalogs[catalogSlot];
-        if (catalog is not LanguageCatalogDescriptor<TResourceKind> typedCatalog)
-        {
-            throw new LanguageCatalogException(
-                $"Catalog '{catalog.CatalogId}' is registered with incompatible resource enum type " +
-                $"'{catalog.ResourceKindType.FullName}'.");
-        }
-        if (!typedCatalog.TryGetUnitSlot(key, out var unitSlot))
+        var found = catalog is LanguageCatalogDescriptor<TResourceKind> typedCatalog
+            ? typedCatalog.TryGetUnitSlot(key, out var unitSlot)
+            : catalog.TryGetUnitSlot(key, out unitSlot);
+        if (!found)
         {
             throw new LanguageCatalogException(
                 $"A value of resource enum type '{resourceKindType.FullName}' is not mapped to any unit " +

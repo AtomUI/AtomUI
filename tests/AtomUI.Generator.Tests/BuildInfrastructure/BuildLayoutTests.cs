@@ -22,6 +22,7 @@ public sealed class BuildLayoutTests
         "AtomUI.Localization.props",
         "AtomUI.Localization.targets",
         "AtomUI.ThemeAssets.targets",
+        "AtomUI.CompiledThemes.targets",
         "AtomUI.Build.Tasks.Process.cs"
     ];
 
@@ -432,7 +433,8 @@ public sealed class BuildLayoutTests
         GetImports("build/AtomUI.Generator.targets").ShouldBe([
             "$(MSBuildThisFileDirectory)AtomUI.Registration.targets",
             "$(MSBuildThisFileDirectory)AtomUI.Localization.targets",
-            "$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets"
+            "$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets",
+            "$(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets"
         ]);
     }
 

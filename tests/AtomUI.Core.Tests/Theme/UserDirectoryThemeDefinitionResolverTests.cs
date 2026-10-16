@@ -170,7 +170,7 @@ public class UserDirectoryThemeDefinitionResolverTests
         {
             using var directory = new TemporaryDirectory();
             File.WriteAllText(System.IO.Path.Combine(directory.Path, "invalid.theme.xml"), "<Theme>");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
 
@@ -192,7 +192,7 @@ public class UserDirectoryThemeDefinitionResolverTests
             using var directory = new TemporaryDirectory();
             File.WriteAllText(System.IO.Path.Combine(directory.Path, "green.theme.xml"),
                 ThemeXml("PolarGreen"));
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
 

@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
 using AtomUI.Theme.Resources;
 
@@ -132,7 +131,15 @@ public static class TokenResourceBinder
             return target.Bind(targetProperty, control.GetResourceObservable(resourceKey, converter), priority);
         }
 
-        return target.Bind(targetProperty, new DynamicResourceExtension(resourceKey));
+        if (target is IResourceHost resourceHost)
+        {
+            return target.Bind(targetProperty, resourceHost.GetResourceObservable(resourceKey, converter), priority);
+        }
+        if (target is IResourceProvider provider)
+        {
+            return target.Bind(targetProperty, provider.GetResourceObservable(resourceKey, converter), priority);
+        }
+        return target.Bind(targetProperty, GetGlobalResourceObservable(resourceKey, converter: converter), priority);
     }
 
     public static IObservable<object?> GetGlobalResourceObservable(object resourceKey,
@@ -145,7 +152,8 @@ public static class TokenResourceBinder
             throw new ApplicationException("The application instance does not exist");
         }
 
-        themeVariant ??= (application as IThemeVariantHost).ActualThemeVariant;
-        return application.Styles.GetResourceObservable(resourceKey, themeVariant, converter);
+        return themeVariant is null
+            ? application.Styles.GetResourceObservable(resourceKey, converter)
+            : application.Styles.GetResourceObservable(resourceKey, themeVariant, converter);
     }
 }

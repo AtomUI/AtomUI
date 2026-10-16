@@ -45,7 +45,8 @@ internal class Program
                                 .UseReactiveUI(build =>
                                     build.ConfigureViewLocator(locator => AtomUIGalleryModule.RegisterViews(locator)))
                                 .UseAtomUIPlatformDetect(windowingPlatform)
-                                .WithAtomUIDefaultOptions();
+                                .WithAtomUIDefaultOptions()
+                                .UseAtomUI(GalleryApplication.Configure);
 
 #if DEBUG
         builder = builder.WithDeveloperTools();

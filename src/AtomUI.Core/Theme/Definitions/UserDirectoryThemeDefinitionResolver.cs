@@ -1,6 +1,6 @@
 namespace AtomUI.Theme.Definitions;
 
-internal sealed class UserDirectoryThemeDefinitionResolver : IThemeDefinitionResolver
+internal sealed class UserDirectoryThemeDefinitionResolver : IBackgroundThemeDefinitionResolver
 {
     internal const string ResolverId = "AtomUI.UserThemeDirectory";
     internal const int DefaultMaxFiles = 128;

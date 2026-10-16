@@ -6,7 +6,10 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Fixture.NuGetAuthor;
 
-AppBuilder.Configure<ResourceApp>().UseHeadless(new AvaloniaHeadlessPlatformOptions()).SetupWithoutStarting();
+AppBuilder.Configure<ResourceApp>()
+          .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+          .UseAtomUI(builder => builder.UseAuthorControls())
+          .SetupWithoutStarting();
 var control = new AuthorControl();
 var typed = new TypedKeyHostControl();
 var window = new Window { Content = new StackPanel { Children = { control, typed } } };
@@ -23,7 +26,12 @@ window.Close();
 Console.WriteLine("TYPED_RESOURCE_PASS condition comes only from AXAML type key");
 Console.WriteLine("STATIC_RESOURCE_PASS trimmed=" + AtomUI.Registration.ControlRegistrationRuntime.IsTrimmed);
 
-public partial class ResourceApp : Application
+public class ResourceApp : Application
 {
-    public override void Initialize() => this.UseAtomUI(builder => builder.UseAuthorControls());
+    // 本工程不引用 AtomUI 生成器，按公开契约手写挂接。
+    public override void RegisterServices()
+    {
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
+    }
 }

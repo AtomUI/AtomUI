@@ -12,20 +12,44 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
     private readonly HashSet<IResourceProvider> _attached = new(ReferenceEqualityComparer.Instance);
     private IResourceHost? _owner;
     private ResourceTable _table = new([]);
+    private ResourceTable? _stagedTable;
+    private readonly WeakReference<ThemeManager>? _themeManager;
 
-    internal StaticThemeResourceProvider()
+    internal StaticThemeResourceProvider(ThemeManager? themeManager = null)
     {
         _ownerBridge = new ThemeResourceOwnerBridge();
+        _themeManager = themeManager is null ? null : new WeakReference<ThemeManager>(themeManager);
     }
+
+    internal int MaterializeAssets()
+    {
+        var resources = _table.Resources.OfType<DeferredControlThemeResourceProvider>().Distinct().ToArray();
+        foreach (var resource in resources)
+        {
+            resource.EnsureLoaded();
+        }
+        return resources.Length;
+    }
+
+    internal void RunUpdate(Action update) => _ownerBridge.RunUpdate(update);
 
     internal ResourceTable CurrentTable => _table;
     public IResourceHost? Owner => _owner;
     public event EventHandler? OwnerChanged;
-    public bool HasResources => _table.Resources.Length != 0;
+    internal void StageTable(ResourceTable? table) => _stagedTable = table;
+    private ThemeManager.PackageUpdate? ReadUpdate => _stagedTable is not null &&
+        _themeManager?.TryGetTarget(out var manager) == true ? manager.PackageReadUpdate : null;
+    private ResourceTable ActiveTable => ReadUpdate?.IsCandidateRead == true ? _stagedTable! : _table;
+    public bool HasResources => ActiveTable.Resources.Length != 0;
 
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
-        return _table.TryGetResource(key, theme, out value);
+        var found = ActiveTable.TryGetResource(key, theme, out value, ReadUpdate);
+        if (found && value is ControlTheme controlTheme && _themeManager?.TryGetTarget(out var manager) == true)
+        {
+            manager.NotifyControlThemeResolved(key, controlTheme);
+        }
+        return found;
     }
 
     internal ResourceTable PrepareTable(IEnumerable<IResourceProvider> resources)
@@ -177,7 +201,7 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
 
         internal IResourceProvider[] Resources { get; }
 
-        internal bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+        internal bool TryGetResource(object key, ThemeVariant? theme, out object? value, ThemeManager.PackageUpdate? update = null)
         {
             _candidates.TryGetValue(key, out var candidates);
             var knownIndex = 0;
@@ -188,13 +212,35 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
                 var unknown = unknownIndex < _unknown.Count ? _unknown[unknownIndex] : -1;
                 // 已知候选和开放资产按同一个全局倒序归并，不能越过未知高优先级覆盖。
                 var index = known > unknown ? candidates![knownIndex++] : _unknown[unknownIndex++];
-                if (Resources[index].TryGetResource(key, theme, out value))
+                var resource = Resources[index];
+                bool found;
+                if (update is { IsCandidateRead: true } && update.OwnsExistingResource(resource))
+                {
+                    found = TryGetCommittedResource(update, resource, key, theme, out value);
+                }
+                else
+                {
+                    found = resource.TryGetResource(key, theme, out value);
+                }
+                if (found)
                 {
                     return true;
                 }
             }
             value = null;
             return false;
+        }
+
+        private static bool TryGetCommittedResource(ThemeManager.PackageUpdate update, IResourceProvider resource,
+            object key, ThemeVariant? theme, out object? value)
+        {
+            // The transaction callback must stay outside the ordinary candidate loop so its
+            // captured parameters do not allocate on every nontransaction hit or miss.
+            object? captured = null;
+            var found = false;
+            update.RunCommittedRead(() => found = resource.TryGetResource(key, theme, out captured));
+            value = captured;
+            return found;
         }
     }
 }

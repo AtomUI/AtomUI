@@ -1,3 +1,4 @@
+using AtomUI.Theme.Definitions.Compiled;
 using System.Security.Cryptography;
 using System.Text;
 using AtomUI.Theme.Build;
@@ -19,6 +20,7 @@ public sealed class GenerateCompiledThemeInputTask : ITask
 
     public bool Execute()
     {
+        _literalCache.Clear();
         var inputs = ThemeInputs.Length == 0
             ? [new Input(SourcePath, SourceIdentity, OutputPath)]
             : ThemeInputs.Select(item => new Input(item.GetMetadata("FullPath"), item.GetMetadata("SourceIdentity"), item.GetMetadata("InputPath"))).ToArray();
@@ -111,8 +113,20 @@ public sealed class GenerateCompiledThemeInputTask : ITask
         try { if (File.Exists(path)) { File.Delete(path); } }
         catch (Exception cleanup) { Error(path, "Could not delete stale compiled theme intermediate: " + cleanup.Message); }
     }
-    private static ThemeLiteralInput[] Tokens(IReadOnlyList<ThemeTokenDocument> tokens) => tokens.Select(t => new ThemeLiteralInput
-    { Name = t.Name, Value = t.Value, Line = t.Location.Line, Column = t.Location.Column, Path = t.Location.Path }).ToArray();
+    private readonly Dictionary<string, BuiltInThemeLiteralValue[]> _literalCache = new(StringComparer.Ordinal);
+
+    private BuiltInThemeLiteralValue[] CompileLiteral(string value)
+    {
+        if (!_literalCache.TryGetValue(value, out var result))
+        {
+            result = BuiltInThemeLiteralCodec.Compile(value).ToArray();
+            _literalCache.Add(value, result);
+        }
+        return result;
+    }
+
+    private ThemeLiteralInput[] Tokens(IReadOnlyList<ThemeTokenDocument> tokens) => tokens.Select(t => new ThemeLiteralInput
+    { Name = t.Name, Value = t.Value, Values = CompileLiteral(t.Value), Line = t.Location.Line, Column = t.Location.Column, Path = t.Location.Path }).ToArray();
 
     private readonly record struct Input(string SourcePath, string SourceIdentity, string OutputPath);
 }

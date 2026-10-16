@@ -73,15 +73,14 @@ public class LanguageCatalogCompilerGeneratorTests
             LanguageFile("Localization/zh-CN.xlf", target));
 
         result.Diagnostics.ShouldBeEmpty();
-        var generated = result.GeneratedSources
-                              .Single(sourceResult =>
-                                  sourceResult.HintName.EndsWith(
-                                      "LanguageCatalogRegistration.g.cs",
-                                      StringComparison.Ordinal))
-                              .SourceText
-                              .ToString();
-        generated.ShouldContain("GeneratedModuleLanguageTags.Language_zh_CN");
-        generated.Split("            \"\",", StringSplitOptions.None).Length.ShouldBe(3);
+        var tree = result.GeneratedSources.Single(static sourceResult =>
+            sourceResult.HintName == "GeneratedLanguageModuleRegistration.g.cs").SyntaxTree;
+        var value = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax>()
+            .Single(static variable => variable.Identifier.ValueText == "Data").Initializer!.Value;
+        var data = AtomUI.Localization.Data.LanguageModuleDataCodec.Read("Test.Package",
+            ((Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax)value).Token.ValueText);
+        data.Bundles.Single(static bundle => bundle.Language == "zh-CN").Values[1].ShouldBe(string.Empty);
+        data.Bundles.Single(static bundle => bundle.Language == "en-US").Values[1].ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -233,7 +232,7 @@ public class LanguageCatalogCompilerGeneratorTests
                                   source.HintName == "GeneratedApplicationLanguageBootstrap.g.cs")
                               .SourceText
                               .ToString();
-        bootstrap.ShouldContain("TranslationSourceKind.StaticLanguagePack");
+        bootstrap.ShouldContain("GeneratedApplicationLanguageData.Register(builder)");
     }
 
     [Fact]

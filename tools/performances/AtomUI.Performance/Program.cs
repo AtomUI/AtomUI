@@ -451,6 +451,13 @@ internal static partial class Program
         // later posts, which kills multi-window verifications like the DataGrid range suite.
         AppBuilder.Configure<PerfApplication>()
                   .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                  .UseAtomUI(builder =>
+                  {
+                      builder.Theme.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                      builder.UseDesktopControls();
+                      builder.UseDesktopColorPicker();
+                      builder.UseDesktopDataGrid();
+                  })
                   .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime
                   {
                       ShutdownMode = Avalonia.Controls.ShutdownMode.OnExplicitShutdown

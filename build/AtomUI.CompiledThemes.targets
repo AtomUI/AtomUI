@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
-    <!-- Execute every build: Reader/XSD, codec, generator and referenced contracts are inputs too.
+    <!-- Execute every build: Core Reader/XSD and value codecs, generator and referenced contracts are inputs too.
          Write-if-changed keeps the compiler incremental; an invalid source deletes its old input. -->
     <Target Name="GenerateAtomUICompiledThemeInputs" BeforeTargets="GenerateMSBuildEditorConfigFile;CoreCompile"
             Condition="'@(AtomUIThemeDefinition)' != ''">

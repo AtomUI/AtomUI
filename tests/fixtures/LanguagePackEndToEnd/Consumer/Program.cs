@@ -14,6 +14,13 @@ public static class Program
     {
         AppBuilder.Configure<FixtureApplication>()
                   .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                  .UseAtomUI(builder =>
+                  {
+                      builder.UseLanguages(
+                          LanguageTags.EnUS,
+                          [LanguageTags.EnUS, LanguageTags.JaJP]);
+                      builder.UseLocalizationComponent();
+                  })
                   .SetupWithoutStarting();
 
         var application = Application.Current ?? throw new InvalidOperationException(
@@ -45,16 +52,5 @@ public static class Program
     }
 }
 
-public partial class FixtureApplication : Application
-{
-    public override void Initialize()
-    {
-        this.UseAtomUI(builder =>
-        {
-            builder.UseLanguages(
-                LanguageTags.EnUS,
-                [LanguageTags.EnUS, LanguageTags.JaJP]);
-            builder.UseLocalizationComponent();
-        });
-    }
-}
+// 本工程引用 AtomUI 生成器：应用类声明为 partial，由生成器补上 RegisterServices 挂接。
+public partial class FixtureApplication : Application;

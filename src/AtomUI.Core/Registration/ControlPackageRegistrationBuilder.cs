@@ -28,6 +28,19 @@ public sealed class ControlPackageRegistrationBuilder
         _deferFragments = deferFragments;
     }
 
+    internal MaterializedControlFragment CompleteFragment()
+    {
+        _sealed = true;
+        return new MaterializedControlFragment(_controls.ToArray(), _semantics.ToArray(),
+            _assets.Values.ToArray(), _resources.Values.ToArray());
+    }
+
+    internal IReadOnlyList<ControlRegistrationFragmentAttribute> ExtractFragments()
+    {
+        _sealed = true;
+        return _pendingFragments?.ToArray() ?? [];
+    }
+
     /// <summary>
     /// 生成注册 Collect 写入的包级 schema 指纹常量（编译期预计算）。手工收集留空，
     /// 启动 registry 的 Revision 随之回退到全量遍历算法。
@@ -109,7 +122,7 @@ public sealed class ControlPackageRegistrationBuilder
             return;
         }
         builder._fragments.Add(fragment.FragmentId, type);
-        if (builder._deferFragments && !fragment.IsBootstrap)
+        if (builder._deferFragments)
         {
             (builder._pendingFragments ??= []).Add(fragment);
             return;

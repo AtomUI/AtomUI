@@ -1,11 +1,9 @@
 using AtomUI.Controls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-[BootstrapRegistration]
 internal class MenuPopupScrollHost : ContentControl, IMotionAwareControl, IScrollAwareControl
 {
     #region 公共属性定义

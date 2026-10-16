@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -12,7 +11,6 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaMenu = Avalonia.Controls.Menu;
 
-[BootstrapRegistration]
 public partial class Menu : AvaloniaMenu,
                             ICustomizableSizeTypeAware,
                             IMotionAwareControl,

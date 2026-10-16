@@ -170,10 +170,15 @@ NuGet -> 软件包
 
 ###### 配置程序入口文件
 
+在 `AppBuilder` 链上启用 AtomUI：
+
 ```csharp
 using Avalonia;
 using System;
 using AtomUI;
+using AtomUI.Desktop.Controls;
+using AtomUI.Localization;
+using AtomUI.Theme;
 using ReactiveUI.Avalonia;
 
 namespace AtomUIProgressApp;
@@ -190,43 +195,38 @@ internal class Program
                          .UseReactiveUI()
                          .UseAtomUIPlatformDetect()
                          .WithAtomUIDefaultOptions()
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseLanguages(
+                                 LanguageTags.ZhCN,
+                                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+                             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                             builder.UseAlibabaSansFont();
+                             builder.UseDesktopControls();
+                             builder.UseDesktopColorPicker();   // 可选
+                             builder.UseDesktopDataGrid();      // 可选
+                         })
                          .WithDeveloperTools()
                          .LogToTrace();
     }
 }
 ```
 
-###### 在 `Application` 类中启用 `AtomUI`
+###### 把 `Application` 类声明为 `partial`
+
+AtomUI 生成器会把 `partial` 应用类挂接到启动流程，`Initialize()` 执行时 AtomUI 已经就绪：
 
 ```csharp
-using AtomUI;
-using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 
 public partial class App : Application
 {
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-
-        this.UseAtomUI(builder =>
-        {
-            builder.UseLanguages(
-                LanguageTags.ZhCN,
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-            builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont();
-            builder.UseDesktopControls();
-            builder.UseDesktopColorPicker();   // 可选
-            builder.UseDesktopDataGrid();      // 可选
-            builder.UseDesktopExtras();        // 可选
-        });
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 }
 ```
+
+需要启动 Splash 时见[启动指南](docs/guides/startup/overview.md)。
 
 ###### 开始使用 AtomUI
 

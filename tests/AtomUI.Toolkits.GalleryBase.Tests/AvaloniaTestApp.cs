@@ -1,3 +1,4 @@
+using AtomUI;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
 using Avalonia;
@@ -38,21 +39,23 @@ public static class TestAppBuilder
     {
         return AppBuilder.Configure<TestApplication>()
                          .UseReactiveUI(_ => { })
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseDesktopControls();
+                             builder.UseGalleryBase();
+                             builder.UseLanguages(
+                                 LanguageTags.EnUS,
+                                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+                         });
     }
 }
 
 internal sealed class TestApplication : Application
 {
-    public override void Initialize()
+    public override void RegisterServices()
     {
-        this.UseAtomUI(builder =>
-        {
-            builder.UseDesktopControls();
-            builder.UseGalleryBase();
-            builder.UseLanguages(
-                LanguageTags.EnUS,
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-        });
+        base.RegisterServices();
+        AtomUIStartup.Attach(this);
     }
 }

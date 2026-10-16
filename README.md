@@ -176,10 +176,15 @@ Search for "AtomUI" and install the packages your project needs.
 
 ###### Program.cs Configure
 
+Enable AtomUI on the `AppBuilder` chain:
+
 ```csharp
 using Avalonia;
 using System;
 using AtomUI;
+using AtomUI.Desktop.Controls;
+using AtomUI.Localization;
+using AtomUI.Theme;
 using ReactiveUI.Avalonia;
 
 namespace AtomUIProgressApp;
@@ -196,55 +201,54 @@ internal class Program
                          .UseReactiveUI()
                          .UseAtomUIPlatformDetect()
                          .WithAtomUIDefaultOptions()
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseLanguages(
+                                 LanguageTags.EnUS,
+                                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+                             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                             builder.UseAlibabaSansFont();
+                             builder.UseDesktopControls();
+                             builder.UseDesktopColorPicker();   // optional
+                             builder.UseDesktopDataGrid();      // optional
+                         })
                          .WithDeveloperTools()
                          .LogToTrace();
     }
 }
 ```
 
-###### Enable `AtomUI` in the `Application` Class
+###### Declare the `Application` Class as `partial`
+
+The AtomUI generator hooks the `partial` application class into startup, so AtomUI is ready before `Initialize()` runs:
 
 ```csharp
-using AtomUI;
-using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 
 public partial class App : Application
 {
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-
-        this.UseAtomUI(builder =>
-        {
-            builder.UseLanguages(
-                LanguageTags.EnUS,
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-            builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont();
-            builder.UseDesktopControls();
-            builder.UseDesktopColorPicker();   // optional
-            builder.UseDesktopDataGrid();      // optional
-            builder.UseDesktopExtras();        // optional
-        });
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 }
 ```
 
 To make the first rendered frame use the dark theme, configure the initial theme algorithm in the builder:
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
-    builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID, ThemeAlgorithm.Dark);
+    builder.WithInitialTheme(
+        IThemeManager.DEFAULT_THEME_ID,
+        new ThemeConfigBuilder()
+            .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+            .Build());
     builder.UseDesktopControls();
-});
+})
 ```
 
-`SetDarkThemeMode(true)` is intended for runtime theme switching after AtomUI has been initialized.
+`ThemeConfigBuilder` is in `AtomUI.Theme.Configuration` and `ThemeAlgorithm` is in `AtomUI.Theme.Algorithms`. Use
+`IThemeManager.ApplyThemeAsync` to switch themes at runtime. To show a startup splash, see the
+[startup guide](docs/guides/startup/overview.md).
 
 ###### Start building with AtomUI
 

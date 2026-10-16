@@ -42,8 +42,13 @@ internal sealed record RegistrationControl(RegistrationType Type, string? TokenF
     ValueArray<string> Triggers, ValueArray<string> Guards, ValueArray<string> Assets,
     ValueArray<RegistrationTrigger> ConditionalTriggers = default)
 {
-    internal bool? IsBootstrap { get; init; }
+    internal string Catalog { get; init; } = "";
+    internal string Id { get; init; } = "";
+    internal ValueArray<RegistrationOwnToken> OwnTokens { get; init; }
+    internal ValueArray<RegistrationSemanticTheme> SemanticThemes { get; init; }
 }
+internal sealed record RegistrationSemanticTheme(string Property, RegistrationType Target);
+internal sealed record RegistrationOwnToken(string Name, string ValueType, string KeyType, string KeyMember);
 internal sealed record RegistrationTrigger(RegistrationType Type, string Kind);
 internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, string Namespace,
     ValueArray<RegistrationControl> Controls, ValueArray<RegistrationAsset> Assets, ValueArray<string> CompiledGlobalTokenNames,
@@ -51,6 +56,8 @@ internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, s
     RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null, ulong PackageSchemaFingerprint = 0)
 {
     internal bool SupportsResourceKeys { get; init; }
+    internal bool SupportsStartupManifest { get; init; }
+    internal bool HasLanguageModule { get; init; }
 }
 
 internal readonly struct ValueArray<T> : IEquatable<ValueArray<T>>, IEnumerable<T>

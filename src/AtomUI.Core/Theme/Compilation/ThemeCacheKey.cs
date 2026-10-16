@@ -113,6 +113,8 @@ internal sealed class NormalizedThemeConfigCacheKey : IEquatable<NormalizedTheme
     private readonly TokenCacheKey[] _globalTokens;
     private readonly NormalizedControlConfigCacheKey[] _controls;
     private readonly int _hashCode;
+    private readonly string? _controlRevision;
+    private readonly object? _controlBindingIdentity;
 
     private NormalizedThemeConfigCacheKey(NormalizedThemeConfig config)
     {
@@ -121,9 +123,14 @@ internal sealed class NormalizedThemeConfigCacheKey : IEquatable<NormalizedTheme
         Fingerprint          = config.Fingerprint;
         _algorithms          = CacheKeyArray.Algorithms(config.Algorithms);
         _globalTokens        = CacheKeyArray.Tokens(config.GlobalTokens);
-        _controls            = config.Controls.Select(NormalizedControlConfigCacheKey.Create).ToArray();
+        _controlRevision = config.ControlRevision;
+        _controlBindingIdentity = config.ControlBindingIdentity;
+        _controls = config.HasDeferredControls ? Array.Empty<NormalizedControlConfigCacheKey>() : config.Controls.Select(NormalizedControlConfigCacheKey.Create).ToArray();
         _hashCode            = ComputeHashCode();
-        EstimatedRetainedBytes = CacheKeyArray.Estimate(_algorithms, _globalTokens);
+        EstimatedRetainedBytes = ThemeRetainedBytesEstimator.Add(CacheKeyArray.Estimate(_algorithms, _globalTokens),
+            ThemeRetainedBytesEstimator.EstimateValue(_controlRevision));
+        EstimatedRetainedBytes = ThemeRetainedBytesEstimator.Add(EstimatedRetainedBytes,
+            ThemeRetainedBytesEstimator.EstimateKnownDeferredBindingInputs(_controlBindingIdentity));
         EstimatedInputRetainedBytes = ThemeRetainedBytesEstimator.EstimateConfig(config);
         foreach (var control in _controls)
         {
@@ -152,6 +159,8 @@ internal sealed class NormalizedThemeConfigCacheKey : IEquatable<NormalizedTheme
         }
         if (other is null ||
             Fingerprint != other.Fingerprint ||
+            _controlRevision != other._controlRevision ||
+            !Equals(_controlBindingIdentity, other._controlBindingIdentity) ||
             Inherit != other.Inherit ||
             AlgorithmsSpecified != other.AlgorithmsSpecified ||
             !_algorithms.AsSpan().SequenceEqual(other._algorithms) ||
@@ -180,6 +189,8 @@ internal sealed class NormalizedThemeConfigCacheKey : IEquatable<NormalizedTheme
     {
         var hash = new HashCode();
         hash.Add(Fingerprint);
+        hash.Add(_controlRevision, StringComparer.Ordinal);
+        hash.Add(_controlBindingIdentity);
         hash.Add(Inherit);
         hash.Add(AlgorithmsSpecified);
         CacheKeyArray.Add(ref hash, _algorithms);
@@ -250,6 +261,8 @@ internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheK
     private readonly TokenCacheKey[] _tokens;
     private readonly ControlDefinitionCacheKey[] _controls;
     private readonly int _hashCode;
+    private readonly string? _controlRevision;
+    private readonly object? _controlBindingIdentity;
 
     private ThemeDefinitionCacheKey(PreparedThemeDefinition definition)
     {
@@ -260,7 +273,9 @@ internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheK
         IsDefault           = definition.IsDefault;
         _algorithms         = CacheKeyArray.Algorithms(definition.Algorithms);
         _tokens             = CacheKeyArray.Tokens(definition.Tokens);
-        _controls           = definition.Controls
+        _controlRevision = definition.ControlRevision;
+        _controlBindingIdentity = _controlRevision is null ? null : definition;
+        _controls           = _controlRevision is not null ? Array.Empty<ControlDefinitionCacheKey>() : definition.Controls
                                         .OrderBy(static control => control.Descriptor.Identity.Catalog, StringComparer.Ordinal)
                                         .ThenBy(static control => control.Descriptor.Identity.Id, StringComparer.Ordinal)
                                         .Select(static control => new ControlDefinitionCacheKey(control))
@@ -268,7 +283,7 @@ internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheK
         _hashCode = ComputeHashCode();
         EstimatedInputRetainedBytes = ThemeRetainedBytesEstimator.EstimateDefinition(definition);
         EstimatedRetainedBytes = ThemeRetainedBytesEstimator.Add(CacheKeyArray.Estimate(_algorithms, _tokens),
-            ThemeRetainedBytesEstimator.EstimateValue(Id) + ThemeRetainedBytesEstimator.EstimateValue(Name));
+            ThemeRetainedBytesEstimator.EstimateValue(Id) + ThemeRetainedBytesEstimator.EstimateValue(Name) + ThemeRetainedBytesEstimator.EstimateValue(_controlRevision));
         foreach (var control in _controls)
         {
             EstimatedRetainedBytes = ThemeRetainedBytesEstimator.Add(EstimatedRetainedBytes, ThemeRetainedBytesEstimator.Add(8, control.EstimatedRetainedBytes));
@@ -296,6 +311,8 @@ internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheK
         }
         if (other is null ||
             !string.Equals(Id, other.Id, StringComparison.Ordinal) ||
+            _controlRevision != other._controlRevision ||
+            !ReferenceEquals(_controlBindingIdentity, other._controlBindingIdentity) ||
             !string.Equals(Name, other.Name, StringComparison.Ordinal) ||
             DeclaredAppearance != other.DeclaredAppearance ||
             EffectiveAppearance != other.EffectiveAppearance ||
@@ -326,6 +343,8 @@ internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheK
     {
         var hash = new HashCode();
         hash.Add(Id, StringComparer.Ordinal);
+        hash.Add(_controlRevision, StringComparer.Ordinal);
+        hash.Add(_controlBindingIdentity);
         hash.Add(Name, StringComparer.Ordinal);
         hash.Add(DeclaredAppearance);
         hash.Add(EffectiveAppearance);

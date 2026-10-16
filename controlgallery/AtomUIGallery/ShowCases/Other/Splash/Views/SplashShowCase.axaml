@@ -6,8 +6,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Splash"
              x:DataType="vm:SplashViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryShowCaseHost.Header>
+        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryStickyTabsHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Splash"
                     Category="{gallery:SplashShowCaseLangResource ComponentCategory}"
@@ -16,113 +16,11 @@
                     IntroducedVersion="{gallery:SplashShowCaseLangResource ComponentIntroducedVersion}"
                     Subtitle="{gallery:SplashShowCaseLangResource PageSubtitle}"
                     Description="{gallery:SplashShowCaseLangResource PageDescription}"
-                    Namespace="AtomUI.Desktop.Controls"
-                    Package="AtomUI.Desktop.Controls.Extras"
-                    BaseClass="ContentControl"
+                    Namespace="AtomUI.Controls"
+                    Package="AtomUI.Controls"
+                    BaseClass="TemplatedControl"
                     MetadataValueWidth="240" />
-            </gallery:GalleryShowCaseHost.Header>
-
-            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
-                <DataTemplate x:DataType="vm:SplashViewModel">
-                    <!-- 进度区两个部件互斥：Spin 只在不确定态可见、ProgressBar 只在确定态可见，
-                         而语义预览跳过不可见节点。因此舞台上放两个实例，分别固定确定态与不确定态，
-                         使 spin 与 progressBar 都能被定位高亮（预览会合并同类型实例的命中）。
-                         单预览页签的画布高度在部分视口下被钳制到视口剩余高度，超出部分会被静默裁掉
-                         （真机表现为第二个实例只剩一条顶部白边）。因此这里用两列等分 Grid：
-                         列宽自适应画布、永远不会换行到第二行；两个实例的 Width 置为 NaN 以覆盖主题
-                         的 WindowWidth，改由列宽决定宽度。文案保持极短，避免窄列下多行换行把实例撑高。 -->
-                    <gallery:SemanticPartPreview Name="SplashSemanticPreview"
-                                                 Title="Splash"
-                                                 SemanticOwner="{Binding #SplashSemanticOwner}"
-                                                 SemanticOwnerType="{x:Type atom:Splash}"
-                                                 PreviewContentAlignment="Top"
-                                                 PreviewStageMinHeight="420">
-                        <gallery:SemanticPartPreview.PreviewContent>
-                            <Grid ColumnDefinitions="*,*"
-                                  ColumnSpacing="16"
-                                  MaxWidth="720"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Top">
-                                <!-- 不确定态：spin 可见、progressBar 隐藏。不写 Detail，
-                                     避免在不确定进度下出现具体百分比造成语义矛盾。 -->
-                                <atom:Splash Grid.Column="0"
-                                             Name="SplashSemanticOwner"
-                                             Width="NaN"
-                                             MinHeight="220"
-                                             Padding="18,16"
-                                             Title="AtomUI"
-                                             Subtitle="{gallery:SplashShowCaseLangResource P2SemanticSubtitle}"
-                                             Message="{gallery:SplashShowCaseLangResource P2SemanticMessageLoading}"
-                                             IsIndeterminate="True"
-                                             Footer="{gallery:SplashShowCaseLangResource P2SemanticFooter}">
-                                    <atom:Splash.Logo>
-                                        <!-- 同上：徽标填满 logo Part 的 presenter，不自带固定尺寸。 -->
-                                        <Border HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                CornerRadius="10"
-                                                Background="{atom:SharedTokenResource ColorPrimary}">
-                                            <atom:TextBlock Text="A"
-                                                            Foreground="White"
-                                                            FontSize="16"
-                                                            FontWeight="Bold"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center" />
-                                        </Border>
-                                    </atom:Splash.Logo>
-                                </atom:Splash>
-                                <!-- 确定态：progressBar 可见、spin 隐藏。 -->
-                                <atom:Splash Grid.Column="1"
-                                             Width="NaN"
-                                             MinHeight="220"
-                                             Padding="18,16"
-                                             Title="AtomUI"
-                                             Message="{gallery:SplashShowCaseLangResource P2SemanticMessageModules}"
-                                             Detail="{gallery:SplashShowCaseLangResource P2SemanticDetailProgress}"
-                                             Progress="{Binding ProgressValue}"
-                                             IsIndeterminate="False"
-                                             Footer="{gallery:SplashShowCaseLangResource P2SemanticFooter}">
-                                    <StackPanel>
-                                        <atom:Tag Text="{gallery:SplashShowCaseLangResource P2SemanticContentTag}"
-                                                  TagColor="success" />
-                                    </StackPanel>
-                                </atom:Splash>
-                            </Grid>
-                        </gallery:SemanticPartPreview.PreviewContent>
-                        <gallery:SemanticPartPreview.PartDescriptions>
-                            <gallery:SemanticPartDescription
-                                Path="root"
-                                Description="{gallery:SplashShowCaseLangResource SemanticRootDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="logo"
-                                Description="{gallery:SplashShowCaseLangResource SemanticLogoDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="title"
-                                Description="{gallery:SplashShowCaseLangResource SemanticTitleDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="subtitle"
-                                Description="{gallery:SplashShowCaseLangResource SemanticSubtitleDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="content"
-                                Description="{gallery:SplashShowCaseLangResource SemanticContentDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="spin"
-                                Description="{gallery:SplashShowCaseLangResource SemanticSpinDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="progressBar"
-                                Description="{gallery:SplashShowCaseLangResource SemanticProgressBarDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="message"
-                                Description="{gallery:SplashShowCaseLangResource SemanticMessageDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="detail"
-                                Description="{gallery:SplashShowCaseLangResource SemanticDetailDescription}" />
-                            <gallery:SemanticPartDescription
-                                Path="footer"
-                                Description="{gallery:SplashShowCaseLangResource SemanticFooterDescription}" />
-                        </gallery:SemanticPartPreview.PartDescriptions>
-                    </gallery:SemanticPartPreview>
-                </DataTemplate>
-            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+            </gallery:GalleryStickyTabsHost.Header>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -130,279 +28,55 @@
                                    InitialDeferredLoadItemCount="4"
                                    DeferredLoadBatchSize="2"
                                    ContentMargin="28,10,28,28">
-                <gallery:ShowCasePanel.Styles>
-                    <Style Selector="atom|Splash.preview-splash">
-                        <Setter Property="Width" Value="360" />
-                        <Setter Property="MinHeight" Value="260" />
-                    </Style>
-                    <Style Selector="atom|Splash.status-splash">
-                        <Setter Property="Width" Value="320" />
-                        <Setter Property="MinHeight" Value="250" />
-                    </Style>
-                </gallery:ShowCasePanel.Styles>
+                <gallery:ShowCasePanel.Resources>
+                    <ResourceDictionary>
+                        <!-- Splash 默认主题不是包主题资产（提交前由 SplashWindow 直接加载），页内预览需自行合并。 -->
+                        <ResourceDictionary.MergedDictionaries>
+                            <atom:SplashDefaultTheme/>
+                        </ResourceDictionary.MergedDictionaries>
+                    </ResourceDictionary>
+                </gallery:ShowCasePanel.Resources>
 
-                <gallery:ShowCaseItem
-                    Title="{gallery:SplashShowCaseLangResource BasicTitle}"
-                    Description="{gallery:SplashShowCaseLangResource BasicDescription}"
-                    IsDeferredContentEnabled="True">
+                <gallery:ShowCaseItem Title="{gallery:SplashShowCaseLangResource BasicTitle}"
+                                      Description="{gallery:SplashShowCaseLangResource BasicDescription}"
+                                      IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:SplashViewModel">
-                            <atom:Splash Classes="preview-splash"
-                                         Logo="{Binding BasicLogo}"
-                                         Title="AtomUI"
-                                         Subtitle="{gallery:SplashShowCaseLangResource P2SubtitleDesktopBoot}"
+                            <atom:Splash Title="AtomUI"
                                          Message="{gallery:SplashShowCaseLangResource P2MessagePreparingShell}"
-                                         Detail="{gallery:SplashShowCaseLangResource P2DetailLoadingThemeAndResources}"
                                          IsIndeterminate="True"
-                                         HorizontalAlignment="Left">
-                                <atom:Splash.LogoTemplate>
-                                    <DataTemplate x:DataType="vm:SplashLogoInfo">
-                                        <Border Width="52"
-                                                Height="52"
-                                                CornerRadius="14"
-                                                Background="{Binding Background}">
-                                            <atom:TextBlock Text="{Binding Text}"
-                                                            Foreground="{Binding Foreground}"
-                                                            FontSize="20"
-                                                            FontWeight="Bold"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center" />
-                                        </Border>
-                                    </DataTemplate>
-                                </atom:Splash.LogoTemplate>
-                            </atom:Splash>
+                                         HorizontalAlignment="Left"/>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <gallery:ShowCaseItem
-                    Title="{gallery:SplashShowCaseLangResource DeterminateTitle}"
-                    Description="{gallery:SplashShowCaseLangResource DeterminateDescription}"
-                    IsDeferredContentEnabled="True">
+                <gallery:ShowCaseItem Title="{gallery:SplashShowCaseLangResource DeterminateTitle}"
+                                      Description="{gallery:SplashShowCaseLangResource DeterminateDescription}"
+                                      IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:SplashViewModel">
-                            <atom:Splash Classes="preview-splash"
-                                         Logo="{Binding BasicLogo}"
-                                         Title="AtomUI"
-                                         Subtitle="{gallery:SplashShowCaseLangResource P2SubtitleDesktopBoot}"
-                                         Message="{gallery:SplashShowCaseLangResource P2MessageLoadingModules}"
-                                         Detail="{gallery:SplashShowCaseLangResource P2DetailProgress}"
-                                         Progress="{Binding ProgressValue}"
+                            <atom:Splash Title="AtomUI"
+                                         Message="{gallery:SplashShowCaseLangResource P2MessagePreparingShell}"
                                          IsIndeterminate="False"
-                                         HorizontalAlignment="Left">
-                                <atom:Splash.LogoTemplate>
-                                    <DataTemplate x:DataType="vm:SplashLogoInfo">
-                                        <Border Width="52"
-                                                Height="52"
-                                                CornerRadius="14"
-                                                Background="{Binding Background}">
-                                            <atom:TextBlock Text="{Binding Text}"
-                                                            Foreground="{Binding Foreground}"
-                                                            FontSize="20"
-                                                            FontWeight="Bold"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center" />
-                                        </Border>
-                                    </DataTemplate>
-                                </atom:Splash.LogoTemplate>
-                            </atom:Splash>
+                                         Progress="0.6"
+                                         HorizontalAlignment="Left"/>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <gallery:ShowCaseItem
-                    Title="{gallery:SplashShowCaseLangResource StatusTitle}"
-                    Description="{gallery:SplashShowCaseLangResource StatusDescription}"
-                    IsOccupyEntireRow="True"
-                    IsDeferredContentEnabled="True">
+                <gallery:ShowCaseItem Title="{gallery:SplashShowCaseLangResource ErrorTitle}"
+                                      Description="{gallery:SplashShowCaseLangResource ErrorDescription}"
+                                      IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:SplashViewModel">
-                            <WrapPanel Orientation="Horizontal"
-                                       ItemSpacing="20"
-                                       LineSpacing="20">
-                                <atom:Splash Classes="status-splash"
-                                             Title="AtomUI"
-                                             Message="{gallery:SplashShowCaseLangResource P2MessageReady}"
-                                             Detail="{gallery:SplashShowCaseLangResource P2DetailReady}"
-                                             Status="Success"
-                                             Progress="1"
-                                             IsIndeterminate="False"
-                                             Footer="{gallery:SplashShowCaseLangResource P2FooterStaticPreview}" />
-                                <atom:Splash Classes="status-splash"
-                                             Title="AtomUI"
-                                             Message="{gallery:SplashShowCaseLangResource P2MessageError}"
-                                             Detail="{gallery:SplashShowCaseLangResource P2DetailError}"
-                                             Status="Error"
-                                             IsIndeterminate="False"
-                                             Footer="{gallery:SplashShowCaseLangResource P2FooterStaticPreview}" />
-                            </WrapPanel>
-                        </DataTemplate>
-                    </gallery:ShowCaseItem.DeferredContentTemplate>
-                </gallery:ShowCaseItem>
-
-                <gallery:ShowCaseItem
-                    Title="{gallery:SplashShowCaseLangResource ComposedTitle}"
-                    Description="{gallery:SplashShowCaseLangResource ComposedDescription}"
-                    IsOccupyEntireRow="True"
-                    IsDeferredContentEnabled="True">
-                    <gallery:ShowCaseItem.DeferredContentTemplate>
-                        <DataTemplate x:DataType="vm:SplashViewModel">
-                            <atom:Splash Width="420"
-                                         MinHeight="300"
-                                         Logo="{Binding ComposedLogo}"
-                                         Title="AtomUI Gallery"
-                                         Subtitle="{gallery:SplashShowCaseLangResource P2SubtitleDesktopBoot}"
-                                         Message="{gallery:SplashShowCaseLangResource P2MessageLoadingModules}"
-                                         Detail="{gallery:SplashShowCaseLangResource P2DetailProgress}"
-                                         Progress="{Binding ProgressValue}"
-                                         IsIndeterminate="False"
-                                         Footer="{Binding ComposedFooter}"
-                                         HorizontalAlignment="Left">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="8"
-                                            HorizontalAlignment="Center">
-                                    <atom:Tag Text="{gallery:SplashShowCaseLangResource P2ContentModuleCore}"
-                                              TagColor="success" />
-                                    <atom:Tag Text="{gallery:SplashShowCaseLangResource P2ContentModuleTheme}"
-                                              TagColor="processing" />
-                                    <atom:Tag Text="{gallery:SplashShowCaseLangResource P2ContentModuleGallery}"
-                                              TagColor="warning" />
-                                </StackPanel>
-                                <atom:Splash.LogoTemplate>
-                                    <DataTemplate x:DataType="vm:SplashLogoInfo">
-                                        <Border Width="56"
-                                                Height="56"
-                                                CornerRadius="18"
-                                                Background="{Binding Background}">
-                                            <atom:TextBlock Text="{Binding Text}"
-                                                            Foreground="{Binding Foreground}"
-                                                            FontSize="18"
-                                                            FontWeight="Bold"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center" />
-                                        </Border>
-                                    </DataTemplate>
-                                </atom:Splash.LogoTemplate>
-                                <atom:Splash.FooterTemplate>
-                                    <DataTemplate x:DataType="vm:SplashFooterInfo">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="8"
-                                                    VerticalAlignment="Center">
-                                            <atom:Tag Text="{Binding Version}"
-                                                      TagColor="geekblue" />
-                                            <atom:TextBlock Text="{Binding Description}"
-                                                            Foreground="{atom:SharedTokenResource ColorTextTertiary}"
-                                                            VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </atom:Splash.FooterTemplate>
-                            </atom:Splash>
-                        </DataTemplate>
-                    </gallery:ShowCaseItem.DeferredContentTemplate>
-                </gallery:ShowCaseItem>
-
-                <gallery:ShowCaseItem
-                    Title="{gallery:SplashShowCaseLangResource WindowServiceTitle}"
-                    Description="{gallery:SplashShowCaseLangResource WindowServiceDescription}"
-                    IsDeferredContentEnabled="True">
-                    <gallery:ShowCaseItem.DeferredContentTemplate>
-                        <DataTemplate x:DataType="vm:SplashViewModel">
-                            <atom:Button ButtonType="Primary"
-                                         Content="{gallery:SplashShowCaseLangResource P2ContentShowWindowSplash}"
-                                         Click="HandleShowWindowSplashButtonClick" />
-                        </DataTemplate>
-                    </gallery:ShowCaseItem.DeferredContentTemplate>
-                </gallery:ShowCaseItem>
-
-                <gallery:ShowCaseItem
-                    Title="{gallery:SplashShowCaseLangResource SemanticPartStyleTitle}"
-                    Description="{gallery:SplashShowCaseLangResource SemanticPartStyleDescription}"
-                    SourceKey="splash-semantic-part"
-                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
-                    Span="Full"
-                    IsDeferredContentEnabled="True">
-                    <gallery:ShowCaseItem.DeferredContentTemplate>
-                        <DataTemplate x:DataType="vm:SplashViewModel">
-                            <WrapPanel Orientation="Horizontal"
-                                       ItemSpacing="20"
-                                       LineSpacing="20">
-                                <WrapPanel.Styles>
-                                    <!-- 生成的专用 Semantic Part Style 是唯一的部件定制入口：
-                                         外层 Style 负责 owner 类型与业务 class，生成类型封装模板路由。 -->
-                                    <Style Selector="atom|Splash.semantic-parts">
-                                        <atom:SplashLogoStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Width" Value="36" />
-                                            <Setter Property="Height" Value="36" />
-                                        </atom:SplashLogoStyle>
-                                        <atom:SplashTitleStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#531DAB" />
-                                            <Setter Property="FontSize" Value="22" />
-                                        </atom:SplashTitleStyle>
-                                        <atom:SplashSubtitleStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#722ED1" />
-                                        </atom:SplashSubtitleStyle>
-                                        <atom:SplashMessageStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#1D39C4" />
-                                        </atom:SplashMessageStyle>
-                                        <atom:SplashDetailStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#08979C" />
-                                            <Setter Property="FontSize" Value="13" />
-                                        </atom:SplashDetailStyle>
-                                        <atom:SplashProgressBarStyle x:SetterTargetType="atom:ProgressBar">
-                                            <Setter Property="Height" Value="10" />
-                                        </atom:SplashProgressBarStyle>
-                                    </Style>
-                                    <!-- root 语义区域的定制入口：表面背景、圆角与内边距由 owner 属性承载，
-                                         因此用 owner 作用域的普通 Setter 而不是 Part Style。 -->
-                                    <Style Selector="atom|Splash.semantic-parts-root">
-                                        <Setter Property="Background" Value="#F9F0FF" />
-                                        <Setter Property="CornerRadius" Value="16" />
-                                        <Setter Property="Padding" Value="28,24" />
-                                    </Style>
-                                </WrapPanel.Styles>
-
-                                <atom:Splash Classes="semantic-parts"
-                                             Width="360"
-                                             MinHeight="270"
-                                             Title="AtomUI"
-                                             Subtitle="{gallery:SplashShowCaseLangResource P2SubtitleDesktopBoot}"
-                                             Message="{gallery:SplashShowCaseLangResource P2MessageLoadingModules}"
-                                             Detail="{gallery:SplashShowCaseLangResource P2DetailProgress}"
-                                             Progress="{Binding ProgressValue}"
-                                             IsIndeterminate="False"
-                                             Footer="{gallery:SplashShowCaseLangResource P2FooterStaticPreview}">
-                                    <atom:Splash.Logo>
-                                        <!-- 徽标跟随 logo Part 的 presenter 尺寸填满，不自带固定尺寸：
-                                             否则内层固定尺寸会撑破 presenter，Part Setter 对可见外观失效。 -->
-                                        <Border HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                CornerRadius="12"
-                                                Background="{atom:SharedTokenResource ColorPrimary}">
-                                            <atom:TextBlock Text="A"
-                                                            Foreground="White"
-                                                            FontSize="20"
-                                                            FontWeight="Bold"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center" />
-                                        </Border>
-                                    </atom:Splash.Logo>
-                                </atom:Splash>
-
-                                <atom:Splash Classes="semantic-parts-root"
-                                             Width="360"
-                                             MinHeight="270"
-                                             Title="AtomUI"
-                                             Subtitle="{gallery:SplashShowCaseLangResource P2SubtitleDesktopBoot}"
-                                             Message="{gallery:SplashShowCaseLangResource P2MessageReady}"
-                                             Detail="{gallery:SplashShowCaseLangResource P2DetailReady}"
-                                             Status="Success"
-                                             Progress="1"
-                                             IsIndeterminate="False" />
-                            </WrapPanel>
+                            <atom:Splash Title="AtomUI"
+                                         Message="{gallery:SplashShowCaseLangResource ErrorMessage}"
+                                         Status="Error"
+                                         HorizontalAlignment="Left"/>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryShowCaseHost>
+        </gallery:GalleryStickyTabsHost>
     </Grid>
 </UserControl>

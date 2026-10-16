@@ -4,7 +4,6 @@ using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Definitions.Compiled;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
-using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Theme;
@@ -13,6 +12,8 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 {
     private readonly List<ThemeDefinitionRegistration> _themeDefinitionResolvers = new();
     private readonly List<Action<IThemeManager>> _initializers = new();
+    private readonly List<EnabledControlPackage> _packageDeclarations = [];
+    private StartupImage? _startupImage;
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
     private readonly HashSet<ControlTokenIdentity> _registeredSemanticControlIdentities = new();
     private readonly HashSet<Type> _registeredSemanticControlTypes = new();
@@ -21,10 +22,13 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly HashSet<string> _registeredThemeDefinitionResolvers = new(StringComparer.Ordinal);
     private bool _useUserThemeDirectory;
     private string? _userThemeDirectory;
+    private bool _hasExplicitApplicationId;
+    private readonly bool _hasApplicationType;
 
-    internal ThemeManagerBuilder(Application? application = null)
+    internal ThemeManagerBuilder(Type? applicationType = null)
     {
-        ApplicationId = ThemeApplicationIdentity.ResolveDefault(application?.GetType()) ??
+        _hasApplicationType = applicationType is not null;
+        ApplicationId = ThemeApplicationIdentity.ResolveDefault(applicationType) ??
                         typeof(ThemeManagerBuilder).Assembly.GetName().Name!;
         InitialRequest = new ThemeRequest(
             IThemeManager.DEFAULT_THEME_ID,
@@ -40,6 +44,21 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal ThemeRequest? FollowSystemDarkRequest { get; private set; }
     internal IReadOnlyList<Action<IThemeManager>> Initializers => _initializers;
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
+    internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
+    internal StartupImage? StartupImage => _startupImage;
+    internal void AddPackageDeclaration(EnabledControlPackage declaration)
+    {
+        if (_registeredControlPackageIds.Contains(declaration.Definition.Id))
+        {
+            throw new ThemeResourceRegisterException("Control package is already registered: " + declaration.Definition.Id);
+        }
+        _packageDeclarations.Add(declaration);
+    }
+    internal void UseStartupImage(StartupImage image)
+    {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
+        _startupImage = image;
+    }
     internal string? ApplicationId { get; private set; }
 
     private readonly List<ControlPackageRegistration> _controlPackages = new();
@@ -47,7 +66,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     public void AddThemeDefinitionResolver(IThemeDefinitionResolver resolver)
     {
         ArgumentNullException.ThrowIfNull(resolver);
-        ControlRegistrationState.ThrowIfUnavailable();
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         if (string.IsNullOrWhiteSpace(resolver.Id))
         {
             throw new ArgumentException("Theme definition resolver id cannot be empty.", nameof(resolver));
@@ -64,7 +83,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     public void AddCompiledThemePackage(CompiledThemePackage package)
     {
         ArgumentNullException.ThrowIfNull(package);
-        ControlRegistrationState.ThrowIfUnavailable();
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         if (!_registeredThemeDefinitionResolvers.Add(package.Id))
         {
             throw new ThemeResourceRegisterException($"Theme definition registration '{package.Id}' is already registered.");
@@ -78,7 +97,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         {
             ArgumentNullException.ThrowIfNull(package);
             ControlRegistrationState.ThrowIfUnavailable();
-            if (_registeredControlPackageIds.Contains(package.Id))
+            if (ControlRegistrationState.IsStaged(package.Id) || _registeredControlPackageIds.Contains(package.Id) || _packageDeclarations.Any(declaration => declaration.Definition.Id == package.Id))
             {
                 throw new ThemeResourceRegisterException(
                     $"Control package '{package.Id}' is already registered.");
@@ -195,18 +214,37 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         ThemeApplicationIdentity.Validate(applicationId, nameof(applicationId));
         ApplicationId = applicationId;
+        _hasExplicitApplicationId = true;
     }
+
+    /// <summary>提前准备必须有可确定的应用标识；已有 Application 时也用于同步 Splash 准备。</summary>
+    internal bool CanPrepareBeforeApplication => _hasApplicationType || _hasExplicitApplicationId;
+
+    /// <summary>后台只运行已声明安全的主题来源和生成式纯数据程序。</summary>
+    internal bool CanPrepareInBackground => CanPrepareBeforeApplication &&
+        _themeDefinitionResolvers.All(static registration =>
+            registration.Resolver is IBackgroundThemeDefinitionResolver ||
+            registration.Package is { } package && package.Programs.All(static program => program.SupportsBackgroundPrepare));
+
+    internal ThemeStartupInputs CaptureStartupInputs() =>
+        new(InitialRequest,
+            FollowSystemLightRequest,
+            FollowSystemDarkRequest,
+            CreateThemeDefinitionRegistrations(),
+            ApplicationId!,
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            FontFamily);
 
     public void UseUserThemeDirectory()
     {
-        ControlRegistrationState.ThrowIfUnavailable();
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         _useUserThemeDirectory = true;
         _userThemeDirectory = null;
     }
 
     public void UseUserThemeDirectory(string directory)
     {
-        ControlRegistrationState.ThrowIfUnavailable();
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         _useUserThemeDirectory = true;
         _userThemeDirectory = Path.GetFullPath(directory);
@@ -224,16 +262,11 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         FontFamily = FontFamily.Parse(fontFamily);
     }
 
-    internal ThemeManager Build() => Build(staged: false);
-
-    internal ThemeManager Build(bool staged)
+    internal ThemeManager Build()
     {
         try
         {
-            if (!staged)
-            {
-                CompletePendingRegistrations();
-            }
+            CompletePendingRegistrations();
             ControlRegistrationState.Freeze();
             return BuildCore();
         }
@@ -251,21 +284,6 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly Dictionary<string, ControlThemeResourceRegistration> _mergedThemeResources =
         new(StringComparer.Ordinal);
 
-    // ---- 分级启动：Stage 2 注册窗口 ----
-
-    /// <summary>受控重开 staging（ApplicationScope 在执行 Deferred 注册块前调用）。</summary>
-    internal void OpenStageTwoWindow()
-    {
-        ControlRegistrationState.ReopenForStageTwo();
-    }
-
-    /// <summary>关闭窗口并永久冻结（失败路径也必须调用——由 ApplicationScope 的 finally 保证）。</summary>
-    internal void CloseStageTwoWindow()
-    {
-        ControlRegistrationState.CloseStageTwoWindow();
-        DiscardPendingRegistrations();
-    }
-
     internal void DiscardPendingRegistrations()
     {
         foreach (var package in _controlPackages)
@@ -274,14 +292,6 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         }
     }
 
-    /// <summary>
-    /// Stage 2 注册块的完整包并入已构建的 ThemeManager：逐项走与 BuildCore 相同的
-    /// 贡献合并路径（provider/描述符/语义/资产/资源），随后由
-    /// ThemeManager.ExecuteRegistrationEvolutionAsync 重建 registry 并重应用主题。
-    /// </summary>
-    internal void MergeStageTwoInto(ThemeManager themeManager) => MergeContributionsInto(themeManager);
-
-    // 初次构建与增量演化共用唯一的贡献累积路径。
     private void MergeContributionsInto(ThemeManager themeManager)
     {
         ArgumentNullException.ThrowIfNull(themeManager);
@@ -361,7 +371,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         }
     }
 
-    // 两阶段必须使用同一套有效来源，包括 UseUserThemeDirectory 配置生成的 resolver。
+    // 有效来源包括 UseUserThemeDirectory 配置生成的 resolver。
     internal IReadOnlyList<ThemeDefinitionRegistration> CreateThemeDefinitionRegistrations()
     {
         var themeDefinitionResolvers = new List<ThemeDefinitionRegistration>(_themeDefinitionResolvers);
@@ -392,6 +402,12 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             _controlPackages.Sum(static contribution => contribution.ThemeAssets.Count),
             _registeredControlThemeProviders.Count);
         MergeContributionsInto(themeManager);
+        if (_packageDeclarations.Count != 0 || _startupImage is not null)
+        {
+            themeManager.ConfigureStartupPackages(_packageDeclarations, _startupImage);
+        }
+        themeManager.SetEnabledPackageIds(_controlPackages.Select(package => package.Id)
+            .Concat(_packageDeclarations.Select(package => package.Definition.Id)));
         themeManager.PrepareRegistrationSchema();
         return themeManager;
     }

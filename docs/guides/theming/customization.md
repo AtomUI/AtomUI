@@ -347,18 +347,18 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 
 应用显式调用 `AtomUI.Generated.AcmeThemes.GeneratedThemePackageRegistration.Register(builder.Theme)`。
 构建时只解析静态声明并生成注册与默认值赋值；运行时合并应用配置并执行现有算法，支持主色、暗色与紧凑设置变化。
-注册不自动启用控件包；XML 中显式覆盖的 Control 必须已登记在当前阶段 registry。静态主题与动态 XML 的 Id
+注册不自动启用控件包；XML 中显式覆盖的 Control 必须已登记在启动时的 registry。静态主题与动态 XML 的 Id
 不能重复。完整支持域、生成协议与验收状态见[编译主题包架构](../../architecture/systems/theming/compiled-theme-packages/overview.md)。
 
 应用启用用户主题目录时必须提供稳定 Application Id：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithApplicationId("Acme.Editor");
     builder.UseUserThemeDirectory();
     builder.UseDesktopControls();
-});
+})
 ```
 
 默认目录位于 `Environment.SpecialFolder.ApplicationData/{ApplicationId}/Themes`。主题系统不使用
@@ -399,7 +399,7 @@ Control 级算法有四种状态：
 应用启动时应在 `UseAtomUI` Builder 阶段配置初始主题，使首个可见帧已经拥有正确 snapshot：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithInitialTheme(
         "AcmeLight",
@@ -408,7 +408,7 @@ this.UseAtomUI(builder =>
             .Build());
 
     builder.UseDesktopControls();
-});
+})
 ```
 
 启动后的切换使用 `IThemeManager.ApplyThemeAsync(ThemeRequest)`。`ThemeConfig` 是深度不可变值；更新主题意味着创建
@@ -577,11 +577,11 @@ Acme.Controls
 应用保持普通包启用方式：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseAcmeControls();
-});
+})
 ```
 
 包身份是普通资源身份；生成器自动输出逐项工厂、条件映射和 Package marker，应用自动生成包引导。

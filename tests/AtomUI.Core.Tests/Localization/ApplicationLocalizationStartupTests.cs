@@ -25,7 +25,7 @@ public class ApplicationLocalizationStartupTests
 
             application.GetLanguageManager().ShouldBeNull();
             application.GetLocalizer().ShouldBeNull();
-            application.UseAtomUI();
+            AtomUIStartup.AttachWith(application, static _ => { });
 
             var scope = ApplicationScopeRegistry.Get(application).ShouldNotBeNull();
             application.GetLanguageManager().ShouldBeSameAs(scope.LanguageManager);
@@ -43,7 +43,7 @@ public class ApplicationLocalizationStartupTests
         {
             var application = Application.Current!;
 
-            application.UseAtomUI(builder =>
+            AtomUIStartup.AttachWith(application, builder =>
             {
                 builder.Localization.AddTranslationBundle(new TranslationBundleDescriptor(
                     "AtomUI.Core.Tests:AtomUI.Core.Tests.Localization.GeneratedStartupLangResourceKind",
@@ -72,7 +72,7 @@ public class ApplicationLocalizationStartupTests
             var application = (TestApplication)Application.Current!;
             var configured = false;
             application.ShouldBeAssignableTo<IGeneratedApplicationLanguageBootstrap>();
-            application.UseAtomUI(builder =>
+            AtomUIStartup.AttachWith(application, builder =>
             {
                 configured = true;
                 builder.UseLanguages(
@@ -96,7 +96,7 @@ public class ApplicationLocalizationStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = (TestApplication)Application.Current!;
-            application.UseAtomUI(builder => builder.UseLanguages(
+            AtomUIStartup.AttachWith(application, builder => builder.UseLanguages(
                 LanguageTags.EnUS,
                 [LanguageTags.EnUS, LanguageTags.ZhCN]));
 
@@ -125,62 +125,15 @@ public class ApplicationLocalizationStartupTests
     }
 
     [Fact]
-    public async Task Language_Change_After_Stage_Two_Uses_Evolved_Snapshots_And_Language_Set()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            var catalog = new LanguageCatalogDescriptor<DeferredResourceKind>(
-                "AtomUI.Core.Tests:DeferredResourceKind",
-                [new LanguageCatalogUnitDescriptor("Value")],
-                static key => key == DeferredResourceKind.Value ? 0 : -1);
-            application.UseAtomUI(builder =>
-            {
-                builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS, LanguageTags.ZhCN]);
-                builder.Deferred(() =>
-                {
-                    builder.UseLanguages(
-                        LanguageTags.EnUS,
-                        [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ArSA]);
-                    builder.Localization.AddCatalog(catalog);
-                    builder.Localization.AddTranslationBundle(
-                        CreateDeferredBundle(catalog, LanguageTags.EnUS, "Deferred English"));
-                    builder.Localization.AddTranslationBundle(
-                        CreateDeferredBundle(catalog, LanguageTags.ZhCN, "延迟中文"));
-                    builder.Localization.AddTranslationBundle(
-                        CreateDeferredBundle(catalog, LanguageTags.ArSA, "العربية المؤجلة"));
-                    builder.Localization.AddTranslationBundle(new TranslationBundleDescriptor(
-                        "AtomUI.Core.Tests:AtomUI.Core.Tests.Localization.GeneratedStartupLangResourceKind",
-                        LanguageTags.ArSA,
-                        TranslationSourceKind.ApplicationOverride,
-                        "AtomUI.Core.Tests",
-                        ["العربية", "{0} عناصر"]));
-                });
-            });
-
-            await application.GetStartup().Completion.WaitAsync(TimeSpan.FromSeconds(10));
-            application.GetStartup().State.ShouldBe(AtomUIStartupState.Ready);
-            application.GetLocalizer()!.Get(DeferredResourceKind.Value).ShouldBe("Deferred English");
-            application.GetLanguageManager()!.SupportedLanguages
-                .Select(static definition => definition.Tag)
-                .ShouldContain(LanguageTags.ArSA);
-
-            application.GetLanguageManager()!.ChangeLanguage(LanguageTags.ZhCN);
-            application.GetLocalizer()!.Get(DeferredResourceKind.Value).ShouldBe("延迟中文");
-            application.GetLanguageManager()!.ChangeLanguage(LanguageTags.ArSA);
-            application.GetLocalizer()!.Get(DeferredResourceKind.Value).ShouldBe("العربية المؤجلة");
-        });
-    }
-
-    [Fact]
     public void UseAtomUI_Rejects_Duplicate_Initialization()
     {
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            application.UseAtomUI();
+            AtomUIStartup.AttachWith(application, static _ => { });
 
-            var exception = Should.Throw<InvalidOperationException>(() => application.UseAtomUI());
+            var exception = Should.Throw<InvalidOperationException>(
+                () => AtomUIStartup.AttachWith(application, static _ => { }));
 
             exception.Message.ShouldContain("already initialized");
         });

@@ -405,10 +405,14 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     {
         ItemsPanelProperty.OverrideDefaultValue<ListView>(DefaultPanel);
         IsSelectedChangedEvent.AddClassHandler<ListView>((list, e) => list.ContainerSelectionChanged(e));
-        ListViewItem.ClickedEvent.AddClassHandler<ListView>((list, args) => list.HandleListViewItemClicked(args));
         IsSelectableProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleIsSelectableChanged(args));
         TotalItemCountProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleItemCountChanged());
         ItemsSourceProperty.Changed.AddClassHandler<ListView>((list, e) => list.HandleItemsSourcePropertyChanged(e));
+    }
+
+    internal static void RegisterItemClickedEvent(RoutedEvent<RoutedEventArgs> clickedEvent)
+    {
+        clickedEvent.AddClassHandler<ListView>((list, args) => list.HandleListViewItemClicked(args));
     }
     
     public ListView()

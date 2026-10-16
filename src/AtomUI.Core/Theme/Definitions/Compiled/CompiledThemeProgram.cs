@@ -38,12 +38,23 @@ public abstract class CompiledThemeProgram
     internal string ProgramDigest { get; }
     internal ThemeInfo Info { get; }
 
+    /// <summary>
+    /// Opt in only when Describe and WriteStaticDefaults are safe on a worker thread and
+    /// safe to run concurrently with a UI-thread fallback after a preparation timeout.
+    /// Handwritten programs default to UI-thread preparation.
+    /// </summary>
+    protected virtual bool IsBackgroundPrepareSafe => false;
+    internal bool SupportsBackgroundPrepare => IsBackgroundPrepareSafe;
+
     protected abstract void Describe(CompiledThemeBindingBuilder builder);
     protected abstract void WriteStaticDefaults(CompiledThemeValueWriter writer);
 
+    protected virtual void DescribeControl(int controlId, CompiledThemeBindingBuilder builder) => Describe(builder);
+    protected virtual void WriteControlDefaults(int controlId, CompiledThemeValueWriter writer) => WriteStaticDefaults(writer);
+
     internal PreparedThemeDefinition Bind(ThemeSchemaRegistry registry)
     {
-        var builder = new CompiledThemeBindingBuilder(registry);
+        var builder = new CompiledThemeBindingBuilder(registry, -1);
         CompiledThemeBinding binding;
         try
         {
@@ -55,19 +66,29 @@ public abstract class CompiledThemeProgram
             builder.Close();
         }
         var location = new ThemeSourceLocation(SourceIdentity, 0, 0, "/Theme");
+        var ids = binding.DeclaredControls.ToDictionary(pair => pair.Value, pair => pair.Key);
         return new PreparedThemeDefinition(Info.Id, Info.Name, Info.Appearance, Info.Appearance, Info.IsDefault,
-            binding.Algorithms, location, () =>
+            binding.Algorithms, location, () => Write(binding, location, null).Tokens, ids.Keys.ToArray(), identity =>
             {
-                var writer = new CompiledThemeValueWriter(binding, location);
+                var controlBuilder = new CompiledThemeBindingBuilder(registry, ids[identity]);
                 try
                 {
-                    WriteStaticDefaults(writer);
-                    return writer.Complete();
+                    DescribeControl(ids[identity], controlBuilder);
+                    return Write(controlBuilder.Complete(Info.Appearance), location, ids[identity]).Controls.Single();
                 }
-                finally
-                {
-                    writer.Close();
-                }
-            });
+                finally { controlBuilder.Close(); }
+            }, ProgramDigest);
+    }
+
+    private PreparedThemeValues Write(CompiledThemeBinding binding, ThemeSourceLocation location, int? controlId)
+    {
+        var writer = new CompiledThemeValueWriter(binding, location);
+        try
+        {
+            if (controlId is { } id) { WriteControlDefaults(id, writer); }
+            else { WriteStaticDefaults(writer); }
+            return writer.Complete();
+        }
+        finally { writer.Close(); }
     }
 }

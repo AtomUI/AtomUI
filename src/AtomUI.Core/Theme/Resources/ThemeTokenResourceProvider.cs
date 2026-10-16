@@ -57,6 +57,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
             }
 
             var resourceKey = snapshot.Registry.GetSharedResourceKey(controlKey.Kind);
+            snapshot.Registry.NotifyControlFirstUse(controlSlot);
             var cell = snapshot.Controls.GetCell(controlSlot);
             var found = cell.UsesRootSharedResources
                 ? snapshot.GlobalResources.TryGetValue(resourceKey, out value)
@@ -84,6 +85,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
                     $"'{descriptor.ControlType.FullName}'.");
             }
 
+            snapshot.Registry.NotifyControlFirstUse(descriptor.Slot);
             var found = snapshot.Controls[descriptor.Slot]
                                    .ControlResources
                                    .TryGetValue(ownKey.ResourceKey, out value);
@@ -99,6 +101,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
         if (snapshot.Registry.TryGetControlResourceSlot(key, out var resourceControlSlot) &&
             (uint)resourceControlSlot < (uint)snapshot.Controls.Count)
         {
+            snapshot.Registry.NotifyControlFirstUse(resourceControlSlot);
             var found = snapshot.Controls[resourceControlSlot].ControlResources.TryGetValue(key, out value);
             value = ThemeResourceValue.CloneForConsumer(value);
             return found;

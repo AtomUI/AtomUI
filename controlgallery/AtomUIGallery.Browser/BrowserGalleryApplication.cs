@@ -14,25 +14,24 @@ namespace AtomUIGallery.Browser;
 
 public partial class BrowserGalleryApplication : Application
 {
-    public override void Initialize()
+    /// <summary>宿主在 AppBuilder 链上登记 Browser Gallery 的 AtomUI 配置。</summary>
+    public static void Configure(IAtomUIBuilder builder)
     {
-        this.UseAtomUI(builder =>
-        {
-            builder.UseLanguages(
-                GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
-            builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont();
-            builder.UseAlibabaPuHuiTiFont();
-            builder.WithDefaultFontFamily(FontFamily.Parse(
-                $"fonts:AlibabaSans#Alibaba Sans, {AlibabaPuHuiTiFontConstants.FontFamily}, $Default"));
-            builder.UseDesktopControls();
-            builder.UseDesktopExtras();
-            builder.UseDesktopColorPicker();
-            builder.UseDesktopDataGrid();
-            builder.UseGalleryBase(AtomUIGalleryModule.Configure);
-            builder.UseGalleryControls();
-        });
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.UseLanguages(
+            GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
+            [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
+        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+        builder.UseAlibabaSansFont();
+        builder.UseAlibabaPuHuiTiFont();
+        builder.WithDefaultFontFamily(FontFamily.Parse(
+            $"fonts:AlibabaSans#Alibaba Sans, {AlibabaPuHuiTiFontConstants.FontFamily}, $Default"));
+        builder.UseDesktopControls();
+        builder.UseDesktopExtras();
+        builder.UseDesktopColorPicker();
+        builder.UseDesktopDataGrid();
+        builder.UseGalleryBase(AtomUIGalleryModule.Configure);
+        builder.UseGalleryControls();
     }
 
     public override void OnFrameworkInitializationCompleted()

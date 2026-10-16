@@ -19,8 +19,11 @@ public abstract class CompiledThemeProgram
     protected CompiledThemeProgram(int abiVersion, string sourceIdentity, string sourceRevision,
         string contentDigest, string programDigest, string id, string name,
         ThemeAppearance appearance, bool isDefault, Color? accentColor);
+    protected virtual bool IsBackgroundPrepareSafe { get; }
     protected abstract void Describe(CompiledThemeBindingBuilder builder);
     protected abstract void WriteStaticDefaults(CompiledThemeValueWriter writer);
+    protected virtual void DescribeControl(int controlId, CompiledThemeBindingBuilder builder);
+    protected virtual void WriteControlDefaults(int controlId, CompiledThemeValueWriter writer);
 }
 ```
 
@@ -28,9 +31,13 @@ public abstract class CompiledThemeProgram
 `AtomUI.Generated.<Assembly>.GeneratedThemePackageRegistration` 提供 `CreatePackage()` 与
 `Register(IThemeManagerBuilder builder)`；前者仅创建轻量描述，后者提交同一个包到 Builder。
 生成代码写入 ABI 数字 `1`，不能引用随运行时升级变化的常量来掩盖旧生成代码。
+生成器发射的纯数据程序重写 `IsBackgroundPrepareSafe => true`，允许启动期在工作线程准备全局层。
+手写/旧二进制程序默认 `false`，其 Describe/WriteStaticDefaults 在 UI 线程执行；作者只有在全部被调用代码可跨线程且可与
+超时回退并发时才应显式覆写。该能力是运行时调度约定，不改变编译主题数据 ABI v1。
 
-Describe 在实际 registry 上验证全部必要契约，不创建值或调用 evaluator。WriteStaticDefaults 在所选定义首次
-需要默认覆盖时执行；成功后冻结并释放工厂/binding 临时引用，失败保留可重试输入。
+Describe 只绑定全局契约并登记控件身份；WriteStaticDefaults 只构造全局默认值。
+生成器为每个 controlId 输出独立 DescribeControl/WriteControlDefaults 分支，在该控件首次编译时才绑定与写值。
+绑定与默认值缓存归具体 registry 所有；切换 registry 不复用旧 descriptor/slot。失败保留可重试输入。
 两个受限 builder/writer 均由 Core 构造，不能被外部 new；Describe/Write 无论成功或失败都在 finally 中终止本次写入能力。
 重试创建新 writer，封存或失败后继续写入必须失败，旧 finally 不能清除新执行的候选。
 
@@ -56,9 +63,10 @@ public sealed class CompiledThemeValueWriter
 }
 ```
 
-tokenId 在整个程序内唯一、controlId 在程序控件集合内唯一；均为稠密非负本地序号，不能作为应用 slot。
+tokenId 在整个程序内唯一、controlId 在程序控件集合内唯一；均为非负本地序号，不能作为应用 slot。
 resourceKey 使用现有 `SharedTokenKind` 或对应 `XxxTokenKind`，Control 使用公开 `XxxTokens.Identity`；
-实际绑定检查精确 owner Type/定义程序集、资源 key、编译时 Token 名、`typeof(T)`、stage 与值契约版本，不能凭结构摘要自认证。
+实际绑定检查精确 owner Type/metadata name、资源 key、编译时 Token 名、`typeof(T)`、stage 与值契约版本，不能凭结构摘要自认证。
+程序集名称、文化与公钥参与构建期符号解析，版本号不要求相等；运行时不比较 Assembly.FullName。
 枚举常量内联后若库版本改变排序，必须拒绝名称不匹配，不能把旧数值重解释成另一个 Token；包需重新构建。
 compiled owner 必须有真实 OwnerType，不能接受动态 XML 使用的纯字符串 identity。
 重复、缺失、越界、多写、跨 Control 写入及未知枚举均拒绝。值被复制到本次候选；writer 不暴露资源发布能力。
@@ -89,6 +97,7 @@ ThemeBuildOwnerAttribute(int version, string catalog, string id, string ownerAss
 ThemeBuildTokenAttribute(int version, string catalog, string ownerId, string name,
     string valueType, string valueTypeAssemblyIdentity, string resourceKeyType,
     string resourceKeyAssemblyIdentity, string resourceKeyMember, int stage, int valueContractVersion)
+CompiledThemeManifestAttribute(int version, string packageId, string data)
 ```
 
 只含字符串和整数，不产生 Control Type 根表。Global 的 catalog/ownerId 均为空；attribute 所属 IAssemblySymbol
@@ -96,6 +105,10 @@ ThemeBuildTokenAttribute(int version, string catalog, string ownerId, string nam
 值类型和资源键类型也保留定义程序集身份；类型解析必须无歧义，不能猜测同名类型。类型名使用完整 C# 类型表达，资源键与 identityProvider
 使用完整类型名，不猜测简单名称。每个精确 owner 下 token 名/key 唯一；记录 version 固定为 1。
 schemaDigest 使用规范排序、明确字段边界的 SHA-256，不能代替运行时实际 registry 校验。
+
+`CompiledThemeManifestAttribute` 按包导出版本 1 的有界纯数据：每个主题的显式 owner、scope、Token 名称、
+值类型、stage、资源键和值能力版本。owner 程序集只记录 simple name；应用链接对实际启用包/schema 验证，
+不在运行时扫描 attribute。当前编译的要求直接传给应用链接器，不能依赖同轮生成 attribute 的可见性。
 
 同工程契约由共同 transform 直接传递；引用包契约从 Roslyn 元数据读取。引用 metadata 中的非法/重复记录为
 构建错误；不能通过加载项目 DLL 或反射 internal Token 来补齐。
@@ -106,11 +119,11 @@ schemaDigest 使用规范排序、明确字段边界的 SHA-256，不能代替�
 快照并生成版本化中立 AdditionalFile，带原始 SHA-256、位置与 diagnostics；这些中间输入不进入运行时。
 程序摘要覆盖中立输入、所需 Token 契约、字面量/ABI 与生成实现身份。所有输出按 configuration/framework 隔离。
 
-中立传输版本为 3，仅包含声明文本、来源位置、摘要和诊断；保留记录/字节限额和 payload 摘要校验。
+中立传输版本为 4，包含声明文本、来源位置、摘要、规范值与类型化 primitive payload；保留记录/字节限额。
 旧版本输入直接拒绝，由配套工具重新生成。它是构建工具私有协议，不进入运行时，运行时生成 ABI 仍为 v1。
 
-Generator 的 `ThemeDefinitions/Literals/` 负责静态字面量解析与 C# 表达生成。HSL/HSV 颜色字面量通过
-`ThemeLiteralColorConversion` 转成 ARGB；这不包含主题派生算法。生成程序只注册并写入静态默认值，
+Core 的内置 codec 拥有字面量解析和规范格式，Tasks 源链接相同实现；HSL/HSV 等语法直接使用运行时 converter。
+Generator 只匹配值能力并发射类型化 C# 表达式。生成程序只注册并写入静态默认值，
 由现有 ThemeCompiler 在有效配置下执行运行时算法和快照生命周期。
 
 本次验证状态见[验证文档](../../architecture/systems/theming/compiled-theme-packages/verification.md#8-当前验证状态)。

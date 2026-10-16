@@ -42,7 +42,6 @@ Acme.Controls/
 │   ├── Rating.cs
 │   ├── RatingToken.cs              可选
 │   └── Themes/RatingTheme.axaml
-├── AcmeControlThemesProvider.cs
 └── ThemeManagerBuilderExtensions.cs
 ```
 
@@ -103,25 +102,9 @@ internal sealed class RatingToken : AbstractControlDesignToken
 跨程序集继承、属性冲突和默认计算调用规则见
 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。
 
-## 3. Provider 与普通入口
+## 3. 普通包入口
 
-Provider 只使用正常包身份：
-
-```csharp
-using AtomUI.Theme.Resources;
-
-namespace Acme.Controls;
-
-internal sealed class AcmeControlThemesProvider : ControlThemesProvider
-{
-    public AcmeControlThemesProvider()
-    {
-        Id = "Acme.Controls";
-    }
-}
-```
-
-以下是生成 helper 的无状态入口用法：
+包通过生成的不可变 `Definition` 声明显式入口，无需创建每包 Provider：
 
 ```csharp
 using AtomUI;
@@ -132,42 +115,27 @@ namespace Acme.Controls;
 public static class ThemeManagerBuilderExtensions
 {
     public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-        => GeneratedControlPackageRegistration.Register(
-            builder,
-            static () => new AcmeControlThemesProvider());
+        => GeneratedControlPackageRegistration.Definition.Register(builder);
 }
 ```
 
-生成命名空间由程序集名确定，生成文件不需要提交到 Git。入口不需要额外 Attribute 或方法名字符串。
-provider 使用 factory，只有通过注册状态检查后才创建实例。
+生成命名空间由程序集名确定，生成文件不需要提交到 Git。依赖使用 `ControlPackageOptions.DependsOn`，应用级初始化
+使用 `OnCommit`，首次消费初始化使用 `OnFirstUse`；服务与订阅通过 `context.Own(...)` 交给应用管理。生成式语言模块
+随包声明注册，配置阶段不访问平台对象。完整示例与版本规则见[控件包启动接入](../startup/package-authoring.md)。
 
-有基础包、配置、语言或 initializer 的包，使用同一 helper 的显式生命周期回调。`prepare` 与 `complete` 均为可选的 `Action<IAtomUIBuilder>`：
-
-```csharp
-return GeneratedControlPackageRegistration.Register(
-    builder,
-    static () => new AcmeControlThemesProvider(),
-    prepare: PreparePackageCore,
-    complete: CompletePackageCore);
-```
-
-`prepare` 在 provider 创建前执行；`complete` 在本包记录通过结构校验并暂存后执行。
-把正常依赖启用、配置准备放在 prepare，把语言注册和 initializer 声明放在 complete；生成器不解析方法体猜测顺序。
-框架基础包的内部 Ensure 与公共 Use 是不同契约；普通包不能通过反复调用公共 Use 来表达重复依赖。
-
-公共包入口在同一 builder 上重复调用或递归进入会在 prepare 前报错；不同 builder 互相独立。
-注册异常后不能继续构建一个部分成功的应用。所有入口完成后，框架才统一跨包校验、创建/挂载资源并冻结注册表。
+同一包入口也能传给 `application.GetAtomUI().LoadPackages(builder => builder.UseAcmeControls())`，由 UI 线程原子追加。
+直接重复注册和循环依赖会失败；依赖与显式 `Ensure` 幂等，不重复运行已启用包的配置或服务。
 
 ## 4. 应用启用
 
 应用只安装控件包并调用普通入口：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseAcmeControls();
-});
+})
 ```
 
 然后正常使用 `<acme:Rating />`、`new Rating()`、生成的 Token 资源键或专用 Semantic Part Style。

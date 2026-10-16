@@ -3,7 +3,6 @@ using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Media;
 using AtomUI.MotionScene;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -19,7 +18,6 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
-[BootstrapRegistration]
 public class Popup : AvaloniaPopup, IMotionAwareControl
 {
     #region 公共属性定义

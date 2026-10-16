@@ -79,15 +79,43 @@ internal static class ThemeRetainedBytesEstimator
         return retainedBytes;
     }
 
-    internal static long EstimateConfig(NormalizedThemeConfig config)
+    internal static long EstimateConfig(NormalizedThemeConfig config) =>
+        EstimateConfig(config, new HashSet<NormalizedThemeConfig>(ReferenceEqualityComparer.Instance));
+
+    internal static long EstimateKnownDeferredBindingInputs(object? bindingIdentity) =>
+        EstimateKnownDeferredBindingInputs(bindingIdentity,
+            new HashSet<NormalizedThemeConfig>(ReferenceEqualityComparer.Instance));
+
+    private static long EstimateConfig(NormalizedThemeConfig config, HashSet<NormalizedThemeConfig> visited)
     {
-        var bytes = 128L + config.Algorithms.Count * ReferenceBytes + config.Controls.Count * ReferenceBytes;
+        if (!visited.Add(config))
+        {
+            return 0;
+        }
+        var bytes = 128L + config.Algorithms.Count * ReferenceBytes + config.ControlIdentities.Count * ReferenceBytes;
         bytes = Add(bytes, EstimateNormalizedTokens(config.GlobalTokens));
+        if (config.HasDeferredControls)
+        {
+            bytes = Add(bytes, EstimateDeferredControls(config.ControlIdentities, config.ControlRevision!));
+            // ThemeConfigMerger owns this exact tuple and its deferred resolver closes over
+            // both normalized inputs. Count those known values without invoking the resolver.
+            return Add(bytes, EstimateKnownDeferredBindingInputs(config.ControlBindingIdentity, visited));
+        }
         foreach (var control in config.Controls)
         {
             bytes = Add(bytes, NormalizedControlConfigCacheKey.Create(control).EstimatedInputRetainedBytes);
         }
         return bytes;
+    }
+
+    private static long EstimateKnownDeferredBindingInputs(object? bindingIdentity,
+        HashSet<NormalizedThemeConfig> visited)
+    {
+        if (bindingIdentity is not ValueTuple<NormalizedThemeConfig, NormalizedThemeConfig> inputs)
+        {
+            return 0;
+        }
+        return Add(EstimateConfig(inputs.Item1, visited), EstimateConfig(inputs.Item2, visited));
     }
 
     internal static long EstimateConfig(NormalizedControlThemeConfig config)
@@ -112,17 +140,33 @@ internal static class ThemeRetainedBytesEstimator
 
     internal static long EstimateDefinition(PreparedThemeDefinition definition)
     {
-        var bytes = 192L + definition.Algorithms.Count * ReferenceBytes + definition.Controls.Count * ReferenceBytes;
+        var bytes = 192L + definition.Algorithms.Count * ReferenceBytes + definition.ControlIdentities.Count * ReferenceBytes;
         bytes = Add(bytes, EstimateValue(definition.Id));
         bytes = Add(bytes, EstimateValue(definition.Name));
         bytes = Add(bytes, EstimateLocation(definition.Location));
         bytes = Add(bytes, EstimateBoundTokens(definition.Tokens));
+        if (definition.ControlRevision is { } revision)
+        {
+            return Add(bytes, EstimateDeferredControls(definition.ControlIdentities, revision));
+        }
         foreach (var control in definition.Controls)
         {
             bytes = Add(bytes, 160L + control.Algorithms.Count * ReferenceBytes);
             bytes = Add(bytes, EstimateLocation(control.Location));
             bytes = Add(bytes, EstimateBoundTokens(control.GlobalTokens));
             bytes = Add(bytes, EstimateBoundTokens(control.OwnTokens));
+        }
+        return bytes;
+    }
+
+    private static long EstimateDeferredControls(IReadOnlyList<Schema.ControlTokenIdentity> identities, string revision)
+    {
+        // Count the immutable declaration index and its deferred factories. Estimation must not
+        // invoke factories; compiled control snapshots are budgeted by their own cache on first use.
+        var bytes = EstimateValue(revision);
+        foreach (var identity in identities)
+        {
+            bytes = Add(bytes, 256L + EstimateValue(identity.Catalog) + EstimateValue(identity.Id));
         }
         return bytes;
     }

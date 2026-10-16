@@ -1,3 +1,5 @@
+using AtomUI.Localization.Data;
+
 namespace AtomUI.Localization;
 
 internal sealed class LocalizationBuilder : ILocalizationBuilder
@@ -5,16 +7,57 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
     private readonly List<LanguageCatalogDescriptor> _catalogs = [];
     private readonly List<TranslationBundleDescriptor> _bundles = [];
     private readonly List<LanguageDefinition> _definitions = [];
+    private readonly HashSet<string> _moduleIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _moduleData = new(StringComparer.Ordinal);
+    private IReadOnlySet<string>? _verifiedLanguages;
+    private IReadOnlyDictionary<string, string>? _verifiedModules;
     private LanguageCatalogRegistry? _registry;
     private LocalizationHost? _host;
-    private LanguageContext? _builtContext;
     private LanguageTag _defaultLanguage;
     private LanguageTag[]? _supportedLanguages;
     private bool _isFrozen;
+    private readonly bool _appendOnly;
+
+    internal LocalizationBuilder(bool appendOnly = false) => _appendOnly = appendOnly;
+    internal IReadOnlyDictionary<string, string> ModuleData => _moduleData;
+    internal void Close() => _isFrozen = true;
+
+    private void EnsureInitialConfiguration()
+    {
+        EnsureMutable();
+        if (_appendOnly)
+        {
+            throw new InvalidOperationException("Supported languages and language definitions cannot change during package loading.");
+        }
+    }
 
     internal IReadOnlyList<LanguageCatalogDescriptor> Catalogs => _catalogs;
 
     internal IReadOnlyList<TranslationBundleDescriptor> TranslationBundles => _bundles;
+
+    public void AddModuleData(string moduleId, string data)
+    {
+        EnsureMutable();
+        if (_moduleIds.Contains(moduleId))
+        {
+            throw new LanguageCatalogException($"Language module '{moduleId}' is registered more than once.");
+        }
+        LanguageModuleData module;
+        try
+        {
+            module = LanguageModuleDataCodec.Read(moduleId, data);
+        }
+        catch (FormatException exception)
+        {
+            throw new LanguageCatalogException($"Invalid language module '{moduleId}'.", exception);
+        }
+        var catalogs = module.Catalogs.Select(static catalog => new LanguageDataCatalogDescriptor(catalog)).ToArray();
+        var bundles = module.Bundles.Select(static bundle => new TranslationBundleDescriptor(bundle)).ToArray();
+        _moduleIds.Add(moduleId);
+        _moduleData.Add(moduleId, data);
+        _catalogs.AddRange(catalogs);
+        _bundles.AddRange(bundles);
+    }
 
     public void AddCatalog(LanguageCatalogDescriptor descriptor)
     {
@@ -32,7 +75,7 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
 
     public void AddLanguageDefinition(LanguageDefinition definition)
     {
-        EnsureMutable();
+        EnsureInitialConfiguration();
         ArgumentNullException.ThrowIfNull(definition);
         _definitions.Add(definition);
     }
@@ -41,7 +84,7 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         LanguageTag defaultLanguage,
         IEnumerable<LanguageTag> supportedLanguages)
     {
-        EnsureMutable();
+        EnsureInitialConfiguration();
         if (defaultLanguage == default)
         {
             throw new ArgumentException("A valid default language is required.", nameof(defaultLanguage));
@@ -52,7 +95,19 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         _supportedLanguages = supportedLanguages.ToArray();
     }
 
-    internal LanguageCatalogRegistry FreezeRegistry(bool allowUnresolvedBundles = false)
+    internal void ApplyBuildProof(IReadOnlySet<string> languages, IReadOnlyDictionary<string, string> modules)
+    {
+        EnsureMutable();
+        _verifiedLanguages = languages;
+        _verifiedModules = modules;
+    }
+
+    private bool HasBuildProof(IReadOnlyList<LanguageTag> languages) =>
+        _verifiedLanguages is { } verified && _verifiedModules is { } modules &&
+        languages.All(language => verified.Contains(language.Value)) && _moduleData.Count == modules.Count &&
+        _moduleData.All(pair => modules.TryGetValue(pair.Key, out var data) && string.Equals(pair.Value, data, StringComparison.Ordinal));
+
+    internal LanguageCatalogRegistry FreezeRegistry(bool generatedDataVerified = false)
     {
         if (_registry is not null)
         {
@@ -60,21 +115,12 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         }
 
         _isFrozen = true;
-        _registry = LanguageCatalogRegistry.Create(_catalogs, _bundles, allowUnresolvedBundles);
+        _registry = LanguageCatalogRegistry.Create(_catalogs, _bundles, generatedDataVerified: generatedDataVerified);
         return _registry;
     }
 
-    // 分级启动：已构建的语言上下文（LanguageContext.Evolve 的调用入口）。
-    internal LanguageContext BuiltContext =>
-        _builtContext ?? throw new InvalidOperationException("Localization has not been built yet.");
-
-    /// <summary>
-    /// 构建本地化宿主。<paramref name="allowUnresolvedBundles"/> 仅在分级启动的 Stage 1 中间态为
-    /// true：应用级语言包可能先于其目标包的 catalog 到达（catalog 随包注册被后置），此时未解析的
-    /// bundle 不参与 Stage 1 快照（其 catalog 不存在，任何查询都不可达），由 Stage 2 演化以全量
-    /// 集合严格重建并解析。
-    /// </summary>
-    internal LocalizationHost Build(Func<bool>? checkAccess = null, bool allowUnresolvedBundles = false)
+    /// <summary>构建本地化宿主；跨包的 bundle 引用必须闭合，否则抛出。</summary>
+    internal LocalizationHost Build(Func<bool>? checkAccess = null)
     {
         if (_host is not null)
         {
@@ -86,16 +132,17 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         var supportedDefinitions = ResolveSupportedDefinitions(
             supportedLanguages,
             definitionsByTag);
-        var registry = FreezeRegistry(allowUnresolvedBundles);
-        var snapshots = new Dictionary<LanguageTag, LanguageSnapshot>(supportedDefinitions.Count);
+        var generatedDataVerified = HasBuildProof(supportedLanguages);
+        var registry = FreezeRegistry(generatedDataVerified);
+        var defaultDefinition = supportedDefinitions.First(definition => definition.Tag == defaultLanguage);
         foreach (var definition in supportedDefinitions)
         {
-            snapshots.Add(
-                definition.Tag,
-                LanguageSnapshotBuilder.Build(registry, definition.Tag, definition));
+            LanguageSnapshotBuilder.ValidateManualCoverage(registry, definition, generatedDataVerified);
         }
-
-        var defaultDefinition = supportedDefinitions.First(definition => definition.Tag == defaultLanguage);
+        var snapshots = new Dictionary<LanguageTag, LanguageSnapshot>
+        {
+            [defaultLanguage] = LanguageSnapshotBuilder.Build(registry, defaultLanguage, defaultDefinition, deferCatalogs: true)
+        };
         var initialState = new LanguageState(
             defaultLanguage,
             defaultDefinition.FormattingCulture,
@@ -104,14 +151,14 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         var context = new LanguageContext(
             registry,
             new LanguageRevision(snapshots[defaultLanguage], initialState));
-        _builtContext = context;
         var provider = new LanguageResourceProvider(context);
         var manager = new LanguageManager(
             context,
             snapshots,
             supportedDefinitions,
             provider,
-            checkAccess);
+            checkAccess,
+            _moduleData);
         var localizer = new Localizer(context);
         _host = new LocalizationHost(
             registry,
@@ -206,56 +253,5 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         {
             throw new InvalidOperationException("The localization builder has already been frozen.");
         }
-    }
-
-    // ---- 分级启动：Stage 2 注册窗口 ----
-    private bool _stageTwoWindowUsed;
-
-    /// <summary>受控重开（一次性）：Deferred 注册块内追加 catalog/bundle/定义。</summary>
-    internal void OpenStageTwoWindow()
-    {
-        if (_isFrozen && !_stageTwoWindowUsed)
-        {
-            _stageTwoWindowUsed = true;
-            _isFrozen = false;
-            return;
-        }
-        throw new InvalidOperationException(
-            "Stage 2 localization window is unavailable (not frozen, or already used).");
-    }
-
-    /// <summary>关闭窗口并永久冻结（失败路径也必须调用——由 ApplicationScope 的 finally 保证）。</summary>
-    internal void CloseStageTwoWindow()
-    {
-        _isFrozen = true;
-    }
-
-    /// <summary>
-    /// Stage 2 演化构建：冻结完整 registry，按不可变来源证据复用旧 Catalog 行。
-    /// 新增 Bundle/Override 仍使相关行失效，完成时全支持语言均已验证并就绪。
-    /// </summary>
-    internal (
-        LanguageCatalogRegistry Registry,
-        IReadOnlyDictionary<LanguageTag, LanguageSnapshot> Snapshots,
-        IReadOnlyList<LanguageDefinition> SupportedLanguages)
-        BuildStageTwoEvolution(LanguageCatalogRegistry? previousRegistry = null,
-            IReadOnlyDictionary<LanguageTag, LanguageSnapshot>? previousSnapshots = null)
-    {
-        return CaptureStageTwoEvolution(previousRegistry, previousSnapshots).Build();
-    }
-
-    internal LocalizationEvolutionInput CaptureStageTwoEvolution(LanguageCatalogRegistry? previousRegistry,
-        IReadOnlyDictionary<LanguageTag, LanguageSnapshot>? previousSnapshots)
-    {
-        if (!_stageTwoWindowUsed || !_isFrozen)
-        {
-            throw new InvalidOperationException(
-                "Stage 2 localization evolution requires a closed registration window.");
-        }
-        var (_, supportedLanguages) = NormalizeLanguageConfiguration();
-        var definitionsByTag = CollectExplicitDefinitions();
-        var supportedDefinitions = ResolveSupportedDefinitions(supportedLanguages, definitionsByTag);
-        return new LocalizationEvolutionInput(_catalogs.ToArray(), _bundles.ToArray(), supportedDefinitions,
-            previousRegistry, previousSnapshots);
     }
 }

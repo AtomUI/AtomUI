@@ -237,14 +237,14 @@ using Avalonia.Metadata;
 回到第 1 节的结论：注册完还得改 Token。在 `UseAtomUI` 里调用 `WithDefaultFontFamily`：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
     builder.UseMyFontFont();
     builder.WithDefaultFontFamily(FontFamily.Parse(
         $"{MyFontFontConstants.FontFamily}, Segoe UI, PingFang SC, $Default"));
     builder.UseDesktopControls();
-});
+})
 ```
 
 Browser Gallery 是完整的现成例子，它注册两个包再拼一条链，中西文分工：

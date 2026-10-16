@@ -16,8 +16,8 @@ public class ImageLoadingApplicationBuilderTests
             var secondApplication = new Avalonia.Application();
             try
             {
-                firstApplication.UseAtomUI(builder => builder.UseImageLoading());
-                secondApplication.UseAtomUI(builder => builder.UseImageLoading());
+                AtomUIStartup.AttachWith(firstApplication, builder => builder.UseImageLoading());
+                AtomUIStartup.AttachWith(secondApplication, builder => builder.UseImageLoading());
 
                 var firstLoader = firstApplication.GetImageLoader();
                 var secondLoader = secondApplication.GetImageLoader();

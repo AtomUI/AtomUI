@@ -1,7 +1,6 @@
 using System.Windows.Input;
 using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -11,7 +10,6 @@ namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Normal, StdPseudoClass.Minimized, StdPseudoClass.Maximized, StdPseudoClass.Fullscreen)]
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
-[BootstrapRegistration]
 internal class CaptionButtonGroup : TemplatedControl, IOperationSystemAware
 {
     #region 公共属性定义

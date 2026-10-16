@@ -14,6 +14,7 @@
         <IsTrimmable>true</IsTrimmable>
         <PublishTrimmed Condition="'$(GalleryPublishTrimmed)' != ''">$(GalleryPublishTrimmed)</PublishTrimmed>
         <PublishAot Condition="'$(GalleryPublishAot)' != ''">$(GalleryPublishAot)</PublishAot>
+        <PublishReadyToRun Condition="'$(GalleryPublishReadyToRun)' != ''">$(GalleryPublishReadyToRun)</PublishReadyToRun>
         <SelfContained Condition="'$(GalleryPublishTrimmed)' == 'true' or '$(GalleryPublishAot)' == 'true'">true</SelfContained>
         <UseAppHost Condition="'$(GalleryPublishTrimmed)' == 'true' or '$(GalleryPublishAot)' == 'true'">true</UseAppHost>
     </PropertyGroup>
@@ -91,6 +92,8 @@
 
     <ItemGroup>
         <AvaloniaResource Remove="Assets/Images/AtomUIGallery.ico" />
+        <!-- 启动 Splash 的 Logo：UseSplash 只保存 avares:// 地址，显示 Splash 时才加载。 -->
+        <AvaloniaResource Include="Assets/Images/AppLogo.iconset/icon_128x128@2x.png" />
     </ItemGroup>
     
 </Project>

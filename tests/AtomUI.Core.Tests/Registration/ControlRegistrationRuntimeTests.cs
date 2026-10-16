@@ -20,7 +20,7 @@ public class ControlRegistrationRuntimeTests
         await HeadlessTestApp.RunAsync(() =>
         {
             var calls = new List<string>();
-            var builder = new AtomUIBuilder(Application.Current!);
+            var builder = new AtomUIBuilder(Application.Current!.GetType());
             Register("Desktop", prepare: _ =>
             {
                 calls.Add("prepare-desktop");
@@ -66,11 +66,11 @@ public class ControlRegistrationRuntimeTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new AtomUIBuilder(new Application());
+            var builder = new AtomUIBuilder(typeof(Application));
             Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(builder, "Test",
                 () => { Fail("provider"); return new Provider("Test"); }, _ => Fail("collect"), _ => Fail("prepare"), _ => Fail("complete")));
             Should.Throw<InvalidOperationException>(() => builder.ThemeManagerBuilder.Build());
-            var other = new AtomUIBuilder(new Application());
+            var other = new AtomUIBuilder(typeof(Application));
             ControlRegistrationRuntime.RegisterPackage(other, "Test", static () => new Provider("Test"), static _ => { });
             using var manager = other.ThemeManagerBuilder.Build();
             return;
@@ -83,7 +83,7 @@ public class ControlRegistrationRuntimeTests
     [InlineData(true)]
     public void Duplicate_And_Reentry_Fail_Before_Prepare_And_Poison_Build(bool recurse)
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         var prepares = 0;
         Action<IAtomUIBuilder> prepare = _ => prepares++;
         void Register() => ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), static _ => { }, prepare);
@@ -104,7 +104,7 @@ public class ControlRegistrationRuntimeTests
     [Fact]
     public void Shared_Asset_Deduplicates_But_Conflicting_Metadata_Or_Factory_Fails()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), collection =>
         {
             collection.AddResource(new("shared", ControlResourcePhase.Shared, 0, CreateResource));
@@ -117,7 +117,7 @@ public class ControlRegistrationRuntimeTests
             new ControlThemeResourceRegistration("shared", ControlResourcePhase.Shared, 0, OtherResource)
         })
         {
-            var invalid = new AtomUIBuilder(new Application());
+            var invalid = new AtomUIBuilder(typeof(Application));
             Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(invalid, "Test", static () => new Provider("Test"), collection =>
             {
                 collection.AddResource(new("shared", ControlResourcePhase.Shared, 0, CreateResource));
@@ -134,7 +134,7 @@ public class ControlRegistrationRuntimeTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new AtomUIBuilder(new Application());
+            var builder = new AtomUIBuilder(typeof(Application));
             var owner = ControlTokenIdentity.ForControl(typeof(Button), "Foreign", "Button");
             var factories = 0;
             var asset = ControlThemeAssetContractTests.Asset([], [owner], globals: GeneratedThemeSchema.GetGlobalTokens());
@@ -161,7 +161,7 @@ public class ControlRegistrationRuntimeTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new AtomUIBuilder(new Application());
+            var builder = new AtomUIBuilder(typeof(Application));
             var identity = ControlTokenIdentity.ForControl(typeof(Button), "Test", "Button");
             ControlRegistrationRuntime.RegisterPackage(builder, "Semantic", static () => new Provider("Semantic"), collection =>
                 collection.AddSemanticControl(new(typeof(Button), identity,
@@ -169,7 +169,7 @@ public class ControlRegistrationRuntimeTests
             using var manager = builder.ThemeManagerBuilder.Build();
             manager.SemanticParts.TryGetControl(identity, out _).ShouldBeTrue();
 
-            var conflicting = new AtomUIBuilder(new Application());
+            var conflicting = new AtomUIBuilder(typeof(Application));
             ControlRegistrationRuntime.RegisterPackage(conflicting, "Semantic", static () => new Provider("Semantic"), collection =>
                 collection.AddSemanticControl(builder.ThemeManagerBuilder.ControlPackages.Single().SemanticControls.Single()));
             ControlRegistrationRuntime.RegisterPackage(conflicting, "Token", static () => new Provider("Token"), collection =>
@@ -183,7 +183,7 @@ public class ControlRegistrationRuntimeTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new AtomUIBuilder(new Application());
+            var builder = new AtomUIBuilder(typeof(Application));
             var prepares = 0;
             ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), static _ => { });
             ControlRegistrationRuntime.EnsurePackage(builder, "Test", static () => new Provider("Test"), static _ => { }, _ => prepares++);
@@ -197,7 +197,7 @@ public class ControlRegistrationRuntimeTests
     [Fact]
     public void Ensure_Cannot_Reenter_During_Complete_Or_Build_A_Partial_Application()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), static _ => { },
             complete: _ => ControlRegistrationRuntime.EnsurePackage(builder, "Test", static () => new Provider("Test"), static _ => { })));
         Should.Throw<InvalidOperationException>(() => builder.ThemeManagerBuilder.Build());
@@ -207,13 +207,15 @@ public class ControlRegistrationRuntimeTests
     public void Collector_Uses_Only_TryGetValue_And_Activates_A_Proxy_Once()
     {
         SelectedFragmentAttribute.Activations = 0;
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), collection =>
             ControlRegistrationRuntime.CollectFragments(collection, new TryOnlyMap(new Dictionary<string, Type>
             {
                 ["control"] = typeof(SelectedFragmentAttribute), ["style"] = typeof(SelectedFragmentAttribute)
             }), ["absent", "control", "style"]));
         SelectedFragmentAttribute.Activations.ShouldBe(1);
+        builder.ThemeManagerBuilder.ControlPackages.Single().Controls.ShouldBeEmpty();
+        builder.ThemeManagerBuilder.CompletePendingRegistrations();
         builder.ThemeManagerBuilder.ControlPackages.Single().Controls.ShouldHaveSingleItem();
     }
 
@@ -223,7 +225,7 @@ public class ControlRegistrationRuntimeTests
     [InlineData("conflict")]
     public void Collector_Rejects_Invalid_Proxy_And_Fragment_Identity_Conflicts(string scenario)
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         var types = scenario switch
         {
             "missing" => new[] { typeof(MissingFragmentAttribute) },
@@ -239,7 +241,7 @@ public class ControlRegistrationRuntimeTests
     [Fact]
     public void Caught_Invalid_Proxy_Still_Poisons_The_Package_Collection()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), collection =>
         {
             try { ControlRegistrationRuntime.CollectFragments(collection, new Dictionary<string, Type> { ["bad"] = typeof(Button) }, ["bad"]); }
@@ -251,7 +253,7 @@ public class ControlRegistrationRuntimeTests
     [Fact]
     public void Cross_Package_Shared_Resource_Metadata_Is_Validated_Before_Any_Factory()
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         var calls = 0;
         Func<IResourceProvider> factory = () => { calls++; return new ResourceDictionary(); };
         foreach (var id in new[] { "First", "Later" })
@@ -268,7 +270,7 @@ public class ControlRegistrationRuntimeTests
     {
         await HeadlessTestApp.RunAsync(() =>
         {
-            var builder = new AtomUIBuilder(Application.Current!);
+            var builder = new AtomUIBuilder(Application.Current!.GetType());
             var calls = 0;
             Func<IResourceProvider> factory = () => { calls++; return new ResourceDictionary(); };
             var asset = ControlThemeAssetContractTests.Asset(
@@ -300,7 +302,7 @@ public class ControlRegistrationRuntimeTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new AtomUIBuilder(new Application());
+            var builder = new AtomUIBuilder(typeof(Application));
             var owner = ControlTokenIdentity.ForControl(typeof(Button), "Test", "Button");
             var semantic = new ControlSemanticDescriptor(typeof(Button), owner,
             [
@@ -342,83 +344,9 @@ public class ControlRegistrationRuntimeTests
         });
     }
 
-    [Fact]
-    public async Task Stage_Two_Partitioned_Package_Mounts_Each_Resource_Once_In_Global_Order()
-    {
-        await HeadlessTestApp.RunAsync(async () =>
-        {
-            var application = Application.Current!;
-            var builder = new AtomUIBuilder(application);
-            var stageOneProvider = new Provider("StageOne.Package");
-            var sharedAsset = ControlThemeAssetContractTests.Asset(
-                [],
-                globals: GeneratedThemeSchema.GetGlobalTokens());
-            var sharedResource = new ControlThemeResourceRegistration(
-                sharedAsset.AssetId,
-                ControlResourcePhase.Control,
-                15,
-                CreateResource);
-            ControlRegistrationRuntime.RegisterPartitionedPackage(
-                builder,
-                stageOneProvider.Id,
-                () => stageOneProvider,
-                critical =>
-                {
-                    critical.AddThemeAsset(sharedAsset, sharedResource);
-                    critical.AddResource(CreateOrderedResource("stage-one-critical", 20, "high"));
-                },
-                deferred =>
-                {
-                    deferred.AddThemeAsset(sharedAsset, sharedResource);
-                    deferred.AddResource(CreateOrderedResource("stage-one-deferred", 10, "low"));
-                });
-            using var manager = builder.ThemeManagerBuilder.Build();
-            manager.InitializeApplication(application);
-            var stageTwoProvider = new Provider("StageTwo.Package");
-            var stageTwoSemanticIdentity = ControlTokenIdentity.ForControl(
-                typeof(Button),
-                "StageTwo",
-                "Button");
-
-            builder.ThemeManagerBuilder.OpenStageTwoWindow();
-            ControlRegistrationRuntime.RegisterPartitionedPackage(
-                builder,
-                stageTwoProvider.Id,
-                () => stageTwoProvider,
-                critical =>
-                {
-                    critical.AddResource(CreateOrderedResource("critical", 10, "low"));
-                    critical.AddSemanticControl(new ControlSemanticDescriptor(
-                        typeof(Button),
-                        stageTwoSemanticIdentity,
-                        [new SemanticPartDescriptor(
-                            "root",
-                            "root",
-                            null,
-                            typeof(Button),
-                            SemanticPartCardinality.Single,
-                            SemanticPartCustomization.Root,
-                            null,
-                            false,
-                            null,
-                            false)]));
-                },
-                deferred => deferred.AddResource(CreateOrderedResource("deferred", 20, "high")));
-            builder.ThemeManagerBuilder.CloseStageTwoWindow();
-            builder.ThemeManagerBuilder.MergeStageTwoInto(manager);
-            await manager.ExecuteRegistrationEvolutionAsync();
-
-            AssertOrderedResources(stageOneProvider, expectedResourceCount: 3);
-            AssertOrderedResources(stageTwoProvider, expectedResourceCount: 2);
-            manager.SemanticParts.TryGetControl(stageTwoSemanticIdentity, out _).ShouldBeTrue();
-            manager.Resources.TryGetResource("priority", null, out var effective).ShouldBeTrue();
-            effective.ShouldBe("high");
-        });
-    }
-
     private static AtomUIBuilder BuildSemanticBinding(Type declaredTarget, Type boundTarget)
     {
-        var builder = new AtomUIBuilder(new Application());
+        var builder = new AtomUIBuilder(typeof(Application));
         var owner = ControlTokenIdentity.ForControl(typeof(Button), "Test", "Button");
         var semantic = new ControlSemanticDescriptor(typeof(Button), owner,
         [

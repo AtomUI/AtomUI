@@ -3,9 +3,9 @@ namespace AtomUI;
 /// <summary>应用唯一启动过程的当前状态。</summary>
 public enum AtomUIStartupState
 {
-    Configuring,
-    WaitingForHost,
-    Initializing,
+    Preparing,
+    Committed,
+    Presenting,
     Ready,
     Failed,
     Canceled

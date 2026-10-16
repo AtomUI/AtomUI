@@ -38,11 +38,11 @@
 | `AtomUI.Toolchain` | 按 profile 引用 MSBuild 或定版 ILLink/Cecil；ILC8 使用隔离缓存中的上游源码工程 | 统一任务、协议与注册后端源码；产物和引擎宿主仍隔离，不进入运行时 |
 | `AtomUI.LanguagePack.Template` | 无运行时引用 | `dotnet new atomui-language-pack` 模板包 |
 | `AtomUI.Controls.Shared` | `AtomUI.Core`, `AtomUI.Generator` | 控件共享契约和协调器 |
-| `AtomUI.Controls` | `AtomUI.Core`, `AtomUI.Controls.Shared`, `AtomUI.Fonts.AlibabaSans`, `AtomUI.Icons.AntDesign`, `AtomUI.Generator` | 公共控件、Primitives、公共主题 |
+| `AtomUI.Controls` | `AtomUI.Core`, `AtomUI.Controls.Shared`, `AtomUI.Fonts.AlibabaSans`, `AtomUI.Icons.AntDesign`, `AtomUI.Generator` | 公共控件、Primitives、公共主题；启动 Splash（`UseSplash`，经 Core 内部接缝接入启动流程，Core 不引用本项目） |
 | `AtomUI.Desktop.Controls` | `AtomUI.Controls`, `AtomUI.Native`, `AtomUI.Generator`, `Avalonia.Desktop`, `Avalonia.Wayland`, `Avalonia.X11` | 桌面主控件包及 AtomUI 的桌面后端选择入口 |
 | `AtomUI.Desktop.Controls.DataGrid` | `AtomUI.Desktop.Controls`, `AtomUI.Generator` | 独立 DataGrid 包 |
 | `AtomUI.Desktop.Controls.ColorPicker` | `AtomUI.Desktop.Controls`, `AtomUI.Generator`, `Avalonia.Controls.ColorPicker` | 独立 ColorPicker 包 |
-| `AtomUI.Desktop.Controls.Extras` | `AtomUI.Desktop.Controls`, `AtomUI.Generator` | Ant Design 之外的稳定补充控件包 |
+| `AtomUI.Desktop.Controls.Extras` | `AtomUI.Desktop.Controls`, `AtomUI.Generator` | Ant Design 之外的稳定补充控件包；当前暂无控件，`UseDesktopExtras()` 只登记空包 |
 | `AtomUI.Toolkits.GalleryBase` | `AtomUI.Desktop.Controls`, `AtomUI.Generator` | 产品中立的 Gallery 展示控件、主题和运行时底座 |
 | `AtomUI.Icons.AntDesign` | `AtomUI.Core` | Ant Design 图标注册与生成图标 |
 | `AtomUI.Icons.AntDesign.Generator` | `AtomUI.Icons.Shared` | 从 SVG 生成 Ant Design 图标源码 |

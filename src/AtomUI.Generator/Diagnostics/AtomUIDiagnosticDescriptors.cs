@@ -283,6 +283,15 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor StartupHookMissingAttach = new(
+        AtomUIDiagnosticIds.StartupHookMissingAttach,
+        "Application overrides RegisterServices without the AtomUI startup hook",
+        "Application '{0}' overrides RegisterServices without calling AtomUIStartup.Attach(this); call it after base.RegisterServices()",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor LocalizationInvalidLanguageData = new(
         AtomUIDiagnosticIds.LocalizationInvalidLanguageData,
         "Pinned language data record is invalid",

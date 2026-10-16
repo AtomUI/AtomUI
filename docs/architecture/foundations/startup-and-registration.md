@@ -3,7 +3,8 @@
 > 控件注册与裁剪采用已实现的 TypeMap 体系；本地验证、未完成门槛与发布状态统一见
 > [AOT 与裁剪架构](aot-and-trimming.md#1-状态与事实边界)。
 
-AtomUI 的启动链路分为平台默认配置和主题控件注册两部分。
+AtomUI 的启动链路分为平台默认配置和主题控件注册两部分。启动编排（提前执行配置、后台 Prepare、Splash、一次性提交、
+主窗体交接）由[启动系统](../systems/startup/overview.md)拥有，本文只描述配置内容与注册顺序。
 
 ## AppBuilder 默认配置
 
@@ -27,7 +28,8 @@ AtomUI Window 从首帧开始使用 CSD，不能先显示 compositor 标题栏�
 
 - Windows 10：`AngleEgl/Software` 渲染回退与 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退策略。
 - Windows 11+：`AngleEgl/Software` 渲染回退与 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退策略。
-- macOS Avalonia Native 渲染优先级：OpenGL、Metal、Software。
+- macOS Avalonia Native 渲染优先级：Metal、OpenGL、Software。Metal 在渲染线程直接呈现，启动提交占用 UI 线程时 Splash
+  动画仍能上屏；早先 Metal live resize 抖动已由 Avalonia 12.1.0（#21588）修复。
 - X11 平台选项：`EnableDrawnDecorations = true`。
 - 字体 fallback：`Microsoft YaHei`。
 
@@ -36,31 +38,31 @@ Windows 选项通过公开 `Win32PlatformOptions` 强类型配置，不使用运
 
 这一步只配置 Avalonia 平台选项，不注册 AtomUI 控件主题。
 
-## Application 注册 AtomUI
+## 注册 AtomUI
 
-入口位于 `src/AtomUI.Core/ApplicationExtensions.cs`：
+入口位于 `src/AtomUI.Core/AppBuilderExtensions.cs`，在 `AppBuilder` 链上声明；应用类声明为 `partial`，由生成器挂接
+（见[挂接生成器与守卫](../systems/startup/lifecycle.md#8-挂接生成器与守卫)）：
 
 ```csharp
-public override void Initialize()
-{
-    AvaloniaXamlLoader.Load(this);
-
-    this.UseAtomUI(builder =>
-    {
-        builder.UseLanguages(
-            LanguageTags.EnUS,
-            [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
-        builder.UseAlibabaSansFont();
-        builder.UseDesktopControls();
-        builder.UseDesktopColorPicker();
-        builder.UseDesktopDataGrid();
-    });
-}
+AppBuilder.Configure<App>()
+          .UseAtomUIPlatformDetect()
+          .WithAtomUIDefaultOptions()
+          .UseAtomUI(builder =>
+          {
+              builder.UseLanguages(
+                  LanguageTags.EnUS,
+                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+              builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+              builder.UseAlibabaSansFont();
+              builder.UseDesktopControls();
+              builder.UseDesktopColorPicker();
+              builder.UseDesktopDataGrid();
+          })
+          .StartWithClassicDesktopLifetime(args);
 ```
 
-`UseAtomUI()` 会创建根 `IAtomUIBuilder` 及相互独立的 `LocalizationBuilder`、`ThemeManagerBuilder`。应用生成的
-本地化 bootstrap 先注册应用 Catalog 和外部语言包 Bundle，随后执行用户注册动作；最后分别构建全部支持语言
+`UseAtomUI()` 为每个应用实例创建根 `IAtomUIBuilder` 及相互独立的 `LocalizationBuilder`、`ThemeManagerBuilder`，执行配置
+回调收集声明。提交时，应用生成的本地化 bootstrap 先注册应用 Catalog 和外部语言包 Bundle；随后分别构建全部支持语言
 Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot、Root ThemeContext 和唯一 ThemeManager。
 
 构建后的主题运行流见 [AtomUI 主题系统](../systems/theming/runtime.md)。简化顺序是：
@@ -83,10 +85,10 @@ Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot�
 9. 后续主题更新由 ThemeManager 的五阶段 `ThemeTransaction` 提交；语言更新由 `LanguageManager` 独立交换预构建 Snapshot。
 
 如果应用需要首帧就是暗色或紧凑主题，应在 builder 阶段通过 `ThemeConfig` 配置初始主题算法，而不是在
-`UseAtomUI()` 之后调用运行期切换 API：
+启动后调用运行期切换 API：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithInitialTheme(
         IThemeManager.DEFAULT_THEME_ID,
@@ -94,7 +96,7 @@ this.UseAtomUI(builder =>
             .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
             .Build());
     builder.UseDesktopControls();
-});
+})
 ```
 
 `ThemeConfigBuilder` 只用于一次性构造并在 `Build()` 时防御性复制；传入 Manager 或
@@ -107,11 +109,11 @@ this.UseAtomUI(builder =>
 应用可以显式启用用户主题目录：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithApplicationId("AtomUIGallery");
     builder.UseUserThemeDirectory();
-});
+})
 ```
 
 未显式设置 Application Id 时，默认使用具体 Application 类型所在程序集的简单名称；`Application.Name` 不作为
@@ -123,100 +125,14 @@ this.UseAtomUI(builder =>
 Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification TopLevel 必须从显式 owner 获得
 `ThemeContextLease` 和宿主私有 ResourceBridge；无 owner 静态 API 使用根主题。
 
-## 分级启动（Staged Startup）
+## 启动生命周期
 
-> 状态：2026-10-12 工作树已完成算法与提交边界重构，保持 opt-in；性能和平台证据单独验收。
-> 资源优先级、跨代缓存身份、快照生命周期及跨主题/语言发布的职责见[分级启动演化与提交边界](staged-startup-evolution.md)。
+配置回调在 `AppBuilder` 阶段执行，全局 Token 在平台初始化期间于后台准备，内核在 `RegisterServices` 中一次性提交，早于
+`Application.Initialize()`；可选的 Splash 覆盖提交与主窗体构建。状态、出错与取消、宿主差异见
+[启动生命周期](../systems/startup/lifecycle.md)，Splash 见 [Splash](../systems/startup/splash.md)。
 
-`UseAtomUI()` 默认把全部注册与初始化在窗口出现前同步完成。对于注册面较大的应用（如 Gallery 的全部
-可选包），可以通过**分级启动**把"完整 AtomUI chrome 首帧"与"框架完备初始化"拆成两个阶段：窗口出现
-等待已启用包的 bootstrap 注册、初始主题、公共语言与关键字体；主题字典和控件快照按实际使用创建。指定宿主的可见根完成 compositor rendered batch，
-且普通前台窗口收到请求的激活事件后，调度剩余注册。
-这不证明显示器实际呈现。机制是**纯 opt-in**——不调用 `Deferred` 的应用走同步构建路径。
-
-```csharp
-this.UseAtomUI(builder =>
-{
-    builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS, LanguageTags.ZhCN]);
-    builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
-    builder.UseDesktopControls();            // Stage 1：注册 Desktop 的 bootstrap 片段，资源与快照按需创建
-
-    builder.Deferred(() =>                   // Stage 2 注册块（按声明序执行）
-    {
-        builder.UseDesktopColorPicker();
-        builder.UseDesktopDataGrid();
-    });
-});
-```
-
-`Deferred` 支持控件包、主题定义来源、本地化 Catalog/Bundle 和语言配置。服务、初始主题、FollowSystem 模板、
-字体、应用标识、initializer 与 Deferred 声明只能在初始配置窗口调用；后置或晚期调用立即抛错。
-主题 initializer 的任意副作用不能参加 Stage 2 原子提交。成功封存统一检查包失败状态与未完成注册。
-
-### 统一启动结果
-
-`Application.GetStartup()` 返回该应用唯一的 `IAtomUIStartup`，同步与分阶段模式共用契约。
-尚未调用 `UseAtomUI()` 时抛出明确的初始化错误。`State` 描述当前状态：
-
-| 路径 | 状态顺序 |
-| --- | --- |
-| 同步 | `Configuring → Ready` |
-| 分阶段 | `Configuring → WaitingForHost → Initializing → Ready` |
-| 失败或宿主取消 | 从进行中的状态进入 `Failed` 或 `Canceled`，终态不可覆盖 |
-
-`Completion` 是可重复等待的框架就绪任务。成功为 `RanToCompletion`；失败保留原始异常；应用启动取消为
-`Canceled`。发布终态前先关闭注册输入、释放宿主等待者及 staging hooks。启动已成功后释放应用服务不会
-把结果改成取消。晚创建窗口、single-view 与多个观察者都能读取同一个结果。
-
-```csharp
-var startup = Application.Current!.GetStartup();
-await startup.Completion.WaitAsync(windowCancellation);
-// 在 UI 线程安排实际页面或 shell 构建。
-```
-
-`WaitAsync` 的调用者取消只结束自身等待；应用启动只受自身宿主生命周期控制。运行期间取消先关闭注册
-能力与等待订阅，待准备任务退出并完成清理后，`Completion` 才以取消结束。
-
-`ProgressChanged` 提供可选的 UI 线程进度，参数含 `State` 和 `Detail`。订阅不会重放，处理器异常逐个隔离并
-记录 System warning；读取终态必须使用 `State`/`Completion`。同步模式不增加后台工作或 Dispatcher 调度。
-旧 `IAtomUIStartupEvents`、`AtomUIStartupEvents`、`StartupStage`、`StartupStageEventArgs` 及两处
-`GetStartupEvents()` 已移除，迁移见[待发布启动 API 迁移](../../releases/unreleased-startup-api-changes.zh-CN.md)。
-
-Gallery 构造加载态后等待 `Completion`，成功后将 Shell 构建排入 Background，失败展示异常信息。
-窗口关闭或卸载取消自身等待和未执行的构建操作；晚创建窗口同样构建内容。Shell 构建/布局自身仍不可抢占，
-其成本单独测量。框架 Ready 不代表 Shell 已绘制，宿主就绪证据见
-[就绪、取消与重入](staged-startup-evolution.md#4-就绪取消与重入)。
-
-### Bootstrap 注册与按需创建
-
-控件包通过声明旁的 `[BootstrapRegistration]` 指定首阶段所需的片段。生成器复用既有资源关系补齐本包
-owner/export；不维护 `.csproj` 字符串名单，也不要求应用传控件枚举。详见[注册分期与按需创建](lazy-control-registration.md)。
-
-- `AtomUICriticalControls` 已退役，`ATOMUIREG009` 不再产生；net8 与 net10 通过同一片段执行边界分期。
-- 未标记包保持完整注册；无 `Deferred` 的应用在 Build 内补齐全部片段。
-- Stage 1 的部分包保持同一 provider 与提交序号；Stage 2 补齐为完整快照并走现有 theme/language 原子演化。
-- 标记只影响实际选中片段的执行阶段，不改变 AOT 保留关系；无效标记报告 `ATOMUIREG010`。
-
-
-### Stage 2 演化与失败语义
-
-- **主题**：注册窗口（受控重开/再冻结）内完成 Deferred 块和原包余量 → 冻结本地化输入 → 完整包贡献并入 →
-  准备 registry、目录、根/局部快照、Semantic registry 和静态资源表。已有 provider/owner 保持稳定。
-- **本地化**：增量准备 Catalog 行、全部支持语言 Snapshot 和定义，以匹配的 registry/revision 读取视图交换
-  （manager/provider/localizer 与订阅者零身份变化）；未被覆盖的既有键值不变，新键即时可查，Stage 2 后切换
-  语言不会退回 Stage 1 Snapshot。Stage 1 是中间态：应用级语言包
-  bundle 可能先于其目标包的 catalog 到达（catalog 随包后置），未解析引用在 Stage 1 被容忍、在
-  Stage 2 终态严格校验。
-- **提交与失败**：`StageTwoEvolutionPlan` 先校验主题/作用域与语言版本，再无回调交换双方有效状态，最后统一发布。
-  提交前失败后继续使用 Stage 1；一次性输入在成功、失败或取消后释放。详见[提交边界](staged-startup-evolution.md#3-capturepreparecommitcorepublish)。
-
-### 已知约束
-
-- 同步模式共用启动结果对象，`UseAtomUI()` 返回时任务已经完成，不引入后台初始化或调度。
-- 包资源按 `(Phase, Order, AssetId)` 规范顺序挂载。跨包遵循提交顺序，同一资产去重；合并字典查找自尾向头，
-  已知键候选与开放资源回退必须遵循同一优先级。
-- AOT：分期不引入反射/表达式树；`Deferred` 只存 `Action` 委托。发布门（Gallery staged +
-  StartupPerformance 非 staged 双 AOT 冒烟）为常规验收项。
+`Application.GetStartup()` 返回该应用唯一的 `IAtomUIStartup`（`Preparing → Committed → Presenting → Ready`，另有
+`Failed`、`Canceled`）；`Completion` 在 `Ready` 时成功完成，失败保留原始异常，取消为已取消。
 
 ## ThemeManagerBuilder 收集内容
 
@@ -237,32 +153,28 @@ owner/export；不维护 `.csproj` 字符串名单，也不要求应用传控件
 ## 控件包注册顺序
 
 应用仍通过 `UseDesktopControls()`、`UseDesktopDataGrid()`、`UseDesktopColorPicker()` 等正常包入口启用能力。
-入口调用生成的注册 helper，不声明方法名身份或 AOT 专用分支。统一顺序是：
+入口调用生成的 `GeneratedControlPackageRegistration.Definition`，不声明方法名身份或 AOT 专用分支。统一顺序是：
 
-1. 检查当前 builder 的重复或递归注册，在 prepare 前拒绝非法进入。
-2. 执行 prepare；Desktop 明确先调用 Common，并保持 Dialog input capture 的初始化位置。
-3. 创建平台 Provider，收集公共包资源和选中的逐控件片段。普通非裁剪模式使用全部片段；发布后端提供精细选择结果。
-4. 只检查包内结构与重复身份，暂存 Token、Semantic descriptor 和资源 factory，分配 PackageCommitOrdinal。
-5. 执行 complete，注册语言模块及主题 initializer；DataGrid/ColorPicker 仍在各自包提交后登记语言。
-6. configure 完成后统一验证跨包 RequiredTokenOwners、语义和 schema，再按包提交次序和包内资源规则创建、挂载并冻结。
+1. 拒绝直接重复和循环声明；按 `DependsOn` 幂等启用依赖。
+2. 记录包元数据、语言数据、`OnCommit` 和 `OnFirstUse`，配置期不创建 Provider 或控件。
+3. 初始提交将启用包与应用镜像相交，并保持真实 TypeMap 选择；手工 descriptor 走直接 schema 校验。
+4. 校验 Control 定义类型、Token owner、语义属性/目标、全局资源键 schema 与语言覆盖；固定稳定 slot 和单一资源层。
+5. 挂载应用服务并运行 `OnCommit`，随后冻结并释放初始 builder。Token、语义描述和资产继续按真实首次使用物化。
 
-Common 与其他控件包使用同一个 TypeMap 模型。图片服务、codec、语言属于其明确的 Package Core；公共控件与主题不再因为
-同处 Common 就被无条件完整注册。包可被 NuGet 引用和 bootstrap 发现，但不会因此执行 Provider 或 initializer。
+初始提交后，显式调用 `application.GetAtomUI().LoadPackages(...)` 可原子追加插件包。只追加新 slot 和资源/语言目录，
+保留已物化 cell 与全局值；失败恢复旧表并释放新贡献，成功只发布一次根资源变更。它不扫描程序集或自动发现包。
+依赖、资源工厂重试、服务生命周期和清单版本边界见[控件包启动接入](../../guides/startup/package-authoring.md)。
 
 NativeAOT/CoreCLR 使用官方 TypeMap；Browser 裁剪与 AOT 使用官方 ILLink 标记结果的编译期转换后端。
-查询和代理去重只在启动收集阶段进行；不扫描程序集发现控件，不遍历依赖图，也不在控件实例化后追加注册。
-普通首次主题初始化和运行时更新仍共用既有 ThemeManager 时序。完整契约见
-[TypeMap 注册管线](aot-typemap-registration.md)和[控件与资源注册契约](control-registration-contracts.md)。
-
-同一 builder 的第二次公共包入口报错，失败不能通过重试全量注册掩盖；不同 builder 的状态相互独立。
-共享服务自身已定义的幂等/合并语义（例如 UseImageLoading）不因此改变。
+生成的资产可用性谓词保留资源自身的 OS/最低版本 guard，不能用控件可用性代替资产可用性。
+完整契约见[TypeMap 注册管线](aot-typemap-registration.md)和[控件与资源注册契约](control-registration-contracts.md)。
 
 ## 图片加载注册
 
-图片系统复用 `UseAtomUI()` 构建窗口，不引入进程静态初始化或 Control 首次加载时的延迟注册：
+图片系统复用 `UseAtomUI()` 的配置与提交，不引入进程静态初始化或 Control 首次加载时的延迟注册：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseImageLoading(options =>
     {
@@ -270,7 +182,7 @@ this.UseAtomUI(builder =>
         options.MaxConcurrentDecodes = 4;
     });
     builder.UseDesktopControls();
-});
+})
 ```
 
 顺序与幂等规则固定为：
@@ -279,7 +191,7 @@ this.UseAtomUI(builder =>
 2. `UseCommonControls()` 调用同一 `UseImageLoading()` 默认入口，再显式注册 Controls 拥有的 trusted
    `avares` SVG codec；默认值不得覆盖用户显式值。
 3. `UseDesktopControls()` 仍先调用 `UseCommonControls()`，不另建 Desktop loader；DataGrid、ColorPicker 和 Extras 也不重复注册。
-4. configure callback 返回后，Core 冻结图片 options 与 codec registration；Shared pipeline 静态构造每个 source kind 的 reader，
+4. 提交时 Core 冻结图片 options 与 codec registration；Shared pipeline 静态构造每个 source kind 的 reader，
    然后构建 Localization、Theme 和 owned services。
 5. `ApplicationScope` 按注册顺序 attach owned services；`ImageLoader` attach 后才由
    `Application.GetImageLoader()` 可见。

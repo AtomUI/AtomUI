@@ -55,13 +55,13 @@ public static class ThemeManagerBuilderExtensions
 推荐启动顺序：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseDesktopColorPicker();
     builder.UseDesktopDataGrid();
     builder.UseGalleryBase(...);
-});
+})
 ```
 
 GalleryBase 依赖 AtomUI Desktop 控件作为 Shell 默认 UI，因此产品应先注册 Desktop 控件主题。

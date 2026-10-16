@@ -1,5 +1,4 @@
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -13,7 +12,6 @@ namespace AtomUI.Desktop.Controls;
 /// 下拉菜单里的「分组标题 + 选项列表」容器，对应 antd 的
 /// <c>ant-menu-item-group</c>：标题渲染为不可交互的标题行，子项为普通菜单项。
 /// </summary>
-[BootstrapRegistration]
 public class MenuItemGroup : ItemsControl
 {
     public static readonly StyledProperty<object?> HeaderProperty =

@@ -4,23 +4,13 @@ param (
     [string]$framework = "net10.0",
     [string]$runtime = "osx-arm64",
     [string]$buildTimestamp,
-    [object]$publishAot = $true
+    [object]$publishAot = $true,
+    [object]$publishReadyToRun = $true
 )
 
 if ([string]::IsNullOrEmpty($buildTimestamp)) {
     $buildTimestamp = Get-Date -Format 'yyyyMMddHHmm'
 }
-
-if (Test-Path -Path $publishRootPath -PathType Container) {
-    Remove-Item -Path $publishRootPath -Recurse -Force
-}
-
-$configPath = Join-Path -Path $publishRootPath -ChildPath "config"
-$packagesPath = Join-Path -Path $publishRootPath -ChildPath "packages"
-
-New-Item -Path $publishRootPath -ItemType Directory -Force | Out-Null
-New-Item -Path $configPath -ItemType Directory -Force | Out-Null
-New-Item -Path $packagesPath -ItemType Directory -Force | Out-Null
 
 function Update-VersionInFile {
     param(
@@ -79,6 +69,112 @@ function ConvertTo-Bool {
             throw "Invalid boolean value '$Value'. Expected true or false."
         }
     }
+}
+
+function Resolve-PublishPath {
+    param([Parameter(Mandatory=$true)][string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or $Path.IndexOfAny([char[]]'*?[]') -ge 0) {
+        throw "Invalid publish root path '$Path'."
+    }
+    if (($Path -split '[/\\]') | Where-Object { $_ -eq '.' -or $_ -eq '..' }) {
+        throw "Publish root path must not contain '.' or '..': '$Path'."
+    }
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if (Test-Path -LiteralPath $fullPath) {
+        $leaf = Get-Item -LiteralPath $fullPath -Force -ErrorAction Stop
+        if ($leaf.LinkType) {
+            throw "Publish root must not be a symbolic link: '$Path'."
+        }
+    }
+    $existing = $fullPath
+    $suffix = [System.Collections.Generic.List[string]]::new()
+    while (-not (Test-Path -LiteralPath $existing)) {
+        $parent = [System.IO.Path]::GetDirectoryName($existing)
+        if ([string]::IsNullOrEmpty($parent) -or $parent -eq $existing) {
+            throw "Publish root path has no existing ancestor: '$Path'."
+        }
+        $suffix.Insert(0, [System.IO.Path]::GetFileName($existing))
+        $existing = $parent
+    }
+    if (-not (Test-Path -LiteralPath $existing -PathType Container)) {
+        throw "Publish root ancestor is not a directory: '$existing'."
+    }
+
+    # Resolve existing links one component at a time. Resolve-Path alone leaves
+    # /tmp -> /private/tmp (and similar repository aliases) unresolved.
+    $root = [System.IO.Path]::GetPathRoot($existing)
+    $resolved = $root
+    foreach ($part in ($existing.Substring($root.Length) -split '[/\\]' | Where-Object { $_ })) {
+        $candidate = Join-Path $resolved $part
+        $item = Get-Item -LiteralPath $candidate -Force -ErrorAction Stop
+        if ($item.LinkType) {
+            $target = $item.ResolveLinkTarget($true)
+            if ($target -isnot [System.IO.DirectoryInfo] -or -not $target.Exists) {
+                throw "Publish root ancestor link is not a directory: '$candidate'."
+            }
+            $resolved = $target.FullName
+        } else {
+            $resolved = $item.FullName
+        }
+    }
+    foreach ($part in $suffix) {
+        $resolved = Join-Path $resolved $part
+    }
+    return [System.IO.Path]::GetFullPath($resolved)
+}
+
+function Test-PathIsWithin {
+    param([string]$Path, [string]$Parent)
+
+    $comparison = if ($IsWindows) { [System.StringComparison]::OrdinalIgnoreCase } else { [System.StringComparison]::Ordinal }
+    $prefix = $Parent.TrimEnd([char[]]@('/', '\')) + [System.IO.Path]::DirectorySeparatorChar
+    return $Path.StartsWith($prefix, $comparison)
+}
+
+function Initialize-PublishRoot {
+    param([Parameter(Mandatory=$true)][string]$Path)
+
+    $resolved = Resolve-PublishPath -Path $Path
+    $repositoryRoot = Resolve-PublishPath -Path ([System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..')))
+    $homeRoot = Resolve-PublishPath -Path ([Environment]::GetFolderPath('UserProfile'))
+    $fileSystemRoot = [System.IO.Path]::GetPathRoot($resolved)
+    if ($resolved -eq $fileSystemRoot -or $resolved -eq $homeRoot -or
+        $resolved -eq $repositoryRoot -or
+        (Test-PathIsWithin -Path $repositoryRoot -Parent $resolved) -or
+        (Test-PathIsWithin -Path $homeRoot -Parent $resolved)) {
+        throw "Refusing unsafe publish root '$resolved'."
+    }
+    if ((Test-PathIsWithin -Path $resolved -Parent $repositoryRoot) -and
+        -not (Test-PathIsWithin -Path $resolved -Parent (Join-Path $repositoryRoot '.artifacts/gallery_published')) -and
+        -not (Test-PathIsWithin -Path $resolved -Parent (Join-Path $repositoryRoot 'binaries/gallery_published'))) {
+        throw "Publish root inside the repository must be under .artifacts/gallery_published or binaries/gallery_published: '$resolved'."
+    }
+
+    $markerName = '.atomui-gallery-publish-root'
+    $markerValue = 'AtomUIGallery.Desktop PublishToLocal.ps1 output v1'
+    if (Test-Path -LiteralPath $resolved) {
+        if (-not (Test-Path -LiteralPath $resolved -PathType Container)) {
+            throw "Publish root is not a directory: '$resolved'."
+        }
+        $entries = @(Get-ChildItem -LiteralPath $resolved -Force -ErrorAction Stop)
+        if ($entries.Count -gt 0) {
+            $markerPath = Join-Path $resolved $markerName
+            if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf) -or
+                (Get-Item -LiteralPath $markerPath -Force -ErrorAction Stop).LinkType -or
+                (Get-Content -LiteralPath $markerPath -Raw -ErrorAction Stop).Trim() -cne $markerValue) {
+                throw "Refusing to replace a nonempty directory without the Gallery publish marker: '$resolved'."
+            }
+            Remove-Item -LiteralPath $resolved -Recurse -Force -ErrorAction Stop
+            if (Test-Path -LiteralPath $resolved) {
+                throw "Publish root cleanup did not remove '$resolved'."
+            }
+        }
+    }
+    New-Item -Path $resolved -ItemType Directory -Force -ErrorAction Stop | Out-Null
+    Set-Content -LiteralPath (Join-Path $resolved $markerName) -Value $markerValue -ErrorAction Stop
+    return $resolved
 }
 
 function Invoke-DotNet {
@@ -208,16 +304,72 @@ function Test-PackageFile {
     }
 }
 
+function Assert-PublishModeSegments {
+    foreach ($segment in @($buildType, $framework, $runtime)) {
+        if ([string]::IsNullOrWhiteSpace($segment) -or $segment -match '[/\\]' -or $segment -eq '.' -or $segment -eq '..') {
+            throw "Invalid publish intermediate path segment '$segment'."
+        }
+    }
+}
+
+function Get-PublishIntermediateRoot {
+    $repositoryRoot = Resolve-PublishPath -Path ([System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..')))
+    $generatedRoot = Join-Path $repositoryRoot '.artifacts/AtomUIGallery.Desktop/obj'
+    $candidate = Join-Path $generatedRoot "$buildType/$framework/$runtime"
+    $resolved = Resolve-PublishPath -Path $candidate
+    if (-not (Test-PathIsWithin -Path $resolved -Parent $generatedRoot)) {
+        throw "Publish intermediate path escapes the Gallery generated output directory: '$resolved'."
+    }
+    return $resolved
+}
+
+function Clear-PublishModeIntermediates {
+    param([Parameter(Mandatory=$true)][string]$IntermediateRoot)
+
+    # The SDK does not clean linked/ or R2R/ when a subsequent publish switches
+    # between trimmed NativeAOT, trimmed R2R and untrimmed R2R in the same RID obj.
+    # A stale trimmed ReactiveUI.dll can otherwise be bundled with an untrimmed caller.
+    foreach ($name in @('linked', 'R2R')) {
+        $candidate = Join-Path $IntermediateRoot $name
+        if (Test-Path -LiteralPath $candidate -ErrorAction Stop) {
+            if ((Get-Item -LiteralPath $candidate -Force -ErrorAction Stop).LinkType) {
+                throw "Publish intermediate '$candidate' must not be a symbolic link."
+            }
+            if (-not (Test-Path -LiteralPath $candidate -PathType Container -ErrorAction Stop)) {
+                throw "Publish intermediate '$candidate' is not a directory."
+            }
+            Remove-Item -LiteralPath $candidate -Recurse -Force -ErrorAction Stop
+            if (Test-Path -LiteralPath $candidate -ErrorAction Stop) {
+                throw "Publish intermediate cleanup did not remove '$candidate'."
+            }
+        }
+    }
+}
+
 $publishAotEnabled = ConvertTo-Bool -Value $publishAot
+$publishReadyToRunEnabled = ConvertTo-Bool -Value $publishReadyToRun
 $projectPath = Join-Path -Path $PSScriptRoot -ChildPath "../AtomUIGallery.Desktop.csproj"
 $assetsPath = Join-Path -Path $PSScriptRoot -ChildPath "../../../.artifacts/AtomUIGallery.Desktop/obj/project.assets.json"
 $configsPath = Join-Path -Path $PSScriptRoot -ChildPath "../configs"
 $versionPropsPath = Join-Path -Path $PSScriptRoot -ChildPath "../../../build/Versions.props"
 
+if ($publishAotEnabled -and $buildType -ne "Release") {
+    throw "NativeAOT Gallery publishing requires buildType 'Release'. Current buildType is '$buildType'."
+}
+if (-not $publishAotEnabled -and $publishReadyToRunEnabled -and $buildType -ne "Release") {
+    throw "ReadyToRun Gallery publishing requires buildType 'Release'. Pass -publishReadyToRun false for a Debug publish."
+}
+
+Assert-PublishModeSegments
+$intermediateRoot = Get-PublishIntermediateRoot
+$publishRootPath = Initialize-PublishRoot -Path $publishRootPath
+$configPath = Join-Path $publishRootPath 'config'
+$packagesPath = Join-Path $publishRootPath 'packages'
+New-Item -Path $configPath, $packagesPath -ItemType Directory -Force -ErrorAction Stop | Out-Null
+
+Clear-PublishModeIntermediates -IntermediateRoot $intermediateRoot
+
 if ($publishAotEnabled) {
-    if ($buildType -ne "Release") {
-        throw "NativeAOT Gallery publishing requires buildType 'Release'. Current buildType is '$buildType'."
-    }
 
     Invoke-DotNet -Arguments @(
         "restore",
@@ -275,6 +427,7 @@ if ($publishAotEnabled) {
         $buildType,
         "-p:GalleryPublishTrimmed=true",
         "-p:GalleryPublishAot=false",
+        "-p:GalleryPublishReadyToRun=$($publishReadyToRunEnabled.ToString().ToLowerInvariant())",
         "-p:PublishSingleFile=true"
     )
 }

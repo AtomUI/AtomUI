@@ -77,8 +77,8 @@ public class ShowCasePanelStructureTests
         var tokenResources    = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/TokenResourceConst.g.cs");
         var languageResources = ReadRepoFile(
             "src/AtomUI.Toolkits.GalleryBase/Localization/GalleryShowCaseHeaderLang/GalleryShowCaseHeaderLangResourceKind.cs");
-        var languageRegistration = ReadRepoFile(
-            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.LocalizationGenerator/AtomUI.Toolkits.GalleryBase.Localization.GalleryShowCaseHeaderLangResourceKind.LanguageCatalogRegistration.g.cs");
+        var languageModuleRegistration = ReadRepoFile(
+            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.LocalizationGenerator/GeneratedLanguageModuleRegistration.g.cs");
 
         headerSource.ShouldContain("public const string LanguageId = \"GalleryShowCaseHeader\"");
         headerSource.ShouldNotContain("RegisterTokenResourceScope");
@@ -118,10 +118,12 @@ public class ShowCasePanelStructureTests
         languageResources.ShouldContain("NamespaceLabel");
         languageResources.ShouldContain("PackageLabel");
         languageResources.ShouldContain("BaseClassLabel");
-        languageRegistration.ShouldContain("builder.AddCatalog(");
-        languageRegistration.ShouldContain("LanguageTag.Parse(\"en-US\")");
-        languageRegistration.ShouldContain("LanguageTag.Parse(\"zh-CN\")");
-        languageRegistration.ShouldContain("LanguageTag.Parse(\"zh-TW\")");
+        languageModuleRegistration.ShouldContain("LanguageModuleManifestAttribute(1, \"AtomUI.Toolkits.GalleryBase\"");
+        languageModuleRegistration.ShouldContain("builder.AddModuleData(\"AtomUI.Toolkits.GalleryBase\", Data)");
+        languageModuleRegistration.ShouldContain("GalleryShowCaseHeaderLangResourceKind");
+        languageModuleRegistration.ShouldContain("en-US");
+        languageModuleRegistration.ShouldContain("zh-CN");
+        languageModuleRegistration.ShouldContain("zh-TW");
     }
 
     [Fact]

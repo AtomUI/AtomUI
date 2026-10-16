@@ -1,7 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk"
-         TreatAsLocalProperty="TargetFramework;IsTrimmable;IsAotCompatible;EnableAotAnalyzer;EnableTrimAnalyzer;EnableSingleFileAnalyzer;PublishAot;PublishTrimmed;PublishSingleFile;RunAOTCompilation;SelfContained">
+         TreatAsLocalProperty="TargetFramework;TargetFrameworks;RuntimeIdentifier;RuntimeIdentifiers;IsTrimmable;IsAotCompatible;EnableAotAnalyzer;EnableTrimAnalyzer;EnableSingleFileAnalyzer;PublishAot;PublishTrimmed;PublishSingleFile;PublishReadyToRun;PublishReadyToRunComposite;RunAOTCompilation;SelfContained">
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks />
+        <!-- Application publish properties must never change the portable worker identity. -->
+        <RuntimeIdentifier />
+        <RuntimeIdentifiers />
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
         <UseAppHost>false</UseAppHost>
         <RollForward>LatestPatch</RollForward>
@@ -15,6 +19,8 @@
         <PublishAot>false</PublishAot>
         <PublishTrimmed>false</PublishTrimmed>
         <PublishSingleFile>false</PublishSingleFile>
+        <PublishReadyToRun>false</PublishReadyToRun>
+        <PublishReadyToRunComposite>false</PublishReadyToRunComposite>
         <RunAOTCompilation>false</RunAOTCompilation>
         <SelfContained>false</SelfContained>
     </PropertyGroup>
@@ -30,6 +36,8 @@
     </PropertyGroup>
     <ItemGroup Condition="'$(AtomUIToolchainProfile)' == 'Tasks'">
         <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />
+        <PackageReference Include="Avalonia" PrivateAssets="all" />
+        <Compile Include="../AtomUI.Core/Theme/Definitions/Compiled/BuiltInThemeLiteral*.cs;../AtomUI.Core/Theme/DesignTokens/BuiltInTokenValueConverters.cs;../AtomUI.Core/Theme/DesignTokens/ITokenValueConverter.cs;../AtomUI.Core/Theme/DesignTokens/TokenValueConverterAttribute.cs;../AtomUI.Core/Theme/Schema/ThemeTokenValueFormatter.cs;../AtomUI.Core/Dimension.cs;../AtomUI.Core/Common.cs;../AtomUI.Core/Utils/MathUtils.cs;../AtomUI.Core/Utils/SpanStringTokenizer.cs" Link="CoreThemeCodec/%(Filename)%(Extension)" />
         <Compile Include="Tasks/**/*.cs;Common/ThemeDefinitions/**/*.cs;Common/Localization/**/*.cs;Common/SourceGeneration/**/*.cs;Common/Registration/*.cs" />
         <Compile Include="../../build/AtomUI.Build.Tasks.Process.cs" Link="Tasks/Isolation/TaskProtocol.cs" />
         <!-- Core owns the XML dialect. Compile its exact BCL-only reader in the worker,

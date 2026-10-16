@@ -22,7 +22,7 @@ public class GalleryBaseRegistrationTests
         GalleryBaseConfiguration? firstConfiguration = null;
         try
         {
-            Should.Throw<Exception>(() => new Application().UseAtomUI(builder =>
+            Should.Throw<Exception>(() => AtomUIStartup.AttachWith(new Application(), builder =>
             {
                 builder.UseGalleryBase(options =>
                 {
@@ -36,9 +36,9 @@ public class GalleryBaseRegistrationTests
                     Configure(options, "duplicate");
                 });
             }));
-            firstConfiguration.ShouldNotBeNull();
+            firstConfiguration.ShouldBeSameAs(originalConfiguration);
             callbacks.ShouldBe(1);
-            GalleryBaseConfigurationProvider.Current.ShouldBeSameAs(firstConfiguration);
+            GalleryBaseConfigurationProvider.Current.ShouldBeSameAs(originalConfiguration);
         }
         finally
         {

@@ -44,65 +44,22 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
     private const string TitleBarMenuResourceKey = "WorkspaceTitleBarMenu";
     private const string ThemeColorGroupName = "ThemeColor";
     private GalleryShellView? _shellView;
-    private DispatcherOperation? _deferredContentOperation;
-    private readonly CancellationTokenSource _startupWaitingCancellation = new();
     private bool _closed;
-    private Avalonia.Controls.TextBlock? _loadingPlaceholder;
     private MenuItem? _themeMenuItem;
     private readonly List<MenuItem> _themeMenuItems = new();
     private PropertyChangedEventHandler? _viewModelPropertyChangedHandler;
 
     public WorkspaceWindow()
     {
-        // 分级启动：窗口只搭骨架（含加载占位），真实 shell 等框架就绪后构建。
+        // Splash 在提交前显示，主窗体出现时内核已就绪：窗口直接构建完整 shell，不再有加载占位。
         ViewModel = new WorkspaceWindowViewModel();
         InitializeComponent();
-        AddLoadingPlaceholder();
-        _ = WaitForStartupAsync();
+        BuildContent();
     }
 
-    private async Task WaitForStartupAsync()
+    private void BuildContent()
     {
-        var cancellation = _startupWaitingCancellation.Token;
-        try
-        {
-            var application = Application.Current ?? throw new InvalidOperationException("Application is unavailable.");
-            await application.GetStartup().Completion.WaitAsync(cancellation);
-            cancellation.ThrowIfCancellationRequested();
-            // 晚创建窗口读取相同终态；等待就绪后再调度 shell，取消覆盖排队和运行前窗口。
-            _deferredContentOperation = Dispatcher.UIThread.InvokeAsync(BuildDeferredContent, DispatcherPriority.Background);
-            await _deferredContentOperation;
-        }
-        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
-        {
-        }
-        catch (Exception exception)
-        {
-            if (!_closed && _loadingPlaceholder is { } placeholder)
-            {
-                placeholder.Text = "Startup failed: " + exception.Message;
-            }
-        }
-    }
-
-    // 占位符只服务首帧到 shell 就绪之间的空窗；静态无动画，避免与后置构建抢渲染。
-    private void AddLoadingPlaceholder()
-    {
-        _loadingPlaceholder = new Avalonia.Controls.TextBlock
-        {
-            Text = "...",
-            FontSize = 18,
-            Opacity = 0.45,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        ShellHost.Children.Add(_loadingPlaceholder);
-    }
-
-    private void BuildDeferredContent()
-    {
-        _deferredContentOperation = null;
-        if (_closed || ViewModel is null || _shellView is not null)
+        if (ViewModel is null || _shellView is not null)
         {
             return;
         }
@@ -116,11 +73,6 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
             AtomUIGalleryModule.GetConfiguration(),
             showCaseNavigation,
             ViewModel.Router);
-        if (_loadingPlaceholder is { } placeholder)
-        {
-            ShellHost.Children.Remove(placeholder);
-            _loadingPlaceholder = null;
-        }
         ShellHost.Children.Add(_shellView);
     }
 
@@ -161,10 +113,6 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
             return;
         }
         _closed = true;
-        _startupWaitingCancellation.Cancel();
-        _startupWaitingCancellation.Dispose();
-        _deferredContentOperation?.Abort();
-        _deferredContentOperation = null;
         RemoveHandler(MenuItem.ClickEvent, HandleMenuItemClick);
         if (ViewModel is not null && _viewModelPropertyChangedHandler is not null)
         {

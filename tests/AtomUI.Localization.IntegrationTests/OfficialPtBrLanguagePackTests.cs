@@ -518,12 +518,10 @@ public sealed partial class LanguagePackEndToEndTests
 
             public sealed partial class FixtureApplication : Application
             {
-                public override void Initialize()
-                {
-                    this.UseAtomUI(builder => builder.UseLanguages(
+                public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<FixtureApplication>()
+                    .UseAtomUI(builder => builder.UseLanguages(
                         LanguageTags.PtBR,
                         [LanguageTags.EnUS, LanguageTags.PtBR]));
-                }
             }
 
             public static class CatalogProbe

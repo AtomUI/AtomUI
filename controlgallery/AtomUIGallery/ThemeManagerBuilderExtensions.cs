@@ -1,21 +1,19 @@
 using AtomUI;
 using AtomUI.Generated.AtomUIGallery;
+using AtomUI.Toolkits.GalleryBase;
 
 namespace AtomUIGallery;
 
 public static class ThemeManagerBuilderExtensions
 {
     /// <summary>
-    /// Registers Gallery-level services shared by all hosts. The GalleryBase control package
-    /// entry (UseGalleryBase) must be invoked directly by the application project so the
-    /// linked-registration plan can see it.
+    /// Declares the Gallery package, its shell dependency, translations and compiled themes.
     /// </summary>
     public static IAtomUIBuilder UseGalleryControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        GeneratedLanguageModuleRegistration.Register(builder.Localization);
-        GeneratedThemePackageRegistration.Register(builder.Theme);
-
-        return builder;
+        return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
+            .DependsOn(static root => root.UseGalleryBase(AtomUIGalleryModule.Configure))
+            .DependsOn(static root => GeneratedThemePackageRegistration.Register(root.Theme)));
     }
 }

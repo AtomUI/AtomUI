@@ -1,6 +1,7 @@
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.MotionScene;
+using AtomUI.Registration;
 using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Animation;
@@ -16,34 +17,19 @@ public static class ThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseDesktopControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Register(
-            builder,
-            static () => RuntimePlatform.Features.SupportsNativeWindow
-                ? new DesktopControlThemesProvider()
-                : new BrowserDesktopControlThemesProvider(),
-            PrepareDesktopPackageCore,
-            CompleteDesktopPackageCore);
+        return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
+            .DependsOn(static builder => builder.UseCommonControls())
+            .OnCommit(InitializeDesktopRuntime));
     }
 
-    private static void PrepareDesktopPackageCore(IAtomUIBuilder builder)
+    private static void InitializeDesktopRuntime(ControlPackageContext context)
     {
-        builder.UseCommonControls();
         DialogInputCaptureTracker.Initialize();
-    }
-
-    private static void CompleteDesktopPackageCore(IAtomUIBuilder builder)
-    {
-        GeneratedLanguageModuleRegistration.Register(builder.Localization);
-        builder.Theme.AddInitializer(InitializeDesktopRuntime);
-    }
-
-    private static void InitializeDesktopRuntime(IThemeManager manager)
-    {
         Animation.RegisterCustomAnimator<TransformOperations, MotionTransformOptionsAnimator>();
         var inputManager = AvaloniaLocator.CurrentMutable.GetService(typeof(IInputManager)) as IInputManager;
         if (inputManager is not null)
         {
-            AvaloniaLocator.CurrentMutable.BindToSelf(new ToolTipService(inputManager));
+            AvaloniaLocator.CurrentMutable.BindToSelf(context.Own(new ToolTipService(inputManager)));
         }
 
         if (!RuntimePlatform.Features.SupportsNativeWindow)
@@ -51,9 +37,9 @@ public static class ThemeManagerBuilderExtensions
             return;
         }
 
-        if (manager is ThemeManager themeManager)
+        if (context.ThemeManager is ThemeManager themeManager)
         {
-            MediaBreakPointThemeBootstrapper.Attach(themeManager);
+            context.Own(MediaBreakPointThemeBootstrapper.Attach(themeManager));
         }
     }
 

@@ -7,11 +7,20 @@
         <AssemblyName>AtomUI.StartupPerformance</AssemblyName>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <!-- AOT/裁剪必须经中转属性传入：命令行直接传全局 -p:PublishAot=true 会让
+             AtomUI.Generator 等非最终可执行项目也收到该属性并触发 NETSDK1207。 -->
+        <PublishTrimmed Condition="'$(StartupPublishTrimmed)' != ''">$(StartupPublishTrimmed)</PublishTrimmed>
+        <PublishAot Condition="'$(StartupPublishAot)' != ''">$(StartupPublishAot)</PublishAot>
+        <SelfContained Condition="'$(StartupPublishTrimmed)' == 'true' or '$(StartupPublishAot)' == 'true'">true</SelfContained>
+        <UseAppHost Condition="'$(StartupPublishTrimmed)' == 'true' or '$(StartupPublishAot)' == 'true'">true</UseAppHost>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Desktop"/>
     </ItemGroup>
+
+    <Import Project="../../../build/MacOSHomebrewNativeAot.targets"
+            Condition="'$(PublishAot)' == 'true'" />
 
     <ItemGroup>
         <ProjectReference Include="../../../src/AtomUI.Core/AtomUI.Core.csproj"/>

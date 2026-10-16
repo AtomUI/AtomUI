@@ -1,6 +1,5 @@
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -12,7 +11,6 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[BootstrapRegistration]
 public class MenuFlyoutPresenter : MenuBase,
                                    IArrowAwareShadowMaskInfoProvider,
                                    IMotionAwareControl,

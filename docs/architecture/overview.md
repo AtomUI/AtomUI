@@ -6,7 +6,8 @@ AtomUI 是基于 Avalonia/.NET 的桌面与跨平台控件系统。整体架构�
 ## 导航
 
 - [架构基础](foundations/overview.md)：依赖关系、运行平台、启动注册、构建和打包。
-- [跨模块系统](systems/overview.md)：主题、本地化、Control 基础设施、渲染和窗口系统的架构入口。
+- [跨模块系统](systems/overview.md)：启动、主题、本地化、Control 基础设施、渲染和窗口系统的架构入口。
+- [启动系统](systems/startup/overview.md)：`UseAtomUI` 入口、启动生命周期、Splash 与主窗体交接。
 - [字体子系统](systems/typography/overview.md)：字体包注册、字体族回退、字号与行高 Token 派生。
 - [Control 基础设施](systems/control-infrastructure/overview.md)：异步加载、过滤与响应式共享契约。
 - [统一图片加载系统](systems/image-loading/overview.md)：当前应用级图片管线、公共 Source、缓存安全和控件 API。
@@ -103,7 +104,7 @@ Core 只提供通用应用托管服务收集、attach、回滚和逆序销毁，
 AtomUI 应用通常分两步接入：
 
 1. 在 `AppBuilder` 上调用 `WithAtomUIDefaultOptions()` 应用平台默认配置。
-2. 在 `Application.Initialize()` 内调用 `UseAtomUI(builder => ...)` 注册主题、本地化、字体、Control 包和可选包。
+2. 在同一 `AppBuilder` 链上调用 `UseAtomUI(builder => ...)` 登记主题、本地化、字体、Control 包和可选包；具体应用类声明为 `partial`，由生成的 `RegisterServices` 挂接在 `Initialize()` 之前完成提交。
 
 根 `IAtomUIBuilder` 组合主题与本地化 Builder。主题链路收集生成式 Control descriptor、主题 Provider、算法
 descriptor 和 ControlTheme asset manifest；本地化链路收集 Catalog、编译后 Translation Bundle 与支持语言配置。

@@ -17,22 +17,32 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             .Combine(Declarations(TargetMarkConstants.ThemeAlgorithmAttribute))
             .Combine(Declarations(TargetMarkConstants.SemanticPartAttribute));
         var assets = initContext.AdditionalTextsProvider
-            .Where(static text => ThemeAssetInfo.IsThemeAssetPath(text.Path))
+            .Where(static text => text.Path.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase))
             .Combine(initContext.AnalyzerConfigOptionsProvider)
+            .Where(static input =>
+            {
+                input.Right.GetOptions(input.Left).TryGetValue("build_metadata.AdditionalFiles.Link", out var link);
+                return ThemeAssetInfo.IsThemeAssetPath(string.IsNullOrWhiteSpace(link) ? input.Left.Path : link!);
+            })
             .Select(static (input, token) =>
             {
                 input.Right.GlobalOptions.TryGetValue("build_property.AtomUIThemeAssetProjectDirectory", out var directory);
                 input.Right.GetOptions(input.Left).TryGetValue("build_metadata.AdditionalFiles.Link", out var link);
                 return new ThemeAssetInput(input.Left.Path, input.Left.GetText(token)?.ToString() ?? "", directory, link);
-            }).Collect();
+            })
+            .Collect();
         var inputs = initContext.CompilationProvider.Combine(initContext.AnalyzerConfigOptionsProvider).Combine(declarations).Combine(assets);
         var themeInputs = initContext.AdditionalTextsProvider
             .Where(static file => file.Path.EndsWith(AtomUI.Theme.Build.CompiledThemeInput.Extension, StringComparison.OrdinalIgnoreCase))
             .Select(static (file, token) => (file.Path, Text: file.GetText(token)?.ToString() ?? "")).Collect();
-        var output = inputs.Combine(themeInputs).Select(static (combined, cancellationToken) =>
+        var output = inputs.Combine(themeInputs).Combine(StartupReferenceReader.Create(initContext))
+            .Combine(Localization.LocalizationCompilationProvider.Create(initContext))
+            .Select(static (combined, cancellationToken) =>
         {
-            var input = combined.Left;
-            var themeInputs = combined.Right;
+            var input = combined.Left.Left.Left;
+            var themeInputs = combined.Left.Left.Right;
+            var references = combined.Left.Right;
+            var localization = combined.Right;
             var compilation = input.Left.Left.Left;
             var options = input.Left.Left.Right;
             var declarations = input.Left.Right;
@@ -113,11 +123,13 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             var resourceFacts = new RegistrationModelBuilder(compilation, packageId, catalog, context.ReportDiagnostic);
             resourceFacts.ReadResources(assets, documents, semanticDeclarations);
             var semanticControls = hasSemanticRuntime ? SemanticPartModelBuilder.Build(compilation, semanticDeclarations, assets, resourceFacts, context.ReportDiagnostic) : Array.Empty<SemanticControlDeclaration>();
+            RegistrationPackage? ownRegistration = null;
             if (compilation.GetTypeByMetadataName("AtomUI.Registration.ControlPackageMarkerAttribute") is not null)
             {
                 controlInfos.RemoveAll(static control => !control.HasOwnToken);
                 var package = resourceFacts.Build(controlInfos, semanticControls, globalNames);
-                if (package.Controls.Count != 0 || package.Assets.Count != 0)
+                ownRegistration = package;
+                if (package.SupportsStartupManifest || package.Controls.Count != 0 || package.Assets.Count != 0)
                 {
                     if (RegistrationFrameworkResolver.TryResolve(compilation, options.GlobalOptions, out var framework, out var error))
                     {
@@ -131,17 +143,20 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                     }
                 }
             }
+            ThemeBuildContracts? contracts = null;
+            AtomUI.Theme.Definitions.Compiled.CompiledThemeManifest? ownTheme = null;
             if (ThemeBuildContracts.HasAbi(compilation))
             {
-                var contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, context);
+                contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, context);
                 contracts.Write(context);
-                CompiledThemePackageWriter.Write(context, compilation, contracts, themeInputs, assemblyName, packageId);
+                ownTheme = CompiledThemePackageWriter.Write(context, compilation, contracts, themeInputs, assemblyName, packageId);
             }
             else if (themeInputs.Length != 0)
             {
                 CompiledThemePackageWriter.Error(context, null, 0, 0, "Compiled theme inputs require generated ABI v1.");
             }
             info.ControlThemeInfos.AddRange(controlInfos);
+            StartupImageWriter.Write(context, compilation, ownRegistration, references, localization, contracts, ownTheme);
             ThemeControlCatalogMetadataWriter.Write(context, catalog);
             if (info.SchemaTokens.Count > 0 || controlInfos.Count > 0 || algorithms.Length > 0)
             {

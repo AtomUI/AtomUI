@@ -33,7 +33,7 @@ public class NumericUpDownRootSurfaceTests
         var window = new AvaloniaWindow();
         try
         {
-            var builder = new AtomUIBuilder(new Application());
+            var builder = new AtomUIBuilder(typeof(Application));
             builder.UseDesktopControls();
             builder.ThemeManagerBuilder.CompletePendingRegistrations();
             var registration = builder.ThemeManagerBuilder.ControlPackages

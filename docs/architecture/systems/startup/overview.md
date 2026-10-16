@@ -1,8 +1,8 @@
 # AtomUI 启动系统架构
 
 启动系统负责从 `AppBuilder` 配置到"主窗体完整出现"之间的全部 AtomUI 编排：收集应用配置、在平台初始化期间于后台
-准备全局 Token、可选地显示启动 Splash、一次性提交 AtomUI 内核（本地化、主题、自有服务），并在主窗体首个渲染批次
-完成后交接。它横跨 `AtomUI.Core`（生命周期与提交）、`AtomUI.Controls`（Splash 控件与呈现器）和
+准备全局 Token、可选地显示启动 Splash、一次性提交 AtomUI 内核（本地化、主题、自有服务），并编排 Splash 与主窗体的交接。
+主窗体首帧后立即隐藏并关闭 Splash。它横跨 `AtomUI.Core`（生命周期与提交）、`AtomUI.Controls`（Splash 控件与呈现器）和
 `AtomUI.Generator`（`RegisterServices` 挂接生成器）。
 
 ## 设计目标
@@ -40,7 +40,7 @@ StartWithClassicDesktopLifetime → SetupUnsafe
   Initialize()                         App.axaml；Prism 在此创建并显示 Shell
   AfterApplicationSetup                守卫：本实例未执行 Attach 则抛出带修复说明的异常
   OnFrameworkInitializationCompleted   传统写法在此创建主窗体
-主循环：判定主窗体 → 等其首个渲染批次 → Splash 淡出关闭 → Ready
+主循环：创建主窗体 → 显示并等待首个渲染批次 → 隐藏并关闭 Splash → Ready
 ```
 
 ## 模块职责

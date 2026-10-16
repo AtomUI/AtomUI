@@ -94,4 +94,5 @@ macOS、Windows、Linux X11 与 Wayland 各执行一次，检查 Gallery 与一�
 
 ## 5. 已知不一致
 
-- macOS 主窗体上屏前约 1 s 的渲染线程阻塞会让 Splash 停顿，见 [Splash 已知问题](splash.md#7-已知问题)。
+- 启动交接须验证主窗体首个合成批次完成后 Splash 才隐藏；呈现失败需恢复可见错误态。
+- macOS 主窗体首帧前的渲染线程阻塞可能让 Splash 动画停顿，但不得造成 Splash 提前消失后的长时间空档，见 [Splash 已知问题](splash.md#7-已知问题)。

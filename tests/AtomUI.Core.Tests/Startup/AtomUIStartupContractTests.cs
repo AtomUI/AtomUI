@@ -13,16 +13,23 @@ public class AtomUIStartupContractTests
 {
     // headless 会话的 dispatch 完成回调内联执行：必须阻塞式 dispatch，否则会话线程会在 Dispose 中等待自身。
     [Fact]
-    public void Generated_hook_commits_before_Initialize_and_reaches_Ready()
+    public async Task Generated_hook_commits_before_Initialize_and_reaches_Ready()
     {
-        using var session = HeadlessUnitTestSession.StartNew(typeof(HookedEntry), AvaloniaTestIsolationLevel.PerTest);
-        session.Dispatch(() =>
+        var session = HeadlessUnitTestSession.StartNew(typeof(HookedEntry), AvaloniaTestIsolationLevel.PerTest);
+        try
         {
-            var application = (TestApplication)Application.Current!;
-            application.ThemeManagerSeenInInitialize.ShouldBeTrue();
-            application.GetStartup().State.ShouldBe(AtomUIStartupState.Ready);
-            application.GetStartup().Completion.IsCompletedSuccessfully.ShouldBeTrue();
-        }, CancellationToken.None).GetAwaiter().GetResult();
+            await session.Dispatch(() =>
+            {
+                var application = (TestApplication)Application.Current!;
+                application.ThemeManagerSeenInInitialize.ShouldBeTrue();
+                application.GetStartup().State.ShouldBe(AtomUIStartupState.Ready);
+                application.GetStartup().Completion.IsCompletedSuccessfully.ShouldBeTrue();
+            }, TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            await Task.Run(session.Dispose, TestContext.Current.CancellationToken);
+        }
     }
 
     public static class HookedEntry

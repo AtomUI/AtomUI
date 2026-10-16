@@ -163,6 +163,7 @@ Splash 在内核提交之前显示，自定义主题必须遵守：
 
 - 汇报的 `Fraction`（0–1）使 Splash 切换为确定进度；`Message` 为 null 时不改消息。
 - 用户在交接前关闭 Splash 时 `context.CancellationToken` 取消，应用随即退出。
+- 工厂返回后显示主窗体，等待其首个渲染批次完成，再立即隐藏并关闭 Splash，避免 Splash 消失后主窗体长时间未出现。
 - 使用 `UseMainWindow` 时不要再自行给 `desktop.MainWindow` 赋值；它只适用于经典桌面生命周期。
 
 ## 5. Prism

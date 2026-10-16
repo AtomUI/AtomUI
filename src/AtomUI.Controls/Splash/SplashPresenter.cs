@@ -4,13 +4,11 @@ using Avalonia.Rendering.Composition;
 namespace AtomUI.Controls;
 
 /// <summary>
-/// Splash 呈现器：创建并显示 SplashWindow，汇报启动进度，错误态等待用户确认，交接时淡出关闭。
+/// Splash 呈现器：创建并显示 SplashWindow，汇报启动进度，错误态等待用户确认，交接时先隐藏、后关闭。
 /// 全部成员在 UI 线程调用（由 Core 的启动编排保证）。
 /// </summary>
 internal sealed class SplashPresenter : IAtomUISplashPresenter
 {
-    private static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(150);
-
     private readonly TaskCompletionSource _firstFrame = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _errorAcknowledged = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private SplashWindow? _window;
@@ -69,25 +67,39 @@ internal sealed class SplashPresenter : IAtomUISplashPresenter
         }
         splash.Status = SplashStatus.Error;
         splash.Message = exception.GetBaseException().Message;
+        // 主窗体呈现失败可能发生在 Splash 已透明之后；错误态必须重新可见、可操作。
+        if (_window is { } window)
+        {
+            window.Opacity = 1;
+            window.IsHitTestVisible = true;
+            window.Topmost = true;
+            if (ElementComposition.GetElementVisual(window) is { } visual)
+            {
+                visual.StopAnimation("Opacity");
+                visual.Opacity = 1;
+            }
+            if (!window.IsVisible)
+            {
+                window.Show();
+            }
+        }
     }
 
-    public async Task FadeOutAndCloseAsync()
+    public Task HideAsync()
     {
         if (_window is not { } window)
         {
-            return;
+            return Task.CompletedTask;
         }
-        if (ElementComposition.GetElementVisual(window) is { } visual)
+        if (!ReferenceEquals(_window, window))
         {
-            var fade = visual.Compositor.CreateScalarKeyFrameAnimation();
-            fade.Target = "Opacity";
-            fade.InsertKeyFrame(0f, 1f);
-            fade.InsertKeyFrame(1f, 0f);
-            fade.Duration = FadeDuration;
-            visual.StartAnimation("Opacity", fade);
-            await Task.Delay(FadeDuration + TimeSpan.FromMilliseconds(10));
+            return Task.CompletedTask;
         }
-        Close();
+        // 主窗体首帧已经完成，直接隐藏 Splash，避免透明度合成和主窗体上屏之间形成空档。
+        window.IsHitTestVisible = false;
+        window.Topmost = false;
+        window.Hide();
+        return Task.CompletedTask;
     }
 
     public void Close()

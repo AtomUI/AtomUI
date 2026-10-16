@@ -246,13 +246,12 @@ internal sealed class AtomUIStartupRun
 
             _process.MoveTo(AtomUIStartupState.Presenting);
             // 主窗体在首帧前被关闭视为用户取消：不再等待首帧，也不再走正常交接。
-            var cancelledDuringPresentation = false;
             void HandleMainWindowClosed(object? sender, EventArgs args)
             {
                 if (_process.State == AtomUIStartupState.Presenting)
                 {
-                    cancelledDuringPresentation = true;
                     _process.Cancel();
+                    _cancellation.Cancel();
                 }
             }
 
@@ -261,23 +260,17 @@ internal sealed class AtomUIStartupRun
             {
                 if (builder.MainWindowFactory is not null)
                 {
+                    _cancellation.Token.ThrowIfCancellationRequested();
                     mainWindow.Show();
                 }
-                if (!cancelledDuringPresentation)
-                {
-                    await WaitForFirstFrameAsync(mainWindow, _cancellation.Token);
-                }
+                await WaitForFirstFrameAsync(mainWindow, _cancellation.Token);
             }
             finally
             {
                 mainWindow.Closed -= HandleMainWindowClosed;
             }
-            if (cancelledDuringPresentation)
-            {
-                await CloseSplashAsync();
-                return;
-            }
             AtomUIStartupEventSource.Log.MainWindowFirstFrame();
+            // 主窗体已经完成首个合成批次后才隐藏 Splash，避免 Splash 提前消失后主窗体长时间尚未上屏。
             await CloseSplashAsync();
             _process.CompleteReady();
         }
@@ -337,8 +330,10 @@ internal sealed class AtomUIStartupRun
             }
             try
             {
-                await visual.Compositor.RequestCompositionBatchCommitAsync().Rendered
-                    .WaitAsync(MainWindowFirstFrameTimeout, closedOrCanceled.Token);
+                await AwaitCompositionAsync(
+                    visual.Compositor.RequestCompositionBatchCommitAsync().Rendered,
+                    MainWindowFirstFrameTimeout,
+                    closedOrCanceled.Token);
             }
             catch (TimeoutException)
             {
@@ -351,14 +346,29 @@ internal sealed class AtomUIStartupRun
         }
     }
 
-    private Task CloseSplashAsync()
+    private static Task AwaitCompositionAsync(Task composition, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        // CompositionBatch completes its TCS with synchronous continuations. Keep startup
+        // continuations off the render thread; the caller resumes on the UI dispatcher.
+        return composition.WaitAsync(timeout, cancellationToken).ContinueWith(
+            static completed => completed.GetAwaiter().GetResult(),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    private async Task CloseSplashAsync()
     {
         if (_splash is not { } splash)
         {
-            return Task.CompletedTask;
+            return;
         }
+        await splash.HideAsync();
         splash.ClosedByUser -= HandleSplashClosedByUser;
         _splash = null;
-        return splash.FadeOutAndCloseAsync();
+        // Window.Close synchronously tears down its composition target. Defer it until
+        // the current render/native callback has returned; otherwise Avalonia can enter
+        // ServerCompositor.Render again from SyncDisposeCompositionTarget.
+        Dispatcher.UIThread.Post(splash.Close, DispatcherPriority.Background);
     }
 }

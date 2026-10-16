@@ -28,8 +28,8 @@ internal interface IAtomUISplashPresenter
 
     Task ErrorAcknowledged { get; }
 
-    /// <summary>淡出并关闭（交接）。</summary>
-    Task FadeOutAndCloseAsync();
+    /// <summary>主窗体首帧完成后隐藏 Splash；窗口随后由启动编排安全关闭。</summary>
+    Task HideAsync();
 
     /// <summary>不等待动画立即关闭；用于启动取消或呈现失败时释放窗口。</summary>
     void Close();

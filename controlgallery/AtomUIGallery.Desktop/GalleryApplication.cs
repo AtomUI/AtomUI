@@ -6,7 +6,8 @@ using AtomUI.Localization;
 using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase;
 using AtomUIGallery.Localization;
-using Avalonia.Controls.ApplicationLifetimes;
+using AtomUIGallery.Workspace.Views;
+using Window = Avalonia.Controls.Window;
 
 namespace AtomUIGallery.Desktop;
 
@@ -38,22 +39,6 @@ public partial class GalleryApplication : BaseGalleryApplication
         builder.UseSplash(SplashMode.Auto, splash => splash
             .WithLogo(new Uri("avares://AtomUIGallery.Desktop/Assets/Images/AppLogo.iconset/icon_128x128@2x.png"))
             .WithTitle("AtomUI Gallery"));
-    }
-
-    public override void Initialize()
-    {
-        base.Initialize();
-    }
-
-    public override void OnFrameworkInitializationCompleted()
-    {
-        switch (ApplicationLifetime)
-        {
-            case IClassicDesktopStyleApplicationLifetime desktop:
-                desktop.MainWindow = CreateWorkspaceWindow();
-                break;
-        }
-
-        base.OnFrameworkInitializationCompleted();
+        builder.UseMainWindow(static _ => Task.FromResult<Window>(new WorkspaceWindow()));
     }
 }

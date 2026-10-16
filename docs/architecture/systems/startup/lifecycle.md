@@ -102,12 +102,13 @@ public static void AtomUIStartup.Attach(Application application);
 生命周期已启动）。不是经典桌面生命周期（headless、single-view）时不投递，直接进入 `Ready`。判定主窗体：
 
 1. 配置了 `UseMainWindow`：在 UI 线程执行工厂（可 await，经 `AtomUIMainWindowContext.Progress` 汇报进度），把返回的
-   窗口赋给 `desktop.MainWindow` 并显示。应用同时自行给 `desktop.MainWindow` 赋值视为配置错误。
+   窗口赋给 `desktop.MainWindow` 并显示；主窗体首个合成批次完成后才隐藏并关闭 Splash。应用同时自行给
+   `desktop.MainWindow` 赋值视为配置错误。
 2. 否则 `desktop.MainWindow` 已赋值（传统写法、Prism）：就是它。
 3. 否则视为没有主窗体：立即关闭 Splash，状态 → `Ready`。
 
-主窗体确定后状态 → `Presenting`；等它 `Opened`（上限 3 s）后的首个渲染批次（上限 3 s），然后 Splash 淡出并关闭，
-状态 → `Ready`。两个超时只写 Warning 并直接交接，防止最小化或被遮挡的窗口让 Splash 永不关闭。没有 Splash 时同样按
+主窗体确定后状态 → `Presenting`；等它 `Opened`（上限 3 s）后的首个渲染批次（上限 3 s），然后立即隐藏并关闭 Splash，
+状态 → `Ready`。传统宿主自行显示的主窗体在该首帧后才淡出 Splash。两个主窗体等待超时只写 Warning 并直接交接，防止最小化或被遮挡的窗口让 Splash 永不关闭。没有 Splash 时同样按
 此规则推进状态。主窗体在等待期间关闭、或用户关闭 Splash 触发启动取消时，关闭/取消信号会立即中断
 `Opened` 与合成批次等待，不继续消耗 3 秒超时，也不记作成功首帧或 Ready。
 

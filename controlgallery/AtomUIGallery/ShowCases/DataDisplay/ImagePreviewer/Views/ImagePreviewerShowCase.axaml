@@ -125,8 +125,17 @@
                     IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:ImagePreviewerViewModel">
-                            <atom:ImagePreviewer Width="200"
-                                                 ItemsSource="{Binding DefaultImages}" />
+                            <StackPanel Spacing="12">
+                                <atom:CheckBox Name="WheelZoomCheckBox"
+                                               IsChecked="True"
+                                               Content="{gallery:ImagePreviewerShowCaseLangResource WheelZoomEnabled}" />
+                                <atom:ImagePreviewer Width="200"
+                                                     ImageMinScale="0.1"
+                                                     ImageMaxScale="8"
+                                                     ImageScaleStep="0.5"
+                                                     IsWheelZoomEnabled="{Binding #WheelZoomCheckBox.IsChecked}"
+                                                     ItemsSource="{Binding DefaultImages}" />
+                            </StackPanel>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>

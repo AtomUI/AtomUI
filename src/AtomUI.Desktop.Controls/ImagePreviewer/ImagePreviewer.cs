@@ -10,6 +10,8 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class ImagePreviewer : AbstractImagePreviewer
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<object?> CoverIndicatorContentProperty =
         AvaloniaProperty.Register<ImagePreviewer, object?>(nameof(CoverIndicatorContent));
 
@@ -49,21 +51,6 @@ public partial class ImagePreviewer : AbstractImagePreviewer
             nameof(IsCoverFailed),
             control => control.IsCoverFailed);
 
-    internal static readonly DirectProperty<ImagePreviewer, IImage?> EffectiveCoverImageProperty =
-        AvaloniaProperty.RegisterDirect<ImagePreviewer, IImage?>(
-            nameof(EffectiveCoverImage),
-            control => control.EffectiveCoverImage);
-
-    private ImagePreviewEntry? _coverEntry;
-    private ImagePreviewEntry? _retainedCoverEntry;
-    private IImage? _effectiveCoverImage;
-    private ImageLoadState _coverLoadState;
-    private ImageLoadError? _coverLoadError;
-    private ImageLoadProgress? _coverLoadProgress;
-    private bool _isCoverLoading;
-    private bool _isCoverLoaded;
-    private bool _isCoverFailed;
-
     [DependsOn(nameof(CoverIndicatorContentTemplate))]
     public object? CoverIndicatorContent
     {
@@ -83,19 +70,48 @@ public partial class ImagePreviewer : AbstractImagePreviewer
         set => SetValue(IsShowCoverMaskProperty, value);
     }
 
+    private ImageLoadState _coverLoadState;
+
     public ImageLoadState CoverLoadState => _coverLoadState;
+
+    private ImageLoadError? _coverLoadError;
 
     public ImageLoadError? CoverLoadError => _coverLoadError;
 
+    private ImageLoadProgress? _coverLoadProgress;
+
     public ImageLoadProgress? CoverLoadProgress => _coverLoadProgress;
+
+    private bool _isCoverLoading;
 
     public bool IsCoverLoading => _isCoverLoading;
 
+    private bool _isCoverLoaded;
+
     public bool IsCoverLoaded => _isCoverLoaded;
+
+    private bool _isCoverFailed;
 
     public bool IsCoverFailed => _isCoverFailed;
 
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<ImagePreviewer, IImage?> EffectiveCoverImageProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewer, IImage?>(
+            nameof(EffectiveCoverImage),
+            control => control.EffectiveCoverImage);
+
+    private IImage? _effectiveCoverImage;
+
     internal IImage? EffectiveCoverImage => _effectiveCoverImage;
+
+    #endregion
+
+    private ImagePreviewEntry? _coverEntry;
+
+    private ImagePreviewEntry? _retainedCoverEntry;
 
     public void ReloadCover()
     {

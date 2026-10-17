@@ -9,6 +9,16 @@ namespace AtomUI.Desktop.Controls;
 [TemplatePart("PART_IconPresenter", typeof(IconPresenter))]
 internal class ImagePreviewerTitleBar : WindowTitleBar
 {
+    #region 公共属性定义
+
+    public PathIcon? Icon
+    {
+        get => GetValue(IconProperty);
+        set => SetValue(IconProperty, value);
+    }
+
+    #endregion
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<PathIcon?> IconProperty =
@@ -57,12 +67,6 @@ internal class ImagePreviewerTitleBar : WindowTitleBar
             (o, v) => o.IsLastImage = v);
 
     private int _currentIndex;
-
-    public PathIcon? Icon
-    {
-        get => GetValue(IconProperty);
-        set => SetValue(IconProperty, value);
-    }
 
     internal int CurrentIndex
     {

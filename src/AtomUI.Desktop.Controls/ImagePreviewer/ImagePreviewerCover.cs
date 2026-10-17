@@ -11,22 +11,14 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 {
-    static ImagePreviewerCover()
-    {
-        // Avalonia TemplatedControl 默认 ClipToBounds=true（合成层裁剪），会把负 Margin
-        // 铺出 cover 边界的遮罩（对齐 ant genImageCoverStyle 的 absolute inset:0）裁回
-        // 内区，root 的 padding 环永远压不暗。裁剪职责归 owner 根的 PixelAlignedBorder
-        // （对齐上游 root 的 overflow:hidden + border-radius）。
-        ClipToBoundsProperty.OverrideDefaultValue<ImagePreviewerCover>(false);
-    }
-
     #region 公共属性定义
+
     public static readonly StyledProperty<IImage?> ImageSourceProperty =
         AvaloniaProperty.Register<ImagePreviewerCover, IImage?>(nameof(ImageSource));
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ImagePreviewerCover>();
-    
+
     public static readonly StyledProperty<bool> IsShowCoverMaskProperty =
         ImagePreviewer.IsShowCoverMaskProperty.AddOwner<ImagePreviewerCover>();
 
@@ -35,11 +27,6 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 
     public static readonly StyledProperty<bool> IsFailedProperty =
         AvaloniaProperty.Register<ImagePreviewerCover, bool>(nameof(IsFailed));
-
-    internal static readonly DirectProperty<ImagePreviewerCover, bool> HasErrorProperty =
-        AvaloniaProperty.RegisterDirect<ImagePreviewerCover, bool>(
-            nameof(HasError),
-            control => control.HasError);
 
     public static readonly StyledProperty<object?> LoadingContentProperty =
         AvaloniaProperty.Register<ImagePreviewerCover, object?>(nameof(LoadingContent));
@@ -52,19 +39,19 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 
     public static readonly StyledProperty<IDataTemplate?> ErrorContentTemplateProperty =
         AvaloniaProperty.Register<ImagePreviewerCover, IDataTemplate?>(nameof(ErrorContentTemplate));
-    
+
     public IImage? ImageSource
     {
         get => GetValue(ImageSourceProperty);
         set => SetValue(ImageSourceProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public bool IsShowCoverMask
     {
         get => GetValue(IsShowCoverMaskProperty);
@@ -106,9 +93,15 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
         get => GetValue(ErrorContentTemplateProperty);
         set => SetValue(ErrorContentTemplateProperty, value);
     }
+
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly DirectProperty<ImagePreviewerCover, bool> HasErrorProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewerCover, bool>(
+            nameof(HasError),
+            control => control.HasError);
 
     internal static readonly StyledProperty<double> MaskOpacityProperty =
         AvaloniaProperty.Register<ImagePreviewerCover, double>(nameof(MaskOpacity), 0.0);
@@ -133,6 +126,10 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
             nameof(OwnerMaskMargin),
             o => o.OwnerMaskMargin);
 
+    private bool _hasError;
+
+    internal bool HasError => _hasError;
+
     internal double MaskOpacity
     {
         get => GetValue(MaskOpacityProperty);
@@ -140,27 +137,11 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
     }
 
     private bool _isCoverMaskVisible = true;
-    private bool _hasError;
-    private Thickness _ownerMaskMargin;
-
-    internal bool HasError => _hasError;
 
     internal bool IsCoverMaskVisible
     {
         get => _isCoverMaskVisible;
         set => SetAndRaise(IsCoverMaskVisibleProperty, ref _isCoverMaskVisible, value);
-    }
-
-    /// <summary>
-    /// 遮罩层的负外边距：抵消 owner（ImagePreviewer/ImageGroupPreviewer 模板的
-    /// PixelAlignedBorder）的 Padding + BorderThickness，使遮罩铺满整个 root，
-    /// 对齐 ant `genImageCoverStyle` 的 `position:absolute; inset:0` cover。
-    /// 这是运行时几何（宿主 padding 是用户属性），ControlTheme 无法静态表达。
-    /// </summary>
-    internal Thickness OwnerMaskMargin
-    {
-        get => _ownerMaskMargin;
-        private set => SetAndRaise(OwnerMaskMarginProperty, ref _ownerMaskMargin, value);
     }
 
     /// <summary>owner 模板 PixelAlignedBorder 的 Padding（用于负 Margin 抵消），非布局用途。</summary>
@@ -189,7 +170,30 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
         set => SetValue(OwnerCornerRadiusProperty, value);
     }
 
+    private Thickness _ownerMaskMargin;
+
+    /// <summary>
+    /// 遮罩层的负外边距：抵消 owner（ImagePreviewer/ImageGroupPreviewer 模板的
+    /// PixelAlignedBorder）的 Padding + BorderThickness，使遮罩铺满整个 root，
+    /// 对齐 ant `genImageCoverStyle` 的 `position:absolute; inset:0` cover。
+    /// 这是运行时几何（宿主 padding 是用户属性），ControlTheme 无法静态表达。
+    /// </summary>
+    internal Thickness OwnerMaskMargin
+    {
+        get => _ownerMaskMargin;
+        private set => SetAndRaise(OwnerMaskMarginProperty, ref _ownerMaskMargin, value);
+    }
+
     #endregion
+
+    static ImagePreviewerCover()
+    {
+        // Avalonia TemplatedControl 默认 ClipToBounds=true（合成层裁剪），会把负 Margin
+        // 铺出 cover 边界的遮罩（对齐 ant genImageCoverStyle 的 absolute inset:0）裁回
+        // 内区，root 的 padding 环永远压不暗。裁剪职责归 owner 根的 PixelAlignedBorder
+        // （对齐上游 root 的 overflow:hidden + border-radius）。
+        ClipToBoundsProperty.OverrideDefaultValue<ImagePreviewerCover>(false);
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

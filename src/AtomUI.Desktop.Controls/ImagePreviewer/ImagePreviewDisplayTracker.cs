@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using Avalonia;
 using Avalonia.Media;
+
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
@@ -32,7 +34,11 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
         _retainedSeedAccessor  = retainedSeedAccessor;
     }
 
+    internal ImagePreviewEntry? CurrentItem => _currentItem;
+
     internal IImage? EffectiveImage { get; private set; }
+
+    internal Size EffectiveImageSize { get; private set; }
 
     internal bool IsCurrentLoading { get; private set; }
 
@@ -128,15 +134,22 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
             }
         }
 
+        var imageSize = currentImage is null
+            ? default
+            : ReferenceEquals(currentImage, _currentItem?.FullImage)
+                ? _currentItem.FullImageSize
+                : _retainedItem?.FullImageSize ?? currentImage.Size;
         var isLoading = _currentItem?.IsFullLoading == true ||
                         _currentItem is { FullImage: null, IsFullFailed: false };
         var isFailed  = _currentItem?.IsFullFailed == true;
         if (!ReferenceEquals(EffectiveImage, currentImage) ||
+            EffectiveImageSize != imageSize ||
             IsCurrentLoading != isLoading ||
             IsCurrentFailed != isFailed)
         {
             // 三值变更短路：未变化不触发宿主回调，避免冗余 SetCurrentValue/能力重算
             EffectiveImage    = currentImage;
+            EffectiveImageSize = imageSize;
             IsCurrentLoading = isLoading;
             IsCurrentFailed  = isFailed;
             _stateChanged();

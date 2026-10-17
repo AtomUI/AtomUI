@@ -21,8 +21,8 @@
     </unit>
     <unit id="BasicUsageDescription">
       <segment>
-        <source>Click the image to zoom in.</source>
-        <target state="translated">Clique o imagem para zoom em.</target>
+        <source>Open a fitted preview, then zoom between 0.1 and 8 times its initial size. Disable wheel zoom to keep toolbar and touch zoom available.</source>
+        <target state="translated">Abra a imagem ajustada à área de visualização e amplie entre 0,1 e 8 vezes o tamanho inicial. Desativar o zoom da roda mantém o zoom pela barra de ferramentas e por toque.</target>
       </segment>
     </unit>
     <unit id="BasicUsageTitle">
@@ -245,6 +245,12 @@
       <segment>
         <source>20 remote images</source>
         <target state="translated">20 remote imagens</target>
+      </segment>
+    </unit>
+    <unit id="WheelZoomEnabled">
+      <segment>
+        <source>Enable wheel zoom</source>
+        <target state="translated">Ativar zoom com a roda</target>
       </segment>
     </unit>
   </file>

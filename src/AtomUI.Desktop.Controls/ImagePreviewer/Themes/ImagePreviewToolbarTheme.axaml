@@ -22,10 +22,8 @@
                     <atom:IconButton Name="PART_ScaleUpButton"
                                      Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}"
                                      IsEnabled="{TemplateBinding IsScaleUpEnabled}" />
-                    <atom:ToggleIconButton Name="PART_FitToWindowButton"
-                                           CheckedIcon="{antdicons:AntDesignIconProvider FitToWindowOutlined}"
-                                           UnCheckedIcon="{antdicons:AntDesignIconProvider OneToOneOutlined}"
-                                           IsChecked="{TemplateBinding IsImageFitToWindow}"/>
+                    <atom:IconButton Name="PART_FitToWindowButton"
+                                     Icon="{antdicons:AntDesignIconProvider FitToWindowOutlined}" />
                     <atom:IconButton Name="PART_HorizontalFlipButton"
                                      Icon="{antdicons:AntDesignIconProvider SwapOutlined}" />
                     <atom:IconButton Name="PART_VerticalFlipButton"

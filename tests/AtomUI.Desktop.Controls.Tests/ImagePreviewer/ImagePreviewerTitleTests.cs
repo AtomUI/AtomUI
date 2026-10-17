@@ -249,7 +249,7 @@ public class ImagePreviewerTitleTests
             dialog.RaiseRoutedEventFromOverlay(toolbar, fitArgs);
 
             fitArgs.Handled.ShouldBeTrue();
-            dialog.IsImageFitToWindow.ShouldBeFalse();
+            dialog.IsImageFitToWindow.ShouldBeTrue();
 
             var nextArgs = RelayToolbarRequest(dialog, toolbar, ImagePreviewBaseToolbar.NextRequestEvent);
             nextArgs.Handled.ShouldBeTrue();

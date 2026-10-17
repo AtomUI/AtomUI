@@ -125,7 +125,8 @@ public class GalleryCatalogCoverageTests
         // + 3（Pagination 自定义页大小组件示例）+ 1（DataGrid 分页 Extra Content 示例）
         // + 38（DateViewer 独立页面）+ 1（DateViewer 导航）+ 1（DateViewer footer Part）+ 2（ColorPicker 确认示例）+ 2（TimePicker 确认示例）= 4836
         // - 51（启动重构：Splash 迁入 AtomUI.Controls，示例页改为页内预览，65 → 14）= 4785。
-        sourceFiles.Sum(CountUnits).ShouldBe(4785);
+        // + 1（ImagePreviewer 滚轮缩放开关）= 4786。
+        sourceFiles.Sum(CountUnits).ShouldBe(4786);
         foreach (var sourcePath in sourceFiles)
         {
             var targetPath = Path.Combine(

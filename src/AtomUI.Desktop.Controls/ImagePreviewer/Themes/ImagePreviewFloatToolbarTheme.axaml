@@ -30,11 +30,9 @@
                                              Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                              Icon="{antdicons:AntDesignIconProvider ZoomInOutlined}" 
                                              IsEnabled="{TemplateBinding IsScaleUpEnabled}" />
-                            <atom:ToggleIconButton Name="PART_FitToWindowButton"
-                                                   Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
-                                                   CheckedIcon="{antdicons:AntDesignIconProvider FitToWindowOutlined}"
-                                                   UnCheckedIcon="{antdicons:AntDesignIconProvider OneToOneOutlined}"
-                                                   IsChecked="{TemplateBinding IsImageFitToWindow}"/>
+                            <atom:IconButton Name="PART_FitToWindowButton"
+                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
+                                             Icon="{antdicons:AntDesignIconProvider FitToWindowOutlined}" />
                             <atom:IconButton Name="PART_HorizontalFlipButton"
                                              Width="{Binding Bounds.Height, RelativeSource={RelativeSource Self}}"
                                              Icon="{antdicons:AntDesignIconProvider SwapOutlined}" />

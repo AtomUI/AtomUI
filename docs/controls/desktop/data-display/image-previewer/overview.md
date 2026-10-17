@@ -3,7 +3,8 @@
 本文档定义 ImagePreviewer 控件家族的正式架构契约，包括来源模型、内容身份、缓存策略、集合与加载状态、宿主行为和主题边界。
 内部实现与维护职责见 [ImagePreviewer 桌面版实现原理](implementation.md)，Token 语义见
 [ImagePreviewer Token 设计](token.md)，变化记录见 [ImagePreviewer Changelog](changelog.md)。应用级加载、缓存、安全和 codec
-能力由 [AtomUI 图片加载系统](../../../../architecture/systems/image-loading/overview.md) 统一提供。
+能力由 [AtomUI 图片加载系统](../../../../architecture/systems/image-loading/overview.md) 统一提供。预览图片的基础适配、变换状态、输入和边界
+见 [ImagePreviewer 预览变换设计](preview-transform-design.md)。
 
 ## 1. 控件定位
 
@@ -215,7 +216,7 @@ public enum ImageCacheStoragePolicy
 | 当前加载状态 | `CurrentLoadState/Error/Progress`、`IsCurrentLoading/Loaded/Failed` | 当前完整图 entry 的只读投影 |
 | 占位内容 | `LoadingContent/Template`、`ErrorContent/Template` | 只替换主题 presenter 内容，不改变状态机 |
 | 打开状态 | `IsOpen=false` | 默认 TwoWay，统一驱动 native dialog 或 Browser overlay |
-| 预览交互 | `IsImageMovable=true`、`ImageScaleStep=0.5`、`ImageMinScale=1`、`ImageMaxScale=50` | 拖拽、缩放、旋转和 fit-to-window 的边界 |
+| 预览交互 | `IsImageMovable=true`、`ImageScaleStep=0.5`、`ImageMinScale=1`、`ImageMaxScale=50`、`IsWheelZoomEnabled=true` | 基础适配、拖拽、缩放、旋转、翻转、reset 和边界 |
 | 窗口 | `IsDialogModal=false`、`IsDialogTopmost=false` | Desktop native window 行为；Browser 使用 overlay |
 | 标题 | `PreviewTitle`、`PreviewTitleIcon`、`PreviewTitleResolver` | 当前项标题和可选 PathIcon |
 | 动效 | `IsMotionEnabled` | 控制主题动效，不改变加载与集合语义 |
@@ -413,6 +414,14 @@ presenter 由 `:loading:not(:has-image)` 门控而不覆盖旧图。失败呈现
 Desktop 支持 native window 时使用 `ImagePreviewerDialog`；Browser 等无 native window 平台使用
 `ImagePreviewerOverlayHost`。两种宿主共享 ItemsSource、CurrentIndex TwoWay、交互、占位、动效、加载和关闭语义。
 
+预览交互先按视口宽度和视口高度的 70% 计算完整可见的基础图片尺寸，再以 `Scale=1` 作为用户变换起点。`ImageMinScale`、
+`ImageMaxScale` 和 `ImageScaleStep` 只约束用户变换比例；Dialog 与 OverlayHost 不复制缩放或拖拽算法，统一由 ImageViewer 维护
+`X/Y`、`Scale`、`Rotate`、`FlipX` 和 `FlipY`。完整公式、输入语义、解码升级和验证边界见
+[ImagePreviewer 预览变换设计](preview-transform-design.md)。
+
+`ImageMinScale="0.1"` 允许缩小到初始适配尺寸的 10%；它不影响打开时的完整适配。`IsWheelZoomEnabled="False"` 将滚轮交回宿主，工具栏、双击和触摸缩放保持可用。切图和 reset 清空平移、比例、旋转与翻转；关闭后重新打开使用同一初始状态。
+
+
 ## 5. 视觉与主题模型
 
 稳定主题节点包括：
@@ -428,8 +437,8 @@ Renderer 只消费 entry 已提交的 `IImage`，不得自行打开 Source 或�
 使用居中 Spin；Failed 时使用本地化默认错误内容或用户模板。viewer 的加载指示器由 `:loading:not(:has-image)` 门控，只在无可
 显示图片时呈现。Loading/error 自定义模板只替换内容，不能拥有请求、entry 或结果 lease。
 
-本设计不改变现有缩放、拖拽、旋转、导航、标题栏、封面 mask、Token 和 Light/Dark 视觉契约。Token 的来源、计算和消费位置见
-[ImagePreviewer Token 设计](token.md)。
+预览变换不改变 `popup.body`、`popup.footer`、`popup.actions` 和 `PART_ImageRenderer` 的主题语义；基础适配与用户变换共享
+`PART_ImageViewerScene` 坐标空间。Token 的来源、计算和消费位置见 [ImagePreviewer Token 设计](token.md)。
 
 ## Semantic Parts
 
@@ -449,7 +458,7 @@ Part 命名与 SelectorRoute 与上游 Image 控件的 Semantic DOM 一一对齐
 
 `AbstractImagePreviewer` 定义共享 item、current、loading、interaction 和 host contract。`ImagePreviewer` 增加单封面投影，
 `ImageGroupPreviewer` 增加多封面 ItemsPanel。`ImagePreviewerDialog` 与 `ImagePreviewerOverlayHost` 是同一 open state 的两种宿主，
-`ImageViewer` 和 `ImagePreviewRenderer` 复用相同 entry。
+`ImageViewer` 统一维护预览变换，`ImagePreviewRenderer` 复用相同 entry 并只负责绘制。
 
 应用级图片加载系统按以下稳定边界服务 Previewer：
 
@@ -481,7 +490,10 @@ DecodeSpec 保存解码结果。多个来源只有在同一 CachePartition 中�
 - source replacement、collection remove/reset、旧 generation 和已关闭 host 都不能回写当前 entry。
 - Full 与 Thumbnail 通道保持取消、状态、错误、进度、尺寸和 lease 隔离。
 - 当前项和封面按显示索引 clamp，但不静默改写外部 TwoWay CurrentIndex。
-- Template Part、伪类、loading/error 门控、标题、导航、缩放和 Token 视觉语义保持稳定。
+- 基础图片尺寸同时受视口宽度和视口高度 70% 约束；`Scale=1` 表示基础适配尺寸，用户比例由统一变换状态管理。
+- 缩放、滚轮、拖拽、旋转、翻转、reset、切图和 resize 共用同一边界修正算法；图片小于视口时自动回到中心。
+- Dialog 与 OverlayHost 不各自维护变换算法，两个宿主对同一输入产生相同变换状态。
+- Template Part、伪类、loading/error 门控、标题、导航和 Token 视觉语义保持稳定。
 - 不允许同步 I/O、固定延迟、反射发现 reader/codec/serializer，或在 Previewer 内创建 `HttpClient`、cache 或 scheduler。
 - SourceSnapshot、encoded content 和 decoded content 的共享范围都受 CachePartition 限制；安全分区之间不共享命中或诊断。
 - borrowed `IImage` 始终由调用方拥有，任何 loader/cache/control 生命周期都不能 dispose 它。
@@ -564,6 +576,7 @@ fallback 或 `ImageFailed`。
 - [ImagePreviewer Token 设计](token.md)
 - [ImagePreviewer 切换显示设计](switch-display-design.md)
 - [ImagePreviewer Changelog](changelog.md)
+- [ImagePreviewer 预览变换设计](preview-transform-design.md)
 - [统一图片加载系统](../../../../architecture/systems/image-loading/overview.md)
 - [AtomUI Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md)
 
@@ -574,7 +587,7 @@ fallback 或 `ImageFailed`。
 - 并发与租约：两级 single-flight、commit generation、waiter-local cancellation、cache epoch、LRU 与 lease 延迟释放。
 - 控件行为：collection replacement/Add/Remove/Move/Replace/Reset/Clear、Full/Thumbnail 隔离、fallback、Reload 三个入口、尺寸升级、
   host close、detach/reattach 和旧结果拒绝。
-- 显示与主题：两种 ImageSwitchMode 的显示矩阵、稳定 Template Part、伪类、loading/error 门控、标题、Light/Dark 和宿主一致性。
+- 显示与主题：两种 ImageSwitchMode 的显示矩阵、基础适配尺寸、统一变换状态、鼠标中心缩放、拖拽 rebound、稳定 Template Part、伪类、loading/error 门控、标题、Light/Dark 和宿主一致性。
 - 发布：Gallery public API 示例、Shared/Desktop targeted tests、Browser managed publish、Desktop NativeAOT publish 与启动 smoke。
 - Semantic Part：两个 owner 的 descriptor 断言（名称、Selector、SelectorRoute、ContractType、Cardinality 与 cross-root/runtime
   标志）、全部内置主题的 marker 完整性、生成 Semantic Style 在 overlay 宿主的命中（native dialog 内 marker 完整但 owner

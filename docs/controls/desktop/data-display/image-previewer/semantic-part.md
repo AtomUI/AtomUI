@@ -146,7 +146,7 @@ Gallery 仅列出描述、不参与高亮；触发区部件（`root`/`image`/`co
 | RuntimeCreated | `true` |
 | AtomUI 节点 | `ImageViewer` 模板内 `PART_ImageViewerScene` Canvas |
 | 职责 | 预览内容区：居中承载图片渲染与指针交互（对齐上游 `.ant-image-preview-body`） |
-| 相关 API | 缩放、拖拽、旋转与 fit-to-window 交互 API |
+| 相关 API | 基础适配、缩放、拖拽、旋转、翻转与 reset 交互 API |
 | 相关 Token | 无独立 Token（沿用 viewer 背景与交互 Token） |
 | 稳定性 | stable since 6.2.0 |
 
@@ -186,7 +186,7 @@ Gallery 仅列出描述、不参与高亮；触发区部件（`root`/`image`/`co
 | RuntimeCreated | `true` |
 | AtomUI 节点 | `ImagePreviewFloatToolbarTheme` 内 `#ActionFrame` |
 | 职责 | 预览操作组：footer 内的胶囊形操作按钮组（对齐上游 `.ant-image-preview-actions`） |
-| 相关 API | 缩放、翻转、旋转与 fit-to-window 命令 |
+| 相关 API | 缩放、翻转、旋转与 reset 命令 |
 | 相关 Token | `PreviewOperationSize`、`PreviewOperationColor` |
 | 稳定性 | stable since 6.2.0 |
 
@@ -295,7 +295,7 @@ Style 中复写 `>>` route；native `ImagePreviewerDialog` 为独立 TopLevel，
 - **页码指示**：`IndicatorFrame` 对应上游 preview progress 节点，不发布为 Part（属于 `popup.footer` 内容）。
 - **加载与错误呈现**：`PART_LoadingPresenter`、`PART_ErrorPresenter`、`MediaBreakPointIndicator` 是 Template Part，
   不进入 Semantic Part 契约。
-- **操作按钮个体**：`popup.actions` 只承诺按钮组容器本体，组内每个按钮（缩放、翻转、旋转、fit-to-window）不单独发布。
+- **操作按钮个体**：`popup.actions` 只承诺按钮组容器本体，组内每个按钮（缩放、翻转、旋转、reset）不单独发布。
 - **native dialog 窗口 chrome**：标题栏、caption 按钮、窗口边框由 Window 契约承担，不属于任何 Part。
 - `PART_*` 名称、internal 类型、`.semantic-scope-*` 路由标记与模板层级。
 
@@ -316,7 +316,7 @@ cardinality，或让任一内置模板变体缺少 marker，均属于公共主�
 - 上游预览浮层与触发图片在同一 DOM，owner 作用域样式天然命中；AtomUI 的 owner 作用域 Semantic Style 只保证命中 overlay
   宿主（与 owner 同 TopLevel 的树内浮层），native `ImagePreviewerDialog` 是独立 TopLevel，样式级联不跨窗口边界，预览视觉经
   host 契约定制。
-- AtomUI 操作组额外提供 fit-to-window 切换按钮（行为差异，不影响 Part 契约）。
+- AtomUI 操作组的基础适配与 reset 由统一预览变换状态提供；按钮组仍只作为 `popup.actions` 的内部内容，不进入 Semantic Part 契约。
 
 验证至少覆盖（实现测试矩阵见 [实现原理](implementation.md)）：
 

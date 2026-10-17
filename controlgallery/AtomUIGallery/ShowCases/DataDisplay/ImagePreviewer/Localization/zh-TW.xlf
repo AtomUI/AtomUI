@@ -21,8 +21,8 @@
     </unit>
     <unit id="BasicUsageDescription">
       <segment>
-        <source>Click the image to zoom in.</source>
-        <target state="translated">點擊圖片放大預覽。</target>
+        <source>Open a fitted preview, then zoom between 0.1 and 8 times its initial size. Disable wheel zoom to keep toolbar and touch zoom available.</source>
+        <target state="translated">開啟後完整適配視口，縮放範圍為初始尺寸的 0.1～8 倍。關閉滾輪縮放後，仍可使用工具列與觸控縮放。</target>
       </segment>
     </unit>
     <unit id="BasicUsageTitle">
@@ -245,6 +245,12 @@
       <segment>
         <source>20 remote images</source>
         <target state="translated">20 張遠程圖片</target>
+      </segment>
+    </unit>
+    <unit id="WheelZoomEnabled">
+      <segment>
+        <source>Enable wheel zoom</source>
+        <target state="translated">啟用滾輪縮放</target>
       </segment>
     </unit>
   </file>

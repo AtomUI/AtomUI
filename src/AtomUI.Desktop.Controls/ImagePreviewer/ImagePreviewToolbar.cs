@@ -4,8 +4,6 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ImagePreviewToolbar : ImagePreviewBaseToolbar
 {
-    protected override ImagePreviewToolbarSource ToolbarSource => ImagePreviewToolbarSource.TitleBar;
-
     #region 内部属性定义
 
     internal static readonly DirectProperty<ImagePreviewToolbar, bool> IsLastImageProperty =
@@ -13,13 +11,13 @@ internal class ImagePreviewToolbar : ImagePreviewBaseToolbar
             nameof(IsLastImage),
             o => o.IsLastImage,
             (o, v) => o.IsLastImage = v);
-    
+
     internal static readonly DirectProperty<ImagePreviewToolbar, bool> IsFirstImageProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewToolbar, bool>(
             nameof(IsFirstImage),
             o => o.IsFirstImage,
             (o, v) => o.IsFirstImage = v);
-    
+
     private bool _isLastImage;
 
     internal bool IsLastImage
@@ -27,7 +25,7 @@ internal class ImagePreviewToolbar : ImagePreviewBaseToolbar
         get => _isLastImage;
         set => SetAndRaise(IsLastImageProperty, ref _isLastImage, value);
     }
-    
+
     private bool _isFirstImage;
 
     internal bool IsFirstImage
@@ -37,4 +35,6 @@ internal class ImagePreviewToolbar : ImagePreviewBaseToolbar
     }
 
     #endregion
+
+    protected override ImagePreviewToolbarSource ToolbarSource => ImagePreviewToolbarSource.TitleBar;
 }

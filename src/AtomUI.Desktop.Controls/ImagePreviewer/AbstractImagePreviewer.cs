@@ -37,6 +37,7 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
                                                ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<IEnumerable<ImagePreviewItem>?> ItemsSourceProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, IEnumerable<ImagePreviewItem>?>(nameof(ItemsSource));
 
@@ -134,6 +135,27 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, bool>(
             nameof(IsCurrentFailed),
             control => control.IsCurrentFailed);
+
+    public static readonly StyledProperty<bool> IsImageMovableProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsImageMovable), true);
+
+    public static readonly StyledProperty<double> ImageScaleStepProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageScaleStep), 0.5);
+
+    public static readonly StyledProperty<double> ImageMinScaleProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageMinScale), 1.0);
+
+    public static readonly StyledProperty<double> ImageMaxScaleProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageMaxScale), 50.0);
+
+    public static readonly StyledProperty<bool> IsWheelZoomEnabledProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsWheelZoomEnabled), true);
+
+    public static readonly StyledProperty<bool> IsDialogModalProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof (IsDialogModal), false);
+
+    public static readonly StyledProperty<bool> IsDialogTopmostProperty =
+        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsDialogTopmost));
 
     public IEnumerable<ImagePreviewItem>? ItemsSource
     {
@@ -233,41 +255,33 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         set => SetValue(ImageSwitchModeProperty, value);
     }
 
+    private ImagePreviewItem? _currentItem;
+
     public ImagePreviewItem? CurrentItem => _currentItem;
+
+    private ImageLoadState _currentLoadState;
 
     public ImageLoadState CurrentLoadState => _currentLoadState;
 
+    private ImageLoadError? _currentLoadError;
+
     public ImageLoadError? CurrentLoadError => _currentLoadError;
+
+    private ImageLoadProgress? _currentLoadProgress;
 
     public ImageLoadProgress? CurrentLoadProgress => _currentLoadProgress;
 
+    private bool _isCurrentLoading;
+
     public bool IsCurrentLoading => _isCurrentLoading;
+
+    private bool _isCurrentLoaded;
 
     public bool IsCurrentLoaded => _isCurrentLoaded;
 
+    private bool _isCurrentFailed;
+
     public bool IsCurrentFailed => _isCurrentFailed;
-
-    #endregion
-
-    #region 预览窗口相关属性设置
-
-    public static readonly StyledProperty<bool> IsImageMovableProperty =
-        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsImageMovable), true);
-
-    public static readonly StyledProperty<double> ImageScaleStepProperty =
-        AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageScaleStep), 0.5);
-
-    public static readonly StyledProperty<double> ImageMinScaleProperty =
-        AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageMinScale), 1.0);
-
-    public static readonly StyledProperty<double> ImageMaxScaleProperty =
-        AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageMaxScale), 50.0);
-
-    public static readonly StyledProperty<bool> IsDialogModalProperty =
-        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof (IsDialogModal), false);
-
-    public static readonly StyledProperty<bool> IsDialogTopmostProperty =
-        AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsDialogTopmost));
 
     public bool IsImageMovable
     {
@@ -293,6 +307,12 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         set => SetValue(ImageMaxScaleProperty, value);
     }
 
+    public bool IsWheelZoomEnabled
+    {
+        get => GetValue(IsWheelZoomEnabledProperty);
+        set => SetValue(IsWheelZoomEnabledProperty, value);
+    }
+
     public bool IsDialogModal
     {
         get => GetValue(IsDialogModalProperty);
@@ -310,34 +330,17 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
     #region 公共事件定义
 
     public event EventHandler? DialogClosed;
+
     public event EventHandler? DialogOpened;
+
     public event EventHandler<CancelEventArgs>? DialogClosing;
+
     public event EventHandler<ImagePreviewOpenedEventArgs>? ImageOpened;
+
     public event EventHandler<ImagePreviewFailedEventArgs>? ImageFailed;
 
     /// <inheritdoc />
     public event EventHandler? CrossRootsChanged;
-
-    #endregion
-
-    #region ISemanticPartCrossRootProvider 实现
-
-    /// <summary>
-    /// 预览面承载在独立 Window（ImagePreviewerDialog）中，属 owner 视觉树之外的跨根宿主；
-    /// 语义预览经该契约发现宿主并在打开/关闭/表面就绪时跟随刷新。overlay 宿主
-    /// （同窗口内）同样经此上报，两路径统一。
-    /// </summary>
-    public IReadOnlyList<Visual> GetCrossRoots()
-    {
-        return _openState?.RootVisual is { } rootVisual
-            ? new Visual[] { rootVisual }
-            : Array.Empty<Visual>();
-    }
-
-    private void RaiseCrossRootsChanged()
-    {
-        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
-    }
 
     #endregion
 
@@ -369,25 +372,95 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
 
     #endregion
 
+    #region 内部协作 API
+
+    internal void RequestPreviewLoads()
+    {
+        if (EffectiveItems is not { Count: > 0 } entries)
+        {
+            return;
+        }
+        var currentIndex = ClampIndex(CurrentIndex, entries.Count);
+        var active = new HashSet<int> { currentIndex };
+        for (var offset = 1; offset <= PreloadCount; offset++)
+        {
+            if (currentIndex - offset >= 0)
+            {
+                active.Add(currentIndex - offset);
+            }
+            if (currentIndex + offset < entries.Count)
+            {
+                active.Add(currentIndex + offset);
+            }
+        }
+        for (var index = 0; index < entries.Count; index++)
+        {
+            if (!active.Contains(index))
+            {
+                entries[index].CancelFullLoad();
+            }
+        }
+
+        var (width, height) = GetFullDecodeSize();
+        var currentSize = _previewDecodeSize ?? new PixelSize(width, height);
+        RequestFullLoad(entries[currentIndex], currentSize.Width, currentSize.Height, ImageRequestPriority.Critical);
+        foreach (var index in active.Where(index => index != currentIndex).OrderBy(index => Math.Abs(index - currentIndex)))
+        {
+            RequestFullLoad(entries[index], width, height, ImageRequestPriority.Preload);
+        }
+    }
+
+    internal void NotifyPreviewDecodeSize(ImagePreviewEntry? entry, Size imageSize, PixelSize size)
+    {
+        // A reset or retained frame can still describe the previous item while a switch is in flight.
+        // Accept geometry only for the current entry and the source dimensions used to calculate it.
+        if (!ReferenceEquals(entry, _currentEntry) || entry?.FullImage is null ||
+            imageSize != entry.FullImageSize ||
+            size.Width <= 0 || size.Height <= 0 || _previewDecodeSize == size)
+        {
+            return;
+        }
+
+        _previewDecodeSize = size;
+        if (IsOpen && _isAttachedToVisualTree)
+        {
+            // Only the current item uses the zoom target; neighbours keep the baseline preload size.
+            RequestFullLoad(entry, size.Width, size.Height, ImageRequestPriority.Critical);
+        }
+    }
+
+    internal void NotifyDialogHostCloseRequest()
+    {
+        CloseDialog();
+    }
+
+    #endregion
+
     private bool _ignoreIsOpenChanged;
+
     private IImagePreviewerOpenState? _openState;
+
     private IDisposable? _modalSubscription;
+
     private bool _dialogOpening;
+
     private bool _dialogClosing;
+
     private INotifyCollectionChanged? _observableItemsSource;
+
     private bool _isItemsSourceSubscribed;
+
     private bool _isAttachedToVisualTree;
+
     private ImagePreviewEntry? _currentEntry;
+
     private ImagePreviewEntry? _latestLoadedFullEntry;
-    private ImagePreviewItem? _currentItem;
-    private ImageLoadState _currentLoadState;
-    private ImageLoadError? _currentLoadError;
-    private ImageLoadProgress? _currentLoadProgress;
-    private bool _isCurrentLoading;
-    private bool _isCurrentLoaded;
-    private bool _isCurrentFailed;
+
     private ImageLoadState _lastNotifiedCurrentState;
+
     private TopLevel? _decodeSizeTopLevel;
+
+    private PixelSize? _previewDecodeSize;
 
     static AbstractImagePreviewer()
     {
@@ -395,13 +468,20 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         IsOpenProperty.Changed.AddClassHandler<AbstractImagePreviewer>((x, e) => x.HandleIsOpenChanged(e));
     }
 
-    private static int CoerceNonNegativeValue(AvaloniaObject sender, int value)
-    {
-        return Math.Max(0, value);
-    }
-
     protected AbstractImagePreviewer()
     {
+    }
+
+    /// <summary>
+    /// 预览面承载在独立 Window（ImagePreviewerDialog）中，属 owner 视觉树之外的跨根宿主；
+    /// 语义预览经该契约发现宿主并在打开/关闭/表面就绪时跟随刷新。overlay 宿主
+    /// （同窗口内）同样经此上报，两路径统一。
+    /// </summary>
+    public IReadOnlyList<Visual> GetCrossRoots()
+    {
+        return _openState?.RootVisual is { } rootVisual
+            ? new Visual[] { rootVisual }
+            : Array.Empty<Visual>();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -430,34 +510,6 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         {
             _openState?.RefreshImageSwitchMode();
         }
-    }
-
-    private void HandleItemsSourceChanged(IEnumerable<ImagePreviewItem>? oldValue)
-    {
-        UnsubscribeItemsSource(oldValue as INotifyCollectionChanged);
-        _observableItemsSource = ItemsSource as INotifyCollectionChanged;
-        SubscribeItemsSource();
-        MaterializeEffectiveItems();
-    }
-
-    private void SubscribeItemsSource()
-    {
-        if (!_isAttachedToVisualTree || _isItemsSourceSubscribed || _observableItemsSource is null)
-        {
-            return;
-        }
-        _observableItemsSource.CollectionChanged += HandleItemsCollectionChanged;
-        _isItemsSourceSubscribed = true;
-    }
-
-    private void UnsubscribeItemsSource(INotifyCollectionChanged? source = null)
-    {
-        if (!_isItemsSourceSubscribed)
-        {
-            return;
-        }
-        (source ?? _observableItemsSource)?.CollectionChanged -= HandleItemsCollectionChanged;
-        _isItemsSourceSubscribed = false;
     }
 
     private protected void MaterializeEffectiveItems()
@@ -496,194 +548,8 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         SetEffectiveItems(entries, preserved);
     }
 
-    private void SetEffectiveItems(
-        ObservableCollection<ImagePreviewEntry> entries,
-        IReadOnlySet<ImagePreviewEntry>? preserved = null)
-    {
-        var oldEntries = EffectiveItems;
-        UnsubscribeEntries(oldEntries);
-        SetCurrentValue(EffectiveItemsProperty, entries);
-        SubscribeEntries(entries);
-        if (oldEntries is not null)
-        {
-            foreach (var entry in oldEntries)
-            {
-                if (preserved?.Contains(entry) != true)
-                {
-                    entry.Dispose();
-                }
-            }
-        }
-        ConfigureCurrentEntry();
-        OnEffectiveItemsChanged();
-        RequestLoadsForCurrentState();
-    }
-
-    private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
-    {
-        if (EffectiveItems is not ObservableCollection<ImagePreviewEntry> entries)
-        {
-            MaterializeEffectiveItems();
-            return;
-        }
-        switch (args.Action)
-        {
-            case NotifyCollectionChangedAction.Add:
-                if (args.NewStartingIndex < 0)
-                {
-                    MaterializeEffectiveItems();
-                    return;
-                }
-                var addIndex = args.NewStartingIndex >= 0 ? args.NewStartingIndex : entries.Count;
-                foreach (ImagePreviewItem item in args.NewItems ?? Array.Empty<object>())
-                {
-                    var entry = new ImagePreviewEntry(item);
-                    entry.PropertyChanged += HandleEffectiveEntryPropertyChanged;
-                    entries.Insert(addIndex++, entry);
-                }
-                break;
-            case NotifyCollectionChangedAction.Remove:
-                if (args.OldStartingIndex < 0)
-                {
-                    MaterializeEffectiveItems();
-                    return;
-                }
-                RemoveEntries(entries, args.OldStartingIndex, args.OldItems?.Count ?? 0);
-                break;
-            case NotifyCollectionChangedAction.Replace:
-                if (args.OldStartingIndex < 0 || args.NewStartingIndex < 0)
-                {
-                    MaterializeEffectiveItems();
-                    return;
-                }
-                RemoveEntries(entries, args.OldStartingIndex, args.OldItems?.Count ?? 0);
-                var replaceIndex = args.NewStartingIndex;
-                foreach (ImagePreviewItem item in args.NewItems ?? Array.Empty<object>())
-                {
-                    var entry = new ImagePreviewEntry(item);
-                    entry.PropertyChanged += HandleEffectiveEntryPropertyChanged;
-                    entries.Insert(replaceIndex++, entry);
-                }
-                break;
-            case NotifyCollectionChangedAction.Move:
-                if (args.OldItems?.Count == 1)
-                {
-                    entries.Move(args.OldStartingIndex, args.NewStartingIndex);
-                }
-                else
-                {
-                    MaterializeEffectiveItems();
-                    return;
-                }
-                break;
-            default:
-                MaterializeEffectiveItems();
-                return;
-        }
-        ConfigureCurrentEntry();
-        OnEffectiveItemsChanged();
-        RequestLoadsForCurrentState();
-    }
-
-    private void RemoveEntries(
-        ObservableCollection<ImagePreviewEntry> entries,
-        int startIndex,
-        int count)
-    {
-        for (var index = 0; index < count && startIndex >= 0 && startIndex < entries.Count; index++)
-        {
-            var entry = entries[startIndex];
-            entry.PropertyChanged -= HandleEffectiveEntryPropertyChanged;
-            entries.RemoveAt(startIndex);
-            entry.Dispose();
-        }
-    }
-
     private protected virtual void OnEffectiveItemsChanged()
     {
-    }
-
-    private void RequestLoadsForCurrentState()
-    {
-        if (!_isAttachedToVisualTree)
-        {
-            return;
-        }
-        if (IsOpen)
-        {
-            RequestPreviewLoads();
-        }
-        else
-        {
-            RequestClosedStateLoads();
-        }
-    }
-
-    private void CancelImageLoads(bool releaseLeases = false)
-    {
-        if (EffectiveItems is null)
-        {
-            return;
-        }
-        foreach (var entry in EffectiveItems)
-        {
-            if (releaseLeases)
-            {
-                entry.Unload();
-            }
-            else
-            {
-                entry.CancelFullLoad();
-                entry.CancelThumbnailLoad();
-            }
-        }
-    }
-
-    private void ReleaseFullImageLoads()
-    {
-        if (EffectiveItems is null)
-        {
-            return;
-        }
-        foreach (var entry in EffectiveItems)
-        {
-            entry.UnloadFull();
-        }
-    }
-
-    internal void RequestPreviewLoads()
-    {
-        if (EffectiveItems is not { Count: > 0 } entries)
-        {
-            return;
-        }
-        var currentIndex = ClampIndex(CurrentIndex, entries.Count);
-        var active = new HashSet<int> { currentIndex };
-        for (var offset = 1; offset <= PreloadCount; offset++)
-        {
-            if (currentIndex - offset >= 0)
-            {
-                active.Add(currentIndex - offset);
-            }
-            if (currentIndex + offset < entries.Count)
-            {
-                active.Add(currentIndex + offset);
-            }
-        }
-        for (var index = 0; index < entries.Count; index++)
-        {
-            if (!active.Contains(index))
-            {
-                entries[index].CancelFullLoad();
-            }
-        }
-
-        var (width, height) = GetFullDecodeSize();
-        RequestFullLoad(entries[currentIndex], width, height, ImageRequestPriority.Critical);
-        foreach (var index in active.Where(index => index != currentIndex).OrderBy(index => Math.Abs(index - currentIndex)))
-        {
-            RequestFullLoad(entries[index], width, height, ImageRequestPriority.Preload);
-        }
     }
 
     private protected void RequestFullLoad(
@@ -716,8 +582,9 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         {
             return;
         }
-        var (width, height) = GetFullDecodeSize();
-        RequestFullLoad(_currentEntry, width, height, ImageRequestPriority.Critical, reload: true);
+        var baseline = GetFullDecodeSize();
+        var size = _previewDecodeSize ?? new PixelSize(baseline.Width, baseline.Height);
+        RequestFullLoad(_currentEntry, size.Width, size.Height, ImageRequestPriority.Critical, reload: true);
     }
 
     public void ReloadItem(int index)
@@ -726,14 +593,16 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         {
             throw new ArgumentOutOfRangeException(nameof(index));
         }
-        var (width, height) = GetFullDecodeSize();
+        var baseline = GetFullDecodeSize();
+        var isCurrent = index == ClampIndex(CurrentIndex, EffectiveItems.Count);
+        var size = isCurrent && _previewDecodeSize is { } previewSize
+            ? previewSize
+            : new PixelSize(baseline.Width, baseline.Height);
         RequestFullLoad(
             EffectiveItems[index],
-            width,
-            height,
-            index == ClampIndex(CurrentIndex, EffectiveItems.Count)
-                ? ImageRequestPriority.Critical
-                : ImageRequestPriority.Preload,
+            size.Width,
+            size.Height,
+            isCurrent ? ImageRequestPriority.Critical : ImageRequestPriority.Preload,
             reload: true);
     }
 
@@ -744,117 +613,6 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
             return 0;
         }
         return Math.Clamp(index, 0, count - 1);
-    }
-
-    private void SubscribeEntries(IEnumerable<ImagePreviewEntry>? entries)
-    {
-        if (entries is null)
-        {
-            return;
-        }
-        foreach (var entry in entries)
-        {
-            entry.PropertyChanged += HandleEffectiveEntryPropertyChanged;
-        }
-    }
-
-    private void UnsubscribeEntries(IEnumerable<ImagePreviewEntry>? entries)
-    {
-        if (entries is null)
-        {
-            return;
-        }
-        foreach (var entry in entries)
-        {
-            entry.PropertyChanged -= HandleEffectiveEntryPropertyChanged;
-        }
-    }
-
-    private void HandleEffectiveEntryPropertyChanged(object? sender, PropertyChangedEventArgs args)
-    {
-        if (args.PropertyName is nameof(ImagePreviewEntry.IsFullLoaded) or
-            nameof(ImagePreviewEntry.FullImage))
-        {
-            // 保留帧种子：任何 entry 完成全图加载都更新；图像失效（卸载/释放）时清除
-            if (sender is ImagePreviewEntry { IsFullLoaded: true, FullImage: not null } loaded)
-            {
-                _latestLoadedFullEntry = loaded;
-            }
-            else if (ReferenceEquals(sender, _latestLoadedFullEntry))
-            {
-                _latestLoadedFullEntry = null;
-            }
-        }
-        if (ReferenceEquals(sender, _currentEntry))
-        {
-            UpdateCurrentState();
-        }
-    }
-
-    private void ConfigureCurrentEntry()
-    {
-        var next = EffectiveItems is { Count: > 0 } entries
-            ? entries[ClampIndex(CurrentIndex, entries.Count)]
-            : null;
-        if (!ReferenceEquals(_currentEntry, next))
-        {
-            _currentEntry = next;
-            _lastNotifiedCurrentState = ImageLoadState.Idle;
-        }
-        UpdateCurrentState();
-    }
-
-    private void UpdateCurrentState()
-    {
-        var item = _currentEntry?.Item;
-        var state = _currentEntry?.FullState ?? ImageLoadState.Idle;
-        SetAndRaise(CurrentItemProperty, ref _currentItem, item);
-        SetAndRaise(CurrentLoadStateProperty, ref _currentLoadState, state);
-        SetAndRaise(CurrentLoadErrorProperty, ref _currentLoadError, _currentEntry?.FullError);
-        SetAndRaise(CurrentLoadProgressProperty, ref _currentLoadProgress, _currentEntry?.FullProgress);
-        SetAndRaise(IsCurrentLoadingProperty, ref _isCurrentLoading, state == ImageLoadState.Loading);
-        SetAndRaise(IsCurrentLoadedProperty, ref _isCurrentLoaded, state == ImageLoadState.Loaded);
-        SetAndRaise(IsCurrentFailedProperty, ref _isCurrentFailed, state == ImageLoadState.Failed);
-
-        if (_currentEntry is not null && state != _lastNotifiedCurrentState)
-        {
-            var index = EffectiveItems?.IndexOf(_currentEntry) ?? -1;
-            if (state == ImageLoadState.Loaded)
-            {
-                ImageLoadEventDispatcher.Dispatch(
-                    ImageOpened,
-                    this,
-                    new ImagePreviewOpenedEventArgs(
-                        _currentEntry.Item,
-                        index,
-                        _currentEntry.FullOrigin));
-            }
-            else if (state == ImageLoadState.Failed && _currentEntry.FullError is { } error)
-            {
-                ImageLoadEventDispatcher.Dispatch(
-                    ImageFailed,
-                    this,
-                    new ImagePreviewFailedEventArgs(_currentEntry.Item, index, error));
-            }
-        }
-        _lastNotifiedCurrentState = state;
-    }
-
-    private (int Width, int Height) GetFullDecodeSize()
-    {
-        var topLevel = TopLevel.GetTopLevel(this);
-        var scaling = topLevel?.RenderScaling ?? 1;
-        var size = topLevel?.ClientSize ?? Bounds.Size;
-        return (Quantize(size.Width * scaling), Quantize(size.Height * scaling));
-    }
-
-    private static int Quantize(double value)
-    {
-        if (!double.IsFinite(value) || value <= 0)
-        {
-            return 0;
-        }
-        return checked((int)(Math.Ceiling(value / 16) * 16));
     }
 
     protected override void OnLoaded(RoutedEventArgs args)
@@ -887,59 +645,10 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void SubscribeDecodeSizeTopLevel()
-    {
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (ReferenceEquals(_decodeSizeTopLevel, topLevel))
-        {
-            return;
-        }
-        UnsubscribeDecodeSizeTopLevel();
-        _decodeSizeTopLevel = topLevel;
-        if (_decodeSizeTopLevel is not null)
-        {
-            _decodeSizeTopLevel.ScalingChanged += HandleDecodeSizeChanged;
-            _decodeSizeTopLevel.SizeChanged += HandleDecodeSizeChanged;
-        }
-    }
-
-    private void UnsubscribeDecodeSizeTopLevel()
-    {
-        if (_decodeSizeTopLevel is null)
-        {
-            return;
-        }
-        _decodeSizeTopLevel.ScalingChanged -= HandleDecodeSizeChanged;
-        _decodeSizeTopLevel.SizeChanged -= HandleDecodeSizeChanged;
-        _decodeSizeTopLevel = null;
-    }
-
-    private void HandleDecodeSizeChanged(object? sender, EventArgs args)
-    {
-        RequestLoadsForCurrentState();
-    }
-
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
         OpenDialog();
-    }
-
-    #region 预览窗口相关方法
-
-    private void HandleIsOpenChanged(AvaloniaPropertyChangedEventArgs e)
-    {
-        if (!_ignoreIsOpenChanged)
-        {
-            if (e.GetNewValue<bool>())
-            {
-                OpenDialog();
-            }
-            else
-            {
-                CloseDialog();
-            }
-        }
     }
 
     public void OpenDialog()
@@ -1066,6 +775,426 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         _dialogOpening = false;
     }
 
+    private protected virtual void PrepareDialogOpen()
+    {
+        if (EffectiveItems is null)
+        {
+            MaterializeEffectiveItems();
+        }
+    }
+
+    protected virtual void CloseDialog()
+    {
+        if (_dialogClosing)
+        {
+            return;
+        }
+
+        var closingArgs = new CancelEventArgs();
+        DialogClosing?.Invoke(this, closingArgs);
+        if (closingArgs.Cancel)
+        {
+            return;
+        }
+
+        if (_openState is null)
+        {
+            using (BeginIgnoringIsOpen())
+            {
+                SetCurrentValue(IsOpenProperty, false);
+            }
+
+            return;
+        }
+
+        _openState.Dispose();
+        _openState = null;
+        _previewDecodeSize = null;
+
+        _modalSubscription?.Dispose();
+        _modalSubscription = null;
+        ReleaseFullImageLoads();
+        RequestClosedStateLoads();
+        using (BeginIgnoringIsOpen())
+        {
+            SetCurrentValue(IsOpenProperty, false);
+        }
+    }
+
+    private protected virtual void RelayDialogHostBindings(CompositeDisposable disposables, ImagePreviewerDialog dialogHost)
+    {
+        // The dialog is created in a separate visual root, outside this control's template.
+        // ControlTheme cannot reach it; the dialog session owns and disposes these relay bindings.
+        disposables.Add(BindUtils.RelayBind(this, IsImageMovableProperty, dialogHost, ImagePreviewerDialog.IsImageMovableProperty));
+        disposables.Add(BindUtils.RelayBind(this, ImageScaleStepProperty, dialogHost, ImagePreviewerDialog.ScaleStepProperty));
+        disposables.Add(BindUtils.RelayBind(this, ImageMinScaleProperty, dialogHost, ImagePreviewerDialog.MinScaleProperty));
+        disposables.Add(BindUtils.RelayBind(this, ImageMaxScaleProperty, dialogHost, ImagePreviewerDialog.MaxScaleProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsWheelZoomEnabledProperty, dialogHost, ImagePreviewerDialog.IsWheelZoomEnabledProperty));
+        disposables.Add(BindUtils.RelayBind(this, EffectiveItemsProperty, dialogHost, ImagePreviewerDialog.ItemsSourceProperty));
+        disposables.Add(BindUtils.RelayBind(this, LoadingContentProperty, dialogHost, ImagePreviewerDialog.LoadingContentProperty));
+        disposables.Add(BindUtils.RelayBind(this, LoadingContentTemplateProperty, dialogHost, ImagePreviewerDialog.LoadingContentTemplateProperty));
+        disposables.Add(BindUtils.RelayBind(this, ErrorContentProperty, dialogHost, ImagePreviewerDialog.ErrorContentProperty));
+        disposables.Add(BindUtils.RelayBind(this, ErrorContentTemplateProperty, dialogHost, ImagePreviewerDialog.ErrorContentTemplateProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, dialogHost, ImagePreviewerDialog.IsMotionEnabledProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsDialogModalProperty, dialogHost, ImagePreviewerDialog.IsModalProperty));
+        disposables.Add(BindUtils.RelayBind(this,
+            CurrentIndexProperty,
+            dialogHost,
+            ImagePreviewerDialog.CurrentIndexProperty,
+            BindingMode.TwoWay));
+        disposables.Add(BindUtils.RelayBind(this, PreviewTitleProperty, dialogHost, Window.TitleProperty));
+        disposables.Add(BindUtils.RelayBind(this, PreviewTitleIconProperty, dialogHost, ImagePreviewerDialog.TitleIconProperty));
+        disposables.Add(BindUtils.RelayBind(this, PreviewTitleResolverProperty, dialogHost, ImagePreviewerDialog.PreviewTitleResolverProperty));
+    }
+
+    private void RaiseCrossRootsChanged()
+    {
+        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static int CoerceNonNegativeValue(AvaloniaObject sender, int value)
+    {
+        return Math.Max(0, value);
+    }
+
+    private void HandleItemsSourceChanged(IEnumerable<ImagePreviewItem>? oldValue)
+    {
+        UnsubscribeItemsSource(oldValue as INotifyCollectionChanged);
+        _observableItemsSource = ItemsSource as INotifyCollectionChanged;
+        SubscribeItemsSource();
+        MaterializeEffectiveItems();
+    }
+
+    private void SubscribeItemsSource()
+    {
+        if (!_isAttachedToVisualTree || _isItemsSourceSubscribed || _observableItemsSource is null)
+        {
+            return;
+        }
+        _observableItemsSource.CollectionChanged += HandleItemsCollectionChanged;
+        _isItemsSourceSubscribed = true;
+    }
+
+    private void UnsubscribeItemsSource(INotifyCollectionChanged? source = null)
+    {
+        if (!_isItemsSourceSubscribed)
+        {
+            return;
+        }
+        (source ?? _observableItemsSource)?.CollectionChanged -= HandleItemsCollectionChanged;
+        _isItemsSourceSubscribed = false;
+    }
+
+    private void SetEffectiveItems(
+        ObservableCollection<ImagePreviewEntry> entries,
+        IReadOnlySet<ImagePreviewEntry>? preserved = null)
+    {
+        var oldEntries = EffectiveItems;
+        UnsubscribeEntries(oldEntries);
+        SetCurrentValue(EffectiveItemsProperty, entries);
+        SubscribeEntries(entries);
+        if (oldEntries is not null)
+        {
+            foreach (var entry in oldEntries)
+            {
+                if (preserved?.Contains(entry) != true)
+                {
+                    entry.Dispose();
+                }
+            }
+        }
+        ConfigureCurrentEntry();
+        OnEffectiveItemsChanged();
+        RequestLoadsForCurrentState();
+    }
+
+    private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (EffectiveItems is not ObservableCollection<ImagePreviewEntry> entries)
+        {
+            MaterializeEffectiveItems();
+            return;
+        }
+        switch (args.Action)
+        {
+            case NotifyCollectionChangedAction.Add:
+                if (args.NewStartingIndex < 0)
+                {
+                    MaterializeEffectiveItems();
+                    return;
+                }
+                var addIndex = args.NewStartingIndex >= 0 ? args.NewStartingIndex : entries.Count;
+                foreach (ImagePreviewItem item in args.NewItems ?? Array.Empty<object>())
+                {
+                    var entry = new ImagePreviewEntry(item);
+                    entry.PropertyChanged += HandleEffectiveEntryPropertyChanged;
+                    entries.Insert(addIndex++, entry);
+                }
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                if (args.OldStartingIndex < 0)
+                {
+                    MaterializeEffectiveItems();
+                    return;
+                }
+                RemoveEntries(entries, args.OldStartingIndex, args.OldItems?.Count ?? 0);
+                break;
+            case NotifyCollectionChangedAction.Replace:
+                if (args.OldStartingIndex < 0 || args.NewStartingIndex < 0)
+                {
+                    MaterializeEffectiveItems();
+                    return;
+                }
+                RemoveEntries(entries, args.OldStartingIndex, args.OldItems?.Count ?? 0);
+                var replaceIndex = args.NewStartingIndex;
+                foreach (ImagePreviewItem item in args.NewItems ?? Array.Empty<object>())
+                {
+                    var entry = new ImagePreviewEntry(item);
+                    entry.PropertyChanged += HandleEffectiveEntryPropertyChanged;
+                    entries.Insert(replaceIndex++, entry);
+                }
+                break;
+            case NotifyCollectionChangedAction.Move:
+                if (args.OldItems?.Count == 1)
+                {
+                    entries.Move(args.OldStartingIndex, args.NewStartingIndex);
+                }
+                else
+                {
+                    MaterializeEffectiveItems();
+                    return;
+                }
+                break;
+            default:
+                MaterializeEffectiveItems();
+                return;
+        }
+        ConfigureCurrentEntry();
+        OnEffectiveItemsChanged();
+        RequestLoadsForCurrentState();
+    }
+
+    private void RemoveEntries(
+        ObservableCollection<ImagePreviewEntry> entries,
+        int startIndex,
+        int count)
+    {
+        for (var index = 0; index < count && startIndex >= 0 && startIndex < entries.Count; index++)
+        {
+            var entry = entries[startIndex];
+            entry.PropertyChanged -= HandleEffectiveEntryPropertyChanged;
+            entries.RemoveAt(startIndex);
+            entry.Dispose();
+        }
+    }
+
+    private void RequestLoadsForCurrentState()
+    {
+        if (!_isAttachedToVisualTree)
+        {
+            return;
+        }
+        if (IsOpen)
+        {
+            RequestPreviewLoads();
+        }
+        else
+        {
+            RequestClosedStateLoads();
+        }
+    }
+
+    private void CancelImageLoads(bool releaseLeases = false)
+    {
+        if (EffectiveItems is null)
+        {
+            return;
+        }
+        foreach (var entry in EffectiveItems)
+        {
+            if (releaseLeases)
+            {
+                entry.Unload();
+            }
+            else
+            {
+                entry.CancelFullLoad();
+                entry.CancelThumbnailLoad();
+            }
+        }
+    }
+
+    private void ReleaseFullImageLoads()
+    {
+        if (EffectiveItems is null)
+        {
+            return;
+        }
+        foreach (var entry in EffectiveItems)
+        {
+            entry.UnloadFull();
+        }
+    }
+
+    private void SubscribeEntries(IEnumerable<ImagePreviewEntry>? entries)
+    {
+        if (entries is null)
+        {
+            return;
+        }
+        foreach (var entry in entries)
+        {
+            entry.PropertyChanged += HandleEffectiveEntryPropertyChanged;
+        }
+    }
+
+    private void UnsubscribeEntries(IEnumerable<ImagePreviewEntry>? entries)
+    {
+        if (entries is null)
+        {
+            return;
+        }
+        foreach (var entry in entries)
+        {
+            entry.PropertyChanged -= HandleEffectiveEntryPropertyChanged;
+        }
+    }
+
+    private void HandleEffectiveEntryPropertyChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName is nameof(ImagePreviewEntry.IsFullLoaded) or
+            nameof(ImagePreviewEntry.FullImage))
+        {
+            // 保留帧种子：任何 entry 完成全图加载都更新；图像失效（卸载/释放）时清除
+            if (sender is ImagePreviewEntry { IsFullLoaded: true, FullImage: not null } loaded)
+            {
+                _latestLoadedFullEntry = loaded;
+            }
+            else if (ReferenceEquals(sender, _latestLoadedFullEntry))
+            {
+                _latestLoadedFullEntry = null;
+            }
+        }
+        if (ReferenceEquals(sender, _currentEntry))
+        {
+            UpdateCurrentState();
+        }
+    }
+
+    private void ConfigureCurrentEntry()
+    {
+        var next = EffectiveItems is { Count: > 0 } entries
+            ? entries[ClampIndex(CurrentIndex, entries.Count)]
+            : null;
+        if (!ReferenceEquals(_currentEntry, next))
+        {
+            _currentEntry = next;
+            _previewDecodeSize = null;
+            _lastNotifiedCurrentState = ImageLoadState.Idle;
+        }
+        UpdateCurrentState();
+    }
+
+    private void UpdateCurrentState()
+    {
+        var item = _currentEntry?.Item;
+        var state = _currentEntry?.FullState ?? ImageLoadState.Idle;
+        SetAndRaise(CurrentItemProperty, ref _currentItem, item);
+        SetAndRaise(CurrentLoadStateProperty, ref _currentLoadState, state);
+        SetAndRaise(CurrentLoadErrorProperty, ref _currentLoadError, _currentEntry?.FullError);
+        SetAndRaise(CurrentLoadProgressProperty, ref _currentLoadProgress, _currentEntry?.FullProgress);
+        SetAndRaise(IsCurrentLoadingProperty, ref _isCurrentLoading, state == ImageLoadState.Loading);
+        SetAndRaise(IsCurrentLoadedProperty, ref _isCurrentLoaded, state == ImageLoadState.Loaded);
+        SetAndRaise(IsCurrentFailedProperty, ref _isCurrentFailed, state == ImageLoadState.Failed);
+
+        if (_currentEntry is not null && state != _lastNotifiedCurrentState)
+        {
+            var index = EffectiveItems?.IndexOf(_currentEntry) ?? -1;
+            if (state == ImageLoadState.Loaded)
+            {
+                ImageLoadEventDispatcher.Dispatch(
+                    ImageOpened,
+                    this,
+                    new ImagePreviewOpenedEventArgs(
+                        _currentEntry.Item,
+                        index,
+                        _currentEntry.FullOrigin));
+            }
+            else if (state == ImageLoadState.Failed && _currentEntry.FullError is { } error)
+            {
+                ImageLoadEventDispatcher.Dispatch(
+                    ImageFailed,
+                    this,
+                    new ImagePreviewFailedEventArgs(_currentEntry.Item, index, error));
+            }
+        }
+        _lastNotifiedCurrentState = state;
+    }
+
+    private (int Width, int Height) GetFullDecodeSize()
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        var scaling = topLevel?.RenderScaling ?? 1;
+        var size = topLevel?.ClientSize ?? Bounds.Size;
+        return (Quantize(size.Width * scaling), Quantize(size.Height * scaling));
+    }
+
+    private static int Quantize(double value)
+    {
+        if (!double.IsFinite(value) || value <= 0)
+        {
+            return 0;
+        }
+        return checked((int)(Math.Ceiling(value / 16) * 16));
+    }
+
+    private void SubscribeDecodeSizeTopLevel()
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (ReferenceEquals(_decodeSizeTopLevel, topLevel))
+        {
+            return;
+        }
+        UnsubscribeDecodeSizeTopLevel();
+        _decodeSizeTopLevel = topLevel;
+        if (_decodeSizeTopLevel is not null)
+        {
+            _decodeSizeTopLevel.ScalingChanged += HandleDecodeSizeChanged;
+            _decodeSizeTopLevel.SizeChanged += HandleDecodeSizeChanged;
+        }
+    }
+
+    private void UnsubscribeDecodeSizeTopLevel()
+    {
+        if (_decodeSizeTopLevel is null)
+        {
+            return;
+        }
+        _decodeSizeTopLevel.ScalingChanged -= HandleDecodeSizeChanged;
+        _decodeSizeTopLevel.SizeChanged -= HandleDecodeSizeChanged;
+        _decodeSizeTopLevel = null;
+    }
+
+    private void HandleDecodeSizeChanged(object? sender, EventArgs args)
+    {
+        RequestLoadsForCurrentState();
+    }
+
+    private void HandleIsOpenChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (!_ignoreIsOpenChanged)
+        {
+            if (e.GetNewValue<bool>())
+            {
+                OpenDialog();
+            }
+            else
+            {
+                CloseDialog();
+            }
+        }
+    }
+
     private void OpenOverlayDialog(Control placementTarget, TopLevel? topLevel)
     {
         try
@@ -1085,6 +1214,8 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
             var handlerCleanup = new CompositeDisposable(8);
             ((ISetLogicalParent)previewHost).SetParent(this);
 
+            // This runtime overlay lives outside the owner's template and needs its actual theme scope.
+            // handlerCleanup releases the cross-root binding when this overlay session closes.
             previewHost
                 .Bind(
                     ThemeVariantScope.ActualThemeVariantProperty,
@@ -1155,80 +1286,15 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         Canvas.SetTop(previewHost, 0);
     }
 
-    private protected virtual void PrepareDialogOpen()
-    {
-        if (EffectiveItems is null)
-        {
-            MaterializeEffectiveItems();
-        }
-    }
-
-    protected virtual void CloseDialog()
-    {
-        if (_dialogClosing)
-        {
-            return;
-        }
-
-        var closingArgs = new CancelEventArgs();
-        DialogClosing?.Invoke(this, closingArgs);
-        if (closingArgs.Cancel)
-        {
-            return;
-        }
-
-        if (_openState is null)
-        {
-            using (BeginIgnoringIsOpen())
-            {
-                SetCurrentValue(IsOpenProperty, false);
-            }
-
-            return;
-        }
-
-        _openState.Dispose();
-        _openState = null;
-
-        _modalSubscription?.Dispose();
-        _modalSubscription = null;
-        ReleaseFullImageLoads();
-        RequestClosedStateLoads();
-        using (BeginIgnoringIsOpen())
-        {
-            SetCurrentValue(IsOpenProperty, false);
-        }
-    }
-
-    private protected virtual void RelayDialogHostBindings(CompositeDisposable disposables, ImagePreviewerDialog dialogHost)
-    {
-        disposables.Add(BindUtils.RelayBind(this, IsImageMovableProperty, dialogHost, ImagePreviewerDialog.IsImageMovableProperty));
-        disposables.Add(BindUtils.RelayBind(this, ImageScaleStepProperty, dialogHost, ImagePreviewerDialog.ScaleStepProperty));
-        disposables.Add(BindUtils.RelayBind(this, ImageMinScaleProperty, dialogHost, ImagePreviewerDialog.MinScaleProperty));
-        disposables.Add(BindUtils.RelayBind(this, ImageMaxScaleProperty, dialogHost, ImagePreviewerDialog.MaxScaleProperty));
-        disposables.Add(BindUtils.RelayBind(this, EffectiveItemsProperty, dialogHost, ImagePreviewerDialog.ItemsSourceProperty));
-        disposables.Add(BindUtils.RelayBind(this, LoadingContentProperty, dialogHost, ImagePreviewerDialog.LoadingContentProperty));
-        disposables.Add(BindUtils.RelayBind(this, LoadingContentTemplateProperty, dialogHost, ImagePreviewerDialog.LoadingContentTemplateProperty));
-        disposables.Add(BindUtils.RelayBind(this, ErrorContentProperty, dialogHost, ImagePreviewerDialog.ErrorContentProperty));
-        disposables.Add(BindUtils.RelayBind(this, ErrorContentTemplateProperty, dialogHost, ImagePreviewerDialog.ErrorContentTemplateProperty));
-        disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, dialogHost, ImagePreviewerDialog.IsMotionEnabledProperty));
-        disposables.Add(BindUtils.RelayBind(this, IsDialogModalProperty, dialogHost, ImagePreviewerDialog.IsModalProperty));
-        disposables.Add(BindUtils.RelayBind(this,
-            CurrentIndexProperty,
-            dialogHost,
-            ImagePreviewerDialog.CurrentIndexProperty,
-            BindingMode.TwoWay));
-        disposables.Add(BindUtils.RelayBind(this, PreviewTitleProperty, dialogHost, Window.TitleProperty));
-        disposables.Add(BindUtils.RelayBind(this, PreviewTitleIconProperty, dialogHost, ImagePreviewerDialog.TitleIconProperty));
-        disposables.Add(BindUtils.RelayBind(this, PreviewTitleResolverProperty, dialogHost, ImagePreviewerDialog.PreviewTitleResolverProperty));
-    }
-
     private void RelayOverlayHostBindings(CompositeDisposable disposables, ImagePreviewerOverlayHost overlayHost)
     {
+        // The overlay host is inserted into the runtime OverlayLayer, not this control's template.
+        // ControlTheme cannot reach it; the open-state disposables own these relay bindings.
         disposables.Add(BindUtils.RelayBind(this, IsImageMovableProperty, overlayHost, ImagePreviewerOverlayHost.IsImageMovableProperty));
         disposables.Add(BindUtils.RelayBind(this, ImageScaleStepProperty, overlayHost, ImagePreviewerOverlayHost.ScaleStepProperty));
         disposables.Add(BindUtils.RelayBind(this, ImageMinScaleProperty, overlayHost, ImagePreviewerOverlayHost.MinScaleProperty));
         disposables.Add(BindUtils.RelayBind(this, ImageMaxScaleProperty, overlayHost, ImagePreviewerOverlayHost.MaxScaleProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsWheelZoomEnabledProperty, overlayHost, ImagePreviewerOverlayHost.IsWheelZoomEnabledProperty));
         disposables.Add(BindUtils.RelayBind(this, EffectiveItemsProperty, overlayHost, ImagePreviewerOverlayHost.ItemsSourceProperty));
         disposables.Add(BindUtils.RelayBind(this, LoadingContentProperty, overlayHost, ImagePreviewerOverlayHost.LoadingContentProperty));
         disposables.Add(BindUtils.RelayBind(this, LoadingContentTemplateProperty, overlayHost, ImagePreviewerOverlayHost.LoadingContentTemplateProperty));
@@ -1292,11 +1358,6 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
     }
 
     private void ParentClosed(object? sender, EventArgs e)
-    {
-        CloseDialog();
-    }
-
-    internal void NotifyDialogHostCloseRequest()
     {
         CloseDialog();
     }
@@ -1393,6 +1454,4 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
             _cleanup.Dispose();
         }
     }
-
-    #endregion
 }

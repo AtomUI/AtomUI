@@ -2,6 +2,14 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-17
+
+- 新增 `IsWheelZoomEnabled=true`，只控制滚轮；统一滚轮刻度、指针锚点、拖拽平移、双击与捏合缩放，运行时缩放范围变化立即钳制比例和刷新按钮。
+- 两种宿主使用相同的切图/reset 行为，工具栏适配按钮改为完整重置；viewer scene 明确裁剪图片，原始尺寸元数据稳定基础布局，实际预览窗口的视口与 DPI 驱动当前项解码升级。
+- Gallery 基础示例提供 `ImageMinScale=0.1`、`ImageMaxScale=8` 与滚轮开关，覆盖四种页面语言。
+
+- 建立预览变换专项设计：基础图片尺寸同时受视口宽度和高度 70% 约束，`Scale=1` 表示基础适配尺寸；`ImageViewer` 统一拥有缩放、滚轮、拖拽、旋转、翻转、reset 和边界修正，Dialog 与 OverlayHost 只负责宿主和操作转发；解码目标按基础尺寸、用户比例和 render scaling 升级，并继续受应用级图片预算约束。
+
 ## 2026-09-28
 
 - 为 internal `ImagePreviewerTitleBar` 补齐与 native `WindowTitleBar` 一致的 Browser 平台排除声明，使生成的主题资产与所需 WindowTitleBar Token schema 具有一致可用域；Browser 继续使用既有 overlay 宿主。

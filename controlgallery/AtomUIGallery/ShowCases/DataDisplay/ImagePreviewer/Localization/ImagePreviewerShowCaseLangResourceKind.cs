@@ -45,5 +45,6 @@ public enum ImagePreviewerShowCaseLangResourceKind
     SemanticPopupFooterDescription,
     SemanticPopupActionsDescription,
     SemanticPartStyleTitle,
-    SemanticPartStyleDescription
+    SemanticPartStyleDescription,
+    WheelZoomEnabled
 }

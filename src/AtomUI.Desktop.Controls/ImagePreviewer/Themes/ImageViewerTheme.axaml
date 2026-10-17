@@ -9,6 +9,7 @@
             <ControlTemplate>
                 <Panel Background="{TemplateBinding Background}">
                     <Canvas Name="PART_ImageViewerScene"
+                            ClipToBounds="True"
                             Classes.semantic-popup-body="True"
                             IsVisible="{TemplateBinding CurrentImage, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <atom:ImagePreviewRenderer

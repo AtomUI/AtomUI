@@ -3,13 +3,14 @@
 本文档描述 ImagePreviewer 的源码 ownership、entry 状态机、集合同步、应用级加载集成、宿主生命周期和维护不变量。
 公共契约见 [ImagePreviewer 桌面版架构设计](overview.md)，Semantic Part 契约见
 [ImagePreviewer Semantic Part 契约](semantic-part.md)，Token 语义见 [ImagePreviewer Token 设计](token.md)，
-切换显示策略与保留帧状态机见 [ImagePreviewer 切换显示设计](switch-display-design.md)，变化记录见
-[ImagePreviewer Changelog](changelog.md)。
+切换显示策略与保留帧状态机见 [ImagePreviewer 切换显示设计](switch-display-design.md)，预览基础适配、变换状态和输入算法见
+[ImagePreviewer 预览变换设计](preview-transform-design.md)，变化记录见 [ImagePreviewer Changelog](changelog.md)。
 
 ## 1. 实现定位
 
 本文覆盖 ImagePreviewer 家族的 internal entry、集合同步、双通道加载、dialog/overlay 宿主、viewer/renderer 协作和结果租约
-生命周期。具体 StyledProperty 注册、AXAML selector 和局部变换公式仍以源码为准；本文记录跨文件 owner、状态流和维护边界。
+生命周期。具体 StyledProperty 注册和 AXAML selector 仍以源码为准；预览变换的跨文件 owner、状态流和公式由
+[ImagePreviewer 预览变换设计](preview-transform-design.md)统一定义，本文记录其实现边界和维护规则。
 
 ## 2. 源码文件结构
 
@@ -28,7 +29,7 @@
 | `ImagePreviewerDialog` | Desktop native window、标题算法、CurrentIndex relay 和 viewer 组合 |
 | `ImagePreviewerTitleBar` | native dialog 的 internal 标题栏，和 WindowTitleBar 一样声明 Browser 不可用；其主题/Token 依赖不进入 Browser 注册 |
 | `ImagePreviewerOverlayHost` | Browser/无原生窗口平台的 overlay 宿主 |
-| `ImageViewer` | 导航、变换、fit-to-window 和 loading/error 状态呈现 |
+| `ImageViewer` | 视口基础适配、统一变换状态、导航、输入、边界修正和 loading/error 状态呈现 |
 | `ImagePreviewRenderer` | 只渲染 entry 已持有的 `IImage` |
 | `IImagePreviewTitleResolver` | 无 I/O 的标题解析扩展点 |
 
@@ -185,10 +186,20 @@ visual subtree 后不残留任何 marker 或订阅；`viewer`、float toolbar �
 ## 7. 交互与事件处理
 
 单封面点击只打开当前项；group 封面点击先更新 `CurrentIndex` 再打开。dialog/overlay 导航通过 TwoWay relay 更新 current，显示 clamp
-不回写业务值。拖拽、缩放、旋转和 fit-to-window 由 `ImageViewer` 处理。只有 current Full entry 的终态变化触发
+不回写业务值。基础适配、拖拽、缩放、滚轮、旋转、翻转、reset 和边界修正由 `ImageViewer` 统一处理。只有 current Full entry 的终态变化触发
 `ImageOpened`/`ImageFailed`；预加载和 Thumbnail 不冒充当前项事件。
 
 ## 8. 内部算法与关键流程
+
+### 8.0 预览变换 ownership
+
+`ImageViewer` 是预览坐标和变换状态的唯一 owner。基础图片尺寸由图片原始宽高比和实际 scene 视口计算；render scaling 只用于物理像素解码目标。用户变换保存为
+`X/Y`、`Scale`、`Rotate`、`FlipX` 和 `FlipY`。`ImagePreviewerDialog` 与 `ImagePreviewerOverlayHost` 只负责宿主生命周期、relay binding
+和操作请求转发，不维护并行的缩放或拖拽算法。
+
+`PART_ImageViewerScene` 提供视口坐标空间，`PART_ImageRenderer` 以基础适配尺寸布局图片，再消费 viewer 生成的 RenderTransform。窗口尺寸、
+DPI、图片替换和用户输入都回到同一个变换计算路径；viewer 的 `PreviewChanged` 通知向宿主投射操作后的比例与能力，并将实际 `DecodeSize` 交给 previewer。详细公式、输入比例、rebound 和 reset 语义见
+[ImagePreviewer 预览变换设计](preview-transform-design.md)。
 
 ### 8.1 请求策略
 
@@ -215,9 +226,12 @@ source/decode 两级 single-flight、来源验证、content-addressed encoded/de
 
 ### 8.2 解码尺寸
 
-完整图目标尺寸使用 TopLevel ClientSize；无法取得 TopLevel 时使用控件 Bounds。封面使用 CoverWidth/CoverHeight，值为 NaN 时
-回退到当前 Bounds。所有逻辑尺寸乘 render scaling 后向上量化到 16 px。初始占位测量、后续真实 Arrange、Cover 尺寸修改、
-TopLevel resize 和 DPI 变化都必须重新提交当前 bucket；entry 负责过滤重复 bucket，不能用 Loaded 状态永久阻止尺寸升级。
+完整图目标尺寸由实际 viewer 的基础适配尺寸乘当前用户 Scale 和宿主 render scaling 得到，并向上取整到 16 px bucket。首次布局前使用封面所在 TopLevel 或控件 Bounds；相邻预加载项保持基础目标。封面使用
+CoverWidth/CoverHeight，值为 NaN 时回退到当前 Bounds。所有逻辑尺寸乘 render scaling 后向上量化到 16 px。初始占位测量、后续真实
+Arrange、Cover 尺寸修改、TopLevel resize、DPI 变化和用户放大都必须重新提交当前 bucket；entry 负责过滤重复 bucket，不能用 Loaded 状态
+永久阻止尺寸升级。尺寸升级期间 viewer 保留当前变换状态，结果提交后只替换 renderer 图片。`ImagePreviewEntry.FullImageSize` 与显示 tracker 的 `EffectiveImageSize` 传递同一提交结果的原始宽高比，解码 rounding 不改变基础布局尺寸。viewer 保存基础布局使用的原始尺寸，与 entry 身份一起发布解码目标；owner 拒绝来自旧图或保留帧的过期几何。两种 current reload 入口复用显示目标，不能降回封面宿主尺寸。
+
+基础适配尺寸与用户变换比例的分离、目标尺寸公式和预算超限退化见 [ImagePreviewer 预览变换设计](preview-transform-design.md)。
 
 Full 请求允许 0 x 0 表示原始尺寸。封面在宽高都为 0 时等待真实 Arrange，不用 timer 或固定 delay 猜测布局就绪。
 
@@ -314,8 +328,8 @@ Dialog 和 overlay 对 CurrentIndex 只做显示 clamp，并通过 TwoWay relay 
 ### 8.9 Theme 与 renderer 边界
 
 Theme 文件负责 cover mask、Skeleton/Spin、错误内容、viewer scene、toolbar、title bar 和 platform title layout。
-`ImagePreviewRenderer` 只接收当前 `IImage` 与 transform/stretch 状态，不调用 loader。图片尺寸变化需要让 viewer 重新计算
-fit-to-window 与缩放能力，但不能反向修改 entry 状态。`ImageViewer` 由显示状态同步 `:loading` / `:has-image` 伪类，
+`ImagePreviewRenderer` 只接收当前 `IImage`、基础适配尺寸与 transform/stretch 状态，不调用 loader。图片尺寸、视口或 DPI 变化需要让 viewer
+重新计算基础适配尺寸、边界和缩放能力，但不能反向修改 entry 状态。`ImageViewer` 由显示状态同步 `:loading` / `:has-image` 伪类，
 `PART_LoadingPresenter` 由 `^:loading:not(:has-image)` 选择器置可见，只在无可显示图片时呈现，与封面和 `AsyncImage` 门控语义一致。
 
 Loading/error 自定义模板只替换内容。模板不能通过视觉存在与否推导加载成功，也不能持有 entry 之外的结果租约。
@@ -426,6 +440,10 @@ Loading/error 自定义模板只替换内容。模板不能通过视觉存在与
 - source/decode single-flight、早 generation 晚完成、waiter-local cancellation、cache clear epoch 和 lease 延迟释放竞态。
 - auto-sized cover 从占位 Bounds 升级到最终物理像素 bucket、显式 cover resize、同 bucket 幂等和替换期间旧 lease 保留。
 - dialog/overlay close 释放 Full lease、保留或恢复 Thumbnail；detach 释放两者。
+- 预览变换：极宽、极高和普通宽高比图片的双轴基础适配，`Scale=1` 的中心布局，运行时最小/最大比例变化，鼠标中心缩放、滚轮开关、
+  拖拽 rebound、旋转后的轴向边界、reset、切图重置，以及 native dialog/overlay 的状态一致性。
+- 预览解码升级：基础尺寸乘 Scale 和 RenderScaling 的 bucket 计算，升级期间旧 lease 保持可见，旧 generation 不能覆盖新结果，预算超限
+ 产生明确限制错误。
 - 两种 `ImageSwitchMode` 的显示矩阵：`WaitForLoaded` 加载期间保持上一张、完成换新、失败呈现错误、保留帧源移除后回退占位；
   `Immediate` 从目标切换的同一 UI 周期清空旧图并呈现 loading，包括请求开始前的 Idle 瞬态与持续快速切换场景。
 - 显示 tracker 的订阅配对（Clear/切换后事件不再触达）、`Immediate` 零持有、WaitForLoaded 保留帧上界、会话隔离与目标序号单调前进不变量。

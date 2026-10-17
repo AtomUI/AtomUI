@@ -18,7 +18,7 @@
     </unit>
     <unit id="BasicUsageDescription">
       <segment>
-        <source>Click the image to zoom in.</source>
+        <source>Open a fitted preview, then zoom between 0.1 and 8 times its initial size. Disable wheel zoom to keep toolbar and touch zoom available.</source>
       </segment>
     </unit>
     <unit id="BasicUsageTitle">
@@ -204,6 +204,11 @@
     <unit id="TwentyRemoteImagesTitle">
       <segment>
         <source>20 remote images</source>
+      </segment>
+    </unit>
+    <unit id="WheelZoomEnabled">
+      <segment>
+        <source>Enable wheel zoom</source>
       </segment>
     </unit>
   </file>

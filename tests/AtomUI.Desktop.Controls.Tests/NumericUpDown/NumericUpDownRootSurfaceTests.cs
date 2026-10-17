@@ -1,3 +1,4 @@
+using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -35,11 +36,15 @@ public class NumericUpDownRootSurfaceTests
         {
             var builder = new AtomUIBuilder(typeof(Application));
             builder.UseDesktopControls();
-            builder.ThemeManagerBuilder.CompletePendingRegistrations();
-            var registration = builder.ThemeManagerBuilder.ControlPackages
-                .Where(p => p.Id == "AtomUI.Desktop.Controls")
-                .SelectMany(p => p.Resources)
-                .Single(r => r.AssetId.EndsWith("NumericUpDown/Themes/NumericUpDownSpinnerTheme.axaml", StringComparison.Ordinal));
+            var package = builder.PackageDeclarations.Single(
+                declaration => declaration.Definition.Id == "AtomUI.Desktop.Controls");
+            var registration = StartupPackageIndex.Create(builder.PackageDeclarations)
+                                                  .Assets
+                                                  .Where(asset => ReferenceEquals(asset.Package, package))
+                                                  .Single(asset => new Uri(asset.Data.Uri).AbsolutePath.EndsWith(
+                                                      "/NumericUpDown/Themes/NumericUpDownSpinnerTheme.axaml",
+                                                      StringComparison.Ordinal))
+                                                  .GetRegistration();
             var wrapper = registration.Factory().ShouldBeAssignableTo<ResourceDictionary>();
             var dictionary = wrapper.MergedDictionaries.Single().ShouldBeAssignableTo<ResourceDictionary>();
             var theme = dictionary[typeof(NumericUpDownSpinner)].ShouldBeOfType<ControlTheme>();

@@ -2,7 +2,9 @@ using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -51,13 +53,10 @@ public class ComboBoxPinnedPopupOverlayTests
             popup.IsOpen.ShouldBeTrue();
             popup.IsLightDismissEnabled.ShouldBeFalse();
 
-            // 属性被抑制不代表遮罩未创建：模板阶段的先开后抑会留下一个
-            // IsVisible=true 的遮罩层挡住页面其余交互。
             window.GetVisualDescendants()
                   .Where(static layer => layer.GetType().Name == DismissLayerTypeName)
                   .ShouldNotContain(static layer => layer.IsVisible);
 
-            // 行为断言：远离输入框的点位必须仍可被页面自身命中，而不是被遮罩吞掉。
             var hit = window.InputHitTest(new Point(620, 460));
             hit.ShouldNotBeNull();
             hit!.GetType().Name.ShouldNotBe(
@@ -257,6 +256,12 @@ public class ComboBoxPinnedPopupOverlayTests
             Width  = 640,
             Height = 480
         };
+        overlayPanel.Children.Add(new Border
+        {
+            Width = 640,
+            Height = 480,
+            Background = Brushes.Transparent
+        });
         overlayPanel.Children.Add(content);
         var visualLayerManager = new VisualLayerManager
         {
@@ -277,6 +282,8 @@ public class ComboBoxPinnedPopupOverlayTests
             Dispatcher.UIThread.RunJobs();
             content.ApplyTemplate();
             window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
             assertion(window);
         }

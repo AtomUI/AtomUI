@@ -144,6 +144,7 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 - Window 外轮廓只能由现有 `WindowVisualLayerClip` 统一裁剪；Overlay Dialog 不单独复制 frame shadow margin 或 CornerRadius。
 - Overlay 与 Window 必须使用同一套 Surface 正文尺寸解析。Window 只允许在 presenter 边界加回 chrome；不能把 Surface `HostMin/Max` 直接解释为包含标题栏和 frame 的 Window client constraints。
 - 用户 resize、runtime `HostMin/Max`、主题或宿主容量变化不得无条件重置已调整尺寸；actual size 只有越出最新有效区间时才被 clamp。
+- owner 容量变化对 Overlay Surface 的边界约束不改变用户位置偏移；未拖动的居中 Dialog 随最新 owner bounds 重新居中，已拖动 Dialog 在容量恢复后保留用户偏移。
 - 不重新引入同步 DispatcherFrame、callback close、隐藏 MessageBox Dialog 或分离的 Popup mask。
 - 关闭入口开关保持正交：`IsClosable` 管标题栏 X，`IsMaskClosable` 管 Overlay modal mask 外点，互不推导；`IsMaskClosable=false` 时 mask 外点不产生 `HostCloseRequest`。
 

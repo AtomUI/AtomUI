@@ -120,7 +120,7 @@ public class FeedbackCardMotionTests
 
         var running = motion.RunAsync(actor, cancellationToken: cancellation.Token);
         cancellation.Cancel();
-        await running;
+        await Should.ThrowAsync<OperationCanceledException>(async () => await running);
 
         motion.Transitions.Count.ShouldBe(2);
         foreach (var transition in motion.Transitions)

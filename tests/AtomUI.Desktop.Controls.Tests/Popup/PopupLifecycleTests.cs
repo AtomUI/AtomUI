@@ -142,19 +142,28 @@ public class PopupLifecycleTests
             OpenPopup(other);
             window.UpdateLayout();
             Dispatcher.UIThread.RunJobs();
+
             popup.IsPopupPinnedOpen = true;
             Dispatcher.UIThread.RunJobs();
-            Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            window.InputHitTest(new Point(340, 290))?.GetType().Name.ShouldBe("LightDismissOverlayLayer");
-            other.Close();
+
+            var dismissLayer = window.GetVisualDescendants()
+                                     .Single(layer => layer.GetType().Name == "LightDismissOverlayLayer");
+            popup.IsLightDismissEnabled.ShouldBeFalse();
+            other.IsLightDismissEnabled.ShouldBeTrue();
+            dismissLayer.IsVisible.ShouldBeTrue();
+
+            window.MouseDown(new Point(340, 290), MouseButton.Left);
+            window.MouseUp(new Point(340, 290), MouseButton.Left);
             Dispatcher.UIThread.RunJobs();
-            Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            window.InputHitTest(new Point(340, 290))?.GetType().Name.ShouldNotBe("LightDismissOverlayLayer");
+
+            popup.IsOpen.ShouldBeTrue();
+            other.IsOpen.ShouldBeFalse();
+            dismissLayer.IsVisible.ShouldBeFalse();
+
             popup.IsLightDismissEnabled = false;
             popup.IsPopupPinnedOpen = false;
             popup.IsLightDismissEnabled.ShouldBeFalse();
-            Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            window.InputHitTest(new Point(340, 290))?.GetType().Name.ShouldNotBe("LightDismissOverlayLayer");
+            dismissLayer.IsVisible.ShouldBeFalse();
         }
         finally
         {

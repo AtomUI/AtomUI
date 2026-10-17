@@ -17,6 +17,7 @@ Modal 尺寸模型负责把 public `HostWidth`、`HostHeight`、`HostMin*`、`Ho
 - Overlay 与 Window 使用同一套 Surface 约束解析；差异只存在于宿主容量来源、Window chrome 换算和 resize 执行机制。
 - Overlay resize handle 在按下后捕获 pointer，并在 release 或 capture lost 时通过同一个幂等结束路径清理本次 resize；pointer/native 热路径只使用已解析约束，不重新测量标题、Footer 或内容。
 - owner、screen、主题、模板或有效按钮集合变化后重新解析约束；只有当前实际尺寸越界时才纠正，不无条件重置用户已经调整的尺寸。
+- Overlay 的 owner 容量变化只临时约束当前 Surface position，不把边界修正写入用户偏移。默认居中的 Dialog 按新 owner bounds 重新居中；用户拖动形成的偏移在容量恢复后继续生效。
 
 ## 3. 尺寸模型与 Public API
 
@@ -119,7 +120,7 @@ windowRequested = requestedSurfaceSize + windowChrome
 
 - `Dialog` 只拥有 public requested properties 与 Session，不缓存 presenter 的实际几何。
 - `DialogSurface` 拥有结构性区域的测量结果；Header、Content viewport、Footer 和 `PART_Resizer` 继续由 `DialogSurfaceTheme.axaml` 组合。
-- concrete presenter 拥有 host capacity、effective constraints、actual size 与 maximize restore geometry。
+- concrete presenter 拥有 host capacity、effective constraints、actual size 与 maximize restore geometry。Overlay presenter 将当前受限的 Surface position 与 `Dialog.OffsetX/Y` 中的持久用户偏移分开管理。
 - 共享尺寸解析是 Dialog 模块中的纯值职责，不读取平台对象、不创建 Visual，也不持有订阅。
 - Window 模块只发布 chrome、working area、render scaling 和 native resize 能力；Dialog presenter 不复制 Win32、AppKit、X11 或 Wayland 几何算法。
 
@@ -170,7 +171,7 @@ Dialog Host* / IsResizable / IsMaximizable
 | --- | --- |
 | 纯约束计算 | requested min/max、structural、capacity、NaN natural size、冲突 max、capacity 小于结构下限均得到确定结果。 |
 | DialogSurface | Header/Footer visibility、标准/自定义按钮、模板 spacing/font 和 Dialog Token 变化会更新结构性最小尺寸；Content 的完整 DesiredSize 不会变成 minimum。 |
-| Overlay presenter | 八方向 resize 不能越过 effective constraints；pointer release/capture lost 均结束当前 resize；owner 变小、自然轴 clamp、maximize/restore 和 runtime Host* 更新保持 actual/offset 一致。 |
+| Overlay presenter | 八方向 resize 不能越过 effective constraints；pointer release/capture lost 均结束当前 resize；owner 往返缩放时默认居中与用户偏移均可恢复，临时边界修正不改变 offsets；自然轴 clamp、maximize/restore 和 runtime Host* 更新保持 actual geometry 一致。 |
 | Window presenter | Window tree 在 native Show 前完成 Surface 自然测量、chrome 换算、owner-screen capacity、最终尺寸和 initial placement；首个原生可见帧直接使用该几何快照，不发生 opacity staging、Dispatcher 延迟或 post-show correction。native min/max、runtime Host*、screen/chrome 变化和 restore 均保持正文语义；finite HostMax 任一轴都会禁用 native maximize，两轴恢复无限后重新启用。 |
 | MessageBox | MessageBox 最小宽度继续提高 Dialog structural minimum，不能降低结构性高度。 |
 | Gallery | resizable Window/Overlay 示例无需手写 `HostMinHeight` 也不能缩到操作区不可用；显式 HostMin/Max 示例能展示收紧区间。 |

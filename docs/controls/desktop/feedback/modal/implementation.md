@@ -194,7 +194,7 @@ Overlay presenter 在外层 Surface 与内容层的关闭任务全部完成后�
 
 Overlay 直接把 effective constraints 应用于 Surface，并在 resize handler 中只读取缓存约束；handle 捕获 pointer，release 与 capture lost 复用同一个幂等结束路径。自然轴被新约束 clamp 后会提交为 presenter-owned actual geometry，后续放宽约束不回落。Window presenter 按当前 Template 模式把 Surface constraints 加回 chrome：managed/drawn title bar 使用 padding、frame shadow 与有效标题栏高度，CSD 使用 padding 与 `WindowDecorationMargin`；CSD、visible frame、screen、DPI 与相关 frame metrics 变化都会重新解析。Window 的 `CanMaximize` 由 `IsMaximizable` 与两个 `HostMax*` 组合得出，任一 finite maximum 都禁用 native maximize。Surface 的 measure invalidation 会重新比较 structural minimum，只有数值改变才通知 presenter。完整公式、maximize/restore 和 capacity 退化规则见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
 
-Overlay 首次 placement 完成前收到 `StructuralMinimumChanged` 时，只重新解析 constraints 和 requested size，不 clamp 尚未解析的 Surface position，也不向 `OffsetX` / `OffsetY` 写回位置差值。首次 placement 完成后，同一路径才允许 clamp actual geometry 并同步 offsets；这样 template 初始布局不会把临时 `(0, 0)` 坐标固化为相对居中位置的负偏移。
+Overlay 首次 placement 完成前收到 `StructuralMinimumChanged` 时，只重新解析 constraints 和 requested size，不 clamp 尚未解析的 Surface position。首次 placement 完成后，owner 容量或结构约束变化可以 clamp actual geometry，但临时边界修正只更新 Surface position，不写回 `OffsetX` / `OffsetY`；重新 placement 时仍以原有 startup anchor 和用户偏移计算。只有用户拖动、交互 resize、显式尺寸请求或 maximize restore 等主动几何操作会同步 offsets。
 
 ### 8.4 Motion
 

@@ -664,19 +664,14 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         }
 
         var clampedSize = _normalSizeConstraints.Clamp(actualSize);
+        // Owner-driven bounds correction is transient; OffsetX/Y retain the requested placement.
         var clampedPosition = ConstrainAndRoundSurfacePosition(ownerBounds, clampedSize, _surfacePosition);
         if (clampedSize == actualSize)
         {
-            if (clampedPosition != _surfacePosition)
-            {
-                SynchronizeDialogOffsets(ownerBounds, clampedSize, clampedPosition);
-                SetSurfacePosition(clampedPosition);
-            }
-
+            SetSurfacePosition(clampedPosition);
             return;
         }
 
-        SynchronizeDialogOffsets(ownerBounds, clampedSize, clampedPosition);
         if (!MathUtils.AreClose(clampedSize.Width, actualSize.Width))
         {
             _surface.Width = clampedSize.Width;

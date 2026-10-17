@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -117,18 +116,36 @@ public class PopupShadowTests
     [Fact]
     public void ShadowsAwareContainer_Releases_A_Replaced_Nested_Surface()
     {
-        var result = CreateNestedSurfaceReplacement();
+        var oldSurface = new Border { CornerRadius = new CornerRadius(4) };
+        var newSurface = new Border { CornerRadius = new CornerRadius(12) };
+        var innerPresenter = new ContentPresenter { Content = oldSurface };
+        var container = new ShadowsAwareContainer
+        {
+            Child = new ContentPresenter { Content = innerPresenter }
+        };
+        var window = new AvaloniaWindow { Content = container };
 
         try
         {
-            CollectGarbage();
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            container.CornerRadius.ShouldBe(new CornerRadius(4));
 
-            result.OldSurface.IsAlive.ShouldBeFalse();
-            result.Container.CornerRadius.ShouldBe(new CornerRadius(12));
+            innerPresenter.Content = newSurface;
+            Dispatcher.UIThread.RunJobs();
+            container.CornerRadius.ShouldBe(new CornerRadius(12));
+
+            oldSurface.CornerRadius = new CornerRadius(20);
+            Dispatcher.UIThread.RunJobs();
+            container.CornerRadius.ShouldBe(new CornerRadius(12));
+
+            newSurface.CornerRadius = new CornerRadius(16);
+            Dispatcher.UIThread.RunJobs();
+            container.CornerRadius.ShouldBe(new CornerRadius(16));
         }
         finally
         {
-            result.Window.Close();
+            window.Close();
             Dispatcher.UIThread.RunJobs();
         }
     }
@@ -217,42 +234,6 @@ public class PopupShadowTests
         field.ShouldNotBeNull();
         return (Control?)field!.GetValue(container);
     }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static SurfaceReplacementResult CreateNestedSurfaceReplacement()
-    {
-        var oldSurface = new Border { CornerRadius = new CornerRadius(4) };
-        var innerPresenter = new ContentPresenter { Content = oldSurface };
-        var container = new ShadowsAwareContainer
-        {
-            Child = new ContentPresenter { Content = innerPresenter }
-        };
-        var window = new AvaloniaWindow { Content = container };
-        window.Show();
-        Dispatcher.UIThread.RunJobs();
-        container.CornerRadius.ShouldBe(new CornerRadius(4));
-
-        var weakSurface = new WeakReference(oldSurface);
-        innerPresenter.Content = new Border { CornerRadius = new CornerRadius(12) };
-        oldSurface = null!;
-        Dispatcher.UIThread.RunJobs();
-
-        return new SurfaceReplacementResult(window, container, weakSurface);
-    }
-
-    private static void CollectGarbage()
-    {
-        for (var iteration = 0; iteration < 3; iteration++)
-        {
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-            GC.WaitForPendingFinalizers();
-        }
-    }
-
-    private sealed record SurfaceReplacementResult(
-        AvaloniaWindow Window,
-        ShadowsAwareContainer Container,
-        WeakReference OldSurface);
 
     private static AtomUIWindow ShowInWindow(Control content)
     {

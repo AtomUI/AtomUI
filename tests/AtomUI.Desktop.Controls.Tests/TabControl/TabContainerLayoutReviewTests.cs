@@ -51,8 +51,14 @@ public class TabContainerLayoutReviewTests
         var owner = CreateCardOwner(strip, placement, itemCount: 3);
         owner.Width = 900;
         owner.Height = 600;
-        if (owner is CardTabControl tabs) tabs.TabAlignmentCenter = true;
-        else ((CardTabStrip)owner).TabAlignmentCenter = true;
+        if (owner is CardTabControl tabs)
+        {
+            tabs.TabAlignmentCenter = true;
+        }
+        else
+        {
+            ((CardTabStrip)owner).TabAlignmentCenter = true;
+        }
 
         ShowInWindow(owner, window =>
         {
@@ -79,6 +85,8 @@ public class TabContainerLayoutReviewTests
                 buttonBounds.Bottom.ShouldBeLessThanOrEqualTo(panel.Bounds.Height + 0.5);
             }
 
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
             var buttonPoint = addButton.TranslatePoint(new Point(addButton.Bounds.Width / 2,
                 addButton.Bounds.Height / 2), window).ShouldNotBeNull();
             var hit = window.InputHitTest(buttonPoint) as Visual;

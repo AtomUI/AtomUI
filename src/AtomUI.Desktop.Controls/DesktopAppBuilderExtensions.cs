@@ -1,5 +1,8 @@
 using System.Runtime.CompilerServices;
+using AtomUI.Reflection;
 using Avalonia;
+using Avalonia.Logging;
+using Avalonia.Threading;
 
 namespace AtomUI;
 
@@ -118,9 +121,25 @@ public static class DesktopAppBuilderExtensions
         });
 #pragma warning restore AVALONIA_WAYLAND_FORCE_CSD
 
-        return builder.UseWayland()
-                      .UseSkia()
-                      .UseHarfBuzz();
+        builder.UseWayland()
+               .UseSkia()
+               .UseHarfBuzz();
+
+        var initializeWayland = builder.WindowingSubsystemInitializer!;
+        return builder.UseWindowingSubsystem(() =>
+        {
+            initializeWayland();
+
+            // Wayland creates Dispatcher before its worker finishes, then installs a new backend.
+            // Share the original clock before platform-ready callbacks or application startup run.
+            if (!Dispatcher.UIThread.TryShareManagedClock())
+            {
+                Logger.TryGet(LogEventLevel.Warning, AtomUILogArea.System)?.Log(
+                    typeof(DesktopAppBuilderExtensions),
+                    "Wayland shared clock compatibility fix was not applied: " +
+                    "only the Avalonia 12.1.3 Managed dispatcher implementation is supported.");
+            }
+        }, builder.WindowingSubsystemName ?? "Wayland");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

@@ -192,7 +192,13 @@ Overlay presenter 在外层 Surface 与内容层的关闭任务全部完成后�
 
 `DialogSurface` 根据当前 Header、Footer、有效按钮和 `DialogToken.MinWidth/MinHeight` 正文 viewport 基线形成 structural minimum。presenter 将 structural minimum、requested `HostMin/Max` 与 host capacity 交给共享纯值解析职责，得到 normal 状态的 effective constraints。
 
-Overlay 直接把 effective constraints 应用于 Surface，并在 resize handler 中只读取缓存约束；handle 捕获 pointer，release 与 capture lost 复用同一个幂等结束路径。自然轴被新约束 clamp 后会提交为 presenter-owned actual geometry，后续放宽约束不回落。Window presenter 按当前 Template 模式把 Surface constraints 加回 chrome：managed/drawn title bar 使用 padding、frame shadow 与有效标题栏高度，CSD 使用 padding 与 `WindowDecorationMargin`；CSD、visible frame、screen、DPI 与相关 frame metrics 变化都会重新解析。Window 的 `CanMaximize` 由 `IsMaximizable` 与两个 `HostMax*` 组合得出，任一 finite maximum 都禁用 native maximize。Surface 的 measure invalidation 会重新比较 structural minimum，只有数值改变才通知 presenter。完整公式、maximize/restore 和 capacity 退化规则见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
+Overlay 尺寸维护必须区分 normal 按轴模式与本次 actual geometry。自然轴保留自然 Width/Height 输入，通过 Surface effective constraints 接受容量限制；owner、内容或约束变化后的实际测量结果不得反向写成该轴的定尺寸值。定尺寸轴由 finite public request 或用户 resize 形成，保留其合法尺寸，仅在越界时 clamp；不能仅凭 `Dialog.HostWidth/Height` 当前是否为 `NaN` 推断该模式。
+
+正常态直接由 `DialogSurface.Width/Height` 分别保存 `NaN` 或定尺寸输入，不额外维护一套模式标志或初始自然尺寸缓存。自动约束只 clamp finite 输入；自然轴由 Min/Max 和正常布局限制。最大化前的 `_restoreSize` 保存这两个输入而非 finite actual bounds；最大化期间的显式请求只更新快照中的对应轴。restore 重新应用约束与输入，按保留的 `Dialog.OffsetX/Y` 位置意图重新测量和放置。
+
+显式宽度/高度更新和交互 resize 只能接管对应轴，不能借完整 Surface `Size` / `Rect` 将另一自然轴一并写死。maximize 的临时容量几何与 normal 按轴模式、定尺寸值和位置意图分开保存；restore 恢复正常态模式，自然轴重新测量，不直接把旧 actual bounds 还原为两个固定尺寸。resize handle 继续捕获 pointer，release 与 capture lost 复用同一个幂等结束路径；事件处理只使用缓存约束，未接管自然轴的重新测量由正常布局执行。
+
+Window presenter 按当前 Template 模式把 Surface constraints 加回 chrome：managed/drawn title bar 使用 padding、frame shadow 与有效标题栏高度，CSD 使用 padding 与 `WindowDecorationMargin`；CSD、visible frame、screen、DPI 与相关 frame metrics 变化都会重新解析。原生 Show 前解析自然尺寸，显示后由 native actual size 驱动，不套用 Overlay 的持续自然测量模式。Window 的 `CanMaximize` 由 `IsMaximizable` 与两个 `HostMax*` 组合得出，任一 finite maximum 都禁用 native maximize。Surface 的 measure invalidation 会重新比较 structural minimum，只有数值改变才通知 presenter。完整公式、模式转换、maximize/restore 和 capacity 退化规则见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
 
 Overlay 首次 placement 完成前收到 `StructuralMinimumChanged` 时，只重新解析 constraints 和 requested size，不 clamp 尚未解析的 Surface position。首次 placement 完成后，owner 容量或结构约束变化可以 clamp actual geometry，但临时边界修正只更新 Surface position，不写回 `OffsetX` / `OffsetY`；重新 placement 时仍以原有 startup anchor 和用户偏移计算。只有用户拖动、交互 resize、显式尺寸请求或 maximize restore 等主动几何操作会同步 offsets。
 
@@ -261,6 +267,7 @@ Dialog 内容区内的 popup 沿 placement target 解析同一 Window `TopLevel`
 - mask bounds、Window visible frame、Dialog body owner bounds 和 Dialog BoxShadow extents 必须保持独立。mask 覆盖完整 layer；所有平台的 Surface 正文都可进入 managed/drawn 标题栏但不能覆盖有效 frame；BoxShadow 允许由 Window visual-layer clip 在外轮廓处裁剪。
 - Dialog 与 Drawer 共享 Window chrome suppression 的引用计数 owner，但不共享 layer、容器或 presentation 生命周期状态。
 - Surface structural minimum、requested Host constraints 和 host capacity 必须由同一纯值规则解析；Overlay 与 Window 不能分别定义默认最小尺寸语义。
+- Overlay normal 尺寸模式按轴由 presenter 独占；自动 clamp、单轴更新或 restore 不得把未接管自然轴的 `Bounds` / `DesiredSize` 当作定尺寸来源。用户已调整的尺寸不能因 public request 仍为 `NaN` 而被清除。
 - Window presenter 只能在 Surface constraints 解析完成后加回 Window chrome；live resize 热路径不能重新测量结构区域。
 - MessageBox 继续作为 Dialog 派生类，不增加平行 host/session/button cache 生命周期。
 - mask 外点关闭入口只由 `IsMaskClosable` 在 Overlay presenter 的 mask 输入路径统一门控；不引入第二条 mask 关闭路径，也不在 Session veto 层复制该判断。
@@ -276,7 +283,7 @@ Dialog 内容区内的 popup 沿 placement target 解析同一 Window `TopLevel`
 
 - `DialogSessionTests`: 状态转换、veto、forced close、异常和 presenter failure。
 - `DialogLifecycleTests`: 实例/声明式打开、取消、detach、重开、嵌套焦点和 WeakReference。
-- `OverlayDialogPresenterTests` / `DialogContentPopupLayeringTests`: mask ownership、modal/modeless 输入、栈顶路由、`IsMaskClosable` 门控、TopLevel ownership、popup/light-dismiss、chrome suppression 引用计数、完整 mask bounds、平台 body bounds、结构性最小尺寸、拖动 resize、capacity 退化、maximize/restore 和 motion。
+- `OverlayDialogPresenterTests` / `DialogContentPopupLayeringTests`: mask ownership、modal/modeless 输入、栈顶路由、`IsMaskClosable` 门控、TopLevel ownership、popup/light-dismiss、chrome suppression 引用计数、完整 mask bounds、平台 body bounds、结构性最小尺寸、拖动 resize、capacity 退化、maximize/restore 和 motion。尺寸验收还须锁定自然轴往返恢复、单轴更新/resize 隔离、maximize/restore 模式保留，以及 runtime `NaN` 不重置用户几何；具体触发条件见[宿主尺寸验证矩阵](host-sizing-design.md#111-overlay-按轴尺寸验收)。
 - `OverlayDialogPresenterCompositorMotionTests`: anchored zoom 与无锚点 fade 的 opening/closing 均不产生 UI-thread transform/opacity 帧，opening 取消在 teardown 前恢复 actor 基值。
 - `WindowDialogPresenterTests`: Opened/Closed 原生生命周期、首帧几何、原生关闭、owner close、自然尺寸、Surface/chrome constraints 换算、native resize、placement 和资源 parent。
 - `DialogButtonBoxTests` / `DialogSurfaceTests`: 有效按钮集合、template 生命周期、内容和配置。

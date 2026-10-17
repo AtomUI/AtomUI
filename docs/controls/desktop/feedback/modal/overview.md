@@ -36,7 +36,7 @@ Modal 不承担通知队列、轻量 Tooltip、Popup 菜单或业务级导航服
 | 内容 | `Title`, `TitleIcon`, `Content`, `ContentTemplate`, `DataContext` | 定义标题和任意内容对象或模板。 |
 | 打开状态 | `IsOpen`, `OpenAsync(...)` | `IsOpen` 是默认 TwoWay 的声明式意图；`OpenAsync` 表示一次完整 Session。 |
 | 展示方式 | `DialogHostType`, `IsModal`, `PlacementTarget`, `OverlayScope`, startup anchor/offset | 选择 Overlay/Window、交互模态、初始位置与 overlay 宿主作用域。直接实例化与静态 API 的水平、垂直 startup anchor 默认均为 `Center`；显式 `Custom` 时由对应 offset 决定位置。`OverlayScope` 默认 `null` 表示宿主解析到 owning TopLevel；指定后 mask 与正文尺寸限定在该作用域内（对齐上游内联模态语义），仅 Overlay 宿主有效。 |
-| 尺寸与窗口能力 | `HostWidth/Height/Min/Max`, `IsResizable`, `IsClosable`, `IsMaskClosable`, `IsDragMovable`, `IsMaximizable`, `IsMinimizable`, `IsTopmost` | 同一组 Surface 正文尺寸请求映射到 Overlay 或原生 Window。`NaN` 表示初始自然尺寸；有效最小尺寸还必须满足 Dialog 的结构性下限。`IsClosable` 控制标题栏关闭入口，`IsMaskClosable` 控制 Overlay modal mask 外点关闭入口，两者正交且默认都为 `true`。 |
+| 尺寸与窗口能力 | `HostWidth/Height/Min/Max`, `IsResizable`, `IsClosable`, `IsMaskClosable`, `IsDragMovable`, `IsMaximizable`, `IsMinimizable`, `IsTopmost` | 同一组 Surface 正文尺寸请求映射到 Overlay 或原生 Window。初次 `NaN` 选择自然尺寸；Overlay 未被显式请求或 resize 接管的自然轴持续参与布局。有效最小尺寸还必须满足 Dialog 的结构性下限。`IsClosable` 控制标题栏关闭入口，`IsMaskClosable` 控制 Overlay modal mask 外点关闭入口，两者正交且默认都为 `true`。 |
 | 操作 | `StandardButtons`, `CustomButtons`, `DefaultStandardButton`, `EscapeStandardButton`, `ButtonsConfigure` | 生成标准按钮、加入自定义按钮并配置当前有效按钮序列。 |
 | 状态与策略 | `IsLoading`, `IsConfirmLoading`, `IsFooterVisible`, `IsMotionEnabled`, `IsPinnedOpen`, `BeforeCloseAsync` | 控制加载、确认按钮 loading、Footer、motion、预览钉住和关闭前校验。 |
 | 结果 | `Result`, `Accept()`, `Reject()`, `Done(...)` | 所有关闭来源归一为结果与 `DialogCloseReason`。 |
@@ -143,8 +143,9 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 - Dialog 内容、placement target 与 owning Window 必须保持在同一 `TopLevel`；Dialog 使用 `OverlayLayer`，内容弹层使用更高的 `PopupOverlayLayer`，并保留中间的 light-dismiss 层。
 - Window 外轮廓只能由现有 `WindowVisualLayerClip` 统一裁剪；Overlay Dialog 不单独复制 frame shadow margin 或 CornerRadius。
 - Overlay 与 Window 必须使用同一套 Surface 正文尺寸解析。Window 只允许在 presenter 边界加回 chrome；不能把 Surface `HostMin/Max` 直接解释为包含标题栏和 frame 的 Window client constraints。
-- 用户 resize、runtime `HostMin/Max`、主题或宿主容量变化不得无条件重置已调整尺寸；actual size 只有越出最新有效区间时才被 clamp。
+- 用户 resize、runtime `HostMin/Max`、主题或宿主容量变化不得无条件重置已调整的定尺寸；其 actual size 只有越出最新有效区间时才被 clamp。Overlay 自然轴按最新约束测量，自动受限不改变尺寸模式。
 - owner 容量变化对 Overlay Surface 的边界约束不改变用户位置偏移；未拖动的居中 Dialog 随最新 owner bounds 重新居中，已拖动 Dialog 在容量恢复后保留用户偏移。
+- Overlay 单轴显式请求、交互 resize 和 maximize/restore 必须保留未被接管的自然轴；不能将当前实际矩形中的两轴同时固化成尺寸意图。
 - 不重新引入同步 DispatcherFrame、callback close、隐藏 MessageBox Dialog 或分离的 Popup mask。
 - 关闭入口开关保持正交：`IsClosable` 管标题栏 X，`IsMaskClosable` 管 Overlay modal mask 外点，互不推导；`IsMaskClosable=false` 时 mask 外点不产生 `HostCloseRequest`。
 
@@ -171,7 +172,9 @@ Created -> Opening -> Open -> ClosePending -> Closing -> Closed
 
 `HostWidth/Height/Min/Max` 统一描述 `DialogSurface` 正文 DIP。Dialog 以 Header、Footer 和 `DialogToken.MinWidth/MinHeight` 正文 viewport 基线解析结构性最小尺寸，再与调用方 min/max 和当前 host capacity 合成 effective constraints。
 
-normal 状态的 Overlay 直接应用 Surface constraints；Window presenter 把 Surface constraints 加回当前 Window chrome 后交给 native resize。`HostWidth/Height=NaN` 只选择初始自然尺寸，用户 resize 不反向写回 public request。Overlay maximize 临时使用 host capacity；原生 Window 任一轴配置 finite `HostMax*` 时禁用 native maximize，只有两轴都为默认 `PositiveInfinity` 才允许平台窗口铺满 working area。完整公式、失效条件、宿主策略和验证矩阵见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
+normal 状态的 Overlay 按宽、高分别维护自然轴或定尺寸轴。初次 `HostWidth/Height=NaN` 选择自然模式；owner 容量、内容或约束变化只改变该自然轴的实际测量结果，不把临时收缩固定下来。finite 尺寸请求或交互 resize 只接管对应轴，用户 resize 不反向写回 public request。运行时设置 `NaN` 不强制清除已经形成的定尺寸。
+
+Overlay maximize 临时使用 host capacity，restore 恢复正常态的按轴模式和用户位置偏移，自然轴按恢复时的约束重新测量。Window presenter 在原生 Show 前解析初始自然尺寸，显示后保持 native actual size 与原生 resize 策略，并在 Surface constraints 上加回当前 Window chrome。原生 Window 任一轴配置 finite `HostMax*` 时禁用 native maximize，只有两轴都为默认 `PositiveInfinity` 才允许平台窗口铺满 working area。完整公式、失效条件、宿主策略和验证矩阵见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
 
 ### 8.4 Overlay 窗口几何
 

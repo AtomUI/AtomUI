@@ -20,7 +20,7 @@ public sealed class OverlayDialogOwnerResizeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Non_draggable_dialog_stays_centered_through_owner_resize(bool dark)
+    public void Non_draggable_natural_dialog_restores_its_viewport_and_center_through_owner_resize(bool dark)
     {
         Dispatcher.UIThread.Invoke(() =>
         {
@@ -40,13 +40,25 @@ public sealed class OverlayDialogOwnerResizeTests
                 Text = "unchanged draft",
                 Height = 32
             };
+            var scrollViewer = new Avalonia.Controls.ScrollViewer
+            {
+                VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+                Content = new StackPanel
+                {
+                    Children = { editor, new Border { Height = 1200 } }
+                }
+            };
+            var footer = new Border { Height = 32 };
             var content = new Avalonia.Controls.Grid
             {
-                Height = 300,
-                Children = { editor }
+                RowDefinitions = new RowDefinitions("*,Auto"),
+                Margin = new Thickness(8),
+                Children = { scrollViewer, footer }
             };
+            Avalonia.Controls.Grid.SetRow(footer, 1);
             var dialog = new AtomUI.Desktop.Controls.Dialog
             {
+                Title = "Natural-size owner resize",
                 Content = content,
                 IsModal = true,
                 IsMaskClosable = false,
@@ -55,7 +67,9 @@ public sealed class OverlayDialogOwnerResizeTests
                 IsResizable = false,
                 IsFooterVisible = false,
                 HostWidth = 760,
-                HostHeight = 500
+                HostMaxWidth = 760,
+                HostHeight = double.NaN,
+                HostMaxHeight = 796
             };
             var presenter = new OverlayDialogPresenter(dialog, placementTarget);
 
@@ -67,7 +81,9 @@ public sealed class OverlayDialogOwnerResizeTests
                 Pump(owner);
 
                 content.Bounds.Width.ShouldBeGreaterThan(0);
-                content.Bounds.Height.ShouldBe(300);
+                var originalViewportHeight = scrollViewer.Viewport.Height;
+                originalViewportHeight.ShouldBeGreaterThan(0);
+                scrollViewer.Extent.Height.ShouldBeGreaterThan(originalViewportHeight);
                 editor.Focus().ShouldBeTrue();
 
                 foreach (var size in new[]
@@ -83,6 +99,16 @@ public sealed class OverlayDialogOwnerResizeTests
                     Pump(owner);
 
                     owner.ClientSize.ShouldBe(size);
+                    presenter.Surface.Height.ShouldBe(double.NaN);
+                    footer.Bounds.Height.ShouldBe(32);
+                    if (size.Height == 820)
+                    {
+                        scrollViewer.Viewport.Height.ShouldBe(originalViewportHeight, 1);
+                    }
+                    else
+                    {
+                        scrollViewer.Viewport.Height.ShouldBeLessThan(originalViewportHeight);
+                    }
                     var center = content.TranslatePoint(
                         new Point(content.Bounds.Width / 2, 0), owner).ShouldNotBeNull().X;
                     center.ShouldBe(owner.ClientSize.Width / 2, 1);

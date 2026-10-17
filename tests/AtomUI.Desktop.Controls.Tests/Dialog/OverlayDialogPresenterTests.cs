@@ -610,7 +610,7 @@ public class OverlayDialogPresenterTests
     }
 
     [Fact]
-    public void Runtime_Minimum_Clamp_Commits_A_Natural_Axis_As_Actual_Size()
+    public void Runtime_Minimum_Clamp_Preserves_The_Natural_Axis()
     {
         RunOnUIThread(() =>
         {
@@ -634,12 +634,13 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
 
                 fixture.Presenter.Surface.Bounds.Width.ShouldBe(clampedWidth);
-                fixture.Presenter.Surface.Width.ShouldBe(clampedWidth);
+                fixture.Presenter.Surface.Width.ShouldBe(double.NaN);
 
                 fixture.Dialog.HostMinWidth = 0;
                 Dispatcher.UIThread.RunJobs();
 
-                fixture.Presenter.Surface.Bounds.Width.ShouldBe(clampedWidth);
+                fixture.Presenter.Surface.Bounds.Width.ShouldBe(naturalWidth);
+                fixture.Presenter.Surface.Width.ShouldBe(double.NaN);
             }
             finally
             {
@@ -826,13 +827,14 @@ public class OverlayDialogPresenterTests
                 IsMotionEnabled = false,
                 IsResizable = true,
                 IsMaximizable = true,
+                Content = new Border { Width = 180, Height = 70 },
                 HostWidth = 320,
-                HostHeight = 220
+                HostHeight = double.NaN
             });
 
             try
             {
-                ResizeSurface(fixture, ResizeHandleLocation.SouthEast, new Vector(45, 35));
+                ResizeSurface(fixture, ResizeHandleLocation.East, new Vector(45, 0));
                 var resizedBounds = GetSurfaceBodyBounds(fixture.Presenter.Surface, fixture.Presenter);
                 var maximizeButton = fixture.Presenter.Surface.Header.ShouldNotBeNull()
                                             .GetVisualDescendants()
@@ -845,6 +847,8 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
 
                 GetSurfaceBodyBounds(fixture.Presenter.Surface, fixture.Presenter).ShouldBe(resizedBounds);
+                fixture.Presenter.Surface.Width.ShouldBe(resizedBounds.Width);
+                fixture.Presenter.Surface.Height.ShouldBe(double.NaN);
             }
             finally
             {

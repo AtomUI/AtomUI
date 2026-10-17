@@ -2,6 +2,18 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-17
+
+- Design
+  - 明确 Overlay 正常态的按轴自然/定尺寸模型：宿主容量、约束或内容变化只影响自然轴的当前布局结果，不将自动 clamp 固化为定尺寸意图。
+  - 明确单轴显式请求、交互 resize 和 maximize/restore 的接管边界；保留 runtime `NaN` 不强制重置用户尺寸，以及原生 Window 显示后的实际尺寸策略。
+- Fix
+  - 修复 #499：Overlay Dialog 的自然轴在 owner 容量或约束收紧后继续保留自然测量输入，容量恢复时重新展开，不再将自动 clamp 的 actual size 写成固定尺寸。
+  - 显式尺寸请求与交互 resize 只接管对应轴；maximize/restore 保存并恢复 normal 按轴输入，保留另一自然轴及位置偏移意图。
+- Docs
+  - 同步宿主尺寸设计、公共总览与内部状态所有权约束，扩展自然高度往返、跨轴更新、restore、焦点和滚动布局的验收矩阵。
+  - 本次完成 macOS 原生窗口中的真实 owner resize、滚轮、东侧 resize 和 maximize/restore 视觉验收；其他平台未在本次执行。
+
 ## 2026-10-16
 
 - Fix

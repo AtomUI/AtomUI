@@ -24,6 +24,20 @@ namespace AtomUI.Desktop.Controls;
 internal sealed class OverlayDialogPresenter : ContentControl,
                                                IDialogPresenter
 {
+    #region 公共属性定义
+
+    public IInputElement FocusScope => _surface;
+
+    #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<DialogPresenterCloseRequestedEventArgs>? CloseRequested;
+
+    #endregion
+
+    #region 内部属性定义
+
     internal static readonly StyledProperty<bool> IsModalProperty =
         Dialog.IsModalProperty.AddOwner<OverlayDialogPresenter>();
 
@@ -60,6 +74,41 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         set => SetValue(MotionDurationProperty, value);
     }
 
+    #endregion
+
+    #region 内部协作 API
+
+    internal DialogSurface Surface => _surface;
+
+    internal void UpdateLayerBounds(Size layerSize)
+    {
+        if (layerSize.Width <= 0 || layerSize.Height <= 0)
+        {
+            return;
+        }
+
+        var visibleFrameBounds = ResolveOwnerBounds(layerSize);
+        ApplyMaskBounds(layerSize);
+        if (_surface.IsDialogMaximized)
+        {
+            ApplyMaximizedBounds(ResolveDialogBodyOwnerBounds(visibleFrameBounds));
+            return;
+        }
+
+        var ownerBounds = ResolveDialogBodyOwnerBounds(visibleFrameBounds);
+        ApplyNormalSurfaceSizeConstraints(ownerBounds);
+        UpdateSurfacePlacement(ownerBounds);
+    }
+
+    internal bool TryInvokeStandardButton(Key key)
+    {
+        return _surface.TryInvokeStandardButton(key);
+    }
+
+    #endregion
+
+    private static readonly TimeSpan CompositionMotionCompletionSlack = TimeSpan.FromMilliseconds(32);
+
     private readonly Dialog _dialog;
     private readonly Control _placementTarget;
     private readonly DialogSurface _surface;
@@ -80,16 +129,10 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private Point _surfacePosition;
     private DialogSizeConstraints _normalSizeConstraints;
     private Rect? _resizeOriginBounds;
-    private Rect? _restoreBounds;
+    // Normal Width/Height own each axis' sizing intent: NaN stays natural until explicitly sized.
+    // Maximization temporarily replaces those inputs, so retain them rather than actual bounds.
+    private Size? _restoreSize;
     private bool _isInitialSizeResolved;
-
-    private static readonly TimeSpan CompositionMotionCompletionSlack = TimeSpan.FromMilliseconds(32);
-
-    internal DialogSurface Surface => _surface;
-
-    public event EventHandler<DialogPresenterCloseRequestedEventArgs>? CloseRequested;
-
-    public IInputElement FocusScope => _surface;
 
     internal OverlayDialogPresenter(Dialog dialog, Control placementTarget)
     {
@@ -601,36 +644,16 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _drawnChromeOverlaySuppression = null;
     }
 
-    internal void UpdateLayerBounds(Size layerSize)
-    {
-        if (layerSize.Width <= 0 || layerSize.Height <= 0)
-        {
-            return;
-        }
-
-        var visibleFrameBounds = ResolveOwnerBounds(layerSize);
-        ApplyMaskBounds(layerSize);
-        if (_surface.IsDialogMaximized)
-        {
-            ApplyMaximizedBounds(ResolveDialogBodyOwnerBounds(visibleFrameBounds));
-            return;
-        }
-
-        var ownerBounds = ResolveDialogBodyOwnerBounds(visibleFrameBounds);
-        ApplyNormalSurfaceSizeConstraints(ownerBounds);
-        UpdateSurfacePlacement(ownerBounds);
-    }
-
     private void ApplyNormalSurfaceSizeConstraints(Rect ownerBounds)
     {
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
         if (!_isInitialSizeResolved)
         {
-            _surface.Width = ResolveInitialSize(
+            _surface.Width = ClampExplicitSize(
                 _dialog.HostWidth,
                 _normalSizeConstraints.MinWidth,
                 _normalSizeConstraints.MaxWidth);
-            _surface.Height = ResolveInitialSize(
+            _surface.Height = ClampExplicitSize(
                 _dialog.HostHeight,
                 _normalSizeConstraints.MinHeight,
                 _normalSizeConstraints.MaxHeight);
@@ -672,12 +695,12 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             return;
         }
 
-        if (!MathUtils.AreClose(clampedSize.Width, actualSize.Width))
+        if (double.IsFinite(_surface.Width) && !MathUtils.AreClose(clampedSize.Width, actualSize.Width))
         {
             _surface.Width = clampedSize.Width;
         }
 
-        if (!MathUtils.AreClose(clampedSize.Height, actualSize.Height))
+        if (double.IsFinite(_surface.Height) && !MathUtils.AreClose(clampedSize.Height, actualSize.Height))
         {
             _surface.Height = clampedSize.Height;
         }
@@ -847,11 +870,9 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         return new Rect(_surfacePosition, ResolveActualSurfaceSize());
     }
 
-    private void ApplyNormalSurfaceGeometry(Rect ownerBounds, Size size, Point position)
+    private void ApplyNormalSurfacePlacement(Rect ownerBounds, Size size, Point position)
     {
         SynchronizeDialogOffsets(ownerBounds, size, position);
-        _surface.Width = size.Width;
-        _surface.Height = size.Height;
         SetSurfacePosition(position);
     }
 
@@ -876,15 +897,13 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             return;
         }
 
-        if (_surface.IsDialogMaximized && _restoreBounds is { } restoreBounds)
+        if (_surface.IsDialogMaximized && _restoreSize is { } restoreSize)
         {
-            _restoreBounds = new Rect(
-                restoreBounds.Position,
-                new Size(Math.Max(0, value), restoreBounds.Height));
+            _restoreSize = new Size(Math.Max(0, value), restoreSize.Height);
             return;
         }
 
-        ApplyRequestedWidth(value);
+        ApplyRequestedSize(new Size(value, _surface.Height));
     }
 
     private void HandleHostHeightChanged(double value)
@@ -894,18 +913,16 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             return;
         }
 
-        if (_surface.IsDialogMaximized && _restoreBounds is { } restoreBounds)
+        if (_surface.IsDialogMaximized && _restoreSize is { } restoreSize)
         {
-            _restoreBounds = new Rect(
-                restoreBounds.Position,
-                new Size(restoreBounds.Width, Math.Max(0, value)));
+            _restoreSize = new Size(restoreSize.Width, Math.Max(0, value));
             return;
         }
 
-        ApplyRequestedHeight(value);
+        ApplyRequestedSize(new Size(_surface.Width, value));
     }
 
-    private void ApplyRequestedWidth(double requestedWidth)
+    private void ApplyRequestedSize(Size requestedSize)
     {
         if (_dialogLayer is null || !_isInitialSizeResolved)
         {
@@ -914,29 +931,15 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
         var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
-        var actualBounds = ResolveActualSurfaceBounds();
-        var requestedSize = new Size(
-            Math.Clamp(requestedWidth, _normalSizeConstraints.MinWidth, _normalSizeConstraints.MaxWidth),
-            actualBounds.Height);
-        var position = ConstrainAndRoundSurfacePosition(ownerBounds, requestedSize, actualBounds.Position);
-        ApplyNormalSurfaceGeometry(ownerBounds, requestedSize, position);
-    }
-
-    private void ApplyRequestedHeight(double requestedHeight)
-    {
-        if (_dialogLayer is null || !_isInitialSizeResolved)
-        {
-            return;
-        }
-
-        var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
-        ResolveNormalSurfaceSizeConstraints(ownerBounds);
-        var actualBounds = ResolveActualSurfaceBounds();
-        var requestedSize = new Size(
-            actualBounds.Width,
-            Math.Clamp(requestedHeight, _normalSizeConstraints.MinHeight, _normalSizeConstraints.MaxHeight));
-        var position = ConstrainAndRoundSurfacePosition(ownerBounds, requestedSize, actualBounds.Position);
-        ApplyNormalSurfaceGeometry(ownerBounds, requestedSize, position);
+        _surface.Width = ClampExplicitSize(
+            requestedSize.Width, _normalSizeConstraints.MinWidth, _normalSizeConstraints.MaxWidth);
+        _surface.Height = ClampExplicitSize(
+            requestedSize.Height, _normalSizeConstraints.MinHeight, _normalSizeConstraints.MaxHeight);
+        // An explicit request may reflow the other natural axis before placement is resolved.
+        _surface.Measure(ownerBounds.Size);
+        var surfaceSize = _surface.DesiredSize;
+        var position = ConstrainAndRoundSurfacePosition(ownerBounds, surfaceSize, _surfacePosition);
+        ApplyNormalSurfacePlacement(ownerBounds, surfaceSize, position);
     }
 
     private Rect ResolveCurrentDialogBodyOwnerBounds()
@@ -961,7 +964,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         ApplyNormalSurfaceSizeConstraints(ownerBounds);
     }
 
-    private static double ResolveInitialSize(double value, double min, double max)
+    private static double ClampExplicitSize(double value, double min, double max)
     {
         return double.IsFinite(value) ? Math.Clamp(value, min, max) : double.NaN;
     }
@@ -1025,7 +1028,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     private void HandleMaximizeRequested(object? sender, EventArgs e)
     {
-        _restoreBounds = ResolveActualSurfaceBounds();
+        _restoreSize = new Size(_surface.Width, _surface.Height);
         _resizeOriginBounds = null;
         _surface.IsDialogMaximized = true;
         var visibleFrameBounds = ResolveOwnerBounds(_dialogLayer?.AvailableSize ?? Bounds.Size);
@@ -1038,14 +1041,13 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.ClearValue(TemplatedControl.CornerRadiusProperty);
         var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
-        var restoreBounds = _restoreBounds ?? ResolveActualSurfaceBounds();
-        var restoreSize = _normalSizeConstraints.Clamp(restoreBounds.Size);
-        var restorePosition = ConstrainAndRoundSurfacePosition(
-            ownerBounds,
-            restoreSize,
-            restoreBounds.Position);
-        ApplyNormalSurfaceGeometry(ownerBounds, restoreSize, restorePosition);
-        _restoreBounds = null;
+        var restoreSize = _restoreSize ?? new Size(_surface.Width, _surface.Height);
+        _surface.Width = ClampExplicitSize(
+            restoreSize.Width, _normalSizeConstraints.MinWidth, _normalSizeConstraints.MaxWidth);
+        _surface.Height = ClampExplicitSize(
+            restoreSize.Height, _normalSizeConstraints.MinHeight, _normalSizeConstraints.MaxHeight);
+        _restoreSize = null;
+        UpdateSurfacePlacement(ownerBounds);
     }
 
     private void HandleResizeStarted(object? sender, OverlayDialogResizeEventArgs e)
@@ -1108,12 +1110,23 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             y = originBounds.Bottom - height;
         }
 
+        // Only a changed resize axis takes over natural sizing. An already fixed axis still
+        // follows the cumulative drag back towards its origin; unrelated axes retain their input.
+        var changesWidth = (e.Location & (ResizeHandleLocation.East | ResizeHandleLocation.West)) != 0;
+        var changesHeight = (e.Location & (ResizeHandleLocation.North | ResizeHandleLocation.South)) != 0;
+        if (changesWidth && (double.IsFinite(_surface.Width) || !MathUtils.AreClose(width, originBounds.Width)))
+        {
+            _surface.Width = width;
+        }
+
+        if (changesHeight && (double.IsFinite(_surface.Height) || !MathUtils.AreClose(height, originBounds.Height)))
+        {
+            _surface.Height = height;
+        }
+
         var surfaceSize = new Size(width, height);
-        var position = ConstrainAndRoundSurfacePosition(
-            ownerBounds,
-            surfaceSize,
-            new Point(x, y));
-        ApplyNormalSurfaceGeometry(ownerBounds, surfaceSize, position);
+        var position = ConstrainAndRoundSurfacePosition(ownerBounds, surfaceSize, new Point(x, y));
+        ApplyNormalSurfacePlacement(ownerBounds, surfaceSize, position);
     }
 
     private void HandleResizeCompleted(object? sender, OverlayDialogResizeEventArgs e)
@@ -1219,8 +1232,4 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.Focus(NavigationMethod.Pointer);
     }
 
-    internal bool TryInvokeStandardButton(Key key)
-    {
-        return _surface.TryInvokeStandardButton(key);
-    }
 }

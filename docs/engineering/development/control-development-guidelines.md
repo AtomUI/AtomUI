@@ -205,6 +205,7 @@ Theme 中增加 `Custom` selector。
 无限动画、Compositor 循环动画、自动播放定时器、倒计时刷新和其他周期性视觉工作必须以控件的有效可见性为运行边界。有效可见性同时包含控件自身和当前 Visual 祖先链；只检查实例 `IsVisible` 不能覆盖隐藏页面、隐藏容器或切页后仍保留在 VisualTree 中的场景。
 
 - 手工调用 `Animation.RunAsync` 的持续 Avalonia 动画必须显式使用 `PlaybackBehavior.OnlyIfVisible`。不能依赖默认 `Auto`，因为手工启动动画的默认语义不会因有效不可见而暂停。
+- 手工调用 `Animation.RunAsync` 的动画禁止使用 `IterationCount.Infinite`：Avalonia 会返回 faulted Task（`Looping animations must not use the Run method.`），无人观察时会在 GC 阶段触发 `TaskScheduler.UnobservedTaskException`。单实例持续动画应声明为 owner 私有的样式动画（`Style.Animations`，target 选模板叶子节点以避免样式作用域级联）；确需循环调用时使用有限迭代次数并观察返回的 Task。
 - Compositor 的 `AnimationIterationBehavior.Forever` 动画和 `DispatcherTimer` 不会自动遵守控件有效可见性。owner 必须跟踪自身及 Visual 祖先链的可见性，在有效不可见时停止，在恢复可见时按控件语义重新启动。
 - 暂停与恢复必须保持业务同步。纯装饰动画可以从初始状态重启；自动播放进度等与定时器耦合的状态必须和计时 owner 同步重置或恢复；基于绝对时间的统计值必须在恢复时先以当前时间重算，再继续周期刷新。
 - 可见性订阅、animation cancellation、Compositor target 和 timer handler 必须由启动持续工作的控件持有，并在 detach、unload、re-template 或功能关闭的对应路径释放。

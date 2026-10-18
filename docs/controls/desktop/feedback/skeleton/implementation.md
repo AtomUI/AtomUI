@@ -157,7 +157,7 @@ Skeleton 的交互事件应从输入源收敛到控件级语义事件：
 - `SkeletonLine` 按最终内容盒解析 `LineWidth`：像素值作为上限，百分比相对于最终宽度计算；内部占位层使用最终高度，
   不计入外部 Margin。`LineWidth` 变化使测量失效，确保运行时修改能够更新布局。
 
-Active shimmer 使用单个无限 Avalonia `Animation` 驱动。该动画必须显式采用 `PlaybackBehavior.OnlyIfVisible`，使 Skeleton 自身或任一 Visual 祖先不可见时暂停时钟；重新可见后由 Avalonia 恢复当前动画，不为每次可见性变化重建动画对象。
+Active shimmer 由挂在模板叶子节点 `PART_ActiveAnimationLayer` 上的样式动画（`Style.Animations`）驱动，图层 `Background` 由动画直接写入。不得改回在控件上手工调用 `Animation.RunAsync`：Avalonia 的 `RunAsync` 禁止 `IterationCount.Infinite`（返回 faulted Task，未观察时会在 GC 阶段触发 `TaskScheduler.UnobservedTaskException`），样式动画是 Avalonia 公开 API 中唯一原生支持 Infinite 且不创建 Task 的单实例持续动画路径。动画必须显式采用 `PlaybackBehavior.OnlyIfVisible`，使 Skeleton 自身或任一 Visual 祖先不可见时暂停时钟；重新可见后由 Avalonia 恢复当前动画，不为每次可见性变化重建动画对象。动画 target 必须是模板叶子节点而非控件自身，避免样式作用域级联到嵌套的 Skeleton 子控件。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 

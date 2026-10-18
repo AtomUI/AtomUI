@@ -28,7 +28,6 @@
                             IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
                     <Border Name="PART_ActiveAnimationLayer"
                             Classes.semantic-content="True"
-                            Background="{TemplateBinding AnimationLayerFill}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"

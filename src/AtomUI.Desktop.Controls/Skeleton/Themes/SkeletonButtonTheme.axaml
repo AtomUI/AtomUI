@@ -17,7 +17,6 @@
                             Height="{TemplateBinding Height}"
                             MinWidth="{TemplateBinding MinWidth}"
                             HorizontalAlignment="Left"
-                            Background="{TemplateBinding AnimationLayerFill}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"

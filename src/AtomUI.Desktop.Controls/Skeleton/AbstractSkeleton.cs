@@ -53,10 +53,7 @@ public abstract class AbstractSkeleton : TemplatedControl
     
     internal static readonly StyledProperty<IBrush?> LoadingBackgroundEndProperty =
         AvaloniaProperty.Register<AbstractSkeleton, IBrush?>(nameof(LoadingBackgroundEnd));
-    
-    internal static readonly StyledProperty<IBrush?> AnimationLayerFillProperty =
-        AvaloniaProperty.Register<AbstractSkeleton, IBrush?>(nameof(AnimationLayerFill));
-    
+
     internal IBrush? LoadingBackgroundStart
     {
         get => GetValue(LoadingBackgroundStartProperty);
@@ -74,12 +71,6 @@ public abstract class AbstractSkeleton : TemplatedControl
         get => GetValue(LoadingBackgroundEndProperty);
         set => SetValue(LoadingBackgroundEndProperty, value);
     }
-
-    internal IBrush? AnimationLayerFill
-    {
-        get => GetValue(AnimationLayerFillProperty);
-        set => SetValue(AnimationLayerFillProperty, value);
-    }
     #endregion
 
     private static readonly Easing DefaultActiveMotionEasing = new SplineEasing
@@ -91,8 +82,8 @@ public abstract class AbstractSkeleton : TemplatedControl
     };
     
     private Animation? _animation;
-    private CancellationTokenSource? _animationCancellationTokenSource;
-    private Control? _activeAnimationLayer;
+    private Style? _activeAnimationStyle;
+    private Border? _activeAnimationLayer;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -126,7 +117,8 @@ public abstract class AbstractSkeleton : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _activeAnimationLayer = e.NameScope.Find<Control>("PART_ActiveAnimationLayer");
+        StopActiveAnimation();
+        _activeAnimationLayer = e.NameScope.Find<Border>("PART_ActiveAnimationLayer");
         UpdateActiveAnimationState();
     }
 
@@ -138,34 +130,31 @@ public abstract class AbstractSkeleton : TemplatedControl
             return;
         }
 
-        if (_animationCancellationTokenSource is not null)
+        if (_activeAnimationStyle is not null)
         {
             return;
         }
 
         _animation ??= BuildActiveAnimation();
-        SetCurrentValue(AnimationLayerFillProperty, LoadingBackgroundStart);
 
-        _animationCancellationTokenSource = new CancellationTokenSource();
-        var cancellationTokenSource = _animationCancellationTokenSource;
-        var animation               = _animation;
-        Dispatcher.InvokeAsync(async () =>
-        {
-            try
-            {
-                await animation.RunAsync(this, cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
-            {
-            }
-        });
+        // Avalonia 的 Animation.RunAsync 禁止 IterationCount.Infinite（返回 faulted Task，
+        // 未观察时会在 GC 阶段以 TaskScheduler.UnobservedTaskException 爆发）。
+        // 单实例持续动画必须由样式动画承载：样式动画原生支持 Infinite，且不创建 Task。
+        var animationStyle = new Style(selector => selector.Is<Border>());
+        animationStyle.Animations.Add(_animation);
+        _activeAnimationLayer!.Styles.Add(animationStyle);
+        _activeAnimationStyle = animationStyle;
     }
 
     protected void StopActiveAnimation()
     {
-        _animationCancellationTokenSource?.Cancel();
-        _animationCancellationTokenSource?.Dispose();
-        _animationCancellationTokenSource = null;
+        if (_activeAnimationStyle is null)
+        {
+            return;
+        }
+
+        _activeAnimationLayer?.Styles.Remove(_activeAnimationStyle);
+        _activeAnimationStyle = null;
     }
 
     private void UpdateActiveAnimationState()
@@ -182,7 +171,7 @@ public abstract class AbstractSkeleton : TemplatedControl
 
     private void RestartActiveAnimation()
     {
-        var shouldRestart = _animationCancellationTokenSource is not null;
+        var shouldRestart = _activeAnimationStyle is not null;
         StopActiveAnimation();
         _animation = null;
         if (shouldRestart)
@@ -203,17 +192,17 @@ public abstract class AbstractSkeleton : TemplatedControl
             {
                 new KeyFrame
                 {
-                    Setters = { new Setter(AnimationLayerFillProperty, LoadingBackgroundStart) },
+                    Setters = { new Setter(Border.BackgroundProperty, LoadingBackgroundStart) },
                     Cue     = new Cue(0.0d)
                 },
                 new KeyFrame
                 {
-                    Setters = { new Setter(AnimationLayerFillProperty, LoadingBackgroundMiddle) },
+                    Setters = { new Setter(Border.BackgroundProperty, LoadingBackgroundMiddle) },
                     Cue     = new Cue(0.5d)
                 },
                 new KeyFrame
                 {
-                    Setters = { new Setter(AnimationLayerFillProperty, LoadingBackgroundEnd) },
+                    Setters = { new Setter(Border.BackgroundProperty, LoadingBackgroundEnd) },
                     Cue     = new Cue(1.0d)
                 }
             }

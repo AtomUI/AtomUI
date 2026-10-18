@@ -2,6 +2,11 @@
 
 本文档记录 Skeleton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-18
+
+- Fixed
+  - Drive the active shimmer with an owner-scoped style animation on the template `PART_ActiveAnimationLayer`, removing the `Animation.RunAsync` + `IterationCount.Infinite` path that raised `TaskScheduler.UnobservedTaskException` during GC.
+
 ## 2026-10-03
 
 - Fixed

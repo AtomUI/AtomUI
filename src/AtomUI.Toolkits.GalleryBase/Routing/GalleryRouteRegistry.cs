@@ -28,6 +28,13 @@ public sealed class GalleryRouteRegistry
 
     public IReadOnlyList<GalleryRouteDescriptor> Routes => _orderedRoutesView;
 
+    public void Map(GalleryRouteDescriptor route)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        EnsureMutable();
+        AddDescriptor(route);
+    }
+
     public void Map<TViewModel, TView>(EntityKey routeKey, Func<IScreen, TViewModel> viewModelFactory)
         where TViewModel : class, IRoutableViewModel
         where TView : class, IViewFor<TViewModel>, new()
@@ -41,12 +48,7 @@ public sealed class GalleryRouteRegistry
         where TViewModel : class, IRoutableViewModel
         where TView : class, IViewFor<TViewModel>
     {
-        if (_isReadOnly)
-        {
-            throw new GalleryConfigurationException(
-                "Gallery route registry is read-only after configuration is built.");
-        }
-
+        EnsureMutable();
         if (string.IsNullOrWhiteSpace(routeKey.Value))
         {
             throw new GalleryConfigurationException("Gallery route key must not be empty.");
@@ -87,6 +89,15 @@ public sealed class GalleryRouteRegistry
     internal GalleryRouteRegistry ToReadOnlySnapshot()
     {
         return new GalleryRouteRegistry(_orderedRoutes, isReadOnly: true);
+    }
+
+    private void EnsureMutable()
+    {
+        if (_isReadOnly)
+        {
+            throw new GalleryConfigurationException(
+                "Gallery route registry is read-only after configuration is built.");
+        }
     }
 
     private void AddDescriptor(GalleryRouteDescriptor descriptor)

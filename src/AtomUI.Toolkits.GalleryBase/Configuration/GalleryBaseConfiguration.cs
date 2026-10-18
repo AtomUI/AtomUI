@@ -77,8 +77,10 @@ public sealed class GalleryBaseConfiguration
             throw new GalleryConfigurationException("Gallery navigation DefaultRoute must be configured.");
         }
 
-        var defaultNode = Walk(navigationNodes).FirstOrDefault(node => node.Key == navigation.DefaultRoute);
-        if (defaultNode is null)
+        var nodesByKey = new Dictionary<EntityKey, GalleryNavigationNode>();
+        GalleryNavigationNode? firstUnregisteredRoute = null;
+        IndexNavigation(navigationNodes, routes, nodesByKey, ref firstUnregisteredRoute);
+        if (!nodesByKey.TryGetValue(navigation.DefaultRoute, out var defaultNode))
         {
             throw new GalleryConfigurationException(
                 $"Gallery navigation DefaultRoute '{navigation.DefaultRoute}' does not exist in navigation nodes.");
@@ -96,7 +98,6 @@ public sealed class GalleryBaseConfiguration
                 $"Gallery navigation DefaultRoute '{navigation.DefaultRoute}' does not have a registered route.");
         }
 
-        var nodesByKey = Walk(navigationNodes).ToDictionary(node => node.Key);
         var defaultOpenKeys = new HashSet<EntityKey>();
         foreach (var defaultOpenKey in navigation.DefaultOpenKeys)
         {
@@ -125,25 +126,26 @@ public sealed class GalleryBaseConfiguration
             }
         }
 
-        foreach (var routeNode in Walk(navigationNodes).Where(node => node.IsRoute))
+        if (firstUnregisteredRoute is not null)
         {
-            if (!routes.ContainsRoute(routeNode.Key))
-            {
-                throw new GalleryConfigurationException(
-                    $"Gallery navigation page '{routeNode.Key}' does not have a registered route.");
-            }
+            throw new GalleryConfigurationException(
+                $"Gallery navigation page '{firstUnregisteredRoute.Key}' does not have a registered route.");
         }
     }
 
-    private static IEnumerable<GalleryNavigationNode> Walk(IEnumerable<GalleryNavigationNode> nodes)
+    private static void IndexNavigation(IReadOnlyList<GalleryNavigationNode> nodes,
+                                         GalleryRouteRegistry routes,
+                                         Dictionary<EntityKey, GalleryNavigationNode> nodesByKey,
+                                         ref GalleryNavigationNode? firstUnregisteredRoute)
     {
         foreach (var node in nodes)
         {
-            yield return node;
-            foreach (var child in Walk(node.Children))
+            nodesByKey.Add(node.Key, node);
+            if (firstUnregisteredRoute is null && node.IsRoute && !routes.ContainsRoute(node.Key))
             {
-                yield return child;
+                firstUnregisteredRoute = node;
             }
+            IndexNavigation(node.Children, routes, nodesByKey, ref firstUnregisteredRoute);
         }
     }
 

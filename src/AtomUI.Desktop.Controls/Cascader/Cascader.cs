@@ -245,10 +245,12 @@ public partial class Cascader : AbstractSelect
     private INotifyCollectionChanged? _selectedOptionsCollectionChangedSource;
     private bool _needSkipSyncSelectedOptions;
     private bool _isDefaultSelectOptionPathApplied;
+    private bool _isEnterKeyPressed;
 
     static Cascader()
     {
         FocusableProperty.OverrideDefaultValue<Cascader>(true);
+        KeyDownEvent.AddClassHandler<Cascader>((control, e) => control.HandlePreviewKeyDown(e), RoutingStrategies.Tunnel);
         SelectHandle.ClearRequestedEvent.AddClassHandler<Cascader>((target, args) => target.HandleClearRequest());
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<Cascader>((x, e) => x.HandleSearchInputTextChanged(e));
         SelectTag.ClosedEvent.AddClassHandler<Cascader>((x, e) => x.HandleTagCloseRequest(e));
@@ -332,6 +334,7 @@ public partial class Cascader : AbstractSelect
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseSelectedOptionsCollectionChangedSource();
+        _isEnterKeyPressed = false;
         base.OnDetachedFromVisualTree(e);
     }
     
@@ -367,53 +370,86 @@ public partial class Cascader : AbstractSelect
     
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        _ = e ?? throw new ArgumentNullException(nameof(e));
         base.OnKeyDown(e);
-        if (e.Handled || !IsEnabled)
+        HandleKeyDownCore(e);
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (!IsKeyboardFocusWithin)
+        {
+            _isEnterKeyPressed = false;
+            _cascaderView?.HandleKeyUp(new KeyEventArgs { Key = Key.Enter });
+        }
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            _isEnterKeyPressed = false;
+        }
+        _cascaderView?.HandleKeyUp(e);
+        base.OnKeyUp(e);
+    }
+
+    private void HandlePreviewKeyDown(KeyEventArgs e)
+    {
+        if (IsDropDownOpen && e.Source is Avalonia.Controls.TextBox &&
+            (e.Key is Key.Up or Key.Down or Key.Enter or Key.Escape ||
+             (e.Key == Key.Back && e.Source is Avalonia.Controls.TextBox { Text: null or "" } &&
+              _cascaderView?.IsFiltering == false)))
+        {
+            HandleKeyDownCore(e);
+        }
+    }
+
+    private void HandleKeyDownCore(KeyEventArgs e)
+    {
+        if (e.Handled || !IsEnabled || CascaderView.IsComposingKeyInput(e.Source) ||
+            (e.KeyModifiers != KeyModifiers.None && e.Key != Key.F4))
         {
             return;
         }
-        
+        if (e.Key == Key.Enter)
+        {
+            if (_isEnterKeyPressed)
+            {
+                e.Handled = true;
+                return;
+            }
+            _isEnterKeyPressed = true;
+        }
         if (IsDropDownOpen)
         {
-            if (_cascaderView != null)
+            _cascaderView?.HandleKeyDown(e);
+            if (e.Handled)
             {
-                _cascaderView.HandleKeyDown(e);
-                if (e.Handled)
-                {
-                    return;
-                }
+                return;
             }
-
             if (e.Key == Key.Escape)
             {
                 SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
         }
-        else
+        else if ((e.Key == Key.Down && !this.IsAllowedXYNavigationMode(e.KeyDeviceType)) ||
+                 e.Key is Key.Enter or Key.Space)
         {
-            // The drop down is not open, the Down key will toggle it open.
-            // Ignore key buttons, if they are used for XY focus.
-            if (e.Key == Key.Down
-                && !this.IsAllowedXYNavigationMode(e.KeyDeviceType))
-            {
-                SetCurrentValue(IsDropDownOpenProperty, true);
-                e.Handled = true;
-            }
+            SetCurrentValue(IsDropDownOpenProperty, true);
+            e.Handled = true;
         }
-
-        // Standard drop down navigation
-        switch (e.Key)
+        if (e.Key == Key.F4)
         {
-            case Key.F4:
-                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
-                e.Handled = true;
-                break;
-
-            default:
-                break;
+            SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
+            e.Handled = true;
         }
+    }
+
+    private void HandleCascaderViewCloseRequested(object? sender, EventArgs e)
+    {
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -496,6 +532,7 @@ public partial class Cascader : AbstractSelect
             _cascaderView.SelectedOptionsChanged -= HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemDoubleClicked      -= HandleCascaderViewItemDoubleClicked;
             _cascaderView.OptionSelected         -= HandleCascaderViewItemSelected;
+            _cascaderView.CloseRequested         -= HandleCascaderViewCloseRequested;
             _cascaderView.OptionsSource          =  null;
         }
 
@@ -507,6 +544,7 @@ public partial class Cascader : AbstractSelect
             _cascaderView.SelectedOptionsChanged += HandleCascaderViewItemsCheckedChanged;
             _cascaderView.ItemDoubleClicked      += HandleCascaderViewItemDoubleClicked;
             _cascaderView.OptionSelected         += HandleCascaderViewItemSelected;
+            _cascaderView.CloseRequested         += HandleCascaderViewCloseRequested;
             _cascaderView.OptionsSource          =  BuildOptionsList(Options);
             SyncSelectedOptionsToCascaderView();
         }

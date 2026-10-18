@@ -7,6 +7,7 @@ using AtomUI.Desktop.Controls.DataLoad;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -318,6 +319,97 @@ public partial class CascaderView : TemplatedControl,
     
     #endregion
     
+    #region 内部协作 API
+
+    internal event EventHandler? CloseRequested;
+
+
+    internal void HandleKeyUp(KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            _isEnterKeyPressed = false;
+        }
+    }
+
+    internal static bool IsComposingKeyInput(object? source)
+    {
+        return source is Avalonia.Controls.TextBox input &&
+               input.GetVisualDescendants().OfType<TextPresenter>()
+                    .Any(presenter => !string.IsNullOrEmpty(presenter.PreeditText));
+    }
+
+    internal void UpdateKeyboardCandidateContainer(CascaderViewItem item)
+    {
+        item.SetCurrentValue(CascaderViewItem.IsCandidateSelectedProperty,
+            !IsFiltering && ReferenceEquals(item.AttachedOption, _keyboardCandidateOption));
+    }
+
+    internal void ResetInteractionState()
+    {
+        CancelPendingSelectedOptionPresentation();
+        SetKeyboardCandidate(null);
+        _filterList?.ClearCandidate();
+        CollapseAll();
+    }
+
+    internal void RestoreSelectedOptionPath()
+    {
+        if (SelectedOption is { } option)
+        {
+            SelectTargetOption(option);
+            SetKeyboardCandidateOption(IsOptionEnabled(option) ? option : null);
+        }
+    }
+
+    internal bool TryParseSelectPath(TreeNodePath path, out IList<ICascaderOption> pathNodes)
+    {
+        var                    segments     = path.Segments;
+        var                    count        = path.Segments.Count;
+        var                    isPathValid  = true;
+        IEnumerable<ICascaderOption> currentItems = BuildOptionList(_options);
+
+        var                          options    = new List<ICascaderOption>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var segment = segments[i];
+            var found   = false;
+            foreach (var currentItem in currentItems)
+            {
+                if (segment == currentItem.ItemKey || segment == currentItem.Value?.ToString())
+                {
+                    options.Add(currentItem);
+                    currentItems = currentItem.Children;
+                    found        = true;
+                }
+            }
+
+            if (!found)
+            {
+                isPathValid = false;
+                break;
+            }
+        }
+        pathNodes = options;
+
+        return isPathValid;
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal static readonly DefaultFilterValueSelector DefaultCascaderFilterValueSelector = value =>
+    {
+        if (value is ICascaderItemInfo info)
+        {
+            return info.Path;
+        }
+        return null;
+    };
+
+    #endregion
+
     private readonly ItemCollection _options = new();
     private bool _ignoreSyncSelectedOptions;
     private StackPanel? _itemsPanel;
@@ -325,7 +417,8 @@ public partial class CascaderView : TemplatedControl,
     private bool _defaultExpandPathApplied;
     private bool _isSynchronizingSelectedOptionToView;
     private CascaderViewLevelList? _rootLevelList;
-    private CascaderViewItem? _keyboardCandidateItem;
+    private ICascaderOption? _keyboardCandidateOption;
+    private bool _isEnterKeyPressed;
     private DispatcherOperation? _pendingSelectedOptionPresentation;
     
     static CascaderView()
@@ -358,15 +451,6 @@ public partial class CascaderView : TemplatedControl,
         ConfigureEmptyIndicator();
         ConfigureEffectiveToggleType();
     }
-
-    internal static readonly DefaultFilterValueSelector DefaultCascaderFilterValueSelector = value =>
-    {
-        if (value is ICascaderItemInfo info)
-        {
-            return info.Path;
-        }
-        return null;
-    };
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -405,54 +489,9 @@ public partial class CascaderView : TemplatedControl,
         RestoreSelectedOptionPath();
     }
 
-    internal void ResetInteractionState()
-    {
-        CancelPendingSelectedOptionPresentation();
-        SetKeyboardCandidate(null);
-        _filterList?.ClearCandidate();
-        CollapseAll();
-    }
-
-    internal void RestoreSelectedOptionPath()
-    {
-        if (SelectedOption is { } option)
-        {
-            SelectTargetOption(option);
-        }
-    }
-
-    internal bool TryParseSelectPath(TreeNodePath path, out IList<ICascaderOption> pathNodes)
-    {
-        var                    segments     = path.Segments;
-        var                    count        = path.Segments.Count;
-        var                    isPathValid  = true;
-        IEnumerable<ICascaderOption> currentItems = BuildOptionList(_options);
         
-        var                          options    = new List<ICascaderOption>(count);
-        for (var i = 0; i < count; i++)
-        {
-            var segment = segments[i];
-            var found   = false;
-            foreach (var currentItem in currentItems)
-            {
-                if (segment == currentItem.ItemKey || segment == currentItem.Value?.ToString())
-                {
-                    options.Add(currentItem);
-                    currentItems = currentItem.Children;
-                    found        = true;
-                }
-            }
     
-            if (!found)
-            {
-                isPathValid = false;
-                break;
-            }
-        }
-        pathNodes = options;
     
-        return isPathValid;
-    }
 
     private static List<ICascaderOption> BuildOptionList(IEnumerable source)
     {
@@ -487,6 +526,10 @@ public partial class CascaderView : TemplatedControl,
     private void HandleCascaderSourceChanged(AvaloniaPropertyChangedEventArgs args)
     {
         CancelPendingSelectedOptionPresentation();
+        SetKeyboardCandidateOption(null);
+        _filterList?.ClearCandidate();
+        _allPathInfos = null;
+        _asyncLoadCoordinator.CancelAll();
         ResetLevelListsForOptionsSourceChanging();
         _options.SetItemsSource(args.GetNewValue<IEnumerable<ICascaderOption>?>());
         RestoreRootLevelListItemsSource();
@@ -557,9 +600,11 @@ public partial class CascaderView : TemplatedControl,
         {
             ConfigureEmptyIndicator();
         }
-        else if (change.Property == IsCheckableProperty)
+        else if (change.Property == IsCheckableProperty || change.Property == IsAllowSelectParentProperty)
         {
             ConfigureEffectiveToggleType();
+            _allPathInfos = null;
+            FilterItems();
         }
         else if (change.Property == SelectedOptionProperty)
         {
@@ -767,211 +812,264 @@ public partial class CascaderView : TemplatedControl,
         }
     }
 
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (!IsKeyboardFocusWithin)
+        {
+            _isEnterKeyPressed = false;
+        }
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        HandleKeyUp(e);
+        base.OnKeyUp(e);
+    }
+
     public void HandleKeyDown(KeyEventArgs e)
     {
+        if (e.Handled || !IsEnabled || e.KeyModifiers != KeyModifiers.None || IsComposingKeyInput(e.Source))
+        {
+            return;
+        }
+
         switch (e.Key)
         {
             case Key.Enter:
-                e.Handled = IsFiltering ? TryCommitFilterCandidate() : TryCommitKeyboardCandidate();
+                if (!_isEnterKeyPressed)
+                {
+                    _isEnterKeyPressed = true;
+                    if (IsFiltering)
+                    {
+                        TryCommitFilterCandidate();
+                    }
+                    else
+                    {
+                        TryCommitKeyboardCandidate();
+                    }
+                }
+                e.Handled = true;
                 break;
-
             case Key.Up:
                 e.Handled = IsFiltering ? TryMoveFilterCandidate(-1) : TryMoveKeyboardCandidate(-1);
                 break;
-
             case Key.Down:
                 e.Handled = IsFiltering ? TryMoveFilterCandidate(1) : TryMoveKeyboardCandidate(1);
                 break;
-
             case Key.Left:
+            case Key.Right:
+                if (!IsFiltering)
+                {
+                    var isForward = (e.Key == Key.Right) == (FlowDirection != FlowDirection.RightToLeft);
+                    e.Handled = isForward ? TryMoveKeyboardCandidateToChild() : TryMoveKeyboardCandidateToParent();
+                }
+                break;
+            case Key.Back:
                 e.Handled = !IsFiltering && TryMoveKeyboardCandidateToParent();
                 break;
-
-            case Key.Right:
-                e.Handled = !IsFiltering && TryExpandKeyboardCandidateOrMoveToChild();
-                break;
-
-            default:
+            case Key.Escape:
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+                e.Handled = true;
                 break;
         }
     }
 
     private bool TryMoveKeyboardCandidate(int delta)
     {
-        var candidates = GetVisibleKeyboardCandidates();
-        if (candidates.Count == 0 || delta == 0)
+        var candidate = GetKeyboardCandidate();
+        var siblings = candidate?.ParentNode is ICascaderOption parent
+            ? parent.Children.ToList()
+            : BuildOptionList(_options);
+        if (siblings.Count == 0)
         {
             return false;
         }
 
-        var index = _keyboardCandidateItem != null ? candidates.IndexOf(_keyboardCandidateItem) : -1;
-        if (index == -1)
+        var index = candidate != null ? siblings.IndexOf(candidate) : -1;
+        if (index < 0 && delta < 0)
         {
-            index = delta > 0 ? 0 : candidates.Count - 1;
+            index = siblings.Count;
         }
-        else
+        for (var i = 0; i < siblings.Count; i++)
         {
-            index += delta;
-            if (index < 0)
+            index = (index + delta + siblings.Count) % siblings.Count;
+            if (IsOptionEnabled(siblings[index]))
             {
-                index = candidates.Count - 1;
-            }
-            else if (index >= candidates.Count)
-            {
-                index = 0;
+                ActivateKeyboardCandidate(siblings[index]);
+                return true;
             }
         }
-
-        SetKeyboardCandidate(candidates[index]);
-        return true;
+        return false;
     }
 
-    private bool TryExpandKeyboardCandidateOrMoveToChild()
+    private bool TryMoveKeyboardCandidateToChild()
     {
-        var candidate = GetKeyboardCandidateOrFirstVisibleItem();
-        if (candidate?.AttachedOption == null || candidate.IsLeaf || candidate.IsLoading || !candidate.IsEnabled)
+        var candidate = GetKeyboardCandidate();
+        if (candidate == null || GetCascaderViewItem(candidate)?.IsLoading == true)
         {
             return false;
         }
-
-        Dispatcher.InvokeAsync(async () =>
+        var child = candidate.Children.FirstOrDefault(IsOptionEnabled);
+        if (child == null)
         {
-            await ExpandItemAsync(candidate);
-            ExecuteLayoutPass();
-            var child = GetFirstEnabledChildCandidate(candidate);
-            if (child != null)
-            {
-                SetKeyboardCandidate(child);
-            }
-        });
+            return false;
+        }
+        ActivateKeyboardCandidate(child);
         return true;
     }
 
     private bool TryMoveKeyboardCandidateToParent()
     {
-        var candidate = GetKeyboardCandidateOrFirstVisibleItem();
-        if (candidate == null)
+        var candidate = GetKeyboardCandidate();
+        if (candidate?.ParentNode is ICascaderOption parent)
         {
-            return false;
+            ActivateKeyboardCandidate(parent);
         }
-
-        if (candidate.AttachedOption?.ParentNode is ICascaderOption parentOption)
+        else
         {
-            var parentList = GetLevelListForOption(parentOption);
-            var parentItem = parentList?.ContainerFromItem(parentOption) as CascaderViewItem;
-            if (parentItem != null)
-            {
-                SetKeyboardCandidate(parentItem);
-                return true;
-            }
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
-
-        if (!candidate.IsLeaf && candidate.IsExpanded)
-        {
-            CollapseItem(candidate);
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     private bool TryCommitKeyboardCandidate()
     {
-        var candidate = GetKeyboardCandidateOrFirstVisibleItem();
-        if (candidate?.AttachedOption == null || candidate.IsLoading || !candidate.IsEnabled)
+        var candidate = GetKeyboardCandidate();
+        if (candidate == null || !TryCommitOption(candidate))
         {
             return false;
         }
-
-        if (candidate.IsLeaf || IsAllowSelectParent)
+        if (!IsCheckable)
         {
-            SelectOptionFromInteraction(candidate.AttachedOption);
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+        return true;
+    }
+
+    private bool TryCommitOption(ICascaderOption option)
+    {
+        if (!IsOptionEnabled(option) || GetCascaderViewItem(option)?.IsLoading == true)
+        {
+            return false;
+        }
+        if (IsCheckable)
+        {
+            if (!option.IsCheckBoxEnabled || (IsMaxSelectReached && option.IsChecked != true))
+            {
+                return false;
+            }
+            if (option.IsChecked == true)
+            {
+                UnCheckedSubTree(option);
+            }
+            else
+            {
+                CheckedSubTree(option);
+            }
             return true;
         }
-
-        return TryExpandKeyboardCandidateOrMoveToChild();
+        if (!option.IsEffectiveLeaf() && !IsAllowSelectParent)
+        {
+            return false;
+        }
+        SelectOptionFromInteraction(option);
+        return true;
     }
 
-    private CascaderViewItem? GetKeyboardCandidateOrFirstVisibleItem()
+    private ICascaderOption? GetKeyboardCandidate()
     {
-        var candidates = GetVisibleKeyboardCandidates();
-        if (_keyboardCandidateItem?.AttachedOption != null && candidates.Contains(_keyboardCandidateItem))
+        if (_keyboardCandidateOption is { } candidate && IsOptionInSource(candidate) && IsOptionEnabled(candidate))
         {
-            return _keyboardCandidateItem;
+            return candidate;
         }
-
-        SetKeyboardCandidate(candidates.Count > 0 ? candidates[0] : null);
-        return _keyboardCandidateItem;
+        SetKeyboardCandidateOption(null);
+        return null;
     }
 
-    private CascaderViewItem? GetFirstEnabledChildCandidate(CascaderViewItem parentItem)
+    private bool IsOptionInSource(ICascaderOption option)
     {
-        if (parentItem.AttachedOption == null)
+        while (option.ParentNode is ICascaderOption parent)
         {
-            return null;
-        }
-
-        var childList = GetLevelList(GetViewOptionLevel(parentItem.AttachedOption));
-        if (childList == null)
-        {
-            return null;
-        }
-
-        for (var i = 0; i < childList.ItemCount; i++)
-        {
-            if (childList.ContainerFromIndex(i) is CascaderViewItem child && child.IsEnabled)
+            if (!parent.Children.Contains(option))
             {
-                return child;
+                return false;
+            }
+            option = parent;
+        }
+        return _options.Contains(option);
+    }
+
+    private static bool IsOptionEnabled(ICascaderOption option)
+    {
+        for (ICascaderOption? current = option; current != null; current = current.ParentNode as ICascaderOption)
+        {
+            if (!current.IsEnabled)
+            {
+                return false;
             }
         }
+        return true;
+    }
 
-        return null;
+    private void ActivateKeyboardCandidate(ICascaderOption option)
+    {
+        SetKeyboardCandidateOption(option);
+        Dispatcher.InvokeAsync(async () =>
+        {
+            if (!IsLoaded || IsFiltering || !ReferenceEquals(_keyboardCandidateOption, option) || !IsOptionInSource(option))
+            {
+                return;
+            }
+            await ExpandItemAsync(option);
+            if (!ReferenceEquals(_keyboardCandidateOption, option) || IsFiltering || !IsLoaded || !IsOptionInSource(option))
+            {
+                return;
+            }
+            var levelList = GetLevelListForOption(option);
+            if (levelList != null)
+            {
+                if (levelList.Presenter?.Panel is AtomUI.Controls.Primitives.VirtualizingStackPanel panel)
+                {
+                    panel.ScrollItemIntoView(levelList.Items.IndexOf(option));
+                    ExecuteLayoutPass();
+                }
+                if (TryGetRealizedCascaderViewItem(levelList, option) is { } container)
+                {
+                    UpdateKeyboardCandidateContainer(container);
+                }
+            }
+        });
     }
 
     private void SetKeyboardCandidate(CascaderViewItem? item)
     {
-        if (ReferenceEquals(_keyboardCandidateItem, item))
+        SetKeyboardCandidateOption(item?.AttachedOption);
+    }
+
+    private void SetKeyboardCandidateOption(ICascaderOption? option)
+    {
+        if (ReferenceEquals(_keyboardCandidateOption, option))
         {
             return;
         }
-
-        _keyboardCandidateItem?.SetCurrentValue(CascaderViewItem.IsCandidateSelectedProperty, false);
-        _keyboardCandidateItem = item;
-        _keyboardCandidateItem?.SetCurrentValue(CascaderViewItem.IsCandidateSelectedProperty, true);
-    }
-
-    private List<CascaderViewItem> GetVisibleKeyboardCandidates()
-    {
-        var candidates = new List<CascaderViewItem>();
-        if (_itemsPanel == null)
+        if (_keyboardCandidateOption != null && GetCascaderViewItem(_keyboardCandidateOption) is { } previous)
         {
-            return candidates;
+            previous.SetCurrentValue(CascaderViewItem.IsCandidateSelectedProperty, false);
         }
-
-        foreach (var child in _itemsPanel.Children)
+        _keyboardCandidateOption = option;
+        if (option != null && GetCascaderViewItem(option) is { } current)
         {
-            if (child is not CascaderViewLevelList levelList)
-            {
-                continue;
-            }
-
-            for (var i = 0; i < levelList.ItemCount; i++)
-            {
-                if (levelList.ContainerFromIndex(i) is CascaderViewItem item &&
-                    item.IsVisible && item.IsEnabled && !item.IsLoading)
-                {
-                    candidates.Add(item);
-                }
-            }
+            UpdateKeyboardCandidateContainer(current);
         }
-
-        return candidates;
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
         CancelPendingSelectedOptionPresentation();
+        SetKeyboardCandidateOption(null);
+        _isEnterKeyPressed = false;
         
         // 清理所有待处理的异步加载操作
         _asyncLoadCoordinator.CancelAll();

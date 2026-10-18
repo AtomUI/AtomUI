@@ -3,6 +3,17 @@
 本文档记录 Cascader 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-18
+
+- Behavior
+  - Use data-owned active paths and same-column sibling navigation; activate branches without entering their child column, support RTL and root-level return/close.
+  - Open with Down/Enter/Space, submit only an explicit valid candidate, close after permitted parent selection, and toggle subtree checks for multi-select without closing.
+  - Preserve valid search candidates by full path, include selectable parent paths, and keep IME/caret editing separate from candidate commands.
+- Implementation
+  - Complete Enter down/up cycles and retain the inline search input while rebuilding selected tags, preserving focus and preventing repeated commits.
+- Gallery
+  - Connect both external search examples to the shared keyboard implementation and coordinate search versus confirmation.
+
 ## 2026-10-04
 
 - Fix

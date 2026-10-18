@@ -82,6 +82,10 @@ public class CascaderShowCasePageTests
         var codeBehindSource = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Cascader/Views/CascaderShowCase.axaml.cs");
 
         CountOccurrences(pageSource, "OptionSelected=\"HandleSearchCascaderViewOptionSelected\"").ShouldBe(2);
+        CountOccurrences(pageSource, "IsSearchOnEnterEnabled=\"False\"").ShouldBe(2);
+        codeBehindSource.ShouldContain("HandleExternalSearchKeyDown");
+        codeBehindSource.ShouldContain("HandleExternalSearchKeyUp");
+        codeBehindSource.ShouldContain("view.HandleKeyDown(e);");
         codeBehindSource.ShouldContain("HandleSearchCascaderViewOptionSelected");
         codeBehindSource.ShouldContain("searchEdit.Clear();");
     }

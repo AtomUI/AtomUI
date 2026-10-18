@@ -8,6 +8,8 @@ using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -16,6 +18,8 @@ namespace AtomUIGallery.ShowCases.Cascader;
 public partial class CascaderShowCase : GalleryReactiveUserControl<CascaderViewModel>
 {
     public const string LanguageId = nameof(CascaderShowCase);
+
+    private SearchEdit? _enterPressedSearchInput;
 
     public CascaderShowCase()
     {
@@ -62,6 +66,9 @@ public partial class CascaderShowCase : GalleryReactiveUserControl<CascaderViewM
             }
         });
         InitializeComponent();
+        AddHandler(KeyDownEvent, HandleExternalSearchKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, HandleExternalSearchKeyUp, RoutingStrategies.Tunnel);
+        AddHandler(LostFocusEvent, HandleExternalSearchLostFocus, RoutingStrategies.Bubble);
     }
 
     private void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)
@@ -133,6 +140,79 @@ public partial class CascaderShowCase : GalleryReactiveUserControl<CascaderViewM
         if (DataContext is CascaderViewModel viewModel)
         {
             viewModel.ClearBoundCascaderOptionsSelection();
+        }
+    }
+
+    private static bool TryGetExternalSearchTarget(object? source, out SearchEdit search, out CascaderView view)
+    {
+        var input = source as SearchEdit ?? (source as Visual)?.FindAncestorOfType<SearchEdit>();
+        if (input?.Parent is Panel parent &&
+            parent.Children.OfType<CascaderView>().FirstOrDefault(candidate =>
+                candidate.Name is "SearchCascaderView" or "SearchCascaderViewItemsSource") is { } target)
+        {
+            search = input;
+            view = target;
+            return true;
+        }
+        search = null!;
+        view = null!;
+        return false;
+    }
+
+    private void HandleExternalSearchKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled || e.KeyModifiers != KeyModifiers.None ||
+            e.Key is not (Key.Up or Key.Down or Key.Enter) ||
+            !TryGetExternalSearchTarget(e.Source, out var search, out var view) ||
+            search.GetVisualDescendants().OfType<TextPresenter>()
+                  .Any(presenter => !string.IsNullOrEmpty(presenter.PreeditText)))
+        {
+            return;
+        }
+        if (e.Key == Key.Enter)
+        {
+            if (ReferenceEquals(_enterPressedSearchInput, search))
+            {
+                e.Handled = true;
+                return;
+            }
+            _enterPressedSearchInput = search;
+        }
+        var query = search.Text?.Trim() ?? string.Empty;
+        var hasCurrentResults = !string.IsNullOrEmpty(query) && Equals(view.FilterValue, query);
+        if (e.Key == Key.Enter && !hasCurrentResults)
+        {
+            view.FilterValue = query;
+            e.Handled = true;
+        }
+        else if (hasCurrentResults)
+        {
+            view.HandleKeyDown(e);
+        }
+    }
+
+    private void HandleExternalSearchKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            _enterPressedSearchInput = null;
+            if (TryGetExternalSearchTarget(e.Source, out _, out var view))
+            {
+                // Complete the forwarded key cycle on the sibling view's routed input surface.
+                view.RaiseEvent(new KeyEventArgs { RoutedEvent = KeyUpEvent, Key = e.Key });
+            }
+        }
+    }
+
+    private void HandleExternalSearchLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (ReferenceEquals(e.Source, _enterPressedSearchInput))
+        {
+            if (TryGetExternalSearchTarget(e.Source, out _, out var view))
+            {
+                view.RaiseEvent(new KeyEventArgs { RoutedEvent = KeyUpEvent, Key = Key.Enter });
+            }
+            _enterPressedSearchInput = null;
         }
     }
 

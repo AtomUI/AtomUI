@@ -7,6 +7,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class CascaderViewFilterList : ListBox
 {
+    #region 内部属性定义
+
     internal static readonly DirectProperty<CascaderViewFilterList, object?> CandidateSelectedItemProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewFilterList, object?>(
             nameof(CandidateSelectedItem),
@@ -34,6 +36,8 @@ internal class CascaderViewFilterList : ListBox
         get => _candidateSelectedIndex;
         set => SetAndRaise(CandidateSelectedIndexProperty, ref _candidateSelectedIndex, value);
     }
+
+    #endregion
 
     static CascaderViewFilterList()
     {
@@ -81,6 +85,8 @@ internal class CascaderViewFilterList : ListBox
         }
     }
 
+    #region 内部协作 API
+
     internal bool TryMoveCandidate(int delta)
     {
         if (ItemCount == 0 || delta == 0)
@@ -95,6 +101,7 @@ internal class CascaderViewFilterList : ListBox
             if (Items[startIndex] is not CascaderViewFilterListItemData itemData || itemData.IsEnabled)
             {
                 SetCandidate(startIndex);
+                ScrollIntoView(startIndex);
                 return true;
             }
         }
@@ -106,24 +113,26 @@ internal class CascaderViewFilterList : ListBox
         }
 
         SetCandidate(nextIndex);
+        ScrollIntoView(nextIndex);
         return true;
     }
 
-    internal CascaderViewFilterListItemData? GetCandidateOrFirstEnabledItem()
+    internal void RestoreCandidate(CascaderViewFilterListItemData? previous)
     {
-        if (CandidateSelectedItem is CascaderViewFilterListItemData candidate && candidate.IsEnabled)
+        if (previous?.ExpandItems is not { } previousPath)
         {
-            return candidate;
+            return;
         }
-
-        var firstEnabledIndex = FindNextEnabledIndex(-1, 1);
-        if (firstEnabledIndex == -1)
+        for (var i = 0; i < ItemCount; i++)
         {
-            return null;
+            if (Items[i] is CascaderViewFilterListItemData { IsEnabled: true, ExpandItems: { } path } &&
+                path.Count == previousPath.Count &&
+                path.Zip(previousPath).All(pair => ReferenceEquals(pair.First, pair.Second)))
+            {
+                SetCandidate(i);
+                return;
+            }
         }
-
-        SetCandidate(firstEnabledIndex);
-        return CandidateSelectedItem as CascaderViewFilterListItemData;
     }
 
     internal void ClearCandidate()
@@ -131,6 +140,8 @@ internal class CascaderViewFilterList : ListBox
         SetCurrentValue(CandidateSelectedIndexProperty, -1);
         SetCurrentValue(CandidateSelectedItemProperty, null);
     }
+
+    #endregion
 
     private void HandleCandidateSelectedItemChanged(AvaloniaPropertyChangedEventArgs args)
     {

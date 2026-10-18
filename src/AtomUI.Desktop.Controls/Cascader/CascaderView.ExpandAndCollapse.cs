@@ -100,6 +100,10 @@ public partial class CascaderView
                     if (!IsReallyExpanded(currentCascaderItem))
                     {
                         await DoExpandItemAsync(currentCascaderItem);
+                        if (!currentCascaderItem.IsExpanded || !IsOptionInSource(currentNode))
+                        {
+                            return null;
+                        }
                     }
                     else
                     {
@@ -167,6 +171,8 @@ public partial class CascaderView
         Debug.Assert(_itemsPanel != null);
         var attachedOption = cascaderViewItem.AttachedOption;
         Debug.Assert(attachedOption != null);
+        // Mark the path open before awaiting data; another branch can collapse it while loading.
+        cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, true);
         if (!attachedOption.HasChildren() && !cascaderViewItem.AsyncLoaded && !attachedOption.IsLeaf)
         {
             if (DataLoader != null)

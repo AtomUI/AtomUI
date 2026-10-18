@@ -768,6 +768,7 @@
                         <DataTemplate x:DataType="vm:CascaderViewModel">
         <StackPanel Orientation="Vertical" Spacing="10">
             <atom:SearchEdit PlaceholderText="{gallery:CascaderShowCaseLangResource P2PlaceholderTextSearch}"
+                             IsSearchOnEnterEnabled="False"
                              SearchRequested="HandleFilterCascaderViewSearchRequested" />
             <atom:CascaderView Name="SearchCascaderView"
                                OptionSelected="HandleSearchCascaderViewOptionSelected"
@@ -785,6 +786,7 @@
                         <DataTemplate x:DataType="vm:CascaderViewModel">
         <StackPanel Orientation="Vertical" Spacing="10">
             <atom:SearchEdit PlaceholderText="{gallery:CascaderShowCaseLangResource P2PlaceholderTextSearch}"
+                             IsSearchOnEnterEnabled="False"
                              SearchRequested="HandleFilterCascaderViewItemsSourceSearchRequested" />
             <atom:CascaderView
                 Name="SearchCascaderViewItemsSource"

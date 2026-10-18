@@ -144,6 +144,8 @@ NumericUpDown 采用按需模板模型。`Mode=Input` 使用默认输入框模�
 - `PART_TextBox` 的 `BorderThickness=0` 是为了避免内层 TextBox 与外层输入壳体重复绘制边框。
 - `PART_ClearButton` 与 `PART_InnerRightContentPresenter` 共用内部右侧 stack，必须保留顺序：清除按钮在用户内部右侧内容之前。
 - 浮动 Handle 由 `ButtonSpinnerDecoratedBox` 控制透明度和偏移，不应在 NumericUpDown 模板中动态创建或移除。
+- 编辑器和后缀由同一个输入布局面板协调：后缀避让浮动 Handle 时，编辑器的实际可交互宽度同步收窄，不能依靠层级覆盖保持点击。
+- Spinner 模式左右 action 按钮按实际高度维持正方形，分隔线在按钮之外占位，图标保持居中。
 
 状态视觉由共享主题分层承担：
 

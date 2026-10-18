@@ -134,6 +134,15 @@ public class ButtonSpinnerRootSurfaceTests
                 window.MouseMove(point);
                 frame.IsSpinnerContentHover.ShouldBeTrue();
                 frame.HandleOpacity.ShouldBe(1);
+                frame.ContentRightShift.ShouldBeLessThan(0d);
+
+                spinner.IsButtonSpinnerVisible = false;
+                frame.HandleOpacity.ShouldBe(0);
+                frame.ContentRightShift.ShouldBe(0d);
+                spinner.IsButtonSpinnerVisible = true;
+                window.MouseMove(point);
+                frame.ContentRightShift.ShouldBeLessThan(0d);
+
                 using var device = new MouseDevice();
                 var root = window.GetPresentationSource().ShouldNotBeNull().ShouldBeAssignableTo<IInputRoot>();
                 var manager = (IInputManager)AvaloniaLocator.CurrentMutable.GetService(typeof(IInputManager))!;

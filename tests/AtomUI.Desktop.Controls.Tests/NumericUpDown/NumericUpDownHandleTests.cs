@@ -326,7 +326,7 @@ public class NumericUpDownHandleTests
     }
 
     [Fact]
-    public void Spinner_Mode_Action_Segments_Use_Input_Padding_And_Normal_Icon_Size()
+    public void Spinner_Mode_Action_Segments_Are_Square_And_Use_Normal_Icon_Size()
     {
         var numericUpDown = new AtomUINumericUpDown
         {
@@ -338,10 +338,8 @@ public class NumericUpDownHandleTests
 
         ShowInWindow(numericUpDown, () =>
         {
-            var actionPadding = GetThemeResource<Thickness>(SharedTokenKind.InputPadding);
-            var iconSize      = GetThemeResource<double>(SharedTokenKind.IconSize);
-            var lineWidth     = GetThemeResource<double>(SharedTokenKind.LineWidth);
-            var expectedWidth = actionPadding.Left + iconSize + actionPadding.Right + lineWidth;
+            var iconSize  = GetThemeResource<double>(SharedTokenKind.IconSize);
+            var lineWidth = GetThemeResource<double>(SharedTokenKind.LineWidth);
 
             var decreaseButton = numericUpDown.GetVisualDescendants()
                                               .OfType<IconButton>()
@@ -350,15 +348,32 @@ public class NumericUpDownHandleTests
                                               .OfType<IconButton>()
                                               .Single(item => item.Name == "PART_IncreaseButton");
 
-            decreaseButton.Padding.ShouldBe(actionPadding);
-            increaseButton.Padding.ShouldBe(actionPadding);
+            decreaseButton.Padding.ShouldBe(new Thickness(0));
+            increaseButton.Padding.ShouldBe(new Thickness(0));
             decreaseButton.IconWidth.ShouldBe(iconSize);
             increaseButton.IconWidth.ShouldBe(iconSize);
             decreaseButton.IconHeight.ShouldBe(iconSize);
             increaseButton.IconHeight.ShouldBe(iconSize);
 
-            decreaseButton.GetVisualParent()!.Bounds.Width.ShouldBe(expectedWidth, 0.5);
-            increaseButton.GetVisualParent()!.Bounds.Width.ShouldBe(expectedWidth, 0.5);
+            foreach (var size in new[] { CustomizableSizeType.Small, CustomizableSizeType.Middle, CustomizableSizeType.Large })
+            {
+                numericUpDown.SizeType = size;
+                ((AvaloniaWindow)TopLevel.GetTopLevel(numericUpDown)!).UpdateLayout();
+                Dispatcher.UIThread.RunJobs();
+                ((AvaloniaWindow)TopLevel.GetTopLevel(numericUpDown)!).UpdateLayout();
+                decreaseButton.Bounds.Width.ShouldBe(decreaseButton.Bounds.Height, 0.5);
+                increaseButton.Bounds.Width.ShouldBe(increaseButton.Bounds.Height, 0.5);
+                decreaseButton.GetVisualParent()!.Bounds.Width.ShouldBe(decreaseButton.Bounds.Width + lineWidth, 0.5);
+                increaseButton.GetVisualParent()!.Bounds.Width.ShouldBe(increaseButton.Bounds.Width + lineWidth, 0.5);
+            }
+
+            numericUpDown.SizeType = CustomizableSizeType.Custom;
+            numericUpDown.Height = 48;
+            ((AvaloniaWindow)TopLevel.GetTopLevel(numericUpDown)!).UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            ((AvaloniaWindow)TopLevel.GetTopLevel(numericUpDown)!).UpdateLayout();
+            decreaseButton.Bounds.Width.ShouldBe(decreaseButton.Bounds.Height, 0.5);
+            increaseButton.Bounds.Width.ShouldBe(increaseButton.Bounds.Height, 0.5);
         });
     }
 
@@ -409,10 +424,9 @@ public class NumericUpDownHandleTests
         ShowInWindow(numericUpDown, () =>
         {
             var controlHeight  = GetThemeResource<double>(SharedTokenKind.ControlHeight);
-            var actionPadding  = GetThemeResource<Thickness>(SharedTokenKind.InputPadding);
             var iconSize       = GetThemeResource<double>(SharedTokenKind.IconSize);
             var lineWidth      = GetThemeResource<double>(SharedTokenKind.LineWidth);
-            var expectedWidth  = actionPadding.Left + iconSize + actionPadding.Right;
+            var expectedWidth  = controlHeight - lineWidth * 2;
             var increaseButton = numericUpDown.GetVisualDescendants()
                                               .OfType<IconButton>()
                                               .Single(item => item.Name == "PART_IncreaseButton");

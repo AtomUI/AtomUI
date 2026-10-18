@@ -27,6 +27,21 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     public static readonly StyledProperty<ButtonSpinnerLocation> ButtonSpinnerLocationProperty =
         ButtonSpinner.ButtonSpinnerLocationProperty.AddOwner<ButtonSpinnerDecoratedBox>();
 
+    public static readonly StyledProperty<double> HandleOpacityProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOpacity));
+
+    public static readonly StyledProperty<double> HandleOffsetProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOffset));
+
+    public static readonly StyledProperty<double> ContentLeftShiftProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentLeftShift));
+
+    public static readonly StyledProperty<double> ContentRightShiftProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentRightShift));
+
+    public static readonly StyledProperty<Thickness> ContentPaddingProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, Thickness>(nameof(ContentPadding));
+
     public object? SpinnerContent
     {
         get => GetValue(SpinnerContentProperty);
@@ -65,25 +80,15 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             o => o.SpinnerBorderThickness,
             (o, v) => o.SpinnerBorderThickness = v);
     
-    public static readonly StyledProperty<double> HandleOpacityProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOpacity));
 
-    public static readonly StyledProperty<double> HandleOffsetProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOffset));
 
-    public static readonly StyledProperty<double> ContentLeftShiftProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentLeftShift));
 
-    public static readonly StyledProperty<double> ContentRightShiftProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentRightShift));
 
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, double> SpinnerHandleWidthProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, double>(nameof(SpinnerHandleWidth),
             o => o.SpinnerHandleWidth,
             (o, v) => o.SpinnerHandleWidth = v);
     
-    public static readonly StyledProperty<Thickness> ContentPaddingProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, Thickness>(nameof(ContentPadding));
     
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, Thickness> EffectiveContentPaddingProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, Thickness>(nameof(EffectiveContentPadding),
@@ -357,16 +362,18 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             IsSpinnerContentHover = false;
         }
 
-        if (IsHandleFloatable && IsSpinnerContentHover)
+        if (IsShowHandle && IsHandleFloatable && IsSpinnerContentHover)
         {
             if (ButtonSpinnerLocation == ButtonSpinnerLocation.Right)
             {
-                ContentRightShift = -EffectiveContentPadding.Right * 1.5;
+                // The content padding already reserves part of the handle width. Keep half
+                // that padding as the gap, including at Small size and custom handle widths.
+                ContentRightShift = -Math.Max(0d, SpinnerHandleWidth - EffectiveContentPadding.Right / 2);
                 ContentLeftShift = 0.0;
             }
             else
             {
-                ContentLeftShift = EffectiveContentPadding.Left * 1.5;
+                ContentLeftShift = Math.Max(0d, SpinnerHandleWidth - EffectiveContentPadding.Left / 2);
                 ContentRightShift = 0.0;
             }
         }

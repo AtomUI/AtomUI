@@ -3,6 +3,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -72,6 +74,7 @@ public class NumericUpDownSpinnerLayoutTests
             Width = 320,
             Mode = NumericUpDownMode.Input,
             Value = 3m,
+            IsAllowClear = true,
             InnerRightContent = "kg",
             IsMotionEnabled = false
         };
@@ -95,13 +98,54 @@ public class NumericUpDownSpinnerLayoutTests
             var originX = suffix.TransformToVisual(numericUpDown).ShouldNotBeNull()
                                  .Transform(new Point(0, 0)).X;
 
-            // Motion is disabled, so the hover state settles the suffix shift synchronously.
-            decoratedBox.IsSpinnerContentHover = true;
+            var editor = numericUpDown.GetVisualDescendants().OfType<EmbeddedTextBox>().Single();
+            var clear = numericUpDown.GetVisualDescendants().OfType<InputClearIconButton>()
+                                     .Single(control => ReferenceEquals(control.TemplatedParent, numericUpDown));
+            var outerBounds = numericUpDown.Bounds;
+            var hoverPoint = editor.TranslatePoint(new Point(10, editor.Bounds.Height / 2), window)
+                                   .ShouldNotBeNull();
+            window.MouseMove(hoverPoint);
             Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
 
             var shiftedX = suffix.TransformToVisual(numericUpDown).ShouldNotBeNull()
                                   .Transform(new Point(0, 0)).X;
-            (originX - shiftedX).ShouldBeGreaterThan(0d);
+            (originX - shiftedX).ShouldBe(-decoratedBox.ContentRightShift, 0.5);
+            var editorRight = editor.TranslatePoint(new Point(editor.Bounds.Width, 0), numericUpDown)
+                                    .ShouldNotBeNull().X;
+            editorRight.ShouldBeLessThanOrEqualTo(shiftedX + 0.5);
+            var sharedShift = decoratedBox.ContentRightShift;
+            foreach (var inset in new[] { 0.25, 0.5, 0.75, 1.25 })
+            {
+                decoratedBox.ContentRightShift = -inset;
+                window.UpdateLayout();
+                var animatedEditorRight = editor.TranslatePoint(new Point(editor.Bounds.Width, 0), numericUpDown)
+                                                .ShouldNotBeNull().X;
+                var animatedSuffixLeft = suffix.TranslatePoint(default, numericUpDown).ShouldNotBeNull().X;
+                animatedEditorRight.ShouldBeLessThanOrEqualTo(animatedSuffixLeft + 0.01);
+            }
+            decoratedBox.ContentRightShift = sharedShift;
+            window.UpdateLayout();
+
+            foreach (var x in new[] { 1d, clear.Bounds.Width / 2, clear.Bounds.Width - 1d })
+            {
+                var point = clear.TranslatePoint(new Point(x, clear.Bounds.Height / 2), window)
+                                 .ShouldNotBeNull();
+                var hit = (window.InputHitTest(point) as Visual).ShouldNotBeNull();
+                hit.GetSelfAndVisualAncestors().Contains(clear).ShouldBeTrue();
+            }
+
+            var center = clear.TranslatePoint(new Point(clear.Bounds.Width / 2, clear.Bounds.Height / 2), window)
+                              .ShouldNotBeNull();
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            numericUpDown.Value.ShouldBeNull();
+            string.IsNullOrEmpty(numericUpDown.Text).ShouldBeTrue();
+            clear.IsEffectivelyVisible.ShouldBeFalse();
+            numericUpDown.Bounds.ShouldBe(outerBounds);
         }
         finally
         {
@@ -139,7 +183,10 @@ public class NumericUpDownSpinnerLayoutTests
                                             .Single();
             decoratedBox.IsSpinnerContentHover = true;
             Dispatcher.UIThread.RunJobs();
-            var middleShift = suffix.RenderTransform.ShouldNotBeNull().Value.M31;
+            window.UpdateLayout();
+            var inputPanel = suffix.GetVisualParent().ShouldNotBeNull();
+            var middleShift = suffix.TranslatePoint(new Point(suffix.Bounds.Width, 0), inputPanel)
+                                    .ShouldNotBeNull().X + suffix.Margin.Right - inputPanel.Bounds.Width;
 
             numericUpDown.SizeType = CustomizableSizeType.Small;
             window.UpdateLayout();
@@ -147,9 +194,16 @@ public class NumericUpDownSpinnerLayoutTests
             window.UpdateLayout();
             Dispatcher.UIThread.RunJobs();
 
-            var smallShift = suffix.RenderTransform.ShouldNotBeNull().Value.M31;
+            var smallShift = suffix.TranslatePoint(new Point(suffix.Bounds.Width, 0), inputPanel)
+                                   .ShouldNotBeNull().X + suffix.Margin.Right - inputPanel.Bounds.Width;
             smallShift.ShouldNotBe(middleShift);
-            smallShift.ShouldBe(-decoratedBox.EffectiveContentPadding.Right * 1.5, 0.001);
+            smallShift.ShouldBe(decoratedBox.ContentRightShift, 0.5);
+            var handle = numericUpDown.GetVisualDescendants().OfType<ContentPresenter>()
+                                      .Single(control => control.Name == "PART_SpinnerHandle");
+            var handleLeft = handle.TranslatePoint(default, inputPanel).ShouldNotBeNull().X;
+            var suffixRight = suffix.TranslatePoint(new Point(suffix.Bounds.Width, 0), inputPanel)
+                                    .ShouldNotBeNull().X;
+            suffixRight.ShouldBeLessThanOrEqualTo(handleLeft);
         }
         finally
         {

@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Media;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -183,6 +183,12 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(StringValueProperty, value);
     }
 
+    public bool IsCustomFontSize
+    {
+        get => GetValue(IsCustomFontSizeProperty);
+        set => SetValue(IsCustomFontSizeProperty, value);
+    }
+
     #endregion
     
     #region 内部属性定义
@@ -214,12 +220,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     {
         get => GetValue(SpinnerHandleWidthProperty);
         set => SetValue(SpinnerHandleWidthProperty, value);
-    }
-    
-    public bool IsCustomFontSize
-    {
-        get => GetValue(IsCustomFontSizeProperty);
-        set => SetValue(IsCustomFontSizeProperty, value);
     }
     
     private bool _isEffectiveShowClearButton;
@@ -256,6 +256,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     
     #endregion
     
+    private EventHandler? _formValueChanged;
     private IconButton? _clearButton;
     private TextBox? _textBoxPart;
     private CompositeDisposable? _templatePartBindings;
@@ -326,104 +327,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         _textConverter = new NumericUpDownTextConverter(this);
     }
 
-    #region 实现 CompactSpace 接口
-
-    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
-    {
-        var isUsedInCompactSpace = position != null;
-        if (IsUsedInCompactSpace != isUsedInCompactSpace)
-        {
-            IsUsedInCompactSpace = isUsedInCompactSpace;
-        }
-
-        if (CompactSpaceItemPosition != position)
-        {
-            CompactSpaceItemPosition = position;
-        }
-    }
-
-    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
-    {
-        if (CompactSpaceOrientation != orientation)
-        {
-            CompactSpaceOrientation = orientation;
-        }
-    }
-
-    double ICompactSpaceAware.GetBorderThickness()
-    {
-        if (!IsUsedInCompactSpace)
-        {
-            return 0.0;
-        }
-
-        var addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
-        if (addOnDecoratedBox == null)
-        {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel != null)
-            {
-                topLevel.UpdateLayout();
-                addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
-            }
-        }
-
-        if (addOnDecoratedBox == null || StyleVariant != InputControlStyleVariant.Outlined)
-        {
-            return 0.0;
-        }
-
-        // 都一样宽
-        return addOnDecoratedBox.InnerBoxBorderThickness.Left;
-    }
-
-    #endregion
-
-    #region 实现 FormItem 接口
-
-    private EventHandler? _formValueChanged;
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as decimal?);
-
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-
-    private void HandleValueChanged()
-    {
-        _formValueChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void NotifySetFormValue(decimal? value)
-    {
-        SetCurrentValue(ValueProperty, value);
-    }
-
-    protected virtual decimal? NotifyGetFormValue()
-    {
-        return Value;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-        SetCurrentValue(ValueProperty, null);
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (FormStatus != status)
-        {
-            SetCurrentValue(FormStatusProperty, status);
-        }
-    }
-
-    #endregion
-
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -450,106 +353,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         SetupTemplatePartBindings(e);
     }
 
-    /// <summary>
-    /// Relays the owner's root border brush onto the input frame as a local value so
-    /// application-level customization wins over the frame state machine, mirroring antd
-    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
-    /// owner value restores the state machine.
-    /// </summary>
-    private void RelayFrameBorderBrush()
-    {
-        var decoratedBox = _buttonSpinner?.DecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            decoratedBox.ClearValue(BorderBrushProperty);
-        }
-        else
-        {
-            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        }
-    }
-
-    private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
-    {
-        NotifyClearButtonClicked();
-    }
-
-    private void SetupTemplatePartBindings(TemplateAppliedEventArgs e)
-    {
-        _templatePartBindings?.Dispose();
-        _templatePartBindings = new CompositeDisposable();
-
-        if (e.NameScope.Find<InputClearIconButton>("PART_ClearButton") is { } clearButton)
-        {
-            // Only the visibility relay stays in code: IsEffectiveShowClearButton is an internal
-            // direct property, invisible to compiled template bindings. Icon and IsMotionEnabled
-            // are template-bound in the ControlTheme.
-            _templatePartBindings.Add(BindUtils.RelayBind(this, IsEffectiveShowClearButtonProperty, clearButton,
-                Visual.IsVisibleProperty));
-        }
-
-        if (e.NameScope.Find<ContentPresenter>("PART_InnerLeftContentPresenter") is { } innerLeftContent)
-        {
-            // The presenter lives in a ButtonSpinner.InnerLeftContent property-element subtree, where
-            // TemplatedParent never propagates, so template bindings stay dead there; relay in code.
-            _templatePartBindings.Add(BindUtils.RelayBind(this, InnerLeftContentProperty, innerLeftContent,
-                ContentPresenter.ContentProperty));
-            _templatePartBindings.Add(BindUtils.RelayBind(this, InnerLeftContentTemplateProperty,
-                innerLeftContent, ContentPresenter.ContentTemplateProperty));
-        }
-
-        // InnerRightContent / InnerRightContentTemplate and the text box IsCustomFontSize are
-        // template-bound in the ControlTheme (the parts sit in direct template content where
-        // TemplatedParent propagates), so no code relay is needed for them.
-
-        // The suffix group renders inside the spinner content segment, outside the decorated box's
-        // ContentRightAddOn slot, so the floating-handle shift no longer reaches it through the
-        // template. The transform and its transition are declared in the ControlTheme; only the
-        // hover trigger stays in code because the hover state is an internal property on the
-        // decorated box that selectors cannot reach back across the spinner Content boundary,
-        // and the target offset is derived from runtime padding. Do not re-mirror the animated
-        // ContentRightShift frame by frame here: a per-frame relay fights the render clock and
-        // shows up as a one-frame jump when the pointer re-enters quickly.
-        if (e.NameScope.Find<StackPanel>("PART_SuffixGroup") is { } suffixGroup &&
-            _buttonSpinner?.DecoratedBox is { } decoratedBox)
-        {
-            var refreshSuffixShift = new Action(() => SyncSuffixGroupShift(suffixGroup, decoratedBox));
-            _templatePartBindings.Add(decoratedBox.GetPropertyChangedObservable(
-                    ButtonSpinnerDecoratedBox.IsSpinnerContentHoverProperty)
-                .Subscribe(_ => refreshSuffixShift()));
-            _templatePartBindings.Add(decoratedBox.GetPropertyChangedObservable(
-                    ButtonSpinnerDecoratedBox.EffectiveContentPaddingProperty)
-                .Subscribe(_ => refreshSuffixShift()));
-            _templatePartBindings.Add(decoratedBox.GetPropertyChangedObservable(
-                    ButtonSpinnerDecoratedBox.IsHandleFloatableProperty)
-                .Subscribe(_ => refreshSuffixShift()));
-            _templatePartBindings.Add(decoratedBox.GetPropertyChangedObservable(
-                    ButtonSpinnerDecoratedBox.ButtonSpinnerLocationProperty)
-                .Subscribe(_ => refreshSuffixShift()));
-            refreshSuffixShift();
-        }
-    }
-
-    private static void SyncSuffixGroupShift(StackPanel suffixGroup,
-                                             ButtonSpinnerDecoratedBox decoratedBox)
-    {
-        var target = decoratedBox.IsHandleFloatable &&
-                     decoratedBox.IsSpinnerContentHover &&
-                     decoratedBox.ButtonSpinnerLocation == Desktop.Controls.ButtonSpinnerLocation.Right
-            ? -decoratedBox.EffectiveContentPadding.Right * 1.5
-            : 0d;
-        // Replacing the RenderTransform value (not mutating a transform property) is what arms the
-        // ControlTheme TransformOperationsTransition.
-        suffixGroup.RenderTransform = TransformParser.Parse(
-            FormattableString.Invariant($"translateX({target}px)"));
-    }
-    
     protected virtual void NotifyClearButtonClicked()
     {
         Value = null;
@@ -641,6 +444,174 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         }
 
         base.OnKeyDown(e);
+    }
+
+    #region 实现 CompactSpace 接口
+
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        var isUsedInCompactSpace = position != null;
+        if (IsUsedInCompactSpace != isUsedInCompactSpace)
+        {
+            IsUsedInCompactSpace = isUsedInCompactSpace;
+        }
+
+        if (CompactSpaceItemPosition != position)
+        {
+            CompactSpaceItemPosition = position;
+        }
+    }
+
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        if (CompactSpaceOrientation != orientation)
+        {
+            CompactSpaceOrientation = orientation;
+        }
+    }
+
+    double ICompactSpaceAware.GetBorderThickness()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        var addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
+        if (addOnDecoratedBox == null)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null)
+            {
+                topLevel.UpdateLayout();
+                addOnDecoratedBox = _buttonSpinner?.DecoratedBox;
+            }
+        }
+
+        if (addOnDecoratedBox == null || StyleVariant != InputControlStyleVariant.Outlined)
+        {
+            return 0.0;
+        }
+
+        // 都一样宽
+        return addOnDecoratedBox.InnerBoxBorderThickness.Left;
+    }
+
+    #endregion
+
+    #region 实现 FormItem 接口
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as decimal?);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    private void HandleValueChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(decimal? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual decimal? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (FormStatus != status)
+        {
+            SetCurrentValue(FormStatusProperty, status);
+        }
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Relays the owner's root border brush onto the input frame as a local value so
+    /// application-level customization wins over the frame state machine, mirroring antd
+    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
+    /// owner value restores the state machine.
+    /// </summary>
+    private void RelayFrameBorderBrush()
+    {
+        var decoratedBox = _buttonSpinner?.DecoratedBox;
+        if (decoratedBox is null)
+        {
+            return;
+        }
+
+        var value = GetValue(BorderBrushProperty);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            decoratedBox.ClearValue(BorderBrushProperty);
+        }
+        else
+        {
+            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
+        }
+    }
+
+    private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
+    {
+        NotifyClearButtonClicked();
+    }
+
+    private void SetupTemplatePartBindings(TemplateAppliedEventArgs e)
+    {
+        _templatePartBindings?.Dispose();
+        _templatePartBindings = new CompositeDisposable();
+
+        if (e.NameScope.Find<InputClearIconButton>("PART_ClearButton") is { } clearButton)
+        {
+            // Only the visibility relay stays in code: IsEffectiveShowClearButton is an internal
+            // direct property, invisible to compiled template bindings. Icon and IsMotionEnabled
+            // are template-bound in the ControlTheme.
+            _templatePartBindings.Add(BindUtils.RelayBind(this, IsEffectiveShowClearButtonProperty, clearButton,
+                Visual.IsVisibleProperty));
+        }
+
+        if (e.NameScope.Find<ContentPresenter>("PART_InnerLeftContentPresenter") is { } innerLeftContent)
+        {
+            // The presenter lives in a ButtonSpinner.InnerLeftContent property-element subtree, where
+            // TemplatedParent never propagates, so template bindings stay dead there; relay in code.
+            _templatePartBindings.Add(BindUtils.RelayBind(this, InnerLeftContentProperty, innerLeftContent,
+                ContentPresenter.ContentProperty));
+            _templatePartBindings.Add(BindUtils.RelayBind(this, InnerLeftContentTemplateProperty,
+                innerLeftContent, ContentPresenter.ContentTemplateProperty));
+        }
+
+        // InnerRightContent / InnerRightContentTemplate and the text box IsCustomFontSize are
+        // template-bound in the ControlTheme (the parts sit in direct template content where
+        // TemplatedParent propagates), so no code relay is needed for them.
+
+        if (e.NameScope.Find<NumericUpDownInputPanel>("PART_InputPanel") is { } inputPanel &&
+            _buttonSpinner?.DecoratedBox is { } decoratedBox)
+        {
+            // The animated source is internal state of the spinner's nested decorated-box
+            // template, outside this Content subtree's TemplateBinding scope. Keep this
+            // binding scoped to the current template and consume the existing animation;
+            // the panel must not start a second transition or translate the suffix again.
+            _templatePartBindings.Add(inputPanel.Bind(NumericUpDownInputPanel.RightInsetProperty,
+                decoratedBox.GetObservable(ButtonSpinnerDecoratedBox.ContentRightShiftProperty)
+                            .Select(static shift => Math.Max(0d, -shift))));
+        }
     }
 
     private void HandleTextBoxKeyDown(object? sender, KeyEventArgs e)

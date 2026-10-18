@@ -8,6 +8,15 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-10-18
+
+- Implementation
+  - Route the existing floating-handle side-shift animation into a shared input layout panel. The suffix and editor now occupy adjacent layout regions throughout the animation; remove the duplicate suffix transform and hover subscriptions.
+  - Derive floating clearance from the handle width and side padding, including Small size, and release side shifts when the handle is hidden.
+  - Keep Spinner action buttons square using their actual height, with centered icons and separate divider space.
+- Tests
+  - Extend existing pointer/layout/state tests to cover clear-button hit areas, editor clearance, handle visibility changes, size changes and square Spinner actions without adding permanent test cases.
+
 ## 2026-09-28
 
 - 注册生成器通过真实 type-key 对应的默认主题 TypeMap 条件证明 `NumericUpDownSpinnerTheme.BasedOn` 的保留关系；保持 Application 级 ButtonSpinner 主题替换、content padding、派生模板及局部属性覆盖优先级。

@@ -18,10 +18,10 @@ public class SplitView : AvaloniaSplitView, IMotionAwareControl
         AvaloniaProperty.Register<SplitView, Easing?>(nameof(PaneMotionEasing));
 
     public static readonly StyledProperty<TimeSpan> PaneOpenMotionDurationProperty =
-        AvaloniaProperty.Register<StyledElement, TimeSpan>(nameof(PaneOpenMotionDuration));
+        AvaloniaProperty.Register<SplitView, TimeSpan>(nameof(PaneOpenMotionDuration));
 
     public static readonly StyledProperty<TimeSpan> PaneCloseMotionDurationProperty =
-        AvaloniaProperty.Register<StyledElement, TimeSpan>(nameof(PaneCloseMotionDuration));
+        AvaloniaProperty.Register<SplitView, TimeSpan>(nameof(PaneCloseMotionDuration));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SplitView>();

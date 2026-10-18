@@ -14,7 +14,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     #region 公共属性定义
 
     public static readonly StyledProperty<string?> SecondaryPlaceholderTextProperty =
-        AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(SecondaryPlaceholderText));
+        AvaloniaProperty.Register<RangeInfoPickerInput, string?>(nameof(SecondaryPlaceholderText));
     
     public string? SecondaryPlaceholderText
     {
@@ -31,7 +31,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
             o => o.RangeActivatedPart);
     
     internal static readonly StyledProperty<double> RangePickerIndicatorOpacityProperty =
-        AvaloniaProperty.Register<InfoPickerInput, double>(nameof(RangePickerIndicatorOpacity), 0d);
+        AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangePickerIndicatorOpacity), 0d);
     
     internal double RangePickerIndicatorOpacity
     {
@@ -46,7 +46,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(PickerIndicatorOffsetY));
     
     internal static readonly StyledProperty<string?> SecondaryTextProperty =
-        AvaloniaProperty.Register<TextBlock, string?>(nameof(SecondaryText));
+        AvaloniaProperty.Register<RangeInfoPickerInput, string?>(nameof(SecondaryText));
     
     private RangeActivatedPart _rangeActivatedPart;
 

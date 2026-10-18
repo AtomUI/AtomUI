@@ -87,19 +87,19 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         AvaloniaProperty.Register<BaseTabControl, object?>(nameof (HeaderStartExtraContent));
     
     public static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
-        AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(HeaderStartExtraContentTemplate));
+        AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(HeaderStartExtraContentTemplate));
     
     public static readonly StyledProperty<object?> HeaderEndExtraContentProperty = 
         AvaloniaProperty.Register<BaseTabControl, object?>(nameof (HeaderEndExtraContent));
     
     public static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
-        AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(HeaderEndExtraContentTemplate));
+        AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(HeaderEndExtraContentTemplate));
     
     public static readonly StyledProperty<bool> IsTabClosableProperty =
-        AvaloniaProperty.Register<ContentControl, bool>(nameof(IsTabClosable));
+        AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabClosable));
     
     public static readonly StyledProperty<bool> IsTabAutoHideCloseButtonProperty =
-        AvaloniaProperty.Register<ContentControl, bool>(nameof(IsTabAutoHideCloseButton));
+        AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabAutoHideCloseButton));
 
     #region 公共事件定义
     

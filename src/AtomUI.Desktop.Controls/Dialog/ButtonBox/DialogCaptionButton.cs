@@ -15,19 +15,19 @@ internal class DialogCaptionButton : AvaloniaButton
     #region 公共属性定义
 
     public static readonly StyledProperty<PathIcon?> NormalIconProperty =
-        AvaloniaProperty.Register<CaptionButton, PathIcon?>(nameof(NormalIcon));
+        AvaloniaProperty.Register<DialogCaptionButton, PathIcon?>(nameof(NormalIcon));
     
     public static readonly StyledProperty<PathIcon?> CheckedIconProperty =
-        AvaloniaProperty.Register<CaptionButton, PathIcon?>(nameof(CheckedIcon));
+        AvaloniaProperty.Register<DialogCaptionButton, PathIcon?>(nameof(CheckedIcon));
     
     public static readonly StyledProperty<double> IconWidthProperty =
-        AvaloniaProperty.Register<CaptionButton, double>(nameof(IconWidth));
+        AvaloniaProperty.Register<DialogCaptionButton, double>(nameof(IconWidth));
 
     public static readonly StyledProperty<double> IconHeightProperty = 
-        AvaloniaProperty.Register<CaptionButton, double>(nameof(IconHeight));
+        AvaloniaProperty.Register<DialogCaptionButton, double>(nameof(IconHeight));
     
     public static readonly StyledProperty<bool> IsCheckedProperty = 
-        AvaloniaProperty.Register<CaptionButton, bool>(nameof(IsChecked), defaultBindingMode: BindingMode.TwoWay, defaultValue:false);
+        AvaloniaProperty.Register<DialogCaptionButton, bool>(nameof(IsChecked), defaultBindingMode: BindingMode.TwoWay, defaultValue:false);
     
     public static readonly StyledProperty<IBrush?> IconBrushProperty =
         IconPresenter.IconBrushProperty.AddOwner<DialogCaptionButton>();

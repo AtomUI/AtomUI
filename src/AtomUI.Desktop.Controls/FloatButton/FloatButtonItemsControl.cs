@@ -28,7 +28,7 @@ internal class FloatButtonItemsControl : TemplatedControl
         FloatButtonGroup.MenuPlacementProperty.AddOwner<FloatButtonItemsControl>();
 
     public static readonly StyledProperty<bool> IsTriggerModeProperty =
-        AvaloniaProperty.Register<FloatButtonGroup, bool>(nameof(IsTriggerMode));
+        AvaloniaProperty.Register<FloatButtonItemsControl, bool>(nameof(IsTriggerMode));
     
     public FloatButtonShape Shape
     {

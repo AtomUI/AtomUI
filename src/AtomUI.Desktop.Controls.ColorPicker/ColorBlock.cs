@@ -49,7 +49,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     #region 公共属性定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClearRequestEvent =
-        RoutedEvent.Register<SplitButton, RoutedEventArgs>(
+        RoutedEvent.Register<ColorBlock, RoutedEventArgs>(
             nameof(ClearRequest),
             RoutingStrategies.Bubble);
 

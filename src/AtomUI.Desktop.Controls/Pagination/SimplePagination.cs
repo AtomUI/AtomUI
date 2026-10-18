@@ -12,7 +12,7 @@ public partial class SimplePagination : AbstractPagination
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsReadOnlyProperty =
-        AvaloniaProperty.Register<AbstractPagination, bool>(nameof(IsReadOnly), defaultValue:true);
+        AvaloniaProperty.Register<SimplePagination, bool>(nameof(IsReadOnly), defaultValue:true);
 
     public bool IsReadOnly
     {

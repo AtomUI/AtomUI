@@ -40,7 +40,7 @@ internal class SelectTagAwareTextBox : TemplatedControl
         Select.MaxTagCountProperty.AddOwner<SelectTagAwareTextBox>();
 
     public static readonly StyledProperty<bool> IsResponsiveTagModeProperty =
-        Select.IsResponsiveTagModeProperty.AddOwner<SelectResultOptionsBox>();
+        Select.IsResponsiveTagModeProperty.AddOwner<SelectTagAwareTextBox>();
 
     private IList? _selectedItems;
 

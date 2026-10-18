@@ -64,7 +64,7 @@ public partial class TreeSelect : AbstractSelect
         TreeView.IsSwitcherRotationProperty.AddOwner<TreeSelect>();
 
     public static readonly StyledProperty<bool> IsTreeCheckStrictlyProperty =
-        AvaloniaProperty.Register<TreeView, bool>(nameof(IsTreeCheckStrictly), false);
+        AvaloniaProperty.Register<TreeSelect, bool>(nameof(IsTreeCheckStrictly), false);
 
     public static readonly DirectProperty<TreeSelect, IList<TreeNodePath>?> TreeDefaultExpandedPathsProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, IList<TreeNodePath>?>(

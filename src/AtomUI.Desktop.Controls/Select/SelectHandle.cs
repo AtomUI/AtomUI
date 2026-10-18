@@ -161,7 +161,7 @@ internal class SelectHandle : TemplatedControl
     internal PathIcon? FilterIndicator => _filterIndicator;
 
     public static readonly RoutedEvent<RoutedEventArgs> ClearRequestedEvent =
-        RoutedEvent.Register<Button, RoutedEventArgs>(nameof(ClearRequested), RoutingStrategies.Bubble);
+        RoutedEvent.Register<SelectHandle, RoutedEventArgs>(nameof(ClearRequested), RoutingStrategies.Bubble);
 
     public event EventHandler<RoutedEventArgs>? ClearRequested
     {

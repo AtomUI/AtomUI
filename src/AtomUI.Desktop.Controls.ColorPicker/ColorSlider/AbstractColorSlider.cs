@@ -44,8 +44,8 @@ internal abstract class AbstractColorSlider : RangeBase
             o => o.TransparentBgBrush,
             (o, v) => o.TransparentBgBrush = v);
 
-    internal static readonly DirectProperty<ColorSlider, double> ThumbSizeProperty =
-        AvaloniaProperty.RegisterDirect<ColorSlider, double>(
+    internal static readonly DirectProperty<AbstractColorSlider, double> ThumbSizeProperty =
+        AvaloniaProperty.RegisterDirect<AbstractColorSlider, double>(
             nameof(ThumbSize),
             o => o.ThumbSize,
             (o, v) => o.ThumbSize = v);

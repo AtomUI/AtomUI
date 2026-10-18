@@ -6,8 +6,8 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class TreeView
 {
-    internal static readonly DirectProperty<TreeViewItem, bool> IsFilterModeProperty =
-        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsFilterMode),
+    internal static readonly DirectProperty<TreeView, bool> IsFilterModeProperty =
+        AvaloniaProperty.RegisterDirect<TreeView, bool>(nameof(IsFilterMode),
             o => o.IsFilterMode,
             (o, v) => o.IsFilterMode = v);
     

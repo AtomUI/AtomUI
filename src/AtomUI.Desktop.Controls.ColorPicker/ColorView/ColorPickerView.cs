@@ -9,7 +9,7 @@ public class ColorPickerView : AbstractColorPickerView
 {
     #region 公共属性定义
     public static readonly StyledProperty<Color> ValueProperty =
-        AvaloniaProperty.Register<AbstractColorPickerView, Color>(nameof(Value),
+        AvaloniaProperty.Register<ColorPickerView, Color>(nameof(Value),
             Colors.White,
             defaultBindingMode: BindingMode.TwoWay,
             coerce: CoerceColor);

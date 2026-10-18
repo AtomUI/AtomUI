@@ -23,7 +23,7 @@ public enum FormItemLayout
 public partial class FormItem : TemplatedControl, IFormItem
 {
     public static readonly RoutedEvent<FormItemValidateChangedEventArgs> ValidateChangedEvent =
-        RoutedEvent.Register<Button, FormItemValidateChangedEventArgs>(
+        RoutedEvent.Register<FormItem, FormItemValidateChangedEventArgs>(
             nameof(ValidateChanged),
             RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 

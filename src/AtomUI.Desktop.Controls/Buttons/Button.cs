@@ -231,7 +231,7 @@ public partial class Button : AvaloniaButton,
         AvaloniaProperty.Register<Button, object?>(nameof(RightExtraContent));
 
     internal static readonly StyledProperty<IDataTemplate?> RightExtraContentTemplateProperty =
-        AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(RightExtraContentTemplate));
+        AvaloniaProperty.Register<Button, IDataTemplate?>(nameof(RightExtraContentTemplate));
 
     internal static readonly StyledProperty<Thickness> EffectiveBorderThicknessProperty =
         AvaloniaProperty.Register<Button, Thickness>(

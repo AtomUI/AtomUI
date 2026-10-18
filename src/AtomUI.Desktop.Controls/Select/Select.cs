@@ -93,10 +93,10 @@ public partial class Select : AbstractSelect
             TimeSpan.FromSeconds(10));
 
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
-        AvaloniaProperty.Register<AbstractSelect, IValueFilter?>(nameof(Filter));
+        AvaloniaProperty.Register<Select, IValueFilter?>(nameof(Filter));
 
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
-        AvaloniaProperty.Register<AbstractSelect, DefaultFilterValueSelector?>(
+        AvaloniaProperty.Register<Select, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
 
     public IEnumerable<ISelectOption>? OptionsSource

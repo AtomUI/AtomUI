@@ -12,7 +12,7 @@ internal class RateCharacter : Control
     #region 公共属性定义
 
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        Border.BackgroundProperty.AddOwner<TextBlock>();
+        Border.BackgroundProperty.AddOwner<RateCharacter>();
     
     public static readonly StyledProperty<IBrush?> ForegroundProperty =
         TextElement.ForegroundProperty.AddOwner<RateCharacter>();

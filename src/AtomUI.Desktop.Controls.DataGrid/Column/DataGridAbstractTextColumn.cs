@@ -15,37 +15,37 @@ public abstract class DataGridAbstractTextColumn :  DataGridBoundColumn
     /// Identifies the FontFamily dependency property.
     /// </summary>
     public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
-        TextElement.FontFamilyProperty.AddOwner<DataGridTextColumn>();
+        TextElement.FontFamilyProperty.AddOwner<DataGridAbstractTextColumn>();
     
     /// <summary>
     /// Identifies the FontSize dependency property.
     /// </summary>
     public static readonly AttachedProperty<double> FontSizeProperty =
-        TextElement.FontSizeProperty.AddOwner<DataGridTextColumn>();
+        TextElement.FontSizeProperty.AddOwner<DataGridAbstractTextColumn>();
     
     /// <summary>
     /// Identifies the FontStyle dependency property.
     /// </summary>
     public static readonly AttachedProperty<FontStyle> FontStyleProperty =
-        TextElement.FontStyleProperty.AddOwner<DataGridTextColumn>();
+        TextElement.FontStyleProperty.AddOwner<DataGridAbstractTextColumn>();
     
     /// <summary>
     /// Identifies the FontWeight dependency property.
     /// </summary>
     public static readonly AttachedProperty<FontWeight> FontWeightProperty =
-        TextElement.FontWeightProperty.AddOwner<DataGridTextColumn>();
+        TextElement.FontWeightProperty.AddOwner<DataGridAbstractTextColumn>();
     
     /// <summary>
     /// Identifies the FontStretch dependency property.
     /// </summary>
     public static readonly AttachedProperty<FontStretch> FontStretchProperty =
-        TextElement.FontStretchProperty.AddOwner<DataGridTextColumn>();
+        TextElement.FontStretchProperty.AddOwner<DataGridAbstractTextColumn>();
     
     /// <summary>
     /// Identifies the Foreground dependency property.
     /// </summary>
     public static readonly AttachedProperty<IBrush?> ForegroundProperty =
-        TextElement.ForegroundProperty.AddOwner<DataGridTextColumn>();
+        TextElement.ForegroundProperty.AddOwner<DataGridAbstractTextColumn>();
     
     /// <summary>
     /// Gets or sets the font name.

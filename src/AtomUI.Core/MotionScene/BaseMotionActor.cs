@@ -42,10 +42,10 @@ public abstract class BaseMotionActor : ContentControl, IMotionActor
     #region 公共事件定义
     
     public static readonly RoutedEvent<RoutedEventArgs> PreStartEvent = 
-        RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(PreStart), RoutingStrategies.Bubble);
+        RoutedEvent.Register<BaseMotionActor, RoutedEventArgs>(nameof(PreStart), RoutingStrategies.Bubble);
     
     public static readonly RoutedEvent<RoutedEventArgs> CompletedEvent = 
-        RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(Completed), RoutingStrategies.Bubble);
+        RoutedEvent.Register<BaseMotionActor, RoutedEventArgs>(nameof(Completed), RoutingStrategies.Bubble);
 
     public event EventHandler<RoutedEventArgs>? PreStart
     {

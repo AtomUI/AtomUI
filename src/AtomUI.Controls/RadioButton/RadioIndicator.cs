@@ -16,7 +16,7 @@ internal class RadioIndicator : TemplatedControl
     #region 公共属性定义
 
     public static readonly StyledProperty<bool?> IsCheckedProperty =
-        ToggleButton.IsCheckedProperty.AddOwner<CheckBoxIndicator>();
+        ToggleButton.IsCheckedProperty.AddOwner<RadioIndicator>();
 
     public static readonly StyledProperty<double> RadioSizeProperty =
         AvaloniaProperty.Register<RadioIndicator, double>(nameof(RadioSize));

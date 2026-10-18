@@ -116,7 +116,7 @@ Public API / ItemsSource / Command / Event
 Window 对标题栏的协作拆成两条独立路径：
 
 1. 通用 host projection：Window 定义 caption requested visibility、窗口能力、WindowState、active state、Topmost、平台/CSD 输入、native chrome metrics、CaptionButtonCommand 和 effective Logo 通知的强类型集合，并把标题栏双击与拖动 pointer 订阅纳入同一个 `IDisposable` lease。
-2. 默认内容配置：`NotifyConfigureTitleBar` 只投影 Title、IsTitleVisible、Logo、TitleAlignment、LeftAddOn、RightAddOn 及其模板，服务 Window 模板创建的默认或派生标题栏。
+2. 默认内容配置：`NotifyConfigureTitleBar` 只投影 Title、IsTitleVisible、Logo、TitleAlignment、LeftAddOn、RightAddOn、`TitleBarFrameBackground` 及其模板，服务 Window 模板创建的默认或派生标题栏。`TitleBarFrameBackground` 使用 `BindingPriority.Template` 投影到默认标题栏的 `Background`，值为 `null` 时释放投影，让 ControlTheme 的主题默认背景重新生效。Linux CSD 例外：默认标题栏保持 `Transparent`，背景由 overlay 中的 `WindowTitleBarShadowBackground` 按 frame 裁剪绘制，避免不透明标题栏盖住该绘制层。
 
 每个 `WindowTitleBar` 按自己的 logical attach/detach 生命周期持有 host projection lease。同一 Window 中多个标题栏分别持有独立 lease；标题栏从 Window A 移到 Window B 时，必须先释放 A 的 lease，再从 B 创建新 lease。默认标题栏在 `OnApplyTemplate` 中无条件提前连接宿主，随后进入逻辑树时命中幂等路径；派生类覆盖 `NotifyConfigureTitleBar` 不能跳过通用宿主连接。
 
@@ -173,8 +173,12 @@ Window 的标题栏存在两套输入模型，维护时必须同时成立：
 
 | 路径 | 背景/装饰层 | 拖拽 / 默认标题栏层 | 用户交互层 |
 | --- | --- | --- | --- |
-| 非 CSD `WindowTheme.axaml` | `TitleBarFrameLayer` / `TitleBarFrameBackground` 位于默认 `WindowTitleBar` 下方，表达背景和装饰。 | `WindowTitleBar` 负责标题、Logo、caption buttons 和空白区域拖拽。 | `LeftAddOn` 和 `RightAddOn` 内部控件负责默认标题栏的按钮、菜单、搜索框等交互。 |
-| CSD `WindowDrawnDecorationsTheme.axaml` | `PART_TitleBar` 可承载 `TitleBarFrameLayer`，并使用 `ElementRole="TitleBar"` 表达标题栏拖拽区域。 | 默认 `WindowTitleBar` 的展示由 overlay presenter 承载，平台 chrome role 不应吞掉该 presenter 内部交互。 | `PART_TitleBarPresenter` 承载默认 `WindowTitleBar`，使用 `ElementRole="User"`；`LeftAddOn` 和 `RightAddOn` 在此获得 client input。 |
+| 非 CSD `WindowTheme.axaml` | `TitleBarFrameBackground` 由默认 `WindowTitleBar` 绘制；`TitleBarFrameLayer` 仍位于默认 `WindowTitleBar` 下方，表达装饰。 | `WindowTitleBar` 负责标题、Logo、caption buttons 和空白区域拖拽。 | `LeftAddOn` 和 `RightAddOn` 内部控件负责默认标题栏的按钮、菜单、搜索框等交互。 |
+| CSD `WindowDrawnDecorationsTheme.axaml` | Linux：`WindowTitleBarShadowBackground` 在 overlay 中按 frame 裁剪绘制 `TitleBarFrameBackground`；非 Linux：由 overlay 中的默认 `WindowTitleBar` 绘制。`PART_TitleBar` 可承载 `TitleBarFrameLayer`，并使用 `ElementRole="TitleBar"` 表达标题栏拖拽区域。 | 默认 `WindowTitleBar` 的展示由 overlay presenter 承载，平台 chrome role 不应吞掉该 presenter 内部交互。 | `PART_TitleBarPresenter` 承载默认 `WindowTitleBar`，使用 `ElementRole="User"`；`LeftAddOn` 和 `RightAddOn` 在此获得 client input。 |
+
+`TitleBarFrameBackground` 通过 `Window.NotifyConfigureTitleBar` 以 `BindingPriority.Template` 投影到默认 `WindowTitleBar.Background`；属性为 `null` 时释放该投影，回落到 `WindowTitleBar` ControlTheme 的 `ColorBgContainer` 动态资源。Linux CSD 是唯一例外：标题栏固定投影为 `Transparent`，由 `WindowTitleBarShadowBackground` 继续承担按 frame 裁剪的背景绘制。不能把这条绑定下放到 ControlTheme：默认标题栏实例由 Window 创建，且 `null` 必须回退到主题值。
+
+在 `ActualTransparencyLevel=None` 的平台（例如 Windows），drawn decorations 的 Underlay 会由不透明的 `PART_TransparencyFallback` 覆盖；因此 `TitleBarFrameLayer` 等 Underlay 视觉目前只在透明表面平台上可见，后续如需跨平台一致性应迁移到 Overlay。
 
 实现时必须避免以下错误结构：
 

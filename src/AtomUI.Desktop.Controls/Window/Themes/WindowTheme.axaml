@@ -49,7 +49,6 @@
                                         <Panel Name="TitleBarPanel" IsVisible="{TemplateBinding IsTitleBarVisible}"
                                                DockPanel.Dock="Top">
                                             <ContentPresenter Name="TitleBarFrameLayer"
-                                                              Background="{TemplateBinding TitleBarFrameBackground}"
                                                               Content="{TemplateBinding TitleBarFrameLayer}"
                                                               ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
                                                               Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
@@ -119,7 +118,6 @@
                                 <Panel Name="TitleBarPanel" IsVisible="{TemplateBinding IsTitleBarVisible}"
                                        DockPanel.Dock="Top">
                                     <ContentPresenter Name="TitleBarFrameLayer"
-                                                      Background="{TemplateBinding TitleBarFrameBackground}"
                                                       Content="{TemplateBinding TitleBarFrameLayer}"
                                                       ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
                                                       Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"

@@ -581,6 +581,7 @@ public partial class Window : AvaloniaWindow,
     private Border? _transparencyFallbackBorder;
     private MediaBreakPointIndicator? _mediaBreakPointIndicator;
     private CompositeDisposable? _defaultTitleBarBindings;
+    private IDisposable? _titleBarFrameBackgroundProjection;
     private Window? _mainWindowLogoFallbackSource;
     private CompositeDisposable? _mainWindowLogoFallbackLease;
     private bool _isOpened;
@@ -969,6 +970,8 @@ public partial class Window : AvaloniaWindow,
     {
         _defaultTitleBarBindings?.Dispose();
         _defaultTitleBarBindings = null;
+        _titleBarFrameBackgroundProjection?.Dispose();
+        _titleBarFrameBackgroundProjection = null;
         titleBar.SizeChanged -= HandleTitleBarSizeChanged;
         titleBar.DetachHost(this);
     }
@@ -1310,6 +1313,8 @@ public partial class Window : AvaloniaWindow,
     protected virtual void NotifyConfigureTitleBar(WindowTitleBar titleBar)
     {
         _defaultTitleBarBindings?.Dispose();
+        _titleBarFrameBackgroundProjection?.Dispose();
+        _titleBarFrameBackgroundProjection = null;
         _defaultTitleBarBindings = new CompositeDisposable
         {
             titleBar.Bind(WindowTitleBar.TitleProperty, this.GetObservable(TitleProperty)),
@@ -1333,8 +1338,40 @@ public partial class Window : AvaloniaWindow,
             titleBar.Bind(
                 WindowTitleBar.RightAddOnTemplateProperty,
                 this.GetObservable(RightAddOnTemplateProperty),
-                BindingPriority.Template)
+                BindingPriority.Template),
+            // TitleBarFrameBackground 不能放进 ControlTheme：默认标题栏由 Window 在
+            // OnApplyTemplate 中创建，且属性为 null 时必须回退到 ControlTheme 的
+            // ColorBgContainer DynamicResource。Template 优先级可覆盖 ControlTheme，
+            // 同时保留用户 LocalValue 的优先级。
+            this.GetObservable(TitleBarFrameBackgroundProperty).Subscribe(
+                brush => ProjectTitleBarFrameBackground(titleBar, brush)),
+            this.GetObservable(IsCsdEnabledProperty).Subscribe(
+                _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground))
         };
+    }
+
+    private void ProjectTitleBarFrameBackground(WindowTitleBar titleBar, IBrush? brush)
+    {
+        _titleBarFrameBackgroundProjection?.Dispose();
+
+        // Linux CSD 的标题栏背景由 drawn decorations overlay 的
+        // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
+        // 否则不透明背景会盖住该绘制层。其他平台由默认标题栏直接绘制。
+        if (OsType == OsType.Linux && IsCsdEnabled)
+        {
+            _titleBarFrameBackgroundProjection = titleBar.SetValue(
+                WindowTitleBar.BackgroundProperty,
+                Brushes.Transparent,
+                BindingPriority.Template);
+            return;
+        }
+
+        _titleBarFrameBackgroundProjection = brush is null
+            ? null
+            : titleBar.SetValue(
+                WindowTitleBar.BackgroundProperty,
+                brush,
+                BindingPriority.Template);
     }
 
     private bool CanExecuteCaptionButtonAction(CaptionButtonAction action)

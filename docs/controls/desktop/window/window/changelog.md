@@ -2,6 +2,18 @@
 
 本文档记录 Window 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-17
+
+- Fix
+  - Project `TitleBarFrameBackground` to the default `WindowTitleBar` background so the brush is visible on Windows CSD and non-CSD paths; `null` restores the themed default.
+  - Keep the default title bar transparent on Linux CSD so the existing frame-clipped `WindowTitleBarShadowBackground` painter becomes visible instead of being covered.
+- Implementation
+  - Retain the Linux-only `WindowTitleBarShadowBackground` painter and remove the duplicate frame-layer background paint to avoid double compositing for translucent brushes.
+- Docs
+  - Document the title-bar background projection and the Underlay visibility limitation on non-transparent surfaces.
+- Validation
+  - Verified the Linux CSD path on Ubuntu 26.04 (X11 managed decorations, Xvfb): gradient, solid, translucent and default title-bar brushes render with frame clipping, and the translucent brush composites once.
+
 ## 2026-10-09
 
 - Theme

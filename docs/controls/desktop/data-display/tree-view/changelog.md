@@ -3,6 +3,11 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-19
+
+- Behavior
+  - Preserve pre-reset TreeView selection and checked state across `ItemsSource` replay and publish only final `SelectionChanged`, `CheckedItemsChanged` and Form value differences. Consecutive explicit collection edits and assignments made before replay completes take precedence; a nested source replacement takes over the pending replay; a filter failure clears the replay transaction.
+
 ## 2026-10-03
 
 - Implementation

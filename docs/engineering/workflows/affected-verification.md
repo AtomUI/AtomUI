@@ -149,6 +149,8 @@ python3 scripts/verification/test.py metrics
 
 `.github/workflows/verify-affected.yml` 在 PR 上按基线选择测试，保存短期紧凑报告；手动 workflow 的 full test phase
 是 CI 例外，仍使用 `test.py --tests-only` 生成机器可读证据。agent 本地最终全量只使用带进度、ETA、继续收集失败的脚本。
+全量脚本失败时通过 `[DIAGNOSTICS]` 输出系统临时目录中的项目日志路径，保留完整异常、断言与清理阶段的栈；
+不得只根据测试名推断失败原因。成功项目日志自动清理，失败日志在完成排障后清理，不写入仓库测试产物目录。
 CI 没有定期全量任务，不改仓库 branch protection；是否要求该 job 通过由仓库管理员配置。
 该 job 明确命名为 `Selected tests and impact report`，使用 `--tests-only`，成功只表示选中的测试阶段通过；
 专项义务仍保留在 JSON 中，必须由发布/平台检查单独覆盖。这个 job 不承担发布可用性 gate，不能把它的绿色结果

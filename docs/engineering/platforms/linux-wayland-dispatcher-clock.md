@@ -3,7 +3,7 @@
 ## 接入与原理
 
 `UseAtomUIPlatformDetect()` 选择原生 Wayland 时，会在原 Wayland 初始化器执行完成后、所有平台就绪回调和
-Application 创建之前，执行一次共享时钟适配。默认构建使用官方 Avalonia 12.1.3 包。
+Application 创建之前，执行一次共享时钟适配。默认构建使用官方 Avalonia 12.1.4 包。
 
 Wayland 的输入队列会在 worker 就绪之前创建 Dispatcher；随后安装的 Managed 后端另起 Stopwatch，
 而 Dispatcher 仍保留首次创建时的时间源。两个时间基准不一致时，Dispatcher 计算的绝对定时截止值会在后端延迟执行。
@@ -15,10 +15,11 @@ Wayland 的输入队列会在 worker 就绪之前创建 Dispatcher；随后安�
 
 ## 兼容边界
 
-兼容边界限定为 Avalonia 程序集版本 `12.1.3.0`，并检查精确后端类型、闭包类型和 Stopwatch 字段。
+适配不检查 Avalonia 版本号，以实际后端和时钟结构判定兼容性：精确后端类型、闭包类型与 Stopwatch 字段
+必须匹配，捕获的时钟必须正在运行。
 反射信息按项目约定集中声明为 `Lazy<FieldInfo>`，使用 `FixedMemberReflection.RequireField` 校验，
 并通过精确成员级 `DynamicDependency` 声明裁剪依赖；执行路径复用缓存。重复调用保留同一时钟引用。
-不支持的版本或结构跳过写入并记录 Warning；升级框架时必须重新验证这条边界。
+不支持的后端或结构跳过写入并记录 Warning；升级框架时必须重新验证结构及裁剪后的运行行为。
 
 仅经 AtomUI 平台选择入口配置的默认 Wayland Managed 主循环适用。直接调用 Avalonia `UseWayland()`、
 可选 GLib 主循环、X11、macOS 和 Windows 不由该适配器修复。非 Wayland 平台不会调用它。
@@ -34,6 +35,12 @@ ATOMUI_WINDOWING_PLATFORM=wayland \
 ```
 
 ## 验证与维护
+
+当前结构兼容性已在官方 Avalonia 12.1.3 与 12.1.4 包上验证，共享时钟、重复调用与 DispatcherTimer
+均通过。12.1.4 的 osx-arm64 NativeAOT 临时宿主链接实际适配代码后发布和运行通过，没有新增私有成员
+保留配置或 trim/AOT 诊断。临时测试与宿主已清理。
+
+以下 Linux 实测证据来自此前 12.1.3 验证；本轮 macOS 验证不代替 Linux Wayland 交互复验。
 
 - 官方 12.1.3 Gallery Debug/net10.0 构建通过，实际加载的 Base/Wayland 与官方包内 DLL 一致。
 - 链接实际反射适配和平台入口的 linux-x64 NativeAOT 宿主发布无裁剪警告；重复接入返回成功，

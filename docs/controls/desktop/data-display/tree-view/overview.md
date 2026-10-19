@@ -294,6 +294,7 @@ TreeView 不实现 CompactSpace、Button 家族或 Popup 菜单导航模型。
 - `ToggleType=Radio` 只在叶子节点显示 radio，并遵守 `GroupName` 分组。
 - `TreeNodePath` 匹配优先使用 `ItemKey`，没有 `ItemKey` 时才使用 `Value` 字符串。
 - `ItemsSource` 变化后应尽量按节点身份路径恢复运行期选择和勾选状态，再回放默认状态。
+- `ItemsSource` 替换期间的容器清理和状态回放不应对外暴露中间选择或勾选；最终状态未变时不触发对应事件，真正变化时 `SelectionChanged`、`CheckedItemsChanged` 与 Form 值变更只通知最终差异。
 - 多选模式下 `SelectedItems` 是运行期选择恢复的权威来源，`ItemsSource` 变化或容器首次回放不能因 `SelectedItem` 非空而把多选折叠成单选。
 - filter 清除后必须恢复过滤前节点可见性、展开状态和高亮状态。
 - 异步加载只在数据节点模型下写入 `ITreeItemNode.Children`，不修改普通手写 `TreeViewItem` 子树。

@@ -137,7 +137,7 @@ public static class DesktopAppBuilderExtensions
                 Logger.TryGet(LogEventLevel.Warning, AtomUILogArea.System)?.Log(
                     typeof(DesktopAppBuilderExtensions),
                     "Wayland shared clock compatibility fix was not applied: " +
-                    "only the Avalonia 12.1.3 Managed dispatcher implementation is supported.");
+                    "the dispatcher backend or clock structure is not supported.");
             }
         }, builder.WindowingSubsystemName ?? "Wayland");
     }

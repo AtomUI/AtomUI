@@ -720,6 +720,10 @@ public partial class TreeSelect : AbstractSelect
 
             SelectedItems = remappedItems.Count > 0 ? remappedItems : null;
         }
+
+        // The popup tree may still be replaying its source. Its owner selection is authoritative
+        // after the remap, even if checked items were synchronized one node at a time.
+        _treeView?.CaptureOwnerSelectionForItemsSourceReplay();
     }
 
     private void HandleItemsChanged(object? sender, NotifyCollectionChangedEventArgs args)
@@ -862,7 +866,9 @@ public partial class TreeSelect : AbstractSelect
 
     private void HandleTreeViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_treeView == null || _needSkipCollectionChangedEvent)
+        // The detached popup tree is a projection, not an input source. Its source reset must not
+        // overwrite the selection owned by TreeSelect before the popup is opened again.
+        if (_treeView == null || !_treeView.IsLoaded || _needSkipCollectionChangedEvent)
         {
             return;
         }
@@ -914,7 +920,7 @@ public partial class TreeSelect : AbstractSelect
 
     private void HandleTreeViewItemsCheckedChanged(object? sender, TreeViewCheckedItemsChangedEventArgs e)
     {
-        if (_treeView == null)
+        if (_treeView == null || !_treeView.IsLoaded)
         {
             return;
         }
@@ -1259,7 +1265,8 @@ public partial class TreeSelect : AbstractSelect
                 if ((showCheckedStrategy & TreeSelectCheckedStrategy.ShowParent) == TreeSelectCheckedStrategy.ShowParent)
                 {
                     var selectedSet          = BuildTreeNodeSet(SelectedItems);
-                    var fullySelectedParents = new HashSet<ITreeItemNode>(SelectedItems.Count);
+                    var fullySelectedParents = new HashSet<ITreeItemNode>(SelectedItems.Count,
+                        ReferenceEqualityComparer.Instance);
                     foreach (var node in SelectedItems)
                     {
                         if (AreAllChildrenSelected(node.Children, selectedSet))
@@ -1328,9 +1335,10 @@ public partial class TreeSelect : AbstractSelect
     {
         var items = source switch
         {
-            ICollection collection => new HashSet<ITreeItemNode>(collection.Count),
-            IReadOnlyCollection<ITreeItemNode> collection => new HashSet<ITreeItemNode>(collection.Count),
-            _ => new HashSet<ITreeItemNode>()
+            ICollection collection => new HashSet<ITreeItemNode>(collection.Count, ReferenceEqualityComparer.Instance),
+            IReadOnlyCollection<ITreeItemNode> collection =>
+                new HashSet<ITreeItemNode>(collection.Count, ReferenceEqualityComparer.Instance),
+            _ => new HashSet<ITreeItemNode>(ReferenceEqualityComparer.Instance)
         };
         foreach (var item in source)
         {
@@ -1341,7 +1349,7 @@ public partial class TreeSelect : AbstractSelect
 
     private static HashSet<ITreeItemNode> BuildTreeNodeSet(ICollection<ITreeItemNode> source)
     {
-        var items = new HashSet<ITreeItemNode>(source.Count);
+        var items = new HashSet<ITreeItemNode>(source.Count, ReferenceEqualityComparer.Instance);
         foreach (var item in source)
         {
             items.Add(item);

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using AtomUI.Reflection;
 using Avalonia;
 
 namespace AtomUI;
@@ -20,6 +21,7 @@ public static class ApplicationStartup
         {
             return;
         }
+        GridMeasureCacheCompatibility.EnsureInitialized();
         new StartupRun(application, configuration).Run();
     }
 
@@ -33,6 +35,7 @@ public static class ApplicationStartup
             throw new InvalidOperationException(
                 $"AtomUI is already initialized for Application '{application.GetType().FullName}'.");
         }
+        GridMeasureCacheCompatibility.EnsureInitialized();
         var builder = new AtomUIBuilder(application.GetType());
         configure(builder);
         var process = new StartupProcess();

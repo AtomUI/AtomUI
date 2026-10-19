@@ -2,7 +2,7 @@
     <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
     <ItemGroup>
         <PackageReference Include="AtomUI.Desktop.Controls" Version="$(AtomUIFixtureVersion)" />
-        <PackageReference Include="Avalonia.Headless" Version="12.1.3" />
+        <PackageReference Include="Avalonia.Headless" Version="12.1.4" />
         <ProjectReference Include="../Author/Author.csproj" />
     </ItemGroup>
 </Project>

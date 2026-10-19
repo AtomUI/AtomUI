@@ -603,9 +603,7 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             {
                 ThrowIfDisposed();
                 var grammar = _textMateRegistry.LoadGrammar(scopeName);
-                WarmUpGrammar(grammar, _editor.Document);
                 SetGrammarInternal(grammar);
-                WarmUpGrammar(grammar, _editor.Document);
                 ForceTokenizeDocument();
                 RequestVisibleLineTokenization();
             }
@@ -628,10 +626,9 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
                 _textMateRegistry.SetTheme(theme);
                 var textMateTheme = _textMateRegistry.GetTheme();
                 _transformer.SetTheme(textMateTheme);
-                _tmModel?.InvalidateLine(0);
-                _editorModel?.InvalidateViewPortLines();
                 _themeColorsDictionary = textMateTheme.GetGuiColorDictionary();
             }
+            _editor.TextArea.TextView.Redraw();
             RequestVisibleLineTokenization();
         }
 
@@ -701,9 +698,11 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
                         _editor.Document,
                         _exceptionHandler);
                     _tmModel = new TMModel(_editorModel);
-                    _tmModel.SetGrammar(_grammar);
+                    // The transformer only reads this model's tokens. Setting its grammar or
+                    // adding a listener starts TMModel's worker, which would race the UI-owned
+                    // tokenizer and corrupt TextMateSharp's mutable decoding dictionaries.
+                    _editorModel.SetGrammar(_grammar);
                     _transformer.SetModel(_editor.Document, _tmModel);
-                    _tmModel.AddModelTokensChangedListener(_transformer);
                     ForceTokenizeDocument();
                     RequestVisibleLineTokenization();
                 }
@@ -734,32 +733,7 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         private void SetGrammarInternal(IGrammar grammar)
         {
             _grammar = grammar;
-            _transformer.SetGrammar(_grammar);
-        }
-
-        private static void WarmUpGrammar(IGrammar grammar, TextDocument? document)
-        {
-            if (document is null || document.LineCount == 0)
-            {
-                grammar.TokenizeLine(string.Empty);
-                return;
-            }
-
-            // TextMateSharp compiles grammar rules lazily. TMModel skips forced tokenization
-            // while the grammar is compiling, so compile the rules used by the current snippet
-            // before the model is asked to produce the first visible tokens.
-            IStateStack? state = null;
-            var lineCount = Math.Min(document.LineCount, 200);
-            var timeLimit = TimeSpan.FromMilliseconds(1000);
-            for (var lineNumber = 1; lineNumber <= lineCount; lineNumber++)
-            {
-                var line = document.GetLineByNumber(lineNumber);
-                var text = document.GetText(line.Offset, Math.Min(line.Length, 10000));
-                var result = state is null
-                    ? grammar.TokenizeLine(text)
-                    : grammar.TokenizeLine(text, state, timeLimit);
-                state = result.RuleStack;
-            }
+            _editorModel?.SetGrammar(grammar);
         }
 
         private void ForceTokenizeDocument()
@@ -842,8 +816,6 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
                 QueueVisibleLineTokenizationRetry();
                 return;
             }
-
-            RedrawLineRange(startLine, endLine);
         }
 
         private void QueueVisibleLineTokenizationRetry()
@@ -1024,23 +996,6 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             endLine = Math.Clamp(endLine, startLine, lineCount - 1);
         }
 
-        private void RedrawLineRange(int startLine, int endLine)
-        {
-            var document = _editor.Document;
-            if (document is null || document.LineCount == 0)
-            {
-                return;
-            }
-
-            startLine = Math.Clamp(startLine, 0, document.LineCount - 1);
-            endLine = Math.Clamp(endLine, startLine, document.LineCount - 1);
-            var firstLine = document.GetLineByNumber(startLine + 1);
-            var lastLine = document.GetLineByNumber(endLine + 1);
-            _editor.TextArea.TextView.Redraw(
-                firstLine.Offset,
-                lastLine.Offset + lastLine.TotalLength - firstLine.Offset);
-        }
-
         private void ThrowIfDisposed()
         {
             if (_isDisposed)
@@ -1056,7 +1011,6 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
                 return;
             }
 
-            tmModel.RemoveModelTokensChangedListener(_transformer);
             tmModel.Dispose();
         }
     }
@@ -1066,8 +1020,10 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         private readonly TextDocument _document;
         private readonly AvaloniaEdit.Rendering.TextView _textView;
         private readonly Action<Exception>? _exceptionHandler;
+        private IGrammar? _grammar;
+        private Tokenizer? _tokenizer;
         private DocumentSnapshot _documentSnapshot;
-        private InvalidLineRange? _invalidRange;
+        private int _invalidStartLine = -1;
         private bool _isViewportTokenizationPending;
         private int _pendingViewportStartLine = -1;
         private int _pendingViewportEndLine = -1;
@@ -1100,6 +1056,8 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             }
 
             _isDisposed = true;
+            _grammar = null;
+            _tokenizer = null;
             _document.Changing -= HandleDocumentChanging;
             _document.Changed -= HandleDocumentChanged;
             _document.UpdateFinished -= HandleDocumentUpdateFinished;
@@ -1125,12 +1083,16 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             return _documentSnapshot.GetLineLength(lineIndex);
         }
 
-        public void InvalidateViewPortLines()
+        public void SetGrammar(IGrammar? grammar)
         {
-            if (_textView.VisualLinesValid && _textView.VisualLines.Count != 0)
+            _textView.Dispatcher.VerifyAccess();
+            _grammar = grammar;
+            _tokenizer = grammar is null ? null : new Tokenizer(grammar);
+            ForEach(line =>
             {
-                InvalidateLineRange(GetFirstVisibleLineIndex(), GetLastVisibleLineIndex());
-            }
+                line.ResetTokenizationState();
+                line.IsInvalid = true;
+            });
         }
 
         public void ForceTokenizeAllLines()
@@ -1138,21 +1100,66 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             var lineCount = _documentSnapshot.LineCount;
             if (lineCount > 0)
             {
-                ForceTokenization(0, lineCount - 1);
+                ForceTokenizeLineRange(0, lineCount - 1);
             }
         }
 
         public void ForceTokenizeLineRange(int startLine, int endLine)
         {
+            _textView.Dispatcher.VerifyAccess();
             var lineCount = _documentSnapshot.LineCount;
-            if (lineCount <= 0)
+            if (_isDisposed || lineCount <= 0 || _tokenizer is null || _grammar?.IsCompiling != false)
             {
                 return;
             }
 
             var normalizedStartLine = Math.Clamp(startLine, 0, lineCount - 1);
             var normalizedEndLine = Math.Clamp(endLine, normalizedStartLine, lineCount - 1);
-            ForceTokenization(normalizedStartLine, normalizedEndLine);
+            var firstChangedLine = -1;
+            var lastChangedLine = -1;
+            for (var lineIndex = 0; lineIndex <= normalizedEndLine; lineIndex++)
+            {
+                var line = Get(lineIndex);
+                if (!line.IsInvalid && line.Tokens is not null)
+                {
+                    continue;
+                }
+
+                var text = GetLineTextIncludingTerminators(lineIndex);
+                line.State ??= _tokenizer.GetInitialState();
+                var result = _tokenizer.Tokenize(text, line.State, 0, 10000, TimeSpan.FromSeconds(3));
+                if (result.ActualStopOffset < text.Length)
+                {
+                    result.Tokens.Add(new TMToken(result.ActualStopOffset, []));
+                    result.EndState = line.State;
+                }
+
+                line.Tokens = result.Tokens;
+                line.IsInvalid = false;
+                if (lineIndex + 1 < lineCount)
+                {
+                    var nextLine = Get(lineIndex + 1);
+                    if (!Equals(nextLine.State, result.EndState))
+                    {
+                        nextLine.State = result.EndState;
+                        nextLine.IsInvalid = true;
+                    }
+                }
+
+                if (firstChangedLine < 0)
+                {
+                    firstChangedLine = lineIndex;
+                }
+
+                lastChangedLine = lineIndex;
+            }
+
+            if (firstChangedLine >= 0)
+            {
+                var firstLine = _document.GetLineByNumber(firstChangedLine + 1);
+                var lastLine = _document.GetLineByNumber(lastChangedLine + 1);
+                _textView.Redraw(firstLine.Offset, lastLine.Offset + lastLine.TotalLength - firstLine.Offset);
+            }
         }
 
         private void HandleTextViewScrollOffsetChanged(object? sender, EventArgs e)
@@ -1212,7 +1219,7 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             _isViewportTokenizationPending = false;
             if (startLine >= 0 && endLine >= startLine)
             {
-                ForceTokenization(startLine, endLine);
+                ForceTokenizeLineRange(startLine, endLine);
             }
         }
 
@@ -1255,7 +1262,7 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
                 }
 
                 _documentSnapshot.Update(e);
-                SetInvalidRange(startLine == 0 ? startLine : startLine - 1, endLine);
+                SetInvalidRange(startLine == 0 ? startLine : startLine - 1);
             }
             catch (Exception ex)
             {
@@ -1263,39 +1270,38 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             }
         }
 
-        private void SetInvalidRange(int startLine, int endLine)
+        private void SetInvalidRange(int startLine)
         {
             if (!_document.IsInUpdate)
             {
-                InvalidateLineRange(startLine, endLine);
-            }
-            else if (_invalidRange is null)
-            {
-                _invalidRange = new InvalidLineRange(startLine, endLine);
+                InvalidateDocumentLines(startLine);
             }
             else
             {
-                _invalidRange.SetInvalidRange(startLine, endLine);
+                _invalidStartLine = _invalidStartLine < 0 ? startLine : Math.Min(_invalidStartLine, startLine);
             }
         }
 
         private void HandleDocumentUpdateFinished(object? sender, EventArgs e)
         {
-            if (_invalidRange is null)
+            if (_invalidStartLine < 0)
             {
                 return;
             }
 
-            try
+            var startLine = Math.Clamp(_invalidStartLine, 0, _documentSnapshot.LineCount - 1);
+            _invalidStartLine = -1;
+            InvalidateDocumentLines(startLine);
+        }
+
+        private void InvalidateDocumentLines(int startLine)
+        {
+            for (var lineIndex = startLine; lineIndex < _documentSnapshot.LineCount; lineIndex++)
             {
-                var startLine = Math.Clamp(_invalidRange.StartLine, 0, _documentSnapshot.LineCount - 1);
-                var endLine = Math.Clamp(_invalidRange.EndLine, 0, _documentSnapshot.LineCount - 1);
-                InvalidateLineRange(startLine, endLine);
+                Get(lineIndex).IsInvalid = true;
             }
-            finally
-            {
-                _invalidRange = null;
-            }
+
+            RequestViewportTokenization();
         }
 
         private int GetFirstVisibleLineIndex()
@@ -1306,25 +1312,6 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         private int GetLastVisibleLineIndex()
         {
             return _textView.VisualLines[^1].LastDocumentLine.LineNumber - 1;
-        }
-
-        private sealed class InvalidLineRange
-        {
-            public InvalidLineRange(int startLine, int endLine)
-            {
-                StartLine = startLine;
-                EndLine = endLine;
-            }
-
-            public int StartLine { get; private set; }
-
-            public int EndLine { get; private set; }
-
-            public void SetInvalidRange(int startLine, int endLine)
-            {
-                StartLine = Math.Min(StartLine, startLine);
-                EndLine = Math.Max(EndLine, endLine);
-            }
         }
     }
 }

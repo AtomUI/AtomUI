@@ -244,6 +244,9 @@ GalleryShowCaseCodeDrawerHost
 - `GalleryCodeViewer` 暴露 `LightSyntaxTheme` 和 `DarkSyntaxTheme`，默认值分别为 `LightPlus` 和 `DarkPlus`。产品 Gallery 可以在不改 GalleryBase 源码的前提下替换为 `VisualStudioLight`、`VisualStudioDark`、`AtomOneDark`、`Dracula` 等 TextMate 内置主题。
 - `GalleryCodeViewer` 只安装一次 TextMate。主题变化时调用 `TextMate.Installation.SetTheme(...)` 切换主题，不销毁 `TextEditor`、不重建 document、不中断当前滚动位置。
 - `Language` 变化只更新 grammar，`ActualThemeVariant` 或 syntax theme 属性变化只更新 TextMate theme，两条路径不能互相重建。
+- 分词器、行状态和 token 缓存由 UI dispatcher 独占写入；可见行、文本更新和 grammar 切换统一走同一个分词入口。
+  `TMModel` 仅作为着色 transformer 读取 token 的存储适配器，不给它设置 grammar 或注册会启动后台 worker 的 listener。
+  文本改动使修改点前一行及后续行失效，分词按顺序传播跨行状态；主题切换复用 scope 并重绘，dispose 取消待处理任务和文档订阅。
 - 已打开的 Drawer 编辑器必须监听主题变体变化作为同步信号。纯 Avalonia 主题切换可由 `Application.ActualThemeVariantChanged` 覆盖；AtomUI 主题切换必须订阅 `IThemeManager.ThemeVariantProperty`，因为它在激活主题按算法更新后触发。不要直接订阅 `IThemeManager.IsDarkThemeModeProperty`，否则会早于主题激活流程，读到旧的 `ActivatedTheme`。
 - 行号默认显示。
 - 编辑器只读，允许文本选择和复制。

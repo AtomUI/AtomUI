@@ -6,6 +6,38 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.6
+
+`2026-10-19`
+
+- 破坏性变更
+  - 启动与主题：将 AtomUI 配置入口移到 `AppBuilder.UseAtomUI`，要求应用类接入生成式启动挂接，将旧 Extras Splash 替换为框架管理的 `AtomUI.Controls` Splash，引入分阶段包加载和生成式编译主题注册，并将启动包清单升级到版本 2。应用和生成式消费方请按 [6.2.6 API 迁移指南](docs/releases/6.2.6-api-changes.zh-CN.md) 完成迁移。
+  - 注册：六个控件包公开生成的 `ControlPackageGroup_*` 类型名随 6.2.6 程序集标识变化，字体包也开始参与注册管线。请同步升级 AtomUI 包与 Generator，重新编译已编译的消费方，并重新发布裁剪/NativeAOT 应用；详见迁移指南。
+  - 依赖：最低要求 Avalonia 12.1.4。固定使用 12.1.3 的应用须先升级 Avalonia，再安装 AtomUI 6.2.6；详见迁移指南。
+- 启动与 Core
+  - 通过分阶段注册、主题惰性编译和生成式注册，减少启动工作量、分配与主题/资源初始化成本。
+  - 修复主窗体首个渲染批次后的 Splash 交接，并共享 Wayland 调度时钟，避免动画定时卡顿。
+  - 针对 Avalonia 12.1.4 更新 Wayland 兼容路径，改为校验调度后端和时钟结构，不再硬编码程序集版本。
+  - 隔离 Avalonia Grid 测量临时缓存，避免仍存活的 Grid 保留已关闭 Dialog；检测到上游已清理测量缓存时自动跳过兼容处理。
+- Cascader
+  - 对齐 Ant Design 键盘导航并修复搜索焦点路由。#502
+- NumericUpDown、Skeleton 与 Window
+  - 修复 NumericUpDown 清除按钮命中及步进按钮方形布局。
+  - 改用样式驱动 Skeleton shimmer，并观察异步动画异常。
+  - 修复 `TitleBarFrameBackground` 更新问题。
+- Dialog、ImagePreviewer 与 SplitView
+  - 修复 Dialog 遮罩自然尺寸恢复、单轴状态隔离和缩放偏移。#499
+  - 统一 ImagePreviewer 缩放变换并修正成员布局检查。
+  - 修正 SplitView 动效属性与滚动条 owner 注册。
+- 控件与 Gallery
+  - 修正共享控件和桌面控件中样式属性与路由事件的 owner 注册类型。
+  - 修复 TreeView 的 `ItemsSource` 回放暴露临时选择、勾选与 Form 值变更，导致 TreeSelect 重复上报 Form 值的问题；保留回放完成前的连续修改与嵌套换源，并把值相等的旧节点重映射为新实例。
+  - 修复 TextMate 分词状态被并发访问导致 Gallery 代码高亮偶发缺失的问题。
+  - 复用 Gallery 路由配置并延迟创建命令和计时器，降低启动开销。
+- 构建与依赖
+  - 新增 `buildTransitive/AtomUI.CompiledThemes.targets`，并在 `tools/net10.0` 中携带编译主题构建任务加载的 Avalonia 程序集；字体包开始携带注册载荷。
+  - 将支持的 Avalonia 依赖和包消费方 fixture 升级到 12.1.4。
+
 ## 6.2.5
 
 `2026-10-10`

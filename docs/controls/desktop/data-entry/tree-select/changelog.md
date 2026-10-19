@@ -3,6 +3,11 @@
 本文档记录 TreeSelect 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-19
+
+- Behavior
+  - Keep TreeSelect Form value notifications tied to the final selected nodes when the popup TreeView replaces its `ItemsSource`; temporary deselection and replay no longer produce duplicate notifications. Compare selected and checked nodes by instance identity so an equal-valued source replacement updates the owner to the new node. Ignore selection and checked events from a closed popup tree, then restore the owner selection when it reopens.
+
 ## 2026-09-16
 
 - Behavior

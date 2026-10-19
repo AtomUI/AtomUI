@@ -109,7 +109,7 @@ echo "[COUNT] 共 ${#PROJECTS[@]} 个项目, $total 个测试"
 run_one() { # $1=项目名 $2=预期数 $3=全局已完成基数
     local p="$1" expected="$2" gbase="$3"
     local cs="$REPO_ROOT/tests/$p/$p.csproj"
-    local log="$WORKDIR/cur.log"
+    local log="$WORKDIR/$p.log"
     : > "$log"
 
     echo "[RUN] $p ($expected tests)"
@@ -160,6 +160,11 @@ run_one() { # $1=项目名 $2=预期数 $3=全局已完成基数
     local mark="✔"
     [ "$rc" -ne 0 ] && mark="✘"
     echo "[RUN] $p DONE $mark passed=$passed failed=$failed skipped=$skipped rc=$rc ($(fmt_clock $dur))"
+    if [ "$rc" -ne 0 ]; then
+        echo "[DIAGNOSTICS] $p 完整失败日志: $log"
+    else
+        rm -f "$log"
+    fi
     return $rc
 }
 
@@ -193,6 +198,9 @@ if [ "$any_fail" -eq 0 ]; then
     echo "[SUMMARY] TOTAL: $total 个测试全部通过, 总耗时 $(fmt_clock $total_dur)"
 else
     echo "[SUMMARY] TOTAL: 存在失败, 详见上方清单; 总耗时 $(fmt_clock $total_dur)"
+    echo "[DIAGNOSTICS] 失败清单与完整异常栈已保留: $WORKDIR"
 fi
-rm -rf "$WORKDIR"
+if [ "$any_fail" -eq 0 ]; then
+    rm -rf "$WORKDIR"
+fi
 exit "$any_fail"

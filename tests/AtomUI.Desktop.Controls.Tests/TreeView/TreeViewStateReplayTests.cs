@@ -2,6 +2,8 @@ using System.Collections;
 using System.ComponentModel;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
+using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Threading;
@@ -42,6 +44,41 @@ public class TreeViewStateReplayTests
             checkedLeaf.IsChecked.ShouldBe(true);
             treeView.SelectedItems.Contains(secondChild).ShouldBeTrue();
             treeView.CheckedItems.Contains(checkedLeaf).ShouldBeTrue();
+        });
+    }
+
+    [Fact]
+    public void ItemsSource_Change_During_Replay_Uses_Latest_Source()
+    {
+        var firstNodes = CreateDefaultPathDataNodes();
+        var secondNodes = CreateDefaultPathDataNodes();
+        var thirdNodes = CreateDefaultPathDataNodes();
+        var firstSelection = firstNodes[0].Children.ElementAt(1);
+        var secondSelection = secondNodes[0].Children.ElementAt(1);
+        var thirdSelection = thirdNodes[0].Children.ElementAt(1);
+        var treeView = new AtomUI.Desktop.Controls.TreeView
+        {
+            IsMotionEnabled = false,
+            ItemsSource = firstNodes,
+            SelectedItem = firstSelection
+        };
+
+        ShowInWindow(treeView, () =>
+        {
+            using var subscription = treeView.GetObservable(AtomUI.Desktop.Controls.TreeView.SelectedItemProperty)
+                .Subscribe(item =>
+                {
+                    if (ReferenceEquals(item, secondSelection))
+                    {
+                        treeView.ItemsSource = thirdNodes;
+                    }
+                });
+
+            treeView.ItemsSource = secondNodes;
+            Dispatcher.UIThread.RunJobs();
+
+            treeView.ItemsSource.ShouldBeSameAs(thirdNodes);
+            treeView.SelectedItem.ShouldBeSameAs(thirdSelection);
         });
     }
 
@@ -88,13 +125,54 @@ public class TreeViewStateReplayTests
             treeView.CheckedItems.Add(checkedNode);
             Dispatcher.UIThread.RunJobs();
 
+            var checkedChanges = new List<TreeViewCheckedItemsChangedEventArgs>();
+            treeView.CheckedItemsChanged += (_, args) => checkedChanges.Add(args);
             treeView.ItemsSource = secondNodes;
             RunDispatcherJobsUntil(() => ReferenceEquals(treeView.SelectedItem, secondNodes[0].Children.ElementAt(1)));
 
             treeView.SelectedItem.ShouldBeSameAs(secondNodes[0].Children.ElementAt(1));
+            checkedChanges.Count.ShouldBe(1);
+            checkedChanges[0].RemovedItems.Cast<object>().ShouldContain(checkedNode);
+            checkedChanges[0].AddedItems.Cast<object>()
+                          .ShouldContain(secondNodes[0].Children.ElementAt(1).Children.ElementAt(0));
             treeView.CheckedItems.Contains(secondNodes[0].Children.ElementAt(1).Children.ElementAt(0)).ShouldBeTrue();
             treeView.SelectedItems.Contains(secondNodes[0].Children.ElementAt(0)).ShouldBeFalse();
             treeView.CheckedItems.Contains(secondNodes[0].Children.ElementAt(0)).ShouldBeTrue();
+
+            var thirdNodes = CreateDefaultPathDataNodes();
+            var explicitCheckedNode = thirdNodes[0].Children.ElementAt(0);
+            var addedCheckedNode = new TreeItemNode { Header = "extra", ItemKey = "extra" };
+            thirdNodes.Add(addedCheckedNode);
+            treeView.ItemsSource = thirdNodes;
+            treeView.CheckedItems = new List<object> { explicitCheckedNode };
+            treeView.CheckedItems.Add(addedCheckedNode);
+            Dispatcher.UIThread.RunJobs();
+
+            treeView.CheckedItems.Contains(explicitCheckedNode).ShouldBeTrue();
+            treeView.CheckedItems.Contains(addedCheckedNode).ShouldBeTrue();
+            treeView.CheckedItems.Contains(thirdNodes[0].Children.ElementAt(1).Children.ElementAt(0)).ShouldBeFalse();
+
+            treeView.CheckedItems = new AvaloniaList<object>();
+            Dispatcher.UIThread.RunJobs();
+            checkedChanges.Clear();
+            treeView.IsCheckStrictly = true;
+            List<ITreeItemNode> fourthNodes =
+            [
+                new TreeItemNode { Header = "first", ItemKey = "flat-0" },
+                new TreeItemNode { Header = "second", ItemKey = "flat-1" }
+            ];
+            var firstCheckedNode = fourthNodes[0];
+            var secondCheckedNode = fourthNodes[1];
+            treeView.ItemsSource = fourthNodes;
+            treeView.CheckedItems.Add(firstCheckedNode);
+            treeView.CheckedItems.Add(secondCheckedNode);
+            treeView.CheckedItems.Contains(firstCheckedNode).ShouldBeTrue();
+            treeView.CheckedItems.Contains(secondCheckedNode).ShouldBeTrue();
+            Dispatcher.UIThread.RunJobs();
+
+            treeView.CheckedItems.Contains(firstCheckedNode).ShouldBeTrue();
+            treeView.CheckedItems.Contains(secondCheckedNode).ShouldBeTrue();
+            checkedChanges.Count.ShouldBe(1);
         });
     }
 
@@ -126,6 +204,19 @@ public class TreeViewStateReplayTests
             treeView.SelectedItems.Count.ShouldBe(2);
             treeView.SelectedItems.Contains(secondNodes[0].Children.ElementAt(0)).ShouldBeTrue();
             treeView.SelectedItems.Contains(secondNodes[0].Children.ElementAt(1)).ShouldBeTrue();
+            Dispatcher.UIThread.RunJobs();
+
+            var thirdNodes = CreateDefaultPathDataNodes();
+            var explicitSelection = thirdNodes[0].Children.ElementAt(1);
+            var addedSelection = thirdNodes[0].Children.ElementAt(0);
+            treeView.ItemsSource = thirdNodes;
+            treeView.SelectedItems = new List<ITreeItemNode> { explicitSelection };
+            treeView.SelectedItems.Add(addedSelection);
+            Dispatcher.UIThread.RunJobs();
+
+            treeView.SelectedItems.Count.ShouldBe(2);
+            treeView.SelectedItems[0].ShouldBeSameAs(explicitSelection);
+            treeView.SelectedItems[1].ShouldBeSameAs(addedSelection);
         });
     }
 

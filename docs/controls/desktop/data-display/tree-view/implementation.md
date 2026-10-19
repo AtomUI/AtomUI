@@ -97,6 +97,8 @@ fallback to DefaultCheckedPaths
 restore expanded state or expand all
 ```
 
+回放事务以最新 `ItemsSource` 修订为准。若属性观察者在恢复选择时同步再次换源，后一次回放接管节点路径与事务；最初的快照继续用于计算最终对外差异，旧回放不发布中间事件。
+
 Form 值流：
 
 ```text
@@ -298,7 +300,7 @@ TreeView pointer 流程：
 
 默认状态回放按 selected、checked、filter、expanded 的顺序执行。这样选中和勾选可以在过滤和展开之前完成基础状态同步，最后由 `IsDefaultExpandAll` 或 `DefaultExpandedPaths` 决定可见展开结构。
 
-ItemsSource 变化时，TreeView 先捕获运行期状态的节点身份路径，再清空当前 selection / checked 集合，随后按新数据源尝试恢复运行期状态，最后回退默认路径。多选模式下 `SelectedItems` 是选择恢复的权威来源，即使 Avalonia 同时维护了 `SelectedItem`，也必须先恢复 `SelectedItems` 路径，避免多选状态在首次容器回放或数据源替换时折叠成单选。
+ItemsSource 变化时，TreeView 在 Avalonia 清理旧容器之前捕获选中、勾选对象及运行期节点路径。Avalonia 的源重置可能逐项发出临时变化；TreeView 在回放事务中将中间 `SelectionChanged` 标记为已处理，暂缓 `CheckedItemsChanged` 与 Form 值通知。连续换源只回放最后一次源；调用方在换源后显式设置的选择或勾选优先于旧快照。同一事务内，可观察集合的连续增删更新最终路径，内部勾选级联不记录部分状态；显式赋值为普通 `IList` 后的同步修改在回放前重新读取。完成后按对象身份比较原状态与最终状态：未变则不通知，真实变化则分别发布一次包含移除与新增节点的选择或勾选事件；选择变化对应的 Form 值变更只通知一次。多选模式以 `SelectedItems` 路径为恢复权威，避免 `SelectedItem` 非空时折叠成单选；属性处理或回放抛错、控件脱离视觉树时清理事务状态。
 
 ### 7.3 勾选级联
 

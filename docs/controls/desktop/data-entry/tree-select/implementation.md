@@ -73,6 +73,8 @@ SelectedItems ObservableCollection.CollectionChanged
   → refresh max count state
 ```
 
+TreeSelect 比较 owner 与 popup 的选择集合时按节点实例引用判等。`ItemKey` / `Value` 用于换源重映射；重映射后即使新旧节点的值相等，Form 值也必须持有新数据源的节点实例。
+
 过滤流：
 
 ```text
@@ -151,6 +153,8 @@ SelectTag.Closed
 ### 7.1 节点路径重映射
 
 `ItemsSource` 替换前，TreeSelect 将当前选择转换为 `TreeNodePath`。路径每一段优先使用节点 `ItemKey`，没有 `ItemKey` 时使用 `Value`。新数据源写入 `Items` 后，控件沿路径逐层查找新节点实例，并把选择映射到新实例。
+弹层 TreeView 在自身换源事务结束后只发布最终选择与勾选差异；TreeSelect 完成选择重映射后，把 owner 的最终选择和勾选状态交给尚未结束的 TreeView 回放事务，避免逐项同步时的中间状态覆盖完整选择。TreeSelect 因此不会把容器重建时的临时移除和选回写入 public selection 或重复触发 Form 值变更。
+弹层关闭并脱离视觉树后，其 TreeView selection / checked 事件不再作为输入处理。TreeSelect 保留自己拥有的选择，并在弹层重新打开时同步到候选树，避免隐藏树换源覆盖 Form 值。
 
 ### 7.2 选择同步抑制
 

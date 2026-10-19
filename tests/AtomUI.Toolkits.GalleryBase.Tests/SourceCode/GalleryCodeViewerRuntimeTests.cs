@@ -981,14 +981,10 @@ public class GalleryCodeViewerRuntimeTests
         try
         {
             var installation = GetTextMateInstallation(viewer);
-            var tmModel = GetTextMateModel(installation);
             var compilingGrammar = new AlwaysCompilingGrammar();
-            tmModel.GetType()
-                   .GetMethod("SetGrammar")!
-                   .Invoke(tmModel, new object[] { compilingGrammar });
             installation.GetType()
-                        .GetField("_grammar", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .SetValue(installation, compilingGrammar);
+                        .GetMethod("SetGrammarInternal", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .Invoke(installation, new object[] { compilingGrammar });
             ClearLineTokens(viewer, 11);
 
             installation.GetType()
@@ -1040,17 +1036,13 @@ public class GalleryCodeViewerRuntimeTests
             Dispatcher.UIThread.RunJobs();
 
             var installation = GetTextMateInstallation(viewer);
-            var tmModel = GetTextMateModel(installation);
             var registryOptions = new RegistryOptions(GetCurrentSyntaxTheme(viewer));
             var registry = new Registry(registryOptions);
             var grammar = new ControlledCompilingGrammar(
                 registry.LoadGrammar(registryOptions.GetScopeByExtension(".xml")));
-            tmModel.GetType()
-                   .GetMethod("SetGrammar")!
-                   .Invoke(tmModel, new object[] { grammar });
             installation.GetType()
-                        .GetField("_grammar", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .SetValue(installation, grammar);
+                        .GetMethod("SetGrammarInternal", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .Invoke(installation, new object[] { grammar });
             ClearLineTokens(viewer, 0);
             IsLineInvalid(viewer, 0).ShouldBeTrue();
 

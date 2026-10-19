@@ -117,6 +117,7 @@ Form value + MaxCount state
 - `IsTreeCheckable=true` 使用 checkbox 作为节点切换入口，TreeView selection 不再作为主要选择入口。
 - `ShowCheckedStrategy` 只影响多选 tag 展示集合，不改变 `SelectedItems` 的真实值。
 - `SelectedItems` 是用户拥有的受控集合。集合引用替换和 `ObservableCollection` 等 `INotifyCollectionChanged` 原地 `Add`、`Remove`、`Reset` 都必须刷新 tag、`SelectedCount`、Form value changed、候选树 selection / checked items 和最大选择数状态。
+- 弹层 TreeView 因 `ItemsSource` 换源而清理、回放选中或勾选状态时，TreeSelect 只响应最终变化，不把中间状态重复上报给 Form；已关闭的弹层树不作为选择或勾选输入来源。
 
 过滤行为：
 

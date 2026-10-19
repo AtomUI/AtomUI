@@ -4,6 +4,38 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.6
+
+`2026-10-19`
+
+- Breaking Changes
+  - Startup and Theme: move AtomUI configuration to `AppBuilder.UseAtomUI`, require generated application startup hookup, replace the legacy Extras Splash with the framework-managed `AtomUI.Controls` Splash, introduce staged package loading and generated compiled-theme registration, and advance the startup package manifest to version 2. Applications and generated consumers must follow the [6.2.6 API migration guide](docs/releases/6.2.6-api-changes.md).
+  - Registration: generated `ControlPackageGroup_*` type names change with the 6.2.6 assembly identity in six control packages, and the font packages now join the registration pipeline. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers and republish trimmed/NativeAOT applications; see the migration guide.
+  - Dependencies: require Avalonia 12.1.4. Applications pinned to 12.1.3 must upgrade Avalonia before installing AtomUI 6.2.6; see the migration guide.
+- Startup and Core
+  - Reduce startup work, allocations and theme/resource initialization cost through staged registration, lazy theme compilation and generated registration.
+  - Fix Splash handoff after the main window's first rendered batch and share the Wayland dispatcher clock to prevent animation timing stalls.
+  - Update the Wayland compatibility path for Avalonia 12.1.4 by validating the dispatcher backend and clock structure rather than a hard-coded assembly version.
+  - Isolate Avalonia Grid measurement scratch to prevent retained Grids from keeping closed dialogs alive; automatically skip the compatibility path when upstream measurement cleanup is detected.
+- Cascader
+  - Align keyboard navigation with Ant Design and fix search focus routing. #502
+- NumericUpDown, Skeleton and Window
+  - Fix clear-button hit testing and square step-button layout in NumericUpDown.
+  - Drive Skeleton shimmer through styles and observe asynchronous animation failures.
+  - Fix `TitleBarFrameBackground` updates.
+- Dialog, ImagePreviewer and SplitView
+  - Fix Dialog overlay natural-size restoration, independent axis state and scale offsets. #499
+  - Unify ImagePreviewer zoom transforms and correct layout checks.
+  - Correct SplitView motion-property and scrollbar owner registration.
+- Controls and Gallery
+  - Correct owner registration for styled properties and routed events across shared and desktop controls.
+  - Fix TreeView `ItemsSource` replay exposing transient selection, checked-state and Form value changes, which caused duplicate TreeSelect Form notifications; preserve consecutive edits and nested source replacements, and remap equal-valued nodes to their new instances.
+  - Fix intermittent missing Gallery code highlighting caused by concurrent access to TextMate tokenization state.
+  - Reuse Gallery route configuration and defer command/timer creation to reduce startup overhead.
+- Build and Dependencies
+  - Add `buildTransitive/AtomUI.CompiledThemes.targets` and the Avalonia assemblies the compiled-theme build task loads from `tools/net10.0`; the font packages now ship the registration payload.
+  - Upgrade the supported Avalonia dependency and package-consumer fixtures to 12.1.4.
+
 ## 6.2.5
 
 `2026-10-10`

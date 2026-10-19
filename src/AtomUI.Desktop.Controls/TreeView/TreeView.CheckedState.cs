@@ -390,7 +390,8 @@ public partial class TreeView
                 removed = e.OldItems;
                 break;
         }
-        if (added?.Count > 0 || removed?.Count > 0)
+        RecordExplicitCheckedUpdateDuringReplay(false);
+        if (!IsItemsSourceReplayPending && (added?.Count > 0 || removed?.Count > 0))
         {
             CheckedItemsChanged?.Invoke(this, new TreeViewCheckedItemsChangedEventArgs(
                 removed ?? Empty,

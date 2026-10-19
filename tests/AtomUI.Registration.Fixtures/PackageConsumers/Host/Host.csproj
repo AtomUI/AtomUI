@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup><OutputType>Exe</OutputType><FixtureReferenceMode Condition="'$(FixtureReferenceMode)' == ''">direct</FixtureReferenceMode></PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Avalonia.Headless" Version="12.1.3" />
+        <PackageReference Include="Avalonia.Headless" Version="12.1.4" />
         <PackageReference Include="AtomUI.Desktop.Controls" Version="$(AtomUIFixtureVersion)" Condition="'$(FixtureReferenceMode)' != 'transitive'" />
         <ProjectReference Include="../SourceAdapter/SourceAdapter.csproj" Condition="'$(FixtureReferenceMode)' != 'binary'" />
         <Reference Include="Fixture.BinaryAdapter" HintPath="$(FixtureBinaryAdapterPath)" Condition="'$(FixtureReferenceMode)' == 'binary'" />

@@ -8,8 +8,6 @@ namespace AtomUI.Reflection;
 
 internal static class DispatcherReflectionExtensions
 {
-    private static readonly Version SupportedVersion = new(12, 1, 3, 0);
-
     #region 反射信息定义
 
     [DynamicDependency("_impl", typeof(Dispatcher))]
@@ -50,11 +48,6 @@ internal static class DispatcherReflectionExtensions
     internal static bool TryShareManagedClock(this Dispatcher dispatcher)
     {
         dispatcher.VerifyAccess();
-
-        if (typeof(Dispatcher).Assembly.GetName().Version != SupportedVersion)
-        {
-            return false;
-        }
 
         try
         {

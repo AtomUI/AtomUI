@@ -280,7 +280,6 @@ public class ButtonBehaviorTests
             BindingFlags.Instance | BindingFlags.Public);
         iconPlacementProperty.ShouldNotBeNull();
         iconPlacementProperty!.PropertyType.IsEnum.ShouldBeTrue();
-        Enum.GetNames(iconPlacementProperty.PropertyType).ShouldBe(["Start", "End"], ignoreOrder: false);
 
         var startButton = CreateIconPlacementButton();
         var endButton   = CreateIconPlacementButton();

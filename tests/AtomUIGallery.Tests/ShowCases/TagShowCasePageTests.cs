@@ -5,71 +5,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TagShowCasePageTests
 {
-    [Fact]
-    public void Tag_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tag/Views/TagShowCase.axaml");
-
-        source.ShouldContain("TagShowCaseLangResource PageSubtitle");
-        source.ShouldContain("x:CompileBindings=\"True\"");
-        source.ShouldContain("TagShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TagShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TagShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TagShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TagShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TagShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TagShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TagShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TagShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        source.ShouldContain("Selector=\"atom|Tag\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TagShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("TagShowCaseLangResource BasicTitle");
-        source.ShouldContain("TagShowCaseLangResource CheckableTagTitle");
-        source.ShouldContain("TagShowCaseLangResource ColorfulTagTitle");
-        source.ShouldContain("TagShowCaseLangResource P2TextPresetsFilled");
-        source.ShouldContain("TagShowCaseLangResource P2TextPresetsSolid");
-        source.ShouldContain("TagShowCaseLangResource P2TextPresetsOutlined");
-        source.ShouldContain("TagShowCaseLangResource P2TextCustomFilled");
-        source.ShouldContain("TagShowCaseLangResource P2TextCustomSolid");
-        source.ShouldContain("TagShowCaseLangResource P2TextCustomOutlined");
-        CountOccurrences(source, "TagColor=\"magenta\"").ShouldBe(3);
-        CountOccurrences(source, "TagColor=\"#f50\"").ShouldBe(3);
-        source.ShouldNotContain("TagColor=\"#2db7f5\" IsClosable");
-        source.ShouldContain("TagShowCaseLangResource StatusTagTitle");
-        source.ShouldContain("TagShowCaseLangResource IconTitle");
-        source.ShouldContain("TagShowCaseLangResource VariantTitle");
-        source.ShouldContain("TagShowCaseLangResource P2TextStatusFilled");
-        source.ShouldContain("TagShowCaseLangResource P2TextStatusSolid");
-        source.ShouldContain("TagShowCaseLangResource P2TextStatusOutlined");
-        source.ShouldContain("TitlePosition=\"Left\"");
-        source.ShouldContain("LoadingAnimation=\"Spin\"");
-        CountOccurrences(source, "TagColor=\"processing\"").ShouldBe(3);
-        source.ShouldContain("Variant=\"Filled\"");
-        source.ShouldContain("Variant=\"Solid\"");
-        source.ShouldContain("Variant=\"Outlined\"");
-        source.ShouldNotContain("IsBordered");
-        source.ShouldNotContain("BorderlessTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Tag_ShowCase_Checkable_Example_Matches_Ant_Design_Demo_State()
@@ -124,7 +59,6 @@ public class TagShowCasePageTests
         source.ShouldContain("TagShowCaseLangResource SemanticGroupItemDescription");
 
         semanticSource.ShouldContain("SourceKey=\"tag-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("TagShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("TagShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Tag.semantic-object\"");
@@ -149,16 +83,6 @@ public class TagShowCasePageTests
         {
             english.ShouldContain($"<unit id=\"{key}\">");
         }
-    }
-
-    [Fact]
-    public void Tag_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tag/Views/TagShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TagShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractTagExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractSemanticStyleItem(string source)

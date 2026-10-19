@@ -13,47 +13,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class QRCodeShowCasePageTests
 {
-    [Fact]
-    public void QRCode_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/QRCode/Views/QRCodeShowCase.axaml");
-
-        source.ShouldContain("QRCodeShowCaseLangResource PageSubtitle");
-        source.ShouldContain("QRCodeShowCaseLangResource PageDescription");
-        source.ShouldNotContain("QRCodeShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("QRCodeShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("QRCodeShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("QRCodeShowCaseLangResource ComponentCategory");
-        source.ShouldContain("QRCodeShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("QRCodeShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("QRCodeShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("QRCodeShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:QRCodeShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("QRCodeShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("QRCodeShowCaseLangResource WithIconTitle");
-        source.ShouldContain("QRCodeShowCaseLangResource DifferentStatusTitle");
-        source.ShouldContain("QRCodeShowCaseLangResource AdvancedUsageTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void QRCode_ShowCase_Declares_The_Official_Deferred_Semantic_Preview_And_Style_Example()
@@ -73,7 +32,6 @@ public class QRCodeShowCasePageTests
         source.ShouldContain("Path=\"cover\"");
 
         semanticSource.ShouldContain("SourceKey=\"qr-code-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"6.0.0\"");
         semanticSource.ShouldContain("QRCodeShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("QRCodeShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Orientation=\"Horizontal\"");
@@ -152,16 +110,6 @@ public class QRCodeShowCasePageTests
             qrCodes.Length.ShouldBe(2);
             qrCodes[1].Icon.ShouldNotBeNull();
         });
-    }
-
-    [Fact]
-    public void QRCode_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/QRCode/Views/QRCodeShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/QRCodeShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractQRCodeExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractQRCodeExampleItems(string source)

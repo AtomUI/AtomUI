@@ -30,77 +30,6 @@ public class StepsShowCasePageTests
     }
 
     [Fact]
-    public void Steps_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Steps/Views/StepsShowCase.axaml");
-
-        source.ShouldContain("StepsShowCaseLangResource PageSubtitle");
-        source.ShouldContain("StepsShowCaseLangResource PageDescription");
-        source.ShouldNotContain("StepsShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("StepsShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("StepsShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("StepsShowCaseLangResource ComponentCategory");
-        source.ShouldContain("StepsShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("StepsShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("StepsShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("StepsShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:StepsShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("Name=\"StepsSemanticPreview\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #StepsSemanticOwner}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Steps}\"");
-        source.ShouldContain("Path=\"root\"");
-        source.ShouldContain("Path=\"item\"");
-        source.ShouldContain("Path=\"itemWrapper\"");
-        source.ShouldContain("Path=\"itemIcon\"");
-        source.ShouldContain("Path=\"itemTitle\"");
-        source.ShouldContain("Path=\"itemSubtitle\"");
-        source.ShouldContain("Path=\"itemContent\"");
-        source.ShouldContain("Path=\"itemRail\"");
-        source.ShouldContain("StepsShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldContain("StepsShowCaseLangResource SemanticPartStyleDescription");
-        source.ShouldContain("SourceKey=\"steps-semantic-part\"");
-        CountShowCaseItemElements(source).ShouldBe(17);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(17);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(17);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:StepsViewModel\"").ShouldBe(18);
-        source.ShouldContain("StepsShowCaseLangResource BasicTitle");
-        source.ShouldContain("StepsShowCaseLangResource SwitchStepTitle");
-        source.ShouldContain("StepsShowCaseLangResource P2TextCurrent");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("StepsShowCaseLangResource NavigationStepsTitle");
-        source.ShouldContain("StepsShowCaseLangResource InlineStepsTitle");
-        source.ShouldContain("StepsShowCaseLangResource InlineStyleCombinationTitle");
-        source.ShouldContain("SourceKey=\"steps-inline-style-combination\"");
-        source.ShouldContain("Offset=\"2\"");
-        source.ShouldContain("StepsShowCaseLangResource P2SubHeaderSubTitle");
-        source.ShouldContain("StepsShowCaseLangResource P2HeaderStepN5");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
     public void Steps_ShowCase_Uses_Redesigned_Control_Contract()
     {
         var pageSource       = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Steps/Views/StepsShowCase.axaml");
@@ -164,17 +93,6 @@ public class StepsShowCasePageTests
 
         viewModel.Current = 2;
         viewModel.InteractivePageContent.ShouldBe("Last-content");
-    }
-
-    [Fact]
-    public void Steps_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Steps/Views/StepsShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/StepsShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractStepsExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     [Fact]
@@ -396,7 +314,6 @@ public class StepsShowCasePageTests
         english.ShouldContain("<source>00:02</source>");
 
         semanticSource.ShouldContain("SourceKey=\"steps-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("StepsShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("StepsShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Steps.semantic-style-demo-root\"");
@@ -444,7 +361,6 @@ public class StepsShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "steps-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

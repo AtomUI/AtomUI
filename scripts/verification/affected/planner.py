@@ -5,6 +5,7 @@ from pathlib import Path
 from functools import lru_cache
 
 from .repository import matches, symbols, scrub_csharp
+from .test_value_audit import audit_low_value_permanent_tests
 
 
 class Planner:
@@ -89,7 +90,7 @@ class Planner:
         return [p for p in self.repo.tests if matches(p, pattern)]
 
     def audit(self):
-        errors = []
+        errors = audit_low_value_permanent_tests(self.repo)
         for owner in self.policy.get("areas", []) + self.policy.get("rules", []):
             for pattern in owner.get("tests", []):
                 if not self.suite_files(pattern):

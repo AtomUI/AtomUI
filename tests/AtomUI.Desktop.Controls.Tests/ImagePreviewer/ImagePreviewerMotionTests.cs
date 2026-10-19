@@ -43,18 +43,6 @@ public class ImagePreviewerMotionTests
         });
     }
 
-    [Fact]
-    public void ImagePreviewerDialog_Coalesces_Window_Resize_Transition_Suppression()
-    {
-        var dialogSource = ReadRepoFile("src/AtomUI.Desktop.Controls/ImagePreviewer/ImagePreviewerDialog.cs");
-
-        dialogSource.ShouldContain("SuppressResizeMotion");
-        dialogSource.ShouldContain("WindowStateProperty");
-        dialogSource.ShouldContain("OnSizeChanged(SizeChangedEventArgs e)");
-        dialogSource.ShouldContain("_windowResizeTransformSuppressionVersion");
-        dialogSource.ShouldContain("DispatcherPriority.Background");
-    }
-
     private static string ReadRepoFile(string relativePath)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

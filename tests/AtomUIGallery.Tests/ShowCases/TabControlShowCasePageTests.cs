@@ -25,75 +25,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TabControlShowCasePageTests
 {
-    [Fact]
-    public void TabControl_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/TabControl/Views/TabControlShowCase.axaml");
-
-        source.ShouldContain("TabControlShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TabControlShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TabControlShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TabControlShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TabControlShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TabControlShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TabControlShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TabControlShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TabControlShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TabControlShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost StickyContentPadding=\"28,0,28,0\">");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldContain("Name=\"TabControlSemanticPreview\"");
-        source.ShouldContain("Name=\"CardTabControlSemanticPreview\"");
-        source.ShouldContain("Name=\"TabItemSemanticPreview\"");
-        source.ShouldContain("Title=\"TabItem\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #TabControlSemanticOwner}\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #CardTabControlSemanticOwner}\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #TabItemSemanticOwner}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:TabControl}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:CardTabControl}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:TabItem}\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TabControlShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(17);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(17);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(17);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:TabControlViewModel\"").ShouldBe(18);
-        CountOccurrences(source, "BadgeText=\"v6.0.8\"").ShouldBe(2);
-        source.ShouldContain("TabControlShowCaseLangResource TabControlBasicTitle");
-        source.ShouldContain("TabControlShowCaseLangResource TabControlItemsSourceTitle");
-        source.ShouldContain("TabControlShowCaseLangResource TabControlReorderTitle");
-        source.ShouldContain("TabControlShowCaseLangResource TabControlReorderPlacementTitle");
-        source.ShouldContain("TabControlShowCaseLangResource TabControlAddCloseTitle");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void TabControl_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/TabControl/Views/TabControlShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TabControlShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractTabControlExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
-    }
 
     [Fact]
     public void TabControl_Semantic_Previews_Are_Materialized_On_Tab_Selection()
@@ -220,7 +151,6 @@ public class TabControlShowCasePageTests
         CountOccurrences(source, "Path=\"indicator\"").ShouldBe(1);
 
         semanticSource.ShouldContain("SourceKey=\"tabcontrol-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("TabControlShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("TabControlShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|TabControl.semantic-style-demo\"");
@@ -279,7 +209,6 @@ public class TabControlShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "tabcontrol-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

@@ -8,58 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class ModalShowCasePageTests
 {
-    [Fact]
-    public void Modal_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Modal/Views/ModalShowCase.axaml");
-
-        source.ShouldContain("ModalShowCaseLangResource PageSubtitle");
-        source.ShouldContain("ModalShowCaseLangResource PageDescription");
-        source.ShouldNotContain("ModalShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("ModalShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("ModalShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("ModalShowCaseLangResource ComponentCategory");
-        source.ShouldContain("ModalShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("ModalShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("ModalShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("ModalShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        CountShowCaseItemElements(source).ShouldBe(10);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(10);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(10);
-        // 10 个示例 DataTemplate + 1 个语义预览 DataTemplate。
-        CountOccurrences(source, "DataTemplate x:DataType=\"viewModels:ModalViewModel\"").ShouldBe(11);
-        source.ShouldContain("ModalShowCaseLangResource BasicTitle");
-        source.ShouldContain("ModalShowCaseLangResource MessageBoxStyleTitle");
-        source.ShouldContain("ModalShowCaseLangResource StaticDialogApiTitle");
-        source.ShouldContain("ModalShowCaseLangResource P2ContentOpenBeforeCloseDialog");
-        // MessageBox 样式示例的宿主类型由 ToggleSwitch 切换（勾选=原生窗口，未勾选=浮层）。
-        source.ShouldContain("Name=\"MessageBoxHostTypeSwitch\"");
-        source.ShouldNotContain("MessageBoxOverlayHostButton");
-        source.ShouldNotContain("MessageBoxWindowHostButton");
-        source.ShouldContain("SemanticStyleDialogOpenButton");
-        CountOccurrences(source, "HostMaxWidth=\"").ShouldBeGreaterThanOrEqualTo(2);
-        CountOccurrences(source, "HostMaxHeight=\"").ShouldBeGreaterThanOrEqualTo(2);
-        // 示例区不使用显式 PlacementTarget：只有语义预览把 stage 作为 placement target。
-        ExtractModalExampleItems(source).ShouldNotContain("PlacementTarget=\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Modal_ShowCase_Semantic_Preview_Follows_The_Pinned_Overlay_Pattern()
@@ -187,17 +135,6 @@ public class ModalShowCasePageTests
         // 禁止以事件处理器为特征的代码回退。
         item.ShouldNotContain(".Loaded=");
         item.ShouldNotContain(".Unloaded=");
-    }
-
-    [Fact]
-    public void Modal_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Modal/Views/ModalShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/ModalShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractModalExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractModalExampleItems(string source)

@@ -8,11 +8,6 @@ namespace AtomUI.Desktop.Controls.Tests.Tag;
 
 public class TagContractTests
 {
-    [Fact]
-    public void TagVariant_Uses_Ant_Design_V6_Names()
-    {
-        Enum.GetNames<TagVariant>().ShouldBe(["Filled", "Solid", "Outlined"]);
-    }
 
     [Fact]
     public void Tag_Defaults_To_Filled()

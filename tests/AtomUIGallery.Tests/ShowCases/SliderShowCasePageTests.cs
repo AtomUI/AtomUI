@@ -20,53 +20,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SliderShowCasePageTests
 {
-    [Fact]
-    public void Slider_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Slider/Views/SliderShowCase.axaml");
-
-        source.ShouldContain("SliderShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SliderShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SliderShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SliderShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SliderShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SliderShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SliderShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SliderShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SliderShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SliderShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SliderShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("SliderShowCaseLangResource BasicTitle");
-        source.ShouldContain("SliderShowCaseLangResource RangeValuesBindingTitle");
-        source.ShouldContain("SliderShowCaseLangResource MultiHandleTitle");
-        source.ShouldContain("RangeValues=\"");
-        source.ShouldNotContain("RangeValue=\"");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("SliderShowCaseLangResource CustomizeTooltipTitle");
-        source.ShouldContain("SliderShowCaseLangResource VerticalTitle");
-        source.ShouldContain("SliderShowCaseLangResource GraduatedSliderTitle");
-        source.ShouldContain("SliderShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Slider_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -90,7 +43,6 @@ public class SliderShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"slider-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("SliderShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("SliderShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Slider.semantic-style-demo-h\"");
@@ -204,7 +156,6 @@ public class SliderShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "slider-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -232,16 +183,6 @@ public class SliderShowCasePageTests
             verticalHandle.GetValue(AtomSliderThumb.OutlineThicknessProperty).ShouldBe(new Thickness(2));
             AssertSolidColor(verticalHandle.GetValue(AtomSliderThumb.OutlineBrushProperty), "#722ED1");
         });
-    }
-
-    [Fact]
-    public void Slider_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Slider/Views/SliderShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SliderShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractSliderExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     [Fact]

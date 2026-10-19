@@ -26,57 +26,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class ProgressBarShowCasePageTests
 {
-    [Fact]
-    public void ProgressBar_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/ProgressBar/Views/ProgressBarShowCase.axaml");
-
-        source.ShouldContain("ProgressBarShowCaseLangResource PageSubtitle");
-        source.ShouldContain("ProgressBarShowCaseLangResource PageDescription");
-        source.ShouldNotContain("ProgressBarShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("ProgressBarShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("ProgressBarShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("ProgressBarShowCaseLangResource ComponentCategory");
-        source.ShouldContain("ProgressBarShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("ProgressBarShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("ProgressBarShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("ProgressBarShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        source.ShouldContain("Selector=\"atom|CircleProgress\"");
-        source.ShouldContain("Selector=\"atom|DashboardProgress\"");
-        source.ShouldContain("Selector=\"#CircleWithStep atom|StepsProgressBar\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:ProgressBarShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(20);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(20);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:ProgressBarViewModel\"").ShouldBe(21);
-        source.ShouldContain("ProgressBarShowCaseLangResource ProgressBarTitle");
-        source.ShouldContain("ProgressBarShowCaseLangResource CustomTextFormatTitle");
-        source.ShouldContain("ProgressBarShowCaseLangResource PercentPositionTitle");
-        source.ShouldContain("ProgressBarShowCaseLangResource ToggleDisabledStatusTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void ProgressBar_ShowCase_Declares_The_Official_Semantic_Preview_And_Style_Example()
@@ -136,7 +85,6 @@ public class ProgressBarShowCasePageTests
         CountOccurrences(source, "Path=\"indicator\"").ShouldBe(4);
 
         semanticSource.ShouldContain("SourceKey=\"progress-bar-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("ProgressBarShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("ProgressBarShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Spacing=\"0\"");
@@ -308,7 +256,6 @@ public class ProgressBarShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "progress-bar-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -396,17 +343,6 @@ public class ProgressBarShowCasePageTests
                 AssertStepsIndicatorPlacement(progress);
             }
         });
-    }
-
-    [Fact]
-    public void ProgressBar_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/ProgressBar/Views/ProgressBarShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/ProgressBarShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractProgressBarExampleItems(source));
-        CountOccurrences(normalized, "<gallery:ShowCaseItem").ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractProgressBarExampleItems(string source)

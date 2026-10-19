@@ -18,80 +18,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TourShowCasePageTests
 {
-    [Fact]
-    public void Tour_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tour/Views/TourShowCase.axaml");
-
-        source.ShouldContain("TourShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TourShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TourShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TourShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TourShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TourShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TourShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TourShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TourShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TourShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("gallery:GalleryShowCaseHost.SemanticPartsContentTemplate");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TourShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(8);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(8);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(8);
-        // 8 个示例模板 + 1 个语义部件预览模板
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:TourViewModel\"").ShouldBe(9);
-        source.ShouldContain("TourShowCaseLangResource BasicTitle");
-        source.ShouldContain("TourShowCaseLangResource CustomHighlightedAreaStyleTitle");
-        source.ShouldContain("IsOccupyEntireRow=\"True\"");
-        source.ShouldNotContain("ElementName=");
-        source.ShouldContain("<atom:TextTourIndicator />");
-        source.ShouldContain("<views:SkipTourActionButton");
-        source.ShouldContain("MaskColor=\"#662800FF\"");
-        source.ShouldContain("IsShowMask=\"False\"");
-
-        // 语义预览：对齐 antd Tour _semantic 演示（默认打开、锚点按钮、封面步骤）。
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Tour}\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #TourSemanticOwner}\"");
-        source.ShouldContain("IsPopupPinnedOpen=\"True\"");
-        source.ShouldContain("Name=\"TourSemanticAnchorButton\"");
-        source.ShouldNotContain("Loaded=\"HandleSemanticStageLoaded\"");
-        source.ShouldContain("AttachedToVisualTree=\"HandleSemanticStageAttached\"");
-        source.ShouldContain("PreviewStageMinHeight=\"600\"");
-        source.ShouldContain("Path=\"root\"");
-        source.ShouldContain("Path=\"popup.root\"");
-        source.ShouldContain("Path=\"popup.mask\"");
-        source.ShouldContain("Path=\"popup.section\"");
-        source.ShouldContain("Path=\"popup.cover\"");
-        source.ShouldContain("Path=\"popup.close\"");
-        source.ShouldContain("Path=\"popup.header\"");
-        source.ShouldContain("Path=\"popup.title\"");
-        source.ShouldContain("Path=\"popup.description\"");
-        source.ShouldContain("Path=\"popup.footer\"");
-        source.ShouldContain("Path=\"popup.actions\"");
-        source.ShouldContain("Path=\"popup.indicators\"");
-        source.ShouldContain("Path=\"popup.indicator\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Tour_ShowCase_Customizes_Semantic_Parts_Only_Via_Dedicated_Part_Styles()
@@ -133,17 +59,6 @@ public class TourShowCasePageTests
         AtomUIGallery.ShowCases.Tour.TourShowCase.SetTourStepTarget(root, step.Name, target.Name);
 
         step.Target.ShouldBeSameAs(target);
-    }
-
-    [Fact]
-    public void Tour_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tour/Views/TourShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TourShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractTourExampleItems(source));
-        CountOccurrences(normalized, "<gallery:ShowCaseItem").ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     [Fact]

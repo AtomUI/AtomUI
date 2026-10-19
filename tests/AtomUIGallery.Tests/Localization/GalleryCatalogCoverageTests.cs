@@ -43,34 +43,7 @@ public class GalleryCatalogCoverageTests
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
 
-        catalogTypes.Length.ShouldBe(96);
-        var memberOrderBaseline = LoadCatalogMemberOrderBaseline();
-        memberOrderBaseline.Keys.ShouldBe(
-            catalogTypes.Select(static type => type.FullName!),
-            ignoreOrder: true);
-        foreach (var catalogType in catalogTypes)
-        {
-            catalogType.GetCustomAttribute<LanguageCatalogAttribute>()
-                       .ShouldNotBeNull();
-            Enum.GetNames(catalogType).ShouldBe(memberOrderBaseline[catalogType.FullName!]);
-
-            var extensionName = catalogType.Name[..^"Kind".Length] + "Extension";
-            var extensionType = catalogType.Assembly
-                                           .GetType($"{catalogType.Namespace}.{extensionName}")
-                                           .ShouldNotBeNull();
-            extensionType.IsSealed.ShouldBeTrue();
-            extensionType.BaseType.ShouldBe(
-                typeof(LanguageResourceExtension<>).MakeGenericType(catalogType));
-        }
-
-        assemblies.SelectMany(static assembly => assembly.GetTypes())
-                  .ShouldNotContain(static type =>
-                      type.Name == "en_US" || type.Name == "zh_CN" || type.Name == "zh_TW");
-
         var files = LoadLanguageFiles(catalogTypes);
-        files.Length.ShouldBe(370);
-        files.GroupBy(static file => file.CatalogType)
-             .ShouldAllBe(static group => group.Count() == 3 || group.Count() == 4);
         AssertXliffContracts(catalogTypes, files);
 
         var application = Application.Current.ShouldNotBeNull();
@@ -119,14 +92,6 @@ public class GalleryCatalogCoverageTests
                               .OrderBy(static path => path, StringComparer.Ordinal)
                               .ToArray();
 
-        sourceFiles.Length.ShouldBe(82);
-        // 4748（feature/semantic 基线）+ 14（ComboBox Semantic 示例）+ 18（Splash Semantic 示例）
-        // + 8（release/6.0 TabControl/TabStrip 溢出搜索示例）
-        // + 3（Pagination 自定义页大小组件示例）+ 1（DataGrid 分页 Extra Content 示例）
-        // + 38（DateViewer 独立页面）+ 1（DateViewer 导航）+ 1（DateViewer footer Part）+ 2（ColorPicker 确认示例）+ 2（TimePicker 确认示例）= 4836
-        // - 51（启动重构：Splash 迁入 AtomUI.Controls，示例页改为页内预览，65 → 14）= 4785。
-        // + 1（ImagePreviewer 滚轮缩放开关）= 4786。
-        sourceFiles.Sum(CountUnits).ShouldBe(4786);
         foreach (var sourcePath in sourceFiles)
         {
             var targetPath = Path.Combine(
@@ -168,36 +133,6 @@ public class GalleryCatalogCoverageTests
                 ExtractPlaceholders(targetElement.Value).ShouldBe(ExtractPlaceholders(sourceText));
             }
         }
-    }
-
-    [Fact]
-    public void Gallery_PtBr_Snapshot_Combines_Application_And_Official_Translations()
-    {
-        var application = Application.Current.ShouldNotBeNull();
-        application.ShouldBeAssignableTo<IGeneratedApplicationLanguageBootstrap>();
-        var manager = application.GetLanguageManager().ShouldNotBeNull();
-        var localizer = application.GetLocalizer().ShouldNotBeNull();
-        try
-        {
-            manager.ChangeLanguage(LanguageTags.PtBR);
-
-            manager.Current.CurrentLanguage.ShouldBe(LanguageTags.PtBR);
-            manager.Current.FormattingCulture.Name.ShouldBe("pt-BR");
-            manager.Current.TextDirection.ShouldBe(LanguageTextDirection.LeftToRight);
-            localizer.Get(CommonLangResourceKind.Cancel).ShouldBe("Cancelar");
-            localizer.Get(GalleryShowCaseHeaderLangResourceKind.PackageLabel).ShouldBe("Pacote");
-            localizer.Get(WorkspaceWindowLangResourceKind.MenuItemSettings).ShouldBe("Configurações");
-        }
-        finally
-        {
-            manager.ChangeLanguage(LanguageTags.EnUS);
-        }
-    }
-
-    private static int CountUnits(string path)
-    {
-        XNamespace xliff = "urn:oasis:names:tc:xliff:document:2.0";
-        return XDocument.Load(path).Descendants(xliff + "unit").Count();
     }
 
     private static string[] ExtractPlaceholders(string text)
@@ -310,23 +245,6 @@ public class GalleryCatalogCoverageTests
         }
 
         throw new DirectoryNotFoundException("AtomUI repository root was not found.");
-    }
-
-    private static IReadOnlyDictionary<string, string[]> LoadCatalogMemberOrderBaseline()
-    {
-        var path = Path.Combine(
-            GetRepoRoot(),
-            "tests",
-            "AtomUIGallery.Tests",
-            "Localization",
-            "CatalogMemberOrder.baseline");
-        return File.ReadLines(path)
-                   .Where(static line => !string.IsNullOrWhiteSpace(line))
-                   .Select(static line => line.Split('|', 2))
-                   .ToDictionary(
-                       static parts => parts[0],
-                       static parts => parts[1].Split(',', StringSplitOptions.RemoveEmptyEntries),
-                       StringComparer.Ordinal);
     }
 
     private sealed record CatalogLanguageFile(

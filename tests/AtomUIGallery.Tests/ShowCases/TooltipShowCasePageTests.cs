@@ -5,58 +5,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TooltipShowCasePageTests
 {
-    [Fact]
-    public void Tooltip_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tooltip/Views/TooltipShowCase.axaml");
-
-        source.ShouldContain("TooltipShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TooltipShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TooltipShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TooltipShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TooltipShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TooltipShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TooltipShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TooltipShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TooltipShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TooltipShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TooltipShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("TooltipShowCaseLangResource BasicTitle");
-        source.ShouldContain("TooltipShowCaseLangResource PlacementTitle");
-        source.ShouldContain("TooltipShowCaseLangResource ArrowTitle");
-        source.ShouldContain("TooltipShowCaseLangResource ColorfulTooltipTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Tooltip_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tooltip/Views/TooltipShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TooltipShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractTooltipExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
-    }
 
     [Fact]
     public void Tooltip_ShowCase_Exposes_Semantic_Parts_Tab()

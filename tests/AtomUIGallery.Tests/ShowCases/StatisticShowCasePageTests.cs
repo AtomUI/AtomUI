@@ -13,48 +13,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class StatisticShowCasePageTests
 {
-    [Fact]
-    public void Statistic_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Statistic/Views/StatisticShowCase.axaml");
-
-        source.ShouldContain("StatisticShowCaseLangResource PageSubtitle");
-        source.ShouldContain("StatisticShowCaseLangResource PageDescription");
-        source.ShouldNotContain("StatisticShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("StatisticShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("StatisticShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("StatisticShowCaseLangResource ComponentCategory");
-        source.ShouldContain("StatisticShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("StatisticShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("StatisticShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("StatisticShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:StatisticShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("StatisticShowCaseLangResource BasicTitle");
-        source.ShouldContain("StatisticShowCaseLangResource UnitTitle");
-        source.ShouldContain("StatisticShowCaseLangResource InCardTitle");
-        source.ShouldContain("StatisticShowCaseLangResource AnimatedNumberTitle");
-        source.ShouldContain("StatisticShowCaseLangResource TimerTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Statistic_ShowCase_Declares_The_Official_Semantic_Preview_And_Style_Example()
@@ -76,7 +34,6 @@ public class StatisticShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"statistic-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"v6.1.3\"");
         semanticSource.ShouldContain("StatisticShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("StatisticShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Orientation=\"Vertical\"");
@@ -145,16 +102,6 @@ public class StatisticShowCasePageTests
             Dispatcher.UIThread.RunJobs();
             Assert.All(page.GetVisualDescendants().OfType<SemanticPartPreview>(), preview => Assert.False(preview.IsEffectivelyVisible));
         });
-    }
-
-    [Fact]
-    public void Statistic_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Statistic/Views/StatisticShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/StatisticShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractStatisticExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractStatisticExampleItems(string source)

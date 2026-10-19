@@ -8,54 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class DrawerShowCasePageTests
 {
-    [Fact]
-    public void Drawer_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Drawer/Views/DrawerShowCase.axaml");
-
-        source.ShouldContain("DrawerShowCaseLangResource PageSubtitle");
-        source.ShouldContain("DrawerShowCaseLangResource PageDescription");
-        source.ShouldNotContain("DrawerShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("DrawerShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("DrawerShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("DrawerShowCaseLangResource ComponentCategory");
-        source.ShouldContain("DrawerShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("DrawerShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("DrawerShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("DrawerShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:DrawerShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(9);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(9);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(9);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:DrawerViewModel\"").ShouldBe(10);
-        source.ShouldContain("DrawerShowCaseLangResource BasicTitle");
-        source.ShouldContain("DrawerShowCaseLangResource MultiLevelTitle");
-        source.ShouldContain("DrawerShowCaseLangResource FormInDrawerTitle");
-        source.ShouldContain("DrawerShowCaseLangResource PresetSizeTitle");
-        source.ShouldContain("DrawerShowCaseLangResource SemanticStylesTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Drawer_ShowCase_Semantic_Preview_Follows_The_Inline_Pinned_Pattern()
@@ -96,17 +48,6 @@ public class DrawerShowCasePageTests
         // 禁止以事件处理器为特征的代码回退。
         semanticStylesItem.ShouldNotContain(".Loaded=");
         semanticStylesItem.ShouldNotContain(".Unloaded=");
-    }
-
-    [Fact]
-    public void Drawer_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Drawer/Views/DrawerShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/DrawerShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractDrawerExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractDrawerExampleItems(string source)

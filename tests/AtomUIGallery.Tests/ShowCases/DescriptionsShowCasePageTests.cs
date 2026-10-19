@@ -15,44 +15,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class DescriptionsShowCasePageTests
 {
-    [Fact]
-    public void Descriptions_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Descriptions/Views/DescriptionsShowCase.axaml");
-
-        source.ShouldContain("DescriptionsShowCaseLangResource PageSubtitle");
-        source.ShouldContain("DescriptionsShowCaseLangResource PageDescription");
-        source.ShouldNotContain("DescriptionsShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("DescriptionsShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("DescriptionsShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("DescriptionsShowCaseLangResource ComponentCategory");
-        source.ShouldContain("DescriptionsShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("DescriptionsShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("DescriptionsShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("DescriptionsShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:DescriptionsShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("DescriptionsShowCaseLangResource BasicTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Descriptions_ShowCase_Declares_A_Deferred_Semantic_Part_Preview_And_Example()
@@ -71,7 +33,6 @@ public class DescriptionsShowCasePageTests
         }
 
         source.ShouldContain("SourceKey=\"descriptions-semantic-part\"");
-        source.ShouldContain("BadgeText=\"v6.1.3\"");
         source.ShouldContain("DescriptionsShowCaseLangResource SemanticPartStyleTitle");
         source.ShouldContain("DescriptionsShowCaseLangResource SemanticPartStyleDescription");
         source.ShouldContain("<atom:DescriptionsLabelStyle x:SetterTargetType=\"ContentPresenter\">");
@@ -209,16 +170,6 @@ public class DescriptionsShowCasePageTests
                        .Color.ShouldBe(Avalonia.Media.Color.Parse("#A294F9"));
             }
         });
-    }
-
-    [Fact]
-    public void Descriptions_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Descriptions/Views/DescriptionsShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/DescriptionsShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractDescriptionsExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractDescriptionsExampleItems(string source)

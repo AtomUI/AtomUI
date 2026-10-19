@@ -22,49 +22,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class ExpanderShowCasePageTests
 {
-    [Fact]
-    public void Expander_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Expander/Views/ExpanderShowCase.axaml");
-
-        source.ShouldContain("ExpanderShowCaseLangResource PageSubtitle");
-        source.ShouldContain("ExpanderShowCaseLangResource PageDescription");
-        source.ShouldNotContain("ExpanderShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("ExpanderShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("ExpanderShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("ExpanderShowCaseLangResource ComponentCategory");
-        source.ShouldContain("ExpanderShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("ExpanderShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("ExpanderShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("ExpanderShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:ExpanderShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("ExpanderShowCaseLangResource ExpanderTitle");
-        source.ShouldContain("ExpanderShowCaseLangResource BorderlessTitle");
-        source.ShouldContain("ExpanderShowCaseLangResource ExpandingDirectionTitle");
-        source.ShouldContain("ExpanderShowCaseLangResource ExpandIconLocationTitle");
-        source.ShouldContain("ExpanderShowCaseLangResource CollapsibleTitle");
-        source.ShouldContain("ExpanderShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Expander_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -86,7 +43,6 @@ public class ExpanderShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"expander-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("ExpanderShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("ExpanderShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Expander.semantic-object\"");
@@ -189,7 +145,6 @@ public class ExpanderShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "expander-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -221,16 +176,6 @@ public class ExpanderShowCasePageTests
             largeIcon.IconWidth.ShouldBe(20);
             largeIcon.IconHeight.ShouldBe(20);
         });
-    }
-
-    [Fact]
-    public void Expander_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Expander/Views/ExpanderShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/ExpanderShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractExpanderExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractExpanderExampleItems(string source)

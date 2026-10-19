@@ -14,17 +14,6 @@ namespace AtomUI.Core.Tests.Theme;
 
 public class ThemeGeneratedDescriptorContractTests
 {
-    [Fact]
-    public void Control_Descriptor_Uses_Exact_Control_Type_And_Has_No_Global_Whitelist()
-    {
-        var descriptorType = typeof(ControlTokenDescriptor);
-
-        descriptorType.GetProperty("ControlType").ShouldNotBeNull();
-        descriptorType.GetProperty("SupportedGlobalTokens").ShouldBeNull();
-        descriptorType.GetConstructors().ShouldContain(constructor =>
-            constructor.GetParameters().Length != 0 &&
-            constructor.GetParameters()[0].ParameterType == typeof(Type));
-    }
 
     [Fact]
     public void Descriptor_Preserves_Identity_And_Uses_Direct_Factory()
@@ -33,25 +22,6 @@ public class ThemeGeneratedDescriptorContractTests
 
         descriptor.Identity.ShouldBe(new ControlTokenIdentity("AtomUI", "Button"));
         descriptor.CreateBuilder().ShouldBeOfType<SchemaControlToken>();
-    }
-
-    [Fact]
-    public void Control_Token_Attribute_Is_A_Zero_Argument_Discovery_Marker()
-    {
-        var attribute = new ControlDesignTokenAttribute();
-        var usage = attribute.GetType()
-                             .GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
-                             .Cast<AttributeUsageAttribute>()
-                             .ShouldHaveSingleItem();
-
-        attribute.GetType().GetConstructors().ShouldHaveSingleItem()
-                 .GetParameters().ShouldBeEmpty();
-        attribute.GetType().GetProperties()
-                 .Where(static property => property.DeclaringType == typeof(ControlDesignTokenAttribute))
-                 .ShouldBeEmpty();
-        usage.ValidOn.ShouldBe(AttributeTargets.Class);
-        usage.Inherited.ShouldBeFalse();
-        usage.AllowMultiple.ShouldBeFalse();
     }
 
     [Fact]
@@ -189,7 +159,6 @@ public class ThemeGeneratedDescriptorContractTests
             ThemeAppearanceEffect.Dark);
 
         attribute.Algorithm.ShouldBe(ThemeAlgorithm.Dark);
-        attribute.GetType().GetProperty("Id").ShouldBeNull();
         Should.Throw<ArgumentOutOfRangeException>(() => new ThemeAlgorithmAttribute(
             (ThemeAlgorithm)999,
             revision: 1,

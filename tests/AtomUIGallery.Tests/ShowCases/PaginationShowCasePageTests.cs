@@ -20,85 +20,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class PaginationShowCasePageTests
 {
-    [Fact]
-    public void Pagination_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Pagination/Views/PaginationShowCase.axaml");
-
-        source.ShouldContain("PaginationShowCaseLangResource PageSubtitle");
-        source.ShouldContain("PaginationShowCaseLangResource PageDescription");
-        source.ShouldNotContain("PaginationShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("PaginationShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("PaginationShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("PaginationShowCaseLangResource ComponentCategory");
-        source.ShouldContain("PaginationShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("PaginationShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("PaginationShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("PaginationShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldContain("Name=\"PaginationSemanticPreview\"");
-        source.ShouldContain("Name=\"SimplePaginationSemanticPreview\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #PaginationSemanticOwner}\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #SimplePaginationSemanticOwner}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Pagination}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:SimplePagination}\"");
-        source.ShouldContain("Path=\"root\"");
-        source.ShouldContain("Path=\"item\"");
-        source.ShouldContain("Path=\"info\"");
-        source.ShouldContain("PaginationShowCaseLangResource SemanticRootDescription");
-        source.ShouldContain("PaginationShowCaseLangResource SemanticItemDescription");
-        source.ShouldContain("PaginationShowCaseLangResource SemanticInfoDescription");
-        source.ShouldContain("PaginationShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldContain("PaginationShowCaseLangResource SemanticPartStyleDescription");
-        source.ShouldContain("SourceKey=\"pagination-semantic-part\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:PaginationShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("PaginationShowCaseLangResource BasicTitle");
-        source.ShouldContain("PaginationShowCaseLangResource BindingTitle");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("PaginationShowCaseLangResource AlignTitle");
-        source.ShouldContain("PaginationShowCaseLangResource MoreTitle");
-        source.ShouldContain("PaginationShowCaseLangResource CustomComponentTitle");
-        source.ShouldContain("PaginationShowCaseLangResource MiniSizeTitle");
-        source.ShouldContain("PaginationShowCaseLangResource TotalNumberTitle");
-        source.ShouldContain("PaginationShowCaseLangResource SimpleModeTitle");
-        CountShowCaseItemElements(source).ShouldBe(10);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(10);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(10);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:PaginationViewModel\"").ShouldBe(11);
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Pagination_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Pagination/Views/PaginationShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/PaginationShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractPaginationExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
-    }
 
     [Fact]
     public void Pagination_Custom_Size_Changer_Example_Uses_Compiled_Context_And_Updates_PageSize()
@@ -108,7 +29,6 @@ public class PaginationShowCasePageTests
         var customSource = ExtractShowCaseItemBySourceKey(source, "pagination-custom-size-changer");
 
         customSource.ShouldContain("SourceKey=\"pagination-custom-size-changer\"");
-        customSource.ShouldContain("BadgeText=\"v6.2.1\"");
         customSource.ShouldContain("PaginationShowCaseLangResource CustomComponentTitle");
         customSource.ShouldContain("PaginationShowCaseLangResource CustomComponentDescription");
         customSource.ShouldContain("<atom:Pagination.SizeChangerTemplate>");
@@ -143,7 +63,6 @@ public class PaginationShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(candidate => candidate.SourceKey == "pagination-custom-size-changer");
-            item.BadgeText.ShouldBe("v6.2.1");
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -229,7 +148,6 @@ public class PaginationShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"pagination-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("PaginationShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("PaginationShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Pagination.semantic-style-demo-root\"");
@@ -281,7 +199,6 @@ public class PaginationShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "pagination-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

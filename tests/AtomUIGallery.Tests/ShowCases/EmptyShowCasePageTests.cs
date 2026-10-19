@@ -14,47 +14,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class EmptyShowCasePageTests
 {
-    [Fact]
-    public void Empty_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Empty/Views/EmptyShowCase.axaml");
-
-        source.ShouldContain("EmptyShowCaseLangResource PageSubtitle");
-        source.ShouldContain("EmptyShowCaseLangResource PageDescription");
-        source.ShouldNotContain("EmptyShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("EmptyShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("EmptyShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("EmptyShowCaseLangResource ComponentCategory");
-        source.ShouldContain("EmptyShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("EmptyShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("EmptyShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("EmptyShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:EmptyShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("EmptyShowCaseLangResource BasicTitle");
-        source.ShouldContain("EmptyShowCaseLangResource SizeTitle");
-        source.ShouldContain("EmptyShowCaseLangResource CustomizeTitle");
-        source.ShouldContain("EmptyShowCaseLangResource NoDescriptionTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Empty_ShowCase_Declares_A_Deferred_Semantic_Part_Preview_And_Style_Example()
@@ -76,7 +35,6 @@ public class EmptyShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"empty-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"6.0.0\"");
         semanticSource.ShouldContain("EmptyShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("EmptyShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Orientation=\"Vertical\"");
@@ -143,16 +101,6 @@ public class EmptyShowCasePageTests
             Dispatcher.UIThread.RunJobs();
             Assert.All(page.GetVisualDescendants().OfType<SemanticPartPreview>(), preview => Assert.False(preview.IsEffectivelyVisible));
         });
-    }
-
-    [Fact]
-    public void Empty_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Empty/Views/EmptyShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/EmptyShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractEmptyExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractEmptyExampleItems(string source)

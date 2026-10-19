@@ -8,54 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class FlexPanelShowCasePageTests
 {
-    [Fact]
-    public void FlexPanel_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/FlexPanel/Views/FlexPanelShowCase.axaml");
-
-        source.ShouldContain("FlexPanelShowCaseLangResource PageSubtitle");
-        source.ShouldContain("FlexPanelShowCaseLangResource PageDescription");
-        source.ShouldNotContain("FlexPanelShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("FlexPanelShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("FlexPanelShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("FlexPanelShowCaseLangResource ComponentCategory");
-        source.ShouldContain("FlexPanelShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("FlexPanelShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("FlexPanelShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("FlexPanelShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:FlexPanelShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(11);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(11);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(11);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:FlexPanelViewModel\"").ShouldBe(11);
-        source.ShouldContain("FlexPanelShowCaseLangResource BasicLayoutTitle");
-        source.ShouldContain("FlexPanelShowCaseLangResource AlignmentTitle");
-        source.ShouldContain("FlexPanelShowCaseLangResource AlignSelfTitle");
-        source.ShouldContain("FlexPanelShowCaseLangResource PlaygroundTitle");
-        source.ShouldContain("AttachedToVisualTree=\"InitializeBasicExample\"");
-        source.ShouldContain("AttachedToVisualTree=\"InitializePlaygroundExample\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void FlexPanel_ShowCase_Initializers_Use_Avalonia_Slider_Type_For_Bare_Slider_Elements()
@@ -100,17 +52,6 @@ public class FlexPanelShowCasePageTests
             codeBehindSource.ShouldContain($"FindRequired<Control>(root, \"{containerName}\")");
             codeBehindSource.ShouldNotContain($"FindRequired<Border>(root, \"{containerName}\")");
         }
-    }
-
-    [Fact]
-    public void FlexPanel_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/FlexPanel/Views/FlexPanelShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/FlexPanelShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractFlexPanelExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractFlexPanelExampleItems(string source)

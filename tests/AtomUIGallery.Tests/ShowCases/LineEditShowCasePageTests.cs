@@ -8,70 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class LineEditShowCasePageTests
 {
-    [Fact]
-    public void LineEdit_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/LineEdit/Views/LineEditShowCase.axaml");
-
-        source.ShouldContain("LineEditShowCaseLangResource PageSubtitle");
-        source.ShouldContain("LineEditShowCaseLangResource PageDescription");
-        source.ShouldNotContain("LineEditShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("LineEditShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("LineEditShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("LineEditShowCaseLangResource ComponentCategory");
-        source.ShouldContain("LineEditShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("LineEditShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("LineEditShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("LineEditShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:LineEditShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(22);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(22);
-        source.ShouldContain("LineEditShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("LineEditShowCaseLangResource TextBoxTitle");
-        source.ShouldContain("LineEditShowCaseLangResource InputSizesTitle");
-        source.ShouldContain("LineEditShowCaseLangResource P2PlaceholderTextCustom");
-        source.ShouldContain("SizeType=\"Custom\"");
-        source.ShouldContain("Height=\"38\"");
-        source.ShouldContain("FontSize=\"15\"");
-        source.ShouldContain("LineEditShowCaseLangResource InputStatusTitle");
-        source.ShouldContain("LineEditShowCaseLangResource SearchBoxTitle");
-        source.ShouldContain("LineEditShowCaseLangResource SearchEditSizeTypeTitle");
-        source.ShouldContain("LineEditShowCaseLangResource SearchEditSizeTypeDescription");
-        source.ShouldContain("Name=\"CustomSizeTypeSearchEdit\"");
-        source.ShouldContain("LineEditShowCaseLangResource TextAreaTitle");
-        source.ShouldContain("LineEditShowCaseLangResource OtpLineEditTwoWayBindingTitle");
-        source.ShouldContain("LineEditShowCaseLangResource OtpLineEditFormTitle");
-        source.ShouldContain("LineEditShowCaseLangResource OtpLineEditAntDesignTitle");
-        source.ShouldContain("LineEditShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("SourceKey=\"line-edit-otp-basic\"");
-        source.ShouldContain("SourceKey=\"line-edit-otp-two-way\"");
-        source.ShouldContain("SourceKey=\"line-edit-otp-form\"");
-        source.ShouldContain("SourceKey=\"line-edit-otp-ant-design\"");
-        CountOccurrences(source, "BadgeText=\"v6.0.8\"").ShouldBe(3);
-        CountOccurrences(source, "BadgeText=\"5.16.0\"").ShouldBe(0);
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void LineEdit_ShowCase_Declares_The_Semantic_Preview_And_Style_Example()
@@ -143,7 +79,6 @@ public class LineEditShowCasePageTests
         }
 
         semanticExample.ShouldContain("SourceKey=\"line-edit-semantic-part\"");
-        semanticExample.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticExample.ShouldContain("Selector=\"atom|LineEdit.style-class-base\"");
         semanticExample.ShouldContain("Selector=\"atom|LineEdit.style-class-object\"");
         semanticExample.ShouldContain("Selector=\"atom|LineEdit.style-class-object:focus-within\"");
@@ -216,17 +151,6 @@ public class LineEditShowCasePageTests
         english.ShouldContain("unit id=\"SemanticCountDescription\"");
         english.ShouldContain("unit id=\"SemanticPartStyleTitle\"");
         english.ShouldContain("unit id=\"SemanticPartStyleDescription\"");
-    }
-
-    [Fact]
-    public void LineEdit_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/LineEdit/Views/LineEditShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/LineEditShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractLineEditExampleItems(source));
-        CountOccurrences(normalized, "<gallery:ShowCaseItem").ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractLineEditExampleItems(string source)

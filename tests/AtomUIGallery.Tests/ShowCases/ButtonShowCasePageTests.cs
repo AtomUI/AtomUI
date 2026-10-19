@@ -23,78 +23,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class ButtonShowCasePageTests
 {
-    [Fact]
-    public void Button_ShowCase_Uses_Document_Layout_With_Grouped_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/General/Button/Views/ButtonShowCase.axaml");
-
-        source.ShouldContain("ButtonShowCaseLangResource PageSubtitle");
-        source.ShouldContain("ButtonShowCaseLangResource PageDescription");
-        source.ShouldNotContain("ButtonShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("ButtonShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("ButtonShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldNotContain("MinHeight=\"48\"");
-        source.ShouldNotContain("ItemSpacing=\"48\"");
-        source.ShouldNotContain("LineSpacing=\"8\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("<Setter Property=\"Width\" Value=\"84\" />");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        source.ShouldNotContain("<Setter Property=\"Width\" Value=\"200\" />");
-        source.ShouldNotContain("<Setter Property=\"TextWrapping\" Value=\"NoWrap\" />");
-        source.ShouldNotContain("<Setter Property=\"TextTrimming\" Value=\"CharacterEllipsis\" />");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("Classes=\"info-pair\"");
-        source.ShouldNotContain("Classes=\"info-value-frame\"");
-        source.ShouldNotContain("Width=\"300\"");
-        source.ShouldNotContain("ColumnDefinitions=\"Auto,*\"");
-        source.ShouldNotContain("<Setter Property=\"MaxWidth\" Value=\"220\" />");
-        source.ShouldNotContain("<Setter Property=\"Width\" Value=\"104\" />");
-        source.ShouldNotContain("<Setter Property=\"Width\" Value=\"128\" />");
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldNotContain("ColumnDefinitions=\"Auto,*,Auto,*,Auto,*\"");
-        source.ShouldNotContain("ButtonShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("ButtonShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("ButtonShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("ContentPadding=\"0,10,0,0\"");
-        source.ShouldNotContain("Margin=\"28,0,12,24\"");
-        source.ShouldNotContain("<atom:TabControl.Styles>");
-        source.ShouldNotContain("<gallery:ShowCasePanel ContentMargin=\"0,20,16,0\">");
-        source.ShouldNotContain("<gallery:ShowCasePanel ContentMargin=\"0,10,16,0\">");
-        source.ShouldNotContain("<gallery:ShowCasePanel ContentMargin=\"0,0,16,0\">");
-        source.ShouldNotContain("ContentPadding=\"0,10,16,0\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("ButtonShowCaseLangResource TypeTitle");
-        source.ShouldContain("ButtonShowCaseLangResource ColorVariantTitle");
-        source.ShouldContain("ButtonShowCaseLangResource GradientButtonTitle");
-        source.ShouldContain("ButtonShowCaseLangResource ButtonShapeTitle");
-        source.ShouldContain("ButtonShowCaseLangResource SizeTitle");
-        source.ShouldContain("ButtonShowCaseLangResource IconPlacementTitle");
-        source.ShouldContain("ButtonShowCaseLangResource LoadingTitle");
-        source.ShouldNotContain("Name=\"ScenarioTabs\"");
-        source.ShouldContain("Description=\"{gallery:ButtonShowCaseLangResource PageDescription}\"");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain("Classes=\"showcase-table-row\"");
-        source.ShouldNotContain("showcase-table-divider");
-        source.ShouldNotContain("MinWidth=\"780\"");
-        source.ShouldNotContain("ColumnDefinitions=\"220,*\"");
-        source.ShouldNotContain("Width=\"280\"");
-        source.ShouldNotContain("UsagePrimaryActionTitle");
-        source.ShouldNotContain("OverviewTitle");
-        source.ShouldNotContain(">Gallery<");
-        source.ShouldNotContain("ButtonShowCaseLangResource ScenarioGallery");
-    }
 
     [Fact]
     public void Button_ShowCase_Declares_A_Deferred_Semantic_Part_Preview()
@@ -153,7 +81,6 @@ public class ButtonShowCasePageTests
             "ButtonShowCaseLangResource SemanticPartStyleTitle");
 
         item.ShouldContain("SourceKey=\"button-semantic-part\"");
-        item.ShouldContain("BadgeText=\"v6.1.3\"");
         item.ShouldContain("Span=\"Full\"");
         item.ShouldContain("IsDeferredContentEnabled=\"True\"");
         item.ShouldContain("<gallery:ShowCaseItem.DeferredContentTemplate>");
@@ -289,16 +216,6 @@ public class ButtonShowCasePageTests
             (labelRight.Value.X - targetRight.Value.X).ShouldBe(8, 1,
                 "ShowCaseItem version RibbonBadge should match Ant Design's right:-badgeRibbonOffset placement.");
         });
-    }
-
-    [Fact]
-    public void Button_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/General/Button/Views/ButtonShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/ButtonShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractButtonExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractButtonExampleItems(string source)

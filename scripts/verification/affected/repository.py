@@ -124,6 +124,9 @@ class Repository:
             self._texts[path] = candidate.read_text(errors="replace") if candidate.is_file() else ""
         return self._texts[path]
 
+    def is_file(self, path):
+        return (self.root / path).is_file()
+
     def old_text(self, path, base="HEAD"):
         try:
             return self.git("show", base + ":" + path)

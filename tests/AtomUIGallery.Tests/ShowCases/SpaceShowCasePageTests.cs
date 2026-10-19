@@ -23,83 +23,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SpaceShowCasePageTests
 {
-    [Fact]
-    public void Space_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Space/Views/SpaceShowCase.axaml");
-
-        source.ShouldContain("SpaceShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SpaceShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SpaceShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SpaceShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SpaceShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SpaceShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SpaceShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SpaceShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SpaceShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SpaceShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldContain("Name=\"SpaceSemanticPreview\"");
-        source.ShouldContain("SemanticOwner=\"{Binding #SpaceSemanticOwner}\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Space}\"");
-        source.ShouldContain("Path=\"root\"");
-        source.ShouldContain("Path=\"item\"");
-        source.ShouldContain("Path=\"separator\"");
-        source.ShouldContain("SpaceShowCaseLangResource SemanticRootDescription");
-        source.ShouldContain("SpaceShowCaseLangResource SemanticItemDescription");
-        source.ShouldContain("SpaceShowCaseLangResource SemanticSeparatorDescription");
-        source.ShouldContain("SpaceShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldContain("SpaceShowCaseLangResource SemanticPartStyleDescription");
-        source.ShouldContain("SourceKey=\"space-semantic-part\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SpaceShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(10);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(10);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(10);
-        CountOccurrences(source, "DataTemplate x:DataType=\"viewModels:SpaceViewModel\"").ShouldBe(11);
-        source.ShouldContain("SpaceShowCaseLangResource BasicTitle");
-        source.ShouldContain("SpaceShowCaseLangResource SizeTitle");
-        source.ShouldContain("SpaceShowCaseLangResource AlignTitle");
-        source.ShouldContain("SpaceShowCaseLangResource CompactFormTitle");
-        source.ShouldContain("SpaceShowCaseLangResource CompactButtonTitle");
-        source.ShouldContain("Name=\"SizeDemoSpace\"");
-        source.ShouldContain("ValueChanged=\"HandleCustomSpacingValueChanged\"");
-        source.ShouldNotContain("{Binding #CustomSizeSlider.Value");
-        source.ShouldNotContain("ItemSpacing=\"{Binding CustomSpacingValue, Priority=Template}\"");
-        source.ShouldNotContain("LineSpacing=\"{Binding CustomSpacingValue, Priority=Template}\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Space_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Space/Views/SpaceShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SpaceShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractSpaceExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
-    }
 
     [Fact]
     public void Space_Semantic_Preview_Is_Materialized_On_Tab_Selection()
@@ -170,7 +93,6 @@ public class SpaceShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"space-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("SpaceShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("SpaceShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Space.semantic-style-demo-object\"");
@@ -223,7 +145,6 @@ public class SpaceShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "space-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

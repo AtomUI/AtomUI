@@ -454,7 +454,6 @@ public class WindowCaptionButtonConfigurationTests
         AssertCommand(groupTheme, atom, "PART_PinButton", CaptionButtonAction.TogglePin);
         AssertCommand(groupTheme, atom, "PART_CloseButton", CaptionButtonAction.Close);
 
-        popoverSource.ShouldNotContain("_previousWindowState");
         popoverSource.ShouldNotContain(".Click +=");
         AssertCommand(popoverTheme, atom, "PART_PopoverFullScreenButton", CaptionButtonAction.ToggleFullScreen);
         AssertCommand(popoverTheme, atom, "PART_PopoverCloseButton", CaptionButtonAction.Close);

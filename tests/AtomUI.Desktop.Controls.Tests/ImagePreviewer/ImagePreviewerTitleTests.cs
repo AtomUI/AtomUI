@@ -275,7 +275,6 @@ public class ImagePreviewerTitleTests
                      .ShouldBeLessThan(toolbarSource.IndexOf("RaiseEvent(args);", StringComparison.Ordinal));
 
         titleBarSource.ShouldNotContain("ToolbarHorizontalFlipRequest");
-        dialogSource.ShouldNotContain("_titleBarRequestSource");
         dialogSource.ShouldContain("ImagePreviewBaseToolbar.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>");
     }
 

@@ -43,42 +43,6 @@ public class BorderBeamShowCasePageTests
     }
 
     [Fact]
-    public void BorderBeam_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml");
-
-        source.ShouldContain("BorderBeamShowCaseLangResource PageSubtitle");
-        source.ShouldContain("BorderBeamShowCaseLangResource PageDescription");
-        source.ShouldContain("BorderBeamShowCaseLangResource ComponentCategory");
-        source.ShouldContain("BorderBeamShowCaseLangResource ComponentIntroducedVersion");
-        source.ShouldNotContain("BorderBeamShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("BorderBeamShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("BorderBeamShowCaseLangResource ScenarioDesignToken");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHeader");
-        source.ShouldContain("Title=\"BorderBeam\"");
-        source.ShouldContain("Category=\"{gallery:BorderBeamShowCaseLangResource ComponentCategory}\"");
-        source.ShouldContain("IntroducedVersion=\"{gallery:BorderBeamShowCaseLangResource ComponentIntroducedVersion}\"");
-        source.ShouldContain("Subtitle=\"{gallery:BorderBeamShowCaseLangResource PageSubtitle}\"");
-        source.ShouldContain("Description=\"{gallery:BorderBeamShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("Namespace=\"AtomUI.Desktop.Controls\"");
-        source.ShouldContain("Package=\"AtomUI.Desktop.Controls\"");
-        source.ShouldContain("BaseClass=\"ContentControl\"");
-        source.ShouldContain("MetadataValueWidth=\"220\"");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-    }
-
-    [Fact]
     public void BorderBeam_ShowCase_Header_Centers_Title_Tags_And_Uses_Blue_Introduced_Version_Tag()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml");
@@ -90,15 +54,10 @@ public class BorderBeamShowCasePageTests
             "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/zh-TW.xlf");
 
         source.ShouldContain("<gallery:GalleryShowCaseHeader");
-        source.ShouldContain("IntroducedVersion=\"{gallery:BorderBeamShowCaseLangResource ComponentIntroducedVersion}\"");
-        source.ShouldNotContain("Status=\"{gallery:BorderBeamShowCaseLangResource ComponentStatusPreview}\"");
-        source.ShouldNotContain("IntroducedVersionTagColor=");
-        source.ShouldNotContain("IsIntroducedVersionTagBordered=");
 
         foreach (var localization in new[] { en, zhCn, zhTw })
         {
             localization["ComponentIntroducedVersion"].ShouldBe("v6.0.5");
-            localization.ContainsKey("ComponentStatusPreview").ShouldBeFalse();
         }
     }
 

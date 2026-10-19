@@ -26,51 +26,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SpinShowCasePageTests
 {
-    [Fact]
-    public void Spin_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Spin/Views/SpinShowCase.axaml");
-
-        source.ShouldContain("SpinShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SpinShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SpinShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SpinShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SpinShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SpinShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SpinShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SpinShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SpinShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SpinShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SpinShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("SpinShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("SpinShowCaseLangResource SizeTitle");
-        source.ShouldContain("SpinShowCaseLangResource EmbeddedModeTitle");
-        source.ShouldContain("SpinShowCaseLangResource CustomizedDescriptionTitle");
-        source.ShouldContain("SpinShowCaseLangResource CustomIndicatorTitle");
-        source.ShouldContain("SizeType=\"Custom\"");
-        source.ShouldContain("IndicatorSize=\"44\"");
-        source.ShouldContain("DotSize=\"14\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Spin_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -95,7 +50,6 @@ public class SpinShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"spin-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("SpinShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("SpinShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Orientation=\"Horizontal\"");
@@ -239,7 +193,6 @@ public class SpinShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "spin-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -254,16 +207,6 @@ public class SpinShowCasePageTests
             functionDemo.SizeType.ShouldBe(CustomizableSizeType.Small);
             AssertIndicatorDotFill(functionDemo, "#722ed1");
         });
-    }
-
-    [Fact]
-    public void Spin_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Spin/Views/SpinShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SpinShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractSpinExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractSpinExampleItems(string source)

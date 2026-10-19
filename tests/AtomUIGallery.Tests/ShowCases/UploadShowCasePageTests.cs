@@ -8,82 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class UploadShowCasePageTests
 {
-    [Fact]
-    public void Upload_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Upload/Views/UploadShowCase.axaml");
-
-        source.ShouldContain("UploadShowCaseLangResource PageSubtitle");
-        source.ShouldContain("UploadShowCaseLangResource PageDescription");
-        source.ShouldNotContain("UploadShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("UploadShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("UploadShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("UploadShowCaseLangResource ComponentCategory");
-        source.ShouldContain("UploadShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("UploadShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("UploadShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("UploadShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("Name=\"UploadSemanticPreview\"");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Upload}\"");
-        source.ShouldContain("Path=\"root\"");
-        source.ShouldContain("Path=\"list\"");
-        source.ShouldContain("Path=\"item\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:UploadShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(13);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(13);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:UploadViewModel\"").ShouldBe(14);
-        source.ShouldContain("UploadShowCaseLangResource UploadByClickingTitle");
-        source.ShouldContain("UploadShowCaseLangResource PicturesWallTitle");
-        source.ShouldContain("UploadShowCaseLangResource FileAndDirectoryTitle");
-        source.ShouldContain("UploadShowCaseLangResource ScrollableListTitle");
-        source.ShouldContain("UploadShowCaseLangResource SuccessAutoRemoveTitle");
-        source.ShouldContain("UploadShowCaseLangResource UploadPngOnlyTitle");
-        source.ShouldContain("SourceKey=\"upload-semantic-part\"");
-        source.ShouldContain("<atom:UploadListStyle x:SetterTargetType=\"ItemsControl\">");
-        source.ShouldContain("<atom:UploadItemStyle x:SetterTargetType=\"TemplatedControl\">");
-        source.ShouldContain("<atom:UploadTrigger SourceKind=\"Files\"");
-        source.ShouldContain("<atom:UploadTrigger SourceKind=\"Directories\"");
-        Regex.IsMatch(
-            source,
-            "<atom:Upload Name=\"DragAndDropUpload\"[^>]*IsMultipleEnabled=\"True\"[^>]*>.*" +
-            "<atom:UploadDropZone>\\s*<atom:UploadDefaultDropArea\\s*/>\\s*</atom:UploadDropZone>",
-            RegexOptions.CultureInvariant | RegexOptions.Singleline).ShouldBeTrue();
-        Regex.IsMatch(
-            source,
-            "<atom:UploadDropZone>\\s*<atom:UploadDefaultDropArea\\s*/>\\s*</atom:UploadDropZone>",
-            RegexOptions.CultureInvariant).ShouldBeTrue();
-        source.ShouldContain("AllowedFileTypes=\"{Binding PngFileTypes}\"");
-        source.ShouldNotContain("Accepts=");
-        source.ShouldContain("Files=\"{Binding DefaultFiles}\"");
-        source.ShouldContain("Files=\"{Binding ScrollableUploadFiles}\"");
-        source.ShouldNotContain("DefaultTaskList");
-        source.ShouldNotContain("IsUploadDirectoryEnabled");
-        source.ShouldNotContain("IsShowUploadTrigger");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Upload_ShowCase_Uses_The_Stream_Source_Metadata_Contract()
@@ -99,17 +23,6 @@ public class UploadShowCasePageTests
         viewSource.ShouldContain("fileInfo.Path ??");
         viewModelSource.ShouldContain("IReadOnlyList<FilePickerFileType> PngFileTypes");
         viewModelSource.ShouldContain("Patterns = [\"*.png\"]");
-    }
-
-    [Fact]
-    public void Upload_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Upload/Views/UploadShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/UploadShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractUploadExampleItems(source));
-        CountOccurrences(normalized, "<gallery:ShowCaseItem").ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractUploadExampleItems(string source)

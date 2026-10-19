@@ -44,44 +44,6 @@ public class SplashShowCasePageTests
     }
 
     [Fact]
-    public void Splash_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/Splash/Views/SplashShowCase.axaml");
-
-        source.ShouldContain("SplashShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SplashShowCaseLangResource PageDescription");
-        source.ShouldContain("SplashShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SplashShowCaseLangResource ComponentStatusPreview");
-        source.ShouldContain("SplashShowCaseLangResource ComponentIntroducedVersion");
-        source.ShouldNotContain("SplashShowCaseLangResource ScenarioExamples");
-        // 新 Splash 只有视觉控件，没有 Semantic Part，也没有独立的服务 API 表面。
-        source.ShouldNotContain("SemanticPartsContentTemplate");
-        source.ShouldNotContain("SemanticPartStyle");
-        // 没有 Semantic Part 的页面按约定使用仅示例的 GalleryStickyTabsHost，而不是 Semantic-aware 的 GalleryShowCaseHost。
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldNotContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHeader");
-        source.ShouldContain("Title=\"Splash\"");
-        source.ShouldContain("Category=\"{gallery:SplashShowCaseLangResource ComponentCategory}\"");
-        source.ShouldContain("Status=\"{gallery:SplashShowCaseLangResource ComponentStatusPreview}\"");
-        source.ShouldContain("StatusTagColor=\"processing\"");
-        source.ShouldContain("IntroducedVersion=\"{gallery:SplashShowCaseLangResource ComponentIntroducedVersion}\"");
-        source.ShouldContain("Subtitle=\"{gallery:SplashShowCaseLangResource PageSubtitle}\"");
-        source.ShouldContain("Description=\"{gallery:SplashShowCaseLangResource PageDescription}\"");
-        // Splash 迁入 AtomUI.Controls：页头元数据必须指向新包与真实基类。
-        source.ShouldContain("Namespace=\"AtomUI.Controls\"");
-        source.ShouldContain("Package=\"AtomUI.Controls\"");
-        source.ShouldContain("BaseClass=\"TemplatedControl\"");
-        source.ShouldContain("MetadataValueWidth=\"240\"");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        // 迁移后的示例页约定：示例内容一律延迟创建（MigratedShowCaseDeferredCreationTests）。
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-    }
-
-    [Fact]
     public void Splash_ShowCase_Merges_The_default_theme_for_the_in_page_preview()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/Splash/Views/SplashShowCase.axaml");
@@ -140,20 +102,6 @@ public class SplashShowCasePageTests
                 document[key].ShouldNotBeNullOrWhiteSpace();
             }
         }
-    }
-
-    [Fact]
-    public void Splash_ShowCase_No_Longer_Ships_Dedicated_Window_Controls()
-    {
-        var codeBehind = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/Splash/Views/SplashShowCase.axaml.cs");
-
-        // 旧的窗口演示（自定义 SplashWindow + SplashService）随 Extras Splash 一起删除。
-        codeBehind.ShouldNotContain("SplashService");
-        codeBehind.ShouldNotContain("SplashOptions");
-        codeBehind.ShouldNotContain("GallerySplashWindow");
-        Directory.Exists(Path.Combine(
-                FindRepositoryRoot(), "controlgallery", "AtomUIGallery", "ShowCases", "Other", "Splash", "ShowCaseControls"))
-            .ShouldBeFalse();
     }
 
     private static string FindRepositoryRoot()

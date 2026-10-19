@@ -21,48 +21,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SkeletonShowCasePageTests
 {
-    [Fact]
-    public void Skeleton_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Skeleton/Views/SkeletonShowCase.axaml");
-
-        source.ShouldContain("SkeletonShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SkeletonShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SkeletonShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SkeletonShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SkeletonShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SkeletonShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SkeletonShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SkeletonShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SkeletonShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SkeletonShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SkeletonShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("SkeletonShowCaseLangResource BasicTitle");
-        source.ShouldContain("SkeletonShowCaseLangResource ComplexCombinationTitle");
-        source.ShouldContain("SkeletonShowCaseLangResource ActiveAnimationTitle");
-        source.ShouldContain("SkeletonShowCaseLangResource ButtonAvatarInputImageNodeTitle");
-        source.ShouldContain("SkeletonShowCaseLangResource ContainsSubComponentTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Skeleton_ShowCase_Declares_The_Ant_Design_Semantic_Previews_And_Style_Example()
@@ -87,7 +45,6 @@ public class SkeletonShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"skeleton-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("SkeletonShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("SkeletonShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("ColumnDefinitions=\"*,*\"");
@@ -216,7 +173,6 @@ public class SkeletonShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "skeleton-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -322,16 +278,6 @@ public class SkeletonShowCasePageTests
                 }
             }
         });
-    }
-
-    [Fact]
-    public void Skeleton_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Skeleton/Views/SkeletonShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SkeletonShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractSkeletonExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractSkeletonExampleItems(string source)

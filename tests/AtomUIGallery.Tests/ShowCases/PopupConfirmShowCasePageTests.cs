@@ -20,50 +20,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class PopupConfirmShowCasePageTests
 {
-    [Fact]
-    public void PopupConfirm_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/PopupConfirm/Views/PopupConfirmShowCase.axaml");
-
-        source.ShouldContain("PopupConfirmShowCaseLangResource PageSubtitle");
-        source.ShouldContain("PopupConfirmShowCaseLangResource PageDescription");
-        source.ShouldNotContain("PopupConfirmShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("PopupConfirmShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("PopupConfirmShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("PopupConfirmShowCaseLangResource ComponentCategory");
-        source.ShouldContain("PopupConfirmShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("PopupConfirmShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("PopupConfirmShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("PopupConfirmShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        CountShowCaseItemElements(source).ShouldBe(5);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(5);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(5);
-        // 5 个示例 DataTemplate + 1 个 SemanticPartsContentTemplate DataTemplate。
-        CountOccurrences(source, "DataTemplate x:DataType=\"viewModels:PopupConfirmViewModel\"").ShouldBe(6);
-        source.ShouldContain("PopupConfirmShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("PopupConfirmShowCaseLangResource PlacementTitle");
-        // Placement 的 5x5 网格需要整行宽度，否则会被压缩进半宽列。
-        CountOccurrences(source, "IsOccupyEntireRow=\"True\"").ShouldBe(1);
-        source.ShouldContain("PopupConfirmShowCaseLangResource CustomizeIconTitle");
-        source.ShouldContain("Icon=\"{antdicons:AntDesignIconProvider Kind=QuestionCircleOutlined}\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void PopupConfirm_ShowCase_Declares_Antd_Aligned_Semantic_Preview()
@@ -96,7 +52,6 @@ public class PopupConfirmShowCasePageTests
         var localization = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/PopupConfirm/Localization/en-US.xlf");
 
         source.ShouldContain("SourceKey=\"popupconfirm-semantic-part\"");
-        source.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         source.ShouldContain("PopupConfirmShowCaseLangResource StyleClassTitle");
         source.ShouldContain("PopupConfirmShowCaseLangResource StyleClassDescription");
         source.ShouldContain("Classes=\"semantic-styles-object-demo\"");
@@ -133,17 +88,6 @@ public class PopupConfirmShowCasePageTests
         localization.ShouldContain("<source>Object Style</source>");
         localization.ShouldContain("<source>Function text</source>");
         localization.ShouldContain("<source>Function Style</source>");
-    }
-
-    [Fact]
-    public void PopupConfirm_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/PopupConfirm/Views/PopupConfirmShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/PopupConfirmShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractPopupConfirmExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     [Fact]

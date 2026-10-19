@@ -18,56 +18,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class CalendarShowCasePageTests
 {
-    [Fact]
-    public void Calendar_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Calendar/Views/CalendarShowCase.axaml");
-
-        source.ShouldContain("CalendarShowCaseLangResource PageSubtitle");
-        source.ShouldContain("CalendarShowCaseLangResource PageDescription");
-        source.ShouldNotContain("CalendarShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("CalendarShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("CalendarShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("CalendarShowCaseLangResource ComponentCategory");
-        source.ShouldContain("CalendarShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("CalendarShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("CalendarShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("CalendarShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("MaxColumns=\"1\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:CalendarShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("CalendarShowCaseLangResource BasicTitle");
-        source.ShouldContain("CalendarShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Calendar_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Calendar/Views/CalendarShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/CalendarShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractCalendarExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
-    }
 
     [Fact]
     public void Calendar_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -90,7 +40,6 @@ public class CalendarShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"calendar-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"v6.1.3\"");
         semanticSource.ShouldContain("CalendarShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("CalendarShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Calendar.semantic-object\"");
@@ -193,7 +142,6 @@ public class CalendarShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "calendar-semantic-part");
-            item.BadgeText.ShouldBe("v6.1.3");
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

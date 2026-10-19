@@ -8,56 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TransferShowCasePageTests
 {
-    [Fact]
-    public void Transfer_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Transfer/Views/TransferShowCase.axaml");
-
-        source.ShouldContain("TransferShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TransferShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TransferShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TransferShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TransferShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TransferShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TransferShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TransferShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TransferShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TransferShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TransferShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(9);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(9);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(9);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:TransferViewModel\"").ShouldBe(10);
-        source.ShouldContain("TransferShowCaseLangResource BasicTitle");
-        source.ShouldContain("TransferShowCaseLangResource ControlledKeysTitle");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("TransferShowCaseLangResource AdvancedTitle");
-        source.ShouldContain("TransferShowCaseLangResource TreeTransferTitle");
-        source.ShouldContain("TransferShowCaseLangResource StatusTitle");
-        source.ShouldContain("Click=\"ReloadAdvancedTransferItems\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Transfer_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -104,7 +54,6 @@ public class TransferShowCasePageTests
         }
 
         source.ShouldContain("SourceKey=\"transfer-semantic-part\"");
-        source.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         source.ShouldContain("TransferShowCaseLangResource SemanticPartStyleTitle");
         source.ShouldContain("TransferShowCaseLangResource SemanticPartStyleDescription");
         source.ShouldContain("Selector=\"atom|ListTransfer.semantic-classnames-demo\"");
@@ -169,17 +118,6 @@ public class TransferShowCasePageTests
             paths.Length.ShouldBe(paths.Distinct().Count(),
                 $"duplicate Semantic Part description paths in preview '{region.Groups[1].Value}'");
         }
-    }
-
-    [Fact]
-    public void Transfer_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Transfer/Views/TransferShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TransferShowCaseExamples.snapshot");
-
-        var normalized = ShowCaseSnapshotMarkup.Normalize(ExtractTransferExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractTransferExampleItems(string source)

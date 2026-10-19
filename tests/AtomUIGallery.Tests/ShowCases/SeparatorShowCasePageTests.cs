@@ -25,50 +25,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SeparatorShowCasePageTests
 {
-    [Fact]
-    public void Separator_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/General/Separator/Views/SeparatorShowCase.axaml");
-
-        source.ShouldContain("SeparatorShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SeparatorShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SeparatorShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SeparatorShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SeparatorShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SeparatorShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SeparatorShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SeparatorShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SeparatorShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SeparatorShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SeparatorShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("SeparatorShowCaseLangResource HorizontalTitle");
-        source.ShouldContain("SeparatorShowCaseLangResource DividerWithTitleTitle");
-        source.ShouldContain("SeparatorShowCaseLangResource PlainTextTitle");
-        source.ShouldContain("SeparatorShowCaseLangResource SpacingSizeTitle");
-        source.ShouldContain("SeparatorShowCaseLangResource VerticalTitle");
-        source.ShouldContain("SeparatorShowCaseLangResource VariantTitle");
-        source.ShouldContain("SeparatorShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Separator_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -90,7 +46,6 @@ public class SeparatorShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"separator-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("SeparatorShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("SeparatorShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Value=\"#7cb305\"");
@@ -177,7 +132,6 @@ public class SeparatorShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "separator-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -277,16 +231,6 @@ public class SeparatorShowCasePageTests
             // 1 untitled + 3 titled (2 rails each) + 3 vertical (1 rail each) = 10 visible rails.
             ReadTotalMatchCount(session).ShouldBe(10);
         });
-    }
-
-    [Fact]
-    public void Separator_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/General/Separator/Views/SeparatorShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SeparatorShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractSeparatorExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractSeparatorExampleItems(string source)

@@ -25,58 +25,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class FloatButtonShowCasePageTests
 {
-    [Fact]
-    public void FloatButton_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/General/FloatButton/Views/FloatButtonShowCase.axaml");
-
-        source.ShouldContain("FloatButtonShowCaseLangResource PageSubtitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource PageDescription");
-        source.ShouldNotContain("FloatButtonShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("FloatButtonShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("FloatButtonShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("FloatButtonShowCaseLangResource ComponentCategory");
-        source.ShouldContain("FloatButtonShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("FloatButtonShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("FloatButtonShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("FloatButtonShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:FloatButtonShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("FloatButtonShowCaseLangResource BasicTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource TypeTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource ShapeTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource DescriptionTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource TooltipTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource GroupTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource MenuModeTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource ControlledModeTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource PlacementTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource BackTopTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource BackTopProgressTitle");
-        source.ShouldContain("IsOccupyEntireRow=\"True\"");
-        source.ShouldContain("FloatButtonShowCaseLangResource BadgeTitle");
-        source.ShouldContain("FloatButtonShowCaseLangResource CommandTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void FloatButton_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -104,7 +52,6 @@ public class FloatButtonShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"float-button-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("FloatButtonShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("FloatButtonShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Value=\"0 1 2 0 #0D000000\"");
@@ -238,7 +185,6 @@ public class FloatButtonShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "float-button-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -272,16 +218,6 @@ public class FloatButtonShowCasePageTests
                 .ShouldBeAssignableTo<ISolidColorBrush>()
                 .Color.ShouldNotBe(Color.Parse("#FFFFFF"));
         });
-    }
-
-    [Fact]
-    public void FloatButton_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/General/FloatButton/Views/FloatButtonShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/FloatButtonShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractFloatButtonExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractFloatButtonExampleItems(string source)

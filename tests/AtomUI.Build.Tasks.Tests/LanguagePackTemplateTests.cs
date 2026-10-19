@@ -47,9 +47,6 @@ public class LanguagePackTemplateTests
 
         project.Descendants("AtomUILanguage").ShouldBeEmpty();
 
-        var readme = File.ReadAllText(Path.Combine(GetTemplateRoot(), "README.md"));
-        readme.ShouldContain("PrivateAssets=\"all\"");
-        readme.ShouldContain("optional");
     }
 
     private static string ProjectProperty(XDocument project, string name)

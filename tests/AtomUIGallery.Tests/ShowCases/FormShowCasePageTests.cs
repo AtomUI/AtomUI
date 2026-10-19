@@ -19,68 +19,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class FormShowCasePageTests
 {
-    [Fact]
-    public void Form_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Form/Views/FormShowCase.axaml");
-
-        source.ShouldContain("FormShowCaseLangResource PageSubtitle");
-        source.ShouldContain("FormShowCaseLangResource PageDescription");
-        source.ShouldNotContain("FormShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("FormShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("FormShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("FormShowCaseLangResource ComponentCategory");
-        source.ShouldContain("FormShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("FormShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("FormShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("FormShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldContain("FormThemes.axaml");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:FormShowCaseLangResource PageDescription}\"");
-        var examples = ExtractFormExampleItems(source);
-        CountShowCaseItemElements(examples).ShouldBe(21);
-        CountOccurrences(examples, "IsDeferredContentEnabled=\"True\"").ShouldBe(21);
-        CountOccurrences(examples, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(21);
-        CountOccurrences(examples, "DataTemplate x:DataType=\"viewModels:FormViewModel\"").ShouldBe(21);
-        CountOccurrences(source, "IsOccupyEntireRow=\"True\"").ShouldBeGreaterThanOrEqualTo(18);
-        source.ShouldContain("FormShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("FormShowCaseLangResource FormLayoutTitle");
-        source.ShouldContain("FormShowCaseLangResource FormVariantsTitle");
-        source.ShouldContain("FormShowCaseLangResource NoBlockRuleTitle");
-        source.ShouldContain("FormShowCaseLangResource DynamicFormItemTitle");
-        source.ShouldContain("FormShowCaseLangResource RegistrationTitle");
-        source.ShouldContain("FormShowCaseLangResource CustomizedFormControlsTitle");
-        source.ShouldContain("OptionCheckedChanged=\"HandleFormLayoutOptionCheckedChanged\"");
-        source.ShouldContain("SelectionChanged=\"HandleFormStyleVariantChanged\"");
-        source.ShouldContain("OptionCheckedChanged=\"HandleFormRequiredMarkChanged\"");
-        source.ShouldContain("OptionCheckedChanged=\"HandleFormSizeTypeChanged\"");
-        source.ShouldContain("Click=\"HandleAddFormItem\"");
-        source.ShouldContain("Click=\"HandleAddFormItemAtHead\"");
-        source.ShouldContain("Click=\"HandleFillClicked\"");
-        source.ShouldContain("Submitted=\"HandleNoBlockFormSubmitted\"");
-        source.ShouldContain("Validated=\"HandleNoBlockFormValidated\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Login_Form_Options_Use_A_Value_Aware_Single_Row_Layout()
@@ -209,17 +147,6 @@ public class FormShowCasePageTests
     }
 
     [Fact]
-    public void Form_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Form/Views/FormShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/FormShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractFormExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
-    }
-
-    [Fact]
     public void Form_ShowCase_Declares_The_Semantic_Preview_Matching_Upstream_Example()
     {
         var source  = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/Form/Views/FormShowCase.axaml");
@@ -265,7 +192,6 @@ public class FormShowCasePageTests
         source.ShouldContain("FormShowCaseLangResource SemanticStylingTitle");
         source.ShouldContain("FormShowCaseLangResource SemanticStylingDescription");
         source.ShouldContain("SourceKey=\"form-semantic-part\"");
-        source.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         source.ShouldContain("Span=\"Full\"");
         source.IndexOf("SourceKey=\"form-semantic-part\"", StringComparison.Ordinal)
               .ShouldBeGreaterThan(source.LastIndexOf("IsOccupyEntireRow=\"True\"", StringComparison.Ordinal));

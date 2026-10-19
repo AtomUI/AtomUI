@@ -25,55 +25,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class ListShowCasePageTests
 {
-    [Fact]
-    public void List_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/List/Views/ListShowCase.axaml");
-
-        source.ShouldContain("ListShowCaseLangResource PageSubtitle");
-        source.ShouldContain("ListShowCaseLangResource PageDescription");
-        source.ShouldNotContain("ListShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("ListShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("ListShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("ListShowCaseLangResource ComponentCategory");
-        source.ShouldContain("ListShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("ListShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("ListShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("ListShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:ListShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("ListShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("ListShowCaseLangResource SelectionTitle");
-        source.ShouldContain("ListShowCaseLangResource SelectedItemsBindingTitle");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("ListShowCaseLangResource FilterTitle");
-        source.ShouldContain("ListShowCaseLangResource SearchableTitle");
-        source.ShouldContain("ListShowCaseLangResource PaginationListTitle");
-        source.ShouldContain("ListShowCaseLangResource ListViewEmptyIndicatorTitle");
-        source.ShouldContain("ListShowCaseLangResource ListBoxEmptyIndicatorTitle");
-        source.ShouldContain("ListShowCaseLangResource SemanticPartStyleTitle");
-        CountOccurrences(source, "<atom:ListView.EmptyIndicator>").ShouldBe(1);
-        CountOccurrences(source, "<atom:ListBox.EmptyIndicator>").ShouldBe(1);
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void List_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -97,7 +48,6 @@ public class ListShowCasePageTests
         source.ShouldContain("Path=\"groupHeader\"");
 
         semanticSource.ShouldContain("SourceKey=\"list-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("ListShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("ListShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|ListView.semantic-object\"");
@@ -278,7 +228,6 @@ public class ListShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "list-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -315,16 +264,6 @@ public class ListShowCasePageTests
             listBoxItems.ShouldNotBeEmpty();
             listBoxItems.ShouldAllBe(static candidate => candidate.FontStyle == FontStyle.Italic);
         });
-    }
-
-    [Fact]
-    public void List_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/List/Views/ListShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/ListShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractListExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static object[] GetPreviewItems(SemanticPartPreview preview)

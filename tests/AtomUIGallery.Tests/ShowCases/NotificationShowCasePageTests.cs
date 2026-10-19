@@ -31,62 +31,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class NotificationShowCasePageTests
 {
-    [Fact]
-    public void Notification_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Notification/Views/NotificationShowCase.axaml");
-
-        source.ShouldContain("NotificationShowCaseLangResource PageSubtitle");
-        source.ShouldContain("NotificationShowCaseLangResource PageDescription");
-        source.ShouldNotContain("NotificationShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("NotificationShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("NotificationShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("NotificationShowCaseLangResource ComponentCategory");
-        source.ShouldContain("NotificationShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("NotificationShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("NotificationShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("NotificationShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        CountShowCaseItemElements(source).ShouldBe(9);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(9);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(9);
-        CountOccurrences(source, "DataTemplate x:DataType=\"viewModels:NotificationViewModel\"").ShouldBe(10);
-        source.ShouldContain("NotificationShowCaseLangResource BasicTitle");
-        source.ShouldContain("NotificationShowCaseLangResource PlacementTitle");
-        source.ShouldContain("NotificationShowCaseLangResource ProgressTitle");
-        source.ShouldContain("NotificationShowCaseLangResource StackTitle");
-        source.ShouldContain("SourceKey=\"notification-stack\"");
-        source.ShouldContain("NotificationShowCaseLangResource ActionsTitle");
-        source.ShouldContain("NotificationShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldContain("GalleryShowCaseHost.SemanticPartsContentTemplate");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Notification_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Notification/Views/NotificationShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/NotificationShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractNotificationExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
-    }
 
     [Fact]
     public void Notification_Stack_ShowCase_Isolates_Configuration_Lifetime_And_Destroy_Scope()

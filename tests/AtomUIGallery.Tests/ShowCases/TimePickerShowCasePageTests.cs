@@ -19,94 +19,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TimePickerShowCasePageTests
 {
-    [Fact]
-    public void TimePicker_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/TimePicker/Views/TimePickerShowCase.axaml");
-
-        source.ShouldContain("TimePickerShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TimePickerShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TimePickerShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TimePickerShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TimePickerShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TimePickerShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TimePickerShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TimePickerShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TimePickerShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TimePickerShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("gallery:GalleryShowCaseHost.SemanticPartsContentTemplate");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TimePickerShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(13);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(13);
-        // 13 个示例模板 + 1 个语义部件预览模板
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:TimePickerViewModel\"").ShouldBe(14);
-        source.ShouldContain("TimePickerShowCaseLangResource BasicTitle");
-        source.ShouldContain("TimePickerShowCaseLangResource BindingTitle");
-        source.ShouldContain("SelectedTime=\"{Binding BoundSelectedTime}\"");
-        source.ShouldContain("Text=\"{Binding BoundSelectedTimeText}\"");
-        source.ShouldContain("Click=\"SetBoundSelectedTimeToNoon\"");
-        source.ShouldContain("Click=\"ClearBoundSelectedTime\"");
-        source.ShouldContain("RangeStartSelectedTime=\"{Binding BoundRangeStartSelectedTime}\"");
-        source.ShouldContain("RangeEndSelectedTime=\"{Binding BoundRangeEndSelectedTime}\"");
-        source.ShouldContain("Text=\"{Binding BoundRangeSelectedTimeText}\"");
-        source.ShouldContain("Click=\"SetBoundSelectedTimeRangeToWorkHours\"");
-        source.ShouldContain("Click=\"ClearBoundSelectedTimeRange\"");
-        source.ShouldNotContain("TimePickerShowCaseLangResource RangeBindingTitle");
-        source.ShouldNotContain("TimePickerShowCaseLangResource RangeBindingDescription");
-        AssertResourceOrder(
-            ExtractShowCaseItemByTitle(source, "TimePickerShowCaseLangResource BindingTitle"),
-            "SelectedTime=\"{Binding BoundSelectedTime}\"",
-            "RangeStartSelectedTime=\"{Binding BoundRangeStartSelectedTime}\"");
-        source.ShouldContain("TimePickerShowCaseLangResource PickerDisplayTimeTitle");
-        source.ShouldContain("PickerDisplayTime=\"14:25:30\"");
-        AssertResourceOrder(
-            source,
-            "TimePickerShowCaseLangResource BindingTitle",
-            "TimePickerShowCaseLangResource PickerDisplayTimeTitle");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("TimePickerShowCaseLangResource HourFormatsTitle");
-        source.ShouldContain("Name=\"PickerSizeTypeOptionGroup\"");
-        source.ShouldContain("OptionCheckedChanged=\"HandlePickerSizeTypeOptionCheckedChanged\"");
-        source.ShouldContain("TimePickerShowCaseLangResource P2TextExpandDirection");
-        source.ShouldContain("TimePickerShowCaseLangResource P2ContentLarge");
-        source.ShouldContain("TimePickerShowCaseLangResource P2ContentDefault");
-        source.ShouldContain("TimePickerShowCaseLangResource P2ContentSmall");
-        source.ShouldContain("TimePickerShowCaseLangResource P2ContentCustom");
-        source.ShouldContain("SizeType=\"{Binding PickerSizeType}\"");
-        source.ShouldContain("Selector=\"atom|TimePicker.size-demo-picker[SizeType=Custom]\"");
-        source.ShouldContain("Selector=\"atom|RangeTimePicker.size-demo-picker[SizeType=Custom]\"");
-        source.ShouldContain("Property=\"Height\" Value=\"38\"");
-        source.ShouldContain("Property=\"FontSize\" Value=\"15\"");
-        source.ShouldContain("TimePickerShowCaseLangResource VariantsTitle");
-        source.ShouldContain("TimePickerShowCaseLangResource TimeRangePickerTitle");
-        source.ShouldContain("TimePickerShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldContain("SourceKey=\"timepicker-semantic-part\"");
-        source.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void TimePicker_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -211,17 +123,6 @@ public class TimePickerShowCasePageTests
             host.SelectedTab = GalleryShowCaseTab.Examples;
             Dispatcher.UIThread.RunJobs();
         });
-    }
-
-    [Fact]
-    public void TimePicker_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/TimePicker/Views/TimePickerShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TimePickerShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractTimePickerExampleItems(source));
-        CountOccurrences(normalized, "<gallery:ShowCaseItem").ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractTimePickerExampleItems(string source)

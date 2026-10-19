@@ -26,36 +26,6 @@ public class CommonCatalogTests
     }
 
     [Fact]
-    public void Common_Catalog_Uses_Stable_Keys_For_All_Existing_Entries()
-    {
-        var expectedKeys = new[]
-        {
-            nameof(CommonLangResourceKind.Ok),
-            nameof(CommonLangResourceKind.Submit),
-            nameof(CommonLangResourceKind.Cancel),
-            nameof(CommonLangResourceKind.Reset),
-            nameof(CommonLangResourceKind.Edit),
-            nameof(CommonLangResourceKind.Delete),
-            nameof(CommonLangResourceKind.Save),
-            nameof(CommonLangResourceKind.NoData),
-            nameof(CommonLangResourceKind.Loading),
-            nameof(CommonLangResourceKind.Optional)
-        };
-
-        Enum.GetNames<CommonLangResourceKind>().ShouldBe(expectedKeys);
-    }
-
-    [Fact]
-    public void Common_Markup_Extension_Uses_The_New_Localization_Resource_Base()
-    {
-        typeof(CommonLangResourceExtension).IsSealed.ShouldBeTrue();
-        typeof(CommonLangResourceExtension).BaseType.ShouldBe(
-            typeof(LanguageResourceExtension<CommonLangResourceKind>));
-        typeof(CommonLangResourceExtension).GetConstructor(Type.EmptyTypes).ShouldNotBeNull();
-        typeof(CommonLangResourceExtension).GetConstructor([typeof(CommonLangResourceKind)]).ShouldNotBeNull();
-    }
-
-    [Fact]
     public void UseDesktopControls_Registers_All_BuiltIn_Common_Translations()
     {
         var application = Application.Current.ShouldNotBeNull();

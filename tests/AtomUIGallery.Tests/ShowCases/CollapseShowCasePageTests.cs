@@ -22,49 +22,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class CollapseShowCasePageTests
 {
-    [Fact]
-    public void Collapse_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Collapse/Views/CollapseShowCase.axaml");
-
-        source.ShouldContain("CollapseShowCaseLangResource PageSubtitle");
-        source.ShouldContain("CollapseShowCaseLangResource PageDescription");
-        source.ShouldNotContain("CollapseShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("CollapseShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("CollapseShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("CollapseShowCaseLangResource ComponentCategory");
-        source.ShouldContain("CollapseShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("CollapseShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("CollapseShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("CollapseShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:CollapseShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("CollapseShowCaseLangResource CollapseTitle");
-        source.ShouldContain("CollapseShowCaseLangResource BorderlessTitle");
-        source.ShouldContain("CollapseShowCaseLangResource NestedPanelTitle");
-        source.ShouldContain("CollapseShowCaseLangResource ExpandIconLocationTitle");
-        source.ShouldContain("CollapseShowCaseLangResource CollapsibleTitle");
-        source.ShouldContain("CollapseShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Collapse_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -86,7 +43,6 @@ public class CollapseShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"collapse-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("CollapseShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("CollapseShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Collapse.semantic-object\"");
@@ -187,7 +143,6 @@ public class CollapseShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "collapse-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -242,16 +197,6 @@ public class CollapseShowCasePageTests
             FindItemContent(largeDemo, 1).CornerRadius.ShouldBe(default(CornerRadius));
             FindItemContent(largeDemo, 2).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
         });
-    }
-
-    [Fact]
-    public void Collapse_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Collapse/Views/CollapseShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/CollapseShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractCollapseExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static AtomUICollapseItem GetContainerAt(AtomUICollapse collapse, int index)

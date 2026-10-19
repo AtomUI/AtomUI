@@ -16,66 +16,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SplitterShowCasePageTests
 {
-    [Fact]
-    public void Splitter_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Splitter/Views/SplitterShowCase.axaml");
-
-        source.ShouldContain("SplitterShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SplitterShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SplitterShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SplitterShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SplitterShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SplitterShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SplitterShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SplitterShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SplitterShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SplitterShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldContain("Path=\"root\"");
-        source.ShouldContain("Path=\"panel\"");
-        source.ShouldContain("Path=\"dragger\"");
-        source.ShouldContain("SemanticRootDescription");
-        source.ShouldContain("SemanticPanelDescription");
-        source.ShouldContain("SemanticDraggerDescription");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SplitterShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("SplitterShowCaseLangResource BasicTitle");
-        source.ShouldContain("SplitterShowCaseLangResource HorizontalTitle");
-        source.ShouldContain("SplitterShowCaseLangResource CompositeTitle");
-        source.ShouldContain("SplitterShowCaseLangResource ResizableDisabledTitle");
-        source.ShouldContain("SplitterShowCaseLangResource ShowCollapsibleIconTitle");
-        source.ShouldContain("SplitterShowCaseLangResource MultiPanelsTitle");
-        source.ShouldContain("SplitterShowCaseLangResource LazyTitle");
-        source.ShouldContain("SplitterShowCaseLangResource LineStyleTitle");
-        source.ShouldContain("SplitterShowCaseLangResource DoubleClickResetTitle");
-        source.ShouldContain("SourceKey=\"splitter-double-click-reset\"");
-        source.ShouldContain("DraggerDoubleClicked=\"HandleDraggerDoubleClicked\"");
-        CountOccurrences(source, "atom:Splitter.DefaultSize=\"30%\"").ShouldBeGreaterThanOrEqualTo(2);
-        CountOccurrences(source, "atom:Splitter.DefaultSize=\"40%\"").ShouldBeGreaterThanOrEqualTo(1);
-        source.ShouldContain("SplitterShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldContain("SplitterShowCaseLangResource SemanticPartStyleDescription");
-        source.ShouldContain("SourceKey=\"splitter-semantic-part\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Splitter_Semantic_Preview_Is_Materialized_On_Tab_Selection()
@@ -118,16 +58,6 @@ public class SplitterShowCasePageTests
     }
 
     [Fact]
-    public void Splitter_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Splitter/Views/SplitterShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SplitterShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractSplitterExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
-    }
-
-    [Fact]
     public void Splitter_ShowCase_Declares_The_Semantic_Preview_And_Style_Example()
     {
         var source = ReadRepoFile(
@@ -147,7 +77,6 @@ public class SplitterShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"splitter-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("SplitterShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("SplitterShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Splitter.semantic-style-demo-default\"");
@@ -196,7 +125,6 @@ public class SplitterShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "splitter-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

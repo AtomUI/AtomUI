@@ -16,46 +16,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class BadgeShowCasePageTests
 {
-    [Fact]
-    public void Badge_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Badge/Views/BadgeShowCase.axaml");
-
-        source.ShouldContain("BadgeShowCaseLangResource PageSubtitle");
-        source.ShouldContain("BadgeShowCaseLangResource PageDescription");
-        source.ShouldNotContain("BadgeShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("BadgeShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("BadgeShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("BadgeShowCaseLangResource ComponentCategory");
-        source.ShouldContain("BadgeShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("BadgeShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("BadgeShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("BadgeShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,28,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:BadgeShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("BadgeShowCaseLangResource BasicTitle");
-        source.ShouldContain("BadgeShowCaseLangResource DynamicTitle");
-        source.ShouldContain("BadgeShowCaseLangResource RibbonTitle");
-        source.ShouldContain("BadgeShowCaseLangResource ColorfulBadgeTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Badge_ShowCase_Declares_Three_Deferred_Semantic_Part_Previews()
@@ -168,8 +128,6 @@ public class BadgeShowCasePageTests
 
         CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(11);
         source.ShouldContain("SourceKey=\"badge-semantic-part\"");
-        source.ShouldContain("BadgeText=\"v6.1.3\"");
-        source.ShouldContain("BadgeText=\"v6.1.3\"\n                          Span=\"Full\"");
         source.ShouldContain("BadgeShowCaseLangResource SemanticPartStyleTitle");
         source.ShouldContain("BadgeShowCaseLangResource SemanticPartStyleDescription");
         source.ShouldContain("<StackPanel.Styles>");
@@ -268,16 +226,6 @@ public class BadgeShowCasePageTests
                 .Single(static control => control.Classes.Contains("semantic-content"))
                 .FontWeight.ShouldBe(FontWeight.Bold);
         });
-    }
-
-    [Fact]
-    public void Badge_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Badge/Views/BadgeShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/BadgeShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractBadgeExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     [Fact]

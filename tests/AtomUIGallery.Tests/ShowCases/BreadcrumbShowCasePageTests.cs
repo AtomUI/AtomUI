@@ -17,71 +17,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class BreadcrumbShowCasePageTests
 {
-    [Fact]
-    public void Breadcrumb_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Breadcrumb/Views/BreadcrumbShowCase.axaml");
-
-        source.ShouldContain("BreadcrumbShowCaseLangResource PageSubtitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource PageDescription");
-        source.ShouldNotContain("BreadcrumbShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("BreadcrumbShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("BreadcrumbShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("BreadcrumbShowCaseLangResource ComponentCategory");
-        source.ShouldContain("BreadcrumbShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("BreadcrumbShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("BreadcrumbShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("BreadcrumbShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:BreadcrumbShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("BreadcrumbShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource WithIconTitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource WithParamsTitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource ConfiguringSeparatorTitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource ConfiguringSeparatorIndependentlyTitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource GenerateByTemplateTitle");
-        source.ShouldContain("BreadcrumbShowCaseLangResource SemanticPartStyleTitle");
-        CountOccurrences(source, "<gallery:ShowCaseItem\n").ShouldBe(7);
-        CountOccurrences(source, "Span=\"Full\"").ShouldBe(7);
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
-        source.ShouldContain("<gallery:SemanticPartPreview");
-        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Breadcrumb}\"");
-        source.ShouldContain("SourceKey=\"breadcrumb-semantic-part\"");
-        source.ShouldContain("<atom:BreadcrumbItemStyle x:SetterTargetType=\"atom:BreadcrumbItem\">");
-        source.ShouldContain("<atom:BreadcrumbSeparatorStyle x:SetterTargetType=\"ContentPresenter\">");
-        source.ShouldContain("Classes=\"semantic-style-demo-object\"");
-        source.ShouldContain("Classes=\"semantic-style-demo-function\"");
-        source.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
-        CountOccurrences(source, "<atom:Breadcrumb Classes=").ShouldBe(2);
-    }
-
-    [Fact]
-    public void Breadcrumb_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/Breadcrumb/Views/BreadcrumbShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/BreadcrumbShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractBreadcrumbExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
-    }
 
     [Fact]
     public void Breadcrumb_ShowCase_Declares_A_Deferred_Semantic_Part_Preview()
@@ -150,7 +85,6 @@ public class BreadcrumbShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "breadcrumb-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 

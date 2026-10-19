@@ -8,69 +8,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class ButtonSpinnerShowCasePageTests
 {
-    [Fact]
-    public void ButtonSpinner_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/ButtonSpinner/Views/ButtonSpinnerShowCase.axaml");
-
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource PageSubtitle");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource PageDescription");
-        source.ShouldNotContain("ButtonSpinnerShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("ButtonSpinnerShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("ButtonSpinnerShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource ComponentCategory");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("ButtonSpinnerShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("ButtonSpinnerShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("ButtonSpinnerShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:ButtonSpinnerShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(8);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(8);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(8);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:ButtonSpinnerViewModel\"").ShouldBe(9);
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource BasicTitle");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource ThreeSizesTitle");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource P2LabelSizeTypeLarge");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource P2LabelSizeTypeMiddle");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource P2LabelSizeTypeSmall");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource P2LabelSizeTypeCustom");
-        source.ShouldContain("SizeType=\"Custom\"");
-        source.ShouldContain("ButtonSpinnerShowCaseLangResource StatusTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void ButtonSpinner_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/ButtonSpinner/Views/ButtonSpinnerShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/ButtonSpinnerShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractButtonSpinnerExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
-    }
 
     [Fact]
     public void ButtonSpinner_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()

@@ -6,67 +6,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TimelineShowCasePageTests
 {
-    [Fact]
-    public void Timeline_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Timeline/Views/TimelineShowCase.axaml");
-
-        source.ShouldContain("TimelineShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TimelineShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TimelineShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TimelineShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TimelineShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TimelineShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TimelineShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TimelineShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TimelineShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TimelineShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TimelineShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("TimelineShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("TimelineShowCaseLangResource ColorTitle");
-        source.ShouldContain("TimelineShowCaseLangResource LastNodeAndReversingTitle");
-        source.ShouldContain("TimelineShowCaseLangResource AlternateTitle");
-        source.ShouldContain("TimelineShowCaseLangResource DynamicModeTitle");
-        source.ShouldContain("TimelineShowCaseLangResource HorizontalTitle");
-        source.ShouldContain("Orientation=\"Horizontal\"");
-        source.ShouldContain("Mode=\"Start\"");
-        source.ShouldContain("Mode=\"End\"");
-        source.ShouldContain("Mode=\"Alternate\"");
-        source.ShouldNotContain("TimelineMode.Left");
-        source.ShouldNotContain("TimelineMode.Right");
-        source.ShouldNotContain("Mode=\"Left\"");
-        source.ShouldNotContain("Mode=\"Right\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Timeline_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Timeline/Views/TimelineShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TimelineShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractTimelineExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
-    }
 
     [Fact]
     public void Timeline_ShowCase_Declares_The_Nine_Semantic_Previews_And_Style_Example()
@@ -118,7 +57,6 @@ public class TimelineShowCasePageTests
         source.ShouldContain("TimelineShowCaseLangResource SemanticTimelineItemsRailDescription");
 
         semanticSource.ShouldContain("SourceKey=\"timeline-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("TimelineShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("TimelineShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Timeline.semantic-object\"");

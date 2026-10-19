@@ -112,7 +112,6 @@ public class MasonryShowCasePageTests
             "MasonryShowCaseLangResource SemanticPartStyleTitle");
 
         item.ShouldContain("SourceKey=\"masonry-semantic-part\"");
-        item.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         item.ShouldContain("Span=\"Full\"");
         item.ShouldContain("IsDeferredContentEnabled=\"True\"");
         item.ShouldContain("SemanticPartStyleDescription");

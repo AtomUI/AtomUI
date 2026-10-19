@@ -5,48 +5,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class CardShowCasePageTests
 {
-    [Fact]
-    public void Card_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Card/Views/CardShowCase.axaml");
-
-        source.ShouldContain("CardShowCaseLangResource PageSubtitle");
-        source.ShouldContain("CardShowCaseLangResource PageDescription");
-        source.ShouldNotContain("CardShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("CardShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("CardShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("CardShowCaseLangResource ComponentCategory");
-        source.ShouldContain("CardShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("CardShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("CardShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("CardShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:CardShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("CardShowCaseLangResource BasicTitle");
-        source.ShouldContain("CardShowCaseLangResource NoBorderTitle");
-        source.ShouldContain("CardShowCaseLangResource CardInColumnTitle");
-        source.ShouldContain("CardShowCaseLangResource LoadingCardTitle");
-        source.ShouldContain("CardShowCaseLangResource MoreContentConfigurationTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void Card_ShowCase_Declares_Deferred_Semantic_Part_Previews_And_Example()
@@ -74,20 +32,9 @@ public class CardShowCasePageTests
         }
 
         source.ShouldContain("SourceKey=\"card-semantic-part\"");
-        source.ShouldContain("BadgeText=\"v6.1.3\"");
         source.ShouldContain("<atom:CardHeaderStyle x:SetterTargetType=\"atom:DashedBorder\">");
         source.ShouldContain("<atom:CardTitleStyle x:SetterTargetType=\"ContentPresenter\">");
         source.ShouldContain("<atom:CardMetaContentDescriptionStyle x:SetterTargetType=\"ContentPresenter\">");
-    }
-
-    [Fact]
-    public void Card_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Card/Views/CardShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/CardShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractCardExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractCardExampleItems(string source)

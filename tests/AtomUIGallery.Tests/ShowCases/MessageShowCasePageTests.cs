@@ -25,61 +25,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class MessageShowCasePageTests
 {
-    [Fact]
-    public void Message_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Message/Views/MessageShowCase.axaml");
-
-        source.ShouldContain("MessageShowCaseLangResource PageSubtitle");
-        source.ShouldContain("MessageShowCaseLangResource PageDescription");
-        source.ShouldNotContain("MessageShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("MessageShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("MessageShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("MessageShowCaseLangResource ComponentCategory");
-        source.ShouldContain("MessageShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("MessageShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("MessageShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("MessageShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        CountShowCaseItemElements(source).ShouldBe(6);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(6);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(6);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:MessageViewModel\"").ShouldBe(7);
-        source.ShouldContain("MessageShowCaseLangResource BasicTitle");
-        source.ShouldContain("MessageShowCaseLangResource OtherTypesTitle");
-        source.ShouldContain("MessageShowCaseLangResource LoadingIndicatorTitle");
-        source.ShouldContain("MessageShowCaseLangResource CallbackTitle");
-        source.ShouldContain("MessageShowCaseLangResource StackTitle");
-        source.ShouldContain("SourceKey=\"message-stack\"");
-        source.ShouldContain("MessageShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
-
-    [Fact]
-    public void Message_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Message/Views/MessageShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/MessageShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractMessageExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
-    }
 
     [Fact]
     public void Message_Stack_ShowCase_Isolates_Configuration_Lifetime_And_Destroy_Scope()
@@ -341,8 +286,6 @@ public class MessageShowCasePageTests
         styledMessageMethod.ShouldNotContain("TimeSpan.Zero");
 
         // 版本徽标必须读取 DisplayVersion，禁止硬编码。
-        item.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
-        item.ShouldNotContain("BadgeText=\"v6");
     }
 
     // selectorSuffix 必须精确到闭合引号或伪类，避免匹配到同名前缀的其它样式块

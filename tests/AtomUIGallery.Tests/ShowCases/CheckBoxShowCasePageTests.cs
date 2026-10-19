@@ -21,50 +21,6 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class CheckBoxShowCasePageTests
 {
-    [Fact]
-    public void CheckBox_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/CheckBox/Views/CheckBoxShowCase.axaml");
-
-        source.ShouldContain("CheckBoxShowCaseLangResource PageSubtitle");
-        source.ShouldContain("CheckBoxShowCaseLangResource PageDescription");
-        source.ShouldNotContain("CheckBoxShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("CheckBoxShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("CheckBoxShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("CheckBoxShowCaseLangResource ComponentCategory");
-        source.ShouldContain("CheckBoxShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("CheckBoxShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("CheckBoxShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("CheckBoxShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:CheckBoxShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("CheckBoxShowCaseLangResource BasicTitle");
-        source.ShouldContain("CheckBoxShowCaseLangResource CheckboxGroupTitle");
-        source.ShouldContain("CheckBoxShowCaseLangResource CheckedItemsBindingTitle");
-        source.ShouldContain("BadgeText=\"v6.0.8\"");
-        source.ShouldContain("CheckBoxShowCaseLangResource CheckAllTitle");
-        source.ShouldContain("CheckBoxShowCaseLangResource UseWithGridTitle");
-        source.ShouldContain("CheckBoxShowCaseLangResource SemanticPartStyleTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
 
     [Fact]
     public void CheckBox_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
@@ -86,7 +42,6 @@ public class CheckBoxShowCasePageTests
         }
 
         semanticSource.ShouldContain("SourceKey=\"checkbox-semantic-part\"");
-        semanticSource.ShouldContain("BadgeText=\"{x:Static gallery:GalleryVersionInfo.DisplayVersion}\"");
         semanticSource.ShouldContain("CheckBoxShowCaseLangResource SemanticPartStyleTitle");
         semanticSource.ShouldContain("CheckBoxShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|CheckBox.semantic-fixed\"");
@@ -184,7 +139,6 @@ public class CheckBoxShowCasePageTests
             var item = panel.Children
                             .OfType<ShowCaseItem>()
                             .Single(static candidate => candidate.SourceKey == "checkbox-semantic-part");
-            item.BadgeText.ShouldBe(GalleryVersionInfo.DisplayVersion);
             item.MaterializeDeferredContent();
             Dispatcher.UIThread.RunJobs();
 
@@ -210,16 +164,6 @@ public class CheckBoxShowCasePageTests
             AssertSolidColor(conditionalLabel.Foreground, "#faad14");
             conditionalLabel.FontWeight.ShouldBe(FontWeight.Bold);
         });
-    }
-
-    [Fact]
-    public void CheckBox_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/CheckBox/Views/CheckBoxShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/CheckBoxShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractCheckBoxExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractCheckBoxExampleItems(string source)

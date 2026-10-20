@@ -1,6 +1,8 @@
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
@@ -106,10 +108,46 @@ public abstract class AbstractToggleIconButton : ToggleButton, IMotionAwareContr
     
     #endregion
 
+    private readonly StateMotionSession _stateMotion;
+
     static AbstractToggleIconButton()
     {
         AffectsMeasure<AbstractToggleIconButton>(CheckedIconProperty, UnCheckedIconProperty, IsCheckedProperty, IconWidthProperty, IconHeightProperty);
         AffectsRender<AbstractToggleIconButton>(IconBrushProperty);
+    }
+
+    protected AbstractToggleIconButton()
+    {
+        // Parent templates assign IconBrush and checked appearance through styles after
+        // this control is attached, so the initial appearance must commit without transitions.
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var size = base.MeasureOverride(availableSize);
+        // Template changes invalidate measure even when several changes coalesce back
+        // to the applied template and Avalonia skips OnApplyTemplate.
+        _stateMotion.CompleteInitialization();
+        return size;
     }
     
     public bool HitTest(Point point)

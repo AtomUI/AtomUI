@@ -70,7 +70,8 @@ Avalonia 12.1.4<br>
 #### 最新版本说明
 
 AtomUI 6.2.7 修复启动配置提前创建 Avalonia Dispatcher 导致持续动画卡顿的问题。配置改为在平台服务就绪后的
-UI 线程执行，后台主题准备仍与 Application 构造并行。请同步升级 AtomUI 包和 Generator、重新构建消费方；
+UI 线程执行，后台主题准备仍与 Application 构造并行。状态控件初始化直接提交外观，ToggleSwitch 文本按字形轮廓居中。
+请同步升级 AtomUI 包和 Generator、重新构建消费方；
 配置回调及异常时机变化见 [6.2.7 迁移指南](docs/releases/6.2.7-api-changes.zh-CN.md)，完整内容见
 [Changelog](./CHANGELOG.zh-CN.md)。
 

@@ -1,8 +1,10 @@
 using System.Reflection;
+using AtomUI.Animations;
 using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
@@ -54,6 +56,12 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         set => SetValue(LoadingAnimationDurationProperty, value);
     }
 
+    public IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
+
     public double IconWidth
     {
         get => GetValue(IconWidthProperty);
@@ -72,10 +80,10 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public IBrush? IconBrush
+    public bool IsPassthroughMouseEvent
     {
-        get => GetValue(IconBrushProperty);
-        set => SetValue(IconBrushProperty, value);
+        get => GetValue(IsPassthroughMouseEventProperty);
+        set => SetValue(IsPassthroughMouseEventProperty, value);
     }
     
     #endregion
@@ -84,12 +92,6 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
     
     internal static readonly StyledProperty<bool> IsPassthroughMouseEventProperty = 
         AvaloniaProperty.Register<AbstractIconButton, bool>(nameof(IsPassthroughMouseEvent));
-    
-    public bool IsPassthroughMouseEvent
-    {
-        get => GetValue(IsPassthroughMouseEventProperty);
-        set => SetValue(IsPassthroughMouseEventProperty, value);
-    }
     
     #endregion
     
@@ -101,10 +103,46 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
             "_isFlyoutOpen"));
     #endregion
 
+    private readonly StateMotionSession _stateMotion;
+
     static AbstractIconButton()
     {
         AffectsMeasure<AbstractIconButton>(IconProperty);
         AffectsRender<AbstractIconButton>(IconBrushProperty);
+    }
+
+    protected AbstractIconButton()
+    {
+        // Parent templates assign IconBrush through styles after this control is attached,
+        // so the initial appearance must commit without running the theme transition.
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var size = base.MeasureOverride(availableSize);
+        // Template changes invalidate measure even when several changes coalesce back
+        // to the applied template and Avalonia skips OnApplyTemplate.
+        _stateMotion.CompleteInitialization();
+        return size;
     }
     
     protected bool IsFlyoutOpen()

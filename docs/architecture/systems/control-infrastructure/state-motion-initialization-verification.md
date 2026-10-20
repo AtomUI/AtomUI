@@ -19,14 +19,17 @@
 | ListBoxItem / ListViewItem / ComboBoxItem | 构造时抑制，容器准备及自身加载后恢复；父控件在清理容器之前复位会话，默认虚拟化随后分离并重挂载 |
 | CarouselPageIndicator / PaginationNavItem | 覆盖生成容器的初始选中宽度、透明度及颜色；轮播进度的独立 Animation 保留 |
 | InputControlFrame / RangeInfoPickerInput / BreadcrumbItem | 在共享外观或实际动画目标层持有会话，初始同步及加载后恢复；模板变化与分离时复位 |
+| AbstractIconButton / AbstractToggleIconButton | 父模板通过样式写入初始 `IconBrush` 时抑制背景与图标过渡；加载或已加载后的测量完成时恢复最新集合，分离与模板变化复位。模板变化合并回原模板时仍由正常测量闭合；Tag 关闭按钮的初始前景由 `TagColorVariantTests` 锁定 |
 | 运行期直接提交 | Tab 拖动及 DataGrid 重排使用独立 `TransitionSuppressionScope`，以 `using` / `finally` 恢复；普通布局不重启初始化 |
 
-合计 17 类根或容器显式持有会话，SwitchKnob 使用模板接入。模板行为使用共享静态回调，常见的单目标登记不创建
+合计 19 类根或容器显式持有会话，SwitchKnob 使用模板接入。模板行为使用共享静态回调，常见的单目标登记不创建
 List 或快照数组；没有全局控件表、轮询或排队开启任务。旧模板分离时解除 owner 登记，对象自身保留供重挂载使用的接线。
 
 原 64 个调用文件按职责复核。状态初始化与运行期直接提交已退出私有反射开关；无挂载后初始写入的目标删除冗余开关，
 保留其余生命周期工作。ProgressBar / Spin 保留过程反馈和既有实现，公开反射扩展保留 API 兼容；不能称为全库零反射。
 `TextBox` 当前模板没有旧 `InnerBoxDecorator`，已删除无效查找和投递；输入外观由真实 `InputControlFrame` 管理。
+回归复核补充：父模板样式驱动的 IconButton / ToggleIconButton 初始 `IconBrush` 属于挂载后初始写入，不能删除抑制；
+两者已接入共享会话，Tag 关闭按钮用例给出红绿证据。
 
 ## 2. 根因和有效红绿证据
 
@@ -41,6 +44,7 @@ List 或快照数组；没有全局控件表、轮询或排队开启任务。旧
 | 模板声明 | 目标挂载前有效集合尚未抑制，1 项失败 | 构建时抑制，owner/Loaded 汇合及重挂载恢复通过 |
 | 真实父子场景 | Radio/disabled Radio、ListBox、OptionButtonGroup、Carousel、ListView、Pagination、ComboBox 初始状态仍启动过渡 | 迁移实际目标后，相关模块及临时场景 296 项通过 |
 | 同步重入 | Reset 的属性通知重入 Complete / Dispose，2 项永久抑制失败 | 获取期间使用 Resetting 阶段，获得句柄后再交付所有权；重入释放撤销局部句柄，原断言通过 |
+| 图标按钮初始化 | 全量回归中 Tag 关闭按钮首帧颜色仍为 `ColorIcon`，未到达 Tag 前景；两个基类模板更换后的临时用例报告有效过渡未恢复，A→B→A 合并变化的 2 项临时用例同样失败 | 两个基类在构造时抑制，Loaded 或已加载后的测量完成时恢复；覆盖初始挂载、重挂载、真实模板重建、合并模板变化、自定义集合恢复及首次后续过渡 |
 
 单独创建内部 item 并预先设为 selected 的探针，不能证明真实父控件的准备流程正确。容器通常在挂载后才被赋予初始
 选择；本轮先发现 Tab item，再通过实际 Segmented、Radio、列表、分页和轮播场景纠正了该盲区。宿主不支持弹层、
@@ -79,8 +83,9 @@ List 或快照数组；没有全局控件表、轮询或排队开启任务。旧
 | Button | 235841.13 → 235394.93 | 446.20 B，≈ 0.19% | 11964.13 → 11964.13 |
 
 分离时为下一次挂载重新获取抑制，部分场景增加分配；单独 SegmentedItem 初始化增加 128 B，TabStripItem 增加约 32 B。
-机制有成本，不能宣称整个生命周期都更便宜。复杂度成本为三个共享内部类型、17 个持有字段及模板接入回调，删除状态
+机制有成本，不能宣称整个生命周期都更便宜。当前复杂度成本为三个共享内部类型、19 个持有字段及模板接入回调，删除状态
 初始化的反射/投递接线和动态 Ready selector；不增加逐帧会话、就绪订阅、视觉节点或第二份选择/几何状态。
+本节性能数据采集于图标按钮补齐接入之前，不代表新增两个图标按钮会话的专项性能测量。
 
 ## 4. 原生与 NativeAOT
 
@@ -145,7 +150,8 @@ Margin / TranslateY，不改变字号、轨道和显式/隐式自定义模板布
 有效的动画断言，不计为通过，也不据此增加会话；DataGrid 本轮的通过结论限定为既有重排与状态清理验证。
 
 清理后的最终验证：Core 5 项（368 ms）、35 类改动控件的 Desktop 定向测试 2043 项（约 61 秒）、DataGrid 重排
-19 项（约 1 秒），合计 2067 项通过、零失败、零跳过。测量工具 Release 构建零警告、零错误；不运行 affected-wide 或全量。
+19 项（约 1 秒），合计 2067 项通过、零失败、零跳过。测量工具 Release 构建零警告、零错误；实现阶段不运行
+affected-wide 或全量，随后发版补验见下一节。
 
 ```bash
 state_motion_filter="$(python3 -c 'names="Breadcrumb ButtonSpinner Buttons Card Carousel Cascader CheckBox Collapse ColorPicker ComboBox Dialog Drawer FloatButton ImagePreviewer Input ListBox ListView Menu NavMenu OptionButtonGroup OtpLineEdit Pagination RadioButton Rate ScrollViewer Segmented Slider SplitView Switch TabControl TextBlock TimePicker TreeView Upload WindowTitleBar".split(); print("|".join("FullyQualifiedName~."+name+"." for name in names))')"
@@ -164,3 +170,26 @@ dotnet build tools/performances/AtomUI.GalleryPerformance/AtomUI.GalleryPerforma
 独立只读审查的两项实质问题已由有效复现和原断言验证关闭，复核未发现新增实质问题；性能技能的过时接入指引已同步更新。
 测试处置遵循 [测试价值与生命周期](../../../engineering/development/test-value-and-lifecycle.md)，运行范围遵循
 [按改动影响选择验证](../../../engineering/workflows/affected-verification.md)。
+
+## 7. 6.2.7 发布补验
+
+发布首轮全量在 6514 项中发现一项失败：Tag 关闭按钮的初始 `IconBrush` 仍处于默认 `ColorIcon`，没有直接提交
+Tag 的白色前景。两个图标按钮共享基类补齐初始化会话后，Tag 模块 16 项和挂载、重挂载、自定义集合及模板替换
+4 项临时验证通过。独立复核进一步发现 A→B→A 模板变化合并会跳过 `OnApplyTemplate`，相应两项临时复现失败。
+
+两个基类使用实际测量完成作为已加载后的完成边界。模板属性变化必然使测量失效，即使模板身份回到原值，下一次
+测量仍可恢复后续过渡；真实模板重建和派生类模板初始化也在该边界之前完成。该完成入口不创建派发任务或额外标记字段。
+真实模板重建与合并变化共四项临时验证通过，随后全部临时测试及其空任务目录清理，不增加常驻测试。
+
+清理后的 Tag、Expander、输入、Tab 溢出指示和 WindowTitleBar 定向验证共 92 项通过，执行约 2 秒；两个基类的完整
+成员布局审计为零问题。最终执行 `scripts/run-full-regression.sh`，15 个项目的 6514 项全部通过，零失败、零跳过，
+脚本最终汇总耗时 11 分 49 秒。全量执行期间生产源码保持不变。
+
+发布构建的工具链及 20 个包项目共 21 次构建均为零警告、零错误；20 个包的框架、内容与相对 6.2.6 的布局检查通过。
+包 API 比对仅报告迁移文档所列的 10 条生成式注册类型标识变化，没有其他差异；本发布不声明与 6.2.6 二进制兼容，
+不使用 suppression 隐藏这些诊断。
+
+macOS `osx-arm64` Gallery NativeAOT 发布通过真实产物检查，生成 Mach-O 原生可执行文件；按产物绝对路径启动后持续
+运行 12 秒且无异常日志，验收进程已停止。仍有与 6.2.6 相同的 ReactiveUI `IL2104` / `IL3053` 告警和本机 Homebrew
+库最低 macOS 版本的链接提示；本机启动不能替代较低 macOS 版本或其他平台的实机验收。
+独立原生启动时序验证退出码为 0，120 个定时器样本的中位间隔为 16.15 ms，最大间隔为 17.92 ms。

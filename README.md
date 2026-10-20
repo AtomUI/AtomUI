@@ -77,7 +77,8 @@ Windows, macOS and Linux<br>
 
 AtomUI 6.2.7 fixes startup configuration that could create an Avalonia Dispatcher before platform initialization and
 cause persistent animation stalls. Configuration now runs on the UI thread after platform services are ready, while
-background theme preparation still overlaps Application construction. Upgrade AtomUI packages and the Generator
+background theme preparation still overlaps Application construction. State controls now commit their initial appearance
+without transitions, and ToggleSwitch text aligns by its glyph outline. Upgrade AtomUI packages and the Generator
 together, rebuild consumers, and review the [6.2.7 migration guide](docs/releases/6.2.7-api-changes.md) for callback and
 exception timing changes. See the [Changelog](./CHANGELOG.md).
 

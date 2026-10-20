@@ -14,6 +14,10 @@ All notable changes to AtomUI are documented in this file.
 - Startup and Core
   - Prevent ordinary module configuration that indirectly creates an AvaloniaObject from creating the Dispatcher before platform initialization and causing persistent animation/timer stalls.
   - Preserve background theme preparation, per-Application configuration isolation and AtomUI commit before Initialize; add an on-demand native process acceptance entry for startup ordering and steady-state timer behavior.
+- Controls and Motion
+  - Commit parent-template IconButton and ToggleIconButton appearance immediately, including Tag close-button foreground, while preserving subsequent transitions across remounts and template replacement.
+  - Commit the initial state of ToggleSwitch, Segmented, TabControl, TabStrip, RadioButton, ListBox, ListView, ComboBox, Carousel, Pagination, Breadcrumb and icon buttons directly instead of replaying selection, size or appearance transitions on first display, remount and template reapplication; later user-driven changes keep their normal duration and easing.
+  - Center ToggleSwitch default text by the actual glyph outline, including font fallback and shaping offsets.
 
 ## 6.2.6
 

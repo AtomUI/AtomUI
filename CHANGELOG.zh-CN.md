@@ -16,6 +16,10 @@ AtomUI 的重要变更记录在此文件中。
 - 启动与 Core
   - 防止普通模块配置间接构造 AvaloniaObject 时，在平台初始化前创建 Dispatcher，造成持续的动画与定时器卡顿。
   - 保留后台主题准备、每个 Application 实例的配置隔离及 Initialize 前的内核提交；增加按需独立原生进程验收入口，检查启动顺序与稳态定时器行为。
+- 控件与动效
+  - IconButton 与 ToggleIconButton 直接提交父模板驱动的初始外观，修复 Tag 关闭图标首帧前景色；重挂载和更换模板后仍恢复后续正常过渡。
+  - ToggleSwitch、Segmented、TabControl、TabStrip、RadioButton、ListBox、ListView、ComboBox、Carousel、Pagination、Breadcrumb 以及 IconButton/ToggleIconButton 的初始状态改为直接提交；首次显示、重新挂载和重新应用模板不再补播选中、尺寸或外观过渡，后续用户操作仍保留原有时长与缓动。
+  - ToggleSwitch 默认文本按实际字形轮廓垂直居中，兼容字体回退与 shaping offset。
 
 ## 6.2.6
 

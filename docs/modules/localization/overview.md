@@ -28,6 +28,13 @@ LanguageManager、Localizer 和 Avalonia 动态资源桥，不拥有 XLIFF 构�
 - `AtomUI.Toolchain` 的 Tasks profile（产物 `AtomUI.Build.Tasks.dll`）负责静态语言包文件与打包副作用。
 - Control 包只注册自身 Catalog 和内置 Bundle，不实现独立语言状态。
 
+## 应用资源接入边界
+
+LocalizationHost 拥有语言服务组合，LanguageResourceProvider 提供当前语言的 Avalonia 资源投影。
+Core 的 ApplicationScope 负责物理挂载和 FlowDirection Style，LanguageManager 不接管 Application 的主题字典。
+主题与语言的共同宿主契约见[应用资源宿主设计](../../architecture/systems/theming/application-resource-host.md)，
+实现证据及平台验收边界见[资源宿主验证](../../architecture/systems/theming/application-resource-host-verification.md)。
+
 ## 相关文档
 
 - [本地化系统架构](../../architecture/systems/localization/overview.md)

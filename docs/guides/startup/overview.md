@@ -63,6 +63,9 @@ public partial class App : Application
 
 AtomUI 内核在 `Initialize()` 之前提交完毕，`App.axaml` 与主窗体可以直接使用 AtomUI 主题与本地化。
 
+同时使用 FluentTheme 等外部主题，或需要合并应用资源时，先阅读
+[与其他框架的主题集成](../theming/framework-theme-integration.md)，确认资源优先级、宿主修复的版本范围与覆盖迁移方式。
+
 ## 2. 启用 Splash
 
 不调用 `UseSplash` 就不显示 Splash。默认模式 `Auto`：JIT 运行时显示，NativeAOT 不显示。

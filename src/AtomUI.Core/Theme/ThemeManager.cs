@@ -69,6 +69,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private readonly ThemeScopeGraph _scopeGraph;
     private ThemeState? _currentTheme;
     private Application? _application;
+    private IResourceDictionary? _applicationResources;
+    private Style? _rootContextStyle;
     private readonly Dictionary<IControlThemesProvider, List<ControlThemeResourceRegistration>> _stagedThemeResources = new();
     private readonly List<IControlThemesProvider> _registeredControlThemesProviders = [];
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
@@ -162,49 +164,69 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             throw new InvalidOperationException("ThemeManager is already initialized.");
         }
 
+        ObjectDisposedException.ThrowIf(_disposeRequested, this);
         _application = application;
-        PrepareRegistrationSchema();
-        var registry = _startupRegistry!;
-        var (runtimeConfig, initialConfig, catalogResult) = PrepareRegistrationThemeInputs(registry, _themeDefinitionResolvers);
-        _normalizedRuntimeDefaultConfig = runtimeConfig;
-        _normalizedInitialConfig = initialConfig;
-        _compiledThemeCatalog = catalogResult.Catalog;
-        _themeCatalogDiagnostics = catalogResult.Diagnostics;
-        MountStaticResources();
-
-        var request = _followSystemLightRequest is null
-            ? _initialRequest
-            : (initialSystemAppearance ?? ResolveSystemAppearance(application)) == ThemeAppearance.Dark
-                ? _followSystemDarkRequest!
-                : _followSystemLightRequest;
-        _startupGlobalParent = startupGlobalParent;
-        ThemeTransitionResult result;
         try
         {
-            result = ApplyThemeAsync(request).GetAwaiter().GetResult();
-        }
-        finally
-        {
-            _startupGlobalParent = null;
-        }
-        if (result.Status is not ThemeTransitionStatus.Committed and not ThemeTransitionStatus.NoOp)
-        {
-            var exceptionMessage = result.Exception is null
-                ? string.Empty
-                : $" {result.Exception.GetBaseException().Message}";
-            throw new ThemeLoadException(
-                $"Initial theme '{request.ThemeId}' failed with status '{result.Status}': " +
-                string.Join(" ", result.Diagnostics.Select(static diagnostic => diagnostic.Message)) +
-                exceptionMessage,
-                result.Exception);
-        }
+            PrepareRegistrationSchema();
+            var registry = _startupRegistry!;
+            var (runtimeConfig, initialConfig, catalogResult) = PrepareRegistrationThemeInputs(registry, _themeDefinitionResolvers);
+            _normalizedRuntimeDefaultConfig = runtimeConfig;
+            _normalizedInitialConfig = initialConfig;
+            _compiledThemeCatalog = catalogResult.Catalog;
+            _themeCatalogDiagnostics = catalogResult.Diagnostics;
+            MountStaticResources();
 
-        var rootContextStyle = new Style(selector => selector.OfType<TopLevel>());
-        rootContextStyle.Setters.Add(new Setter(ThemeScope.ContextProperty, RootContext));
-        Add(rootContextStyle);
-        application.Styles.Add(this);
-        _applicationInitialized = true;
-        SubscribeSystemAppearance(application);
+            var request = _followSystemLightRequest is null
+                ? _initialRequest
+                : (initialSystemAppearance ?? ResolveSystemAppearance(application)) == ThemeAppearance.Dark
+                    ? _followSystemDarkRequest!
+                    : _followSystemLightRequest;
+            _startupGlobalParent = startupGlobalParent;
+            ThemeTransitionResult result;
+            try
+            {
+                result = ApplyThemeAsync(request).GetAwaiter().GetResult();
+            }
+            finally
+            {
+                _startupGlobalParent = null;
+            }
+            if (result.Status is not ThemeTransitionStatus.Committed and not ThemeTransitionStatus.NoOp)
+            {
+                var exceptionMessage = result.Exception is null
+                    ? string.Empty
+                    : $" {result.Exception.GetBaseException().Message}";
+                throw new ThemeLoadException(
+                    $"Initial theme '{request.ThemeId}' failed with status '{result.Status}': " +
+                    string.Join(" ", result.Diagnostics.Select(static diagnostic => diagnostic.Message)) +
+                    exceptionMessage,
+                    result.Exception);
+            }
+
+            // Framework resources precede external theme children without outranking the
+            // application's existing merged dictionaries or its explicit Resources overrides.
+            _applicationResources = application.Styles.Resources;
+            _applicationResources.MergedDictionaries.Insert(0, Resources);
+            _rootContextStyle = new Style(selector => selector.OfType<TopLevel>());
+            _rootContextStyle.Setters.Add(new Setter(ThemeScope.ContextProperty, RootContext));
+            application.Styles.Add(_rootContextStyle);
+            _applicationInitialized = true;
+            SubscribeSystemAppearance(application);
+        }
+        catch (Exception initializationException)
+        {
+            try
+            {
+                Dispose();
+            }
+            catch (Exception cleanupException)
+            {
+                throw new AggregateException("ThemeManager initialization and cleanup failed.",
+                    initializationException, cleanupException);
+            }
+            throw;
+        }
     }
 
     internal void CompleteStartupRegistration()
@@ -1070,9 +1092,26 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
         DisposeBoundary(_scopeGraph.DisposeAll);
         DisposeBoundary(() => _startupPackageIndex?.Release());
-        if (application is not null)
+        if (_rootContextStyle is { } rootContextStyle && application is not null)
         {
-            DisposeBoundary(() => application.Styles.Remove(this));
+            DisposeBoundary(() => application.Styles.Remove(rootContextStyle));
+        }
+        _rootContextStyle = null;
+        var applicationResources = _applicationResources;
+        _applicationResources = null;
+        if (applicationResources is not null)
+        {
+            DisposeBoundary(() => applicationResources.MergedDictionaries.Remove(Resources));
+            if (application is not null)
+            {
+                DisposeBoundary(() => ((IResourceProvider)Resources).RemoveOwner(application));
+                // ResourceDictionary stops removing child owners if a notification throws.
+                // Snapshot our root providers so callbacks cannot interrupt sibling cleanup.
+                foreach (var resource in Resources.MergedDictionaries.Concat(Resources.ThemeDictionaries.Values).ToArray())
+                {
+                    DisposeBoundary(() => resource.RemoveOwner(application));
+                }
+            }
         }
         DisposeBoundary(Resources.MergedDictionaries.Clear);
         DisposeBoundary(Resources.Clear);

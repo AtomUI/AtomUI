@@ -987,8 +987,8 @@ AvailableThemes 中”的悬空状态。
 根 ThemeContext 的 Provider 在 ThemeManager 初始化时挂载一次。每个局部 ThemeContext 也只拥有一个
 Provider。主题切换不追加 `MergedDictionaries`，不创建新的 Provider。
 
-Root Provider 由 ThemeManager 的 Styles 资源拥有；局部 Provider 由对应 ThemeConfigProvider.Resources
-拥有；独立 TopLevel 通过自己的 ResourceBridge 委托给 owner context。Provider 和 bridge 都忽略调用方传入的
+Root Provider 位于 ThemeManager.Resources，由根 Styles.Resources 宿主挂入应用；局部 Provider 由对应
+ThemeConfigProvider.Resources 拥有；独立 TopLevel 通过自己的 ResourceBridge 委托给 owner context。Provider 和 bridge 都忽略调用方传入的
 自定义 AtomUI theme id，只使用已提交 snapshot；Avalonia 的 `ThemeVariant` 参数仍用于同一资源树中的普通
 ThemeDictionary 查询。
 
@@ -1193,9 +1193,11 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
    request；不得先按 Default 编译后再补一次 Dark/Light 切换。
 5. 同步完成初始 request 的 Capture/Prepare，生成第一个完整根 `ThemeSnapshot`；启动前后台 Prepare 产出的全局层
    作为可复用父层传入，不重复编译全局层。
-6. 使用该 snapshot 创建 Root ThemeContext、稳定 Provider 和唯一 ThemeManager；Manager 的 Styles 同时预装
-   Control themes、语言资源入口以及向全部 TopLevel 注入 Root ThemeContext 的全局 style。
-7. 将同一个已完整初始化的 ThemeManager 实例挂载到 Application Styles，并绑定为 `IThemeManager` 服务。
+6. 使用该 snapshot 创建 Root ThemeContext 和稳定 Token provider；唯一 ThemeManager 持有完整主题资源字典，
+   语言 Provider 与服务关系由独立 LocalizationHost 持有，不归 ThemeManager 管理。
+7. 服务绑定及应用级资源/Style 挂载采用[应用资源宿主设计](application-resource-host.md)：主题 Resources 与根
+   Context Style 分开挂载，语言 Provider 接入共同资源宿主。实现证据与平台验收边界见
+   [资源宿主验证](application-resource-host-verification.md)。
 8. 显式设置与 snapshot appearance 一致的 Avalonia Light/Dark variant，并且只发布一次初始 Token 资源通知。
 9. 执行与主题生命周期无关的模块初始化。
 

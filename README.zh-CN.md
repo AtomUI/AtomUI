@@ -71,8 +71,9 @@ Avalonia 12.1.4<br>
 
 AtomUI 6.2.7 修复启动配置提前创建 Avalonia Dispatcher 导致持续动画卡顿的问题。配置改为在平台服务就绪后的
 UI 线程执行，后台主题准备仍与 Application 构造并行。状态控件初始化直接提交外观，ToggleSwitch 文本按字形轮廓居中。
-请同步升级 AtomUI 包和 Generator、重新构建消费方；
-配置回调及异常时机变化见 [6.2.7 迁移指南](docs/releases/6.2.7-api-changes.zh-CN.md)，完整内容见
+混合主题应用在 App.axaml 声明 FluentTheme 与 Application.Resources 时保留 AtomUI 窗口装饰和语言资源。
+原先独立 Style.Resources 中的全局同键覆盖须移至 Application.Resources。请同步升级 AtomUI 包和 Generator、重新构建消费方；
+配置回调、异常时机与资源优先级变化见 [6.2.7 迁移指南](docs/releases/6.2.7-api-changes.zh-CN.md)，完整内容见
 [Changelog](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS

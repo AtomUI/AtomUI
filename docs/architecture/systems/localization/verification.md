@@ -160,6 +160,10 @@ Generator 测试按生产职责拆分，避免继续扩张单个 `LanguageCatalo
 
 ## Avalonia 集成测试
 
+语言 Provider 的应用宿主迁移还需满足
+[应用资源宿主验证](../theming/application-resource-host-verification.md)中的原始 AXAML、用户覆盖、生命周期与性能矩阵。
+该页单独记录宿主实现的实测证据和平台缺口，下面的通用要求不代表所有平台已经验收。
+
 - `{atom:DatePickerLangResource Today}` 和应用 `{login:LoginLangResource Title}` 均能通过 compiled XAML。
 - 多次切换语言始终复用同一个 `LanguageResourceProvider`，每次成功切换只发布一次资源通知。
 - `StyledElement` 动态资源刷新，非 StyledElement 的静态 ProvideValue 行为符合文档。

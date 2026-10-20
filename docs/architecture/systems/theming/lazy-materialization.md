@@ -51,7 +51,9 @@ slot 仅在单个 registry revision 内稳定。增加一个按身份排序靠�
 
 逻辑优先级从高到低为：正常控件/作用域/应用覆盖、当前 context 的 Token provider、按包与资产顺序解析的静态
 主题资源。静态层内部仍按 `PackageCommitOrdinal`、`(Phase, Order, AssetId)` 和嵌套字典既有次序处理。
-本页不改变 Avalonia 更外层的覆盖规则。
+本节只定义 AtomUI 主题字典内部的顺序。应用与外部主题之间的宿主层级由
+[应用资源宿主设计](application-resource-host.md)拥有，源码迁移与验收状态见
+[资源宿主验证](application-resource-host-verification.md)。不能据内部 provider 顺序推断全部外部 Style.Resources 覆盖保持不变。
 
 ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有不可变的有序资源表，在演化时交换表引用：
 

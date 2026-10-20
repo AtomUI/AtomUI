@@ -140,6 +140,11 @@ fr-CA      -> fr -> en-US
 Provider 在 Application 初始化时只挂载一次。它始终从 `LanguageManager` 的当前 Snapshot 读取，不为每种语言
 维护一份可变 Avalonia `ResourceDictionary`，切换时也不从 MergedDictionaries 删除或添加字典。
 
+应用级物理挂载由 Core 的 ApplicationScope 负责，LocalizationHost 只拥有本地化服务组合。Provider 与主题资源的
+共同宿主、应用覆盖和释放责任见[应用资源宿主设计](../theming/application-resource-host.md)；
+该宿主迁移的实现证据与验收见[资源宿主验证](../theming/application-resource-host-verification.md)。
+共同宿主不把语言状态交给 ThemeManager，也不让 ChangeLanguage 进入主题事务。
+
 Generator 生成的 `XxxLangResourceExtension` 继续基于 enum key 创建动态资源引用。Provider 负责把 exact enum
 类型和值映射到 Catalog/unit slot。语言通知只使已有动态资源重新查询，不替换 Markup Extension 或资源 key。
 
@@ -169,5 +174,6 @@ AtomUI 控件必须读取 `LanguageState.FormattingCulture`，不能依赖调用
 
 ## 生命周期
 
-`LanguageManager` 与 Application 生命周期一致。释放时必须解绑 Application 资源宿主、根 FlowDirection 投影和
-内部订阅，并清空公开事件。Snapshot 和生成表不持有 Visual、ViewModel、DI Scope 或翻译包文件句柄。
+`LanguageManager` 与 Application 生命周期一致，由 LocalizationHost 释放其内部状态和公开事件。Core 的
+ApplicationScope 负责从实际挂载目标移除语言 Provider 和根 FlowDirection Style，再释放本地化服务；不能要求
+LanguageManager 自行管理应用主题资源集合。Snapshot 和生成表不持有 Visual、ViewModel、DI Scope 或翻译包文件句柄。

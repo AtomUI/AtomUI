@@ -12,6 +12,7 @@ namespace AtomUI;
 internal sealed partial class ApplicationScope : IAtomUI, IDisposable
 {
     private Application? _application;
+    private IResourceDictionary? _applicationResources;
     private readonly List<IAtomUIOwnedService> _ownedServices;
     private readonly HashSet<string> _ownedServiceIds;
     private readonly List<PackageOwnership> _additionalOwnership = [];
@@ -80,10 +81,13 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
                 $"AtomUI is already initialized for Application '{application.GetType().FullName}'.");
         }
 
-        application.Resources.MergedDictionaries.Add(ResourceProvider);
-        application.Styles.Add(FlowDirectionStyle);
         try
         {
+            // Application AXAML may replace Resources. The root Styles resource dictionary
+            // survives that assignment; its existing application dictionaries retain priority.
+            _applicationResources = application.Styles.Resources;
+            _applicationResources.MergedDictionaries.Insert(0, ResourceProvider);
+            application.Styles.Add(FlowDirectionStyle);
             ThemeManager.InitializeApplication(application, initialSystemAppearance, startupGlobalParent);
             ApplicationScopeRegistry.Register(application, this);
             for (var index = 0; index < _ownedServices.Count; index++)
@@ -99,7 +103,7 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
             DetachOwnedServices(application, failures);
             TryCleanup(() => ApplicationScopeRegistry.Unregister(application, this), failures);
             TryCleanup(() => application.Styles.Remove(FlowDirectionStyle), failures);
-            TryCleanup(() => application.Resources.MergedDictionaries.Remove(ResourceProvider), failures);
+            DetachApplicationResources(application, failures);
             ThrowFailures("AtomUI application initialization and rollback failed.", failures);
         }
     }
@@ -123,7 +127,7 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
             ReleaseAdditionalOwnership(application, failures);
             DetachOwnedServices(application, failures);
             TryCleanup(() => application.Styles.Remove(FlowDirectionStyle), failures);
-            TryCleanup(() => application.Resources.MergedDictionaries.Remove(ResourceProvider), failures);
+            DetachApplicationResources(application, failures);
         }
 
         for (var index = _ownedServices.Count - 1; index >= 0; index--)
@@ -142,6 +146,19 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
         if (Volatile.Read(ref _disposed) != 0)
         {
             throw new ObjectDisposedException(nameof(ApplicationScope));
+        }
+    }
+
+    private void DetachApplicationResources(Application application, ICollection<Exception> failures)
+    {
+        var resources = _applicationResources;
+        _applicationResources = null;
+        if (resources is not null)
+        {
+            TryCleanup(() => resources.MergedDictionaries.Remove(ResourceProvider), failures);
+            // Collection/owner notifications can throw after insertion or removal. Release
+            // our provider independently even if the collection callback did not finish.
+            TryCleanup(() => ((IResourceProvider)ResourceProvider).RemoveOwner(application), failures);
         }
     }
 

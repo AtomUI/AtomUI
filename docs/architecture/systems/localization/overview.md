@@ -22,6 +22,7 @@ Avalonia 资源桥与主题系统保持独立。
 | [公共 API](../../../reference/localization/public-api.md) | 启动配置、`LanguageTag`、`ILanguageManager`、`ILocalizer`、XAML 与 C# 使用面 |
 | [Catalog 与 XLIFF](../../../reference/localization/catalog-and-xliff.md) | Language Catalog 契约、目录约定、XLIFF 2.1、稳定 Key、格式化与覆盖规则 |
 | [runtime.md](runtime.md) | Registry、Snapshot、Manager、ResourceProvider、切换、回退、Culture 和 RTL |
+| [应用资源宿主设计](../theming/application-resource-host.md) | Core 拥有的主题/语言共同资源接入契约、覆盖与挂载释放边界；实施状态见配套验证页 |
 | [generation-and-build.md](generation-and-build.md) | Source Generator、应用 bootstrap、AdditionalFiles、`AtomUI.Build.Tasks` 与 NuGet 布局 |
 | [language-packs.md](language-packs.md) | 内置语言、官方聚合包、模块包、第三方语言包、模板和消费协议 |
 | [verification.md](verification.md) | 构建诊断、运行时不变量、Generator/Task/集成/AOT 验证要求 |

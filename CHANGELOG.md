@@ -11,6 +11,11 @@ All notable changes to AtomUI are documented in this file.
 - Breaking Changes
   - Startup: execute `UseAtomUI` application configuration after platform services are ready, before Application construction. Callback side effects and exceptions occur during platform setup rather than during the registration call; see the [6.2.7 migration guide](docs/releases/6.2.7-api-changes.md).
   - Registration: generated registration group identities follow the 6.2.7 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the migration guide.
+  - Theme resources: AtomUI defaults now resolve before resources in independent application Style children. Move intentional global same-key overrides from `Style.Resources` to `Application.Resources`; ordinary setters and local scopes keep their precedence. See the migration guide.
+- Theme and Localization
+  - Keep AtomUI window decorations when FluentTheme is declared in App.axaml, and preserve language resources when AXAML replaces Application.Resources. #506 #507
+  - Preserve explicit application overrides and existing merged-dictionary order; keep theme/language providers stable through changes and clean partial ownership failures.
+  - Add the developer guide for integrating AtomUI with other frameworks' themes.
 - Startup and Core
   - Prevent ordinary module configuration that indirectly creates an AvaloniaObject from creating the Dispatcher before platform initialization and causing persistent animation/timer stalls.
   - Preserve background theme preparation, per-Application configuration isolation and AtomUI commit before Initialize; add an on-demand native process acceptance entry for startup ordering and steady-state timer behavior.

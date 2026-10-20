@@ -87,12 +87,24 @@ Application 映射由 Shared 的 `ImageLoaderStore` 管理；Core 不增加 `App
 静态 cache。完整生命周期见
 [图片加载管线、并发与生命周期](../../architecture/systems/image-loading/pipeline-and-lifecycle.md)。
 
+## 应用资源宿主职责
+
+Core 拥有主题与语言资源的应用级挂载编排。ApplicationScope 管理语言 Provider 与 FlowDirection Style，
+ThemeManager 管理自己的主题资源字典与根 Context Style；Localization 模块保留语言服务状态的所有权。
+共同宿主、覆盖优先级、部分挂载回滚与释放边界由
+[应用资源宿主设计](../../architecture/systems/theming/application-resource-host.md)定义。
+
+当前分支已采用共同宿主；实现证据与未覆盖的验收范围见
+[资源宿主验证](../../architecture/systems/theming/application-resource-host-verification.md)。
+
 ## 相关文档
 
 - [内容展开与收起动效设计](../../architecture/systems/control-infrastructure/content-expansion.md)：共享动效职责与上层控件接入契约，实现证据由各控件维护。
 - [状态动效初始化架构设计](../../architecture/systems/control-infrastructure/state-motion-initialization.md)：初始化会话、可撤销抑制、目标生命周期、新控件接入与性能契约。
 - [状态动效初始化验证](../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)：当前源码、专项原型与目标架构的差异，以及行为、性能和发布验收证据。
 - [主题系统架构](../../architecture/systems/theming/runtime.md)
+- [应用资源宿主设计](../../architecture/systems/theming/application-resource-host.md)
+- [应用资源宿主验证](../../architecture/systems/theming/application-resource-host-verification.md)
 - [编译主题包](../../architecture/systems/theming/compiled-theme-packages/overview.md)：Core 拥有统一执行语义、生成 ABI 与生命周期，不依赖构建工具程序集。
 - [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)
 - [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)

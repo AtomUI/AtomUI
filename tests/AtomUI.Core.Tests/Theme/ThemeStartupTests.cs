@@ -141,7 +141,7 @@ public class ThemeStartupTests
     }
 
     [Fact]
-    public void InitializeApplication_Mounts_A_Fully_Populated_Manager_On_The_First_Frame()
+    public void InitializeApplication_Mounts_Full_Resources_And_Root_Style_Before_The_First_Frame()
     {
         HeadlessTestApp.Run(() =>
         {
@@ -159,14 +159,28 @@ public class ThemeStartupTests
                    .OfType<ThemeTokenResourceProvider>()
                    .ShouldHaveSingleItem()
                    .ShouldBeSameAs(manager.RootContext.ResourceProvider);
-            application.Styles.ShouldContain(manager);
+            application.Styles.Resources.MergedDictionaries.ShouldContain(manager.Resources);
+            manager.Resources.Owner.ShouldBeSameAs(application);
+            application.Styles.ShouldNotContain(manager);
             application.RequestedThemeVariant.ShouldBe(ThemeVariant.Light);
             manager.AvailableThemes.ShouldContain(theme =>
                 theme.Id == IThemeManager.DEFAULT_THEME_ID && theme.IsDefault);
-            manager.OfType<Style>().ShouldContain(style =>
+            application.Styles.OfType<Style>().ShouldContain(style =>
                 style.Setters.OfType<Setter>().Any(setter =>
                     setter.Property == ThemeScope.ContextProperty &&
                     ReferenceEquals(setter.Value, manager.RootContext)));
+
+            var frameworkValue = new object();
+            manager.Resources["StartupThemeResource"] = frameworkValue;
+            application.Styles.Add(new Style
+            {
+                Resources = new ResourceDictionary { ["StartupThemeResource"] = new object() }
+            });
+            application.TryGetResource("StartupThemeResource", null, out var actual).ShouldBeTrue();
+            actual.ShouldBeSameAs(frameworkValue);
+            application.Resources["StartupThemeResource"] = "application override";
+            application.TryGetResource("StartupThemeResource", null, out actual).ShouldBeTrue();
+            actual.ShouldBe("application override");
         });
     }
 

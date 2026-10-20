@@ -91,6 +91,11 @@ public static void ApplicationStartup.Attach(Application application);
 5. `ApplicationScope.InitializeApplication`：挂载资源与样式、初始化主题（复用全局层）、注册作用域、挂接自有服务。
 6. 执行 initializer（`UseAlibabaSansFont` 等字体注册在此执行：字体在文字排版时才解析，提交期间不排版主窗体内容）。
 
+步骤 5 的主题/语言资源宿主、全局 Style 分离和失败卸载责任由
+[应用资源宿主设计](../theming/application-resource-host.md)定义；
+[资源宿主验证](../theming/application-resource-host-verification.md)记录当前实现证据及未覆盖的平台验收。
+该设计保留 Initialize 前提交边界，不把资源可用性推迟到 AfterApplicationSetup、Loaded 或主循环。
+
 包索引仅从已选中的登记项建立资产候选关系，不在索引构造期物化片段或资源。候选限定在所属包内并保持登记顺序；
 追加包继续复用已有 entry/asset 对象。运行期 Type 身份键可以按弱类型键复用字符串，缓存值不得反向引用 Type、程序集或应用。
 

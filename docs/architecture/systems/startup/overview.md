@@ -60,6 +60,7 @@ StartWithClassicDesktopLifetime → SetupUnsafe
 | `ThemeStartupPreparation` | `AtomUI.Core` | 后台"仅全局"主题准备，产出各外观的全局层快照 |
 | `Application.GetAtomUI()` / `IAtomUI.LoadPackages` | `AtomUI.Core` | 初始提交后在 UI 线程原子追加包；复用旧 slot、cell 和全局值，失败回滚新贡献 |
 | `StartupCommit` | `AtomUI.Core` | 一次性提交本地化、`ThemeManager`、自有服务与 initializer，失败时回滚 |
+| `ApplicationScope` | `AtomUI.Core` | 编排应用级资源接入、本地化及自有服务生命周期；主题资源由 ThemeManager 单独持有挂载责任 |
 | `StartupProcess` | `AtomUI.Core` | `IStartup` 的实现：状态机、`Completion`、进度事件、日志 |
 | `DispatcherPump` | `AtomUI.Core` | 主循环开始前驱动 Dispatcher（Splash 首帧、错误态等待） |
 | `ISplashPresenter` | `AtomUI.Core`（internal） | Core 与 Splash 实现之间的接缝；Core 不引用 `AtomUI.Controls` |
@@ -90,5 +91,6 @@ Token owner、语义属性/目标、资源键 schema；动态语言数据按全�
 | [lifecycle.md](lifecycle.md) | 入口、后台 Prepare、`Attach`、提交、交接、状态机、宿主差异、出错与取消、挂接生成器与守卫 |
 | [splash.md](splash.md) | Splash 类型、默认主题与自定义主题约束、显示判定、交接与关闭、已知问题 |
 | [verification.md](verification.md) | 测量工具与口径、验收线、`AtomUI-Startup` 事件表、测试覆盖 |
+| [应用资源宿主设计](../theming/application-resource-host.md) | Initialize 前资源接入宿主、优先级与所有权；源码对齐及验收状态由配套验证页拥有 |
 | [启动指南](../../../guides/startup/overview.md) | 应用开发者的接入步骤与可复制示例 |
 | [启动与注册链路](../../foundations/startup-and-registration.md) | 平台默认配置、`ThemeManagerBuilder` 收集内容、包注册顺序 |

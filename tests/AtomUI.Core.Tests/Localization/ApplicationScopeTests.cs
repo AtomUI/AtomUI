@@ -24,13 +24,17 @@ public class ApplicationScopeTests
 
             scope.InitializeApplication();
 
-            application.Resources.MergedDictionaries
+            application.Styles.Resources.MergedDictionaries
                        .Count(provider => ReferenceEquals(provider, scope.ResourceProvider))
                        .ShouldBe(1);
             scope.ResourceProvider.Owner.ShouldBeSameAs(application);
             ApplicationScopeRegistry.Get(application).ShouldBeSameAs(scope);
             scope.LanguageManager.ShouldBeSameAs(scope.LocalizationHost.LanguageManager);
             scope.Localizer.ShouldBeSameAs(scope.LocalizationHost.Localizer);
+
+            application.Resources = new ResourceDictionary { ["ApplicationOverride"] = "preserved" };
+            application.TryGetResource(LanguageResourceKeys.FlowDirection, null, out var direction).ShouldBeTrue();
+            direction.ShouldBe(FlowDirection.LeftToRight);
         });
     }
 
@@ -75,7 +79,7 @@ public class ApplicationScopeTests
             var exception = Should.Throw<InvalidOperationException>(() => second.InitializeApplication());
 
             exception.Message.ShouldContain("already initialized");
-            application.Resources.MergedDictionaries
+            application.Styles.Resources.MergedDictionaries
                        .Count(provider => ReferenceEquals(provider, second.ResourceProvider))
                        .ShouldBe(0);
         });
@@ -94,7 +98,7 @@ public class ApplicationScopeTests
 
             scope.Dispose();
 
-            application.Resources.MergedDictionaries.Contains(provider).ShouldBeFalse();
+            application.Styles.Resources.MergedDictionaries.Contains(provider).ShouldBeFalse();
             application.Styles.Contains(flowDirectionStyle).ShouldBeFalse();
             ApplicationScopeRegistry.Get(application).ShouldBeNull();
             Should.Throw<InvalidOperationException>(() =>
@@ -149,7 +153,7 @@ public class ApplicationScopeTests
                 "detach:first"
             ]);
             ApplicationScopeRegistry.Get(application).ShouldBeNull();
-            application.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
+            application.Styles.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
             application.Styles.Contains(scope.FlowDirectionStyle).ShouldBeFalse();
 
             scope.Dispose();
@@ -188,7 +192,7 @@ public class ApplicationScopeTests
                 "dispose:first"
             ]);
             ApplicationScopeRegistry.Get(application).ShouldBeNull();
-            application.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
+            application.Styles.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
             application.Styles.Contains(scope.FlowDirectionStyle).ShouldBeFalse();
         });
     }

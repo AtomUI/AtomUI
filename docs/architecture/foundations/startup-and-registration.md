@@ -3,7 +3,7 @@
 > 控件注册与裁剪采用已实现的 TypeMap 体系；本地验证、未完成门槛与发布状态统一见
 > [AOT 与裁剪架构](aot-and-trimming.md#1-状态与事实边界)。
 
-AtomUI 的启动链路分为平台默认配置和主题控件注册两部分。启动编排（提前执行配置、后台 Prepare、Splash、一次性提交、
+AtomUI 的启动链路分为平台默认配置和主题控件注册两部分。启动编排（平台就绪后执行配置、后台 Prepare、Splash、一次性提交、
 主窗体交接）由[启动系统](../systems/startup/overview.md)拥有，本文只描述配置内容与注册顺序。
 
 ## AppBuilder 默认配置
@@ -127,7 +127,7 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
 
 ## 启动生命周期
 
-配置回调在 `AppBuilder` 阶段执行；平台服务就绪后，全局 Token 在后台准备并与 Application 创建并行。
+`AppBuilder` 阶段只登记回调；平台服务就绪后在 UI 线程执行配置，再在后台准备全局 Token，与 Application 创建并行。
 内核在 `RegisterServices` 中一次性提交，早于
 `Application.Initialize()`；可选的 Splash 覆盖提交与主窗体构建。状态、出错与取消、宿主差异见
 [启动生命周期](../systems/startup/lifecycle.md)，Splash 见 [Splash](../systems/startup/splash.md)。

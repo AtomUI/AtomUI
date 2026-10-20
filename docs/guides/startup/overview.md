@@ -234,8 +234,10 @@ await startup.Completion; // Ready 时完成；失败带原始异常；取消为
 
 ## 8. 性能规则
 
-- 配置回调与 `UseXxx` 中不要访问 `FontManager`、`Application.Current`、`TopLevel`，也不要创建控件或位图：回调在平台
-  初始化之前执行。
+- `UseAtomUI` 只登记回调；普通宿主在平台服务就绪后、Application 构造前执行配置。配置可以间接构造
+  `AvaloniaObject`，不需要为保护 Dispatcher 时钟改写普通数据仓库。此时不要依赖 `Application.Current`、应用主题资源
+  或已打开的 `TopLevel`；主窗体与耗时加载仍使用下面的正常生命周期入口。设计器与 Browser/WASI 的差异见
+  [启动生命周期](../../architecture/systems/startup/lifecycle.md#9-宿主差异)。
 - 不要在应用构造函数中创建控件或访问主题：构造函数早于 `RegisterServices`，此时内核尚未提交。
 - Splash 内容只用基础元素，Logo 与背景图要小。
 - 主窗体构造函数中的工作直接推迟 Splash 交接；耗时加载放进 `UseMainWindow` 的异步工厂并汇报进度。

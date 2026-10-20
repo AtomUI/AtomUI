@@ -1,7 +1,5 @@
-using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 
 namespace AtomUI.Controls.Commons;
@@ -41,15 +39,4 @@ public abstract class AbstractScrollBarThumb : Thumb, IMotionAwareControl
 
     #endregion
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
-    }
 }

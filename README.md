@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.6-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.7-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
@@ -75,12 +75,11 @@ Windows, macOS and Linux<br>
 
 #### Latest Release Notes
 
-AtomUI 6.2.6 introduces a staged startup and generated theme-package pipeline, moves the startup Splash into
-`AtomUI.Controls`, and updates the startup/package contracts. This release contains breaking startup and registration
-changes: upgrade AtomUI packages together, rebuild generated consumers, and republish trimmed/NativeAOT applications. It
-also includes Cascader keyboard and focus fixes, control layout and hit-testing fixes, startup performance improvements,
-and Avalonia 12.1.4 compatibility. Review the [6.2.6 API migration guide](docs/releases/6.2.6-api-changes.md) before
-upgrading and see the [Changelog](./CHANGELOG.md).
+AtomUI 6.2.7 fixes startup configuration that could create an Avalonia Dispatcher before platform initialization and
+cause persistent animation stalls. Configuration now runs on the UI thread after platform services are ready, while
+background theme preparation still overlaps Application construction. Upgrade AtomUI packages and the Generator
+together, rebuild consumers, and review the [6.2.7 migration guide](docs/releases/6.2.7-api-changes.md) for callback and
+exception timing changes. See the [Changelog](./CHANGELOG.md).
 
 #### Incubator
 
@@ -135,10 +134,10 @@ The packages we have released are as follows:
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.6
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.6
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.6
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.6
+dotnet add package AtomUI.Desktop.Controls --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.7
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -166,10 +165,10 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.6"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.6"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.6"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.6"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.7"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

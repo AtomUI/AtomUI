@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -6,7 +5,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
@@ -69,18 +67,6 @@ internal class OtpLineEditCell : InputControlFrame
     private const string InputTargetPseudoClass = ":input-target";
 
     internal AvaloniaTextBox? TextBoxPart => _textBox;
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 
     private void RelayOwnerOverride(AvaloniaProperty sourceProperty, AvaloniaProperty targetProperty)
     {

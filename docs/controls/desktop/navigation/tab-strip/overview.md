@@ -6,6 +6,10 @@
 
 ## 1. 控件定位
 
+独立 TabStrip 的选中指示条首次显示时直接匹配当前选中容器，后续有效切换保留原有过渡；实例独立维护其加载、
+模板及初始几何条件。共享契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，
+源码接入差异与证据见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+
 | 项 | 值 |
 | --- | --- |
 | NuGet 包 | `AtomUI.Desktop.Controls` |

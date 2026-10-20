@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -6,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
@@ -282,13 +280,7 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
     {
         base.OnInitialized();
         ConfigureDefaultIcon();
-        this.DisableTransitions();
-    }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(() => AnimatableReflectionExtensions.EnableTransitions(this));
     }
 
     protected virtual void UpdatePseudoClasses()

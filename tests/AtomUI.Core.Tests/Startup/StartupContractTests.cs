@@ -18,13 +18,19 @@ public class StartupContractTests
         var session = HeadlessUnitTestSession.StartNew(typeof(HookedEntry), AvaloniaTestIsolationLevel.PerTest);
         try
         {
-            await session.Dispatch(() =>
+            TestApplication? previous = null;
+            for (var instance = 0; instance < 2; instance++)
             {
-                var application = (TestApplication)Application.Current!;
-                application.ThemeManagerSeenInInitialize.ShouldBeTrue();
-                application.GetStartup().State.ShouldBe(StartupState.Ready);
-                application.GetStartup().Completion.IsCompletedSuccessfully.ShouldBeTrue();
-            }, TestContext.Current.CancellationToken);
+                await session.Dispatch(() =>
+                {
+                    var application = (TestApplication)Application.Current!;
+                    application.ShouldNotBeSameAs(previous);
+                    application.ThemeManagerSeenInInitialize.ShouldBeTrue();
+                    application.GetStartup().State.ShouldBe(StartupState.Ready);
+                    application.GetStartup().Completion.IsCompletedSuccessfully.ShouldBeTrue();
+                    previous = application;
+                }, TestContext.Current.CancellationToken);
+            }
         }
         finally
         {
@@ -34,9 +40,31 @@ public class StartupContractTests
 
     public static class HookedEntry
     {
-        public static AppBuilder BuildAvaloniaApp() =>
-            AppBuilder.Configure<TestApplication>()
-                      .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                      .UseAtomUI(builder => builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID));
+        public static AppBuilder BuildAvaloniaApp()
+        {
+            var platformReady = false;
+            var configureCount = 0;
+            return AppBuilder.Configure(() =>
+                             {
+                                 platformReady.ShouldBeTrue();
+                                 configureCount.ShouldBe(1);
+                                 return new TestApplication();
+                             })
+                             .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                             .AfterPlatformServicesSetup(_ =>
+                             {
+                                 platformReady = true;
+                                 configureCount = 0;
+                             })
+                             .UseAtomUI(builder =>
+                             {
+                                 // 普通配置可以间接创建 AvaloniaObject，平台必须先确定 Dispatcher 时钟。
+                                 platformReady.ShouldBeTrue();
+                                 configureCount++;
+                                 GC.KeepAlive(new AvaloniaObject());
+                                 builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                             })
+                             .AfterApplicationSetup(_ => configureCount.ShouldBe(1));
+        }
     }
 }

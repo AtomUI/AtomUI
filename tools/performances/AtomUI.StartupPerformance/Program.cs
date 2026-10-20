@@ -1,5 +1,4 @@
 using System.Runtime;
-using AtomUI.Desktop.Controls;
 using Avalonia;
 
 namespace AtomUI.StartupPerformance;
@@ -16,6 +15,10 @@ internal static class Program
     {
         StartupTimeline.MarkMain();
         using var listener = new StartupEventListener();
+        if (args is ["--verify-configuration-boundary"])
+        {
+            return StartupConfigurationAcceptance.Run();
+        }
         if (!HarnessOptions.TryParse(args, out var options, out var error))
         {
             Console.Error.WriteLine(error);

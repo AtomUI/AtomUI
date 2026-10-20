@@ -6,6 +6,17 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.7
+
+`2026-10-20`
+
+- 破坏性变更
+  - 启动：`UseAtomUI` 应用配置改为在平台服务就绪后、Application 构造前执行。回调副作用及异常发生在平台 setup 阶段，不再发生于登记调用期间；详见 [6.2.7 迁移指南](docs/releases/6.2.7-api-changes.zh-CN.md)。
+  - 注册：生成式注册组标识随 6.2.7 程序集版本更新。请同步升级 AtomUI 包和 Generator、重新编译消费方，并重新发布裁剪/NativeAOT 应用；详见迁移指南。
+- 启动与 Core
+  - 防止普通模块配置间接构造 AvaloniaObject 时，在平台初始化前创建 Dispatcher，造成持续的动画与定时器卡顿。
+  - 保留后台主题准备、每个 Application 实例的配置隔离及 Initialize 前的内核提交；增加按需独立原生进程验收入口，检查启动顺序与稳态定时器行为。
+
 ## 6.2.6
 
 `2026-10-19`

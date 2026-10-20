@@ -30,6 +30,10 @@ dotnet publish tools/performances/AtomUI.StartupPerformance/AtomUI.StartupPerfor
 - `--scenario plain|atom-plain|atom-window|atom-splash`，默认 `atom-plain`。
 - `--multicorejit <dir>`：启用 MultiCoreJit，配置文件写在 `<dir>`。首次运行生成配置、第二次起生效。
 - `--platform-defaults-off`：不套 AtomUI 的平台/渲染默认（见上）。
+- `--verify-configuration-boundary`：独立运行启动安全验收，不与其他参数混用。验证 `UseAtomUI` 只登记、配置在平台
+  就绪后且 Application 构造前执行、间接创建 AvaloniaObject 安全、Initialize 前已提交；主循环启动后采样 2 秒
+  的 16 ms DispatcherTimer。输出 `Timer.Samples` / `Timer.MedianMs` / `Timer.MaxMs`；样本少于 20 或中位数超过
+  64 ms 时退出码为 1。按需调用，不进入默认全局测试；阈值用于发现稳定调度退化，不是流畅度指标。
 
 工程是多目标（`TargetFrameworks`），发布必须显式 `-f net10.0`。AOT 发布需先带 RID 与
 `-p:StartupPublishAot=true -p:StartupPublishTrimmed=true` 执行 `restore`，否则 assets 缺少

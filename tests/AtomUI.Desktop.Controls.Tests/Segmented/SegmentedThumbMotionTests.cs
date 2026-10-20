@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reflection;
 using AtomUI.Controls.Commons;
 using Avalonia;
@@ -34,9 +35,13 @@ public class SegmentedThumbMotionTests
     public void Thumb_Transitions_Use_Antd_Motion_Timing()
     {
         var segmented = CreateMotionSegmented();
+        segmented.SelectedIndex = 2;
 
         ShowInWindow(segmented, () =>
         {
+            var selected = segmented.ContainerFromIndex(2).ShouldNotBeNull();
+            ((Point)segmented.GetValue(GetThumbProperty("SelectedThumbPosProperty"))!).ShouldBe(selected.TranslatePoint(default, segmented)!.Value);
+            ((Size)segmented.GetValue(GetThumbProperty("SelectedThumbSizeProperty"))!).ShouldBe(selected.Bounds.Size);
             var transitions = segmented.Transitions.ShouldNotBeNull();
             AssertThumbTransition(transitions, GetThumbProperty("SelectedThumbPosProperty"));
             AssertThumbTransition(transitions, GetThumbProperty("SelectedThumbSizeProperty"));
@@ -259,6 +264,8 @@ public class SegmentedThumbMotionTests
             Content = content
         };
 
+        ((ISupportInitialize)content).BeginInit();
+        ((ISupportInitialize)content).EndInit();
         try
         {
             window.Show();

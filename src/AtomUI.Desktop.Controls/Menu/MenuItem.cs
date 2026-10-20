@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Reflection;
@@ -673,15 +672,4 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
             ref _isUsingDetachedTitleBarPopupPlacement);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.EnableTransitions();
-    }
 }

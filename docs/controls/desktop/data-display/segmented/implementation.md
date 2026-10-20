@@ -103,6 +103,11 @@ IFormItemAware.ClearFormValue()   → SelectedItem = null
 
 ## 5. 生命周期与模板接入
 
+状态动效的基线 owner 为 `AbstractSegmented`，输入是当前选中容器到 owner 的坐标转换和最终 Bounds。共享首帧
+契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)；
+会话接入及已覆盖初始化顺序见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+
 静态初始化：
 
 - `Orientation`、`IsExpanding` 和 `SizeType` 影响 measure/arrange。
@@ -119,8 +124,8 @@ IFormItemAware.ClearFormValue()   → SelectedItem = null
 
 初始化和加载：
 
-- 根控件和 item 在 `OnInitialized()` 中临时禁用 transitions。
-- `OnLoaded()` 通过 dispatcher 重新启用 transitions 并置位 `_transitionsReady`，避免初次布局时出现无意义动画；`_transitionsReady` 置位前所有滑块矩形同步一律瞬移。
+- 根控件和 `AbstractSegmentedItem` 各自在构造时创建 `StateMotionSession`，在 detach 和模板变更时复位；item 的初始选中外观也在加载前直接建立。
+- `OnLoaded()` 与最终排列核对容器几何，第一次有效滑块直接提交位置和尺寸，再启用主题过渡。
 
 模板接入：
 
@@ -202,16 +207,19 @@ container == null（选中项尚无容器）
 正常路径
   → targetPos = container.TranslatePoint((0, 0), owner)
   → targetSize = container.Bounds.Size
-  → canAnimate = animate && _transitionsReady && 滑块已可见 && 目标矩形有变化
-  → canAnimate：直接 SetValue，由 ControlTheme 的 PointTransition/SizeTransition 插值
-  → 否则：DisableTransitions 包裹的瞬移
+  → 已可见且 base target 与新目标相同：保留正在执行的过渡，完成就绪核对后返回
+  → canAnimate = animate && 会话已就绪 && 滑块已可见 && 目标矩形有变化
+  → !canAnimate：初始化覆盖或独立的短期 TransitionSuppressionScope 保证直接提交几何
+  → 写入位置与尺寸，SetThumbVisible(true)，加载且几何有效时完成就绪
+  → canAnimate：由 ControlTheme 的 PointTransition/SizeTransition 插值
   → SetThumbVisible(true)
   → canAnimate 时 BeginThumbMotion()
 ```
 
-瞬移路径覆盖滑块首次出现（避免从原点飞入）、选择变化之外的所有布局校准（`ArrangeOverride`、方向/expanding/
-父容器尺寸变化）以及过渡系统未就绪的初始化阶段。这样水平 expanding、垂直全宽、方向动态切换和父容器尺寸变化都
-使用同一坐标模型，且不会把布局跟随误播成飞行动画。
+该分支区分滑块首次出现、选择变化和布局校准（`ArrangeOverride`、方向/expanding/父容器尺寸变化），统一使用
+owner 局部坐标。容器必须已排列、仍在视觉树中，坐标转换成功且尺寸有限为正。主题只按 `IsMotionEnabled` 声明过渡，
+初始化会话暂时覆盖有效集合，完整基线提交且加载完成后恢复。运行期布局校准使用短期作用域，不重新启动初始化。重复布局比较最终 base target，避免
+将动画的中间呈现值误认为新目标而取消飞行。首次延迟产生的滑块也先直接定位。
 
 `BeginThumbMotion()` 从 ControlTheme 的 `Transitions` 中读取 `SelectedThumbPos` 过渡的实际时长（找不到或时长
 为零则不进入飞行态），把所有 item 的内部状态 `IsThumbMotionActive` 置位，并启动一个

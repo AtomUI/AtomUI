@@ -1,5 +1,4 @@
 using System.Globalization;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Generated.AtomUIDesktopControls;
@@ -14,7 +13,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Rendering;
@@ -531,18 +529,6 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         {
             RefreshMarkTextMetrics();
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     private static IReadOnlyList<double>? CoerceRangeValues(AvaloniaObject sender, IReadOnlyList<double>? values)

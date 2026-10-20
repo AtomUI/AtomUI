@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
@@ -108,6 +108,31 @@ public class BreadcrumbItem : AvaloniaButton
 
     #endregion
     
+    private readonly StateMotionSession _stateMotion;
+
+    public BreadcrumbItem()
+    {
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -134,6 +159,7 @@ public class BreadcrumbItem : AvaloniaButton
     {
         base.OnApplyTemplate(e);
         UpdatePseudoClasses();
+        _stateMotion.CompleteInitialization();
     }
 
     protected override void OnClick()
@@ -158,18 +184,6 @@ public class BreadcrumbItem : AvaloniaButton
                 });
             }
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     private void UpdatePseudoClasses()

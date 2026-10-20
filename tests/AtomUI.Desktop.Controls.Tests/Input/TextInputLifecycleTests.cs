@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -141,7 +142,45 @@ public class TextInputLifecycleTests
             var clearButton = FindTemplatePart<InputClearIconButton>(input, "PART_ClearButton");
             clearButton.IsVisible.ShouldBeTrue($"{inputType.Name} clear visibility must remain bound after reattach.");
 
-            if (input is AtomUILineEdit lineEdit)
+            if (input is AtomUITextBox textBox)
+            {
+                var scrollViewer = FindTemplatePart<ScrollViewer>(input, "ScrollViewer");
+                var emptyContentBounds = scrollViewer.Bounds;
+                var leftContent = new Border { Width = 18, Height = 18 };
+                var rightContent = new Border { Width = 24, Height = 18 };
+                textBox.InnerLeftContent = leftContent;
+                textBox.InnerRightContent = rightContent;
+                Dispatcher.UIThread.RunJobs();
+
+                var leftPresenter = FindTemplatePart<ContentPresenter>(input, "InnerLeftContentPresenter");
+                var rightPresenter = FindTemplatePart<ContentPresenter>(input, "InnerRightContentPresenter");
+                leftPresenter.Child.ShouldBeSameAs(leftContent);
+                rightPresenter.Child.ShouldBeSameAs(rightContent);
+                leftContent.Bounds.Width.ShouldBeGreaterThan(0);
+                rightContent.Bounds.Width.ShouldBeGreaterThan(0);
+                scrollViewer.Bounds.Width.ShouldBeLessThan(emptyContentBounds.Width);
+                input.TryFindResource(SharedTokenKind.SpacingXXS, out var spacingValue).ShouldBeTrue();
+                var expectedSpacing = spacingValue.ShouldBeOfType<double>();
+                var leftContentEnd = leftContent.TranslatePoint(new Point(leftContent.Bounds.Width, 0), input)!.Value.X;
+                var viewportStart = scrollViewer.TranslatePoint(default, input)!.Value.X;
+                var viewportEnd = scrollViewer.TranslatePoint(new Point(scrollViewer.Bounds.Width, 0), input)!.Value.X;
+                var clearButtonStart = clearButton.TranslatePoint(default, input)!.Value.X;
+                (viewportStart - leftContentEnd).ShouldBe(expectedSpacing, 0.01);
+                (clearButtonStart - viewportEnd).ShouldBe(expectedSpacing, 0.01);
+
+                textBox.InnerLeftContent = null;
+                textBox.InnerRightContent = null;
+                Dispatcher.UIThread.RunJobs();
+
+                leftPresenter.IsVisible.ShouldBeFalse();
+                rightPresenter.IsVisible.ShouldBeFalse();
+                leftContent.GetVisualParent().ShouldBeNull();
+                rightContent.GetVisualParent().ShouldBeNull();
+                scrollViewer.Bounds.ShouldBe(emptyContentBounds);
+                var emptyViewportEnd = scrollViewer.TranslatePoint(new Point(scrollViewer.Bounds.Width, 0), input)!.Value.X;
+                (clearButton.TranslatePoint(default, input)!.Value.X - emptyViewportEnd).ShouldBe(0, 0.01);
+            }
+            else if (input is AtomUILineEdit lineEdit)
             {
                 var content = new Border();
                 lineEdit.InnerRightContent = content;

@@ -19,7 +19,7 @@ LineEdit 家族包含以下稳定入口：
 | 类型 | 定位 |
 | --- | --- |
 | `AbstractTextInput` | 公开但不作为直接实例化入口的抽象文本输入基类，统一尺寸、输入表面状态、清除、reveal、字数统计、Form、native validation、CompactSpace 和文本 viewport 度量。 |
-| `TextBox` | AtomUI 基础文本框，继承 `AbstractTextInput`，提供单行文本编辑和基础输入模板。 |
+| `TextBox` | AtomUI 基础文本框，继承 `AbstractTextInput`，提供单行文本编辑、内部左右内容和基础输入模板。 |
 | `LineEdit` | 标准单行输入框，继承 `AbstractTextInput`，提供外部 AddOn、单行布局和搜索/组合控件复用入口。 |
 | `SearchEdit` | 搜索输入框，在 `LineEdit` 基础上加入搜索按钮、搜索按钮样式、加载态和搜索事件；独立契约见 [SearchEdit 桌面版架构设计](../search-edit/overview.md)。 |
 | `TextArea` | 多行输入框，继承 `AbstractTextInput`，复用输入状态、尺寸、清除、字数统计、Form 和 TextArea 专属 resize 模型。 |
@@ -100,7 +100,12 @@ AtomUI 输入扩展 API：
 | `Status` | `TextBox`、`LineEdit`、`SearchEdit`、`TextArea` | 显式输入反馈状态；最终视觉由 `InputControlFrame.EffectiveStatus` 计算，native validation error 仍以 `DataValidationErrors` 为唯一真源。 |
 | `LeftAddOn` / `LeftAddOnTemplate` | `LineEdit`、`SearchEdit` | 外部左侧附加内容和模板。 |
 | `RightAddOn` / `RightAddOnTemplate` | `LineEdit` | 外部右侧附加内容和模板；SearchEdit 的右侧外部 add-on 位置由搜索按钮占用。 |
+| `InnerLeftContent` / `InnerRightContent` | `TextBox`、`LineEdit`、`TextArea` | 继承的内部左右内容，支持文本、控件和隐式 DataTemplate；内容不随编辑区滚动，置空时不占布局空间。 |
 | `InnerLeftContentTemplate` / `InnerRightContentTemplate` | `LineEdit`、`TextArea` | 内部前后缀模板。 |
+
+`TextBox` 的内部左右内容位于输入边框内，不提供 `LineEdit` 的外部 AddOn 能力。左右内容跟随 `VerticalContentAlignment`，右侧内容与清除、密码 reveal、Form feedback 和字数统计共用辅助区。设置内部左右内容时，非空辅助区与文本编辑区之间采用 `SpacingXXS` 间距；两侧内容均为空时保留原有编辑区和辅助按钮布局。`TextBox` 不增加专用的内容模板属性，数据对象通过标准 `DataTemplates` 渲染。
+
+密码掩码沿用 `PasswordChar` 指定字符的字体字形和原生文本布局。需要常规圆点外观时可设置 `PasswordChar="●"`；星号 `*` 在字体行框中通常偏上，不通过平移整个文本 presenter 补偿，以保持光标、选择和命中位置一致。
 
 Root 表面定制 API：
 

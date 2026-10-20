@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ using Xunit;
 using AtomUITabControl = AtomUI.Desktop.Controls.TabControl;
 using AtomUITabItem    = AtomUI.Desktop.Controls.TabItem;
 using AtomUITabStrip   = AtomUI.Desktop.Controls.TabStrip;
+using AtomUITabStripItem = AtomUI.Desktop.Controls.TabStripItem;
 using AvaloniaWindow   = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.TabControl;
@@ -44,36 +46,48 @@ public class TabControlInkBarThicknessTests
     [Fact]
     public void InkBar_Thickness_Token_Override_Sizes_Selected_Indicator()
     {
-        var tabControl = new AtomUITabControl();
+        var tabControl = new AtomUITabControl { IsMotionEnabled = true };
         tabControl.Resources[TabControlTokenKind.InkBarThickness] = 4.0;
         tabControl.Items.Add(new AtomUITabItem { Header = "Tab 1" });
         tabControl.Items.Add(new AtomUITabItem { Header = "Tab 2" });
+        tabControl.SelectedIndex = 1;
         using (Show(tabControl))
         {
-            tabControl.SelectedIndex = 0;
-            Dispatcher.UIThread.RunJobs();
-
             var indicator = tabControl.GetVisualDescendants()
                                       .OfType<Border>()
                                       .Single(static candidate => candidate.Name == "PART_SelectedItemIndicator");
             indicator.Height.ShouldBe(4d);
+            tabControl.SelectedIndex.ShouldBe(1);
+            var selected = tabControl.ContainerFromIndex(1).ShouldNotBeNull();
+            indicator.TranslatePoint(default, tabControl)!.Value.X.ShouldBe(selected.TranslatePoint(default, tabControl)!.Value.X, 1e-6);
         }
     }
 
     [Fact]
     public void TabStrip_InkBar_Thickness_Token_Override_Applies()
     {
-        var tabStrip = new AtomUITabStrip();
+        var tabStrip = new AtomUITabStrip { IsMotionEnabled = true };
+        tabStrip.Items.Add(new AtomUITabStripItem { Content = "First" });
+        tabStrip.Items.Add(new AtomUITabStripItem { Content = "Second" });
+        tabStrip.SelectedIndex = 1;
         tabStrip.Resources[TabControlTokenKind.InkBarThickness] = 4.0;
         using (Show(tabStrip))
         {
             tabStrip.SelectedIndicatorThickness.ShouldBe(4d);
+            var indicator = tabStrip.GetVisualDescendants().OfType<Border>()
+                .Single(candidate => candidate.Name == "PART_SelectedItemIndicator");
+            indicator.Height.ShouldBe(4d);
+            tabStrip.SelectedIndex.ShouldBe(1);
+            var selected = tabStrip.ContainerFromIndex(1).ShouldNotBeNull();
+            indicator.TranslatePoint(default, tabStrip)!.Value.X.ShouldBe(selected.TranslatePoint(default, tabStrip)!.Value.X, 1e-6);
         }
     }
 
     private static IDisposable Show(Control content)
     {
         var window = new AvaloniaWindow { Width = 640, Height = 260, Content = content };
+        ((ISupportInitialize)content).BeginInit();
+        ((ISupportInitialize)content).EndInit();
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return new WindowLifetime(window);

@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -77,6 +77,8 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
 
     #endregion
     
+    private readonly StateMotionSession _stateMotion;
+
     static AbstractSegmentedItem()
     {
         SelectableMixin.Attach<AbstractSegmentedItem>(IsSelectedProperty);
@@ -85,22 +87,34 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
         AffectsRender<AbstractSegmentedItem>(BackgroundProperty);
     }
 
-    protected override void OnInitialized()
+    protected AbstractSegmentedItem()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _stateMotion = new StateMotionSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         UpdatePseudoClasses();
+        _stateMotion.CompleteInitialization();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

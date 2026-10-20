@@ -42,6 +42,55 @@ class RealPolicyContracts(unittest.TestCase):
                 names = {c.rsplit(".", 1)[-1] for job in plan["tests"] for c in job["classes"]}
                 self.assertIn(expected, names)
 
+    def test_localization_integration_acceptance_is_selected_by_contract_boundary(self):
+        cases = [
+            (
+                "src/AtomUI.Localization/Services/LanguageManager.cs",
+                set(),
+            ),
+            (
+                "src/LanguagePacks/pt-BR/AtomUI.Controls.I18n.PtBR/Localization/Common/pt-BR.xlf",
+                {"OfficialPtBrLanguagePackTests"},
+            ),
+            (
+                "src/AtomUI.Controls/Localization/Common/en-US.xlf",
+                {"OfficialPtBrLanguagePackTests"},
+            ),
+            (
+                "src/AtomUI.LanguagePack.Template/content/AtomUI.LanguagePack/AtomUI.LanguagePack.csproj",
+                {"LanguageTemplateExportAcceptanceTests"},
+            ),
+            (
+                "tests/fixtures/LanguagePackEndToEnd/Module/Localization/Welcome/en-US.xlf",
+                {
+                    "LanguagePackEndToEndTests",
+                    "LanguageTemplateExportAcceptanceTests",
+                },
+            ),
+            (
+                "build/OutputPaths.props",
+                {
+                    "LanguagePackEndToEndTests",
+                    "LanguageTemplateExportAcceptanceTests",
+                    "OfficialPtBrLanguagePackTests",
+                },
+            ),
+        ]
+        integration_project = (
+            "tests/AtomUI.Localization.IntegrationTests/"
+            "AtomUI.Localization.IntegrationTests.csproj"
+        )
+        for changed, expected in cases:
+            with self.subTest(changed=changed):
+                plan = self.planner.plan([changed])
+                classes = {
+                    test_class.rsplit(".", 1)[-1]
+                    for job in plan["tests"]
+                    if job["project"] == integration_project
+                    for test_class in job["classes"]
+                }
+                self.assertEqual(expected, classes)
+
     def test_registration_and_shared_generator_inputs_preserve_publish_obligations(self):
         for changed in ["src/AtomUI.Core/Theme/ControlPackageRegistration.cs", "src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj", "src/AtomUI.Toolchain/Common/SourceGeneration/GeneratedCodeNamespace.cs"]:
             with self.subTest(changed=changed):

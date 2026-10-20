@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 ﻿using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -583,6 +584,11 @@ public partial class ComboBox : AvaloniaComboBox,
 
     protected override void ClearContainerForItemOverride(Control element)
     {
+        if (element is IStateMotionOwner owner)
+        {
+            owner.StateMotionSession.Reset();
+        }
+
         if (element is ComboBoxItem comboBoxItem)
         {
             if (ReferenceEquals(_candidateSelectedItem, comboBoxItem))

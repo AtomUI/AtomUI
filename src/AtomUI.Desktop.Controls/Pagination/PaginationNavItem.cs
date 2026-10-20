@@ -109,6 +109,8 @@ internal class PaginationNavItem : ContentControl, ISelectable
 
     #endregion
     
+    private readonly StateMotionSession _stateMotion;
+
     static PaginationNavItem()
     {
         SelectableMixin.Attach<PaginationNavItem>(IsSelectedProperty);
@@ -124,17 +126,40 @@ internal class PaginationNavItem : ContentControl, ISelectable
         RaiseEvent(e);
     }
 
-    protected override void OnInitialized()
+    public PaginationNavItem()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
-        SyncSemanticItemMarker();
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SyncSemanticItemMarker();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

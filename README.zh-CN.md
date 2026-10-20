@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview-cn)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.6-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.7-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
@@ -69,10 +69,10 @@ Avalonia 12.1.4<br>
 
 #### 最新版本说明
 
-AtomUI 6.2.6 引入分阶段启动与生成式主题包管线，将启动 Splash 迁入 `AtomUI.Controls`，并更新启动与包注册契约。
-本版本包含破坏性的启动与注册变更：请同步升级 AtomUI 包、重新编译生成式消费方，并重新发布裁剪/NativeAOT 应用。
-同时包含 Cascader 键盘与焦点修复、控件布局和命中测试修复、启动性能优化，以及 Avalonia 12.1.4 兼容性更新。升级前请阅读
-[6.2.6 API 迁移指南](docs/releases/6.2.6-api-changes.zh-CN.md)，并查看 [Changelog](./CHANGELOG.zh-CN.md)。
+AtomUI 6.2.7 修复启动配置提前创建 Avalonia Dispatcher 导致持续动画卡顿的问题。配置改为在平台服务就绪后的
+UI 线程执行，后台主题准备仍与 Application 构造并行。请同步升级 AtomUI 包和 Generator、重新构建消费方；
+配置回调及异常时机变化见 [6.2.7 迁移指南](docs/releases/6.2.7-api-changes.zh-CN.md)，完整内容见
+[Changelog](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS
 
@@ -129,10 +129,10 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.6
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.6
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.6
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.6
+dotnet add package AtomUI.Desktop.Controls --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.7
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -159,10 +159,10 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.6"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.6"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.6"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.6"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.7"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

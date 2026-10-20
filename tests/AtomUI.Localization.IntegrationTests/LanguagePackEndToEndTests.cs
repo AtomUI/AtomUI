@@ -8,7 +8,7 @@ using Xunit;
 
 namespace AtomUI.Localization.IntegrationTests;
 
-public sealed partial class LanguagePackEndToEndTests
+public sealed class LanguagePackEndToEndTests
 {
     private static readonly TimeSpan s_stageTimeout = TimeSpan.FromSeconds(120);
     // Isolated consumers compile the full control graph without shared checkout outputs.
@@ -285,125 +285,7 @@ public sealed partial class LanguagePackEndToEndTests
         }
     }
 
-    [Fact(Timeout = 360_000)]
-    public async Task Language_Template_Is_Exported_From_A_Module_Package_Into_The_Current_Project()
-    {
-        var repositoryRoot = FindRepositoryRoot();
-        var fixtureRoot = Path.Combine(repositoryRoot, "tests", "fixtures", "LanguagePackEndToEnd");
-        var templateProjectDirectory = Path.Combine(fixtureRoot, "TemplateExport");
-        var exportedTemplate = Path.Combine(
-            templateProjectDirectory,
-            "Localization",
-            "Welcome",
-            "ja-JP.xlf");
-        var temporaryRoot = Path.Combine(
-            Path.GetTempPath(),
-            "AtomUI.Localization.IntegrationTests",
-            Guid.NewGuid().ToString("N"));
-        var feed = Path.Combine(temporaryRoot, "feed");
-        var packages = Path.Combine(temporaryRoot, "packages");
-        var packageVersion = "1.0.0-local." + Guid.NewGuid().ToString("N");
-        Directory.CreateDirectory(feed);
-        Directory.CreateDirectory(packages);
-
-        try
-        {
-            File.Exists(exportedTemplate).ShouldBeFalse(
-                $"The template export fixture must start empty: '{exportedTemplate}'.");
-            await RunProcess(
-                "Pack module for template export",
-                repositoryRoot,
-                temporaryRoot,
-                "dotnet",
-                "msbuild",
-                Path.Combine(fixtureRoot, "Module", "Module.csproj"),
-                "-restore",
-                "-t:Pack",
-                "-m:1",
-                "-nr:false",
-                "-p:Configuration=Debug",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:PackageOutputPath={feed}",
-                "-p:NoPackageAnalysis=true");
-            AssertRepositoryCoreAssemblyVersion(repositoryRoot, temporaryRoot);
-
-            var templateProject = Path.Combine(templateProjectDirectory, "TemplateExport.csproj");
-            var globalPackages = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".nuget",
-                "packages");
-            await RunProcess(
-                "Restore template export project",
-                repositoryRoot,
-                temporaryRoot,
-                "dotnet",
-                "restore",
-                templateProject,
-                "--disable-build-servers",
-                $"-p:FixturePackageVersion={packageVersion}",
-                $"-p:RestoreAdditionalProjectSources={feed}",
-                $"-p:RestorePackagesPath={packages}",
-                $"-p:RestoreAdditionalProjectFallbackFolders={globalPackages}");
-            await RunProcess(
-                "Export language template",
-                repositoryRoot,
-                temporaryRoot,
-                "dotnet",
-                "msbuild",
-                templateProject,
-                "-t:AtomUIExportLanguageTemplates",
-                "-m:1",
-                "-nr:false",
-                "-p:Configuration=Debug",
-                "-p:AtomUITargetLanguage=ja-JP",
-                $"-p:FixturePackageVersion={packageVersion}",
-                $"-p:RestorePackagesPath={packages}",
-                $"-p:RestoreAdditionalProjectFallbackFolders={globalPackages}");
-
-            File.Exists(exportedTemplate).ShouldBeTrue();
-            var exported = XDocument.Load(exportedTemplate);
-            XNamespace xliff = "urn:oasis:names:tc:xliff:document:2.0";
-            var root = exported.Root.ShouldNotBeNull();
-            ((string?)root.Attribute("version")).ShouldBe("2.1");
-            ((string?)root.Attribute("srcLang")).ShouldBe("en-US");
-            ((string?)root.Attribute("trgLang")).ShouldBe("ja-JP");
-
-            var file = root.Element(xliff + "file").ShouldNotBeNull();
-            ((string?)file.Attribute("id"))
-                .ShouldBe("Acme.LocalizationComponent.Localization.WelcomeLangResourceKind");
-            var units = file.Elements(xliff + "unit")
-                            .ToDictionary(
-                                static unit => (string)unit.Attribute("id")!,
-                                StringComparer.Ordinal);
-            AssertExportedUnit(units["Greeting"], xliff, "Welcome");
-            AssertExportedUnit(units["ItemCount"], xliff, "You have {0} items.");
-
-            var packageCacheTemplate = Path.Combine(
-                packages,
-                "acme.localizationcomponent",
-                packageVersion,
-                "contentFiles",
-                "any",
-                "any",
-                "Localization",
-                "Welcome",
-                "ja-JP.xlf");
-            File.Exists(packageCacheTemplate).ShouldBeFalse();
-        }
-        finally
-        {
-            if (File.Exists(exportedTemplate))
-            {
-                File.Delete(exportedTemplate);
-            }
-            if (Directory.Exists(temporaryRoot))
-            {
-                Directory.Delete(temporaryRoot, recursive: true);
-            }
-        }
-    }
-
-    private static void AssertRepositoryCoreAssemblyVersion(string repositoryRoot, string temporaryRoot)
+    internal static void AssertRepositoryCoreAssemblyVersion(string repositoryRoot, string temporaryRoot)
     {
         var versionDocument = XDocument.Load(Path.Combine(repositoryRoot, "build", "Versions.props"));
         var atomUIVersion = versionDocument.Descendants("AtomUIVersion").Single().Value;
@@ -530,7 +412,7 @@ public sealed partial class LanguagePackEndToEndTests
         dependencies["Acme.OptionalComponent.I18n.JaJP"].ShouldBe($"[{packageVersion}]");
     }
 
-    private static void AssertExportedUnit(
+    internal static void AssertExportedUnit(
         XElement unit,
         XNamespace xliff,
         string expectedSource)
@@ -566,14 +448,14 @@ public sealed partial class LanguagePackEndToEndTests
         return value.Split(fragment, StringSplitOptions.None).Length - 1;
     }
 
-    private static string[] PackageEntries(string packagePath)
+    internal static string[] PackageEntries(string packagePath)
     {
         File.Exists(packagePath).ShouldBeTrue($"Expected package '{packagePath}' was not created.");
         using var archive = ZipFile.OpenRead(packagePath);
         return archive.Entries.Select(static entry => entry.FullName).ToArray();
     }
 
-    private static string PackageEntryText(string packagePath, string entryPath)
+    internal static string PackageEntryText(string packagePath, string entryPath)
     {
         using var archive = ZipFile.OpenRead(packagePath);
         var entry = archive.GetEntry(entryPath).ShouldNotBeNull(
@@ -582,7 +464,7 @@ public sealed partial class LanguagePackEndToEndTests
         return reader.ReadToEnd();
     }
 
-    private static IReadOnlyDictionary<string, string> PackageDependencies(
+    internal static IReadOnlyDictionary<string, string> PackageDependencies(
         string packagePath,
         string nuspecPath)
     {
@@ -595,14 +477,14 @@ public sealed partial class LanguagePackEndToEndTests
             StringComparer.Ordinal);
     }
 
-    private static bool IsBuildAsset(string path)
+    internal static bool IsBuildAsset(string path)
     {
         return path.StartsWith("build/", StringComparison.OrdinalIgnoreCase) ||
                path.StartsWith("buildMultiTargeting/", StringComparison.OrdinalIgnoreCase) ||
                path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsRuntimeAsset(string path)
+    internal static bool IsRuntimeAsset(string path)
     {
         return path.StartsWith("lib/", StringComparison.OrdinalIgnoreCase) ||
                path.StartsWith("runtimes/", StringComparison.OrdinalIgnoreCase) ||
@@ -634,7 +516,7 @@ public sealed partial class LanguagePackEndToEndTests
                Guid.TryParse(fileName[..^".psmdcp".Length], out _);
     }
 
-    private static bool IsUnexpectedBuildOrRuntimeAsset(string path)
+    internal static bool IsUnexpectedBuildOrRuntimeAsset(string path)
     {
         return path.StartsWith("analyzers/", StringComparison.OrdinalIgnoreCase) ||
                path.StartsWith("tools/", StringComparison.OrdinalIgnoreCase) ||
@@ -682,7 +564,7 @@ public sealed partial class LanguagePackEndToEndTests
         return propsPath;
     }
 
-    private static async Task<ProcessResult> RunProcess(
+    internal static async Task<ProcessResult> RunProcess(
         string stage,
         string workingDirectory,
         string temporaryRoot,
@@ -699,7 +581,7 @@ public sealed partial class LanguagePackEndToEndTests
         return result;
     }
 
-    private static async Task<ProcessResult> RunProcessUnchecked(
+    internal static async Task<ProcessResult> RunProcessUnchecked(
         string stage,
         string workingDirectory,
         string temporaryRoot,
@@ -785,7 +667,7 @@ public sealed partial class LanguagePackEndToEndTests
         return executable + " " + string.Join(' ', arguments);
     }
 
-    private static string FormatFailure(ProcessResult result, string outcome)
+    internal static string FormatFailure(ProcessResult result, string outcome)
     {
         return FormatFailure(
             result.Stage,
@@ -813,7 +695,7 @@ public sealed partial class LanguagePackEndToEndTests
                $"stderr:{Environment.NewLine}{standardError}";
     }
 
-    private static string FindRepositoryRoot()
+    internal static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
@@ -828,7 +710,15 @@ public sealed partial class LanguagePackEndToEndTests
         throw new DirectoryNotFoundException("The AtomUI repository root could not be located.");
     }
 
-    private sealed record ProcessResult(
+    private static string GlobalPackagesPath()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".nuget",
+            "packages");
+    }
+
+    internal sealed record ProcessResult(
         string Stage,
         string Command,
         int ProcessId,

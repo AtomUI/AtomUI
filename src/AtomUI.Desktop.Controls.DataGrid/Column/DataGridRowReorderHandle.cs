@@ -74,6 +74,8 @@ internal class DataGridRowReorderHandle : TemplatedControl
         base.OnPointerCaptureLost(e);
     }
 
+    #region 内部协作 API
+
     internal void NotifyLoadingRow(DataGridRow row)
     {
         OwningRow = row;
@@ -88,15 +90,12 @@ internal class DataGridRowReorderHandle : TemplatedControl
         }
     }
 
-    internal void DisableIndicatorTransitions()
+    internal IDisposable? SuppressIndicatorTransitions()
     {
-        _indicatorButton?.DisableTransitions();
+        return _indicatorButton is { } button ? new TransitionSuppressionScope(button) : null;
     }
 
-    internal void EnableIndicatorTransitions()
-    {
-        _indicatorButton?.EnableTransitions();
-    }
+    #endregion
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {

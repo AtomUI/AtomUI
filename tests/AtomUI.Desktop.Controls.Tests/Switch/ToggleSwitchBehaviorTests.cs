@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
@@ -115,7 +116,7 @@ public class ToggleSwitchBehaviorTests
             OffContent      = "off",
             Width           = 40,
             IsChecked       = true,
-            IsMotionEnabled = false
+            IsMotionEnabled = true
         };
 
         ShowInWindow(toggleSwitch, () =>
@@ -166,6 +167,9 @@ public class ToggleSwitchBehaviorTests
             Height  = 160,
             Content = content
         };
+        // Reproduce XAML-style logical initialization before visual attachment.
+        ((ISupportInitialize)content).BeginInit();
+        ((ISupportInitialize)content).EndInit();
         try
         {
             window.Show();

@@ -6,7 +6,6 @@
 using System.ComponentModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
@@ -21,9 +20,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -1148,15 +1145,4 @@ internal partial class DataGridColumnHeader : ContentControl
         UnregisterFilterItems();
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(() => this.EnableTransitions());
-    }
 }

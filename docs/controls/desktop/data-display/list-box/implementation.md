@@ -138,7 +138,7 @@ hover / selected 背景不会溢出圆角口袋区，视觉上与 CSS `border-ra
 
 `ClearContainerForItemOverride` 是容器回收清理入口。它保存需要跨回收恢复的上下文，清理容器本地值，再交给基类释放容器。新增容器级状态时必须同时补齐 save、restore、clear 三个路径。
 
-`ListBoxItem.OnInitialized` 初始化选中指示器状态并禁用 transitions。`OnLoaded` 启用 transitions。该顺序用于避免模板初次应用时触发背景和前景过渡。
+`ListBoxItem.OnInitialized` 初始化选中指示器状态；初始过渡由共享初始化会话管理，见下节。
 
 ### 5.1 Semantic Part 处置
 
@@ -338,3 +338,8 @@ git diff --check
   下边缘为单一闭合线；`IsBorderless` 时最后一项保留分割线；追加 / 删除条目后原最后一项恢复、新最后一项抑制；
   三档 SizeType 下规则一致。
 - Gallery List ShowCase、AutoComplete、Mentions、Cascader 相关候选列表显示稳定。
+
+## 状态动效初始化
+
+`ListBoxItem` 在构造阶段抑制过渡，覆盖生成容器挂载后才写入的初始选择；自身加载完成后恢复最新集合。父控件在清理容器之前复位会话，使虚拟化清理和下次挂载共用初始化边界。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。

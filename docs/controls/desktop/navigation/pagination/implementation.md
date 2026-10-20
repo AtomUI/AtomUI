@@ -299,3 +299,8 @@ owner-to-context 同步与 context-to-owner 请求使用不同入口，并在值
 - Gallery 自定义模板使用 `x:DataType="atom:PaginationSizeChangerContext"`，并由 Gallery 测试锁定公开 API 用法。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证；自定义模板实现后至少验证编译绑定与真实
   Gallery NativeAOT publish。
+
+## 状态动效初始化
+
+`PaginationNavItem` 构造时建立共享初始化会话，覆盖导航容器挂载后才同步的初始页码状态；加载后恢复前景、边框和背景过渡。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。

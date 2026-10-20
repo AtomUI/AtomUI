@@ -8,6 +8,8 @@
 ## 设计目标
 
 - 应用只需一个入口：在 `AppBuilder` 链上调用 `UseAtomUI(builder => …)`，应用类声明为 `partial`。
+- `UseAtomUI` 只登记配置，不执行应用代码。普通配置回调在平台服务就绪后的 UI 线程执行，间接构造 `AvaloniaObject`
+  不会提前建立 Dispatcher；该边界由框架保证，不依赖应用作者识别所有构造函数的副作用。
 - AtomUI 内核在 `Application.Initialize()` 之前提交完毕：`App.axaml`、Prism 的 Shell、`OnFrameworkInitializationCompleted`
   中创建的主窗体都能直接使用 AtomUI 主题与本地化。
 - 不依赖 UI 线程的工作（全局 Token 计算）与 Application 创建并行；Dispatcher 的初始化与计时基准由平台建立。
@@ -33,11 +35,11 @@
 ```text
 Main → BuildAvaloniaApp()
   AppBuilder.Configure<App>()…UseAtomUI(builder => …)                 [主线程，平台初始化前]
-    1. 执行配置回调，得到 builder（只有声明；字体、应用语言在提交时执行）
-    2. 捕获后台 Prepare 的不可变输入（此阶段不访问 Dispatcher，不启动后台任务）
-    3. 登记平台服务就绪回调与应用挂接守卫
+    只登记配置回调、平台服务就绪回调与应用挂接守卫
 StartWithClassicDesktopLifetime → SetupUnsafe
-  平台初始化 → AfterPlatformServicesSetup：启动后台 Prepare（TypeMap 预热 → 全局 Token）
+  平台初始化 → AfterPlatformServicesSetup（UI 线程）：
+    1. 确认平台 Dispatcher 就绪 → 执行应用配置回调，得到 builder
+    2. 捕获不可变输入 → 启动符合后台资格的 Prepare（TypeMap 预热 → 全局 Token）
   后台 Prepare ‖ new App()
   new App() → RegisterServices() → 生成的重写：base.RegisterServices(); ApplicationStartup.Attach(this);
     Attach：取得本实例的 builder 与 Prepare 结果 → 判定并显示 Splash → 一次性提交
@@ -51,8 +53,8 @@ StartWithClassicDesktopLifetime → SetupUnsafe
 
 | 类型 | 程序集 | 职责 |
 |---|---|---|
-| `AppBuilderExtensions.UseAtomUI` | `AtomUI.Core` | 公开入口：登记配置、提前执行回调、登记平台就绪后的 Prepare 与应用挂接守卫 |
-| `StartupConfiguration` | `AtomUI.Core` | 每个 `AppBuilder` 一份的配置；保存提前执行的 builder 与 Prepare 任务，供第一个应用实例取走 |
+| `AppBuilderExtensions.UseAtomUI` | `AtomUI.Core` | 公开入口：只登记配置、平台就绪后的配置/Prepare 与应用挂接守卫 |
+| `StartupConfiguration` | `AtomUI.Core` | 每个 `AppBuilder` 一份的配置；平台就绪后创建本实例的 builder 与 Prepare 任务，供 Attach 取走 |
 | `ApplicationStartup` | `AtomUI.Core` | 公开挂接点 `Attach(Application)`：对同一实例幂等；没有 `UseAtomUI` 配置时什么也不做 |
 | `StartupRun` | `AtomUI.Core` | 单个应用实例的启动编排：Prepare 结果、Splash 判定与显示、提交、主窗体交接、取消 |
 | `ThemeStartupPreparation` | `AtomUI.Core` | 后台"仅全局"主题准备，产出各外观的全局层快照 |

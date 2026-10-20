@@ -1,5 +1,12 @@
 # LineEdit Changelog
 
+## 2026-10-19
+
+- Compatibility
+  - Restore `TextBox` rendering for the inherited `InnerLeftContent` and `InnerRightContent` properties, including text, controls and implicit DataTemplates, without adding public API.
+- Theme
+  - Keep side content outside the text viewport, separate nonempty auxiliary regions from the editor using `SpacingXXS`, collapse null content without reserving space, and preserve clear/reveal/Form feedback/count layout. Side content follows `VerticalContentAlignment`; embedded text boxes inherit the same support.
+
 ## 2026-08-29
 
 - Contract

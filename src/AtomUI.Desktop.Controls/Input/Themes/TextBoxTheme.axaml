@@ -25,7 +25,18 @@
                 CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                 CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                 IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
-                <DockPanel Name="ContentLayout" LastChildFill="True">
+                <atom:AdaptiveSpacingDockPanel Name="ContentLayout"
+                                              LastChildFill="True"
+                                              Classes.has-inner-left-content="{TemplateBinding InnerLeftContent, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                              Classes.has-inner-right-content="{TemplateBinding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <ContentPresenter
+                        Name="InnerLeftContentPresenter"
+                        DockPanel.Dock="Left"
+                        VerticalAlignment="Stretch"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        Focusable="False"
+                        IsVisible="{TemplateBinding InnerLeftContent, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Content="{TemplateBinding InnerLeftContent}" />
                     <StackPanel
                         Orientation="Horizontal"
                         DockPanel.Dock="Right"
@@ -49,6 +60,13 @@
                             HorizontalAlignment="Right"
                             IsVisible="{TemplateBinding IsFormFeedbackVisible}"
                             Content="{TemplateBinding FormFeedback}"/>
+                        <ContentPresenter
+                            Name="InnerRightContentPresenter"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Focusable="False"
+                            IsVisible="{TemplateBinding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Content="{TemplateBinding InnerRightContent}" />
                         <atom:TextBlock Name="TextCountIndicator" 
                                         VerticalAlignment="Center"
                                         Text="{TemplateBinding CountText}"
@@ -94,12 +112,16 @@
                                 TextWrapping="{TemplateBinding TextWrapping}" />
                         </Panel>
                     </atom:ScrollViewer>
-                </DockPanel>
+                </atom:AdaptiveSpacingDockPanel>
             </atom:InputControlFrame>
         </ControlTemplate>
     </Setter>
 
     <Style Selector="^:is(atom|TextBox)">
+        <Style Selector="^ /template/ atom|AdaptiveSpacingDockPanel#ContentLayout.has-inner-left-content, ^ /template/ atom|AdaptiveSpacingDockPanel#ContentLayout.has-inner-right-content">
+            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+        </Style>
+
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />

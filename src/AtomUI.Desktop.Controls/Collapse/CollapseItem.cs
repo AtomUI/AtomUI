@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using AtomUI.Animations;
+using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
 using AtomUI.MotionScene;
@@ -292,12 +291,6 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         return new ListItemAutomationPeer(this);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -328,12 +321,6 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         base.OnAttachedToVisualTree(e);
         SetupDefaultExpandIcon();
         _contentExpansion?.ApplyState(IsSelected);
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

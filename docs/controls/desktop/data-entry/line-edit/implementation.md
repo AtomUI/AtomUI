@@ -114,6 +114,7 @@ OverflowTip and other internal consumers
 - `AbstractTextInput` 每次套用模板都重新查找第一个 `InputControlFrame` 后代作为 root 表面中继目标，并把共有状态回放到 frame；frame 负责初始 transitions 抑制、边框厚度和 CompactSpace 状态计算。
 - root 表面中继：`OnApplyTemplate` 建立缓存后立即同步当前 `Background` / `BorderBrush`；owner 这两个属性变化时，有值以 `BindingPriority.LocalValue` 写入 frame 同名属性（共享 `TemplatedControl` 属性实例，直接 `SetValue`），置空或 `UnsetValue` 时对 frame `ClearValue`。LocalValue 高于 frame 状态机的 StyleTrigger，因此定制期间 hover / pressed / focus 的边框变色让位；focus 的 `BoxShadow` 是独立属性槽，反馈不丢失。中继在模板重新套用时丢弃旧 frame 引用并重建。
 - `TextBox` 的 `PART_InputControlFrame` 必须水平填满 TextBox 已分配宽度；placeholder、短文本和长文本只改变内部文本布局，不改变输入外框宽度。
+- `TextBox` 模板通过 `TemplateBinding` 将继承的 `InnerLeftContent` / `InnerRightContent` 交给独立的 `ContentPresenter`。左侧 presenter 停靠在编辑区左侧，右侧 presenter 位于 clear/reveal/Form feedback 之后、count 之前；两者均在文本 scroll viewer 外。模板把内容是否为空映射到布局容器的内部 class，ControlTheme 仅在至少一侧内容非空时为 `AdaptiveSpacingDockPanel` 设置 `SpacingXXS`；面板只为可见且具有宽度的辅助区分配间距。两侧内容均为空时撤销间距 setter，保留原有 clear/reveal/Form feedback/count 场景的编辑宽度。空值 presenter 折叠，避免辅助区内部的 `Spacing` 留下空隙。内容的创建、隐式 DataTemplate 查找、替换和释放由 presenter 管理，不增加代码绑定或内容订阅；重新套用模板时由新模板实例接管当前内容。
 - `AddOnDecoratedBox` 派生 part 只接收 frame 状态并建立 AddOn/内部内容布局，不再承担独立状态选择器。
 - clear/reveal/form/inner-right/count 等稳定 control-to-template 状态由 AXAML `TemplateBinding` 或显式 typed ancestor binding 表达；`AddOnDecoratedBox.ContentRightAddOn` 跨模板边界内的节点使用 `$parent[atom:<InputType>]` 绑定到对应输入控件。
 - `SearchEdit` 获取 `SearchEditDecoratedBox` 后设置 `OwningSearchEdit`，由 decorated box 回调搜索事件。
@@ -278,3 +279,7 @@ AOT 边界：
 - 文本 viewport：clear/feedback/addon 改变内部可用宽度但 owner Bounds 不变时发布新值；模板重套用后旧 source 不再发布；TextArea scroller padding 和 presenter margin 被正确扣除。
 - root 表面：`TextInputRootBrushRelayTests` 覆盖四控件的定制值直达 frame、hover / focus 边框变色让位、focus `BoxShadow` 存活、置空恢复状态机、模板应用前赋值中继和未定制 rest 基线。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
+
+## 状态动效初始化
+
+共享 `InputControlFrame` 在构造时建立初始化会话，覆盖禁用、校验及初始外观同步，加载后恢复最新过渡集合；分离及模板变更时复位。`TextBox` 不再查找当前模板中不存在的 `InnerBoxDecorator` 并投递过渡开关。规则见 [共享状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。

@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Utils;
 using Avalonia;
@@ -746,18 +745,6 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         base.OnSizeChanged(e);
         InvalidateMeasure();
         ClampTransform();
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     private bool CanTransformCurrentImage => CurrentImage != null;

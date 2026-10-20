@@ -269,8 +269,8 @@ internal static class Program
             ["segmented"] = new(
                 "SegmentedShowCase",
                 SegmentedViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SegmentedShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/SegmentedShowCase.axaml",
+                typeof(SegmentedShowCase).FullName!,
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Segmented/Views/SegmentedShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 6 && stats.IconPresenterCount >= 10),
             ["drawer"] = new(
                 "DrawerShowCase",
@@ -331,8 +331,8 @@ internal static class Program
             ["tabcontrol"] = new(
                 "TabControlShowCase",
                 TabControlViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TabControlShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Navigation/TabControlShowCase.axaml",
+                typeof(TabControlShowCase).FullName!,
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/TabControl/Views/TabControlShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 10 && stats.VisualCount > 0),
             ["steps"] = new(
                 "StepsShowCase",
@@ -441,8 +441,8 @@ internal static class Program
             ["toggleswitch"] = new(
                 "ToggleSwitchShowCase",
                 ToggleSwitchViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ToggleSwitchShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/ToggleSwitchShowCase.axaml",
+                typeof(ToggleSwitchShowCase).FullName!,
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/ToggleSwitch/Views/ToggleSwitchShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 5 && stats.ButtonCount >= 2 && stats.VisualCount > 0),
             ["rate"] = new(
                 "RateShowCase",
@@ -649,7 +649,10 @@ internal static class Program
                       build.ConfigureViewLocator(locator => new ShowCaseViewModule().RegisterViews(locator)))
                   .UseHeadless(new AvaloniaHeadlessPlatformOptions())
                   .WithAtomUIDefaultOptions()
+                  .UseAtomUI(GalleryApplication.Configure)
                   .SetupWithLifetime(lifetime);
+        // The public startup flow schedules the main window after framework setup.
+        Dispatcher.UIThread.RunJobs();
     }
 
     private static int RunColdChild(PerfOptions options, ShowCaseSpec showCase)

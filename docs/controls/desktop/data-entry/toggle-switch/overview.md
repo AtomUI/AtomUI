@@ -68,6 +68,11 @@ ToggleSwitch 的公共契约由 Avalonia `ToggleButton` 状态和 AtomUI 扩展�
 
 ## 4. 行为与状态模型
 
+首帧状态契约：把手、内容偏移和轨道外观直接呈现当前 `IsChecked`；后续有效切换保留主题过渡。loading 旋转属于
+过程反馈，保持独立语义。根控件与把手的基线提交和主题就绪条件见
+[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，源码接入差异及证据见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+
 ToggleSwitch 的交互优先级：
 
 ```text
@@ -145,7 +150,7 @@ ToggleSwitch 属于 Data Entry 控件，常用于设置项、表单布尔项和�
 
 ### 8.1 内容模型
 
-`OnContent` 和 `OffContent` 可以是文本、图标或任意模板化对象。内容位置由控件测量当前两个 presenter 的最大宽度后计算，确保开/关切换时轨道宽度能容纳较宽的一侧。
+`OnContent` 和 `OffContent` 可以是文本、图标或任意模板化对象。默认字符串按实际可见字形垂直居中，字体行盒的下伸预留空间不参与标签视觉中心；自定义模板与控件内容保持自身布局。内容位置由控件测量当前两个 presenter 的最大宽度后计算，确保开/关切换时轨道宽度能容纳较宽的一侧。
 
 图标内容使用 `BindUtils.RelayBind` 同步 `IconSize`、`Foreground`、`Icon.FillBrush` 和 `Icon.StrokeBrush`。这些绑定由 on/off 两组 disposable 管理，在内容替换时释放。
 

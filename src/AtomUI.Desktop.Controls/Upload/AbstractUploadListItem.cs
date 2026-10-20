@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls.Primitives;
@@ -136,18 +135,6 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
             RoutedEvent = TaskRemoveRequestEvent,
             Source = this
         });
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     private void HandleActionButtonClicked(IconButton button)

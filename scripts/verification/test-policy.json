@@ -91,8 +91,7 @@
       ],
       "depth": 1,
       "tests": [
-        "tests/AtomUI.Localization.Tests/**/*.cs",
-        "tests/AtomUI.Localization.IntegrationTests/**/*.cs"
+        "tests/AtomUI.Localization.Tests/**/*.cs"
       ],
       "conservative": true
     },
@@ -202,7 +201,7 @@
       "depth": 0,
       "tests": [
         "tests/AtomUI.Build.Tasks.Tests/LanguagePackTemplateTests.cs",
-        "tests/AtomUI.Localization.IntegrationTests/**/*.cs"
+        "tests/AtomUI.Localization.IntegrationTests/LanguageTemplateExportAcceptanceTests.cs"
       ],
       "conservative": true
     },
@@ -213,7 +212,7 @@
       ],
       "depth": 1,
       "tests": [
-        "tests/AtomUI.Localization.IntegrationTests/**/*.cs"
+        "tests/AtomUI.Localization.IntegrationTests/OfficialPtBrLanguagePackTests.cs"
       ],
       "conservative": true
     },
@@ -256,6 +255,14 @@
       "id": "registration-maintainer-tools",
       "roots": [
         "scripts/registration"
+      ],
+      "depth": 0,
+      "tests": []
+    },
+    {
+      "id": "startup-performance",
+      "roots": [
+        "tools/performances/AtomUI.StartupPerformance"
       ],
       "depth": 0,
       "tests": []
@@ -340,8 +347,19 @@
         "controlgallery/**/*.xlf"
       ],
       "tests": [
-        "tests/AtomUIGallery.Tests/Localization/GalleryCatalogCoverageTests.cs",
-        "tests/AtomUI.Localization.IntegrationTests/**/*.cs"
+        "tests/AtomUIGallery.Tests/Localization/GalleryCatalogCoverageTests.cs"
+      ]
+    },
+    {
+      "id": "official-language-pack-source-catalogs",
+      "changes": [
+        "src/AtomUI.Controls/**/en-US.xlf",
+        "src/AtomUI.Desktop.Controls/**/en-US.xlf",
+        "src/AtomUI.Desktop.Controls.DataGrid/**/en-US.xlf",
+        "src/AtomUI.Desktop.Controls.ColorPicker/**/en-US.xlf"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/OfficialPtBrLanguagePackTests.cs"
       ]
     },
     {
@@ -351,6 +369,38 @@
       ],
       "tests": [
         "tests/AtomUI.Localization.IntegrationTests/LanguagePackEndToEndTests.cs"
+      ]
+    },
+    {
+      "id": "language-pack-module-fixtures",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/Module/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguagePackEndToEndTests.cs",
+        "tests/AtomUI.Localization.IntegrationTests/LanguageTemplateExportAcceptanceTests.cs"
+      ]
+    },
+    {
+      "id": "language-pack-end-to-end-fixtures",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/AggregateLanguagePack/**",
+        "tests/fixtures/LanguagePackEndToEnd/Consumer/**",
+        "tests/fixtures/LanguagePackEndToEnd/LanguagePack/**",
+        "tests/fixtures/LanguagePackEndToEnd/OptionalLanguagePack/**",
+        "tests/fixtures/LanguagePackEndToEnd/OptionalModule/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguagePackEndToEndTests.cs"
+      ]
+    },
+    {
+      "id": "language-template-export-fixture",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/TemplateExport/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguageTemplateExportAcceptanceTests.cs"
       ]
     },
     {
@@ -428,8 +478,7 @@
       "changes": [
         "src/AtomUI.Generator/Localization/**",
         "src/AtomUI.Toolchain/Common/Localization/**",
-        "build/*Localization*",
-        "tests/fixtures/LanguagePackEndToEnd/**"
+        "build/*Localization*"
       ],
       "tests": [
         "tests/AtomUI.Localization.IntegrationTests/**/*.cs"

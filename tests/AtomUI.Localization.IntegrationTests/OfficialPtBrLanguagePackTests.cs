@@ -3,10 +3,11 @@ using System.Text;
 using System.Xml.Linq;
 using Shouldly;
 using Xunit;
+using static AtomUI.Localization.IntegrationTests.LanguagePackEndToEndTests;
 
 namespace AtomUI.Localization.IntegrationTests;
 
-public sealed partial class LanguagePackEndToEndTests
+public sealed class OfficialPtBrLanguagePackTests
 {
     private const string AggregatePackageId = "AtomUI.I18n.PtBR";
     private const string DataGridCatalogId =

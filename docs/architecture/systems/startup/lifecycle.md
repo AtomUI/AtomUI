@@ -13,14 +13,15 @@ public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBui
 
 - **应用类型**取 `appBuilder.ApplicationType`（`Configure<TApp>()` 与 `Configure<TApp>(Func<TApp>)` 都会设置），
   用于推导默认应用标识。
-- **提前执行**：在主线程、平台初始化之前执行配置回调，并捕获符合后台资格的 Prepare 不可变输入；此阶段不访问
-  `Dispatcher`、不创建 `AvaloniaObject`、不启动后台 Prepare。Dispatcher 的线程身份与计时基准由平台初始化建立。
-- **后台启动点**：在 `AfterPlatformServicesSetup` 中确认 UI Dispatcher 已就绪，再启动 Prepare，与后续 Application
-  创建并行。提前捕获的配置、主题输入和包 definition 继续复用，不重复声明或准备。平台初始化之前的并行区间不再用于
-  Prepare；启动收益须以相同测量口径复核，不以提前创建 Dispatcher 换取这段重叠。
-- **回调只做声明**：回调执行时 Avalonia 平台尚未初始化，不能访问 `FontManager`、`Application`、`TopLevel`，也不能
-  创建位图。字体注册与应用级语言注册推迟到提交时执行。回调抛出的异常原样同步抛出。
-- **不提前执行的情况**：设计模式（`Design.IsDesignMode`，预览器在调用 `BuildAvaloniaApp` 之前设置）与单线程运行时
+- **只登记**：`UseAtomUI` 不执行配置回调、不创建 builder、不捕获 Prepare 输入、不访问 Dispatcher，也不启动任务。
+  任意应用配置及包/模块配置的副作用都留在平台服务就绪之后，不能以“配置只做声明”为理由提前执行未知应用代码。
+- **配置与后台启动点**：在 `AfterPlatformServicesSetup` 中确认 UI Dispatcher 已就绪，再在 UI 线程执行配置回调，
+  捕获符合后台资格的 Prepare 不可变输入并启动后台任务，与后续 Application 创建并行。Dispatcher 的线程身份与计时
+  基准由平台初始化建立；配置间接创建 `AvaloniaObject` 属于受支持行为，不要求应用先把对象拆成纯静态元数据。
+- **回调仍以配置为职责**：普通宿主此时平台服务已就绪，但 Application 尚未构造、AtomUI 内核尚未提交，不能依赖
+  `Application.Current`、应用资源或已打开的 `TopLevel`。字体注册与应用级语言注册仍在提交时执行；主题和主窗体创建
+  使用各自生命周期入口。回调异常在平台初始化路径原样同步抛出，不再从 `UseAtomUI` 登记调用中抛出。
+- **不在平台回调中执行的情况**：设计模式（`Design.IsDesignMode`，预览器在调用 `BuildAvaloniaApp` 之前设置）与单线程运行时
   （`OperatingSystem.IsBrowser()` / `OperatingSystem.IsWasi()`），全部改在 `Attach` 中同步完成。
 - **不启动后台 Prepare 的情况**：应用类型为 null 且回调中没有调用 `WithApplicationId`，或主题来源包含未声明后台安全的
   自定义 resolver/手写编译程序。前者不能用占位应用标识读取用户目录；后者在需要显示 Splash 时于 UI 线程同步 Prepare，
@@ -66,9 +67,9 @@ public static void ApplicationStartup.Attach(Application application);
 在 `base.RegisterServices()` 之后调用（通常由生成器生成，见 §8）。对同一实例幂等；没有 `UseAtomUI` 配置时直接返回，
 纯 Avalonia 应用不受影响。步骤：
 
-1. **取得 builder**：本实例是该配置的第一个应用实例时，取提前执行的 builder；否则新建 builder 并同步执行回调。
+1. **取得 builder**：取本次平台服务就绪回调准备的 builder；没有准备结果时，新建 builder 并同步执行回调。
 2. **校验宿主**：配置了 `UseMainWindow` 但 `ApplicationLifetime` 不是 `IClassicDesktopStyleApplicationLifetime` 时抛出。
-3. **取得 Prepare 结果**：提前执行的，等待后台任务完成（上限 30 s）；没有提前执行且输入允许 Prepare 时，只有本次
+3. **取得 Prepare 结果**：已经启动后台任务的，等待完成（上限 30 s）；没有后台任务且输入允许 Prepare 时，只有本次
    会显示 Splash 才同步执行 Prepare，否则跳过（提交会在 UI 线程自行编译全局层）。
 4. **选外观**：配置了 FollowSystem 时读取平台外观，选浅色或深色全局层；提交使用同一次读取的结果。
 5. **判定并显示 Splash**（见 [Splash](splash.md#2-显示判定)）：显示后驱动 Dispatcher 直到 Splash 首个渲染批次完成，
@@ -77,8 +78,8 @@ public static void ApplicationStartup.Attach(Application application);
 7. 状态 → `Committed`；登记主循环开始后的交接工作（§5）。
 
 **回调按实例执行**：配置回调对每个 `Application` 实例执行一次。headless 测试按测试隔离时，同一 `AppBuilder` 会先后
-创建多个应用实例；第一个实例使用提前执行的结果，之后的实例在 `Attach` 中同步重跑回调，各自拥有独立的 builder 与
-内核状态。
+创建多个应用实例；每次平台 setup 为该实例执行配置，`Attach` 只消费该次结果，不重复调用。没有经过平台配置回调的
+实例在 `Attach` 中同步配置。各实例拥有独立的 builder 与内核状态。
 
 ## 4. 提交（一次）
 
@@ -147,7 +148,7 @@ Preparing → Committed → Presenting → Ready
 
 | 失败点 | 处理 |
 |---|---|
-| 配置回调抛错 | 在 `UseAtomUI`（或之后实例的 `Attach`）中同步抛出原异常。 |
+| 配置回调抛错 | 在平台服务就绪回调（或同步回退的 `Attach`）中抛出原异常；Configure 分段正常结束，不吞错继续启动。 |
 | 后台 Prepare 失败（含 TypeMap 预热） | Warning 日志，不显示 Splash，照常提交。提交时仍执行真实 selection 与完整主题绑定；持续的映射或主题错误按提交失败处理，保留原异常。 |
 | 等待 Prepare 超过 30 s | Warning 日志（疑似后台代码访问了 UI 线程），不显示 Splash，照常提交。 |
 | Splash 创建或驱动失败 | Error 日志，跳过 Splash，启动继续。 |
@@ -189,12 +190,12 @@ public override void RegisterServices()
 
 ## 9. 宿主差异
 
-| 宿主 | 提前执行 | Splash | 说明 |
+| 宿主 | 配置时机 | Splash | 说明 |
 |---|---|---|---|
-| 桌面（经典生命周期） | 是 | 按[显示判定](splash.md#2-显示判定) | 主路径 |
-| headless 测试 | 第一个实例是 | 否（无经典生命周期） | 之后的实例在 `Attach` 中同步重跑回调；提交后直接 `Ready` |
-| 设计器 | 否 | 否 | 仍然提交，预览器能渲染 AtomUI 控件 |
-| 浏览器 / WASI | 否 | 否 | 同步执行，避免单线程阻塞等待造成死锁；提交后直接 `Ready` |
+| 桌面（经典生命周期） | 平台就绪后、Application 构造前 | 按[显示判定](splash.md#2-显示判定) | 主路径 |
+| headless 测试 | 每次平台 setup 就绪后、Application 构造前 | 否（无经典生命周期） | 每个实例各执行一次；提交后直接 `Ready` |
+| 设计器 | `Attach` 中同步执行 | 否 | 仍然提交，预览器能渲染 AtomUI 控件 |
+| 浏览器 / WASI | `Attach` 中同步执行 | 否 | 避免单线程阻塞等待造成死锁；提交后直接 `Ready` |
 
 ## 10. 内部入口 `AttachWith`
 

@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -77,6 +77,8 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 
     #endregion
         
+    private readonly StateMotionSession _stateMotion;
+
     static RangeInfoPickerInput()
     {
         AffectsArrange<RangeInfoPickerInput>(PickerIndicatorOffsetXProperty, PickerIndicatorOffsetYProperty);
@@ -92,6 +94,30 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         SecondaryInfoInputBox?.Clear();
     }
     
+
+    protected RangeInfoPickerInput()
+    {
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -102,6 +128,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         {
             PickerPopup.OverlayInputPassThroughElement = DecoratedBox;
         }
+        _stateMotion.CompleteInitialization();
     }
 
     private bool IsPointerInTextBox(TextBox? textBox, Point position, double? contentStartOffsetX)
@@ -345,17 +372,6 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.EnableTransitions();
-    }
 }
 
 internal enum RangeActivatedPart

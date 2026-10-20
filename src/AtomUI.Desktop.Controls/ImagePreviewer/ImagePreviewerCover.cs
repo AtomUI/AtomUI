@@ -1,10 +1,7 @@
-using AtomUI.Animations;
-using Avalonia.Threading;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -219,13 +216,7 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
         base.OnInitialized();
         UpdateOwnerMaskGeometry();
         UpdateVisualState();
-        this.DisableTransitions();
-    }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     private void UpdateVisualState()

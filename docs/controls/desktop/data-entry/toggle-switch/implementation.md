@@ -70,6 +70,15 @@ Form.ClearValue()    → IsChecked = null
 
 ## 5. 生命周期与模板接入
 
+`AbstractToggleSwitch` 构造时创建 `StateMotionSession`，在挂载、分离及模板变更时复位。初次排列直接提交把手矩形与
+内容偏移；owner 已加载且最终尺寸、把手排列有效后释放根控件的过渡覆盖。`SwitchKnob` 在模板构建时通过固定的
+`StateMotion.Initialization="Owner"` 接入，与 owner 基线和自身 Loaded 汇合后恢复宽度过渡。主题只保留
+`IsMotionEnabled` 条件，不订阅动态 Ready 属性；自定义过渡的绑定及最新集合也由属性系统保留并恢复。
+初始化 checked 不排队波纹，已就绪的状态切换才生成反馈，执行时再次核对当前部件与生命周期，分离及模板替换时
+取消 owner 持有的待执行操作。共享规则见
+[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，验证范围见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+
 `OnApplyTemplate` 获取以下稳定 part：
 
 - `PART_SwitchKnob`
@@ -141,7 +150,10 @@ owner 的偏移还依赖每个 presenter 的尺寸；画布测量完成时标记
 
 ### 7.3 内容偏移
 
-`ExtraInfoRect` 根据当前状态和内部边距计算内容区域，各 presenter 使用自己的期望高度计算垂直居中位置。
+`ExtraInfoRect` 根据当前状态和内部边距计算内容区域。默认字符串的垂直中心取自 `TextBlock.TextLayout` 中
+各字体运行的真实字形轮廓、基线和 shaping offset，而不是含下伸预留空间的字体行盒。因此 On / Off、中文、
+带下伸或组合字符的标签按其可见字形居中，不写死下移量。计算复用已完成的排版，仅在测量阶段提取轮廓边界并保存偏移数值，每帧排列不生成 Geometry；
+空白、无可用字形度量及显式或隐式自定义模板 / 控件内容保持期望尺寸居中。
 checked 时 on content 进入可见区域，off content 移到右侧不可见区域；unchecked 时反向处理。pressed 内容位移从当前
 把手几何推导，不累计旧偏移。内容偏移使用 `PointTransition` 过渡，并通过 AXAML TemplateBinding 传给内部内容画布；
 画布是 presenter 的唯一排列 owner，负责普通布局和每一帧偏移动画。既有自定义模板仍可使用标准 Canvas，owner 保留原有定位兼容路径；默认模板通过专用画布处理内容尺寸失效与动画排列。

@@ -68,7 +68,10 @@ class Planner:
             # File-reading tests are independent of runtime ProjectReference edges.
             for literal in re.findall(r'"([^"\r\n]+)"', source):
                 name = literal.replace("\\", "/").rsplit("/", 1)[-1]
-                if re.fullmatch(r"[\w. -]+\.(?:cs|axaml|csproj|slnx|props|targets|md|json|yml|yaml|ps1|sh|xlf|nuspec|snapshot|baseline|svg)", name):
+                # XLIFF inputs are intentionally routed by explicit Catalog rules.
+                # Their repeated language filenames (for example en-US.xlf) make
+                # basename-only source-reader inference repository-wide and noisy.
+                if re.fullmatch(r"[\w. -]+\.(?:cs|axaml|csproj|slnx|props|targets|md|json|yml|yaml|ps1|sh|nuspec|snapshot|baseline|svg)", name):
                     self.file_readers[name].add(path)
         if repository.snapshot() != self.source_fingerprint:
             raise ValueError("Repository changed during impact discovery; run again for a consistent plan")

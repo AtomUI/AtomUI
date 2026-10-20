@@ -1,5 +1,3 @@
-using AtomUI.Animations;
-using Avalonia.Threading;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -230,15 +228,4 @@ internal class DrawerInfoContainer : HeaderedContentControl
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

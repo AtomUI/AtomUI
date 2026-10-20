@@ -9,8 +9,8 @@ namespace AtomUI;
 public static class AppBuilderExtensions
 {
     /// <summary>
-    /// 启用 AtomUI。配置回调只做声明（不访问 Avalonia 平台对象与 Application），在此提前执行；
-    /// 全局 Token 在平台服务就绪后于后台准备，与 Application 创建并行；
+    /// 启用 AtomUI。此处只登记配置；平台服务就绪后在 UI 线程执行配置回调，随后在后台准备全局 Token，
+    /// 与 Application 创建并行。回调执行时 Application 尚未创建、AtomUI 内核尚未提交；
     /// 内核在生成的 RegisterServices 重写（ApplicationStartup.Attach）中提交。
     /// </summary>
     public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBuilder> configure)
@@ -19,7 +19,7 @@ public static class AppBuilderExtensions
         ArgumentNullException.ThrowIfNull(configure);
         var configuration = StartupConfiguration.Register(appBuilder, configure);
         return appBuilder.With(configuration)
-                         .AfterPlatformServicesSetup(configuration.StartPrepareAfterPlatformSetup)
+                         .AfterPlatformServicesSetup(configuration.ConfigureAndPrepareAfterPlatformSetup)
                          .AfterApplicationSetup(StartupConfiguration.VerifyAttached);
     }
 

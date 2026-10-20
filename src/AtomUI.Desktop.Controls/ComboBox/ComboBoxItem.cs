@@ -1,4 +1,5 @@
-﻿using AtomUI.Animations;
+using Avalonia.Controls.Primitives;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -10,7 +11,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaComboBoxItem = Avalonia.Controls.ComboBoxItem;
 
-public class ComboBoxItem : AvaloniaComboBoxItem
+public class ComboBoxItem : AvaloniaComboBoxItem, IStateMotionOwner
 {
     #region 内部属性定义
 
@@ -46,16 +47,35 @@ public class ComboBoxItem : AvaloniaComboBoxItem
     private static readonly Point s_invalidPoint = new Point(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
 
-    protected override void OnInitialized()
+    private readonly StateMotionSession _stateMotion;
+
+    public ComboBoxItem()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _stateMotion.CompleteInitialization();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -117,4 +137,10 @@ public class ComboBoxItem : AvaloniaComboBoxItem
         }
         _pointerDownPoint = s_invalidPoint;
     }
+    #region 实现 IStateMotionOwner 接口
+
+    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+
+    #endregion
+
 }

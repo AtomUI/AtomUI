@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
 using Avalonia;
@@ -62,18 +61,6 @@ public class UploadTrigger : ContentControl, IMotionAwareControl
     {
         ClearOwnerBindings();
         base.OnDetachedFromVisualTree(e);
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

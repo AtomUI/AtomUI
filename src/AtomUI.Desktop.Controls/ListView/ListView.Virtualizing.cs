@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using Avalonia.Controls;
@@ -11,6 +12,11 @@ public partial class ListView : IListVirtualizingContextAware
 
     protected sealed override void ClearContainerForItemOverride(Control element)
     {
+        if (element is IStateMotionOwner owner)
+        {
+            owner.StateMotionSession.Reset();
+        }
+
         var originMotionEnabled = false; 
         try
         {

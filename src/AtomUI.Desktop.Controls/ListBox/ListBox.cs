@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
@@ -705,6 +706,11 @@ public partial class ListBox : AvaloniaListBox,
     #region 虚拟化上下文管理
     protected sealed override void ClearContainerForItemOverride(Control element)
     {
+        if (element is IStateMotionOwner owner)
+        {
+            owner.StateMotionSession.Reset();
+        }
+
         var originMotionEnabled = false; 
         try
         {

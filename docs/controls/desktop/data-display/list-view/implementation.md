@@ -541,3 +541,8 @@ git diff --check
   时最后一项无分割线且外框下边缘为单一闭合线；`BottomPagination` / `IsBorderless` 时最后一项保留分割线；追加 / 删除
   条目后原最后一项恢复、新最后一项抑制；组标题无分割线；三档 SizeType 下规则一致。
 - Gallery List ShowCase 的基础和进阶示例显示稳定。
+
+## 状态动效初始化
+
+`ListViewItem` 在构造阶段抑制过渡，覆盖 owner 准备容器时写入的初始选中外观；加载后恢复最新集合。父控件在清理容器之前复位会话，避免离树前的清理写入启动过渡。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。

@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -191,15 +190,4 @@ internal class OverlayDialogHeader : TemplatedControl, IMotionAwareControl
         CloseRequest?.Invoke(this, EventArgs.Empty);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.EnableTransitions();
-    }
 }

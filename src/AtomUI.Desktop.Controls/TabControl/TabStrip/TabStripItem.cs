@@ -189,6 +189,25 @@ public partial class TabStripItem : AvaloniaTabStripItem
         _closeButton = null;
     }
 
+    private readonly StateMotionSession _stateMotion;
+
+    public TabStripItem()
+    {
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -225,6 +244,7 @@ public partial class TabStripItem : AvaloniaTabStripItem
         {
             _closeButton.Click += HandleCloseRequest;
         }
+        _stateMotion.CompleteInitialization();
     }
 
     private void HandleCloseRequest(object? sender, RoutedEventArgs args)
@@ -287,16 +307,10 @@ public partial class TabStripItem : AvaloniaTabStripItem
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        this.EnableTransitions();
+        _stateMotion.CompleteInitialization();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

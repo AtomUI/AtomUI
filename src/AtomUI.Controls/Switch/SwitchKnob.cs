@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -151,18 +150,6 @@ internal class SwitchKnob : TemplatedControl
         _cancellationTokenSource = null;
         _isLoading               = false;
         IsEnabled                = true;
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.UIThread.Post(this.EnableTransitions);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

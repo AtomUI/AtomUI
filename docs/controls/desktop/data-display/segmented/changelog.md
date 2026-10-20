@@ -3,6 +3,15 @@
 本文档记录 Segmented 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-20
+
+- Fixed
+  - 根控件与 item 使用共享初始化会话暂时覆盖有效过渡集合；初次选中块和选中外观直接提交，取消动态 Ready selector。
+  - 相同最终目标的重复排列保留正在执行的位移和尺寸过渡，首次切换继续使用原有时长与缓动。
+- Docs
+  - 同步 [共享状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)
+    及容器有效性、重挂载、重模板和延迟 Items 的实际实现与验证。
+
 ## 2026-10-03
 
 - Fixed

@@ -1,3 +1,4 @@
+using Avalonia.Controls.Primitives;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
@@ -13,7 +14,7 @@ namespace AtomUI.Desktop.Controls;
 
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
-                            ISelectable
+                            ISelectable, IStateMotionOwner
 {
     #region 公共属性定义
 
@@ -186,9 +187,9 @@ public class ListViewItem : ContentControl,
     
     private static readonly Point s_invalidPoint = new(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
-    int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
-    bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
     
+    private readonly StateMotionSession _stateMotion;
+
     static ListViewItem()
     {
         // ListViewItem may be initialized first by a deferred theme. Register only after
@@ -198,6 +199,35 @@ public class ListViewItem : ContentControl,
         PressedMixin.Attach<ListViewItem>();
         FocusableProperty.OverrideDefaultValue<ListViewItem>(true);
         AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<ListViewItem>(IsOffscreenBehavior.FromClip);
+    }
+
+    public ListViewItem()
+    {
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _stateMotion.CompleteInitialization();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _stateMotion.CompleteInitialization();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -223,26 +253,12 @@ public class ListViewItem : ContentControl,
         base.OnInitialized();
         ConfigureSelectedIndicator();
         ConfigureEffectiveBorderThickness();
-        this.DisableTransitions();
+
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 
-    private void ConfigureSelectedIndicator()
-    {
-        SetCurrentValue(IsSelectedIndicatorVisibleProperty, IsShowSelectedIndicator && IsSelected);
-    }
 
-    private void ConfigureEffectiveBorderThickness()
-    {
-        var showSplitLine = IsSplitLineVisible && !IsGroupItem && BorderThickness.Bottom > 0;
-        IsSplitLineEffectiveVisible = showSplitLine;
-        EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
-    }
+
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
@@ -336,4 +352,30 @@ public class ListViewItem : ContentControl,
 
         _pointerDownPoint = s_invalidPoint;
     }
+    #region 实现 IListItemVirtualizingContextAware 接口
+
+    int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
+    bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
+
+    #endregion
+
+    #region 实现 IStateMotionOwner 接口
+
+    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+
+    #endregion
+
+    private void ConfigureSelectedIndicator()
+    {
+        SetCurrentValue(IsSelectedIndicatorVisibleProperty, IsShowSelectedIndicator && IsSelected);
+    }
+
+    private void ConfigureEffectiveBorderThickness()
+    {
+        var showSplitLine = IsSplitLineVisible && !IsGroupItem && BorderThickness.Bottom > 0;
+        IsSplitLineEffectiveVisible = showSplitLine;
+        EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
+    }
+
+
 }

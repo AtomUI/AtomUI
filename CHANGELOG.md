@@ -4,6 +4,17 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.7
+
+`2026-10-20`
+
+- Breaking Changes
+  - Startup: execute `UseAtomUI` application configuration after platform services are ready, before Application construction. Callback side effects and exceptions occur during platform setup rather than during the registration call; see the [6.2.7 migration guide](docs/releases/6.2.7-api-changes.md).
+  - Registration: generated registration group identities follow the 6.2.7 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the migration guide.
+- Startup and Core
+  - Prevent ordinary module configuration that indirectly creates an AvaloniaObject from creating the Dispatcher before platform initialization and causing persistent animation/timer stalls.
+  - Preserve background theme preparation, per-Application configuration isolation and AtomUI commit before Initialize; add an on-demand native process acceptance entry for startup ordering and steady-state timer behavior.
+
 ## 6.2.6
 
 `2026-10-19`

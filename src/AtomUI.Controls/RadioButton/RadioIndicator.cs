@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using AtomUI.Media;
 using AtomUI.Utils;
@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
@@ -106,7 +107,10 @@ internal class RadioIndicator : TemplatedControl
 
     private IPen? _cachedPen;
     private WaveSpiritDecorator? _waveSpiritDecorator;
+    private DispatcherOperation? _pendingWave;
     
+    private readonly StateMotionSession _stateMotion;
+
     static RadioIndicator()
     {
         AffectsRender<RadioIndicator>(
@@ -118,6 +122,33 @@ internal class RadioIndicator : TemplatedControl
             RadioInnerBackgroundProperty,
             RadioDotEffectSizeProperty,
             UseLayoutRoundingProperty);
+    }
+
+    public RadioIndicator()
+    {
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _pendingWave?.Abort();
+        _pendingWave = null;
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _pendingWave?.Abort();
+        _pendingWave = null;
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _stateMotion.CompleteInitialization();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -136,13 +167,20 @@ internal class RadioIndicator : TemplatedControl
         {
             UpdatePseudoClasses();
 
+            if (change.Property == IsCheckedProperty)
+            {
+                _pendingWave?.Abort();
+                _pendingWave = null;
+            }
+
             if (change.Property == IsCheckedProperty &&
+                _stateMotion.IsReady &&
                 IsMotionEnabled &&
                 IsWaveSpiritEnabled &&
                 !PseudoClasses.Contains(StdPseudoClass.Disabled) &&
                 PseudoClasses.Contains(StdPseudoClass.Checked))
             {
-                Dispatcher.Post(PlayWaveSpirit);
+                _pendingWave = Dispatcher.InvokeAsync(PlayWaveSpirit);
             }
         }
 
@@ -165,7 +203,9 @@ internal class RadioIndicator : TemplatedControl
 
     private void PlayWaveSpirit()
     {
-        if (_waveSpiritDecorator is null)
+        _pendingWave = null;
+        if (!_stateMotion.IsReady || !IsMotionEnabled || !IsWaveSpiritEnabled ||
+            !IsEnabled || IsChecked != true || _waveSpiritDecorator is null)
         {
             return;
         }
@@ -227,17 +267,7 @@ internal class RadioIndicator : TemplatedControl
     {
         base.OnApplyTemplate(e);
         _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(WaveSpiritDecorator.WaveSpiritPart);
+        _stateMotion.CompleteInitialization();
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

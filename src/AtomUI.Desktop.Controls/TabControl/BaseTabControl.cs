@@ -375,7 +375,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     private Point _tabReorderStartPointerRootPosition;
     private double _tabReorderPointerAnchorPrimary;
     private bool _isTabReorderDragging;
-    private bool _isTabReorderSelectedIndicatorTransitionSuppressed;
+    private TransitionSuppressionScope? _tabReorderIndicatorSuppression;
     private bool _isTabReorderIndicatorRefreshDeferred;
     private bool _isTabReorderIndicatorRefreshPending;
     private readonly Dictionary<Control, ITransform?> _tabReorderOriginalTransforms = new();
@@ -1576,8 +1576,14 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     private void CompleteTabReorderIndicatorRefresh()
     {
         _isTabReorderIndicatorRefreshDeferred = false;
-        NotifyTabReorderPreviewChanged();
-        SetTabReorderIndicatorTransitionSuppressed(false);
+        try
+        {
+            NotifyTabReorderPreviewChanged();
+        }
+        finally
+        {
+            SetTabReorderIndicatorTransitionSuppressed(false);
+        }
     }
 
     private void CancelPendingTabReorderIndicatorRefresh()
@@ -1611,19 +1617,15 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
 
     private void SetTabReorderIndicatorTransitionSuppressed(bool isSuppressed)
     {
-        if (_isTabReorderSelectedIndicatorTransitionSuppressed == isSuppressed)
-        {
-            return;
-        }
-
-        _isTabReorderSelectedIndicatorTransitionSuppressed = isSuppressed;
         if (isSuppressed)
         {
-            this.DisableTransitions();
+            _tabReorderIndicatorSuppression ??= new TransitionSuppressionScope(this);
         }
         else
         {
-            this.EnableTransitions();
+            var suppression = _tabReorderIndicatorSuppression;
+            _tabReorderIndicatorSuppression = null;
+            suppression?.Dispose();
         }
     }
 

@@ -164,6 +164,8 @@ public partial class TabItem : HeaderedContentControl, ISelectable
     private Dock? _tabStripPlacement;
     private IconButton? _closeButton;
 
+    private readonly StateMotionSession _stateMotion;
+
     static TabItem()
     {
         SelectableMixin.Attach<TabItem>(IsSelectedProperty);
@@ -217,6 +219,24 @@ public partial class TabItem : HeaderedContentControl, ISelectable
         _closeButton = null;
     }
 
+
+    public TabItem()
+    {
+        _stateMotion = new StateMotionSession(this);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _stateMotion.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _stateMotion?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -253,6 +273,7 @@ public partial class TabItem : HeaderedContentControl, ISelectable
         }
 
         SetupDefaultCloseIcon();
+        _stateMotion.CompleteInitialization();
     }
 
     private void HandleCloseRequest(object? sender, RoutedEventArgs args)
@@ -417,15 +438,9 @@ public partial class TabItem : HeaderedContentControl, ISelectable
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _stateMotion.CompleteInitialization();
     }
 }

@@ -34,7 +34,7 @@
 | `Theme/DesignTokens/` | 仅供编译阶段使用的 DesignToken、ControlToken builder、定义和 value converter |
 | `Localization/` | 根 Builder 的本地化扩展；Catalog、Snapshot、Manager 和资源扩展位于 `AtomUI.Localization` 项目 |
 | `Collections/` | ItemsSource 集合适配与弱事件转发 |
-| `Animations/` | Avalonia Transition 扩展 |
+| `Animations/` | Avalonia Transition 扩展；共享状态动效初始化的职责与接入边界见专项架构及验证文档 |
 | `MotionScene/` | 进入、离开、移动、折叠等 Motion 抽象，以及供上层控件复用的 internal 动效执行生命周期词汇 |
 | `Assets/Themes/` | 内置主题定义 |
 | `Reflection/`、`Input/`、`Media/`、`Utils/` | 面向上层控件复用的内部工具 |
@@ -67,13 +67,22 @@ Control 家族的共享视觉语义。跨 Desktop/Mobile 的抽象 Control Token
 Move Motion 原位替换自身动画配置，复用实例不会累计旧动画，也不移除或重排调用者加入 `Animations` 的动画。`Follow` 的绑定由 actor 持有，`UnFollow` 成对释放绑定并退出
 跟随模式，保留解绑瞬间的可见值。上述执行状态均为内部实现，不增加公开生命周期 API。
 
+状态型过渡的共享协议由
+[状态动效初始化架构设计](../../architecture/systems/control-infrastructure/state-motion-initialization.md) 定义：Core 拥有
+初始化会话、可撤销过渡抑制与目标登记，具体控件拥有完整基线和几何，ControlTheme 保留过渡声明；初始状态直接
+提交，完成后开放后续过渡。新控件按同一协议接入，过程反馈型动画保留独立语义。
+
+该协议是共享架构契约，不能据此推断所有能力已进入源码。当前 `StateMotion.IsReady` 接入、公开属性覆盖原型、
+实际性能证据与通用会话的验收差异统一见
+[状态动效初始化验证](../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+
 ## 图片加载生命周期职责
 
 Core 增加内部 `IAtomUIOwnedService`、Builder factory 收集和 `ApplicationScope` 的 attach/回滚/逆序 dispose。该机制供
 Shared 的 `ImageLoader` 使用，但 Core 不定义图片 Source、请求、缓存、HTTP、codec 或控件状态，也不反向引用
 `AtomUI.Controls.Shared`。
 
-owned service 必须在 `UseAtomUI()` 构建阶段一次性冻结，按注册顺序 attach，启动失败和应用销毁按逆序清理。图片 loader 的
+owned service 在平台就绪后的配置回调中收集、提交前一次性冻结，按注册顺序 attach，启动失败和应用销毁按逆序清理。图片 loader 的
 Application 映射由 Shared 的 `ImageLoaderStore` 管理；Core 不增加 `ApplicationImageLoader`、图片 service locator 或进程级
 静态 cache。完整生命周期见
 [图片加载管线、并发与生命周期](../../architecture/systems/image-loading/pipeline-and-lifecycle.md)。
@@ -81,6 +90,8 @@ Application 映射由 Shared 的 `ImageLoaderStore` 管理；Core 不增加 `App
 ## 相关文档
 
 - [内容展开与收起动效设计](../../architecture/systems/control-infrastructure/content-expansion.md)：共享动效职责与上层控件接入契约，实现证据由各控件维护。
+- [状态动效初始化架构设计](../../architecture/systems/control-infrastructure/state-motion-initialization.md)：初始化会话、可撤销抑制、目标生命周期、新控件接入与性能契约。
+- [状态动效初始化验证](../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)：当前源码、专项原型与目标架构的差异，以及行为、性能和发布验收证据。
 - [主题系统架构](../../architecture/systems/theming/runtime.md)
 - [编译主题包](../../architecture/systems/theming/compiled-theme-packages/overview.md)：Core 拥有统一执行语义、生成 ABI 与生命周期，不依赖构建工具程序集。
 - [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)

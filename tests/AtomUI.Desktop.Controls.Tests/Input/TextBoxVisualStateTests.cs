@@ -348,10 +348,6 @@ public class TextBoxVisualStateTests
         source.ShouldNotContain("TextBoxTokenResource ContentMargin");
         source.ShouldNotContain("TextBoxTokenResource DisabledColor");
         source.ShouldNotContain("TextBoxTokenResource AddOnSpacing");
-        source.ShouldNotContain("InnerLeftContent");
-        source.ShouldNotContain("InnerLeftContentTemplate");
-        source.ShouldNotContain("InnerRightContent");
-        source.ShouldNotContain("InnerRightContentTemplate");
         source.ShouldNotContain("PART_LeftInnerContentLayout");
         source.ShouldNotContain("PART_RightInnerContentLayout");
         source.ShouldNotContain("PART_LeftInnerContent");

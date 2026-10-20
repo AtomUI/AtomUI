@@ -1,10 +1,8 @@
 using System.Reflection;
-using AtomUI.Animations;
 using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
@@ -132,15 +130,4 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         e.Handled = !IsPassthroughMouseEvent;
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
-    }
 }

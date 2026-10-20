@@ -85,7 +85,7 @@ StartupEventSource.Log.PhaseStop(StartupPhase.CommitInitializers);
 
 | 分段 | 线程 | 内容 |
 |---|---|---|
-| `Configure` | 主线程 | `UseAtomUI` 中提前执行配置回调 |
+| `Configure` | UI 线程 | 平台服务就绪后执行配置回调；同步回退宿主在 Attach 中执行 |
 | `Prepare` | 后台 | 仅全局主题准备 |
 | `PrepareWait` | 主线程 | `Attach` 等待后台 Prepare |
 | `Splash` | 主线程 | 创建、显示 Splash 并驱动到首帧 |
@@ -106,7 +106,18 @@ StartupEventSource.Log.PhaseStop(StartupPhase.CommitInitializers);
 |---|---|
 | 生成器为每个具体 partial 应用生成挂接；手写重写漏调 `Attach` 报 `ATOMUIGEN039`；抽象、非 partial 不生成；同名应用的生成文件不冲突 | `tests/AtomUI.Generator.Tests/Startup/ApplicationStartupHookGeneratorTests.cs` |
 | 默认主题只依赖全局 Token 与 Splash 自有类型；模板只描述结构、外观值在样式中（可被 BasedOn 局部覆盖）；`SplashWindow` 从自带资源应用窗口主题与 Splash 模板 | `tests/AtomUI.Controls.Tests/Splash/SplashDefaultThemeTests.cs` |
-| 经生成的挂接，内核在 `Initialize` 之前提交并进入 `Ready` | `tests/AtomUI.Core.Tests/Startup/StartupContractTests.cs` |
+| 配置在平台就绪后、Application 构造前执行，每实例一次；允许间接构造 AvaloniaObject，内核在 Initialize 前提交并进入 Ready | `tests/AtomUI.Core.Tests/Startup/StartupContractTests.cs` |
+
+首次 Dispatcher 初始化必须另用真实独立进程验收，不能用已经初始化平台的 headless 会话替代：
+
+```bash
+dotnet run --project tools/performances/AtomUI.StartupPerformance -c Release -f net10.0 -- --verify-configuration-boundary
+```
+
+该入口验证登记阶段没有执行回调或创建 Dispatcher，模块配置间接构造 `AvaloniaObject` 发生在平台就绪之后，且先于
+Application 构造、内核先于 Initialize 提交。原生主循环启动后采样 2 秒的 16 ms DispatcherTimer，输出样本数、
+中位数和最大间隔；样本少于 20 或中位数超过 64 ms 时失败。该宽松阈值用于识别稳定调度退化，不代表 64 ms 是
+动画流畅度目标，也不替代 Gallery 原场景的视觉复核。按需运行，不增加默认全局测试用例。
 
 宿主侧行为（Splash 先出现、主窗体首帧后隐藏关闭、提交期间进度动画、交接前关闭即退出）依赖真实窗口与合成器，按平台实机检查：
 macOS、Windows、Linux X11 与 Wayland 各执行一次，检查 Gallery 与一个 Prism 应用。

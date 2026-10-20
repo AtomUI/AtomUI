@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Collections.ObjectModel;
-using AtomUI.Controls;
 using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;

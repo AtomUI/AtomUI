@@ -1,6 +1,5 @@
 using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Xunit;
 using static AtomUI.Generator.Tests.Registration.TypeMapRegistrationGeneratorTests;

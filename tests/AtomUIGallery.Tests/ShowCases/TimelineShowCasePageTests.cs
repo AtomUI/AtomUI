@@ -1,4 +1,3 @@
-using Avalonia;
 using Shouldly;
 using Xunit;
 

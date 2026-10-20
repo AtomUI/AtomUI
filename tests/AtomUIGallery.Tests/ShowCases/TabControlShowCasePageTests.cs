@@ -1,9 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.TabControl;
 using Avalonia;

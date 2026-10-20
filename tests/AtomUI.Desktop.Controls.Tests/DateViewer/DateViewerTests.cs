@@ -1,7 +1,6 @@
 // Standalone public DateViewer and RangeDateViewer ownership contracts.
 using System.Reflection;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;

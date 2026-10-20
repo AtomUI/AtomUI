@@ -1,4 +1,3 @@
-using AtomUI;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Localization;

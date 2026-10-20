@@ -1,9 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
-using Avalonia;
 using Avalonia.Controls;
 using AtomUICalendarMode = AtomUI.Desktop.Controls.CalendarMode;
 using AtomUIComboBox = AtomUI.Desktop.Controls.ComboBox;

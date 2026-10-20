@@ -1,10 +1,6 @@
-using AtomUIGallery.Localization;
 using System.Reactive.Disposables;
 using AtomUI;
-using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;

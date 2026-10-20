@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace AtomUI.Localization;
 
 public abstract class LanguageCatalogDescriptor

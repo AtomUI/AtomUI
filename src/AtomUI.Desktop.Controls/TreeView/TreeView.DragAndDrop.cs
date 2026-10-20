@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Utils;
 using Avalonia;

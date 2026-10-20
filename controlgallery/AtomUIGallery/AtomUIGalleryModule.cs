@@ -2,7 +2,6 @@ using AtomUI.Icons.AntDesign;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Localization;
 using AtomUI.Toolkits.GalleryBase.Routing;
-using AtomUIGallery.Localization;
 using AtomUIGallery.SourceCode;
 using AtomUIGallery.ShowCases.Alert;
 using AtomUIGallery.ShowCases.AutoComplete;

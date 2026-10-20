@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using AtomUI.Generator.Diagnostics;
-using AtomUI.Generator.Localization;
 using AtomUI.Generator.Localization.Xliff;
 using AtomUI.Build.Tasks.LocalizationBuild;
 using Microsoft.CodeAnalysis;

@@ -1,12 +1,10 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using AtomUI;
 using AtomUI.Controls.Localization;
 using AtomUI.Desktop.Controls.Localization;
 using AtomUI.Localization;
 using AtomUI.Toolkits.GalleryBase.Localization;
-using AtomUIGallery.Localization;
 using Avalonia;
 using Shouldly;
 using Xunit;

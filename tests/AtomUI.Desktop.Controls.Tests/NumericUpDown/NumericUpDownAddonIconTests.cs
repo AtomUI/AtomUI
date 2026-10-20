@@ -1,11 +1,7 @@
-using Avalonia;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
-using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;

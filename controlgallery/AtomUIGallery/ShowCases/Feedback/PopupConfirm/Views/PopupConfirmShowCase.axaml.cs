@@ -1,5 +1,3 @@
-using AtomUI.Controls;
-using AtomUI.Desktop.Controls;
 using Avalonia.Interactivity;
 using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 using PopupConfirmControl = AtomUI.Desktop.Controls.PopupConfirm;

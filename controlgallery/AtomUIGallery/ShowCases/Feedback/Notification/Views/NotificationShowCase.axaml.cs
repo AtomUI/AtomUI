@@ -3,8 +3,6 @@ using AtomUI.Controls;
 using AtomUI.Controls.Commons;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Toolkits.GalleryBase.Controls;
-using AtomUIGallery.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;

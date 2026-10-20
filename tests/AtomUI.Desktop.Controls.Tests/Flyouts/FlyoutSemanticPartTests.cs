@@ -5,7 +5,6 @@ using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;

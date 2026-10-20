@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
-using AtomUI.Controls;
 using AtomUI.Controls.Commons;
 using AtomUI.Theme;
 using AtomUI.Theme.Schema;

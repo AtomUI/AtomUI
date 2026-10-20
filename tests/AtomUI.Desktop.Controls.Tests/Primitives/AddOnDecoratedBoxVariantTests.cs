@@ -1,5 +1,3 @@
-using AtomUI.Desktop.Controls.Primitives;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;

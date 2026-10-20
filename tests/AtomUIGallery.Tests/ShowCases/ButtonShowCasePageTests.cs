@@ -1,13 +1,11 @@
 using System.Reflection;
 using AtomUI.Toolkits.GalleryBase.Controls;
-using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using AtomUIGallery.ShowCases.Button;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
-using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;

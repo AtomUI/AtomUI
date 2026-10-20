@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUIDialog = AtomUI.Desktop.Controls.Dialog;

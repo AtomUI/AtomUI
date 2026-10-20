@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using AtomUI.Build.Tasks.Registration;
 using Microsoft.Build.Framework;

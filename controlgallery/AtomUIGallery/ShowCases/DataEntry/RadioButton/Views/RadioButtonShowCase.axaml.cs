@@ -1,9 +1,6 @@
-using AtomUIGallery.Localization;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
-using AtomUI.Data;
-using AtomUI.Localization;
 using Avalonia;
 
 namespace AtomUIGallery.ShowCases.RadioButton;

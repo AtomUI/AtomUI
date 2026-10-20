@@ -1,4 +1,3 @@
-using AtomUI.Build.Tasks;
 using AtomUI.Build.Tasks.LocalizationBuild;
 using Shouldly;
 using Xunit;

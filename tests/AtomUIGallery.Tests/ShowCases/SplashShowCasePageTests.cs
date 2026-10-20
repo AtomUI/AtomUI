@@ -1,7 +1,6 @@
 using AtomUI.Toolkits.GalleryBase.Localization;
 using AtomUI.Toolkits.GalleryBase.Navigation;
 using AtomUIGallery.ShowCases.Splash;
-using ReactiveUI;
 using Shouldly;
 using Xunit;
 

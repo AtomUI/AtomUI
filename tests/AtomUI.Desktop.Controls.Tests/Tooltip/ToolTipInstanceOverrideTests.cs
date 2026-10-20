@@ -1,7 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Theme.Algorithms;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;

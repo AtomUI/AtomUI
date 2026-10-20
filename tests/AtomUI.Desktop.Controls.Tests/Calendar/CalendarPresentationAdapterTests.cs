@@ -1,14 +1,9 @@
-using System.Globalization;
-using System.Reflection;
 using System.Windows.Input;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Internal.Calendar;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Shouldly;
 using Xunit;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
-using GridControl = Avalonia.Controls.Grid;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
 

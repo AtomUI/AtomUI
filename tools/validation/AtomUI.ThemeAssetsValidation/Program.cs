@@ -1,5 +1,4 @@
 using System.Diagnostics.Tracing;
-using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;

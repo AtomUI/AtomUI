@@ -18,7 +18,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 

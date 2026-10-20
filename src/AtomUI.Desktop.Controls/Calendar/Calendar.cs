@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
-using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using AtomUI.Localization;
 using Avalonia;

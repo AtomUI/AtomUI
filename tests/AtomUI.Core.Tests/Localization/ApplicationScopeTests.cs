@@ -1,15 +1,12 @@
 using AtomUI.Localization;
 using AtomUI.Registration;
 using AtomUI.Theme;
-using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Shouldly;
 using Xunit;
 

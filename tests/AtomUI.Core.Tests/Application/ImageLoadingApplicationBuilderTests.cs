@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using Avalonia;
 using Shouldly;
 using Xunit;
 

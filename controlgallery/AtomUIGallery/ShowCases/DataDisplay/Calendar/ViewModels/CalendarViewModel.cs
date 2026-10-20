@@ -1,7 +1,5 @@
 using System.Globalization;
-using AtomUIGallery.Localization;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Data.Converters;

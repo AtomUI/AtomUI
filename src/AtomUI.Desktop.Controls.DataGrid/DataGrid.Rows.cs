@@ -3,8 +3,6 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Utils;

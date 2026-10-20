@@ -2,14 +2,12 @@ using AtomUI.Controls.Data;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomListView = AtomUI.Desktop.Controls.ListView;
-using ListViewItem = AtomUI.Desktop.Controls.ListViewItem;
 using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.ListView;

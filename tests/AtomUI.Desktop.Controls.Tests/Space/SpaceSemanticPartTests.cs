@@ -4,7 +4,6 @@ using AtomUI.Theme.Schema;
 using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;

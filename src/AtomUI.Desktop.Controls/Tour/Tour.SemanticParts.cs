@@ -1,9 +1,7 @@
-using AtomUI.Controls.Primitives;
 using AtomUI.Theme;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
-using Avalonia.Controls.Primitives;
 using AvaloniaButton = Avalonia.Controls.Button;
 using AvaloniaBorder = Avalonia.Controls.Border;
 

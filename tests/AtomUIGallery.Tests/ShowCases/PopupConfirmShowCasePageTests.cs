@@ -1,8 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using AtomUI.Controls;
-using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.PopupConfirm;
 using Avalonia.Controls;

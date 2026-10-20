@@ -1,4 +1,3 @@
-using AtomUIGallery.Localization;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reactive;

@@ -1,7 +1,6 @@
 using AtomUI.Desktop.Controls;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
 namespace AtomUIGallery.ShowCases.InfoFlyout;

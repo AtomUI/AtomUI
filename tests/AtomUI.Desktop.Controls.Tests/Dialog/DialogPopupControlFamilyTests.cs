@@ -1,10 +1,7 @@
 using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls.Primitives;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;

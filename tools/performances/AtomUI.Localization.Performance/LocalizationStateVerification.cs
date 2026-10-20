@@ -1,6 +1,4 @@
-using AtomUI.Localization;
 using Avalonia.Controls;
-using Avalonia.Styling;
 
 namespace AtomUI.Localization.Performance;
 

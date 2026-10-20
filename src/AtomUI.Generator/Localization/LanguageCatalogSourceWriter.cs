@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Text;
 using AtomUI.Generator.Localization.Catalog;
-using AtomUI.SourceGeneration;
 using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator.Localization;

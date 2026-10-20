@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using AtomUI.Theme.Configuration;
-using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;

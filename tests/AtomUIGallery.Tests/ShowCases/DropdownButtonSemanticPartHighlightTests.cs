@@ -10,7 +10,6 @@ using Xunit;
 using DropdownButtonShowCase = AtomUIGallery.ShowCases.DropdownButton.DropdownButtonShowCase;
 using DropdownButtonViewModel = AtomUIGallery.ShowCases.DropdownButton.DropdownButtonViewModel;
 using AtomUIWindow = AtomUI.Desktop.Controls.Window;
-using AtomUIMenuItem = AtomUI.Desktop.Controls.MenuItem;
 
 namespace AtomUIGallery.Tests.ShowCases;
 

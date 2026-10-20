@@ -1,5 +1,3 @@
-using System;
-
 namespace AtomUI.Build.Tasks.Registration;
 
 internal enum RegistrationFrameworkFamily

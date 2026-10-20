@@ -1,12 +1,8 @@
 using System.Collections;
 using System.Reflection;
-using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
-using AtomUI.Desktop.Controls;
-using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase.Controls;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;

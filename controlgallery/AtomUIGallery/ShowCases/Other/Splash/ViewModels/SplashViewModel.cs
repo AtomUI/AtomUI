@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Data;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.Splash;

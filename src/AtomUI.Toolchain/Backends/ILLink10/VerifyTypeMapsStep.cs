@@ -1,5 +1,3 @@
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Mono.Linker;
 using Mono.Linker.Steps;
 

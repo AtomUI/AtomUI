@@ -4,7 +4,6 @@ using Avalonia.Input;
 using AtomUI.MotionScene;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;

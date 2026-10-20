@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace AtomUI.Build.Tasks.LocalizationBuild;
 
 // String-only fallback contract shared by application linking and the runtime matcher.

@@ -1,13 +1,9 @@
-using AtomUIGallery.Localization;
 using System.Collections;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using Avalonia;
-using Avalonia.Threading;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.DataGrid;

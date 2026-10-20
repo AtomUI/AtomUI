@@ -1,5 +1,4 @@
 using System.Globalization;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;

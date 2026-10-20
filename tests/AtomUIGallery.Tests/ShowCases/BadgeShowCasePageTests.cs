@@ -1,4 +1,3 @@
-using AtomUI.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Badge;
 using Avalonia;

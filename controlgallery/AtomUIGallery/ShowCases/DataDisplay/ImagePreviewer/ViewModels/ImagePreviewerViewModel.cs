@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;

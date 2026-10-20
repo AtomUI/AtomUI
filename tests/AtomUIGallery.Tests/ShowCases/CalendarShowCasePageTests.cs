@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Reflection;
 using AtomUIGallery.ShowCases.Calendar;
-using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;
 using Avalonia.Controls;

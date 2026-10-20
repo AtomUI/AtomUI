@@ -1,7 +1,6 @@
 using AtomUI.Theme;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using AvaloniaButton = Avalonia.Controls.Button;
 using AtomUICandidateList = AtomUI.Desktop.Controls.Primitives.CandidateList;
 using AtomUICandidateListItem = AtomUI.Desktop.Controls.Primitives.CandidateListItem;

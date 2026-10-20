@@ -1,6 +1,5 @@
 using AtomUI.Theme;
 using Avalonia.Controls;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 

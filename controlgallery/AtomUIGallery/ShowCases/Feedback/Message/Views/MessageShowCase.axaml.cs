@@ -1,13 +1,9 @@
 using AtomUI.Desktop.Controls;
-using AtomUIGallery.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using AtomUINumericUpDown = AtomUI.Desktop.Controls.NumericUpDown;
 using Avalonia.Styling;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
-using System.Linq;
 
 namespace AtomUIGallery.ShowCases.Message;
 

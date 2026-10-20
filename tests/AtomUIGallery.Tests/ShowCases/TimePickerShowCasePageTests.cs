@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using AtomUI.Toolkits.GalleryBase.Controls;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;

@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Shouldly;
 using Xunit;
 using static AtomUI.Generator.Tests.Registration.TypeMapRegistrationGeneratorTests;

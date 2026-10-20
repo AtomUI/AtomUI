@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;
 using Avalonia.Controls;

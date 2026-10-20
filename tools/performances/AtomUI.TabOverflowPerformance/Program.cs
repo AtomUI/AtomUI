@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Text;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;

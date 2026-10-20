@@ -1,7 +1,5 @@
 using AtomUI.Controls;
-using AtomUI.Theme;
 using AtomUI.Theme.Resources;
-using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;

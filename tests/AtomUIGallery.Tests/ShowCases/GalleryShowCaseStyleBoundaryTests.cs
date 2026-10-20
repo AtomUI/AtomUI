@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using AtomUI;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Shouldly;

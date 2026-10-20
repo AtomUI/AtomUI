@@ -1,5 +1,4 @@
 using System.Globalization;
-using AtomUI.Localization;
 
 namespace AtomUIGallery.Localization;
 

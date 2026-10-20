@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Text;
 using AtomUI.Generator.Diagnostics;
 using Microsoft.CodeAnalysis;

@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using AtomUI.Desktop.Controls;
 using AtomUIGallery.ShowCases.ImagePreviewer;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;

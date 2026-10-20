@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using AtomUI.Localization;
 using AtomUI.Theme.Resources;

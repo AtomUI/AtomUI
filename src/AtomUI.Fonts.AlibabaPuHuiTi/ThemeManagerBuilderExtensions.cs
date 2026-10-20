@@ -1,4 +1,3 @@
-using AtomUI;
 using AtomUI.Generated.AtomUIFontsAlibabaPuHuiTi;
 using AtomUI.Media;
 using Avalonia.Media;

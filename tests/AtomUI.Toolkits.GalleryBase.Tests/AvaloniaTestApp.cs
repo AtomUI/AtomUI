@@ -1,9 +1,7 @@
-using AtomUI;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Headless;
-using Avalonia.Headless.XUnit;
 using ReactiveUI.Avalonia;
 using Xunit;
 

@@ -3,7 +3,6 @@ using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Utilities;
 
 namespace AtomUI.Desktop.Controls;
 

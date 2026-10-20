@@ -1,5 +1,4 @@
 using AtomUI.Localization;
-using AtomUI.Controls;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Shell;
 using Avalonia;

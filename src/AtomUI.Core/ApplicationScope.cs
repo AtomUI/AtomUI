@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using System.Runtime.ExceptionServices;
 
 namespace AtomUI;

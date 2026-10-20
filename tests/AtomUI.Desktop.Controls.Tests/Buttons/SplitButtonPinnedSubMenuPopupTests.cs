@@ -1,12 +1,8 @@
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Theme;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Avalonia.LogicalTree;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;

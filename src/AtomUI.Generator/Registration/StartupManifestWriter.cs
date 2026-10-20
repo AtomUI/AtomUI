@@ -1,6 +1,5 @@
 using System.Text;
 using AtomUI.Startup.Data;
-using AtomUI.SourceGeneration;
 
 namespace AtomUI.Generator;
 

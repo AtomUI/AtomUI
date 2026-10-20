@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Schema;
 using Avalonia;

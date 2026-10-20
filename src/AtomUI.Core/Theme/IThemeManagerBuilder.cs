@@ -1,8 +1,6 @@
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Definitions.Compiled;
-using AtomUI.Theme.Resources;
-using AtomUI.Theme.Schema;
 using Avalonia.Media;
 
 namespace AtomUI.Theme;

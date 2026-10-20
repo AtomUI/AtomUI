@@ -2,7 +2,6 @@ using AtomUI.Toolkits.GalleryBase.Configuration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;

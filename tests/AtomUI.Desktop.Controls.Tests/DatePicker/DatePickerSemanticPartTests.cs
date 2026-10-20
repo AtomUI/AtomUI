@@ -1,6 +1,4 @@
 using System.Xml.Linq;
-using AtomUI;
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
 using AtomUI.Desktop.Controls.Primitives;

@@ -1,12 +1,9 @@
-using AtomUIGallery.Localization;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 
 namespace AtomUIGallery.ShowCases.Select;

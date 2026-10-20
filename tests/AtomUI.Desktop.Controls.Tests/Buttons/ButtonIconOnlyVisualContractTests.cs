@@ -1,7 +1,6 @@
 using System.Xml.Linq;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;

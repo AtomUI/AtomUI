@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
-using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
 

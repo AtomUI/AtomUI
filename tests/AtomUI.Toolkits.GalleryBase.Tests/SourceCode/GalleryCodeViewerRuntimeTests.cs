@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
-using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;

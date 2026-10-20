@@ -1,7 +1,5 @@
 using AtomUI.Controls.Commons;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.Theme;
-using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 

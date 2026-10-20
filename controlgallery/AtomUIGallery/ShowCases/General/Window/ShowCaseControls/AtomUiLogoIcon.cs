@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Media;
 using AtomUI.Controls;
-using AtomUI.Media;
 
 namespace AtomUIGallery.ShowCases.Window;
 

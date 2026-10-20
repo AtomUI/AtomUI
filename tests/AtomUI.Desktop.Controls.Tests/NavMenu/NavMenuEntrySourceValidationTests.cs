@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Shouldly;
 using Xunit;
 

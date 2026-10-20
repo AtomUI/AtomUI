@@ -2,7 +2,6 @@ using AtomUI.Controls.Primitives;
 using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Animation.Easings;
-using Avalonia.Media;
 using Shouldly;
 using Xunit;
 

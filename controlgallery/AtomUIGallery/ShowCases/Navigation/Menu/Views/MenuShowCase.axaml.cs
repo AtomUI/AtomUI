@@ -1,23 +1,13 @@
-using AtomUIGallery.Localization;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Localization;
-using AtomUI.Toolkits.GalleryBase.Controls;
-using Avalonia.Layout;
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
-using AvaloniaScrollViewer = Avalonia.Controls.ScrollViewer;
-using AtomUINavMenu = AtomUI.Desktop.Controls.NavMenu;
 
 namespace AtomUIGallery.ShowCases.Menu;
 

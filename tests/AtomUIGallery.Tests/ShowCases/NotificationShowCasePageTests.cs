@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using AtomUI.Controls;
-using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.Localization;
 using AtomUIGallery.ShowCases.Notification;

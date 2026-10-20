@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Globalization;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Internal.Calendar;
-using Avalonia;
 using Shouldly;
 using Xunit;
 using AtomUI.Desktop.Controls.Internal.DateViewer;

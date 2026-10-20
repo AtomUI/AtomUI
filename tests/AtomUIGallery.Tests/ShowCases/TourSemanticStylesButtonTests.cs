@@ -1,6 +1,5 @@
 using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;

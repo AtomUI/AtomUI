@@ -1,6 +1,5 @@
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Alert;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;

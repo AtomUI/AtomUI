@@ -1,7 +1,4 @@
-using System;
 using AtomUI.Theme.Definitions.Compiled;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace AtomUI.Theme.Build;

@@ -1,7 +1,5 @@
-using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source;
 using System.Collections.Immutable;
-using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Threading;
 using Shouldly;

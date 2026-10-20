@@ -1,9 +1,7 @@
-using AtomUIGallery.Localization;
 using System.Diagnostics;
 using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

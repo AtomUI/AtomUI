@@ -1,7 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using P2 = AtomUIGallery.Localization.AutoCompleteShowCaseLangResourceKind;
 
 namespace AtomUIGallery.ShowCases.AutoComplete;

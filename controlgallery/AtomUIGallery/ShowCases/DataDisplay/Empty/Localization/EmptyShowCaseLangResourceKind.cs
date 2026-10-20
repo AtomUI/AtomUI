@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]

@@ -2,7 +2,6 @@ using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
 
 namespace AtomUI.Controls;

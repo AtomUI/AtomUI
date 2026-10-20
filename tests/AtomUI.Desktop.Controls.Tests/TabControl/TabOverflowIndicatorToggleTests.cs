@@ -1,7 +1,6 @@
 using System.Reflection;
 using AtomUI.Controls.Primitives;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;

@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Shouldly;

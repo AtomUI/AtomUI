@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Reflection;
-using AtomUI.Controls;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;

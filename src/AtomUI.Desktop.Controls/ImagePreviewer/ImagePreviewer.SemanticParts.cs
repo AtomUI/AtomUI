@@ -1,4 +1,3 @@
-using AtomUI.Controls.Primitives;
 using AtomUI.Theme;
 using Avalonia.Controls;
 

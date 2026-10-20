@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 namespace AtomUI.Theme.Definitions.Compiled;
 
 // BCL-only value transport shared by Core, the isolated worker and the generator.

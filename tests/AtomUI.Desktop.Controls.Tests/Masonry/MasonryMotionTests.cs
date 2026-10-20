@@ -1,5 +1,4 @@
 using System.Reflection;
-using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Threading;

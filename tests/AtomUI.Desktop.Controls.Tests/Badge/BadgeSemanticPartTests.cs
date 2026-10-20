@@ -1,6 +1,5 @@
 using System.Xml.Linq;
 using AtomUI.Theme;
-using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

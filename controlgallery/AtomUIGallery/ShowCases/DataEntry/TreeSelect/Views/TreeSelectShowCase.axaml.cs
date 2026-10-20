@@ -1,13 +1,10 @@
-using AtomUIGallery.Localization;
 using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Localization;
 using Avalonia;
 
 namespace AtomUIGallery.ShowCases.TreeSelect;

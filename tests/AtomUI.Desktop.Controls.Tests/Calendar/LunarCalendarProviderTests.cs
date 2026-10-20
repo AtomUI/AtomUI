@@ -2,13 +2,11 @@ using System.Globalization;
 using System.Reflection;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
-using GridControl = Avalonia.Controls.Grid;
 using LunarCalendarControl = AtomUI.Desktop.Controls.LunarCalendar;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;

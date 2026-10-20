@@ -2,7 +2,6 @@ using System.ComponentModel;
 using AtomUI.Controls;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
 using Avalonia.Threading;
 using Avalonia.VisualTree;

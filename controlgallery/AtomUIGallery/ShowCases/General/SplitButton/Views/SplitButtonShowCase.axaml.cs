@@ -1,5 +1,3 @@
-using AtomUI.Desktop.Controls;
-using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;

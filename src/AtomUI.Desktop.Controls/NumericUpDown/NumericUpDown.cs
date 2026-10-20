@@ -2,7 +2,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
-using AtomUI.Controls.Commons;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -16,7 +15,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Metadata;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 

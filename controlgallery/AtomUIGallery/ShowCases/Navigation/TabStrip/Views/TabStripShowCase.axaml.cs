@@ -1,9 +1,5 @@
-using AtomUIGallery.Localization;
-using System.Globalization;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Interactivity;
 using AtomTabStripItem = AtomUI.Desktop.Controls.TabStripItem;

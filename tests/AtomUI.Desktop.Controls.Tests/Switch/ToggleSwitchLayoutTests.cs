@@ -1,7 +1,5 @@
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUIToggleSwitch = AtomUI.Desktop.Controls.ToggleSwitch;

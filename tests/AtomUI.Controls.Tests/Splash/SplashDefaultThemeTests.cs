@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using Avalonia.Controls;

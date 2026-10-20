@@ -1,6 +1,5 @@
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Empty;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;

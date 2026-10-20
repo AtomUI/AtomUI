@@ -2,7 +2,6 @@ using System.Xml.Linq;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using AtomUI.Icons.AntDesign;

@@ -1,5 +1,4 @@
 using AtomUI.MotionScene;
-using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Threading;

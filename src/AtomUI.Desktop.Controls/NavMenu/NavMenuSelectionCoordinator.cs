@@ -1,5 +1,3 @@
-using Avalonia.Controls;
-
 namespace AtomUI.Desktop.Controls;
 
 internal sealed class NavMenuSelectionCoordinator

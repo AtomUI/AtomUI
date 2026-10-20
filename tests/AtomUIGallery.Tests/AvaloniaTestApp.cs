@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Headless;
-using AtomUI;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
 using AtomUI.Toolkits.GalleryBase;

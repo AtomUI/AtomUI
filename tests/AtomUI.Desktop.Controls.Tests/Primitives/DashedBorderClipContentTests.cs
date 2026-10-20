@@ -1,7 +1,6 @@
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Shouldly;

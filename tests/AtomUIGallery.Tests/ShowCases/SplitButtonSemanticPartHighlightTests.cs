@@ -1,7 +1,5 @@
-using AtomUI.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.LogicalTree;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;

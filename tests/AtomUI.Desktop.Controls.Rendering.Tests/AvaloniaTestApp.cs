@@ -1,4 +1,3 @@
-using AtomUI;
 using AtomUI.Localization;
 using AtomUI.Toolkits.GalleryBase;
 using AtomUIGallery;

@@ -1,13 +1,9 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Localization;
 using AtomUI.Toolkits.GalleryBase.Navigation;
 using AtomUI.Toolkits.GalleryBase.Shell;
-using AtomUIGallery.Localization;
 using AtomUIGallery.Workspace.ViewModels;
 using Avalonia;
 using Avalonia.Automation;

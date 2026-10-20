@@ -1,4 +1,3 @@
-using AtomUI.Controls.Primitives;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.TabControl;
 using Avalonia;
@@ -8,7 +7,6 @@ using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using ReactiveUI;
 using Shouldly;
 using Xunit;
 using AtomUICardTabControl = AtomUI.Desktop.Controls.CardTabControl;

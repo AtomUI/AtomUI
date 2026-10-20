@@ -1,11 +1,8 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
 using Avalonia.Threading;
 using Shouldly;

@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUI.Controls.Primitives;
@@ -18,9 +17,7 @@ using Xunit;
 using AtomUICheckBox = AtomUI.Desktop.Controls.CheckBox;
 using AtomUIListTransfer = AtomUI.Desktop.Controls.ListTransfer;
 using AtomUITreeTransfer = AtomUI.Desktop.Controls.TreeTransfer;
-using AtomUITransferListView = AtomUI.Desktop.Controls.TransferListView;
 using AtomUITransferListItem = AtomUI.Desktop.Controls.TransferListItem;
-using AtomUITransferTreeView = AtomUI.Desktop.Controls.TransferTreeView;
 using AtomUITransferTreeViewItem = AtomUI.Desktop.Controls.TransferTreeViewItem;
 using AvaloniaWindow = Avalonia.Controls.Window;
 

@@ -882,8 +882,17 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
 
     private void GenerateImageRenderTransform()
     {
-        var builder = TransformOperations.CreateBuilder(2);
-        builder.AppendScale(ImageScaleX, ImageScaleY);
+        // Avalonia's TransformOperations interpolator rewrites a no-op scale operation
+        // to Identity during the animation. A retargeted transition then sees mismatched
+        // operation types, falls back to matrix decomposition and normalizes the
+        // rotation angle, which makes repeated rotate clicks spin backwards.
+        var hasScale = !MathUtils.AreClose(ImageScaleX, 1.0) ||
+                       !MathUtils.AreClose(ImageScaleY, 1.0);
+        var builder = TransformOperations.CreateBuilder(hasScale ? 2 : 1);
+        if (hasScale)
+        {
+            builder.AppendScale(ImageScaleX, ImageScaleY);
+        }
         builder.AppendRotate(ImageRotate);
         ImageRenderTransform = builder.Build();
     }

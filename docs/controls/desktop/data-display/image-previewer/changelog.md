@@ -2,6 +2,10 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-21
+
+- 修复快速连续点击旋转时图片角度倒转、来回摆动的问题：`Scale=1` 时不再向 `RenderTransform` 写入无意义的 Scale 操作，避免 Avalonia 的 TransformOperations 插值在动画重定向后退化为矩阵分解并归一化旋转角。
+
 ## 2026-10-17
 
 - 新增 `IsWheelZoomEnabled=true`，只控制滚轮；统一滚轮刻度、指针锚点、拖拽平移、双击与捏合缩放，运行时缩放范围变化立即钳制比例和刷新按钮。

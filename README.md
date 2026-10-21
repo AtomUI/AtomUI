@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.7-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.8-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
@@ -80,14 +80,11 @@ toolchain requirements.
 
 #### Latest Release Notes
 
-AtomUI 6.2.7 fixes startup configuration that could create an Avalonia Dispatcher before platform initialization and
-cause persistent animation stalls. Configuration now runs on the UI thread after platform services are ready, while
-background theme preparation still overlaps Application construction. State controls now commit their initial appearance
-without transitions, and ToggleSwitch text aligns by its glyph outline. Mixed-theme applications preserve AtomUI window
-decorations and language resources when App.axaml declares FluentTheme and Application.Resources. Move global resource
-overrides out of independent Style.Resources into Application.Resources. Upgrade AtomUI packages and the Generator
-together, rebuild consumers, and review the [6.2.7 migration guide](docs/releases/6.2.7-api-changes.md) for callback,
-exception timing and resource-priority changes. See the [Changelog](./CHANGELOG.md).
+AtomUI 6.2.8 fixes DashedBorder crashes during display scaling, restores the Windows 10 CSD top frame border,
+and keeps ImagePreviewer rotation continuous during rapid clicks. TypeMap publishing defaults to .NET 10 and later
+stable versions without SDK or servicing-version allowlists, while retaining conversion and output checks. Upgrade
+AtomUI packages and the Generator together and rebuild compiled consumers, including custom Window themes, because
+generated registration identities and Window token enum values change; see the [6.2.8 migration guide](docs/releases/6.2.8-api-changes.md) and [Changelog](./CHANGELOG.md).
 
 #### Incubator
 
@@ -142,10 +139,10 @@ The packages we have released are as follows:
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.7
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.7
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.7
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.7
+dotnet add package AtomUI.Desktop.Controls --version 6.2.8
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.8
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.8
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.8
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -173,10 +170,10 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.7"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.7"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.7"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.7"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.8"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.8"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.8"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.8"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

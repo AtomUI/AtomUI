@@ -6,6 +6,23 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.8
+
+`2026-10-21`
+
+- 破坏性变更
+  - 注册：生成的 `ControlPackageGroup_*` 标识随 6.2.8 程序集版本变化。请同步升级 AtomUI 包与 Generator、重新构建预编译消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.8 迁移指南](docs/releases/6.2.8-api-changes.zh-CN.md)。
+  - Window Token：新增 Windows 10 边框 Token 后，部分既有 `WindowTokenKind` 与 `WindowTokenKey` 枚举数值改变。请重新编译自定义主题及资源消费方，将持久化或硬编码的 Token 数字改为具名成员；详见迁移指南。
+- DashedBorder
+  - 将子元素裁剪更新移到绘制前，修复显示缩放变化时的崩溃，同时保留圆角裁剪与分数缩放下的边框对齐。
+- Window
+  - 恢复 Windows 10 CSD 窗口缺失的顶边，匹配激活/非激活颜色，并在高 DPI 下保持一个物理像素；其他平台和窗口状态继续使用平台边框。
+- ImagePreviewer
+  - 修复快速连续点击旋转时角度倒转、来回摆动，保持旋转连续。
+- TypeMap 与构建
+  - TypeMap 发布默认支持 .NET 10 及后续稳定版本，取消 SDK/补丁白名单；Browser 使用 SDK 选择的 ILLink/WASM 工具链，保留映射转换、ABI 与消费产物校验。#510
+  - 构建工具允许向后续运行时主版本前滚，最低工具版本改为 TypeMap 引入的 10.0.0。
+
 ## 6.2.7
 
 `2026-10-20`

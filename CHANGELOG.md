@@ -4,6 +4,23 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.8
+
+`2026-10-21`
+
+- Breaking Changes
+  - Registration: generated `ControlPackageGroup_*` identities change with the 6.2.8 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the [6.2.8 migration guide](docs/releases/6.2.8-api-changes.md).
+  - Window tokens: adding the Windows 10 frame-border tokens shifts existing generated `WindowTokenKind` and `WindowTokenKey` values. Recompile custom themes and resource consumers, and replace persisted or hard-coded token numbers with named members; see the migration guide.
+- DashedBorder
+  - Fix crashes during display scaling by updating child clipping before rendering, while preserving rounded clipping and fractional-scale border alignment.
+- Window
+  - Restore the missing Windows 10 CSD top frame border with active/inactive colors and a one-physical-pixel thickness at high DPI; preserve platform-owned borders on other platforms and window states.
+- ImagePreviewer
+  - Keep rotation continuous during rapid repeated clicks instead of reversing direction or oscillating.
+- TypeMap and Build
+  - Default TypeMap publishing to .NET 10 and later stable versions, remove SDK/servicing-version allowlists, and follow the SDK-selected Browser ILLink/WASM toolchain while retaining mapping conversion, ABI and consumed-output checks. #510
+  - Allow build tools to roll forward to later runtime majors; use the TypeMap introduction version, 10.0.0, as the minimum tool version.
+
 ## 6.2.7
 
 `2026-10-20`

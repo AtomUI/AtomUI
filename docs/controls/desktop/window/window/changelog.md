@@ -2,6 +2,21 @@
 
 本文档记录 Window 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-21
+
+- Fix
+  - Restore the visible top frame border on Windows 10 CSD windows. Avalonia 12's extended client area covers the top non-client strip, so DWM paints the left, right and bottom frame but not the top edge; the drawn decorations overlay now supplies a 1-physical-pixel top edge on that platform only.
+  - Match the native frame instead of using a fixed solid color: the new `FrameBorderActive` / `FrameBorderInactive` Window tokens reproduce the DWM shadow texture's translucent compositing (`#707070` on white when active, `#AAAAAA` when inactive).
+- Implementation
+  - Add `Window.IsLegacyWindowsFrameBorderVisible`, gated to Windows builds below 22000, CSD enabled, extended client area, `WindowDecorations.Full` and `WindowState.Normal`. Windows 11, Linux, macOS, maximized and fullscreen states keep the platform-owned frame unchanged.
+  - Add `Window.LegacyWindowsFrameBorderThickness = 1 / RenderScaling` and refresh it on `ScalingChanged`, so the top edge stays one physical pixel at 125%/150%/200% scaling.
+  - Render the border in the existing `WindowDrawnDecorations` overlay with `IsHitTestVisible=false`; no `WM_NCCALCSIZE`, WndProc hook, native style change or hit-test change is introduced.
+- Docs
+  - Document the Windows 10 compensation in the implementation and drawn-decorations guides, including why clearing `WS_CAPTION` is not used (Avalonia #21498 restores it to keep window animations).
+- Validation
+  - Windows 10 22H2 (19045), 150% scaling, Gallery: active top edge `#707070` and inactive top edge `#AAAAAA`, both 1 physical pixel and continuous with the DWM left/right borders; the pre-fix build showed no top edge.
+  - Temporary pure-function tests covered the Windows version, CSD, decorations and window-state gates; deleted after validation. Window focused test suite: 237 passed.
+
 ## 2026-10-17
 
 - Fix

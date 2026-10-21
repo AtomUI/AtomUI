@@ -74,6 +74,32 @@
                                     </ContentPresenter>
                                 </Border>
                             </Panel>
+                            <!-- Win10 扩展客户区下 DWM 顶边边框被客户区覆盖，这里补画同色 1px 顶边；
+                                 Win11 与其他平台由 DWM/窗口管理器绘制，不启用该层。 -->
+                            <Border Name="PART_LegacyFrameTopBorderActive"
+                                    Height="{Binding $parent[atom:Window].LegacyWindowsFrameBorderThickness}"
+                                    VerticalAlignment="Top"
+                                    IsHitTestVisible="False"
+                                    Background="{atom:WindowTokenResource FrameBorderActive}">
+                                <Border.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="$parent[atom:Window].IsLegacyWindowsFrameBorderVisible" />
+                                        <Binding Path="$parent[atom:Window].IsActive" />
+                                    </MultiBinding>
+                                </Border.IsVisible>
+                            </Border>
+                            <Border Name="PART_LegacyFrameTopBorderInactive"
+                                    Height="{Binding $parent[atom:Window].LegacyWindowsFrameBorderThickness}"
+                                    VerticalAlignment="Top"
+                                    IsHitTestVisible="False"
+                                    Background="{atom:WindowTokenResource FrameBorderInactive}">
+                                <Border.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="$parent[atom:Window].IsLegacyWindowsFrameBorderVisible" />
+                                        <Binding Path="$parent[atom:Window].IsActive" Converter="{x:Static BoolConverters.Not}" />
+                                    </MultiBinding>
+                                </Border.IsVisible>
+                            </Border>
                         </Panel>
                     </WindowDrawnDecorationsContent.Overlay>
 

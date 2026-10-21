@@ -45,6 +45,17 @@ internal sealed class WindowToken : AbstractControlDesignToken
     /// </summary>
     public Thickness FullscreenHeaderFramePadding { get; set; }
     
+    /// <summary>
+    /// Windows 10 CSD 客户区顶边自绘边框（激活态）。Win10 的可见边框来自 DWM
+    /// 阴影纹理，顶部在扩展客户区下会被客户区覆盖，需要在客户区内复现同一合成效果。
+    /// </summary>
+    public Color FrameBorderActive { get; set; }
+
+    /// <summary>
+    /// Windows 10 CSD 客户区顶边自绘边框（非激活态）。
+    /// </summary>
+    public Color FrameBorderInactive { get; set; }
+
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -56,6 +67,10 @@ internal sealed class WindowToken : AbstractControlDesignToken
         // 连带 TitleBarHeight 和全屏弹层 padding 一起缩，因此使用跨平台稳定值切开 compact 链路。
         TitleBarHeight               = 40;
         FullscreenHeaderFramePadding = new Thickness(24, 0);
+        // 取值对应 Win10 DWM 阴影纹理在窗口顶边的半透明合成：白底上激活态约 #707070、
+        // 非激活态约 #AAAAAA，因此边框本身使用带透明度的深灰而不是固定实色。
+        FrameBorderActive        = Color.FromArgb(0xA8, 0x26, 0x26, 0x26);
+        FrameBorderInactive      = Color.FromArgb(0x64, 0x26, 0x26, 0x26);
         FrameShadows             = EffectiveGlobalToken.BoxShadowsSecondary;
         FullscreenPopoverShadows = new BoxShadows(
             new BoxShadow

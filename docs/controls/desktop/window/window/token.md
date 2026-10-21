@@ -18,8 +18,10 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `TitleBarHeight` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `FullscreenHeaderFramePadding` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `SystemBarColor` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `SystemBarColor`、`FrameBorderActive`、`FrameBorderInactive` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `CornerRadius`、`FrameShadows`、`FullscreenPopoverShadows` |
+
+`FrameBorderActive` / `FrameBorderInactive` 只服务 Windows 10 CSD 的客户区顶边补偿，带 alpha 以复现 DWM 阴影纹理的合成效果；它们不是通用窗口边框 Token，也不参与 Win11、Linux 或 macOS 的边框绘制。详细触发条件和禁用范围见 [实现原理](implementation.md#62-windows-10-顶边-frame-补偿)。
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 

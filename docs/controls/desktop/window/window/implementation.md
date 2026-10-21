@@ -187,6 +187,27 @@ Window 的标题栏存在两套输入模型，维护时必须同时成立：
 - 给 `TitleBarFrameLayer` 的根节点设置可绘制透明背景后尝试承载整条标题栏交互；这会抢占拖拽区域并混淆职责。
 - 为了让某个按钮可点，在 code-behind 中手动转发 pointer 或 click；这会绕过 Avalonia 原生输入、焦点和命令语义。
 
+### 6.2 Windows 10 顶边 frame 补偿
+
+Avalonia 12 在 `WindowDecorations.Full` + `ExtendClientAreaToDecorationsHint=true` 下把客户区顶到窗口最上沿：`WM_NCCALCSIZE` 只保留左右下三边的非客户区，顶部 0 像素。Windows 11 的 DWM 会在窗口内部绘制可见边框，因此顶边正常；Windows 10 没有对应的 `DWMWA_VISIBLE_FRAME_BORDER_THICKNESS` 绘制，顶边只剩一片与标题栏同色的空白。该问题属于 Avalonia 上游行为，AtomUI 不能通过 `WM_NCCALCSIZE` 或窗口样式修改解决：
+
+- 清除 `WS_CAPTION` 可以让 DWM 重新绘制顶边，但会关闭 Win32 的最小化/还原动画；Avalonia 已在 #21498 中恢复 `WS_CAPTION` 以保留动画。
+- 保留 `WS_CAPTION` 并为顶边预留 1px 非客户区时，Win10 会绘制完整标题栏，不能只露出边框线。
+- AtomUI 不拥有非客户区计算，重新引入 `WM_NCCALCSIZE` hook 会与 Avalonia 的 resize/geometry 所有权冲突。
+
+因此 Window 采用客户区自绘补偿，契约如下：
+
+| 项 | 约束 |
+| --- | --- |
+| 触发条件 | `ShouldDrawLegacyWindowsFrameBorder`：`OsType=Windows`、`IsCsdEnabled=true`、`ExtendClientAreaToDecorationsHint=true`、`WindowDecorations=Full`、`WindowState=Normal`、`OsVersion.Major>=10` 且 `Build<22000`。Win11、Linux、macOS、最大化、全屏、`BorderOnly`/`None` 和非扩展客户区均不启用。 |
+| 视觉位置 | `WindowDrawnDecorationsTheme.axaml` Overlay 中两个 1 物理像素高的 `Border`，位于标题栏 presenter 之后（最上层），横跨整个客户区宽度，`IsHitTestVisible=false`。 |
+| 厚度 | `Window.LegacyWindowsFrameBorderThickness = 1 / RenderScaling`，随 `ScalingChanged` 刷新；150% 缩放下为 0.667 DIP，渲染为 1 个物理像素，与 DWM 左右边框一致。 |
+| 颜色 | `WindowToken.FrameBorderActive` / `FrameBorderInactive`（带 alpha 的深灰）。值复现 DWM 阴影纹理在顶边的合成结果：白底激活态约 `#707070`、非激活态约 `#AAAAAA`；使用 alpha 而不是固定实色，保证深色标题栏下仍按同一方式合成。 |
+| 状态 | 激活态读取 `Window.IsActive`；非激活态使用 `BoolConverters.Not`。 |
+| 输入 | 只补画视觉，不改变 DWM 的左右下边框、resize hit-test、标题栏拖拽或 caption button 交互。 |
+
+维护时不得把该补偿扩展到 Win11 或非 CSD 路径，也不得为了让颜色“更黑”改成固定实色；固定实色会在深色标题栏、非激活态或自定义标题栏背景下与 DWM 侧边框产生明显色差。若上游 Avalonia 在 Win10 恢复顶边绘制，优先删除该 overlay 层而不是继续叠加补偿。
+
 ## 7. 内部算法与关键流程
 
 维护者需要重点关注以下流程：
@@ -275,6 +296,7 @@ ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Wind
 - `TitleBarFrameLayer` 的背景/装饰层语义，以及标题栏交互内容必须通过 `TitleBar` 承载的职责边界。
 - 上层 Dialog/Drawer 不按 OS 或 CSD 状态复制 Window frame 几何，而是消费 Window 发布的 `FrameShadowThickness`、visible frame 和引用计数 chrome suppression lease。
 - `WindowDrawnDecorations` overlay 只包含 chrome；Dialog/Drawer 仍在 owning Window `TopLevel` 内，多个 owner 的 suppression lease 必须在最后一次释放后才恢复 chrome。
+- Windows 10 的顶边 frame 补偿只允许通过 `IsLegacyWindowsFrameBorderVisible` + overlay 自绘实现；不得清除 `WS_CAPTION`、重新引入 `WM_NCCALCSIZE` hook 或修改 Avalonia 的 resize 几何来换取边框。
 - 所有桌面平台共用 Window 首次显示主题表面准备流程，`WindowTheme` 是显示完成后的唯一长期背景所有者。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。

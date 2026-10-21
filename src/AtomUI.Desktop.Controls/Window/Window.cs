@@ -343,6 +343,16 @@ public partial class Window : AvaloniaWindow,
             nameof(IsDrawnChromeOverlayVisible),
             o => o.IsDrawnChromeOverlayVisible);
 
+    internal static readonly DirectProperty<Window, bool> IsLegacyWindowsFrameBorderVisibleProperty =
+        AvaloniaProperty.RegisterDirect<Window, bool>(
+            nameof(IsLegacyWindowsFrameBorderVisible),
+            o => o.IsLegacyWindowsFrameBorderVisible);
+
+    internal static readonly DirectProperty<Window, double> LegacyWindowsFrameBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<Window, double>(
+            nameof(LegacyWindowsFrameBorderThickness),
+            o => o.LegacyWindowsFrameBorderThickness);
+
     internal static readonly DirectProperty<Window, bool> IsEffectiveFullscreenLogoVisibleProperty =
         AvaloniaProperty.RegisterDirect<Window, bool>(
             nameof(IsEffectiveFullscreenLogoVisible),
@@ -463,6 +473,36 @@ public partial class Window : AvaloniaWindow,
         private set => SetAndRaise(
             IsDrawnChromeOverlayVisibleProperty,
             ref _isDrawnChromeOverlayVisible,
+            value);
+    }
+
+    private bool _isLegacyWindowsFrameBorderVisible;
+
+    /// <summary>
+    /// Windows 10 CSD 的客户区顶边需要自绘 1px 边框：Avalonia 在该平台把客户区顶到窗口最上沿，
+    /// DWM 的顶边边框因此被遮住。Windows 11 由 DWM 的可见边框承担，不再自绘。
+    /// </summary>
+    internal bool IsLegacyWindowsFrameBorderVisible
+    {
+        get => _isLegacyWindowsFrameBorderVisible;
+        private set => SetAndRaise(
+            IsLegacyWindowsFrameBorderVisibleProperty,
+            ref _isLegacyWindowsFrameBorderVisible,
+            value);
+    }
+
+    private double _legacyWindowsFrameBorderThickness = 1;
+
+    /// <summary>
+    /// 自绘顶边边框的 DIP 厚度：原生 DWM 边框是 1 个物理像素，
+    /// 这里按 RenderScaling 折算，避免高 DPI 下画成 2 个像素。
+    /// </summary>
+    internal double LegacyWindowsFrameBorderThickness
+    {
+        get => _legacyWindowsFrameBorderThickness;
+        private set => SetAndRaise(
+            LegacyWindowsFrameBorderThicknessProperty,
+            ref _legacyWindowsFrameBorderThickness,
             value);
     }
 
@@ -615,6 +655,8 @@ public partial class Window : AvaloniaWindow,
     {
         _captionButtonCommand = new WindowCaptionButtonCommand(this);
         ConfigureCsdStatus();
+        UpdateLegacyWindowsFrameBorderVisibility();
+        ScalingChanged += HandleWindowScalingChanged;
         _platformChromeManager = WindowChromeManager.Attach(this);
         UpdateCaptionButtonCapabilities();
     }
@@ -1216,6 +1258,48 @@ public partial class Window : AvaloniaWindow,
             IsCsdEnabled && !IsTitleBarVisible ? this.GetDrawnDecorationsTitleBarHeight() : 0);
     }
 
+    internal static bool ShouldDrawLegacyWindowsFrameBorder(
+        OsType osType,
+        Version osVersion,
+        bool isCsdEnabled,
+        bool extendClientAreaToDecorations,
+        WindowDecorations decorations,
+        WindowState windowState)
+    {
+        // Win10 的 DWM 在扩展客户区下把窗口顶边让给客户区，导致可见边框只剩左右下三边。
+        // Win11 的 DWM 会在窗口内部绘制 1px 可见边框，不需要客户区补偿。
+        return osType == OsType.Windows &&
+               isCsdEnabled &&
+               extendClientAreaToDecorations &&
+               decorations == WindowDecorations.Full &&
+               windowState == WindowState.Normal &&
+               osVersion.Major >= 10 &&
+               osVersion.Build < 22000;
+    }
+
+    private void UpdateLegacyWindowsFrameBorderVisibility()
+    {
+        IsLegacyWindowsFrameBorderVisible = ShouldDrawLegacyWindowsFrameBorder(
+            OsType,
+            OsVersion,
+            IsCsdEnabled,
+            ExtendClientAreaToDecorationsHint,
+            WindowDecorations,
+            WindowState);
+        UpdateLegacyWindowsFrameBorderThickness();
+    }
+
+    private void UpdateLegacyWindowsFrameBorderThickness()
+    {
+        var scaling = RenderScaling;
+        LegacyWindowsFrameBorderThickness = 1 / (double.IsFinite(scaling) && scaling > 0 ? scaling : 1);
+    }
+
+    private void HandleWindowScalingChanged(object? sender, EventArgs e)
+    {
+        UpdateLegacyWindowsFrameBorderThickness();
+    }
+
     private void EnsureWindowsCsdMinimumHeight(double measuredTitleBarHeight = 0)
     {
         if (!OperatingSystem.IsWindows() || !IsCsdEnabled)
@@ -1552,6 +1636,7 @@ public partial class Window : AvaloniaWindow,
     protected override void OnClosed(EventArgs e)
     {
         _isOpened = false;
+        ScalingChanged -= HandleWindowScalingChanged;
         _transparencyFallbackBorder = null;
         StopMacOsWindowButtonObserver();
         if (_titleBar != null)
@@ -1738,6 +1823,15 @@ public partial class Window : AvaloniaWindow,
             change.Property == ActualThemeVariantProperty)
         {
             ApplyCurrentWindowsCsdFrameTheme();
+        }
+        if (change.Property == WindowStateProperty ||
+            change.Property == WindowDecorationsProperty ||
+            change.Property == ExtendClientAreaToDecorationsHintProperty ||
+            change.Property == IsCsdEnabledProperty ||
+            change.Property == OsTypeProperty ||
+            change.Property == OsVersionProperty)
+        {
+            UpdateLegacyWindowsFrameBorderVisibility();
         }
         _platformChromeManager?.HandlePropertyChanged(change.Property);
         if (change.Property == IsExtendedIntoWindowDecorationsProperty)

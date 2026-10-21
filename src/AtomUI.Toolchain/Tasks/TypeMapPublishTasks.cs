@@ -9,22 +9,18 @@ namespace AtomUI.Build.Tasks;
 
 internal static class TypeMapBuildContract
 {
-    internal const string Capability = "atomui-typemap-v1-illink-10.0.8";
-    internal const string LinkerIdentity = "illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
-    internal const string LinkerVersion = "10.0.8-servicing.26229.119+94ea82652cdd4e0f8046b5bd5becbd11461482ca";
+    internal const string Capability = OfficialTypeMapToolchain.Capability;
     // Desktop trimming consumes the official TypeMap contract with a toolchain matching the target framework.
-    // The verified servicing floor still applies; the Browser backend keeps its separate exact pins.
-    internal static readonly Version DesktopToolchainFloor = new(10, 0, 8);
+    // TypeMap was introduced in .NET 10; servicing versions do not select its availability.
+    internal static readonly Version MinimumTypeMapVersion = OfficialTypeMapToolchain.MinimumVersion;
     private const string MicrosoftPublicKeyToken = "31BF3856AD364E35";
 
     internal static bool IsSupportedDesktopToolchain(string informationalVersion, Version targetFrameworkVersion)
     {
-        var end = informationalVersion.IndexOfAny(['-', '+']);
-        var numeric = end < 0 ? informationalVersion : informationalVersion[..end];
-        return Version.TryParse(numeric.Trim(), out var version) &&
+        return OfficialTypeMapToolchain.TryParseVersion(informationalVersion, out var version) &&
                version.Major == targetFrameworkVersion.Major &&
                version >= new Version(targetFrameworkVersion.Major, targetFrameworkVersion.Minor) &&
-               version >= DesktopToolchainFloor;
+               version >= MinimumTypeMapVersion;
     }
 
     internal static bool IsSupportedDesktopLinker(string identity, string informationalVersion, Version targetFrameworkVersion)
@@ -94,6 +90,7 @@ internal sealed record TypeMapLinkSignature(string Capability, string BackendPat
 
 public sealed class PrepareTypeMapLinkTask : RegistrationBuildTask
 {
+    // Retained for older build assets. SDK version strings do not determine TypeMap support.
     public string SdkVersion { get; set; } = string.Empty;
     public string WasmSdkTasksPath { get; set; } = string.Empty;
     public string BackendAssembly { get; set; } = string.Empty;
@@ -113,11 +110,6 @@ public sealed class PrepareTypeMapLinkTask : RegistrationBuildTask
     {
         try
         {
-            if (SdkVersion != "10.0.300")
-            {
-                throw new InvalidDataException($"Unsupported SDK '{SdkVersion}'; AtomUI TypeMap publish requires SDK 10.0.300.");
-            }
-
             if (Capability != TypeMapBuildContract.Capability)
             {
                 throw new InvalidDataException($"Unsupported backend capability '{Capability}'.");
@@ -128,20 +120,16 @@ public sealed class PrepareTypeMapLinkTask : RegistrationBuildTask
                 throw new InvalidDataException("AtomUITypeMapReceipt must be an absolute path.");
             }
 
-            if (AssemblyName.GetAssemblyName(LinkerAssembly).FullName != TypeMapBuildContract.LinkerIdentity ||
-                TypeMapBuildContract.InformationalVersion(LinkerAssembly) != TypeMapBuildContract.LinkerVersion)
+            var linkerIdentity = AssemblyName.GetAssemblyName(LinkerAssembly).FullName!;
+            var linkerVersion = TypeMapBuildContract.InformationalVersion(LinkerAssembly);
+            if (!OfficialTypeMapToolchain.IsSupportedLinker(linkerIdentity, linkerVersion))
             {
-                throw new InvalidDataException($"Unsupported actual ILLink binary '{LinkerAssembly}'. Expected ILLink 10.0.8.");
-            }
-            // Resolve the SDK tasks to its installed pack. The running task assembly's metadata, not a TFM guess,
-            // supplies the actual workload patch identity (the task version starts with the pack version).
-            if (!File.Exists(WasmSdkTasksPath) || !TypeMapBuildContract.InformationalVersion(WasmSdkTasksPath).StartsWith("10.0.10", StringComparison.Ordinal))
-            {
-                throw new InvalidDataException($"Unsupported actual WASM SDK tasks '{WasmSdkTasksPath}'. Expected 10.0.10.");
+                throw new InvalidDataException($"Unsupported actual ILLink binary '{LinkerAssembly}' ({linkerVersion}). Expected official ILLink {OfficialTypeMapToolchain.MinimumVersion} or later with TypeMap support.");
             }
 
             var toolDirectory = Path.GetDirectoryName(BackendAssembly)!;
             var linkerDirectory = Path.GetDirectoryName(LinkerAssembly)!;
+            var linkerTargets = Path.GetFullPath(Path.Combine(linkerDirectory, "../../build/Microsoft.NET.ILLink.targets"));
             var assemblies = Assemblies.Select(i => new TypeMapLinkInput(Path.GetFullPath(i.ItemSpec),
                     AssemblyName.GetAssemblyName(i.ItemSpec).FullName!, TypeMapBuildContract.Hash(i.ItemSpec),
                     i.GetMetadata("TrimMode") + ":" + i.GetMetadata("IsTrimmable")))
@@ -156,13 +144,13 @@ public sealed class PrepareTypeMapLinkTask : RegistrationBuildTask
                 .Concat(effectiveLink.InputFiles(Inputs.Where(i => i.GetMetadata("Kind") == "Tool").Select(i => i.ItemSpec).Append(LinkerAssembly)))
                 .Concat(ResolveRegistrationToolsTask.BackendFiles.Select(n => Path.Combine(toolDirectory, n)))
                 .Concat(ResolveRegistrationToolsTask.TaskFiles.Select(n => Path.Combine(Path.GetDirectoryName(typeof(PrepareTypeMapLinkTask).Assembly.Location)!, n)))
-                .Concat(new[] { LinkerAssembly, Path.Combine(linkerDirectory, "Mono.Cecil.dll"), Path.Combine(linkerDirectory, "illink.deps.json"),
+                .Concat(new[] { LinkerAssembly, linkerTargets, Path.Combine(linkerDirectory, "Mono.Cecil.dll"), Path.Combine(linkerDirectory, "illink.deps.json"),
                     Path.Combine(linkerDirectory, "illink.runtimeconfig.json"), WasmSdkTasksPath, typeof(PrepareTypeMapLinkTask).Assembly.Location })
                 .Where(p => !string.IsNullOrWhiteSpace(p)).Select(Path.GetFullPath).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
                 .Select(p => new TypeMapFile(p, TypeMapBuildContract.Hash(p))).ToArray();
             var signature = new TypeMapLinkSignature(Capability, Path.GetFullPath(BackendAssembly), AssemblyName.GetAssemblyName(BackendAssembly).FullName!,
-                TypeMapBuildContract.Hash(BackendAssembly), Path.GetFullPath(LinkerAssembly), TypeMapBuildContract.LinkerIdentity,
-                TypeMapBuildContract.LinkerVersion, ReceiptPath, Path.GetFullPath(OutputDirectory), Configuration, files, assemblies, effectiveLink);
+                TypeMapBuildContract.Hash(BackendAssembly), Path.GetFullPath(LinkerAssembly), linkerIdentity,
+                linkerVersion, ReceiptPath, Path.GetFullPath(OutputDirectory), Configuration, files, assemblies, effectiveLink);
             var content = JsonSerializer.Serialize(signature);
             var changed = !File.Exists(SignaturePath) || File.ReadAllText(SignaturePath) != content;
             BuildEngine.LogMessageEvent(new BuildMessageEventArgs($"AtomUI TypeMap link inputs: signatureExists={File.Exists(SignaturePath)}, contentChanged={changed}, receiptExists={File.Exists(ReceiptPath)}.", null, nameof(PrepareTypeMapLinkTask), MessageImportance.High));
@@ -343,7 +331,7 @@ public sealed class ValidateRegistrationToolchainTask : RegistrationBuildTask
                     AssemblyName.GetAssemblyName(LinkerAssembly).FullName, TypeMapBuildContract.InformationalVersion(LinkerAssembly), targetVersion))
             {
                 throw new InvalidDataException(
-                    $"Unsupported actual ILLink binary '{LinkerAssembly}'. Expected official ILLink major {targetVersion.Major}, version at least {targetVersion.Major}.{targetVersion.Minor} and {TypeMapBuildContract.DesktopToolchainFloor}.");
+                    $"Unsupported actual ILLink binary '{LinkerAssembly}'. Expected official ILLink major {targetVersion.Major}, version at least {targetVersion.Major}.{targetVersion.Minor} and {TypeMapBuildContract.MinimumTypeMapVersion}.");
             }
 
             if (!string.IsNullOrEmpty(NativeCompiler))
@@ -358,7 +346,7 @@ public sealed class ValidateRegistrationToolchainTask : RegistrationBuildTask
                 if (process.ExitCode != 0 || !TypeMapBuildContract.IsSupportedDesktopToolchain(version, targetVersion))
                 {
                     throw new InvalidDataException(
-                        $"Unsupported actual NativeAOT compiler '{NativeCompiler}': {version} {errors}. Expected ILCompiler major {targetVersion.Major}, version at least {targetVersion.Major}.{targetVersion.Minor} and {TypeMapBuildContract.DesktopToolchainFloor}.");
+                        $"Unsupported actual NativeAOT compiler '{NativeCompiler}': {version} {errors}. Expected ILCompiler major {targetVersion.Major}, version at least {targetVersion.Major}.{targetVersion.Minor} and {TypeMapBuildContract.MinimumTypeMapVersion}.");
                 }
             }
             return true;

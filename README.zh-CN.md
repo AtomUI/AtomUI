@@ -67,6 +67,9 @@ Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改�
 Avalonia 12.1.4<br>
 支持 Windows、macOS、Linux 跨平台<br>
 
+TypeMap 发布默认支持 .NET 10 及后续稳定版本。Browser 裁剪与 AOT 发布使用 SDK 选择的 ILLink 和 WASM 工具链，
+不设置 SDK 或补丁版本白名单；发布时验证映射转换结果和实际消费产物。独立的 net8-only 包兼容桥接仍遵循其文档中的工具链要求。
+
 #### 最新版本说明
 
 AtomUI 6.2.7 修复启动配置提前创建 Avalonia Dispatcher 导致持续动画卡顿的问题。配置改为在平台服务就绪后的

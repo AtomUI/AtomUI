@@ -97,13 +97,13 @@ public class TypeMapReceiptIntegrityTests
             var identity = AssemblyName.GetAssemblyName(Input).FullName!;
             var hash = TypeMapBuildContract.Hash(Input);
             var signature = new TypeMapLinkSignature(TypeMapBuildContract.Capability, Tool, identity, hash,
-                Tool, TypeMapBuildContract.LinkerIdentity, TypeMapBuildContract.LinkerVersion, Receipt, Path.GetDirectoryName(Output)!, "fixture",
+                Tool, "illink, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "11.0.0", Receipt, Path.GetDirectoryName(Output)!, "fixture",
                 [new TypeMapFile(Tool, hash)], withAssembly ? [new TypeMapLinkInput(Input, identity, hash, "link:true")] : []);
             File.WriteAllText(Signature, JsonSerializer.Serialize(signature));
             File.WriteAllText(Receipt, JsonSerializer.Serialize(new
             {
                 status = "output-verified", abi = 1, capability = TypeMapBuildContract.Capability, toolIdentity = identity, toolSha256 = hash,
-                linkerIdentity = TypeMapBuildContract.LinkerIdentity, linkerVersion = TypeMapBuildContract.LinkerVersion,
+                linkerIdentity = "illink, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", linkerVersion = "11.0.0",
                 assemblies = withAssembly ? new[] { new { identity, inputSha256 = hash, outputSha256 = hash, outputSymbolsSha256 = TypeMapBuildContract.Hash(Symbols) } } : [],
                 accessors = withAssembly ? new[] { new { packageId = "fixture", assembly = identity, group = "fixture.Group", method = "GetMap", bodySha256 = new string('A', 64) } } : []
             }));

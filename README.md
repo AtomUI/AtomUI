@@ -73,6 +73,11 @@ requests are welcome.
 Avalonia 12.1.4<br>
 Windows, macOS and Linux<br>
 
+TypeMap publishing supports .NET 10 and later stable versions by default. Browser trimmed and AOT publishing follows
+the SDK-selected ILLink and WASM toolchain, without SDK or servicing-version allowlists. Publish checks validate the
+converted maps and consumed outputs. The separate net8-only package compatibility bridge retains its documented
+toolchain requirements.
+
 #### Latest Release Notes
 
 AtomUI 6.2.7 fixes startup configuration that could create an Avalonia Dispatcher before platform initialization and

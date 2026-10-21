@@ -94,14 +94,20 @@ Browser 映射物化入口仍为 `AtomUI.TypeMap.Linker.MaterializeTypeMapsStep`
 `_TrimmerCustomSteps` 的 `AfterStep=MarkStep` 注入，并传入 `AtomUITypeMapBackend` custom-data。
 能力标识属于工具版本契约，由实现中的 `ToolchainContract` 定义；未知或缺失标识导致错误。
 后端另行读取当前已加载 ILLink 的完整程序集身份与 informational version，不能只相信调用者传入的字符串。
-SDK 与实际 WASM workload/runtime assets 的组合检查由构建资产负责。当前组合固定为 SDK `10.0.300`、
-ILLink `10.0.8`（informational version `10.0.8-servicing.26229.119+94ea82652cdd4e0f8046b5bd5becbd11461482ca`）、
-WASM SDK/runtime assets `10.0.10`，能力值为 `atomui-typemap-v1-illink-10.0.8`。
-这是一组已适配工具链，版本升级需要重新验证，不能仅修改版本门禁。
+TypeMap 从 .NET 10 引入，现代发布默认支持 .NET 10 及后续稳定版本，不按 SDK、功能带、补丁或构建号逐个准入。
+Browser 目标框架允许 `net10.0-browser` 及以后版本，使用 SDK 选择的官方 ILLink 与 WASM 工作负载。
+后端只检查官方链接器身份与 TypeMap 引入版本的下限；不读取或逐项比对链接器 targets 的参数定义，
+也不校验 WASM 任务程序集的信息版本。保留 Mark/Sweep/Output 阶段、已标记映射和 accessor/helper ABI 验证，
+并在链接后与 AOT/bundle 消费前验证实际产物。工具链出现真实的不兼容时按错误适配，不预先屏蔽未知的新版本。
+历史能力值 `atomui-typemap-v1-illink-10.0.8` 保留为不透明的 ABI 标识，不再代表 ILLink 补丁约束。
+签名与回执记录实际加载的 ILLink 版本，工具文件内容进入增量指纹；升级工具后必须重新链接。
+net10 消费 net8-only 包的独立条件桥接仍有自己的 SDK/runtime 门禁，本次 Browser 后端规则不扩大其准入范围。
 
-上述精确组合约束 Browser 后端，因为它读取 ILLink 的内部管线。纯 net10 桌面 trimmed CoreCLR 与 NativeAOT 只消费官方
+Browser 后端的转换检查独立于桌面工具链规则。纯现代桌面 trimmed CoreCLR 与 NativeAOT 只消费官方
 TypeMap 契约，不加载本工具，也不校验 SDK 版本字符串；它们只要求实际 ILLink（官方身份）与 NativeAOT 编译器的
-版本不低于已验证的 `10.0.8`，不设上限，因此运行时补丁前滚（例如 ILCompiler `10.0.9`）不会阻断桌面发布。
+版本匹配目标框架，最低为 TypeMap 引入的 `10.0.0`，不设置已验证补丁号下限或后续目标框架上限。
+工具自身使用 `Major` 运行时前滚策略，新 SDK 环境不必额外安装原 .NET 10 工具宿主。
+验证以最低基线与当前稳定工具链的代表性场景为主，无需为每个 SDK 补丁逐一验收后才允许发布。
 
 后端在筛选 marked accessor **之前**检查所有发现的标记包是否实际采用 `Link` action。
 `Skip` 等 action 不保证方法有 Mark 记录，因此先筛 `IsMarked` 会把未转换包误判成零 slot。

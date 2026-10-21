@@ -1,4 +1,5 @@
 using System.Reflection;
+using AtomUI.Build.Tasks.Registration;
 using Mono.Linker;
 using Mono.Linker.Steps;
 
@@ -6,17 +7,14 @@ namespace AtomUI.TypeMap.Linker;
 
 internal static class ToolchainContract
 {
-    internal const string Capability = "atomui-typemap-v1-illink-10.0.8";
-    internal const string LinkerVersion = "10.0.8-servicing.26229.119+94ea82652cdd4e0f8046b5bd5becbd11461482ca";
+    internal const string Capability = OfficialTypeMapToolchain.Capability;
     internal static string ActualLinkerVersion => typeof(LinkContext).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
-
-    internal const string LinkerIdentity = "illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
 
     internal static void ValidateIdentity(string identity, string version)
     {
-        if (identity != LinkerIdentity || version != LinkerVersion)
+        if (!OfficialTypeMapToolchain.IsSupportedLinker(identity, version))
         {
-            throw BackendDiagnostic.Unsupported($"Unsupported ILLink identity '{identity}' ({version}). Use the tested Microsoft.NET.ILLink.Tasks 10.0.8 toolchain.");
+            throw BackendDiagnostic.Unsupported($"Unsupported ILLink identity '{identity}' ({version}). Use official ILLink {OfficialTypeMapToolchain.MinimumVersion} or later with TypeMap support.");
         }
     }
 

@@ -35,7 +35,7 @@
          Ordinary builds (even with inherited PublishTrimmed) retain the ordinary full collector. -->
     <Target Name="AtomUISetRegistrationPublishMode" BeforeTargets="PrepareForILLink"
             Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
-        <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask Condition="'$(_AtomUINet8ManagedRegistration)' != 'true' and '$(_AtomUINative8Registration)' != 'true'" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+        <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask Condition="'$(_AtomUINet8ManagedRegistration)' != 'true' and '$(_AtomUINative8Registration)' != 'true' and '$(RuntimeIdentifier)' != 'browser-wasm'" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
             TargetFrameworkIdentifier="$(_AtomUIRegistrationFrameworkIdentifier)" TargetFrameworkVersion="$(_AtomUIRegistrationFrameworkVersion)"
             LinkerAssembly="$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(ILLinkTasksAssembly)')), 'illink.dll'))" />
         <ItemGroup>
@@ -46,8 +46,7 @@
 
     <Target Name="AtomUIPrepareTypeMapBackend" AfterTargets="PrepareForILLink" BeforeTargets="_RunILLink"
             Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
-        <Error Condition="'$(NETCoreSdkVersion)' != '10.0.300'" Code="ATOMUIREG006" Text="AtomUI Browser TypeMap publish supports SDK 10.0.300; actual SDK is $(NETCoreSdkVersion)." />
-        <Error Condition="'$(TargetFramework)' != 'net10.0-browser' or '$(TrimMode)' != 'full' or '$(RunILLink)' == 'false'" Code="ATOMUIREG006" Text="AtomUI Browser TypeMap requires net10.0-browser with actual full ILLink processing." />
+        <Error Condition="'$(_AtomUIRegistrationFrameworkFamily)' != 'OfficialTypeMap' or '$(_AtomUIRegistrationTargetPlatform)' != 'browser' or '$(TrimMode)' != 'full' or '$(RunILLink)' == 'false'" Code="ATOMUIREG006" Text="AtomUI Browser TypeMap requires net10.0-browser or later with actual full ILLink processing." />
         <AtomUI.Build.Tasks.ResolveRegistrationToolsTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" Candidates="@(AtomUIRegistrationToolCandidate)" IncludeBackend="true">
             <Output TaskParameter="BackendAssembly" PropertyName="_AtomUIResolvedBackend" />
         </AtomUI.Build.Tasks.ResolveRegistrationToolsTask>
@@ -80,7 +79,7 @@
             <_AtomUITypeMapInput Include="@(ReferencePath)" Kind="Reference" />
             <_AtomUITypeMapInput Include="$(ILLinkTasksAssembly)" Kind="Tool" />
             <_AtomUITypeMapInput Include="$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName('$(ILLinkTasksAssembly)'))/../../build/Microsoft.NET.ILLink.targets'))" />
-            <!-- Audit boundary: every input passed by supported ILLink.targets/_RunILLink (10.0.8).
+            <!-- Capture the effective linker configuration for incremental invalidation.
                  Scalar empty values and ordered item metadata are serialized structurally by the worker. -->
             <_AtomUILinkOption Include="TrimMode" Value="$(TrimMode)" />
             <_AtomUILinkOption Include="DefaultAction" Value="$(_TrimmerDefaultAction)" />
@@ -113,7 +112,7 @@
             <_AtomUILinkItem Include="@(_TrimmerKeepMetadata)" Kind="KeepMetadata" />
         </ItemGroup>
         <AtomUI.Build.Tasks.PrepareTypeMapLinkTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
-            SdkVersion="$(NETCoreSdkVersion)" WasmSdkTasksPath="$(WasmAppBuilderTasksAssemblyPath)"
+            WasmSdkTasksPath="$(WasmAppBuilderTasksAssemblyPath)"
             BackendAssembly="$(_AtomUIResolvedBackend)" LinkerAssembly="$(_AtomUIActualLinker)" Capability="$(AtomUITypeMapCapability)"
             ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" LinkSemaphore="$(_LinkSemaphore)" OutputDirectory="$(IntermediateLinkDir)"
             Inputs="@(_AtomUITypeMapInput)" Assemblies="@(ManagedAssemblyToLink)" LinkOptions="@(_AtomUILinkOption)" LinkItems="@(_AtomUILinkItem)"

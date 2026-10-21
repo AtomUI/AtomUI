@@ -8,7 +8,8 @@
         <RuntimeIdentifiers />
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
         <UseAppHost>false</UseAppHost>
-        <RollForward>LatestPatch</RollForward>
+        <!-- Consumers using a newer SDK need not install the original .NET 10 tool host. -->
+        <RollForward>Major</RollForward>
         <IsPackable>false</IsPackable>
         <IncludeInPublish>false</IncludeInPublish>
         <IsAotCompatible>false</IsAotCompatible>
@@ -70,7 +71,7 @@
         <PackageReference Include="Microsoft.NET.ILLink.Tasks" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="all" />
         <Reference Include="illink" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net/illink.dll" Private="false" />
         <Reference Include="Mono.Cecil" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net/Mono.Cecil.dll" Private="true" />
-        <Compile Include="Backends/ILLink10/**/*.cs" />
+        <Compile Include="Backends/ILLink10/**/*.cs;Common/Registration/OfficialTypeMapToolchain.cs" />
         <InternalsVisibleTo Include="AtomUI.TypeMap.Linker.Tests" />
     </ItemGroup>
     <ItemGroup Condition="'$(AtomUIToolchainProfile)' == 'ILLink8' or '$(AtomUIToolchainProfile)' == 'ILLink10'">

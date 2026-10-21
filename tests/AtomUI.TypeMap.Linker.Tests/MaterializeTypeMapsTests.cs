@@ -196,13 +196,18 @@ public class MaterializeTypeMapsTests
     [InlineData("illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null")]
     public void LinkerIdentityMustMatchEvenWhenInformationalVersionMatches(string identity)
     {
-        Assert.Throws<BackendDiagnostic>(() => ToolchainContract.ValidateIdentity(identity, ToolchainContract.LinkerVersion));
+        Assert.Throws<BackendDiagnostic>(() => ToolchainContract.ValidateIdentity(identity, ToolchainContract.ActualLinkerVersion));
     }
 
     [Fact]
-    public void WrongLinkerImplementationIsRejectedEvenWithMatchingAssemblyIdentity()
+    public void OfficialTypeMapLinkerVersionsAreAcceptedFromNet10()
     {
-        Assert.Throws<BackendDiagnostic>(() => ToolchainContract.ValidateIdentity("illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "10.0.9"));
+        ToolchainContract.ValidateIdentity("illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "10.0.0");
+        ToolchainContract.ValidateIdentity("illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "10.0.9-servicing.26270.113+901ca941");
+        ToolchainContract.ValidateIdentity("illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "10.0.13");
+        ToolchainContract.ValidateIdentity("illink, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "11.0.0");
+        ToolchainContract.ValidateIdentity("illink, Version=12.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "12.0.0");
+        Assert.Throws<BackendDiagnostic>(() => ToolchainContract.ValidateIdentity("illink, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35", "11.0.0"));
     }
 
     [Fact]

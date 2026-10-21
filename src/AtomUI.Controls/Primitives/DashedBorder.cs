@@ -126,18 +126,9 @@ public class DashedBorder : Decorator
     private double _layoutScale;
     private Control? _managedClipChild;
     private Geometry? _managedClipGeometry;
+    private TopLevel? _clipScaleRoot;
 
     internal virtual bool ClipTrailingEdgeAtFractionalScale => false;
-
-    private Thickness RenderThickness
-    {
-        get
-        {
-            VerifyLayoutScale();
-            _renderThickness ??= BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness);
-            return _renderThickness.Value;
-        }
-    }
 
     static DashedBorder()
     {
@@ -157,8 +148,9 @@ public class DashedBorder : Decorator
     public sealed override void Render(DrawingContext context)
     {
         var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
-        var renderThickness = RenderThickness;
-        var renderSize = CalculateRenderSize(Bounds.Size);
+        var layoutScale = LayoutHelper.GetLayoutScale(this);
+        var renderThickness = GetRenderThickness(layoutScale);
+        var renderSize = CalculateRenderSize(Bounds.Size, layoutScale);
 
         borderRenderHelper.Render(
             context,
@@ -192,8 +184,25 @@ public class DashedBorder : Decorator
             change.Property == CornerRadiusProperty ||
             change.Property == BackgroundSizingProperty)
         {
+            if (change.Property == ClipContentToCornerRadiusProperty)
+            {
+                UpdateClipScaleSubscription();
+            }
+
             UpdateClip();
         }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateClipScaleSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseClipScaleSubscription();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -229,10 +238,11 @@ public class DashedBorder : Decorator
             return;
         }
 
+        var renderThickness = GetRenderThickness(LayoutHelper.GetLayoutScale(this));
         var figure = BuildRoundedRectClipFigure(
             new Rect(childSize),
             Padding,
-            RenderThickness,
+            renderThickness,
             CornerRadius);
         if (!SupportsGeometryClipHitTesting(figure))
         {
@@ -306,29 +316,64 @@ public class DashedBorder : Decorator
         return geometry;
     }
 
-    private void VerifyLayoutScale()
+    private void UpdateClipScaleSubscription()
     {
-        var currentScale = LayoutHelper.GetLayoutScale(this);
-        if (MathUtils.AreClose(currentScale, _layoutScale))
+        var root = ClipContentToCornerRadius && this.IsAttachedToVisualTree()
+            ? TopLevel.GetTopLevel(this)
+            : null;
+        if (ReferenceEquals(root, _clipScaleRoot))
         {
             return;
         }
 
-        _layoutScale     = currentScale;
-        _renderThickness = null;
+        ReleaseClipScaleSubscription();
+        _clipScaleRoot = root;
+        if (_clipScaleRoot is not null)
+        {
+            _clipScaleRoot.ScalingChanged += HandleClipScaleChanged;
+        }
+    }
+
+    private void ReleaseClipScaleSubscription()
+    {
+        if (_clipScaleRoot is not null)
+        {
+            _clipScaleRoot.ScalingChanged -= HandleClipScaleChanged;
+            _clipScaleRoot = null;
+        }
+    }
+
+    private void HandleClipScaleChanged(object? sender, EventArgs e)
+    {
+        // Scaling can change after layout but before drawing. Prepare the child
+        // clip here so Render only updates its own numerical and drawing caches.
         UpdateClip();
     }
 
-    private Size CalculateRenderSize(Size size)
+    private Thickness GetRenderThickness(double layoutScale)
+    {
+        if (!MathUtils.AreClose(layoutScale, _layoutScale))
+        {
+            _layoutScale     = layoutScale;
+            _renderThickness = null;
+        }
+
+        _renderThickness ??= UseLayoutRounding
+            ? BorderUtils.BuildRenderScaleAwareThickness(BorderThickness, layoutScale)
+            : BorderThickness;
+        return _renderThickness.Value;
+    }
+
+    private Size CalculateRenderSize(Size size, double layoutScale)
     {
         if (!UseLayoutRounding ||
             !ClipTrailingEdgeAtFractionalScale ||
-            MathUtils.AreClose(_layoutScale, Math.Floor(_layoutScale)))
+            MathUtils.AreClose(layoutScale, Math.Floor(layoutScale)))
         {
             return size;
         }
 
-        var physicalPixel = 1 / _layoutScale;
+        var physicalPixel = 1 / layoutScale;
         var renderSize    = size;
 
         for (Visual? ancestor = this.GetVisualParent(); ancestor is not null; ancestor = ancestor.GetVisualParent())

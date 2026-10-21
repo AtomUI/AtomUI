@@ -46,6 +46,11 @@ Source/Size 访问和释放遵守 UI dispatcher ownership。
 
 ## 关键目录
 
+`Primitives/DashedBorder` 与其派生 `PixelAlignedBorder` 统一承载边框绘制、内容圆角裁剪和小数缩放适配。
+共享的数值计算、绘制缓存、裁剪所有权、缩放订阅生命周期及视觉兼容约束由
+[边框渲染架构](../../architecture/systems/rendering/border-rendering.md)拥有；该文档同时区分共享实现、消费模板与原生平台的验证边界。
+具体消费控件的文档继续拥有模板组合与语义部件契约。
+
 | 目录 | 说明 |
 |---|---|
 | `Primitives/` | 桌面控件复用的基础装饰、动效、视觉层 |

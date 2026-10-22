@@ -76,5 +76,6 @@ Mobile 依赖闭包。
 - [Semantic Part Gallery Preview](../../gallery/authoring/semantic-part-preview.md)
 - [source-code-display.md](source-code-display.md)
 - [theming-localization.md](theming-localization.md)
+- [Gallery主题工具](../../gallery/theming/overview.md)：工作台目标设计与产品职责，GalleryBase不拥有具体品牌或生成服务。
 - [Gallery ShowCase 页面设计](../../gallery/authoring/gallery-showcase-design-pattern.md)
 - [启动与注册链路](../../architecture/foundations/startup-and-registration.md)

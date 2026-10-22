@@ -23,6 +23,15 @@
 [TypeMap 管线](../../../foundations/aot-typemap-registration.md)拥有。源级接线与资源延迟遵守
 [惰性物化](../lazy-materialization.md)。
 
+## 完整品牌表达的边界
+
+[品牌配方](../brand-recipes.md)组合Token定义与编译Style/模板资产。编译主题包继续负责声明生成及现有Token执行合同，
+不因此隐式承诺XML v1或ABI v1已经序列化了品牌样式。完整组合manifest与资产引用须独立版本化，
+缺失Control/资产/修订明确诊断，不静默丢样式或执行运行期AXAML。
+
+新Own合同只改变匹配版本的运行期evaluator及构建元数据，不在构建期执行默认算法；现行包的stage、惰性、
+registry绑定、资源词法和发布语义保持。源码与验收边界统一见[主题验证文档](../verification.md)。
+
 ## 2. 目标与不可变约束
 
 目标是省去运行时包内 XML 读取、语法树重建、静态名字解析与静态字面量转换。生成代码直接注册并写入强类型

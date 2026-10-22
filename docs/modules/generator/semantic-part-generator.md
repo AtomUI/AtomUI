@@ -5,6 +5,16 @@ XML namespace 映射、包级注册和构建期诊断。
 公共语义、Selector、Popup、Theme 和兼容性契约由
 [AtomUI Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md) 定义；本文档只定义生成器职责。
 
+## 品牌托管Style的生成边界
+
+[品牌配方](../../architecture/systems/theming/brand-recipes.md)要求为有效样式集合生成有资格的原生规则。资格属于owner选择段，
+不改变`SelectorRoute`语法、Part语义、ContractType或现有无参专用Style入口；生成工厂复用同一声明模型组合资格和route。
+public子Control仍保留自身identity，不能通过资格条件把外层owner当成子Control的Token来源。
+
+此目标能力必须验证原生激活、BindingPriority、嵌套重置、RuntimeCreated及Native/Overlay路径；不能因为构造了Style就宣称命中。
+工厂不运行时解析AXAML、不找节点赋值、不增加Style合并器。当前Nesting+route产物与新目标的差异见
+[主题验证边界](../../architecture/systems/theming/verification.md)。
+
 ## 1. 设计定位
 
 生成器把 Control 源码中的显式 Semantic Part 声明与构建系统提供的 `Themes/**/*.axaml` 组合为确定性输出。它不从

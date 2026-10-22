@@ -6,6 +6,10 @@
 本文定义当前架构。既有兼容对象不得成为绕过这些约束的旁路。面向主题作者和 Control 开发者的分层讲解与定制
 示例见 [AtomUI 主题定制指南](../../../guides/theming/customization.md)。
 
+依赖默认值与完整品牌分别由[Own有效求值](own-token-evaluation.md)和[品牌配方](brand-recipes.md)定义目标合同；
+[Control渲染](control-rendering.md)定义消费终点。它们不静默改写本文的整体evaluator、Token-only请求与五阶段结果，
+源码迁移和验收边界见[验证文档](verification.md)。
+
 包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。派生算法统一在运行时执行，
 并遵守本文的配置、Snapshot、事务与资源语义；当前验证状态由编译主题包文档维护，已发布能力以对应发布记录为准。
 
@@ -55,7 +59,7 @@ AtomUI 主题系统使用静态 `ControlTheme`、typed resource key、snapshot-b
 - 算法是有序 derivative 链；每个算法接收同一份 Seed 和前一算法的 Map 结果。
 - 主题计算和 Control 计算按完整内容缓存，缓存身份包含算法链和所有会改变结果的配置。
 - 嵌套主题依赖上下文隔离；脱离上下文的新渲染根不能自动获得调用点主题。
-- 样式结构保持稳定，主题切换只替换作用域内 Token 值。
+- Token-only更新保持样式结构稳定，只替换作用域内Token值；显式品牌配方的目标装配与资格变化遵守独立的[品牌合同](brand-recipes.md)。
 
 AtomUI 主题系统不引入 CSS selector hash、CSS Variable 命名、style tag 注入、CSS 序列化、SSR 提取或 Web
 生命周期。主题结构和局部作用域统一由静态 ControlTheme、稳定资源 key、snapshot-backed ResourceProvider、
@@ -66,7 +70,7 @@ Static ControlTheme + scoped snapshot resources
 ```
 
 因此 AtomUI 不需要 `zeroRuntime` 或 hashed style 开关。ControlTheme 本来就在构建期编译，运行时只计算和发布
-Token snapshot。
+Token snapshot；品牌组合复用编译资产，不在此路径增加运行期CSS/AXAML解释器。
 
 ### 2.2 公开配置语义
 

@@ -5,6 +5,10 @@
 本文只适用于 `AbstractControlDesignToken` 下的 Control Own Token。Global DesignToken、Seed/Map/Alias Token、
 ThemeConfig 继承和 Control CLR 继承不属于本文范围。
 
+本文的默认计算链描述现行整体evaluator合同。依赖默认值的目标合同见[Own有效求值](own-token-evaluation.md)，
+其生成输入与跨程序集元数据见[生成设计](../../../modules/generator/own-token-defaults.md)。两者共享本文的identity、
+属性扁平化与slot不变量，但不能混跑计算链；目标合同不表示当前源码已迁移，状态见[验证边界](verification.md)。
+
 ## 设计定位
 
 Control Design Token 继承用于复用平台无关的 Control Own Token 定义和默认计算。Desktop、Mobile 或第三方产品包可以从

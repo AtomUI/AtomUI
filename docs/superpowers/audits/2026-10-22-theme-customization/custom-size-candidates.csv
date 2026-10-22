@@ -1,0 +1,59 @@
+path,line,package,selector,direct_setter_properties,status
+src/AtomUI.Desktop.Controls.ColorPicker/Themes/AbstractColorPickerTheme.axaml,55,AtomUI.Desktop.Controls.ColorPicker,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius; FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorBlockTheme.axaml,54,AtomUI.Desktop.Controls.ColorPicker,"^[SizeType=Middle], ^[SizeType=Custom]",Width; Height; CornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorBlockTheme.axaml,71,AtomUI.Desktop.Controls.ColorPicker,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls.DataGrid/Themes/DataGridCellTheme.axaml,52,AtomUI.Desktop.Controls.DataGrid,"^[SizeType=Middle], ^[SizeType=Custom]",Padding; FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls.DataGrid/Themes/DataGridColumnGroupHeaderTheme.axaml,41,AtomUI.Desktop.Controls.DataGrid,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls.DataGrid/Themes/DataGridColumnHeaderTheme.axaml,92,AtomUI.Desktop.Controls.DataGrid,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls.DataGrid/Themes/DataGridRowHeaderTheme.axaml,50,AtomUI.Desktop.Controls.DataGrid,"^[SizeType=Middle], ^[SizeType=Custom]",Padding; FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls.DataGrid/Themes/DataGridRowTheme.axaml,108,AtomUI.Desktop.Controls.DataGrid,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls.DataGrid/Themes/DataGridTheme.axaml,275,AtomUI.Desktop.Controls.DataGrid,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/ButtonSpinner/Themes/ButtonSpinnerDecoratedBoxTheme.axaml,162,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",ContentPadding; MinHeight,candidate-contract-review
+src/AtomUI.Desktop.Controls/ButtonSpinner/Themes/ButtonSpinnerDecoratedBoxTheme.axaml,172,AtomUI.Desktop.Controls,"^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Custom], ^[SizeType=Small]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/ButtonSpinner/Themes/ButtonSpinnerTheme.axaml,60,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls/ButtonSpinner/Themes/SizeTypeAwareIconPresenter.axaml,26,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Cascader/Themes/CascaderAddOnDecoratedBoxTheme.axaml,30,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",ContentFramePadding; CompactContentFramePadding; ContentMinHeight,candidate-contract-review
+src/AtomUI.Desktop.Controls/Cascader/Themes/CascaderAddOnDecoratedBoxTheme.axaml,63,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Cascader/Themes/CascaderTheme.axaml,192,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml,102,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",DefaultHeaderPadding; DefaultContentPadding,candidate-contract-review
+src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml,123,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml,161,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml,186,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/ComboBox/Themes/ComboBoxTheme.axaml,160,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Expander/Themes/ExpanderTheme.axaml,199,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Expander/Themes/ExpanderTheme.axaml,222,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Expander/Themes/ExpanderTheme.axaml,244,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Form/Themes/FormItemTheme.axaml,188,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Input/Themes/TextAreaDecoratedBoxTheme.axaml,83,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",TextAreaFramePadding,candidate-contract-review
+src/AtomUI.Desktop.Controls/Input/Themes/TextAreaTheme.axaml,184,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",LineHeight,candidate-contract-review
+src/AtomUI.Desktop.Controls/Input/Themes/TextAreaTheme.axaml,197,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Input/Themes/TextBoxTheme.axaml,165,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize; CornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls/ListBox/Themes/ListBoxItemTheme.axaml,77,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",MinHeight; Padding,candidate-contract-review
+src/AtomUI.Desktop.Controls/ListBox/Themes/ListBoxTheme.axaml,77,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius; EmptyIndicatorPadding,candidate-contract-review
+src/AtomUI.Desktop.Controls/ListView/Themes/ListViewItemTheme.axaml,69,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",MinHeight; Padding,candidate-contract-review
+src/AtomUI.Desktop.Controls/ListView/Themes/ListViewItemTheme.axaml,94,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/ListView/Themes/ListViewTheme.axaml,92,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius; EmptyIndicatorPadding,candidate-contract-review
+src/AtomUI.Desktop.Controls/Menu/Themes/MenuTheme.axaml,42,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",MinHeight; CornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls/Menu/Themes/TopLevelMenuItemTheme.axaml,107,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius; MinHeight; Padding; FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/OtpLineEdit/Themes/OtpLineEditCellTheme.axaml,67,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Pagination/Themes/PaginationNavItemTheme.axaml,147,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",Height; MinWidth,candidate-contract-review
+src/AtomUI.Desktop.Controls/Pagination/Themes/PaginationNavTheme.axaml,24,AtomUI.Desktop.Controls,"^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Custom]",ItemSpacing,candidate-contract-review
+src/AtomUI.Desktop.Controls/Pagination/Themes/PaginationTheme.axaml,60,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Pagination/Themes/SimplePaginationTheme.axaml,70,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Primitives/AddOnDecoratedBox/Themes/AddOnDecoratedBoxTheme.axaml,142,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Primitives/AddOnDecoratedBox/Themes/InputControlFrameTheme.axaml,50,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls/Primitives/InfoPickerInput/Themes/InfoPickerInputTheme.axaml,118,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Segmented/Themes/SegmentedItemTheme.axaml,110,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius; FontSize; MinHeight; Padding,candidate-contract-review
+src/AtomUI.Desktop.Controls/Segmented/Themes/SegmentedItemTheme.axaml,152,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Segmented/Themes/SegmentedTheme.axaml,43,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",CornerRadius; SelectedThumbCornerRadius,candidate-contract-review
+src/AtomUI.Desktop.Controls/Select/Themes/SelectAddOnDecoratedBoxTheme.axaml,30,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",ContentFramePadding; CompactContentFramePadding; ContentMinHeight,candidate-contract-review
+src/AtomUI.Desktop.Controls/Select/Themes/SelectAddOnDecoratedBoxTheme.axaml,63,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/Select/Themes/SelectFilterTextBoxTheme.axaml,19,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Select/Themes/SelectTagTheme.axaml,29,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",Height,candidate-contract-review
+src/AtomUI.Desktop.Controls/Select/Themes/SelectTheme.axaml,151,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Space/Themes/CompactSpaceAddOnTheme.axaml,36,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize; CornerRadius; Padding; MinHeight,candidate-contract-review
+src/AtomUI.Desktop.Controls/Spin/Themes/SpinIndicatorTheme.axaml,71,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",IndicatorSize; DotSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/Switch/Themes/ToggleSwitchTheme.axaml,105,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom], ^[SizeType=Large]",FontSize; KnobSize; InnerMaxMargin; InnerMinMargin; TrackHeight; TrackMinWidth; IconSize,candidate-contract-review
+src/AtomUI.Desktop.Controls/TreeSelect/Themes/TreeSelectAddOnDecoratedBoxTheme.axaml,30,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",ContentFramePadding; CompactContentFramePadding; ContentMinHeight,candidate-contract-review
+src/AtomUI.Desktop.Controls/TreeSelect/Themes/TreeSelectAddOnDecoratedBoxTheme.axaml,63,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",,candidate-contract-review
+src/AtomUI.Desktop.Controls/TreeSelect/Themes/TreeSelectTheme.axaml,148,AtomUI.Desktop.Controls,"^[SizeType=Middle], ^[SizeType=Custom]",FontSize,candidate-contract-review

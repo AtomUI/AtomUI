@@ -22,6 +22,13 @@ docs/controls/desktop/
 - 控件内部实现、主题契约和维护不变量写入对应控件的 `implementation.md` 或专项设计文档。
 - DataGrid 和 ColorPicker 虽然使用独立发布包，其控件文档仍统一归到本目录，不额外维护包级模块文档。
 
+## 主题设计与验收
+
+Desktop及可选包的主题输入遵守[Control渲染合同](../../architecture/systems/theming/control-rendering.md)，Own依赖与历史别名遵守
+[有效值求解](../../architecture/systems/theming/own-token-evaluation.md)，品牌及弹层遵守[配方scope合同](../../architecture/systems/theming/brand-recipes.md)。
+具体Control继续拥有自己的模板、Token、Part和实际消费者；新的公共输入不能在尚无源码时写成已支持。
+逐Control/Active Own/依赖边/Part的证据要求见[主题验收规范](../../engineering/development/theming/verification.md)。
+
 ## 分类入口
 
 - [General](general/overview.md)

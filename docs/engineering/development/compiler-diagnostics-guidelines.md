@@ -112,6 +112,11 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN024` | Generator | Error | 后续层 `CalculateTokenValues` 没有把唯一的直接 base 调用放在 block body 第一条并原样转发参数 | 以 `base.CalculateTokenValues(isDarkMode);` 开始方法，再计算本层值 | ControlDesignToken |
 | `ATOMUIGEN025` | Generator | Error | 抽象 Control Design Token 定义层名称不以非空 `Token` 后缀结束 | 使用表达家族语义的 `*Token` 名称 | ControlDesignToken |
 | `ATOMUIGEN026` | Generator | Error | Control Design Token 声明为嵌套类型 | 把 Token 移到 namespace 下作为顶级类；泛型容器中的嵌套 Token 仍使用 `ATOMUIGEN021` | ControlDesignToken |
+| `ATOMUIGEN040` | Generator | Error | Own默认求值版本未知／整链混用、revision非法、新版终端缺partial或静态接口、手写新入口或整体evaluator | 整链选择同一版本；新版每层revision为正，终端使用partial及`IControlTokenDefaults`，由生成器实现入口 | ControlTokenDefaults |
+| `ATOMUIGEN041` | Generator | Error | 默认目标缺失／重复、继承重定义标记不符、默认函数对终端不可访问，或字段缺少有效默认 | 明确唯一默认，显式替换继承默认并提供可访问静态函数 | ControlTokenDefaults |
+| `ATOMUIGEN042` | Generator | Error | 默认函数返回类型、context或Own参数类型／数量／ref形态不符，或函数为实例／泛型／async | 使用精确返回类型、首个`in ControlTokenDefaultContext`及按声明顺序的强类型Own参数 | ControlTokenDefaults |
+| `ATOMUIGEN043` | Generator | Error | 默认Own输入未知或依赖成环 | 使用同终端字段，按诊断链移除循环；不修改按名称分配的slot | ControlTokenDefaults |
+| `ATOMUIGEN044` | Generator | Error | Own别名未知/非Own目标、类型或nullable不符、自身/链/环/重复，终端缺partial或IControlTokenAliases，手写别名入口或V2默认读写别名 | 使用同终端直接规范字段；保留历史slot/key，入口交由Generator；默认只依赖规范字段 | ControlTokenAliases |
 | `ATOMUIGEN027` | Generator | Error | Semantic Part 的 Control/Part 声明、名称、path、class、cardinality 或 customization 非法 | 按 Semantic Part 声明契约修正 `[SemanticPart]` | SemanticParts |
 | `ATOMUIGEN028` | Generator | Error | 同一 Control 的 Part name、path 或 selector class 重复 | 为每个 Part 使用唯一名称、path 和 `.semantic-*` class | SemanticParts |
 | `ATOMUIGEN029` | Generator | Error | Semantic Part `ContractType` 不是 public `StyledElement` | 使用稳定且公开可引用的 Avalonia 类型 | SemanticParts |

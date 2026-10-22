@@ -1,6 +1,6 @@
 # 精确主题首批边界与失败基线执行计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: 使用 superpowers:executing-plans 在当前会话逐项执行；用户明确选择委派时才使用 superpowers:subagent-driven-development。步骤使用checkbox跟踪。本文件等待计划审查，本次没有执行以下步骤。
+> **For agentic workers:** REQUIRED SUB-SKILL: 使用 superpowers:executing-plans 在当前会话逐项执行；用户明确选择委派时才使用 superpowers:subagent-driven-development。步骤使用checkbox跟踪。实际执行记录见baseline.md；未勾选项仍有缺口，不能宣称M0全部通过。
 
 **Goal:** 完成CT-00–CT-02的真实Control目录、Token合同分类与代表失败/Host基线，为机制原型及控件整改提供可靠输入。
 
@@ -18,7 +18,7 @@
 - 不把2,736个文件、95个Own类型或1,195个直接声明属性误当作Control数、扁平终端字段数或有效配置项数。
 - 所有新增验证先搜索现有测试；需要internal/主题资产的临时测试放所属项目Temporary/CustomThemeBaseline，文件头注明“临时验证，功能或修复完成后删除”。
 - 只用精确filter执行本批临时反例/已有对照。预期失败是本批要收集的证据，不能改断言、Skip或改编译规则制造通过。
-- 真实UI取证使用atomui-gallery-local-debug及scripted-visual-acceptance；资源探针用atomui-resource-lifecycle。执行时阅读对应skill，不能以Headless通过代替实际Host表现。
+- UI取证遵守用户指定的脚本化执行：使用scripted-visual-acceptance和已有Skia渲染宿主自动创建场景、采样及比较，不使用Computer Use或桌面坐标输入。实际Gallery/原生后端验证另用自驱动宿主并遵守atomui-gallery-local-debug的产物身份核定；资源探针用atomui-resource-lifecycle。Headless通过不能代替原生Host表现，未执行的后端保留缺口。
 - 本计划不包含自动commit；清理并审查后等待用户明确提交指令。
 
 ## Review Focus
@@ -58,10 +58,10 @@ primary_task,review_state,notes
 
 kind取ProductControl/AbstractContract/InternalTarget/OtherBoundary；review_state取StaticChecked/NeedsDecision。同一程序集+metadata name只出现一次；多个模板/平台差异记录在同一对象的资产及边界列，不能因此丢掉变体。
 
-- [ ] **Step 1：建立源码候选并与编译事实交叉。** 对Core/Icon、Controls、Desktop、DataGrid、ColorPicker、GalleryBase及Gallery分别清点public Control；同时记录实际存在的Extras及平台边界。partial按符号归并；抽象、泛型和嵌套类型按现行注册合同分类，不能靠正则结果宣布完整。
-- [ ] **Step 2：核对精确owner与注册模式。** 从Token/Semantic/主题导出及注册符号交叉确认identity、descriptor和资产。没有Own不排除；没有独立片段不直接判Bug；internal目标不能伪造公开owner，未确定项写NeedsDecision及证据位置。
-- [ ] **Step 3：补齐文档、Gallery及测试入口并指派CT-10–CT-21/CT-25。** 一个实际产品Control只有一个主迁移任务；内部目标挂到真实owner，跨家族协作另记notes。没有原审计ID的Control同样必须有任务。
-- [ ] **Step 4：执行目录完整性校验。** 校验元数据集合与CSV双向差集为空、主键唯一、现存源码/文档路径有效、每个产品项均有主任务。若有不可访问编译事实或owner争议，输出明确差集，不能把这些项删掉以获得零差集。
+- [x] **Step 1：建立源码候选并与编译事实交叉。** 对Core/Icon、Controls、Desktop、DataGrid、ColorPicker、GalleryBase及Gallery分别清点public Control；同时记录实际存在的Extras及平台边界。partial按符号归并；抽象、泛型和嵌套类型按现行注册合同分类，不能靠正则结果宣布完整。
+- [x] **Step 2：核对精确owner与注册模式。** 从Token/Semantic/主题导出及注册符号交叉确认identity、descriptor和资产。没有Own不排除；没有独立片段不直接判Bug；internal目标不能伪造公开owner，未确定项写NeedsDecision及证据位置。
+- [x] **Step 3：补齐文档、Gallery及测试入口并指派CT-10–CT-21/CT-25。** 一个实际产品Control只有一个主迁移任务；内部目标挂到真实owner，跨家族协作另记notes。没有原审计ID的Control同样必须有任务。
+- [x] **Step 4：执行目录完整性校验。** 校验元数据集合与CSV双向差集为空、主键唯一、现存源码/文档路径有效、每个产品项均有主任务。若有不可访问编译事实或owner争议，输出明确差集，不能把这些项删掉以获得零差集。
 
 预期：新增未审计产品Control能被差集检出；去掉一个无Own的已纳入Control同样失败。必要临时probe使用namespace AtomUI.Generator.Tests.Temporary.CustomThemeBaseline，测试命名为Inventory_Covers_Public_Controls_And_Separates_Internal_Targets，断言集合相等及internal分类，不实例化Control。
 
@@ -73,7 +73,7 @@ dotnet test tests/AtomUI.Generator.Tests/AtomUI.Generator.Tests.csproj \
 
 仅在Step 2确实建立该probe时运行，发现数必须非零；不创建probe则用静态元数据交叉记录解释检查来源，不能报告该命令通过。
 
-- [ ] **Step 5：清理并交付。** 删除本任务临时probe/helper；记录实际产品分母、分类数、所有未决项及负责任务。文档数据校验及git diff --check通过后交审查，不创建commit。
+- [x] **Step 5：清理并交付。** 删除本任务临时probe/helper；记录实际产品分母、分类数、所有未决项及负责任务。文档数据校验及git diff --check通过后交审查，不创建commit。
 
 **出口：** 产品目录与注册/资源事实双向核定；争议项保留，机制代表Control的owner必须明确。CT-00完成不表示这些Control已渲染验收。
 
@@ -100,11 +100,11 @@ decision_state,notes
 
 proposed_category取Active/Derived/Legacy/Reserved/Deprecated/Undecided；decision_state取SourceChecked/NeedsDecision/Approved。这些值是迁移审查分类，不伪造当前descriptor已拥有相同标志。
 
-- [ ] **Step 1：建立终端字段清单。** 按实际继承链展开所有Own，包括internal导出字段；记录稳定名称和原声明。核对同一属性继承到多个identity的情况，不能按字段短名全局去重。
-- [ ] **Step 2：追消费链与默认依赖。** 每项查直接/间接资源、模板、自绘、派生公式和状态分支；“137项无所扫描直接引用”不直接等于137个Bug。记录可修改上游以及显式下游应保留的关系。
-- [ ] **Step 3：决定或登记兼容边界。** DataGrid的17项规范值与Table*历史入口逐一对照；Button/Separator/Avatar/Progress等悬空或历史字段以及Menu未公开能力不顺手新增功能。同层别名冲突和跨层覆盖分别记录。
-- [ ] **Step 4：核对最小反例。** Active/Derived必须有实际或计划消费者及负责任务；合法0/null与负margin按字段判断；不建立Global消费白名单。未决分类必须给出具体问题、当前源码和决策所有者。
-- [ ] **Step 5：校验覆盖并交付。** CSV覆盖全部已核定终端字段；已有90组ID可解析，字段没有消费者时不得填“当前已生效”。代表Button/LineEdit/Select/Skeleton/Timeline/DataGrid/ColorPicker形成清晰合同，余下待决项进入对应家族的开工门槛。
+- [x] **Step 1：建立终端字段清单。** 按实际继承链展开所有Own，包括internal导出字段；记录稳定名称和原声明。核对同一属性继承到多个identity的情况，不能按字段短名全局去重。
+- [x] **Step 2：追消费链与默认依赖。** 每项查直接/间接资源、模板、自绘、派生公式和状态分支；“137项无所扫描直接引用”不直接等于137个Bug。记录可修改上游以及显式下游应保留的关系。
+- [x] **Step 3：决定或登记兼容边界。** DataGrid的17项规范值与Table*历史入口逐一对照；Button/Separator/Avatar/Progress等悬空或历史字段以及Menu未公开能力不顺手新增功能。同层别名冲突和跨层覆盖分别记录。
+- [x] **Step 4：核对最小反例。** Active/Derived必须有实际或计划消费者及负责任务；合法0/null与负margin按字段判断；不建立Global消费白名单。未决分类必须给出具体问题、当前源码和决策所有者。
+- [x] **Step 5：校验覆盖并交付。** CSV覆盖全部已核定终端字段；已有90组ID可解析，字段没有消费者时不得填“当前已生效”。代表Button/LineEdit/Select/Skeleton/Timeline/DataGrid/ColorPicker形成清晰合同，余下待决项进入对应家族的开工门槛。
 
 **检查：** 主键唯一；生成扁平schema与记录双向匹配；非空Active/Derived消费记录可定位；Legacy映射无隐式同名猜测；每项Undecided有后续主任务。
 
@@ -126,7 +126,7 @@ proposed_category取Active/Derived/Legacy/Reserved/Deprecated/Undecided；decisi
 - Consumes: CT-00的owner/Host与CT-01的字段合同；配置走ThemeConfigBuilder.WithToken及WithControl(identity, ControlThemeConfig)，不直接改token builder模拟用户覆盖。
 - Produces: 每项包含触发输入、期望、实际、目标/来源、几何/像素、Host、执行命令、证据状态、测试处置的记录。后续任务必须复用同一输入和断言做red→green。
 
-- [ ] **Step 1：核对已有保障并编写最小反例。** 临时测试namespace统一为AtomUI.Desktop.Controls.Tests.Temporary.CustomThemeBaseline。复用现有AvaloniaTestApp、窗口清理和调度方式，Desktop项目的UI用例使用既有ButtonThemeScopeTestCollection以隔离全局宿主；DataGrid项目沿用其已有串行宿主合同。只读查找真实节点可以取证，样式定制只能在AXAML使用生成专用Style。下列名字是待创建测试，不是已有或已通过用例。
+- [x] **Step 1：核对已有保障并编写最小反例。** 临时测试namespace统一为AtomUI.Desktop.Controls.Tests.Temporary.CustomThemeBaseline。复用现有AvaloniaTestApp、窗口清理和调度方式，Desktop项目的UI用例使用既有ButtonThemeScopeTestCollection以隔离全局宿主；DataGrid项目沿用其已有串行宿主合同。只读查找真实节点可以取证，样式定制只能在AXAML使用生成专用Style。下列名字是待创建测试，不是已有或已通过用例。
 
 | 场景/测试名 | 输入与断言 | 后续 |
 | --- | --- | --- |
@@ -139,6 +139,7 @@ proposed_category取Active/Derived/Legacy/Reserved/Deprecated/Undecided；decisi
 | B07 Existing_Popup_Tracks_Owner_Typography | owner字体大小14→20→14，并改变Family/Weight/Style；已有Native/Overlay及新host实际文本更新，关闭后可释放 | CT-08/CT-10/CT-16 |
 | B08 Gradient_Text_Updates_Without_Changing_Selection | 已有GradientColorPicker保持ActivatedStopIndex不变，改变前景/disabled/主题；目标文字取新状态色，旧实例不保留快照 | CT-19 |
 | B09 Existing_Configuration_Matches_PreChange_Visual_Baseline | 每个适用Control有默认及既有已支持配置的同条件前后对照；位置/尺寸/排版/颜色/描边/阴影/自绘/状态及动效不得漂移。CT-02先做同版本A/A验证采样可重复，实际产品批次再做改动前/后比较 | CT-10–CT-21/CT-25/CT-26 |
+| B10 Button_Remains_Stable_When_Driver_Stops | 用户发现原生验证窗口按钮连续闪动。保留原字号scope与同一批按钮，离屏对照固定配置、连续字号切换、停止于B及恢复A；固定阶段持续观测实际帧、有效字号和实例身份。主动切换可产生变化，停止后不得自行振荡；原生显示面的结论单独保留 | CT-02/CT-12/CT-25 |
 
 B02关键断言须经过真实配置及模板，不能先改CalculateTokenValues再记录“修复前失败”。具体期望为：
 
@@ -158,7 +159,7 @@ button.Padding.Bottom.ShouldBe(18d);
 // 第二输入显式添加ContentPadding="3,7"，settle后应保持Top/Bottom=7。
 ~~~
 
-- [ ] **Step 2：执行精确反例并分类。**
+- [x] **Step 2：执行精确反例并分类。**
 
 ~~~bash
 dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj \
@@ -172,11 +173,11 @@ dotnet test tests/AtomUI.Desktop.Controls.DataGrid.Tests/AtomUI.Desktop.Controls
 
 预期：测试被真实发现；源码风险中可复现者因目标合同不满足而FAIL，不是编译错误、缺资产或零测试。每项分别记录失败、已有通过、未复现或环境受限；已有通过者保留作为对照，不人为制造失败。B07平台不足时保留未验证Host，不自动写成通过。
 
-- [ ] **Step 3：建立视觉兼容基线与实际Host前证。** 为CT-00每个Control列出Host、主题/配置、尺寸/variant、状态、弹层及对应比较任务；CT-02先对代表场景同版本A/A采样，确认截图及布局可重复。使用当前worktree构建产物，记录真实路径/commit及未提交差异、OS/渲染Host/DPI/字体、ClientSize、语言、数据/资源、滚动/焦点和Native/Overlay模式；动态场景固定时间原点及采样时刻。保留原始高度、嵌套、内容、滚动和裁剪条件，B03/B05/B06/B08核对布局/绘制，不能只查看root属性。未采样Control保持待取证，实际修改前必须补齐；不能用代表截图宣称全范围通过。
-- [ ] **Step 3a：证明视觉比较能够检错。** 在临时验证场景中仅将padding增加1个逻辑单位并确认差异被识别，再还原；这是取证流程的正对照，不改产品基线。原始前后图按相同坐标和尺寸比较并实际查看，不能缩放/对齐/遮罩控件区域，不能设置通用像素比例豁免。采样噪声先以同版本A/A定位并固定条件；有未解释差异则比较流程尚未就绪。
-- [ ] **Step 4：冻结性能和生命周期采样条件。** 记录场景的实际控件/数据量、Host、构建模式、算法和scope。分别测首次使用、等价NoOp、Global更新、Own更新、嵌套和已打开弹层；首次使用保留冷启动样本，热场景先稳定再采样。固定后重复30次，保留中位数/p95、分配和对象数量；此步骤建立基线，不凭空宣布性能无回退。
-- [ ] **Step 5：保存可重建证据并清理。** baseline.md保存反例配方、测试名、断言、真实结果、视觉兼容矩阵及后续任务；查看并记录不依赖媒体的实际数值/观察后，清理仓库外取证媒体以及临时C#/AXAML/helper/进程和专属构建产物。后续修复每批改码前重新开启同条件前后对照流程，前证在改码前采集、后证在改码后比较；不能只凭本轮文字或重建新期望宣布无差异，不建立永久失败测试或截图库。
-- [ ] **Step 6：最终文档核对与M0审查。** 验证目录/分类/问题映射无漏项、临时文件零残留和git diff --check。若仅保留文档则不运行不相关产品回归；临时扩展过既有测试时先还原该临时修改，再用其精确filter确认恢复后的对照。
+- [x] **Step 3：建立视觉兼容基线与实际Host前证。** 为CT-00每个Control列出Host、主题/配置、尺寸/variant、状态、弹层及对应比较任务；CT-02先对代表场景同版本A/A采样，确认截图及布局可重复。使用当前worktree构建产物，记录真实路径/commit及未提交差异、OS/渲染Host/DPI/字体、ClientSize、语言、数据/资源、滚动/焦点和Native/Overlay模式；动态场景固定时间原点及采样时刻。保留原始高度、嵌套、内容、滚动和裁剪条件，B03/B05/B06/B08核对布局/绘制，不能只查看root属性。未采样Control保持待取证，实际修改前必须补齐；不能用代表截图宣称全范围通过。
+- [x] **Step 3a：证明视觉比较能够检错。** 在临时验证场景中仅将padding增加1个逻辑单位并确认差异被识别，再还原；这是取证流程的正对照，不改产品基线。原始前后图按相同坐标和尺寸比较并实际查看，不能缩放/对齐/遮罩控件区域，不能设置通用像素比例豁免。采样噪声先以同版本A/A定位并固定条件；有未解释差异则比较流程尚未就绪。
+- [x] **Step 4：冻结性能和生命周期采样条件。** 记录场景的实际控件/数据量、Host、构建模式、算法和scope。分别测首次使用、等价NoOp、Global更新、Own更新、嵌套和已打开弹层；首次使用保留冷启动样本，热场景先稳定再采样。固定后重复30次，保留中位数/p95、分配和对象数量；此步骤建立基线，不凭空宣布性能无回退。
+- [x] **Step 5：保存可重建证据并清理。** baseline.md保存反例配方、测试名、断言、真实结果、视觉兼容矩阵及后续任务；查看并记录不依赖媒体的实际数值/观察后，清理仓库外取证媒体以及临时C#/AXAML/helper/进程和专属构建产物。后续修复每批改码前重新开启同条件前后对照流程，前证在改码前采集、后证在改码后比较；不能只凭本轮文字或重建新期望宣布无差异，不建立永久失败测试或截图库。
+- [x] **Step 6：最终文档核对与M0审查。** 验证目录/分类/问题映射无漏项、临时文件零残留和git diff --check。若仅保留文档则不运行不相关产品回归；临时扩展过既有测试时先还原该临时修改，再用其精确filter确认恢复后的对照。
 
 **出口：** 有可重复的失败与当前对照、视觉兼容矩阵、同版本A/A及差异检出正对照、Host/未验证边界和基线采样协议。未修复的问题仍待处置；本批没有green修复或改动后视觉一致性证据，不报告“主题系统已支持”或“全部控件视觉无差异”。
 
@@ -185,3 +186,7 @@ dotnet test tests/AtomUI.Desktop.Controls.DataGrid.Tests/AtomUI.Desktop.Controls
 M0审查通过后，先分别编写Own版本/生成/Compiler、别名兼容、品牌资格/协调三个接口明确的子计划；CT-10/CT-11可以同时准备其独立消费链计划。每个新子计划携带具体类型/签名、可失败断言、临时验证位置、最终focused命令及兼容边界，再进入实施。
 
 不存在“完成目录后按路线图自动改全部控件”的步骤；每个家族从CT-00精确对象展开，仍按同一合同和证据闭合。
+
+## M0审查结论
+
+2026-10-22，独立只读审查核对目录／字段／问题映射、源码关系、留存文本证据和清理状态，Critical=0、阻止下一阶段的Important=0，允许交接下一阶段机制规划。一次状态文字不一致随本步骤的阶段状态同步完成。M0仅完成代表基线交接；原生最终显示面无输入闪动、305个owner、123个字段／124个合同决策及逐Control真实消费／视觉／平台／AOT仍按既定任务验收，没有改为产品通过。

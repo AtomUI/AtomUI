@@ -11,6 +11,7 @@ internal static class ThemeDefinitionBinder
     private const string InvalidAlgorithmPolicyCode = "ATMTHM3001";
     private const string InvalidTokenValueCode = "ATMTHM3002";
     private const string InvalidAppearanceCode = "ATMTHM3003";
+    private const string ConflictingAliasCode = "ATMTHM3004";
 
     internal static ThemeDefinitionBindResult Bind(
         ThemeDocument document,
@@ -160,9 +161,10 @@ internal static class ThemeDefinitionBinder
                 if (descriptor.TryGetOwnToken(token.Name, out var ownDescriptor))
                 {
                     matched = true;
-                    if (TryBindToken(token, ownDescriptor, diagnostics, out var value))
+                    if (TryBindToken(token, descriptor.GetCanonicalOwnToken(ownDescriptor), diagnostics, out var value))
                     {
-                        ownTokens.Add(value);
+                        ownTokens.Add(ReferenceEquals(value.Descriptor, ownDescriptor)
+                            ? value : value with { Descriptor = ownDescriptor });
                     }
                 }
 
@@ -190,7 +192,7 @@ internal static class ThemeDefinitionBinder
                 document.AlgorithmMode,
                 algorithms,
                 globalTokens,
-                ownTokens,
+                ControlTokenAliasNormalizer.Normalize(descriptor, ownTokens, ConflictingAliasCode, diagnostics),
                 document.Location));
         }
 

@@ -6,7 +6,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DataGridToken : AbstractControlDesignToken
+internal sealed partial class DataGridToken : AbstractControlDesignToken, IControlTokenAliases
 {
     
     public DataGridToken()
@@ -221,16 +221,26 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     #endregion
 
     #region 内部别名定义
+    [ControlTokenAlias(nameof(CellFontSize))]
     internal double TableFontSize { get; set; }
     internal Color TableBg { get; set; }
+    [ControlTokenAlias(nameof(HeaderBorderRadius))]
     internal CornerRadius TableRadius { get; set; }
+    [ControlTokenAlias(nameof(CellPadding))]
     internal Thickness TablePadding { get; set; }
+    [ControlTokenAlias(nameof(CellPaddingMD))]
     internal Thickness TablePaddingMiddle { get; set; }
+    [ControlTokenAlias(nameof(CellPaddingSM))]
     internal Thickness TablePaddingSmall { get; set; }
+    [ControlTokenAlias(nameof(BorderColor))]
     internal Color TableBorderColor { get; set; }
+    [ControlTokenAlias(nameof(HeaderColor))]
     internal Color TableHeaderTextColor { get; set; }
+    [ControlTokenAlias(nameof(HeaderBg))]
     internal Color TableHeaderBg { get; set; }
+    [ControlTokenAlias(nameof(FooterColor))]
     internal Color TableFooterTextColor { get; set; }
+    [ControlTokenAlias(nameof(FooterBg))]
     internal Color TableFooterBg { get; set; }
     internal Color TableHeaderCellSplitColor { get; set; }
     internal Color TableHeaderSortBg { get; set; }
@@ -238,6 +248,7 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     internal Color TableBodySortBg { get; set; }
     internal Color TableFixedHeaderSortActiveBg { get; set; }
     internal Color TableHeaderFilterActiveBg { get; set; }
+    [ControlTokenAlias(nameof(FilterDropdownBg))]
     internal Color TableFilterDropdownBg { get; set; }
     internal double TableFilterButtonSpacing  { get; set; }
     internal Thickness TableFilterButtonContainerMargin { get; set; }
@@ -248,14 +259,20 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     internal Thickness TableFilterDropdownPadding { get; set; }
     internal double TableFilterDropdownSearchWidth { get; set; }
     
+    [ControlTokenAlias(nameof(RowHoverBg))]
     internal Color TableRowHoverBg { get; set; }
+    [ControlTokenAlias(nameof(RowSelectedBg))]
     internal Color TableSelectedRowBg { get; set; }
+    [ControlTokenAlias(nameof(RowSelectedHoverBg))]
     internal Color TableSelectedRowHoverBg { get; set; }
+    [ControlTokenAlias(nameof(CellFontSizeMD))]
     internal double TableFontSizeMiddle { get; set; }
+    [ControlTokenAlias(nameof(CellFontSizeSM))]
     internal double TableFontSizeSmall { get; set; }
     internal double TableSelectionColumnWidth { get; set; }
     internal Color TableExpandIconBg { get; set; }
     internal double TableExpandColumnWidth { get; set; }
+    [ControlTokenAlias(nameof(RowExpandedBg))]
     internal Color TableExpandedRowBg { get; set; }
     
     internal CornerRadius TableTopLeftColumnCornerRadius { get; set; }

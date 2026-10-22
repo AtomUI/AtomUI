@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Definitions.Compiled;
@@ -61,8 +62,25 @@ public sealed class CompiledThemeValueWriter
         var controls = _binding.Controls.Select(control => new ControlThemeDefinition(control.Value.Descriptor,
             control.Value.Mode, control.Value.Algorithms,
             _values.Where(value => _binding.Tokens[value.Key].ControlId == control.Key && !_binding.Tokens[value.Key].Own).Select(value => value.Value),
-            _values.Where(value => _binding.Tokens[value.Key].ControlId == control.Key && _binding.Tokens[value.Key].Own).Select(value => value.Value), _location)).ToArray();
+            NormalizeOwn(control.Value.Descriptor,
+                _values.Where(value => _binding.Tokens[value.Key].ControlId == control.Key && _binding.Tokens[value.Key].Own)
+                    .Select(value => value.Value)), _location)).ToArray();
         return new PreparedThemeValues(Array.AsReadOnly(globals), Array.AsReadOnly(controls));
+    }
+
+    private static IEnumerable<BoundTokenValue> NormalizeOwn(ControlTokenDescriptor control, IEnumerable<BoundTokenValue> values)
+    {
+        if (control.OwnTokenAliases.Count == 0)
+        {
+            return values;
+        }
+        var diagnostics = new List<ThemeDefinitionDiagnostic>();
+        var result = ControlTokenAliasNormalizer.Normalize(control, values.ToArray(), "ATMTHM3004", diagnostics);
+        if (diagnostics.Count != 0)
+        {
+            throw new ThemeSchemaException(diagnostics[0].Message);
+        }
+        return result;
     }
 
     internal void Close()

@@ -51,6 +51,11 @@ internal static class AtomUIDiagnosticIds
     public const string SemanticPartStyleTypeConflict = "ATOMUIGEN037";
     public const string SemanticPartInvalidSince = "ATOMUIGEN038";
     public const string StartupHookMissingAttach = "ATOMUIGEN039";
+    public const string ControlTokenDefaultVersion = "ATOMUIGEN040";
+    public const string ControlTokenDefaultDeclaration = "ATOMUIGEN041";
+    public const string ControlTokenDefaultSignature = "ATOMUIGEN042";
+    public const string ControlTokenDefaultDependency = "ATOMUIGEN043";
+    public const string ControlTokenAliasDeclaration = "ATOMUIGEN044";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";
     public const string LocalizationInvalidCatalog = "ATOMUILOC003";

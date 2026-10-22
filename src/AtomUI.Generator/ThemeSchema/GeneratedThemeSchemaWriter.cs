@@ -239,8 +239,22 @@ internal sealed class GeneratedThemeSchemaWriter
         }
         source.Append(indentation).AppendLine("    },");
         source.Append(indentation).Append("    static () => new ").Append(typeName).AppendLine("(),");
-        source.Append(indentation).Append("    static (token, appearance) => ((").Append(typeName)
-              .AppendLine(")token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
+        if (control.OwnToken!.DefaultPlan is { } defaults)
+        {
+            source.Append(indentation).Append("    ").Append(typeName).Append(".EvaluateDefaults, 0x")
+                .Append(defaults.Revision.ToString("X16")).Append("UL");
+        }
+        else
+        {
+            source.Append(indentation).Append("    static (token, appearance) => ((").Append(typeName)
+                  .Append(")token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
+        }
+        if (control.OwnToken.Aliases.Count > 0)
+        {
+            source.AppendLine(",");
+            source.Append(indentation).Append("    ").Append(ControlTokenAliasesWriter.MetadataType(control.OwnToken)).Append(".Aliases");
+        }
+        source.AppendLine();
         source.Append(indentation).Append(')').AppendLine(suffix);
     }
 

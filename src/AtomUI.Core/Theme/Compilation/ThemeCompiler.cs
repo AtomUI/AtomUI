@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 using AtomUI.Generated.AtomUICore;
@@ -521,12 +522,25 @@ internal sealed class ThemeCompiler
         if (controlBuilder is not null)
         {
             controlBuilder.AssignEffectiveGlobalToken(effectiveGlobalBuilder);
-            descriptor.Evaluate(controlBuilder, appearance);
-            if (config is not null)
+            if (descriptor.EvaluationVersion == ControlTokenEvaluationVersion.DependencyDefaultsV2)
             {
-                ApplyAllValues(controlBuilder, config.OwnTokens);
+                if (config is not null)
+                {
+                    ApplyAllValues(controlBuilder, config.OwnTokens);
+                }
+                EvaluateControlDefaults(descriptor, controlBuilder, effectiveGlobalBuilder, appearance,
+                    config?.OwnTokens ?? Array.Empty<NormalizedTokenValue>());
+            }
+            else
+            {
+                descriptor.Evaluate(controlBuilder, appearance);
+                if (config is not null)
+                {
+                    ApplyAllValues(controlBuilder, config.OwnTokens);
+                }
             }
 
+            descriptor.ApplyAliases(controlBuilder);
             controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
             controlResources = BuildResourceMap(controlBuilder, descriptor.OwnTokens);
         }
@@ -538,6 +552,41 @@ internal sealed class ThemeCompiler
             globalResourceDelta,
             controlTokenValues,
             controlResources);
+    }
+
+    private static void EvaluateControlDefaults(ControlTokenDescriptor descriptor,
+        AbstractControlDesignToken builder, DesignToken effectiveGlobal, ThemeAppearance appearance,
+        IReadOnlyList<NormalizedTokenValue> explicitValues)
+    {
+        var context = new ControlTokenDefaultContext(effectiveGlobal, appearance);
+        if (explicitValues.Count == 0)
+        {
+            descriptor.EvaluateDefaults(builder, in context, []);
+            return;
+        }
+
+        var wordCount = (int)((descriptor.OwnTokens.Count + 63L) >> 6);
+        ulong[]? rented = null;
+        Span<ulong> presence = wordCount <= 64
+            ? stackalloc ulong[wordCount]
+            : (rented = ArrayPool<ulong>.Shared.Rent(wordCount)).AsSpan(0, wordCount);
+        try
+        {
+            presence.Clear();
+            foreach (var value in explicitValues)
+            {
+                var slot = value.Descriptor.Slot;
+                presence[slot >> 6] |= 1UL << (slot & 63);
+            }
+            descriptor.EvaluateDefaults(builder, in context, presence);
+        }
+        finally
+        {
+            if (rented is not null)
+            {
+                ArrayPool<ulong>.Shared.Return(rented, clearArray: true);
+            }
+        }
     }
 
     private static DesignToken ReevaluateControlGlobal(

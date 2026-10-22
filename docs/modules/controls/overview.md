@@ -27,6 +27,16 @@ builder.UseCommonControls();
 
 `UseDesktopControls()` 会先调用 `UseCommonControls()`，所以普通桌面应用无需单独调用本方法。
 
+## 主题输入与自绘职责
+
+本模块遵守[Control渲染合同](../../architecture/systems/theming/control-rendering.md)：抽象控件与primitive接收真实公开owner的
+有效输入，public子Control保持自身identity。VisualBrush、文本、pen与geometry完整消费约定属性并按依赖失效，
+状态与布局计算不得无条件重写用户公共属性。非Visual对象及动效保持明确的获取/释放owner。
+
+Own共享层只复用真实产品视觉语义，其[依赖默认值](../../architecture/systems/theming/own-token-evaluation.md)和
+[生成计划](../generator/own-token-defaults.md)不形成运行时继承查找。此处定义接入责任，具体Control符合程度与证据由其文档维护；
+不能据此认为所有公共primitive已经完成迁移。
+
 ## 图片加载职责
 
 `AtomUI.Controls` 拥有：

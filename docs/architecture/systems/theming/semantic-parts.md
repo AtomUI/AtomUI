@@ -880,6 +880,8 @@ Button 的 `root`、`icon`、`content` 可以作为基础契约测试样本；�
 
 ## 16. 相关文档
 
+- [品牌配方与样式作用域](brand-recipes.md)：托管品牌的资格、资源、跨根和激活目标合同；实际实现状态见[验证边界](verification.md)。
+- [Control主题输入与渲染](control-rendering.md)：Part Setter、公共实例输入与实际绘制/布局共同遵守的消费合同。
 - [Semantic Part Generator 设计](../../../modules/generator/semantic-part-generator.md)：构建期输入、模板分析、descriptor、诊断和
   AOT 输出。
 - [AtomUI.Core 模块](../../../modules/core/overview.md)：Core descriptor 校验、包级注册、冻结 registry 与运行时查询。

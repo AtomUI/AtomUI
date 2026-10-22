@@ -57,6 +57,7 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | --- | --- |
 | [控件注册生成](control-registration.md) | 本模块的注册输入、输出、增量模型和验证边界 |
 | [Semantic Part Generator](semantic-part-generator.md) | 语义声明、AXAML 路由验证与专用 Style 生成 |
+| [Own默认值生成](own-token-defaults.md) | 依赖默认值目标合同的强类型声明、跨程序集元数据、终端计划、版本和AOT输出；实现状态单独维护 |
 | [Scoped Resource Host Generator](scoped-resource-host-generator.md) | scoped resource host 的识别、生成与生命周期 |
 | [编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md) | 类型化注册与默认赋值、字面量解析、构建契约和 AOT 保留边界 |
 

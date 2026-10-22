@@ -13,6 +13,10 @@ Global Token 使用示例；全部 Global Token 都可覆盖，不在单 Control
 
 ## Token 分层
 
+下图描述现行整体evaluator路径。依赖默认值的目标合同由[Own有效求值](../../architecture/systems/theming/own-token-evaluation.md)拥有：
+显式下游值保留，其余默认读取有效上游；两种合同有明确版本，不能混跑或重复执行旧计算链。源码符合状态见
+[主题验证边界](../../architecture/systems/theming/verification.md)。
+
 ```text
 Global Token
     -> Control-specific Global Override
@@ -105,6 +109,9 @@ internal sealed class RatingToken : AbstractControlDesignToken
 `AtomUI.Controls`，不因复用下沉到 `AtomUI.Core` 或 `AtomUI.Controls.Shared`。
 
 ### 默认值计算继承
+
+本节仅约束现行整体evaluator。新依赖声明、跨程序集默认元数据和partial终端入口遵守
+[Own默认值生成设计](../../modules/generator/own-token-defaults.md)，不将其规则反向套用到旧定义。
 
 Generator 只为终端生成 evaluator，默认计算使用 C# virtual dispatch。继承链后续层 override
 `CalculateTokenValues(bool isDarkMode)` 时，第一条可执行语句必须且只能调用一次

@@ -180,7 +180,7 @@ Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
 
 ## Global Token 使用规则
 
-GalleryBase 可以使用以下 AtomUI Global Token：
+GalleryBase可以使用完整AtomUI Global Token schema，以下只是常见消费示例，不构成支持或消费白名单：
 
 - `ColorBgContainer`
 - `ColorBgLayout`
@@ -195,6 +195,14 @@ Global Token 时使用对应的 `XxxTokenResource`；只有要求该值永远跟
 `SharedTokenResource`。两者都不产生 Global Token 消费清单。不允许在 GalleryBase 主题中写入产品色值，例如固定
 品牌蓝、AtomUI logo 色或产品状态色。
 产品色应通过产品页面或产品品牌配置表达。
+
+## 主题工作台集成职责
+
+[Gallery主题工作台](../../gallery/theming/workbench.md)定义草稿、隔离预览、应用/保存、完整品牌往返和受限生成入口。
+GalleryBase复用其中已形成稳定产品中立责任的Shell、展示和检查设施，不持有产品配方、页面、服务凭据或第二套活动主题。
+
+Shell继续以已提交ThemeManager状态更新菜单；工作台草稿不能直接修改`CurrentThemeId`或应用资源。Token提交结果和品牌表现
+完整性分别消费，未完整应用不能显示为品牌成功。当前Shell切换和工作台目标能力分开记录实现证据。
 
 ## 通用页头本地化
 

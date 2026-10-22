@@ -81,6 +81,8 @@ Do not let `AGENTS.md` become a rule dump. When adding durable guidance:
 Read the relevant document before touching the corresponding area:
 
 - Overall architecture: [docs/architecture/overview.md](docs/architecture/overview.md)
+- Theme design and implementation boundaries: [docs/architecture/systems/theming/overview.md](docs/architecture/systems/theming/overview.md)
+- Mandatory theme authoring and acceptance rules: [docs/engineering/development/theming/overview.md](docs/engineering/development/theming/overview.md)
 - Module boundaries: [docs/architecture/foundations/dependency-graph.md](docs/architecture/foundations/dependency-graph.md)
 - Build-tool ownership and profiles: [docs/modules/toolchain/overview.md](docs/modules/toolchain/overview.md)
 - Mobile target architecture: [docs/architecture/systems/mobile/overview.md](docs/architecture/systems/mobile/overview.md)

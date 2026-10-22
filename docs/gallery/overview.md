@@ -10,6 +10,10 @@
   Adorner 生命周期和零 Control 增量边界。
 - [ShowCase 组织规范](authoring/organization.md)
 
+## Theming
+
+- [主题工具设计](theming/overview.md)：工作台状态、品牌表达、诊断、完整往返和受限生成入口；目标设计与现行Shell能力分开。
+
 ## Platforms
 
 - [Gallery 平台宿主](platforms/overview.md)

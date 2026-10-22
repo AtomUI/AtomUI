@@ -52,6 +52,16 @@ Control 家族的共享视觉语义。跨 Desktop/Mobile 的抽象 Control Token
 扁平化这些定义，Core 运行时不遍历继承链。完整契约见
 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。
 
+## 精确主题设计职责
+
+Core拥有[Own有效求值](../../architecture/systems/theming/own-token-evaluation.md)的运行协议、显式覆盖与别名规范化，
+以及[品牌配方](../../architecture/systems/theming/brand-recipes.md)的scope集合、owner lease和同一Manager协调边界。
+Generator拥有依赖声明与强类型计划生成；具体Control包拥有实际视觉语义和消费者，Core不下沉产品Token。
+
+现行Token CommitCore保持静默引用交换、Publish保持不可回滚。品牌可恢复接线/预激活在其提交前处理，提交后的
+Token诊断与品牌表现结果区分；不能把原生Styles修改塞入CommitCore。新合同尚需源码迁移与机制验证，
+当前证据由[主题验证边界](../../architecture/systems/theming/verification.md)维护，不由本模块概览宣告通过。
+
 ## 集合与 Motion 生命周期
 
 `ItemCollection` 使用 Avalonia 的静态集合弱事件订阅外部 ItemsSource。适配器存活期间持续转发集合变更与 Reset，

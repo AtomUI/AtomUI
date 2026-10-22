@@ -1,0 +1,9 @@
+{
+  "cs.paint": "Brushes\\.\\w+|Colors\\.\\w+|Color\\.(?:Parse|FromArgb|FromRgb)\\s*\\(",
+  "cs.appearance-assignment": "\\b(?:Background|Foreground|BorderBrush|BorderThickness|CornerRadius|Padding|Margin|FontSize|FontFamily|FontWeight|BoxShadow|BoxShadows|Width|Height|MinWidth|MinHeight|MaxWidth|MaxHeight|Opacity|StrokeThickness|Fill|Stroke|Duration|Easing|StrokeDashArray)\\s*=\\s*(?:[-+]?\\d|\"|Brushes\\.|Colors\\.|Color\\.|new\\s+(?:Thickness|CornerRadius|SolidColorBrush|ImmutableSolidColorBrush|Pen|BoxShadow|FontFamily|TimeSpan)|TimeSpan\\.)",
+  "cs.appearance-setvalue": "(?:SetValue|SetCurrentValue)\\s*\\(\\s*(?:\\w+\\.)?(?:Background|Foreground|BorderBrush|BorderThickness|CornerRadius|Padding|Margin|FontSize|FontFamily|FontWeight|BoxShadow|BoxShadows|Width|Height|MinWidth|MinHeight|MaxWidth|MaxHeight|Opacity|StrokeThickness|Fill|Stroke|Duration|Easing|StrokeDashArray)Property\\s*,\\s*(?:[-+]?\\d|\"|Brushes\\.|Colors\\.|Color\\.|new\\s+(?:Thickness|CornerRadius|SolidColorBrush|ImmutableSolidColorBrush|Pen|BoxShadow|FontFamily|TimeSpan)|TimeSpan\\.)",
+  "axaml.setter-literal": "<Setter\\s+Property=\"(?:\\w+\\.)?(?:Background|Foreground|BorderBrush|BorderThickness|CornerRadius|Padding|Margin|FontSize|FontFamily|FontWeight|BoxShadow|BoxShadows|Width|Height|MinWidth|MinHeight|MaxWidth|MaxHeight|Opacity|StrokeThickness|Fill|Stroke|Duration|Easing|StrokeDashArray)\"\\s+Value=\"(?!\\{)[^\"]+\"",
+  "axaml.attribute-literal": "\\b(?:Background|Foreground|BorderBrush|BorderThickness|CornerRadius|Padding|Margin|FontSize|FontFamily|FontWeight|BoxShadow|BoxShadows|Width|Height|MinWidth|MinHeight|MaxWidth|MaxHeight|Opacity|StrokeThickness|Fill|Stroke|Duration|Easing|StrokeDashArray)=\"(?!\\{)[^\"]+\"",
+  "shared-token-consumer": "(?:SharedTokenResource|CreateGlobalTokenBinding)\\b",
+  "shared-token-static-value": "\\bSharedTokenResourceValue\\b"
+}

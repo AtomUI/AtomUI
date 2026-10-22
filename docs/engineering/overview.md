@@ -21,6 +21,7 @@
 - [编译期诊断规范](development/compiler-diagnostics-guidelines.md)
 - [代码风格规范](development/code-style-guidelines.md)
 - [Control 研发规范](development/control-development-guidelines.md)
+- [全局主题研发规范](development/theming/overview.md)：统一基础设施、Token、控件消费与验收要求，引用对应正式设计与实现边界。
 - [Control Token 规范](development/control-token-guidelines.md)
 - [Scoped Resource Host](development/scoped-resource-host.md)
 - [Popup Anchor 作用域](development/popup-anchor-scope.md)

@@ -4,6 +4,9 @@
 [启动系统架构](../../architecture/systems/startup/overview.md)。控件包入口、二进制包链接和语言证明见
 [控件包启动接入](package-authoring.md)。
 
+使用 Avalonia.Headless 创建测试应用时，参见 [Headless 测试接入](../testing/overview.md)，其中提供 xUnit 两套版本的
+完整项目、Application 挂接、UI 线程调度和隔离示例。
+
 ## 1. 最小用法
 
 在 `AppBuilder` 链上调用 `UseAtomUI`，配置回调里只做声明：

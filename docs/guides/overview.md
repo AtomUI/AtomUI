@@ -4,6 +4,7 @@
 或架构不变量；稳定契约分别由 Architecture、Control 文档和 Reference 拥有。
 
 - [启动指南](startup/overview.md)
+- [Headless 测试接入](testing/overview.md)
 - [主题指南](theming/overview.md)
 - [字体指南](typography/overview.md)
 - [Control 基础设施指南](control-infrastructure/overview.md)

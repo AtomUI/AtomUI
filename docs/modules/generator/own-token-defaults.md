@@ -43,3 +43,20 @@ Generator显式区分现行整体evaluator和依赖默认值合同。旧定义�
 ## 6. 验证
 
 覆盖常量/函数默认、显式上下游、重定义、访问性、循环、非法参数、混合版本、同/跨程序集、声明层移动、修订失效及确定输出。验证生成evaluator的运行语义与动态配置一致，并通过真实包消费/trim/NativeAOT；不得以生成文本包含某个方法名代替行为证据。
+
+## 7. CT-03接口到生成产物
+
+具体Attribute、上下文、`IControlTokenDefaults`及descriptor签名统一由[Own求值接口](../../architecture/systems/theming/own-token-evaluation.md#9-ct-03具体构建与运行接口)拥有，不再定义另一套模型名称。
+
+- 新版终端必须声明partial和`IControlTokenDefaults`；生成其`public static EvaluateDefaults(AbstractControlDesignToken, in ControlTokenDefaultContext, ReadOnlySpan<ulong>)`。旧生成器缺少实现时由C#编译失败，不能降级整体evaluator。
+- `ControlTokenPropertyWalker`保留字段扁平化，额外生成脱离symbol的默认计划：版本、层revision、按名称字段、默认方法完整类型/方法名、Own参数映射、重定义与确定evaluator revision。只在当前Compilation内使用symbol做类型/可访问性检查，不将其保存在增量输出中。
+- 仅生成静态拓扑顺序；每步先读对应存在位，再直接赋值并调用强类型函数。拓扑不改变Own slot；descriptor factory直接引用该入口，没有反射或逐字段delegate。
+- Core的完整Global schema同时生成`ControlTokenGlobalValues`只读getter，每个合法Global字段均包含。复用typed codec的复制合同，不能返回mutable Global builder、活动资源或共享mutable brush。
+- 旧版仍执行原Calculation validator及原factory输出。新版诊断覆盖版本／partial／接口／revision、默认声明／覆盖／可访问性、参数／返回类型和未知／环依赖，沿用诊断集中管理与编号规范；错误终端不发布可用的部分默认计划。
+- 默认元数据来自普通CLI Attribute与方法签名；跨程序集通过Roslyn读取，不另建运行期反射注册表。启动schema及编译主题ABI继续按原值域合同处理，不将evaluator版本摘要伪装为Token schema变更。
+
+## Own别名生成
+
+`ControlTokenAliasModel`读取同/跨程序集的属性Attribute，验证直接规范目标、精确类型/nullability、终端partial/静态接口及禁止手写入口；错误使用`ATOMUIGEN044`。输出只保留名称对，不持有Roslyn symbol。`ControlTokenAliasesWriter`生成终端`IControlTokenAliases.GetAliases()`及中立只读表；schema factory直接引用后者，元数据读取不执行Token构造或静态初始化。
+
+Own slot仍包含全部历史字段且按名称排序。V2默认计划跳过别名的默认要求和求值，拒绝以别名为默认目标或Own输入，规范字段步骤仍使用原slot。最终历史值投影由Compiler完成，生成器不维护另一套运行时图，也不更改XML/compiled格式。

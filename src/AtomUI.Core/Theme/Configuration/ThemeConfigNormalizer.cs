@@ -13,6 +13,7 @@ internal static class ThemeConfigNormalizer
     private const string InvalidAlgorithmPolicyCode = "ATMTHM4005";
     private const string InvalidTokenValueCode = "ATMTHM4006";
     private const string InvalidInputCode = "ATMTHM4007";
+    private const string ConflictingAliasCode = "ATMTHM4008";
     private const string Source = "<ThemeConfig>";
 
     internal static ThemeConfigNormalizeResult Normalize(ThemeConfig config, ThemeSchemaRegistry registry)
@@ -230,6 +231,7 @@ internal static class ThemeConfigNormalizer
 
         var globalResult = new List<NormalizedTokenValue>(values.Count);
         var ownResult = new List<NormalizedTokenValue>(values.Count);
+        var aliasValues = control.OwnTokenAliases.Count == 0 ? null : new List<BoundTokenValue>(values.Count);
         var entries = ThemeConfigArray.Copy(values);
         Array.Sort(entries, static (left, right) => string.Compare(left.Key, right.Key, StringComparison.Ordinal));
         foreach (var entry in entries)
@@ -239,9 +241,17 @@ internal static class ThemeConfigNormalizer
             if (control.TryGetOwnToken(entry.Key, out var ownDescriptor))
             {
                 matched = true;
-                if (TryParseToken(entry.Value, ownDescriptor, diagnostics, path, out var value))
+                if (TryParseToken(entry.Value, control.GetCanonicalOwnToken(ownDescriptor), diagnostics, path, out var value))
                 {
-                    ownResult.Add(value);
+                    if (aliasValues is null)
+                    {
+                        ownResult.Add(value);
+                    }
+                    else
+                    {
+                        aliasValues.Add(new BoundTokenValue(ownDescriptor, value.Value,
+                            new ThemeSourceLocation(Source, 0, 0, path), value.CanonicalValue));
+                    }
                 }
             }
 
@@ -265,6 +275,13 @@ internal static class ThemeConfigNormalizer
         }
 
         globalTokens = globalResult;
+        if (aliasValues is not null)
+        {
+            foreach (var value in ControlTokenAliasNormalizer.Normalize(control, aliasValues, ConflictingAliasCode, diagnostics))
+            {
+                ownResult.Add(new NormalizedTokenValue(value.Descriptor, value.Value, value.CanonicalValue));
+            }
+        }
         ownTokens = ownResult;
     }
 

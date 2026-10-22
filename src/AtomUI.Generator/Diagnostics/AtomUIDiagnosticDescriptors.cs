@@ -5,6 +5,23 @@ namespace AtomUI.Generator.Diagnostics;
 #pragma warning disable RS2008
 internal static partial class AtomUIDiagnosticDescriptors
 {
+    public static readonly DiagnosticDescriptor ControlTokenDefaultVersion = DefaultDiagnostic(
+        AtomUIDiagnosticIds.ControlTokenDefaultVersion, "Control default evaluation contract is invalid");
+    public static readonly DiagnosticDescriptor ControlTokenDefaultDeclaration = DefaultDiagnostic(
+        AtomUIDiagnosticIds.ControlTokenDefaultDeclaration, "Control default declaration is invalid");
+    public static readonly DiagnosticDescriptor ControlTokenDefaultSignature = DefaultDiagnostic(
+        AtomUIDiagnosticIds.ControlTokenDefaultSignature, "Control default signature is invalid");
+    public static readonly DiagnosticDescriptor ControlTokenDefaultDependency = DefaultDiagnostic(
+        AtomUIDiagnosticIds.ControlTokenDefaultDependency, "Control default dependency is invalid");
+    public static readonly DiagnosticDescriptor ControlTokenAliasDeclaration = new(
+        AtomUIDiagnosticIds.ControlTokenAliasDeclaration, "Control Token alias declaration is invalid",
+        "Control '{0}' alias contract is invalid: {1}", AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error, isEnabledByDefault: true, customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    private static DiagnosticDescriptor DefaultDiagnostic(string id, string title) => new(id, title,
+        "Control '{0}' default contract is invalid: {1}", AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error, isEnabledByDefault: true, customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor AotMissingGeneratedAccessor = new(
         AtomUIDiagnosticIds.AotMissingGeneratedAccessor,
         "AOT-sensitive data member path requires generated accessor",

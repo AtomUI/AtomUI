@@ -51,6 +51,32 @@ DataGrid 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
 - 如需引入新 Token，必须同步 Token 类型、生成资源、主题引用和本文档。
 
+### 5.1 规范字段与历史入口
+
+以下历史`Table*`属性通过显式别名元数据映射到规范字段；属性、slot、TokenKind、typed key及资源键继续保留。配置先在每层归一，跨层按现行优先级覆盖；同层同值归一，不同值诊断冲突。Compiler在整体默认求值及显式覆盖后，把规范值复制到历史字段，再发布同一snapshot，历史AXAML消费者因而读取有效规范值。
+
+| 历史入口 | 规范字段 | 实际消费区域 |
+| --- | --- | --- |
+| `TableBorderColor` | `BorderColor` | cell/row网格线 |
+| `TableExpandedRowBg` | `RowExpandedBg` | 行详情框体 |
+| `TableFilterDropdownBg` | `FilterDropdownBg` | menu/tree过滤器Presenter |
+| `TableFontSize` | `CellFontSize` | Large单元格/详情文字 |
+| `TableFontSizeMiddle` | `CellFontSizeMD` | Middle单元格/详情文字 |
+| `TableFontSizeSmall` | `CellFontSizeSM` | Small单元格/详情文字 |
+| `TableFooterBg` | `FooterBg` | footer背景 |
+| `TableFooterTextColor` | `FooterColor` | footer文字 |
+| `TableHeaderBg` | `HeaderBg` | header及表头框体背景 |
+| `TableHeaderTextColor` | `HeaderColor` | header文字 |
+| `TablePadding` | `CellPadding` | Large单元格/详情间距 |
+| `TablePaddingMiddle` | `CellPaddingMD` | Middle单元格/详情间距 |
+| `TablePaddingSmall` | `CellPaddingSM` | Small单元格/详情间距 |
+| `TableRadius` | `HeaderBorderRadius` | DataGrid圆角 |
+| `TableRowHoverBg` | `RowHoverBg` | row hover/拖动背景 |
+| `TableSelectedRowBg` | `RowSelectedBg` | selected row背景 |
+| `TableSelectedRowHoverBg` | `RowSelectedHoverBg` | selected row hover背景 |
+
+其他`Table*`字段没有依据前缀自动归为别名。DataGrid继续使用WholeEvaluatorV1默认求值，默认公式与模板尺寸分支保持原合同；规范字段覆盖不会使其他独立默认派生字段自动重新求值。Own依赖默认值及版本边界见[Own Token设计](../../../../architecture/systems/theming/own-token-evaluation.md)。同层同时配置新旧入口且值不同时，现在在绑定边界报错，应用应合并为一个入口或相同值。
+
 ## 6. 验证策略
 
 | 改动类型 | 验证要求 |

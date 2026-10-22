@@ -486,6 +486,8 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
     private readonly GlobalCompilationCacheKey _global;
     private readonly NormalizedControlConfigCacheKey? _controlConfig;
     private readonly object _compilationIdentity;
+    private readonly DesignTokens.ControlTokenEvaluationVersion _evaluationVersion;
+    private readonly ulong _evaluatorRevision;
 
     private ControlCompilationCacheKey(
         GlobalCompilationCacheKey global,
@@ -497,6 +499,8 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 
         _global       = global;
         _compilationIdentity = descriptor.CompilationIdentity;
+        _evaluationVersion = descriptor.EvaluationVersion;
+        _evaluatorRevision = descriptor.EvaluatorRevision;
         Identity      = descriptor.Identity;
         ControlSlot   = descriptor.Slot;
         Appearance    = appearance;
@@ -507,7 +511,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 
     internal ControlTokenIdentity Identity { get; }
     internal long EstimatedRetainedBytes => ThemeRetainedBytesEstimator.Add(
-        ThemeRetainedBytesEstimator.Add(64 + CacheKeyArray.EstimateIdentity(Identity), _global.EstimatedRetainedBytes),
+        ThemeRetainedBytesEstimator.Add(80 + CacheKeyArray.EstimateIdentity(Identity), _global.EstimatedRetainedBytes),
         _controlConfig?.EstimatedRetainedBytes ?? 0);
     internal long EstimatedInputRetainedBytes => _controlConfig?.EstimatedInputRetainedBytes ?? 0;
     internal int ControlSlot { get; }
@@ -528,6 +532,8 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
                Appearance == other.Appearance &&
                Identity == other.Identity &&
                ReferenceEquals(_compilationIdentity, other._compilationIdentity) &&
+               _evaluationVersion == other._evaluationVersion &&
+               _evaluatorRevision == other._evaluatorRevision &&
                _global.Equals(other._global) &&
                Equals(_controlConfig, other._controlConfig);
     }
@@ -539,7 +545,8 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_global, Identity, ControlSlot, Appearance, _compilationIdentity, _controlConfig);
+        return HashCode.Combine(_global, Identity, ControlSlot, Appearance, _compilationIdentity,
+            _evaluationVersion, _evaluatorRevision, _controlConfig);
     }
 }
 

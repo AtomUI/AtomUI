@@ -2,6 +2,12 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-22
+
+- Theme：17项历史Table入口显式映射到规范Own字段；保留属性、slot和生成资源键，规范配置到达现有AXAML消费者。
+- Compatibility：各层归一后覆盖；同层旧名与规范名不同值返回冲突，同值归一。其余内部字段及WholeV1默认公式保持。
+- Validation：产品Window/Skia中明暗、三档密度、默认/历史配置及悬停/点击选择场景前后精确比较；覆盖实际header/cell/footer/details框体和两种过滤器Presenter的输入消费。该范围不代表原生显示面或全部DataGrid交互验证。
+
 ## 2026-09-26
 
 - API

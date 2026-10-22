@@ -6,8 +6,8 @@
 本文定义当前架构。既有兼容对象不得成为绕过这些约束的旁路。面向主题作者和 Control 开发者的分层讲解与定制
 示例见 [AtomUI 主题定制指南](../../../guides/theming/customization.md)。
 
-依赖默认值与完整品牌分别由[Own有效求值](own-token-evaluation.md)和[品牌配方](brand-recipes.md)定义目标合同；
-[Control渲染](control-rendering.md)定义消费终点。它们不静默改写本文的整体evaluator、Token-only请求与五阶段结果，
+Own分版求值与完整品牌分别由[Own有效求值](own-token-evaluation.md)和[品牌配方](brand-recipes.md)拥有；
+[Control渲染](control-rendering.md)定义消费终点。旧整体evaluator保留，依赖默认值必须显式选择新版，不静默改写Token-only请求与五阶段结果，
 源码迁移和验收边界见[验证文档](verification.md)。
 
 包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。派生算法统一在运行时执行，
@@ -626,11 +626,10 @@ ThemeCompileInput
 2. `Disabled` 时只保留直接覆盖，不重新派生；`Global` 或 `Custom` 时，从 Control effective Seed 按相应算法链
    重新生成 Map 和 Alias。
 3. 在重新派生后应用该 Control 的 Map、Alias override 和 Motion 最终规范化。
-4. 使用 Control 的有效全局 Token 计算 Control 自身默认 Token。
-5. 应用 Control 自身 Token override。
-6. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它只提供给该 Control evaluator，不
+4. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它只提供给该 Control evaluator，不
    修改 ThemeContext appearance。
-7. 生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。
+5. WholeEvaluatorV1使用有效Global计算完整Own默认，再应用显式Own覆盖；DependencyDefaultsV2先写显式Own和存在位，再按生成依赖顺序求未指定默认。新版默认读取最终有效上游，显式下游保持，具体声明见[Own接口](own-token-evaluation.md#9-ct-03具体构建与运行接口)。
+6. 已声明Own别名的配置在各输入层绑定时先归一；Own求值及覆盖后，将规范值复制到历史字段，再生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。历史slot/key保持，同层不同值在绑定边界诊断，详见[兼容别名](own-token-evaluation.md#6-别名规范化与兼容)。
 
 Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Global Token，不能继续只读取全局
 `IsDark`。
@@ -641,7 +640,7 @@ Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Glo
 首帧内首次查询的控件一次性支付内联编译成本，具体耗时依赖控件与运行环境。
 跨快照复用独立 cell，物化结果不保留历史 snapshot，见[惰性槽生命周期设计](lazy-materialization.md#2-独立惰性槽与历史快照释放)。
 失败语义同步后移：控件级编译错误（不支持的算法模式、evaluator 抛出等）不再使
-`ApplyTheme` 整体失败，而是在首次查询该槽位时抛出、后续每次查询重复抛出。
+`ApplyTheme` 整体失败，而是在首次查询该槽位时抛出。失败保留输入供后续查询重算，不保存异常作为成功结果；持续失败时每次查询仍抛出，恢复成功后复用物化值。
 
 任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot——该原子性指
 全局维度（Seed/算法链/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。

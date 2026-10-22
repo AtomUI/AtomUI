@@ -26,9 +26,39 @@ Token配置继续遵守现行根请求/局部Provider的不同Inherit=false基�
 
 生成工厂以受控资格组合原生selector及专用Style。selector中的属性条件可能影响原生激活与BindingPriority，因此必须验证实例属性、局部/全局专用Style及状态规则的实际覆盖关系；不能宣称加一个条件就天然保持所有优先级。资格方案未通过这些合同前，不得宣称品牌隔离可交付。
 
+### 2.1 工厂与激活键
+
+工厂拥有托管规则的资格边界：保留资产root原有条件，再追加注册exact Control类型的原生类型selector及继承激活属性的`PropertyEquals`条件。不能忽略注册owner类型，也不能静默擦除资产原有条件；嵌套状态规则继续声明在AXAML中。编译AXAML的原生嵌套selector需要明确父类型，不能强制资产使用selector-free root来换取装配便利。既有生成的无参专用Part Style继续作为root的子Style，通过`Nesting()`和声明route接到同一个资格，不要求为每个Part复制资格属性或重新查找节点。
+
+这里的原生类型selector遵循Avalonia的`StyleKey`语义，不是运行期CLR identity解析器。不得用匹配到的StyleKey替代Token注册的真实Control identity；显式复用其他StyleKey的Control需要单独核定视觉owner合同，不能从父集合猜测其Token owner。
+
+规范化配方的内容身份与实际激活键分离。内容身份用于比较等价/修订；激活键是不透明的引用身份，属于一个context的一代表现状态。两个scope即使内容相同也不能共用激活键，否则祖先和子scope的规则可能同时命中。同名键也不能因字符串相等而误命中。继承子有自己的键，并为该键装配完整有效集合；重置子缺失的Setter由基准主题提供，不能靠将父Setter值重新写到子节点“抵消”。
+
+激活键由ThemeContext拥有，scope根和跨根lease负责继承入口。稳定Token context不因换品牌而更换identity；Token Snapshot不保存这些UI对象。工厂每次返回新的、未挂载的Style图；不同host/lease不得复用已经有owner或parent的可变Style实例。以上是装配合同，当前产品接入状态见[验证边界](verification.md)。
+
+准备检查覆盖整张受支持Style图的父关系、独占性和资源；赋值root资格后重新触发Avalonia原生nesting校验。子规则若带独立selector而不以Nesting连接root，会绕过资格，必须拒绝；不能仅检查父规则。已准备节点以弱键记录，禁止移除后再次用于其他代/host，同时不由记录反向保留已退役Style。最小profile只接受原生Style及其派生专用Style节点，未知容器不被静默遍历放行。此检查不替代注册资产的owner、Setter/模板能力、AOT与跨根生命周期校验。
+
+### 2.2 原生优先级的明确合同
+
+Avalonia的资格属性条件产生activator，托管root规则为`BindingPriority.StyleTrigger`，并非无条件`Style`。专用Part的class route本身也产生activator。采用原生selector意味着以下关系，不能另建引擎按“CSS specificity”重新排序：
+
+| 输入关系 | 原生行为 |
+| --- | --- |
+| 实例局部值与资格规则 | `LocalValue`覆盖资格规则，清除局部值后恢复有效Style |
+| 无条件应用Style与资格规则 | 普通`Style`优先级较低；即使host更近，也不能据此覆盖资格trigger |
+| 同host的资格/状态/应用class规则 | 同为trigger时按原生顺序，后规则优先；条件退出恢复前规则 |
+| 更近host的应用class/专用Part Style与资格规则 | 同为trigger时更近host优先；普通应用规则也能命中重置scope，不被品牌系统清除 |
+| ControlTheme状态trigger与应用层资格trigger | 原生frame类型区分仍生效；不能假定ControlTheme状态会自动压过应用层资格Setter |
+
+默认、hover、disabled等主要视觉仍优先通过Token与ControlTheme完成。配方选择用Style覆盖某个属性时，必须显式审查该属性的状态覆盖，不能依靠原ControlTheme状态替它兜底。自定义者需要覆盖品牌时，可用实例值或符合原生优先级的应用class/专用Part Style；不宣传无条件类型Style总能覆盖。无品牌托管规则时不改变既有样式的优先级。
+
 ## 3. 资源隔离与跨根
 
 候选样式使用未激活资格准备。未命中selector不表示Style.Resources也被隔离，因此不得在准备期把候选公共key资源提前挂入祖先搜索链。模板/静态资产使用明确的不可变引用或按活动generation投影的现有资源入口，保持词法、include与应用覆盖合同。
+
+稳定结构的最小装配profile采用显式资产引用：在接触任何host前验证候选Style图，拒绝非空公共Resources、MergedDictionaries和ThemeDictionaries；递归检查子规则，不只检查外层Style或`HasResources`（主题字典可能未计入该标志）。不支持的容器/include必须拒绝，或由已注册的构建资产机制展开并完成同等检查，不能跳过未知节点。该限制仅针对托管候选的公共资源发布，普通应用Styles不受此准备检查接管。
+
+资源验证不能被解释成完整激活事务：工厂返回的图由框架持有，在准备至退役期间不得被外部修改；后续支持活动generation资源投影须另有装配/恢复证据。模板内部词法资源和已注册的静态引用由其实际资产所有者保持，不通过把候选公共key提前挂载来实现。
 
 Native/Overlay均由实际owner lease接线Token context、托管样式及资格，在显示前完成；已打开host随owner变化更新。迁移、关闭、失败打开和重复释放有对称清理。无owner的独立窗口仍按根主题合同运行，不能推断调用点。
 
@@ -59,6 +89,8 @@ Native/Overlay均由实际owner lease接线Token context、托管样式及资格
 - 退役失败：记录可重试清理责任及受影响host，限制未退役资产数量；不得无界积累旧Style、lease或Visual。无法恢复的host须修复/重建后才能继续承诺完整应用。
 
 恢复只覆盖框架持有的资格/资源/lease，不能回滚任意用户回调副作用。该协调需要显式的表现状态和版本化结果扩展，不能复用现有Token结果表达所有阶段。接线/Setter激活错误与普通发布监听器异常必须区分。
+
+退役先使旧资格失活，再清理原生Style frame与owner。不能只从`Styles`集合移除对象就宣称模板节点已经释放：当前Avalonia版本的移除遍历和新增失效遍历覆盖不同，模板frame可能仍持有旧Style。最小原型已验证“按原索引重新挂载保留的活动Style图”可通过原生新增失效路径清除该残留；产品实现仍须在各实际host证明同一UI调度段内完成、原生顺序/实例/交互保持，并验证失败恢复、性能和释放。不用反射调用私有清理API、寻找节点改属性或重建整页替代这项验收，也不将此原型解释为已修复任意应用样式的原生移除行为。
 
 ## 6. 配方格式与完整导出
 

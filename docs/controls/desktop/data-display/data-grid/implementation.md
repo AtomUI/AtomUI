@@ -283,6 +283,8 @@ DataGrid (DataGridTheme.axaml)
 模板中的 Spin 节点复用 DataGrid 的 operating state；Query/Range Source 只改变该状态的有效输入，不增加平行 overlay。RowsPresenter
 下面的 row、group header 和 cells 由 container lifecycle 动态接入，但必须继续遵守同一个 template/scroll ownership。
 
+DataGridToken保留规范属性和历史Table字段，17项明确兼容关系由`ControlTokenAlias`声明。生成的descriptor包含不可变别名表；配置及定义在各层绑定时归一，Compiler发布前投影历史字段。ControlTheme继续引用原资源键，不在控件或模板内维护别名同步、刷新标记或第二份Token字典。规范名/历史名和消费区域的完整对应见[Token兼容入口](token.md#51-规范字段与历史入口)。
+
 ### 5.2 协作节点
 
 | 节点 | 类型 | 来源 | 生命周期 owner | 影响的 public API | 稳定性 | 使用边界 |

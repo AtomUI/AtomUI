@@ -156,6 +156,9 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 CompiledThemePackageWriter.Error(context, null, 0, 0, "Compiled theme inputs require generated ABI v1.");
             }
             info.ControlThemeInfos.AddRange(controlInfos);
+            ControlTokenDefaultsWriter.Write(context, controlInfos);
+            ControlTokenAliasesWriter.Write(context, controlInfos);
+            ControlTokenGlobalValuesWriter.Write(context, compilation, info.SchemaTokens);
             StartupImageWriter.Write(context, compilation, ownRegistration, references, localization, contracts, ownTheme);
             ThemeControlCatalogMetadataWriter.Write(context, catalog);
             if (info.SchemaTokens.Count > 0 || controlInfos.Count > 0 || algorithms.Length > 0)

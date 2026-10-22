@@ -18,6 +18,73 @@ namespace AtomUI.Core.Tests.Theme;
 public class DenseThemeCompilerTests
 {
     [Fact]
+    public void Dependency_Defaults_Read_Effective_Own_Values_And_Preserve_Zero_Null_And_Explicit_Downstream()
+    {
+        var tokens = new TokenDescriptor[]
+        {
+            new("OwnAccent", 0, TokenStage.Control, typeof(Color?), "dependent.accent",
+                static text => text == "none" ? null : Color.Parse(text), static value => value?.ToString() ?? "none",
+                static value => ((DependentValues)value).Accent,
+                static (value, item) => ((DependentValues)value).Accent = (Color?)item,
+                static value => ((DependentValues)value).Accent),
+            new("OwnLine", 1, TokenStage.Control, typeof(double), "dependent.line",
+                static text => ThemeTokenValueParser.Parse<double>(text), static value => ThemeTokenValueFormatter.Format((double)value!),
+                static value => ((DependentValues)value).Line,
+                static (value, item) => ((DependentValues)value).Line = (double)item!,
+                static value => ((DependentValues)value).Line),
+            new("OwnPadding", 2, TokenStage.Control, typeof(double), "dependent.padding",
+                static text => ThemeTokenValueParser.Parse<double>(text), static value => ThemeTokenValueFormatter.Format((double)value!),
+                static value => ((DependentValues)value).Padding,
+                static (value, item) => ((DependentValues)value).Padding = (double)item!,
+                static value => ((DependentValues)value).Padding)
+        };
+        var controlType = ThemeTestControlTypes.For("AtomUI", "Button");
+        var descriptor = new ControlTokenDescriptor(controlType,
+            ControlTokenIdentity.ForControl(controlType, "AtomUI", "Button"), tokens,
+            static () => new DependentValues(),
+            static (AbstractControlDesignToken value, in ControlTokenDefaultContext context, ReadOnlySpan<ulong> present) =>
+            {
+                var own = (DependentValues)value;
+                if (present.IsEmpty || (present[0] & 1UL) == 0)
+                {
+                    own.Accent = Colors.Blue;
+                }
+                if (present.IsEmpty || (present[0] & 2UL) == 0)
+                {
+                    own.Line = 20;
+                }
+                if (present.IsEmpty || (present[0] & 4UL) == 0)
+                {
+                    own.Padding = Math.Max((context.Global.ControlHeight - own.Line) / 2 - context.Global.LineWidth, 0);
+                }
+            }, 1);
+        var registry = CreateRegistry([descriptor]);
+        ControlThemeSnapshot CompileOwn(string line, string? padding)
+        {
+            var own = new ControlThemeConfigBuilder().WithToken("OwnLine", line).WithToken("OwnAccent", "none");
+            if (padding is not null)
+            {
+                own.WithToken("OwnPadding", padding);
+            }
+            var normalized = ThemeConfigNormalizer.Normalize(new ThemeConfigBuilder()
+                .WithControl(descriptor.Identity, own.Build()).Build(), registry);
+            normalized.Diagnostics.ShouldBeEmpty();
+            var result = new ThemeCompiler().Compile(CreateInput(registry,
+                globalTokens: [Token(registry, "ControlHeight", "50"), Token(registry, "LineWidth", "2")],
+                controls: normalized.Config!.Controls));
+            result.Success.ShouldBeTrue();
+            return result.Snapshot!.Controls[0];
+        }
+
+        var upstream = CompileOwn("10", null);
+        upstream.ControlTokenValues.Get<double>(2).ShouldBe(18);
+        upstream.ControlTokenValues.Get<Color?>(0).ShouldBeNull();
+        CompileOwn("10", "7").ControlTokenValues.Get<double>(2).ShouldBe(7);
+        CompileOwn("0", null).ControlTokenValues.Get<double>(2).ShouldBe(23);
+        CompileOwn("10", null).ControlTokenValues.Get<double>(2).ShouldBe(18);
+    }
+
+    [Fact]
     public void Default_Configs_Are_Cached_By_Their_Immutable_Owner()
     {
         var registry = CreateRegistry();
@@ -714,6 +781,13 @@ public class DenseThemeCompilerTests
             Appearance = appearance;
             Height     = EffectiveGlobalToken.ControlHeight;
         }
+    }
+
+    private sealed class DependentValues : AbstractControlDesignToken
+    {
+        internal Color? Accent { get; set; }
+        internal double Line { get; set; }
+        internal double Padding { get; set; }
     }
 
     private sealed class DenseTransformControlToken(

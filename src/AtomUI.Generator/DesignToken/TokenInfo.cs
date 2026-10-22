@@ -27,6 +27,8 @@ internal sealed class ControlTokenInfo
     public List<Diagnostic> Diagnostics { get; }
     public Location? DeclarationLocation { get; set; }
     public ControlTokenRole Role { get; set; }
+    internal ControlTokenDefaultPlan? DefaultPlan { get; set; }
+    internal IReadOnlyList<ControlTokenAliasInfo> Aliases { get; set; } = Array.Empty<ControlTokenAliasInfo>();
     public bool IsTerminal => Role == ControlTokenRole.Terminal;
     public bool IsValid => Diagnostics.Count == 0 &&
                            (Role == ControlTokenRole.AbstractLayer ||

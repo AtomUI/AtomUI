@@ -243,6 +243,7 @@ OtpLineEdit 的 native validation error 挂在控件根节点。内部 cell 通�
 
 - [OtpLineEdit 桌面版实现原理](implementation.md)
 - [OtpLineEdit Token 设计](token.md)
+- [OtpLineEdit Semantic Part 契约](semantic-part.md)
 - [OtpLineEdit Changelog](changelog.md)
 
 验证策略：

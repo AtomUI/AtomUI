@@ -87,6 +87,14 @@ ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有�
 
 这些保证作用于 AtomUI 持有的关系与清理调用；自定义 provider 和事件访问器仍负责在自己的释放方法中解除其内部关系。
 
+### 4.2 启动索引的热查询
+
+StartupPackageIndex保留字符串身份表供编译清单和有序链接，运行期Token/语义身份查询使用元数据Catalog/Id二元键，避免每次拼接字符串。查询表只保存已有entry，不调用descriptor/Token/Visual工厂；二元键不调用带校验的身份构造器，不提前惰性失败。真实CLR owner匹配、禁用包诊断和追加事务沿原路径执行，不更换公开资源键或用slot相同推断身份相同。
+
+生成式Own key为Int32枚举，确认基础类型后直接拆箱读取ordinal；其他基础类型保留原转换及溢出语义。负数、超界和跨owner校验仍执行。有限元数据表由应用索引拥有，不建立任意查询输入或Control对象的全局缓存。
+
+预热后的生成式标量查询必须分别验证手工registry与实际Startup索引。可变画刷等值仍按消费者隔离合同复制，复制成本单独计量，不能以零分配为由共享可变实例。
+
 ## 5. 按资源 key 路由候选资产
 
 `ResourceTable` 索引为 `key → 按既有优先级排列的候选资产`，不以“某 key 最后一个资产”覆盖所有上下文语义。

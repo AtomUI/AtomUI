@@ -128,7 +128,7 @@ public class TextBoxVisualStateTests
         ControlAlgorithmMode algorithm,
         bool expectDerivedHover)
     {
-        AssertCompositeInputHoverUsesSharedColorPrimaryHover(
+        AssertCompositeInputHoverUsesControlEffectiveColorPrimaryHover(
             new AtomUILineEdit
             {
                 Width           = 180,
@@ -161,7 +161,7 @@ public class TextBoxVisualStateTests
         ControlAlgorithmMode algorithm,
         bool expectDerivedHover)
     {
-        AssertCompositeInputHoverUsesSharedColorPrimaryHover(
+        AssertCompositeInputHoverUsesControlEffectiveColorPrimaryHover(
             new AtomUISearchEdit
             {
                 Width           = 180,
@@ -194,7 +194,7 @@ public class TextBoxVisualStateTests
         ControlAlgorithmMode algorithm,
         bool expectDerivedHover)
     {
-        AssertCompositeInputHoverUsesSharedColorPrimaryHover(
+        AssertCompositeInputHoverUsesControlEffectiveColorPrimaryHover(
             new AtomUITextArea
             {
                 Width           = 180,
@@ -242,7 +242,7 @@ public class TextBoxVisualStateTests
         TextBoxTokens.Identity.Id.ShouldBe(nameof(AtomUI.Desktop.Controls.TextBox));
 
         var source = ReadRepoFile("src/AtomUI.Desktop.Controls/Input/Themes/TextBoxTheme.axaml");
-        source.ShouldContain("SharedTokenResource FontSize");
+        source.ShouldContain("TextBoxTokenResource FontSize");
         source.ShouldNotContain("ControlTokenScope.Identity");
         source.ShouldNotContain("TokenSharedTokenResource");
     }
@@ -317,27 +317,27 @@ public class TextBoxVisualStateTests
 
         // The owner level must stay free of dead surface defaults: the frame theme owns
         // the rest state and the owner value is the relay's customization signal.
-        source.ShouldNotContain("SharedTokenResource ColorBorder");
-        source.ShouldContain("SharedTokenResource BorderThickness");
-        source.ShouldContain("SharedTokenResource BorderRadiusLG");
-        source.ShouldContain("SharedTokenResource BorderRadius");
-        source.ShouldContain("SharedTokenResource BorderRadiusSM");
+        source.ShouldNotContain("TextBoxTokenResource ColorBorder");
+        source.ShouldContain("TextBoxTokenResource BorderThickness");
+        source.ShouldContain("TextBoxTokenResource BorderRadiusLG");
+        source.ShouldContain("TextBoxTokenResource BorderRadius");
+        source.ShouldContain("TextBoxTokenResource BorderRadiusSM");
         source.ShouldContain("TextBoxTokenResource ContentPaddingLG");
         source.ShouldContain("TextBoxTokenResource ContentPadding");
         source.ShouldContain("TextBoxTokenResource ContentPaddingSM");
-        source.ShouldContain("SharedTokenResource EnableMotion");
+        source.ShouldContain("TextBoxTokenResource EnableMotion");
         source.ShouldNotContain("IsCustomPadding");
-        source.ShouldContain("SharedTokenResource UniformlyPaddingXXS");
-        source.ShouldContain("SharedTokenResource FontHeightLG");
-        source.ShouldContain("SharedTokenResource FontHeight");
-        source.ShouldContain("SharedTokenResource FontHeightSM");
-        source.ShouldContain("SharedTokenResource FontSizeLG");
-        source.ShouldContain("SharedTokenResource FontSize");
-        source.ShouldContain("SharedTokenResource FontSizeSM");
-        source.ShouldContain("SharedTokenResource ColorTextPlaceholder");
+        source.ShouldContain("TextBoxTokenResource SpacingXXS");
+        source.ShouldContain("TextBoxTokenResource FontHeightLG");
+        source.ShouldContain("TextBoxTokenResource FontHeight");
+        source.ShouldContain("TextBoxTokenResource FontHeightSM");
+        source.ShouldContain("TextBoxTokenResource FontSizeLG");
+        source.ShouldContain("TextBoxTokenResource FontSize");
+        source.ShouldContain("TextBoxTokenResource FontSizeSM");
+        source.ShouldContain("TextBoxTokenResource ColorTextPlaceholder");
         var frameTheme = ReadRepoFile(
             "src/AtomUI.Desktop.Controls/Primitives/AddOnDecoratedBox/Themes/InputControlFrameTheme.axaml");
-        frameTheme.ShouldContain("SharedTokenResource ColorTextDisabled");
+        frameTheme.ShouldContain("OwnerTokenResource ColorTextDisabled");
         source.ShouldNotContain("ControlTokenScope.Identity");
         source.ShouldNotContain("LineEditTokenResource");
         source.ShouldNotContain("AddOnDecoratedBoxTokenResource");
@@ -714,7 +714,7 @@ public class TextBoxVisualStateTests
         return GetThemeResource<T>(tokenKind);
     }
 
-    private static void AssertCompositeInputHoverUsesSharedColorPrimaryHover(
+    private static void AssertCompositeInputHoverUsesControlEffectiveColorPrimaryHover(
         Control control,
         ControlTokenIdentity identity,
         ControlAlgorithmMode algorithm,
@@ -733,6 +733,17 @@ public class TextBoxVisualStateTests
                     out var globalHoverResource)
                 .ShouldBeTrue();
             var globalHover = GetSolidBrushColor((IBrush)globalHoverResource!);
+            control.TryFindResource(ControlTokenResourceKey.Global(identity, SharedTokenKind.ColorPrimaryHover),
+                    out var controlHoverResource).ShouldBeTrue();
+            var controlHover = GetSolidBrushColor((IBrush)controlHoverResource!);
+            if (expectDerivedHover)
+            {
+                controlHover.ShouldNotBe(globalHover);
+            }
+            else
+            {
+                controlHover.ShouldBe(globalHover);
+            }
 
             var decoratedBox = FindTemplatePart<global::AtomUI.Desktop.Controls.AddOnDecoratedBox>(
                 control,
@@ -742,7 +753,7 @@ public class TextBoxVisualStateTests
             decoratedBox.IsInnerBoxHover = true;
             Dispatcher.UIThread.RunJobs();
 
-            GetSolidBrushColor(contentFrame.BorderBrush).ShouldBe(globalHover);
+            GetSolidBrushColor(contentFrame.BorderBrush).ShouldBe(controlHover);
         });
     }
 
@@ -759,7 +770,7 @@ public class TextBoxVisualStateTests
 
         ShowInWindow(provider, () =>
         {
-            control.TryFindResource(SharedTokenKind.ColorPrimary, out var controlPrimaryResource)
+            control.TryFindResource(ControlTokenResourceKey.Global(identity, SharedTokenKind.ColorPrimary), out var controlPrimaryResource)
                 .ShouldBeTrue();
             var controlPrimary = GetSolidBrushColor((IBrush)controlPrimaryResource!);
             var decoratedBox = FindTemplatePart<global::AtomUI.Desktop.Controls.AddOnDecoratedBox>(
@@ -785,6 +796,10 @@ public class TextBoxVisualStateTests
         return new ThemeConfigBuilder()
                .WithToken(nameof(SharedTokenKind.ColorPrimary), "#eb2f96")
                .WithToken(nameof(SharedTokenKind.ColorPrimaryHover), "#f759ab")
+               .WithControl(identity, new ControlThemeConfigBuilder()
+                   .WithAlgorithm(algorithm)
+                   .WithToken(nameof(SharedTokenKind.ColorPrimary), "#52c41a")
+                   .Build())
                .Build();
     }
 

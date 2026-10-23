@@ -4,6 +4,14 @@
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:Class="AtomUI.Desktop.Controls.Themes.ButtonTheme"
               TargetType="atom:Button">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:ButtonTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:ButtonTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
             <Setter Property="Template">
@@ -67,8 +75,8 @@
                         <Border Name="FocusVisual"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                BorderThickness="{atom:ButtonTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:ButtonTokenResource ColorFocusBorder}"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 ZIndex="1" />
                     </Panel>
@@ -138,8 +146,8 @@
                         <Border Name="FocusVisual"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                BorderThickness="{atom:ButtonTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:ButtonTokenResource ColorFocusBorder}"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 ZIndex="1" />
                     </Panel>
@@ -209,8 +217,8 @@
                         <Border Name="FocusVisual"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                BorderThickness="{atom:ButtonTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:ButtonTokenResource ColorFocusBorder}"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 ZIndex="1" />
                     </Panel>
@@ -222,14 +230,11 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Foreground"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="BorderBrush"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions DurationKind="MotionDurationMid">
+                    <atom:SolidColorBrushTransition Property="Background" />
+                    <atom:SolidColorBrushTransition Property="Foreground" />
+                    <atom:SolidColorBrushTransition Property="BorderBrush" />
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 
@@ -237,20 +242,27 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="FontWeight">
+            <MultiBinding Converter="{x:Static atom:ButtonTheme.FontWeightConverter}">
+                <x:Static Member="atom:ButtonTheme.InheritedFontWeightBinding" />
+                <atom:ButtonTokenResource Kind="FontWeight" WhenExplicit="True" />
+                <atom:ButtonTokenResource Kind="FontWeight" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="BorderThickness" Value="{atom:ButtonTokenResource BorderThickness}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ButtonTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+                Value="{atom:ButtonTokenResource EnableWaveSpirit}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="FocusAdorner" Value="{x:Null}" />
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="MinHeight" Value="{atom:ButtonTokenResource ControlHeightLG}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadiusLG}" />
+            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSizeLG}" />
+            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSizeLG}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
             </Style>
@@ -260,11 +272,11 @@
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:ButtonTokenResource ControlHeight}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadius}" />
+            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
             </Style>
@@ -274,11 +286,11 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="MinHeight" Value="{atom:ButtonTokenResource ControlHeightSM}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadiusSM}" />
+            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSizeSM}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
             </Style>
@@ -289,9 +301,9 @@
 
         <Style Selector="^[SizeType=Custom]">
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadius}" />
+            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
             </Style>
@@ -358,7 +370,7 @@
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <Setter Property="Opacity" Value="{atom:SharedTokenResource OpacityLoading}" />
+            <Setter Property="Opacity" Value="{atom:ButtonTokenResource OpacityLoading}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
@@ -378,12 +390,21 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:ButtonTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
                     Value="{atom:ButtonTokenResource BorderColorDisabled}" />
 
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:ButtonTokenResource ColorBgContainerDisabled}" />
+        </Style>
+        <Style Selector="^[EffectiveColor=Default][EffectiveVariant=Outlined]:disabled, ^[EffectiveColor=Default][EffectiveVariant=Dashed]:disabled">
+            <Setter Property="BorderBrush">
+                <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.OptionalDisabledBorder}">
+                    <atom:ButtonTokenResource Kind="BorderColorDisabled" />
+                    <atom:ButtonTokenResource Kind="DefaultBorderColorDisabled" WhenExplicit="True" />
+                    <atom:ButtonTokenResource Kind="DefaultBorderColorDisabled" />
+                </MultiBinding>
+            </Setter>
         </Style>
         <!-- 公用样式结束 -->
 

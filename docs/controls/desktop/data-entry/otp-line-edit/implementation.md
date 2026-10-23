@@ -1,5 +1,7 @@
 # OtpLineEdit 桌面版实现原理
 
+根和cell模板通过OtpLineEdit typed Global读取自身高度、字号、颜色、状态、selection、placeholder、操作间距与motion。内部OtpTextBox的Foreground/FontSize继续由cell投射，数据模板不借用LineEdit/TextBox公开identity。Own六字段负责cell宽度/间距与光标时间线，不复制三档高度和字体。更新作用于已有cell与文本，根/CellBorderBrush及CellWidth中继和专用Semantic Style保持原生优先级。光标绘制/时间线、separator布局与根排版分别按实际合同处理。
+
 本文档描述 OtpLineEdit 桌面版一次性验证码输入控件的内部状态同步、模板接入、cell 生成、粘贴分发、Form 和 native validation 集成。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [OtpLineEdit 桌面版架构设计](overview.md)，Token 语义见 [OtpLineEdit Token 设计](token.md)，变化记录见 [OtpLineEdit Changelog](changelog.md)。
 
 ## 1. 实现定位
@@ -100,8 +102,11 @@ Form feedback control  → PART_FormFeedBack
 OtpLineEdit
   -> Panel#PART_RootPanel (OtpLineEditTheme.axaml, template-stable)
      -> ItemsControl#PART_CellsHost (template-stable)
-        -> OtpLineEditCell (OtpLineEditCellTheme.axaml, internal-observable)
-        -> ContentPresenter (separator, internal-observable)
+        -> ContentPresenter (generated item container)
+           -> StackPanel (cell scope)
+              -> OtpLineEditCell (OtpLineEditCellTheme.axaml, internal-observable)
+              -> Border (separator semantic part)
+                 -> OtpSeparatorPresenter (internal-observable)
      -> InputClearIconButton#PART_ClearButton (template-stable)
      -> ContentPresenter#PART_FormFeedBack (template-stable)
 ```
@@ -349,3 +354,13 @@ AOT 边界：
 - 模板重建不保留旧模板事件；logical detach 释放外部 feedback 订阅，reattach 后恢复 feedback 观察且当前模板交互继续有效。
 - Gallery 示例、源码片段和源码片段可被测试发现。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
+
+## 几何与部件样式投射
+
+caret宽度直接读取OtpLineEdit有效Global LineWidth。Underlined底边和separator左间距分别由有限Thickness转换器保留BorderThickness.Bottom与MarginXXS.Left，不新增Own或改变其他边。separator的共享Border ControlTheme位于OtpLineEdit主题的词法Resources中，避免发布无关Border主题或扩大平台域；默认Margin为Theme Setter，保留外部专用Style的原生优先级。DataTemplate生成的scope与ItemsControl之间存在ContentPresenter，cell/separator路由以逻辑后代越过该容器，末段保留直接子节点约束。公开定制入口见[部件契约](semantic-part.md)。
+
+caret显隐由ControlTheme依据`:cell-active`且非`:disabled`声明，Cell代码维护输入状态。模板中的同一个TranslateTransform以内容和实际字号绑定计算X，继续采用既有FontSize×0.30的数字advance近似，空内容回到0；字号更新或清除不替换Transform，也不由Cell代码设置RenderTransform，不把该近似描述为精确字形度量。Transform仅承载模板属性绑定，不附加DynamicResource或Token资源订阅。Cursor目标是运行时Content子树中的TextBox，其TemplatedParent为空，不能由Cell的`/template/`选择器覆盖，故仍由Cell在Content及输入目标状态变更时同步。
+
+光标为不重写绘制/布局的内部Rectangle派生对象。三个Opacity关键帧仍在Cell ControlTheme词法Resources中，周期/缓动通过该视觉对象的typed Own Setter提供，活动状态使用TemplateBinding。共享Style.Animation不能绑定每实例资源，Animation为sealed、Apply为internal，且RunAsync拒绝Infinite；内部caret仅建立本实例的原生Style/Animation副本，由框架既有clock运行，不使用自建timer或重复RunAsync循环。复制只适用于该私有Cue/Opacity蓝图，不宣称任意KeyTime/Binding动画克隆能力。
+
+原生OnlyIfVisible保持隐藏暂停/恢复相位；失活或detach时移除专属Style并释放，非正周期保留静态输入反馈。每次比较有效周期与缓动；Spline/Spring参数复制并按值比较，原生无状态曲线复用既有有限类型表，避免普通主题更新重启动画或引入反射。默认1s线性往返与装饰motion=false下的既有节奏保持，详见[时间线Token合同](token.md#23-输入光标时间线)。

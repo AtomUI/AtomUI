@@ -612,35 +612,41 @@ internal sealed class RegistrationModelBuilder
             SymbolEqualityComparer.Default.Equals(m.Assembly, _compilation.Assembly) && m.Namespace == clrNamespace);
     }
 
-    private static IEnumerable<(XElement Element, string Namespace, string Family)> TokenReferences(XElement root)
+    private IEnumerable<(XElement Element, string Namespace, string Family)> TokenReferences(XElement root)
     {
         foreach (var element in root.DescendantsAndSelf())
         {
             foreach (var value in element.Attributes().Where(a => !a.IsNamespaceDeclaration).Select(a => a.Value)
-                     .Concat(element.Nodes().OfType<XText>().Select(t => t.Value)))
-        {
-            for (var start = value.IndexOf('{'); start >= 0; start = value.IndexOf('{', start + 1))
+                         .Concat(element.Nodes().OfType<XText>().Select(t => t.Value)))
             {
-                var end = start + 1;
-                while (end < value.Length && !char.IsWhiteSpace(value[end]) && value[end] is not (',' or '}'))
+                for (var start = value.IndexOf('{'); start >= 0; start = value.IndexOf('{', start + 1))
+                {
+                    var end = start + 1;
+                    while (end < value.Length && !char.IsWhiteSpace(value[end]) && value[end] is not (',' or '}'))
                     {
                         end++;
                     }
-
                     var name = value.Substring(start + 1, end - start - 1);
-                var separator = name.IndexOf(':');
-                var prefix = separator < 0 ? "" : name.Substring(0, separator);
-                name = separator < 0 ? name : name.Substring(separator + 1);
-                const string suffix = "TokenResource";
-                if (!name.EndsWith(suffix, StringComparison.Ordinal) || name == "SharedTokenResource")
+                    var separator = name.IndexOf(':');
+                    var prefix = separator < 0 ? "" : name.Substring(0, separator);
+                    name = separator < 0 ? name : name.Substring(separator + 1);
+                    const string suffix = "TokenResource";
+                    if (!name.EndsWith(suffix, StringComparison.Ordinal) || name == "SharedTokenResource")
                     {
                         continue;
                     }
-
                     var xml = (prefix.Length == 0 ? element.GetDefaultNamespace() : element.GetNamespaceOfPrefix(prefix))?.NamespaceName ?? "";
-                yield return (element, xml, name.Substring(0, name.Length - suffix.Length));
+                    // This Core primitive resolves its registered template owner at runtime;
+                    // it does not reference a Control named Owner. Resolve the actual CLR
+                    // extension so foreign same-short-name resource contracts still validate.
+                    if (name == "OwnerTokenResource" && ResolveXml(xml, name + "Extension")?.ToDisplayString() ==
+                        "AtomUI.Theme.Resources.OwnerTokenResourceExtension")
+                    {
+                        continue;
+                    }
+                    yield return (element, xml, name.Substring(0, name.Length - suffix.Length));
+                }
             }
-        }
         }
     }
 

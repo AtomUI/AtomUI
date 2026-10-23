@@ -2,6 +2,22 @@
 
 本文档记录 RadioButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-23
+
+- Theme
+  - Migrate OptionButton's19 Own defaults to DependencyDefaultsV2 with explicit font, ratio and padding dependencies; consume base ButtonPadding and correct Small/Large inputs.
+  - Consume explicit ordinary and Outline checked backgrounds while preserving transparent defaults, Solid/disabled colors and native property priority.
+  - Resolve Item and Group Global inputs independently and update Item Transition durations on theme changes.
+- Compatibility
+  - Correct the Large padding resource from15,0 to15,7 while preserving default rendered pixels under existing size constraints; keep line-height units as ratios.
+- Docs
+  - Define the exact dependency, optional-background and compound-height contracts in the owning RadioButton module.
+
+## 2026-10-23
+
+- Theme
+  - Transition 时长在实际 owner 上动态消费有效主题作用域；保留原生样式覆盖、默认时长与模板状态。共享框体使用其公开模板 owner，单选指示器保留 Mid/Fast 的独立输入。完整家族迁移与真实动画时序仍按专项任务验收。
+
 ## 2026-10-20
 
 - Fixed

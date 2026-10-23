@@ -24,6 +24,12 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-23
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- DatePicker 与 RangeDatePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入，不借用另一个具体 picker 身份。
+
+
 ## 2026-10-04
 
 - Fixed

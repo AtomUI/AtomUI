@@ -184,3 +184,9 @@ ButtonSpinner 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 根表面主题投射
+
+尺寸预设先提供内部默认参数，再由原生 Padding/CornerRadius 决定有效值；内容 inset 与 handle 的方向/占位分别处理。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。

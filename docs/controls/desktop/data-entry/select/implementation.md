@@ -353,3 +353,8 @@ AbstractSelect 上的公开配置由 Select 实例拥有，主题为其提供 Se
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+## 根表面主题投射
+
+Custom 多选的紧凑 padding 在 owner 默认层计算，显式 padding 不再由内部 frame 自动压缩；标签名义测量预算保持独立。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。

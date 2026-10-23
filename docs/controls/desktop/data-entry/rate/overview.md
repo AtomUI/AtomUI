@@ -166,3 +166,7 @@ Rate 的视觉选项通过 public API 归一为 theme variables、伪类或模�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+## 主题消费合同（2026-10-23）
+
+字符/字符串 Character 属于 glyph 内容，字体入口是原生根 FontFamily；主题默认来自 Own `CharacterFontFamily`，默认 FontFamily.Default 保留原有平台字形。它独立于普通界面文字的全局 FontFamily，可由该 Own 字段或根原生属性/Style 精确覆盖；默认 SVG 星形不受字体影响。

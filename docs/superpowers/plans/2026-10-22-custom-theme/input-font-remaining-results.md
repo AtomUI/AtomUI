@@ -1,0 +1,19 @@
+# CT-13 剩余公开输入字体分包记录
+
+TextBox/TextArea/SearchEdit的有效Global FontFamily原来未消费，配置Times New Roman后实际仍Courier New；SearchEdit四尺寸Global字号配置后仍父级23。7项真实RED914ms。新增根ControlTheme可选字体族及Search全尺寸可选字号，未配置保留实际InheritanceParent，Custom中档，IsCustomFontSize退出，普通Style/LocalValue保持。Core有限选择器同时支持9输入Global对子和原12输入Own/Global三元组，不伪造Own字段或增加公开开关。
+
+## 消费、隔离和生命周期
+
+12项临时验证PASS1s，包含三owner字体、Search四尺寸、旧LineEdit Own优先路径、内部EmbeddedTextBox隔离和三种输入从长寿命父移除后的GC。EmbeddedTextBox复用TextBoxTheme但没有独立公开身份，必须用自身根Setter恢复组合父字体，防止BasedOn泄漏。内部只读继承桥既有，最终属性仍由AXAML选择。
+
+当前Mac arm64 NativeAOT实际运行明暗三字体族、四Search字号和清除继承PASS。链接器提示本机Brotli来自macOS26，不推断macOS12或其他平台。
+
+## 同轨迹视觉与未决出口
+
+12实例，三owner四尺寸，保留原320宽、多行112高与十行内容、clear/count、正常动效。before/after完整相同行为轨迹为idle/hover/disabled/ready/configured/returned，明暗前四默认阶段均0；配置实际变化9024/9012。A/A0，独立实例1DIP检错11263/11326、回位3/21个RGB1；该检错实例不参与主基线，未用其非零回位冒充未经扰动的默认画面。
+
+配置清除15/16像素、maxDelta14/13，全部位于大号Search搜索图标边缘。分离字体族和字号后，仅字体族重现15/16，字号单独往返0；直接原生FontFamily/FontSize赋值清除也重现15/16。对应全部Control精确Bounds、DesiredSize、Margin、至Window矩阵、字体在ready/returned相等。原先观测序列化Rect递归造成诊断脚本失败，改为原始double数组后重跑，未计作产品失败或通过。
+
+在当前checkout精确撤销F2四个主题的可选字体接线后，旧主题下相同原生API操作仍15/16；旧新六阶段明暗全部0。单独InvalidateVisual旧对照往返0。四文件按SHA256精确恢复。以上确认旧API同现象，尚未解释完整绘制链，不构成清除往返通过或新的视觉豁免；CT25继续定位，不得用容差、遮罩或更换基线消除证据。
+
+追加相同轨迹的独立全窗口RenderTargetBitmap对照：全量绘制ready/returned明暗均0，而同轮Headless最终合成帧仍19/20像素（maxDelta5/7）。这进一步把问题缩到保留合成/绘制链，不能用全量绘制替代最终合成画面验收。Search普通Style29的四尺寸补充断言也通过，最终专项仍12项PASS1s。12项临时测试、外部工程427文件、四个源码中间备份已删除；190个媒体运行文件清理，Git媒体审计clean。清理后Core26项243ms、Desktop输入与相关按钮195项4s通过，NET8 Release零警告/错误19.74s。作者自审，未使用subagent、未提交；本分包不关闭CT13全家族。

@@ -19,6 +19,12 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-23
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- 根几何进入实际输入 frame；多选 Custom 的默认紧凑 inset 与显式 inset 分开，标签内在高度保持。现有多选尺寸/前缀参数继续引用 Select 家族资源。
+
+
 ## 2026-10-18
 
 - Behavior

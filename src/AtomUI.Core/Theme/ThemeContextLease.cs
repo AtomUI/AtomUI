@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
@@ -14,6 +15,7 @@ internal sealed class ThemeContextLease : IDisposable
     private TopLevel? _host;
     private ThemeContext? _ownerContext;
     private ThemeContextResourceBridge? _bridge;
+    private ThemeStyleHostLease? _styleLease;
 
     private ThemeContextLease(
         TopLevel host,
@@ -46,6 +48,7 @@ internal sealed class ThemeContextLease : IDisposable
         var bridge = new ThemeContextResourceBridge(ownerContext);
         ThemeContextLease? lease = null;
         var registeredWithManager = false;
+        ThemeStyleHostLease? styleLease = null;
         try
         {
             host.Resources.MergedDictionaries.Add(bridge);
@@ -53,7 +56,9 @@ internal sealed class ThemeContextLease : IDisposable
             host.SetCurrentValue(
                 TopLevel.RequestedThemeVariantProperty,
                 ToAvaloniaVariant(ownerContext.Appearance));
+            styleLease = ThemeStyleHostLease.Attach(host, ownerContext);
             lease = new ThemeContextLease(host, ownerContext, bridge);
+            lease._styleLease = styleLease;
             host.SetValue(LeaseProperty, lease);
             ownerContext.Manager.RegisterContextLease(lease);
             registeredWithManager = true;
@@ -61,6 +66,7 @@ internal sealed class ThemeContextLease : IDisposable
         }
         catch
         {
+            ownerContext.Manager.CleanupPresentation(styleLease, "ThemeContextLease.Attach");
             if (hadPreviousLeaseValue)
             {
                 CleanupBoundary(() => host.SetValue(LeaseProperty, previous));
@@ -113,10 +119,12 @@ internal sealed class ThemeContextLease : IDisposable
         var host = Interlocked.Exchange(ref _host, null);
         var context = Interlocked.Exchange(ref _ownerContext, null);
         var bridge = Interlocked.Exchange(ref _bridge, null);
+        var styleLease = Interlocked.Exchange(ref _styleLease, null);
         if (host is null)
         {
             return;
         }
+        context?.Manager.CleanupPresentation(styleLease, "ThemeContextLease.Dispose");
 
         if (context is not null)
         {

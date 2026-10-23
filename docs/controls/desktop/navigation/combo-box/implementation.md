@@ -325,3 +325,9 @@ ComboBox 实例拥有 OpenMotion/CloseMotion 的有效值，组件主题提供 S
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+## 根表面主题投射
+
+根 padding、边宽、圆角投射到 AddOn 输入表面，编辑/非编辑结构及原有画刷状态合同保持。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。

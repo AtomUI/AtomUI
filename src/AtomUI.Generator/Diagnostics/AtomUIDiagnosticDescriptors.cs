@@ -18,6 +18,11 @@ internal static partial class AtomUIDiagnosticDescriptors
         "Control '{0}' alias contract is invalid: {1}", AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error, isEnabledByDefault: true, customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor TokenResourceOrdinalContract = new(
+        AtomUIDiagnosticIds.TokenResourceOrdinalContract, "Token resource ID contract is invalid",
+        "Token resource ID contract is invalid: {0}", AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error, isEnabledByDefault: true, customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     private static DiagnosticDescriptor DefaultDiagnostic(string id, string title) => new(id, title,
         "Control '{0}' default contract is invalid: {1}", AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error, isEnabledByDefault: true, customTags: [WellKnownDiagnosticTags.Telemetry]);

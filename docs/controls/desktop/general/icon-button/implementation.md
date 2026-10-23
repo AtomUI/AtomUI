@@ -1,0 +1,9 @@
+# 图标按钮实现
+
+Common抽象基类拥有公开属性、命中和StateMotionController生命周期。Desktop的IconButton/ToggleIconButton为默认主题叶子；Themes下同名AXAML声明PixelAlignedBorder和IconPresenter，使用TemplateBinding消费根属性。
+
+两个主题分别用自身类型化TokenResource解析尺寸、圆角、图标及交互色。Transition集合位于ControlTheme style Setter，使用TokenTransitions动态消费owner的MotionDurationMid；不在载入时固化，不复制共享Transition实例。
+
+ToggleIconButton四状态画刷的默认值与最终IconBrush选择由编译Self绑定和伪类Setter表达；不使用属性变更事件镜像状态。模板只读取最终IconBrush，checked决定显示哪个IconPresenter；disabled和pressed的优先顺序见[Token合同](token.md)。模板变化、分离和动效初始化沿用Common既有生命周期。
+
+验证应包括显式根属性/Style、checked/hover/pressed/disabled、配置清除、Template替换以及明暗默认像素；逻辑Headless不能代替真实Skia命中或原生显示面。

@@ -6,6 +6,8 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
+using AtomUI.Theme.Styling;
+using AtomUI.Theme.Branding;
 using Avalonia.Controls;
 
 namespace AtomUI.Theme;
@@ -13,6 +15,7 @@ namespace AtomUI.Theme;
 internal partial class ThemeManager
 {
     private bool _loadingPackages;
+    private ThemeStyleBatch? _packagePresentationCapture;
     private PackageUpdate? _packageReadUpdate;
     internal PackageUpdate? PackageReadUpdate => Volatile.Read(ref _packageReadUpdate);
     private HashSet<string> _enabledPackageIds = new(StringComparer.Ordinal);
@@ -32,10 +35,16 @@ internal partial class ThemeManager
                 throw new InvalidOperationException("Package loading requires an initialized, idle ThemeManager.");
             }
             _loadingPackages = true;
+            _packagePresentationCapture = CaptureCommittedPresentation(_scopeGraph.CaptureAll());
         }
     }
 
-    internal void EndPackageLoading() => _loadingPackages = false;
+    internal void EndPackageLoading()
+    {
+        _packagePresentationCapture?.Dispose();
+        _packagePresentationCapture = null;
+        _loadingPackages = false;
+    }
 
     internal PackageUpdate PreparePackages(ThemeManagerBuilder builder)
     {
@@ -47,11 +56,16 @@ internal partial class ThemeManager
             GeneratedThemeSchema.GetGlobalTokens(), manualControls, GeneratedThemeSchema.GetAlgorithms());
         var newSemantics = manual.SelectMany(package => package.SemanticControls).ToArray();
         var newAssets = manual.SelectMany(package => package.ThemeAssets).ToArray();
+        var schemaChanged = manual.Count != 0 || builder.PackageDeclarations.Count != 0;
         var oldIndex = _startupPackageIndex ?? StartupPackageIndex.Create([], null, _startupRegistry,
             SemanticParts.Controls, _controlThemeAssetDescriptors);
-        var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
-        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms());
-        var semantics = new SemanticPartRegistry(index);
+        var index = schemaChanged ? oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets) : oldIndex;
+        // Registering presentation factories alone does not change the Token schema or its revision domain.
+        var registry = schemaChanged
+            ? new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms())
+            : _startupRegistry!;
+        var semantics = schemaChanged ? new SemanticPartRegistry(index) : SemanticParts;
+        var styleAssets = _styleAssetRegistry.Append(builder.StyleAssets, registry, semantics);
         _ = new ControlThemeAssetManifest(registry, newAssets);
         foreach (var asset in newAssets)
         {
@@ -65,8 +79,19 @@ internal partial class ThemeManager
                 }
             }
         }
-        var catalog = CompiledThemeCatalog.AppendRegistry(_startupRegistry!, registry, _themeDefinitionResolvers);
+        var catalog = schemaChanged
+            ? CompiledThemeCatalog.AppendRegistry(_startupRegistry!, registry, _themeDefinitionResolvers)
+            : CompiledThemeCatalog;
         var definition = catalog.Get(_lastCommittedRequest!.ThemeId);
+        var capture = _scopeGraph.CaptureAll();
+        var brandDiagnostics = ValidateBrandRequest(_lastCommittedRequest, registry.Revision, definition.Revision, styleAssets)
+            .Concat(capture.Nodes.SelectMany(node => ValidateBrandConfig(node.LastValidConfig, registry.Revision,
+                definition.Revision, styleAssets))).ToArray();
+        if (brandDiagnostics.Length != 0)
+        {
+            throw new ThemeLoadException("Package append would invalidate an active brand recipe: " +
+                string.Join(" ", brandDiagnostics.Select(static item => item.Message)));
+        }
         var defaults = ThemeCompiler.CreateDefinitionDefaults(definition.Definition, registry);
         var runtime = _lastCommittedRequest.Config is null ? _normalizedRuntimeDefaultConfig! :
             ThemeConfigNormalizer.Normalize(AddDefaultFont(_lastCommittedRequest.Config)!, registry);
@@ -76,7 +101,6 @@ internal partial class ThemeManager
         }
         var effective = ThemeStartupCompilation.MergeEffectiveConfig(defaults, _normalizedInitialConfig!.Config!, runtime.Config!);
         var snapshot = CompilePackageSnapshot(definition, registry, effective, CurrentSnapshot!);
-        var capture = _scopeGraph.CaptureAll();
         var scopes = new List<(ThemeContext Context, ThemeSnapshot Snapshot)>();
         var parents = new Dictionary<long, ThemeSnapshot> { [0] = snapshot };
         foreach (var node in capture.Nodes)
@@ -113,7 +137,7 @@ internal partial class ThemeManager
         var table = new StaticThemeResourceProvider.ResourceTable(resources.ToArray());
         var ids = _enabledPackageIds.Concat(builder.PackageDeclarations.Select(package => package.Definition.Id))
             .Concat(manual.Select(package => package.Id)).ToHashSet(StringComparer.Ordinal);
-        return new PackageUpdate(this, index, registry, semantics, catalog, snapshot, capture, scopes, table, ids);
+        return new PackageUpdate(this, index, registry, semantics, catalog, snapshot, capture, scopes, table, ids, styleAssets);
     }
 
     private ThemeSnapshot CompilePackageSnapshot(CompiledThemeDefinition definition, ThemeSchemaRegistry registry,
@@ -149,6 +173,7 @@ internal partial class ThemeManager
         internal ThemeState Theme => ReadState.Theme;
         internal SemanticPartRegistry Semantics => ReadState.Semantics;
         internal CompiledThemeCatalog Catalog => ReadState.Catalog;
+        internal ThemeStyleAssetRegistry StyleAssets => ReadState.StyleAssets;
         internal bool OwnsExistingResource(IResourceProvider resource) => _existingResources.Contains(resource);
         internal bool OwnsExistingAsset(StartupAssetEntry asset) => _existingAssets.Contains(asset);
 
@@ -171,17 +196,17 @@ internal partial class ThemeManager
         internal PackageUpdate(ThemeManager manager, StartupPackageIndex index, ThemeSchemaRegistry registry,
             SemanticPartRegistry semantics, CompiledThemeCatalog catalog, ThemeSnapshot snapshot,
             ThemeScopeCapture capture, IReadOnlyList<(ThemeContext Context, ThemeSnapshot Snapshot)> scopes,
-            StaticThemeResourceProvider.ResourceTable table, HashSet<string> ids)
+            StaticThemeResourceProvider.ResourceTable table, HashSet<string> ids, ThemeStyleAssetRegistry styleAssets)
         {
             _manager = manager;
             _capture = capture;
             _previous = new PackageState(manager._startupPackageIndex, manager._startupRegistry!, manager.SemanticParts,
                 manager.CompiledThemeCatalog, manager.CurrentSnapshot!, manager._currentSnapshotKey, manager.CurrentTheme!,
                 scopes.Select(scope => (scope.Context, scope.Context.Snapshot)).ToArray(),
-                manager._staticResourceProvider!.CurrentTable, manager._enabledPackageIds);
+                manager._staticResourceProvider!.CurrentTable, manager._enabledPackageIds, manager._styleAssetRegistry);
             var input = new ThemeCompileInput(snapshot.Definition, snapshot.DefinitionRevision, snapshot.EffectiveConfig, registry);
             _candidate = new PackageState(index, registry, semantics, catalog, snapshot, ThemeSnapshotCacheKey.Create(input),
-                CreateScopeState(snapshot, manager.CurrentTheme!.TransitionId), scopes, table, ids);
+                CreateScopeState(snapshot, manager.CurrentTheme!.TransitionId), scopes, table, ids, styleAssets);
             _previousContexts = _previous.Scopes.ToDictionary(scope => scope.Context, scope => scope.Snapshot);
             _candidateContexts = scopes.ToDictionary(scope => scope.Context, scope => scope.Snapshot);
             _previousContexts.Add(manager.RootContext, _previous.Snapshot);
@@ -217,6 +242,7 @@ internal partial class ThemeManager
 
         internal void EnsureCurrent()
         {
+            _manager._packagePresentationCapture!.Validate();
             if (!_manager._scopeGraph.IsCurrent(_capture))
             {
                 throw new InvalidOperationException("The theme scope graph changed during package loading.");
@@ -243,6 +269,7 @@ internal partial class ThemeManager
             _manager._currentSnapshotKey = state.Key;
             _manager._currentTheme = state.Theme;
             _manager._enabledPackageIds = state.Ids;
+            _manager._styleAssetRegistry = state.StyleAssets;
             _manager.RootContext.Commit(state.Snapshot);
             foreach (var scope in state.Scopes)
             {
@@ -267,6 +294,6 @@ internal partial class ThemeManager
             SemanticPartRegistry Semantics, CompiledThemeCatalog Catalog, ThemeSnapshot Snapshot,
             ThemeSnapshotCacheKey? Key, ThemeState Theme,
             IReadOnlyList<(ThemeContext Context, ThemeSnapshot Snapshot)> Scopes,
-            StaticThemeResourceProvider.ResourceTable Table, HashSet<string> Ids);
+            StaticThemeResourceProvider.ResourceTable Table, HashSet<string> Ids, ThemeStyleAssetRegistry StyleAssets);
     }
 }

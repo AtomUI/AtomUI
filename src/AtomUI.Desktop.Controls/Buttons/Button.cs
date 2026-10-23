@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
@@ -10,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -84,7 +86,8 @@ public partial class Button : AvaloniaButton,
                       ICustomizableSizeTypeAware,
                       IWaveSpiritAwareControl,
                       ICompactSpaceAware,
-                      IFormItemAware
+                      IFormItemAware,
+                      IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -284,6 +287,9 @@ public partial class Button : AvaloniaButton,
     
     internal static readonly StyledProperty<WaveSpiritType> WaveSpiritTypeProperty =
         WaveSpiritAwareControlProperty.WaveSpiritTypeProperty.AddOwner<Button>();
+
+    internal static readonly DirectProperty<Button, FontWeight> InheritedFontWeightProperty =
+        AvaloniaProperty.RegisterDirect<Button, FontWeight>(nameof(InheritedFontWeight), o => o.InheritedFontWeight);
     
     internal static readonly DirectProperty<Button, CornerRadius> EffectiveCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<Button, CornerRadius>(nameof(EffectiveCornerRadius),
@@ -419,6 +425,14 @@ public partial class Button : AvaloniaButton,
         set => SetValue(WaveSpiritTypeProperty, value);
     }
     
+    private FontWeight _inheritedFontWeight = FontWeight.Normal;
+    internal FontWeight InheritedFontWeight
+    {
+        get => _inheritedFontWeight;
+        private set => SetAndRaise(InheritedFontWeightProperty, ref _inheritedFontWeight, value);
+    }
+
+
     private CornerRadius _effectiveCornerRadius;
 
     internal CornerRadius EffectiveCornerRadius
@@ -444,13 +458,19 @@ public partial class Button : AvaloniaButton,
         get => GetValue(IsUsedInCompactSpaceProperty);
         set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
-    
+
+
     #endregion
     
     private static readonly IBrush TransparentBrush = new ImmutableSolidColorBrush(Colors.Transparent);
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
     private WaveSpiritDecorator? _waveSpiritDecorator;
+    private EventHandler? _formValueChanged;
     private IDisposable? _themeScopeSubscription;
+    private IDisposable? _inheritedFontWeightSubscription;
+    private double _shapeCornerRadius;
+    private IDisposable? _flyoutTargetSubscription;
+    private IDisposable? _flyoutGutterBinding;
 
     static Button()
     {
@@ -467,6 +487,116 @@ public partial class Button : AvaloniaButton,
             IsGhostProperty,
             ColorProperty,
             VariantProperty);
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        // AXAML cannot observe AvaloniaObject's protected InheritanceParent, which may
+        // differ from the logical parent. Project its actual value; the ControlTheme
+        // owns FontWeight and keeps native style/local priorities. An unset binding
+        // cannot preserve inheritance: Avalonia 12 seeds the property's default value.
+        _inheritedFontWeightSubscription?.Dispose();
+        _inheritedFontWeightSubscription = InheritanceParent?.GetObservable(FontWeightProperty)
+            .Subscribe(value => InheritedFontWeight = value);
+        if (InheritanceParent is null)
+        {
+            InheritedFontWeight = FontWeight.Normal;
+        }
+        _themeScopeSubscription?.Dispose();
+        _themeScopeSubscription = s_themeTokenResolver.Subscribe(
+            this,
+            _ => ConfigureVariantThemeVariables());
+        ConfigureVariantThemeVariables();
+        ConfigureFlyoutGutterSource();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ReleaseFlyoutGutterSource();
+        _inheritedFontWeightSubscription?.Dispose();
+        _inheritedFontWeightSubscription = null;
+        _themeScopeSubscription?.Dispose();
+        _themeScopeSubscription = null;
+        base.OnDetachedFromLogicalTree(e);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
+        ConfigureEffectiveButtonState();
+        UpdatePseudoClasses();
+        ConfigureWaveSpiritType();
+        ConfigureEffectiveCornerRadius();
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var size         = LayoutHelper.ApplyLayoutConstraints(this, base.MeasureOverride(availableSize));
+        var targetWidth  = size.Width;
+        var targetHeight = size.Height;
+
+        targetWidth = Math.Max(targetWidth, targetHeight);
+
+        if (Shape == ButtonShape.Circle)
+        {
+            targetWidth  = targetHeight;
+        }
+        else if (Shape == ButtonShape.Round)
+        {
+            targetWidth  = Math.Max(targetWidth, targetHeight + targetHeight / 2);
+        }
+
+        // Preserve the existing measured-height geometry without overwriting the
+        // caller's CornerRadius. Bounds can differ under Stretch; substituting it
+        // here would change the existing rendered shape.
+        if (_shapeCornerRadius != targetHeight)
+        {
+            _shapeCornerRadius = targetHeight;
+            ConfigureEffectiveCornerRadius();
+        }
+
+        return new Size(targetWidth, targetHeight);
+    }
+    
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == FlyoutProperty)
+        {
+            ConfigureFlyoutGutterSource();
+        }
+        if (change.Property == IsPressedProperty)
+        {
+            HandlePressedChanged(change);
+        }
+
+        if (change.Property == ButtonTypeProperty ||
+            change.Property == ShapeProperty)
+        {
+            ConfigureWaveSpiritType();
+        }
+
+        if (ShouldConfigureEffectiveButtonState(change.Property))
+        {
+            ConfigureEffectiveButtonState();
+        }
+
+        if (ShouldUpdatePseudoClasses(change.Property))
+        {
+            UpdatePseudoClasses();
+        }
+
+        if (ShouldConfigureEffectiveBorderThickness(change.Property))
+        {
+            ConfigureEffectiveBorderThickness();
+        }
+
+        if (ShouldConfigureEffectiveCornerRadius(change.Property))
+        {
+            ConfigureEffectiveCornerRadius();
+        }
     }
 
     #region 实现 CompactSpace 接口
@@ -503,8 +633,6 @@ public partial class Button : AvaloniaButton,
 
     #region 实现 FormItem 接口
 
-    private EventHandler? _formValueChanged;
-
     event EventHandler? IFormItemAware.ValueChanged
     {
         add => _formValueChanged += value;
@@ -536,89 +664,12 @@ public partial class Button : AvaloniaButton,
 
     #endregion
 
-    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToLogicalTree(e);
-        _themeScopeSubscription?.Dispose();
-        _themeScopeSubscription = s_themeTokenResolver.Subscribe(
-            this,
-            _ => ConfigureVariantThemeVariables());
-        ConfigureVariantThemeVariables();
-    }
+    #region 实现 ThemeInheritance 接口
 
-    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        _themeScopeSubscription?.Dispose();
-        _themeScopeSubscription = null;
-        base.OnDetachedFromLogicalTree(e);
-    }
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
-        ConfigureEffectiveButtonState();
-        UpdatePseudoClasses();
-        ConfigureWaveSpiritType();
-        ConfigureEffectiveCornerRadius();
-    }
-
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        var size         = LayoutHelper.ApplyLayoutConstraints(this, base.MeasureOverride(availableSize));
-        var targetWidth  = size.Width;
-        var targetHeight = size.Height;
-
-        targetWidth = Math.Max(targetWidth, targetHeight);
-
-        if (Shape == ButtonShape.Circle)
-        {
-            targetWidth  = targetHeight;
-            CornerRadius = new CornerRadius(targetHeight);
-        }
-        else if (Shape == ButtonShape.Round)
-        {
-            CornerRadius = new CornerRadius(targetHeight);
-            targetWidth  = Math.Max(targetWidth, targetHeight + targetHeight / 2);
-        }
-
-        return new Size(targetWidth, targetHeight);
-    }
-    
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == IsPressedProperty)
-        {
-            HandlePressedChanged(change);
-        }
-
-        if (change.Property == ButtonTypeProperty ||
-            change.Property == ShapeProperty)
-        {
-            ConfigureWaveSpiritType();
-        }
-
-        if (ShouldConfigureEffectiveButtonState(change.Property))
-        {
-            ConfigureEffectiveButtonState();
-        }
-
-        if (ShouldUpdatePseudoClasses(change.Property))
-        {
-            UpdatePseudoClasses();
-        }
-
-        if (ShouldConfigureEffectiveBorderThickness(change.Property))
-        {
-            ConfigureEffectiveBorderThickness();
-        }
-
-        if (ShouldConfigureEffectiveCornerRadius(change.Property))
-        {
-            ConfigureEffectiveCornerRadius();
-        }
-    }
+    #endregion
 
     private void HandlePressedChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -1118,17 +1169,23 @@ public partial class Button : AvaloniaButton,
     private readonly struct ButtonThemeTokenReader
     {
         private readonly ControlTokenAccessor _accessor;
+        private readonly bool _isDropdown;
 
-        private ButtonThemeTokenReader(ControlTokenAccessor accessor)
+        private ButtonThemeTokenReader(Button owner)
         {
-            _accessor = accessor;
+            // Registered product families keep separate Global and Own tables.
+            // Unregistered application subclasses retain their product base contract.
+            _isDropdown = owner is DropdownButton;
+            _accessor = _isDropdown
+                ? ControlTokenAccessor.Capture<DropdownButton>(owner)
+                : ControlTokenAccessor.Capture<Button>(owner);
         }
 
         internal static bool TryCreate(Button owner, out ButtonThemeTokenReader reader)
         {
             try
             {
-                reader = new ButtonThemeTokenReader(ControlTokenAccessor.Capture<Button>(owner));
+                reader = new ButtonThemeTokenReader(owner);
                 return true;
             }
             catch (InvalidOperationException)
@@ -1140,7 +1197,37 @@ public partial class Button : AvaloniaButton,
 
         internal T Global<T>(SharedTokenKind token) => _accessor.GetEffectiveGlobal<T>(token);
 
-        internal T Control<T>(ButtonTokenKind token) => _accessor.GetOwn<T>(token);
+        internal T Control<T>(ButtonTokenKind token) => _accessor.GetOwn<T>(
+            _isDropdown ? DropdownOwnKey(token) : token);
+
+        private static Enum DropdownOwnKey(ButtonTokenKind token) => token switch
+        {
+            ButtonTokenKind.DangerColor => DropdownButtonTokenKind.DangerColor,
+            ButtonTokenKind.DangerShadow => DropdownButtonTokenKind.DangerShadow,
+            ButtonTokenKind.DefaultActiveBg => DropdownButtonTokenKind.DefaultActiveBg,
+            ButtonTokenKind.DefaultActiveBorderColor => DropdownButtonTokenKind.DefaultActiveBorderColor,
+            ButtonTokenKind.DefaultActiveColor => DropdownButtonTokenKind.DefaultActiveColor,
+            ButtonTokenKind.DefaultBg => DropdownButtonTokenKind.DefaultBg,
+            ButtonTokenKind.DefaultBorderColor => DropdownButtonTokenKind.DefaultBorderColor,
+            ButtonTokenKind.DefaultColor => DropdownButtonTokenKind.DefaultColor,
+            ButtonTokenKind.DefaultGhostBorderColor => DropdownButtonTokenKind.DefaultGhostBorderColor,
+            ButtonTokenKind.DefaultGhostColor => DropdownButtonTokenKind.DefaultGhostColor,
+            ButtonTokenKind.DefaultHoverBg => DropdownButtonTokenKind.DefaultHoverBg,
+            ButtonTokenKind.DefaultHoverBorderColor => DropdownButtonTokenKind.DefaultHoverBorderColor,
+            ButtonTokenKind.DefaultHoverColor => DropdownButtonTokenKind.DefaultHoverColor,
+            ButtonTokenKind.DefaultShadow => DropdownButtonTokenKind.DefaultShadow,
+            ButtonTokenKind.GhostBg => DropdownButtonTokenKind.GhostBg,
+            ButtonTokenKind.LinkHoverBg => DropdownButtonTokenKind.LinkHoverBg,
+            ButtonTokenKind.PrimaryColor => DropdownButtonTokenKind.PrimaryColor,
+            ButtonTokenKind.PrimaryShadow => DropdownButtonTokenKind.PrimaryShadow,
+            ButtonTokenKind.SolidTextColor => DropdownButtonTokenKind.SolidTextColor,
+            ButtonTokenKind.TextHoverBg => DropdownButtonTokenKind.TextHoverBg,
+            ButtonTokenKind.TextTextActiveColor => DropdownButtonTokenKind.TextTextActiveColor,
+            ButtonTokenKind.TextTextColor => DropdownButtonTokenKind.TextTextColor,
+            ButtonTokenKind.TextTextHoverColor => DropdownButtonTokenKind.TextTextHoverColor,
+            _ => throw new ArgumentOutOfRangeException(nameof(token), token,
+                "This Button Own field is not part of the shared variant rendering contract.")
+        };
 
         internal PaletteInfo PresetPalette(PresetPrimaryColor primaryColor) =>
             _accessor.GetPresetPalette(primaryColor);
@@ -1200,8 +1287,10 @@ public partial class Button : AvaloniaButton,
 
     private void ConfigureEffectiveCornerRadius()
     {
+        var radius = Shape is ButtonShape.Circle or ButtonShape.Round
+            ? new CornerRadius(_shapeCornerRadius) : CornerRadius;
         EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
-            CornerRadius, 
+            radius,
             IsUsedInCompactSpace, 
             CompactSpaceItemPosition,
             CompactSpaceOrientation);
@@ -1234,6 +1323,7 @@ public partial class Button : AvaloniaButton,
     private bool ShouldConfigureEffectiveCornerRadius(AvaloniaProperty property)
     {
         return property == CornerRadiusProperty ||
+               property == ShapeProperty ||
                property == CompactSpaceItemPositionProperty ||
                property == CompactSpaceOrientationProperty;
     }
@@ -1250,4 +1340,39 @@ public partial class Button : AvaloniaButton,
         PseudoClasses.Set(ButtonPseudoClass.IsDanger, IsDanger);
     }
 
+
+    private void ConfigureFlyoutGutterSource()
+    {
+        ReleaseFlyoutGutterSource();
+        if (!((ILogical)this).IsAttachedToLogicalTree || Flyout is not AtomUI.Desktop.Controls.Flyout flyout)
+        {
+            return;
+        }
+
+        // Flyout is a non-Visual object outside the Button ControlTemplate, so a
+        // ControlTheme selector cannot reach its MarginToAnchor. Follow its actual
+        // Target before positioning, retaining local-value priority and disposing
+        // both subscriptions on replacement/detach; a shared Flyout has one owner.
+        _flyoutTargetSubscription = flyout.GetObservable(FlyoutBase.TargetProperty).Subscribe(target =>
+        {
+            _flyoutGutterBinding?.Dispose();
+            _flyoutGutterBinding = null;
+            if (ReferenceEquals(target, this))
+            {
+                var key = ButtonTokenKind.GutterToFlyout;
+                var values = this.GetResourceObservable(new ExplicitTokenResourceKey(key))
+                    .CombineLatest(this.GetResourceObservable(key), static (configured, value) =>
+                        configured is double ? value : AvaloniaProperty.UnsetValue);
+                _flyoutGutterBinding = flyout.Bind(AtomUI.Desktop.Controls.Flyout.MarginToAnchorProperty, values, BindingPriority.Template);
+            }
+        });
+    }
+
+    private void ReleaseFlyoutGutterSource()
+    {
+        _flyoutTargetSubscription?.Dispose();
+        _flyoutTargetSubscription = null;
+        _flyoutGutterBinding?.Dispose();
+        _flyoutGutterBinding = null;
+    }
 }

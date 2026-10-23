@@ -4,12 +4,21 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:OtpLineEdit}" TargetType="atom:OtpLineEdit">
+        <ControlTheme.Resources>
+            <ControlTheme x:Key="OtpLineEditSeparatorBorderTheme" TargetType="Border">
+                <Setter Property="Margin">
+                    <MultiBinding Converter="{x:Static atom:OtpLineEditThicknessConverter.Left}">
+                        <atom:OtpLineEditTokenResource Kind="MarginXXS" />
+                    </MultiBinding>
+                </Setter>
+            </ControlTheme>
+        </ControlTheme.Resources>
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Name="PART_RootPanel">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center"
-                                Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                Spacing="{atom:OtpLineEditTokenResource UniformlyPaddingXXS}">
                         <ItemsControl
                             Name="PART_CellsHost"
                             Classes.semantic-cell-list="True"
@@ -50,11 +59,11 @@
                                                 IsTabStop="False"
                                                 Foreground="{Binding $parent[atom:OtpLineEditCell].Foreground}"
                                                 FontSize="{Binding $parent[atom:OtpLineEditCell].FontSize}"
-                                                CaretBrush="{atom:SharedTokenResource ColorText}"
-                                                SelectionBrush="{atom:SharedTokenResource SelectionBackground}"
-                                                SelectionForegroundBrush="{atom:SharedTokenResource SelectionForeground}"
+                                                CaretBrush="{atom:OtpLineEditTokenResource ColorText}"
+                                                SelectionBrush="{atom:OtpLineEditTokenResource SelectionBackground}"
+                                                SelectionForegroundBrush="{atom:OtpLineEditTokenResource SelectionForeground}"
                                                 SourcePlaceholderText="{Binding PlaceholderText}"
-                                                PlaceholderForeground="{atom:SharedTokenResource ColorTextPlaceholder}"
+                                                PlaceholderForeground="{atom:OtpLineEditTokenResource ColorTextPlaceholder}"
                                                 IsCellActive="{Binding IsActive}"
                                                 Text="{Binding DisplayText}" />
                                         </atom:OtpLineEditCell>
@@ -65,7 +74,7 @@
                                             与 cell 中心对齐（测试锁定）。
                                         -->
                                         <Border
-                                            Margin="4,0,0,0"
+                                            Theme="{StaticResource OtpLineEditSeparatorBorderTheme}"
                                             VerticalAlignment="Center"
                                             Classes.semantic-separator="True"
                                             IsVisible="{Binding IsSeparatorVisible}">
@@ -97,7 +106,8 @@
         </Setter>
 
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OtpLineEditTokenResource EnableMotion}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+
     </ControlTheme>
 </ResourceDictionary>

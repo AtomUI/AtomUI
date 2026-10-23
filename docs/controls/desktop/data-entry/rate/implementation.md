@@ -154,3 +154,7 @@ Rate 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 主题消费合同（2026-10-23）
+
+RateItem 为脱离普通继承树的 VisualBrush 字符快照复制有效 FontFamily/FontStyle/FontWeight；字体、字号、Width/Height 改变时重建两张画刷，保留选择/半星与 clip。RateCharacter 的 FontFamily 加入 measure 失效依赖，缓存文字与有效字体一致。不是每帧重建，也不为临时 glyph 创建独立 Own identity。完整 Rate 家族状态/尺寸和 Own V2 迁移仍按对应合同验证。

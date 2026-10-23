@@ -670,10 +670,13 @@ public class ButtonBehaviorTests
             var waveSpiritDecorator = GetPrivateFieldValue(button, "_waveSpiritDecorator");
             SetPublicPropertyValue(waveSpiritDecorator, "SizeMotionDuration", TimeSpan.FromSeconds(1));
             SetPublicPropertyValue(waveSpiritDecorator, "OpacityMotionDuration", TimeSpan.FromSeconds(1));
-            SetPublicPropertyValue(waveSpiritDecorator, "WaveRange", 0d);
-
+            // Warm a valid wave: zero range no longer constructs a degenerate animation.
+            SetPublicPropertyValue(waveSpiritDecorator, "WaveRange", 6d);
             InvokePublicMethod(waveSpiritDecorator, "Play");
             var wavePainter = GetPrivateFieldValue(waveSpiritDecorator, "_wavePainter");
+
+            SetPublicPropertyValue(waveSpiritDecorator, "WaveRange", 0d);
+            InvokePublicMethod(waveSpiritDecorator, "Play");
             GetPublicPropertyValue<double>(wavePainter, "WaveRange").ShouldBe(0d);
 
             SetPublicPropertyValue(waveSpiritDecorator, "WaveRange", 6d);

@@ -1,5 +1,6 @@
 using AtomUI.Registration;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Branding;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Definitions.Compiled;
 using AtomUI.Theme.Resources;
@@ -12,6 +13,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 {
     private readonly List<ThemeDefinitionRegistration> _themeDefinitionResolvers = new();
     private readonly List<Action<IThemeManager>> _initializers = new();
+    private readonly List<ThemeStyleAssetRegistration> _styleAssets = [];
     private readonly List<EnabledControlPackage> _packageDeclarations = [];
     private StartupImage? _startupImage;
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
@@ -43,6 +45,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal ThemeRequest? FollowSystemLightRequest { get; private set; }
     internal ThemeRequest? FollowSystemDarkRequest { get; private set; }
     internal IReadOnlyList<Action<IThemeManager>> Initializers => _initializers;
+    internal IReadOnlyList<ThemeStyleAssetRegistration> StyleAssets => _styleAssets;
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
     internal StartupImage? StartupImage => _startupImage;
@@ -62,6 +65,13 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal string? ApplicationId { get; private set; }
 
     private readonly List<ControlPackageRegistration> _controlPackages = new();
+
+    public void AddThemeStyleAsset(ThemeStyleAssetRegistration registration)
+    {
+        ControlRegistrationState.ThrowIfUnavailable();
+        ArgumentNullException.ThrowIfNull(registration);
+        _styleAssets.Add(registration);
+    }
 
     public void AddThemeDefinitionResolver(IThemeDefinitionResolver resolver)
     {
@@ -409,6 +419,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         themeManager.SetEnabledPackageIds(_controlPackages.Select(package => package.Id)
             .Concat(_packageDeclarations.Select(package => package.Definition.Id)));
         themeManager.PrepareRegistrationSchema();
+        themeManager.RegisterStyleAssets(_styleAssets);
         return themeManager;
     }
 

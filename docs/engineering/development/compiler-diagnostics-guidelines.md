@@ -117,6 +117,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN042` | Generator | Error | 默认函数返回类型、context或Own参数类型／数量／ref形态不符，或函数为实例／泛型／async | 使用精确返回类型、首个`in ControlTokenDefaultContext`及按声明顺序的强类型Own参数 | ControlTokenDefaults |
 | `ATOMUIGEN043` | Generator | Error | 默认Own输入未知或依赖成环 | 使用同终端字段，按诊断链移除循环；不修改按名称分配的slot | ControlTokenDefaults |
 | `ATOMUIGEN044` | Generator | Error | Own别名未知/非Own目标、类型或nullable不符、自身/链/环/重复，终端缺partial或IControlTokenAliases，手写别名入口或V2默认读写别名 | 使用同终端直接规范字段；保留历史slot/key，入口交由Generator；默认只依赖规范字段 | ControlTokenAliases |
+| `ATOMUIGEN045` | Generator | Error | Token资源ID合同版本/行/容量无效、重复或非连续ID、字段/范围缺失或删除 | 保留已登记ID，为新增字段追加ID，修正对应附加文件行；移除须显式迁移审查 | TokenResourceOrdinals |
 | `ATOMUIGEN027` | Generator | Error | Semantic Part 的 Control/Part 声明、名称、path、class、cardinality 或 customization 非法 | 按 Semantic Part 声明契约修正 `[SemanticPart]` | SemanticParts |
 | `ATOMUIGEN028` | Generator | Error | 同一 Control 的 Part name、path 或 selector class 重复 | 为每个 Part 使用唯一名称、path 和 `.semantic-*` class | SemanticParts |
 | `ATOMUIGEN029` | Generator | Error | Semantic Part `ContractType` 不是 public `StyledElement` | 使用稳定且公开可引用的 Avalonia 类型 | SemanticParts |

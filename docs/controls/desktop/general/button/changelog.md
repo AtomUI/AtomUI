@@ -8,6 +8,21 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-10-23
+
+- Theme
+  - 显式DefaultBorderColorDisabled进入默认Outlined/Dashed禁用描边，未配置继续使用通用禁用色。
+  - 显式GutterToFlyout进入关联AtomUI Flyout的实际Target间距；支持共享复用、更新/清除和本地值优先，不改变默认弹层位置。
+
+- Theme
+  - Own定义改为显式依赖默认函数，字体和Padding覆盖进入下游派生，保留缺省数值与历史字段名。
+  - FontWeight实际消费显式Own覆盖；未配置及清除时保持原生继承，局部属性、Style和资源覆盖保留。
+- Fix
+  - Circle/Round不再在Measure覆盖实例CornerRadius，切回Default恢复原圆角，保持原测量几何。
+
+- Theme
+  - Transition 时长在实际 owner 上动态消费有效主题作用域；保留原生样式覆盖、默认时长与模板状态。共享框体使用其公开模板 owner，单选指示器保留 Mid/Fast 的独立输入。完整家族迁移与真实动画时序仍按专项任务验收。
+
 ## 2026-08-31
 
 - Fix

@@ -84,6 +84,11 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+尺寸预设先提供内部默认参数，再由原生 Padding/CornerRadius 决定有效值；内容 inset 与 handle 的方向/占位分别处理。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 ButtonSpinner 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |

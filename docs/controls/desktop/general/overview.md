@@ -9,6 +9,9 @@
 - [Button 桌面版实现原理](button/implementation.md)
 - [Button Token 设计](button/token.md)
 - [Button Changelog](button/changelog.md)
+- [HyperLinkButton 桌面版设计](hyper-link-button/overview.md)
+- [HyperLinkButton Token](hyper-link-button/token.md)
+- [SplitButton Token](split-button/token.md)
 - [FloatButton 桌面版架构设计](float-button/overview.md)
 - [FloatButton 桌面版实现原理](float-button/implementation.md)
 - [FloatButton Token 设计](float-button/token.md)
@@ -25,3 +28,6 @@
 - [SplitButton 桌面版实现原理](split-button/implementation.md)
 - [SplitButton Semantic Part 契约](split-button/semantic-part.md)
 - [SplitButton Changelog](split-button/changelog.md)
+
+- [IconButton 与 ToggleIconButton](icon-button/overview.md)
+- [图标按钮主题合同](icon-button/token.md)

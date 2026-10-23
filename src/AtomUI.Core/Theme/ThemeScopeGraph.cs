@@ -41,6 +41,7 @@ internal sealed class ThemeScopeGraph
 
         var registrationId = ++_nextRegistrationId;
         var context = new ThemeContext(_manager, parentContext.Snapshot, registrationId);
+        context.CommitStyleInputs(parentContext.StyleInputs);
         var node = new ThemeScopeNode(
             registrationId,
             parentRegistrationId,

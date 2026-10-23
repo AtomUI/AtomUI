@@ -295,6 +295,14 @@ public partial class DesignToken
     [DesignTokenKind(DesignTokenKind.Alias)]
     public double WaveStartOpacity { get; set; }
 
+    /// <summary>波纹尺寸动画的精确时长，默认跟随慢速动效。</summary>
+    [DesignTokenKind(DesignTokenKind.Alias)]
+    public TimeSpan WaveSizeMotionDuration { get; set; }
+
+    /// <summary>波纹透明度动画的精确时长，默认保留慢速动效后的50ms尾部。</summary>
+    [DesignTokenKind(DesignTokenKind.Alias)]
+    public TimeSpan WaveOpacityMotionDuration { get; set; }
+
     // Padding
     /// <summary>
     /// 极小内间距

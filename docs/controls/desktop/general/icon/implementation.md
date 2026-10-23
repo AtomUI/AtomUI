@@ -147,3 +147,7 @@ Icon 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 主题消费合同（2026-10-23）
+
+`IconTemplatePresenter` 保存当前构建的 PathIcon，替换、detach 时释放全部宿主绑定，attach 时对同一个 child 重建。运行时 content 位于 ControlTemplate 外，普通 child Style 不能等价产生 Template 绑定优先级，因此保留有界 RelayBind 并在代码注明原因。IconPresenter 的默认 IconBrush 从其 Control Effective Global 的 ColorIconHover 读取，不能跳过该 owner 读 Shared。

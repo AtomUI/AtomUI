@@ -1,6 +1,8 @@
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
+using AtomUI.Theme.Styling;
+using AtomUI.Theme.Branding;
 
 namespace AtomUI.Theme;
 
@@ -36,6 +38,7 @@ internal sealed class ThemeTransactionPreparation
     internal ThemeSnapshotCacheKey SnapshotKey { get; }
     internal IReadOnlyList<ThemeDiagnostic> Diagnostics { get; }
     internal Exception? Exception { get; }
+
     internal bool Success => Snapshot is not null && Exception is null &&
                              Diagnostics.All(static diagnostic =>
                                  diagnostic.Severity != ThemeDiagnosticSeverity.Error);
@@ -94,6 +97,7 @@ internal sealed class ThemeTransaction
     internal ThemeTokenResourceProvider? PreparedResourceProvider { get; set; }
     internal ThemeContext? PreparedRootContext { get; set; }
     internal ThemeScopeCapture? ScopeCapture { get; set; }
+    internal ThemeStyleBatch? StyleBatch { get; set; }
     internal IReadOnlyList<ThemeScopeStagedSnapshot> PreparedScopes { get; set; } =
         Array.Empty<ThemeScopeStagedSnapshot>();
     internal bool AddsResourceProvider { get; set; }
@@ -134,6 +138,7 @@ internal sealed class ThemeScopeUpdateResult
     internal long TransitionId { get; }
     internal ThemeTransitionStatus Status { get; }
     internal bool Success => Status == ThemeTransitionStatus.Committed;
+    internal ThemePresentationResult Presentation { get; set; } = ThemePresentationResult.Unchanged;
     internal ThemeRequest Request { get; }
     internal ThemeState State { get; }
     internal IReadOnlyList<ThemeDiagnostic> Diagnostics { get; }
@@ -156,7 +161,7 @@ internal sealed class ThemeScopeUpdateResult
             State,
             Diagnostics,
             PublishDiagnostics.Concat(publishDiagnostics).ToArray(),
-            Exception);
+            Exception) { Presentation = this.Presentation };
     }
 
     internal static ThemeScopeUpdateResult Succeeded(
@@ -235,11 +240,15 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
     private readonly KeyValuePair<string, string>[]? _tokens;
     private readonly ControlRequestCacheKey[]? _controls;
     private readonly int _hashCode;
+    private readonly ThemeStyleInputs _styleInputs;
+    private readonly ThemeBrandRequirements? _brandRequirements;
 
     private ThemeRequestCacheKey(ThemeRequest request)
     {
         ThemeId = request.ThemeId;
         Reason  = request.Reason;
+        _styleInputs = ThemeStyleInputs.Resolve(ThemeStyleInputs.Empty, request.Config);
+        _brandRequirements = request.Config?.BrandRequirements;
         if (request.Config is not null)
         {
             Inherit     = request.Config.Inherit;
@@ -269,6 +278,8 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
                string.Equals(ThemeId, other.ThemeId, StringComparison.Ordinal) &&
                Reason == other.Reason &&
                Inherit == other.Inherit &&
+               _styleInputs.Equals(other._styleInputs) &&
+               Equals(_brandRequirements, other._brandRequirements) &&
                NullableSequenceEqual(_algorithms, other._algorithms) &&
                NullableSequenceEqual(_tokens, other._tokens) &&
                NullableSequenceEqual(_controls, other._controls);
@@ -284,6 +295,8 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
         hash.Add(ThemeId, StringComparer.Ordinal);
         hash.Add(Reason);
         hash.Add(Inherit);
+        hash.Add(_styleInputs);
+        hash.Add(_brandRequirements);
         Add(ref hash, _algorithms);
         Add(ref hash, _tokens);
         Add(ref hash, _controls);

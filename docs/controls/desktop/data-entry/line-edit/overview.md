@@ -208,6 +208,11 @@ CompactSpace 只影响相邻输入框之间的有效圆角和边框折叠，不�
 
 ## 5. 视觉与主题模型
 
+LineEdit 根几何使用本身份的有效主题默认值并投射到 AddOn 内容 frame；TextBox 与 TextArea 的具体职责分别见其独立文档。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 LineEdit 家族使用输入壳体和文本 presenter 分层：
 
 | 主题 | 职责 |

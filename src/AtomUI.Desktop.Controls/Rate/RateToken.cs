@@ -9,6 +9,11 @@ internal sealed class RateToken : AbstractControlDesignToken
 {
     
     /// <summary>
+    /// Typeface for character glyph content; retains the platform glyph default.
+    /// </summary>
+    public FontFamily CharacterFontFamily { get; set; } = FontFamily.Default;
+
+    /// <summary>
     /// 星星颜色
     /// Star color
     /// </summary>

@@ -89,10 +89,13 @@ public class IconPresenter : Control
 
     private void ConfigureIcon(PathIcon pathIcon)
     {
+        // Runtime content is outside a ControlTemplate; ordinary child Style priority
+        // cannot reproduce these Template-priority bindings. Release them on replacement
+        // and detach, and rebuild on attach so explicit child values retain precedence.
         _disposables?.Dispose();
         _disposables = new CompositeDisposable(7);
-        _disposables.Add(BindUtils.RelayBind(this, WidthProperty, pathIcon, WidthProperty));
-        _disposables.Add(BindUtils.RelayBind(this, HeightProperty, pathIcon, HeightProperty));
+        _disposables.Add(BindUtils.RelayBind(this, WidthProperty, pathIcon, WidthProperty, BindingMode.Default, BindingPriority.Template));
+        _disposables.Add(BindUtils.RelayBind(this, HeightProperty, pathIcon, HeightProperty, BindingMode.Default, BindingPriority.Template));
         if (pathIcon is Icon icon)
         {
             _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, IconControl.StrokeBrushProperty, BindingMode.Default, BindingPriority.Template));

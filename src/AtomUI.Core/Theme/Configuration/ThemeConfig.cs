@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Schema;
+using AtomUI.Theme.Styling;
+using AtomUI.Theme.Branding;
 
 namespace AtomUI.Theme.Configuration;
 
@@ -16,7 +18,10 @@ public sealed class ThemeConfig
         bool inherit,
         IReadOnlyList<ThemeAlgorithm>? algorithms,
         IReadOnlyDictionary<string, string> tokens,
-        IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig> controls)
+        IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig> controls,
+        IReadOnlyList<ThemeStyleAsset>? styleAssets = null,
+        ThemeBrandSelection? brandSelection = null,
+        ThemeBrandRequirements? brandRequirements = null)
     {
         Inherit    = inherit;
         Algorithms = algorithms is null ? null : Array.AsReadOnly(algorithms.ToArray());
@@ -34,6 +39,15 @@ public sealed class ThemeConfig
         }
         Controls = new ReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig>(
             canonicalControls.ToDictionary(static entry => entry.Key, static entry => entry.Value));
+        var assets = styleAssets?.ToArray() ?? [];
+        if (assets.Any(static asset => asset is null) ||
+            assets.Select(static asset => asset.Id).Distinct(StringComparer.Ordinal).Count() != assets.Length)
+        {
+            throw new ArgumentException("A configuration requires distinct, non-null style assets.", nameof(styleAssets));
+        }
+        StyleAssets = Array.AsReadOnly(assets);
+        BrandSelection = brandSelection;
+        BrandRequirements = brandRequirements;
     }
 
     public bool Inherit { get; }
@@ -43,4 +57,9 @@ public sealed class ThemeConfig
     public IReadOnlyDictionary<string, string> Tokens { get; }
 
     public IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig> Controls { get; }
+
+    // Registered compiled assets only. The public registry/manifest boundary is defined in CT-09.
+    internal IReadOnlyList<ThemeStyleAsset> StyleAssets { get; }
+    internal ThemeBrandSelection? BrandSelection { get; }
+    internal ThemeBrandRequirements? BrandRequirements { get; }
 }

@@ -6,8 +6,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ButtonToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ButtonToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -220,32 +220,32 @@ internal sealed class ButtonToken : AbstractControlDesignToken
     /// <summary>
     /// 按钮内容字体大小
     /// </summary>
-    public double ContentFontSize { get; set; } = double.NaN;
+    public double ContentFontSize { get; set; }
 
     /// <summary>
     /// 大号按钮内容字体大小
     /// </summary>
-    public double ContentFontSizeLG { get; set; } = double.NaN;
+    public double ContentFontSizeLG { get; set; }
 
     /// <summary>
     /// 小号按钮内容字体大小
     /// </summary>
-    public double ContentFontSizeSM { get; set; } = double.NaN;
+    public double ContentFontSizeSM { get; set; }
 
     /// <summary>
     /// 按钮内容字体行高
     /// </summary>
-    public double ContentLineHeight { get; set; } = double.NaN;
+    public double ContentLineHeight { get; set; }
 
     /// <summary>
     /// 大号按钮内容字体行高
     /// </summary>
-    public double ContentLineHeightLG { get; set; } = double.NaN;
+    public double ContentLineHeightLG { get; set; }
 
     /// <summary>
     /// 小号按钮内容字体行高
     /// </summary>
-    public double ContentLineHeightSM { get; set; } = double.NaN;
+    public double ContentLineHeightSM { get; set; }
     
     /// <summary>
     /// 按钮的下拉弹出菜单跟按钮之间的间距大小
@@ -271,125 +271,224 @@ internal sealed class ButtonToken : AbstractControlDesignToken
 
     #endregion
 
-    public ButtonToken()
+    [ControlTokenDefault(nameof(FontWeight))]
+    private static double DefaultForFontWeight(in ControlTokenDefaultContext context) =>
+        400;
 
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var fontSize   = EffectiveGlobalToken.FontSize;
-        var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
-
-        ContentFontSize   = !double.IsNaN(ContentFontSize) ? ContentFontSize : fontSize;
-        ContentFontSizeSM = !double.IsNaN(ContentFontSizeSM) ? ContentFontSizeSM : fontSize;
-        ContentFontSizeLG = !double.IsNaN(ContentFontSizeLG) ? ContentFontSizeLG : fontSizeLG;
-        ContentLineHeight = !double.IsNaN(ContentLineHeight)
-            ? ContentLineHeight
-            : CalculatorUtils.CalculateLineHeight(ContentFontSize) * ContentFontSize;
-        ContentLineHeightSM = !double.IsNaN(ContentLineHeightSM)
-            ? ContentLineHeightSM
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeSM) * ContentFontSizeSM;
-        ContentLineHeightLG = !double.IsNaN(ContentLineHeightLG)
-            ? ContentLineHeightLG
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeLG) * ContentFontSizeLG;
-
-        var controlOutlineWidth = EffectiveGlobalToken.ControlOutlineWidth;
-        FontWeight = 400;
-        DefaultShadow = new BoxShadows(new BoxShadow
+    [ControlTokenDefault(nameof(DefaultShadow))]
+    private static BoxShadows DefaultForDefaultShadow(in ControlTokenDefaultContext context) =>
+        new BoxShadows(new BoxShadow
         {
             OffsetX = 0,
-            OffsetY = controlOutlineWidth,
-            Blur    = 3,
-            Spread  = 0,
-            Color   = EffectiveGlobalToken.ColorControlOutline
+            OffsetY = context.Global.ControlOutlineWidth,
+            Blur = 3,
+            Spread = 0,
+            Color = context.Global.ColorControlOutline
         });
 
-        PrimaryShadow = new BoxShadows(new BoxShadow
+    [ControlTokenDefault(nameof(PrimaryShadow))]
+    private static BoxShadows DefaultForPrimaryShadow(in ControlTokenDefaultContext context) =>
+        new BoxShadows(new BoxShadow
         {
             OffsetX = 0,
-            OffsetY = controlOutlineWidth,
-            Blur    = 3,
-            Spread  = 0,
-            Color   = EffectiveGlobalToken.ColorControlOutline
+            OffsetY = context.Global.ControlOutlineWidth,
+            Blur = 3,
+            Spread = 0,
+            Color = context.Global.ColorControlOutline
         });
 
-        DangerShadow = new BoxShadows(new BoxShadow
+    [ControlTokenDefault(nameof(DangerShadow))]
+    private static BoxShadows DefaultForDangerShadow(in ControlTokenDefaultContext context) =>
+        new BoxShadows(new BoxShadow
         {
             OffsetX = 0,
-            OffsetY = controlOutlineWidth,
-            Blur    = 3,
-            Spread  = 0,
-            Color   = EffectiveGlobalToken.ColorErrorOutline
+            OffsetY = context.Global.ControlOutlineWidth,
+            Blur = 3,
+            Spread = 0,
+            Color = context.Global.ColorErrorOutline
         });
-        
-        var lineWidth         = EffectiveGlobalToken.LineWidth;
 
-        PrimaryColor            = EffectiveGlobalToken.ColorTextLightSolid;
-        DangerColor             = EffectiveGlobalToken.ColorTextLightSolid;
-        BorderColorDisabled     = EffectiveGlobalToken.ColorBorder;
-        DefaultGhostColor       = EffectiveGlobalToken.ColorBgContainer;
-        GhostBg                 = Colors.Transparent;
-        DefaultGhostBorderColor = EffectiveGlobalToken.ColorBgContainer;
+    [ControlTokenDefault(nameof(PrimaryColor))]
+    private static Color DefaultForPrimaryColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
 
-        GroupBorderColor           = EffectiveGlobalToken.ColorPrimaryHover;
-        LinkHoverBg                = Colors.Transparent;
-        TextHoverBg                = EffectiveGlobalToken.ColorFillTertiary;
-        DefaultColor               = EffectiveGlobalToken.ColorText;
-        DefaultBg                  = EffectiveGlobalToken.ColorBgContainer;
-        DefaultBorderColor         = EffectiveGlobalToken.ColorBorder;
-        DefaultBorderColorDisabled = EffectiveGlobalToken.ColorBorder;
-        DefaultHoverBg             = EffectiveGlobalToken.ColorBgContainer;
-        DefaultHoverColor          = EffectiveGlobalToken.ColorPrimaryHover;
-        DefaultHoverBorderColor    = EffectiveGlobalToken.ColorPrimaryHover;
-        DefaultActiveBg            = EffectiveGlobalToken.ColorBgContainer;
-        DefaultActiveColor         = EffectiveGlobalToken.ColorPrimaryActive;
-        DefaultActiveBorderColor   = EffectiveGlobalToken.ColorPrimaryActive;
+    [ControlTokenDefault(nameof(DefaultColor))]
+    private static Color DefaultForDefaultColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
 
-        var isBright = ColorUtils.IsBright(EffectiveGlobalToken.ColorBgSolid, Colors.White);
-        if (isBright)
-        {
-            SolidTextColor = Colors.Black;
-        }
-        else
-        {
-            SolidTextColor = Colors.White;
-        }
+    [ControlTokenDefault(nameof(DefaultBg))]
+    private static Color DefaultForDefaultBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
 
-        TextTextColor       = EffectiveGlobalToken.ColorText;
-        TextTextHoverColor  = EffectiveGlobalToken.ColorText;
-        TextTextActiveColor = EffectiveGlobalToken.ColorText;
+    [ControlTokenDefault(nameof(DefaultBorderColor))]
+    private static Color DefaultForDefaultBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBorder;
 
-        var controlHeightSM = EffectiveGlobalToken.ControlHeightSM;
-        var controlHeight   = EffectiveGlobalToken.ControlHeight;
-        var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
+    [ControlTokenDefault(nameof(DefaultBorderColorDisabled))]
+    private static Color DefaultForDefaultBorderColorDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBorder;
 
-        ContentPaddingSM = new Thickness(8 - EffectiveGlobalToken.LineWidth,
-            Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
-        ContentPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
-        ContentPaddingLG = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
+    [ControlTokenDefault(nameof(DangerColor))]
+    private static Color DefaultForDangerColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
 
-        ExtraContentMarginSM    = new Thickness(ContentPaddingSM.Left / 2, 0, 0, 0);
-        ExtraContentMargin      = new Thickness(ContentPadding.Left / 2, 0, 0, 0);
-        ExtraContentMarginLG    = new Thickness(ContentPaddingLG.Left / 2, 0, 0, 0);
-        ExtraContentItemSpacing = EffectiveGlobalToken.UniformlyMarginXXS / 2;
+    [ControlTokenDefault(nameof(DefaultHoverBg))]
+    private static Color DefaultForDefaultHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
 
-        CirclePadding  = new Thickness(ContentPaddingSM.Left / 2);
-        OnlyIconSizeSM = EffectiveGlobalToken.IconSize;
-        OnlyIconSize   = EffectiveGlobalToken.IconSizeLG;
-        OnlyIconSizeLG = EffectiveGlobalToken.IconSizeLG;
+    [ControlTokenDefault(nameof(DefaultHoverColor))]
+    private static Color DefaultForDefaultHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryHover;
 
-        IconMargin    = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-        IconEndMargin = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0, 0, 0);
+    [ControlTokenDefault(nameof(DefaultHoverBorderColor))]
+    private static Color DefaultForDefaultHoverBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryHover;
 
-        IconOnyPadding   = new Thickness(Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
-        IconOnyPaddingLG = new Thickness(Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
-        IconOnyPaddingSM = new Thickness(Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
-        
-        GutterToFlyout = EffectiveGlobalToken.UniformlyMarginXXS;
-    }
-    
+    [ControlTokenDefault(nameof(DefaultActiveBg))]
+    private static Color DefaultForDefaultActiveBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(DefaultActiveColor))]
+    private static Color DefaultForDefaultActiveColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryActive;
+
+    [ControlTokenDefault(nameof(DefaultActiveBorderColor))]
+    private static Color DefaultForDefaultActiveBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryActive;
+
+    [ControlTokenDefault(nameof(BorderColorDisabled))]
+    private static Color DefaultForBorderColorDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBorder;
+
+    [ControlTokenDefault(nameof(DefaultGhostColor))]
+    private static Color DefaultForDefaultGhostColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(GhostBg))]
+    private static Color DefaultForGhostBg(in ControlTokenDefaultContext context) =>
+        Colors.Transparent;
+
+    [ControlTokenDefault(nameof(DefaultGhostBorderColor))]
+    private static Color DefaultForDefaultGhostBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(SolidTextColor))]
+    private static Color DefaultForSolidTextColor(in ControlTokenDefaultContext context) =>
+        ColorUtils.IsBright(context.Global.ColorBgSolid, Colors.White) ? Colors.Black : Colors.White;
+
+    [ControlTokenDefault(nameof(TextTextColor))]
+    private static Color DefaultForTextTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(TextTextHoverColor))]
+    private static Color DefaultForTextTextHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(TextTextActiveColor))]
+    private static Color DefaultForTextTextActiveColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ContentPadding), nameof(ContentLineHeight))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context, double contentLineHeight) =>
+        new Thickness(context.Global.PaddingContentHorizontal - context.Global.LineWidth, Math.Max((context.Global.ControlHeight - contentLineHeight) / 2 - context.Global.LineWidth, 0));
+
+    [ControlTokenDefault(nameof(ContentPaddingLG), nameof(ContentLineHeightLG))]
+    private static Thickness DefaultForContentPaddingLG(in ControlTokenDefaultContext context, double contentLineHeight) =>
+        new Thickness(context.Global.PaddingContentHorizontal - context.Global.LineWidth, Math.Max((context.Global.ControlHeightLG - contentLineHeight) / 2 - context.Global.LineWidth, 0));
+
+    [ControlTokenDefault(nameof(ContentPaddingSM), nameof(ContentLineHeightSM))]
+    private static Thickness DefaultForContentPaddingSM(in ControlTokenDefaultContext context, double contentLineHeight) =>
+        new Thickness(8 - context.Global.LineWidth, Math.Max((context.Global.ControlHeightSM - contentLineHeight) / 2 - context.Global.LineWidth, 0));
+
+    [ControlTokenDefault(nameof(ExtraContentItemSpacing))]
+    private static double DefaultForExtraContentItemSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXXS / 2;
+
+    [ControlTokenDefault(nameof(ExtraContentMarginSM), nameof(ContentPaddingSM))]
+    private static Thickness DefaultForExtraContentMarginSM(in ControlTokenDefaultContext context, Thickness contentPadding) =>
+        new Thickness(contentPadding.Left / 2, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(ExtraContentMargin), nameof(ContentPadding))]
+    private static Thickness DefaultForExtraContentMargin(in ControlTokenDefaultContext context, Thickness contentPadding) =>
+        new Thickness(contentPadding.Left / 2, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(ExtraContentMarginLG), nameof(ContentPaddingLG))]
+    private static Thickness DefaultForExtraContentMarginLG(in ControlTokenDefaultContext context, Thickness contentPadding) =>
+        new Thickness(contentPadding.Left / 2, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(CirclePadding), nameof(ContentPaddingSM))]
+    private static Thickness DefaultForCirclePadding(in ControlTokenDefaultContext context, Thickness contentPadding) =>
+        new Thickness(contentPadding.Left / 2);
+
+    [ControlTokenDefault(nameof(OnlyIconSize))]
+    private static double DefaultForOnlyIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.IconSizeLG;
+
+    [ControlTokenDefault(nameof(OnlyIconSizeLG))]
+    private static double DefaultForOnlyIconSizeLG(in ControlTokenDefaultContext context) =>
+        context.Global.IconSizeLG;
+
+    [ControlTokenDefault(nameof(OnlyIconSizeSM))]
+    private static double DefaultForOnlyIconSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.IconSize;
+
+    [ControlTokenDefault(nameof(IconMargin))]
+    private static Thickness DefaultForIconMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyPaddingXXS, 0);
+
+    [ControlTokenDefault(nameof(IconEndMargin))]
+    private static Thickness DefaultForIconEndMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(GroupBorderColor))]
+    private static Color DefaultForGroupBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryHover;
+
+    [ControlTokenDefault(nameof(LinkHoverBg))]
+    private static Color DefaultForLinkHoverBg(in ControlTokenDefaultContext context) =>
+        Colors.Transparent;
+
+    [ControlTokenDefault(nameof(TextHoverBg))]
+    private static Color DefaultForTextHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillTertiary;
+
+    [ControlTokenDefault(nameof(ContentFontSize))]
+    private static double DefaultForContentFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(ContentFontSizeLG))]
+    private static double DefaultForContentFontSizeLG(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG;
+
+    [ControlTokenDefault(nameof(ContentFontSizeSM))]
+    private static double DefaultForContentFontSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(ContentLineHeight), nameof(ContentFontSize))]
+    private static double DefaultForContentLineHeight(in ControlTokenDefaultContext context, double contentFontSize) =>
+        CalculatorUtils.CalculateLineHeight(contentFontSize) * contentFontSize;
+
+    [ControlTokenDefault(nameof(ContentLineHeightLG), nameof(ContentFontSizeLG))]
+    private static double DefaultForContentLineHeightLG(in ControlTokenDefaultContext context, double contentFontSize) =>
+        CalculatorUtils.CalculateLineHeight(contentFontSize) * contentFontSize;
+
+    [ControlTokenDefault(nameof(ContentLineHeightSM), nameof(ContentFontSizeSM))]
+    private static double DefaultForContentLineHeightSM(in ControlTokenDefaultContext context, double contentFontSize) =>
+        CalculatorUtils.CalculateLineHeight(contentFontSize) * contentFontSize;
+
+    [ControlTokenDefault(nameof(GutterToFlyout))]
+    private static double DefaultForGutterToFlyout(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXXS;
+
+    [ControlTokenDefault(nameof(IconOnyPadding), nameof(ContentLineHeight))]
+    private static Thickness DefaultForIconOnyPadding(in ControlTokenDefaultContext context, double contentLineHeight) =>
+        new Thickness(Math.Max((context.Global.ControlHeight - contentLineHeight) / 2 - context.Global.LineWidth, 0));
+
+    [ControlTokenDefault(nameof(IconOnyPaddingLG), nameof(ContentLineHeightLG))]
+    private static Thickness DefaultForIconOnyPaddingLG(in ControlTokenDefaultContext context, double contentLineHeight) =>
+        new Thickness(Math.Max((context.Global.ControlHeightLG - contentLineHeight) / 2 - context.Global.LineWidth, 0));
+
+    [ControlTokenDefault(nameof(IconOnyPaddingSM), nameof(ContentLineHeightSM))]
+    private static Thickness DefaultForIconOnyPaddingSM(in ControlTokenDefaultContext context, double contentLineHeight) =>
+        new Thickness(Math.Max((context.Global.ControlHeightSM - contentLineHeight) / 2 - context.Global.LineWidth, 0));
 }

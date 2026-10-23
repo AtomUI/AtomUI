@@ -10,6 +10,10 @@ Own分版求值与完整品牌分别由[Own有效求值](own-token-evaluation.md
 [Control渲染](control-rendering.md)定义消费终点。旧整体evaluator保留，依赖默认值必须显式选择新版，不静默改写Token-only请求与五阶段结果，
 源码迁移和验收边界见[验证文档](verification.md)。
 
+Context 可按实际表现需要惰性持有独立的托管样式状态，Application、Provider 与独立窗口 lease 管理其原生宿主图。
+该状态不进入 Snapshot，纯 Token 准备不创建样式属性通知；样式接线/激活/退役也不塞进 Token CommitCore。
+托管表现已由同一 Manager 的 root/scope 事务协调准备、接线、预激活、校验、引用提交和退役；Catalog/package 捕获并复核既有表现，保持相同代。`Presentation` 版本1结果及失败清理重试见[协调接口](brand-recipes.md#41-统一表现协调的现行接口)。公开注册与版本1manifest接口见[配方入口](brand-recipes.md#61-版本1具体入口与校验)；Gallery编辑、AI及全控件/平台覆盖仍须分别验收。
+
 包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。派生算法统一在运行时执行，
 并遵守本文的配置、Snapshot、事务与资源语义；当前验证状态由编译主题包文档维护，已发布能力以对应发布记录为准。
 

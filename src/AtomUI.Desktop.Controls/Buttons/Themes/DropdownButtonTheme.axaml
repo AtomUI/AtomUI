@@ -74,8 +74,8 @@
                         <Border Name="FocusVisual"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                BorderThickness="{atom:DropdownButtonTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:DropdownButtonTokenResource ColorFocusBorder}"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 ZIndex="1" />
                     </Panel>
@@ -87,8 +87,8 @@
                 Value="{atom:DropdownButtonTokenResource MarginToAnchor}" />
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="Width" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">

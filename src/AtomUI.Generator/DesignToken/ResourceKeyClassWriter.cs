@@ -9,15 +9,19 @@ internal sealed class ResourceKeyClassWriter
     private readonly GenerationOutput _context;
     private readonly TokenInfo _tokenInfo;
     private readonly string _controlCatalog;
+    private readonly string _assembly;
+    private readonly TokenResourceOrdinals _resourceIds;
 
     internal ResourceKeyClassWriter(
         GenerationOutput context,
         TokenInfo tokenInfo,
-        string controlCatalog)
+        string controlCatalog, string assembly, TokenResourceOrdinals resourceIds)
     {
         _context = context;
         _tokenInfo = tokenInfo;
         _controlCatalog = controlCatalog;
+        _assembly = assembly;
+        _resourceIds = resourceIds;
     }
 
     internal void Write()
@@ -47,6 +51,7 @@ internal sealed class ResourceKeyClassWriter
             source.AppendLine("}");
         }
 
+        _resourceIds.ValidateAssembly(_assembly);
         _context.AddSource("TokenResourceConst.g.cs", GeneratedSourceText.From(source.ToString()));
     }
 
@@ -56,9 +61,15 @@ internal sealed class ResourceKeyClassWriter
         source.AppendLine("{");
         source.AppendLine("    public enum SharedTokenKind");
         source.AppendLine("    {");
-        foreach (var token in _tokenInfo.Tokens.OrderBy(static token => token.Name, StringComparer.Ordinal))
+        var names = _resourceIds.Order(_assembly, "$shared", _tokenInfo.Tokens.Select(static token => token.Name));
+        for (var id = 0; id < names.Length; id++)
         {
-            source.Append("        ").Append(token.Name).AppendLine(",");
+            source.Append("        ").Append(names[id]);
+            if (_resourceIds.HasScope(_assembly, "$shared"))
+            {
+                source.Append(" = ").Append(id);
+            }
+            source.AppendLine(",");
         }
         source.AppendLine("    }");
         source.AppendLine("}");
@@ -67,9 +78,10 @@ internal sealed class ResourceKeyClassWriter
 
     private void WriteControl(StringBuilder source, ControlThemeInfo control)
     {
-        var ownNames = control.OwnTokens.Select(static token => token.Name)
-                              .OrderBy(static name => name, StringComparer.Ordinal)
-                              .ToArray();
+        var ownScope = control.OwnToken?.GetFullyQualifiedTokenTypeName() ?? "";
+        var ownNames = control.HasOwnToken
+            ? _resourceIds.Order(_assembly, ownScope, control.OwnTokens.Select(static token => token.Name))
+            : Array.Empty<string>();
         var globalNames = _tokenInfo.AvailableGlobalTokenNames
                                     .OrderBy(static name => name, StringComparer.Ordinal)
                                     .ToArray();
@@ -82,9 +94,14 @@ internal sealed class ResourceKeyClassWriter
         {
             source.Append("    public enum ").Append(tokenKindType).AppendLine();
             source.AppendLine("    {");
-            foreach (var name in ownNames)
+            for (var id = 0; id < ownNames.Length; id++)
             {
-                source.Append("        ").Append(name).AppendLine(",");
+                source.Append("        ").Append(ownNames[id]);
+                if (_resourceIds.HasScope(_assembly, ownScope))
+                {
+                    source.Append(" = ").Append(id);
+                }
+                source.AppendLine(",");
             }
             source.AppendLine("    }");
             source.AppendLine();

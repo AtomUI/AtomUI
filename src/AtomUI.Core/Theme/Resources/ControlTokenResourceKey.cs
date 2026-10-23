@@ -2,6 +2,8 @@ using SchemaControlTokenIdentity = AtomUI.Theme.Schema.ControlTokenIdentity;
 
 namespace AtomUI.Theme.Resources;
 
+internal readonly record struct ExplicitTokenResourceKey(object ResourceKey);
+
 public readonly record struct ControlTokenResourceKey
 {
     internal ControlTokenResourceKey(int controlSlot, SharedTokenKind kind)

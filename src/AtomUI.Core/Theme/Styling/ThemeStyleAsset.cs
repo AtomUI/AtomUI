@@ -1,18 +1,21 @@
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using AtomUI.Theme.Branding;
 
 namespace AtomUI.Theme.Styling;
 
 internal sealed class ThemeStyleAsset
 {
     private readonly Func<Style> _factory;
+    private readonly ThemeStyleCapabilities _capabilities;
 
     internal ThemeStyleAsset(
         string id,
         string revision,
         Type controlType,
-        Func<Style> factory)
+        Func<Style> factory,
+        ThemeStyleCapabilities capabilities = ThemeStyleCapabilities.QualifiedStyles)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(revision);
@@ -27,6 +30,7 @@ internal sealed class ThemeStyleAsset
         Revision    = revision;
         ControlType = controlType;
         _factory    = factory;
+        _capabilities = capabilities;
     }
 
     internal string Id { get; }
@@ -41,7 +45,7 @@ internal sealed class ThemeStyleAsset
                     throw new InvalidOperationException($"Style asset '{Id}' returned no style.");
         var selector = style.Selector.OfType(ControlType)
                                      .PropertyEquals(ThemeStyleQualification.ActiveProperty, activation);
-        ThemeStyleGraph.Prepare(style, selector);
+        ThemeStyleGraph.Prepare(style, selector, _capabilities);
         return style;
     }
 }

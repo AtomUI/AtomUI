@@ -73,7 +73,7 @@ Core 拥有动效定义与播放协议。布局原语只承担自然测量、占
 
 | 目录 | 说明 |
 |---|---|
-| `Primitives/` | 桌面控件复用的基础装饰、动效、视觉层 |
+| `Primitives/` | 桌面控件复用的基础装饰、动效、视觉层；参数化箭头见[ArrowIndicator](../../controls/desktop/other/arrow-indicator/overview.md) |
 | `Icon/` | 图标控件与图标主题 |
 | `ItemsControl/` | ItemsControl 相关反射扩展和主题 |
 | `Form/` | 表单验证基础能力 |
@@ -84,3 +84,5 @@ Core 拥有动效定义与播放协议。布局原语只承担自然测量、占
 Control Token 定义层的提取门槛、Generator 扁平化和运行时隔离见
 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。该能力不表示仓库已经存在
 Mobile 终端或共享 Token 基类。
+
+共享输入、跨根字体、图标、glyph 与原生手柄的实际消费边界见 [共享主题消费与绘制依赖](shared-theme-consumers.md)。

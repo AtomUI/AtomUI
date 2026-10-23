@@ -14,3 +14,7 @@
 - [BorderBeam 桌面版实现原理](border-beam/implementation.md)
 - [BorderBeam Token 设计](border-beam/token.md)
 - [BorderBeam Changelog](border-beam/changelog.md)
+
+- [ArrowIndicator 设计](arrow-indicator/overview.md)
+- [ArrowIndicator 实现原理](arrow-indicator/implementation.md)
+- [ArrowIndicator 变更记录](arrow-indicator/changelog.md)

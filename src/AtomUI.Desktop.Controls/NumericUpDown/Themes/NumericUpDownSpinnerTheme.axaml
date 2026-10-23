@@ -22,6 +22,8 @@
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
                         ContentRightAddOn="{TemplateBinding InnerRightContent}"
                         ContentRightAddOnTemplate="{TemplateBinding InnerRightContentTemplate}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"

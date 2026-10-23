@@ -176,3 +176,23 @@ AOT 边界：
 - `LineEditShowCasePageTests` 覆盖 LineEdit / SearchEdit Gallery 示例结构、SearchEdit SizeType 示例和 snapshot。
 - Gallery 走查 SearchEdit 基础、状态、尺寸、Custom、loading、disabled、内部右侧内容和 AutoComplete 搜索示例。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
+
+## 根表面主题投射
+
+根几何投射保持搜索按钮组合；padding 恢复必须同时恢复输入高度、按钮宽度、焦点和选择区。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+### 根前景与字体消费
+
+根 Foreground 的默认来自当前 Control 的 Effective Global ColorText，通过框体继承链到达真实文本。根 FontFamily/FontSize/FontWeight/FontStyle 的原生实例输入保留；语义 input 的专用 Style 可声明覆写，禁用及错误状态仍由对应状态样式处理。其他组合 owner 的独立子控件合同在各家族分别定义。
+
+## 精确主题的资源身份
+
+SearchEdit是独立Global owner；自身模板的caret/selection/placeholder、状态文字、间距与EnableMotion从SearchEdit typed资源读取，不能借用LineEdit或直接Shared查找。内部搜索按钮和公共frame仍按各自实际owner与模板关系逐项验收。
+
+## 可选主题排版
+
+SearchEdit根FontFamily和三档Global字号在对应字段显式配置时生效；未配置时保留真实InheritanceParent的字体。Custom采用中档，IsCustomFontSize=true退出主题字号，普通Style/LocalValue优先级保持。选择最终值的有限MultiBinding位于ControlTheme，继承父通过内部只读桥和AOT编译observable读取；不借用LineEdit的Own字段，也不通过代码设置最终字体。搜索按钮仍保留独立Button身份。
+
+内部frame与操作按钮通过[共享输入架构](../input-control-architecture-design.md#内部资产的主题查询路线)消费真实公开owner的Global；Content附加区的逻辑路线与模板路线同属该合同，保留原生样式优先级和状态归一。

@@ -29,7 +29,8 @@ internal static class ThemeStartupCompilation
             config?.Inherit ?? true,
             config?.Algorithms,
             tokens,
-            config?.Controls ?? new Dictionary<ControlTokenIdentity, ControlThemeConfig>());
+            config?.Controls ?? new Dictionary<ControlTokenIdentity, ControlThemeConfig>(),
+            config?.StyleAssets, config?.BrandSelection, config?.BrandRequirements);
     }
 
     internal static ThemeConfig? StripControls(ThemeConfig? config)
@@ -39,7 +40,8 @@ internal static class ThemeStartupCompilation
             return config;
         }
         return new ThemeConfig(config.Inherit, config.Algorithms, config.Tokens,
-            new Dictionary<ControlTokenIdentity, ControlThemeConfig>());
+            new Dictionary<ControlTokenIdentity, ControlThemeConfig>(), config.StyleAssets, config.BrandSelection,
+            config.BrandRequirements);
     }
 
     /// <summary>主题定义默认值之上依次叠加应用层（初始请求）与运行时层（本次请求）。</summary>

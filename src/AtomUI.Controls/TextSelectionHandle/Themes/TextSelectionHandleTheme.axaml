@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <x:Double x:Key="TextSelectHandleSize">32</x:Double>
     <GeometryGroup x:Key="TextSelectionHandlePath" FillRule="NonZero">
@@ -25,26 +26,29 @@
     <ControlTheme x:Key="{x:Type TextSelectionHandle}"
                   TargetType="TextSelectionHandle">
         <Setter Property="Background"
-                Value="{DynamicResource TextControlSelectionHighlightColor}" />
+                Value="{atom:SharedTokenResource SelectionBackground}" />
         <Setter Property="HorizontalAlignment"
                 Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
                     <Grid>
-                        <PathIcon
-                            Cursor="Arrow"
-                            Name="PART_HandlePathIcon"
-                            HorizontalAlignment="Stretch"
-                            Height="{DynamicResource TextSelectHandleSize}"
-                            Foreground="{TemplateBinding Background}"
-                            Data="{DynamicResource TextSelectionHandlePath}"
-                        />
+                        <Border Name="PART_Indicator">
+                            <PathIcon Cursor="Arrow"
+                                      Name="PART_HandlePathIcon"
+                                      HorizontalAlignment="Stretch"
+                                      Foreground="{TemplateBinding Background}"
+                                      Data="{DynamicResource TextSelectionHandlePath}" />
+                        </Border>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style Selector="^.caret /template/ PathIcon#PART_HandlePathIcon">
+        <Style Selector="^ /template/ PathIcon#PART_HandlePathIcon">
+            <Setter Property="Width" Value="{DynamicResource TextSelectHandleSize}" />
+            <Setter Property="Height" Value="{DynamicResource TextSelectHandleSize}" />
+        </Style>
+        <Style Selector="^:caret /template/ PathIcon#PART_HandlePathIcon">
             <Setter Property="Data" Value="{DynamicResource TextCaretHandlePath}" />
         </Style>
     </ControlTheme>

@@ -18,6 +18,9 @@
                     ContentLeftAddOnTemplate="{TemplateBinding InnerLeftContentTemplate}"
                     ContentRightAddOn="{TemplateBinding InnerRightContent}"
                     ContentRightAddOnTemplate="{TemplateBinding InnerRightContentTemplate}"
+                    ContentPadding="{TemplateBinding Padding}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
                     StyleVariant="{TemplateBinding StyleVariant}"
                     SizeType="{TemplateBinding SizeType}"
                     Status="{TemplateBinding Status}"
@@ -54,14 +57,21 @@
         <Setter Property="SpinnerHandleWidth"
                 Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+
+        <Setter Property="Padding" Value="{CompiledBinding $self.PresetPadding}" />
+        <Setter Property="CornerRadius" Value="{CompiledBinding $self.PresetCornerRadius}" />
+        <Setter Property="BorderThickness" Value="{atom:ButtonSpinnerTokenResource BorderThickness}" />
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="PresetPadding" Value="{atom:ButtonSpinnerTokenResource InputPaddingLG}" />
+            <Setter Property="PresetCornerRadius" Value="{atom:ButtonSpinnerTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="PresetPadding" Value="{atom:ButtonSpinnerTokenResource InputPadding}" />
+            <Setter Property="PresetCornerRadius" Value="{atom:ButtonSpinnerTokenResource BorderRadius}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="PresetPadding" Value="{atom:ButtonSpinnerTokenResource InputPaddingSM}" />
+            <Setter Property="PresetCornerRadius" Value="{atom:ButtonSpinnerTokenResource BorderRadiusSM}" />
         </Style>
 
     </ControlTheme>

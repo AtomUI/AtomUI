@@ -1,12 +1,19 @@
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Branding;
 using Avalonia.Media;
 
 namespace AtomUI;
 
 public static class AtomUIBuilderThemeExtensions
 {
+    public static IAtomUIBuilder AddThemeStyleAsset(this IAtomUIBuilder builder, ThemeStyleAssetRegistration registration)
+    {
+        GetTheme(builder).AddThemeStyleAsset(registration);
+        return builder;
+    }
+
     public static IAtomUIBuilder AddThemeDefinitionResolver(
         this IAtomUIBuilder builder,
         IThemeDefinitionResolver resolver)

@@ -60,13 +60,12 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="TextAreaFramePadding" Value="{CompiledBinding $self.PresetContentPadding}" />
         <Style Selector="^:is(atom|TextAreaDecoratedBox)">
             <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
             <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="ClipToBounds" Value="True" />
-            <Setter Property="ResizeIndicatorLineBrush"
-                    Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
             <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                 <Setter Property="Margin" Value="{atom:TextAreaTokenResource LeftInnerAddOnMargin}" />
             </Style>
@@ -74,7 +73,7 @@
                 <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                     <Setter Property="Padding" Value="0" />
                 </Style>
-                <Setter Property="TextAreaFramePadding"
+                <Setter Property="PresetContentPadding"
                         Value="{atom:SharedTokenResource InputPaddingLG}" />
                 <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Padding" Value="{atom:TextAreaTokenResource RightAddOnPaddingLG}" />
@@ -84,7 +83,7 @@
                 <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                     <Setter Property="Padding" Value="0" />
                 </Style>
-                <Setter Property="TextAreaFramePadding"
+                <Setter Property="PresetContentPadding"
                         Value="{atom:SharedTokenResource InputPadding}" />
                 <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Padding" Value="{atom:TextAreaTokenResource RightAddOnPadding}" />
@@ -97,7 +96,7 @@
                 <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Padding" Value="{atom:TextAreaTokenResource RightAddOnPaddingSM}" />
                 </Style>
-                <Setter Property="TextAreaFramePadding"
+                <Setter Property="PresetContentPadding"
                         Value="{atom:SharedTokenResource InputPaddingSM}" />
             </Style>
 

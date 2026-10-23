@@ -134,6 +134,11 @@ IsEffectiveShowClearButton =
 
 ## 5. 视觉与主题模型
 
+Input 模式投射根 inset 与外框几何；Spinner 模式保留左右 action 段的布局，根 padding 进入文本区。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 NumericUpDown 采用按需模板模型。`Mode=Input` 使用默认输入框模板，以 `ButtonSpinner` 作为输入壳体；`Mode=Spinner` 使用独立三段式拨轮模板，只在用户显式启用 spinner 模式时创建左右步进按钮和分隔视觉。
 
 视觉层级要求：

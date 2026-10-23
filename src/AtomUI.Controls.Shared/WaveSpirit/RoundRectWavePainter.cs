@@ -12,6 +12,8 @@ internal class RoundRectWavePainter : AbstractWavePainter
 
     public CornerRadius CornerRadius { get; set; }
     private Geometry? _originGeometry;
+    private Rect _originGeometryRect;
+    private CornerRadius _originGeometryCornerRadius;
 
     public RoundRectWavePainter(Size size = default, Point originPoint = default)
         : base(originPoint)
@@ -30,11 +32,13 @@ internal class RoundRectWavePainter : AbstractWavePainter
         
         using var state = context.PushOpacity(newOpacity);
 
-        if (_originGeometry is null)
+        var originRect = new Rect(OriginPoint, OriginSize);
+        if (_originGeometry is null || _originGeometryRect != originRect ||
+            _originGeometryCornerRadius != CornerRadius)
         {
-            _originGeometry = BuildRoundedGeometry(
-                new Rect(OriginPoint.X, OriginPoint.Y, OriginSize.Width, OriginSize.Height),
-                CornerRadius);
+            _originGeometry = BuildRoundedGeometry(originRect, CornerRadius);
+            _originGeometryRect = originRect;
+            _originGeometryCornerRadius = CornerRadius;
         }
 
         var deltaSize = newSizeTyped - OriginSize;

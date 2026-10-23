@@ -19,6 +19,12 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-23
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- Custom 多选的紧凑 padding 在 owner 默认层计算，显式 padding 不再由内部 frame 自动压缩；标签名义测量预算保持独立。
+
+
 ## 2026-10-04
 
 - Fix

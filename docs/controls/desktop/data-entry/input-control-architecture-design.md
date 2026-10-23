@@ -128,12 +128,42 @@ Form 不维护与 native validation 并行的 error 真源。Form reset、重新
 
 ## 8. Token、主题和 AOT 边界
 
-- `SharedToken` 和 `InputControlFrameTheme` 提供输入表面共享值。
+- `InputControlFrameTheme`提供输入表面状态与绘制；颜色、边框、add-on预设padding及动效开关通过OwnerTokenResource消费实际公开owner的有效Global，内部资产不建立重复identity或Own。未挂到公开owner时回退共享资源。
 - `TextBoxToken`、`LineEditToken`、`TextAreaToken` 只提供文本尺寸、padding 和 TextArea resize 等稳定差异。
 - 选择、搜索、日期、时间和数值控件的 Own Token 只表达各自业务布局，不复制 frame 的通用边框和状态 Token。
 - `InputControlFrame` 是 internal composition control，不新增公共 Semantic Part 或运行时反射入口。
 - 新增基类、frame、主题叶子和 Token resource 由 AtomUI Generator 显式注册到主题 asset/descriptor；不使用程序集扫描、字符串类型发现或动态主题 fallback。
 - 控件局部 Token scope 允许通过控件主题把 `ColorPrimary`、hover 或透明背景等值投射到 frame；这类 selector 只改变 frame 的主题输入，必须继续以 `EffectiveStatus`、focus、hover 和 variant 为条件，不能重新计算或保存状态。
+
+### 8.1 根表面几何与预设默认值
+
+公开 owner 的 `Padding`、`BorderThickness`、`CornerRadius` 通过 ControlTheme 投射到实际表面。
+几何默认值读取该 owner 的 Effective Global；有 Own 内容 padding 的 TextBox 使用自己的 ContentPadding 系列。
+Avalonia 元数据默认值与主题生效后的 getter 不等同：主题提供实际默认几何，实例值和应用样式使用原生优先级覆盖。
+内部 frame 的尺寸选择只能产生预设默认值，不能以 size trigger 覆盖 owner 的 TemplateBinding。
+
+| 组合 | 几何职责 |
+| --- | --- |
+| TextBox | Padding、边宽和 CompactSpace 派生圆角投射到 InputControlFrame。 |
+| LineEdit / SearchEdit / ComboBox / Select / Cascader / TreeSelect | Padding 投射到内容 frame；边宽、圆角继续经过 AddOn/variant/CompactSpace 的既有几何分配。 |
+| DatePicker / TimePicker 及范围入口 | 具体 owner 提供 Effective Global 默认值，共享 InfoPicker 模板只投射输入。 |
+| TextArea | 外框保持零 padding；owner padding 进入内层内容区，保留右侧操作区、滚动和 resize 的空间分配。 |
+| ButtonSpinner / NumericUpDown | 内容 inset 与 handle 占位分离；数值 Spinner 模式保持 action 段无额外 padding，文本区使用 owner inset。 |
+
+`InputControlFrame.SizeCornerRadius`、`AddOnDecoratedBox.PresetContentPadding` 与
+`ButtonSpinner` 的内部 preset 参数只存放 size 所选默认值；有效几何仍由原生属性系统决定。
+这些不是额外的 Token identity，也不是第二套主题或状态机。
+
+多选 Custom 的紧凑 padding 是主题默认函数：读取当前 Height、边宽、variant 和既有多选 Token，
+在 owner Padding 默认层计算，再让实例/应用样式覆盖。禁止在内部 frame 里再次压缩已生效的用户 padding。
+可见 inset 和标签的内在测量预算分别维护：垂直测量预留至少保留名义 preset，需要更大的实际 inset 时同步约束内容，
+避免无边框/下划线的默认标签因紧凑 inset 而被拉高。标签最小尺寸、Height 和 Min/Max 约束继续生效。
+
+根画刷未提供时不接管 frame 状态；显式画刷沿既有 LocalValue 合同覆盖 hover 等默认状态，清除后恢复。
+声明式替换必须同时保留初始缺省、非空和 clear 行为；不能用始终写入 null 的绑定代替条件投射。
+
+SearchEdit 的搜索按钮高度跟随最终输入表面；自然高度测量使用当前输入/AddOn 内容与按钮最小高度，
+不能把按钮上一次已排列高度反馈为新的输入最小高度。padding 或字体恢复后必须能够缩回原尺寸。
 
 ## 9. 兼容性与定制边界
 
@@ -173,3 +203,15 @@ Form 不维护与 native validation 并行的 error 真源。Form reset、重新
 - [TimePicker 桌面版架构设计](time-picker/overview.md) / [实现原理](time-picker/implementation.md) / [Token 设计](time-picker/token.md)
 - [Form 桌面版架构设计](form/overview.md) / [实现原理](form/implementation.md)
 - [OtpLineEdit 桌面版架构设计](otp-line-edit/overview.md) / [实现原理](otp-line-edit/implementation.md) / [Token 设计](otp-line-edit/token.md)
+
+### 根前景与字体
+
+TextBox/LineEdit/TextArea/SearchEdit 的 Foreground 默认使用具体公开 owner 的 Control Global ColorText，投射到框体后由文本继承。不能让框体的 Shared ColorText 覆盖原生根 Foreground。实际文本仍支持原生 FontFamily/FontSize/FontWeight/FontStyle；input 专用 Style 的附加 TextElement 字体/前景 Setter 保留原生优先级。其他组合 owner 的字体、独立子控件和控制级字体字段分别归其控件家族合同，不用这四项 API 证据代替全部组合路径通过。
+
+### 内部资产的主题查询路线
+
+InputControlFrame、InputClearIconButton及RevealButton没有独立公开主题身份。主题内使用OwnerTokenResource：优先沿TemplatedParent，内容子树没有该关系时沿逻辑Parent，直到真实注册的公开Control；公开子Button继续保有自己的identity。不能因为内部节点位于ContentRightAddOn而直接读Shared，也不把LineEdit身份配置复制给SearchEdit。
+
+资源绑定在上下文、当前父/模板父和逻辑挂载变化时重新解析，并按上下文/资源键去重；资源值仍由Avalonia原生observable与绑定优先级处理，不代码设置最终样式。只读解析依赖注册元数据与实际树拓扑，不能通过单个AXAML静态AncestorType覆盖全部复用owner；编译绑定避免反射，分离/重挂载由原生绑定生命周期释放。未为每条资源订阅所有祖先，也不建立全局强引用控件缓存。
+
+框体仍独立归一EffectiveStatus与四种variant，显式根Background/BorderBrush仍走原LocalValue中继；清除后恢复状态。清除按钮的IconSize、ColorTextQuaternary/Tertiary与按下ColorText，密码显示按钮的IconSize、ColorIcon/Hover及disabled色均来自同一真实owner。TextArea模板只有clear和反馈区，没有RevealButton；不能因继承了相关API便声称模板提供密码按钮。

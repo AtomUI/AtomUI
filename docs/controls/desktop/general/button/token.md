@@ -6,13 +6,7 @@
 
 ButtonToken 是 Button 的组件级设计变量层。它把全局设计体系中的颜色、尺寸、间距、字体和阴影转换为 Button 可消费的语义值。
 
-ButtonToken 服务以下主题和控件：
-
-- `ButtonTheme.axaml`
-- `DropdownButtonTheme.axaml`
-- `SplitButtonTheme.axaml`
-- `HyperLinkButtonTheme.axaml`
-- Button 家族控件中的 icon、额外内容、下拉间距和状态视觉
+ButtonToken只定义Button自身的Own资源；Dropdown、Hyper、Split、Option使用各自identity与Own定义。组合控件内部确实为Button的子实例可以消费Button资源，但不能把父控件的Own配置复制到Button或反向借用。历史额外内容字段不代表Button已经拥有一个额外内容区域。
 
 ButtonToken 不承载 `IsPressed`、`IsPointerOver`、`IsLoading`、`EffectiveColor`、`EffectiveVariant` 等实例状态。这些状态由 Button 状态模型和主题变量处理。
 
@@ -30,13 +24,15 @@ ButtonToken 当前按 Button 语义分为七类。
 - `ContentLineHeightLG`
 - `ContentLineHeightSM`
 
-用于控制 Button 内容文本的字体大小、行高和字重。字体大小默认来自 SharedToken；行高在 `CalculateTokenValues` 中根据字体大小计算。
+字体大小默认来自Button的Effective Global。Own默认函数按显式依赖顺序执行：字体进入布局行高，行高进入纵向内边距；显式下游独立保留。行高单位为DIP，是默认尺寸计算的布局指标；内容的原生段落排版仍可通过Content专用Style定制。
+
+`FontWeight`保留既有double资源类型及400默认读值，接受整数1–1000。其渲染为可选Own覆盖：未配置时保持原生祖先字重，显式400也可覆盖Bold祖先，清除后恢复继承。最终设置位于ControlTheme，实例属性及普通应用Style继续遵循原生优先级。资源缺省与Setter回退的区别见[Core资源合同](../../../../modules/core/configured-token-resources.md)。
 
 ### 2.2 尺寸与间距 Token
 
-- `Padding`
-- `PaddingLG`
-- `PaddingSM`
+- `ContentPadding`
+- `ContentPaddingLG`
+- `ContentPaddingSM`
 - `CirclePadding`
 - `IconOnyPadding`
 - `IconOnyPaddingLG`
@@ -125,7 +121,7 @@ Text Token 必须保持以下语义：
 - `DefaultShadow`
 - `GroupBorderColor`
 
-用于默认按钮阴影和按钮组边框协调。该组 Token 影响 Button 与 Button 家族或周边控件的视觉关系。
+DefaultShadow进入默认按钮实际阴影。GroupBorderColor的历史含义对应组内接缝，当前Button没有Ant旧Button.Group等价区域；不得把它改成整个Button的BorderBrush或静默影响CompactSpace。该字段保留ID/类型/默认值，兼容处置待审查，不列为已验收的有效定制入口。
 
 ## 3. Button 多彩模型中的 Token 使用
 
@@ -193,3 +189,19 @@ ButtonToken 变更要求：
 | 删除或重命名 ButtonToken | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
 | 多彩按钮 Token 调整 | 验证 default、primary、danger、preset color 与各 variant 的状态映射。 |
 | Icon Token 投影调整 | 覆盖 Large / Middle / Small / Custom、普通 icon-only、icon-only loading、本地 `IconWidth` / `IconHeight` 覆盖，以及桌面 / Browser / DropdownButton 模板。 |
+
+## 波纹 Global 输入
+
+`WaveSizeMotionDuration` / `WaveOpacityMotionDuration` 使用实际 Button 的 Effective Global，默认300/350ms。`WaveSizeEasingCurve` / `WaveOpacityEasingCurve` 默认 CubicEaseOut。显式时长精确生效，EnableMotion=false使二者归零。详见[Core动效合同](../../../../modules/core/transition-durations.md)；完整Button Own V2及家族验收仍单独执行。
+
+## FontFamily 的精确与继承合同
+
+本控件的类型化Global FontFamily在正规化配置直接包含该字段时进入根渲染；未配置则保留真实InheritanceParent的字体，清除恢复当前祖先。Shared字体配置同样生效，显式配置与缺省不按值相等猜测。FontFamily Setter由ControlTheme MultiBinding提供，控件只暴露内部只读继承源；原生Style/local及资源覆盖保持。接口观察在分离时释放父订阅，重挂刷新，不以逻辑父代替受保护的真实继承父。详细机制见[显式Token资源](../../../../modules/core/configured-token-resources.md)。
+
+## 显式可选消费与兼容
+
+DefaultBorderColorDisabled用于EffectiveColor=Default、EffectiveVariant=Outlined/Dashed的禁用描边。显式配置时覆盖通用BorderColorDisabled；未配置/清除时继续消费通用值。其他配色/变体保持原状态规则。存在位与普通资源值分开，资源字典覆盖和实例BorderBrush保留原生优先级；最终Setter在ControlTheme中。
+
+GutterToFlyout用于Button.Flyout关联的AtomUI Flyout/MenuFlyout，只有Flyout实际Target为该Button且该Own明确配置时投射MarginToAnchor，支持0与打开期间更新。未配置保留旧Flyout默认0；Token历史默认资源值4不自动改变已有弹层位置。Flyout本地MarginToAnchor优先，RequestedPlacement=null仍保留Avalonia默认定位模式。原生Avalonia Flyout没有这个Margin合同，不注入。非Visual Flyout不在模板子树，代码绑定有具体原因注释，跟随Target并在关闭/替换/分离释放。共享Flyout只使用当前Target owner。
+
+ExtraContentItemSpacing、ExtraContentMargin/SM/LG没有对应Button实际区域；保持资源兼容，不能作为已生效能力展示。与GroupBorderColor的正式兼容决策和工作台可编辑状态须在最终交付审查明确，不以“保留字段”冒充严格Token接入完成。

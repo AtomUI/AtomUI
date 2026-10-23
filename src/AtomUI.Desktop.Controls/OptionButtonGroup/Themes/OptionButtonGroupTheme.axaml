@@ -4,6 +4,14 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:OptionButtonGroup}" TargetType="atom:OptionButtonGroup">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OptionButtonGroupTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OptionButtonGroupTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="Frame"
@@ -17,46 +25,46 @@
         </Setter>
         
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="IsWaveSpiritEnabled" Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OptionButtonGroupTokenResource EnableMotion}" />
+        <Setter Property="IsWaveSpiritEnabled" Value="{atom:OptionButtonGroupTokenResource EnableWaveSpirit}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel Orientation="{CompiledBinding $parent[atom:OptionButtonGroup].Orientation}" />
             </ItemsPanelTemplate>
         </Setter>
 
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:OptionButtonGroupTokenResource BorderRadius}" />
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="CornerRadius" Value="{atom:OptionButtonGroupTokenResource BorderRadiusLG}" />
         </Style>
         
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:OptionButtonGroupTokenResource BorderRadius}" />
         </Style>
         
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="CornerRadius" Value="{atom:OptionButtonGroupTokenResource BorderRadiusSM}" />
         </Style>
 
         <Style Selector="^[Orientation=Horizontal]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:OptionButtonGroupTokenResource ControlHeight}" />
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+                <Setter Property="Height" Value="{atom:OptionButtonGroupTokenResource ControlHeightLG}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+                <Setter Property="Height" Value="{atom:OptionButtonGroupTokenResource ControlHeight}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="Height" Value="{atom:OptionButtonGroupTokenResource ControlHeightSM}" />
             </Style>
         </Style>
         
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="SelectedOptionBorderColor" Value="{atom:SharedTokenResource ColorPrimary}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderBrush" Value="{atom:OptionButtonGroupTokenResource ColorBorder}" />
+        <Setter Property="SelectedOptionBorderColor" Value="{atom:OptionButtonGroupTokenResource ColorPrimary}" />
+        <Setter Property="BorderThickness" Value="{atom:OptionButtonGroupTokenResource BorderThickness}" />
         
     </ControlTheme>
 </ResourceDictionary>

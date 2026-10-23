@@ -33,7 +33,7 @@ RadioButton 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - OptionButtonGroup 的方向、位置和边框几何由 C# 状态与 Theme selector 表达，不为 Horizontal/Vertical 展开 Token 矩阵。
-- Group 和 Item 的预设高度与圆角继续使用 SharedToken 的 `ControlHeight*` 和 `BorderRadius*`；方向能力不增加组件专属高度或圆角 Token。
+- Group 和 Item 的预设高度与圆角分别使用自身有效 Global 的 `ControlHeight*` 和 `BorderRadius*`；方向能力不增加组件专属高度或圆角 Token。
 
 ## 4. 控件家族影响
 
@@ -64,3 +64,29 @@ RadioButton 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、checked、disabled、Outline/Solid、Horizontal/Vertical 和三档 SizeType。 |
+
+## 6. OptionButton 精确默认依赖与消费
+
+`OptionButtonToken` 的 19 字段使用 `DependencyDefaultsV2`、Revision 1。各尺寸字体先求有效 Own，再派生 `ContentLineHeight*`，最后派生 `ContentPadding*`；显式下游值（包括零）不被默认公式覆盖。这里的行高是**比例**，与 Button 的 DIP 行高契约不同。
+
+| 输入 | 默认与消费 |
+| --- | --- |
+| `ContentFontSize` / `SM` / `LG` | Global `FontSize` / `FontSize` / `FontSizeLG`；映射 Item 对应尺寸字体 |
+| `ContentLineHeight*` | 根据对应有效字体计算比例；内容行框高度为字体乘比例 |
+| `ButtonPadding` | 基础留白，默认 16,0；普通/Large水平减描边，Small水平减半后减描边；纵向基础留白加对应尺寸行框居中余量，各边非负 |
+| `ContentPadding*` | Middle/Large/Small分别读取对应高度、字体和行高；显式值直接进入 Item。Large默认资源从 15,0 修正为 15,7，默认既有固定高度渲染保持一致 |
+| `ButtonColor` | 两种外观的未选中前景 |
+| `ButtonBackground` | 显式配置后进入未选中背景及Outline选中背景的回退；缺省仍透明，保留非白父背景 |
+| `ButtonCheckedBackground` | 显式配置后覆盖Outline选中背景；缺省沿用普通背景。Solid选中使用专属语义色 |
+| `ButtonSolidCheckedColor` / `Background` / `HoverBackground` / `ActiveBackground` | Solid选中各交互状态的实际前景/背景 |
+| `ButtonCheckedBgDisabled` / `ButtonCheckedColorDisabled` | 两种外观选中且禁用时的背景/前景 |
+
+两个可选背景仍保留原 `ColorBgContainer` 默认资源读值；渲染使用 [WhenExplicit](../../../../modules/core/configured-token-resources.md) 存在位与普通资源绑定组合，不能用默认资源值推断是否显式配置。原生本地属性和应用 Style 保持 Avalonia 优先级。
+
+`OptionButtonGroup` 与公开子 `OptionButton` 的 Global identity 分别解析。Group 控制组合外框、水平固定高度和选中边框；Item 控制自身字体、留白和状态色。仅给 Item 配高度不会解除 Group 的固定高度约束。两个 Transition 集合在 ControlTheme style Setter 中消费 Item 的动态 `MotionDurationMid`，不把初始化资源值固化到共享 Transition。
+
+## FontFamily 的精确与继承合同
+
+本控件的类型化Global FontFamily在正规化配置直接包含该字段时进入根渲染；未配置则保留真实InheritanceParent的字体，清除恢复当前祖先。Shared字体配置同样生效，显式配置与缺省不按值相等猜测。FontFamily Setter由ControlTheme MultiBinding提供，控件只暴露内部只读继承源；原生Style/local及资源覆盖保持。接口观察在分离时释放父订阅，重挂刷新，不以逻辑父代替受保护的真实继承父。详细机制见[显式Token资源](../../../../modules/core/configured-token-resources.md)。
+
+OptionButton与OptionButtonGroup分别拥有该入口；Group字体通过正常继承进入未单独配置的Item，Item显式配置保持自身身份。

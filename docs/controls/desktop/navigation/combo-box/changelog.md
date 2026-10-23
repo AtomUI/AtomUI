@@ -38,6 +38,12 @@
 - Validation
   - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../superpowers/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
 
+## 2026-10-23
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- 根 padding、边宽、圆角投射到 AddOn 输入表面，编辑/非编辑结构及原有画刷状态合同保持。
+
+
 ## 2026-10-20
 
 - Fixed

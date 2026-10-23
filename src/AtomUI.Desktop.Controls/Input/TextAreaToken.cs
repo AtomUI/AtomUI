@@ -4,15 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TextAreaToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TextAreaToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-    
-    public TextAreaToken()
-
-    {
-    }
-    
     /// <summary>
     /// Resize 指示器颜色
     /// </summary>
@@ -43,17 +37,27 @@ internal sealed class TextAreaToken : AbstractControlDesignToken
     /// </summary>
     public Thickness LeftInnerAddOnMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ResizeIndicatorLineColor = EffectiveGlobalToken.ColorTextDescription;
-        ResizeHandleSize         = EffectiveGlobalToken.SizeXS;
-        
-        var lineWidth    = EffectiveGlobalToken.LineWidth;
-        RightAddOnPadding   = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingSM - lineWidth, 0);
-        RightAddOnPaddingSM = new Thickness(0, 0, EffectiveGlobalToken.ControlPaddingHorizontalSM - lineWidth, 0);
-        RightAddOnPaddingLG = new Thickness(0, 0, EffectiveGlobalToken.ControlPaddingHorizontal - lineWidth, 0);
-        LeftInnerAddOnMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXXS, 0);
-    }
-    
+    [ControlTokenDefault(nameof(ResizeIndicatorLineColor))]
+    private static Color DefaultForResizeIndicatorLineColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(ResizeHandleSize))]
+    private static double DefaultForResizeHandleSize(in ControlTokenDefaultContext context) =>
+        context.Global.SizeXS;
+
+    [ControlTokenDefault(nameof(RightAddOnPadding))]
+    private static Thickness DefaultForRightAddOnPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyPaddingSM - context.Global.LineWidth, 0);
+
+    [ControlTokenDefault(nameof(RightAddOnPaddingSM))]
+    private static Thickness DefaultForRightAddOnPaddingSM(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.ControlPaddingHorizontalSM - context.Global.LineWidth, 0);
+
+    [ControlTokenDefault(nameof(RightAddOnPaddingLG))]
+    private static Thickness DefaultForRightAddOnPaddingLG(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.ControlPaddingHorizontal - context.Global.LineWidth, 0);
+
+    [ControlTokenDefault(nameof(LeftInnerAddOnMargin))]
+    private static Thickness DefaultForLeftInnerAddOnMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMarginXXS, 0);
 }

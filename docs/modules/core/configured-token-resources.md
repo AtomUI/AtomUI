@@ -1,0 +1,29 @@
+# 显式 Token 资源与继承回退
+
+`TokenResourceExtension<TTokenKind>.WhenExplicit` 是生成式 Control Token 资源扩展的可选开关，默认false。true时，资源提供器查询同一snapshot的有效Control配置；该字段已配置才返回其值，否则返回找到的原生Unset值，阻止继续向外层资源host借值。支持已注册Control的类型化Global与Own键；普通Shared键、未注册owner/Own键仍被拒绝。Global只检查规范化共享及该Control的直接Global字段，不把算法输出猜作显式输入。普通资源查找、默认求值、缓存及优先级不变。
+
+别名按既有canonical映射检查存在性；读取值仍走原资源投影。类型化owner键同时验证identity与真实Own归属。查询只针对实际请求的Control，不遍历所有控件或创建新的配置来源标记。
+
+## 资源缺省不等于Setter缺省
+
+Avalonia12的绑定表达式即使结果Unset，也会用目标属性的metadata默认值填充样式入口。因此不能把可选资源直接绑定到可继承属性，再声称其缺省保持原生继承。使用ControlTheme MultiBinding提供明确回退；数字与enum等类型转换也须明确声明。
+
+Button的FontWeight是既有double Own，资源默认400；未配置时保留实际继承字体，显式400仍可覆盖Bold祖先。ControlTheme选择继承值或显式字重，再由原生样式优先级处理实例/应用Style。第三路保留普通资源查找，让局部资源字典覆盖继续生效。有限数值转换不创建新的优先级规则。
+
+实际InheritanceParent是Avalonia受保护成员，可能与逻辑/视觉父节点不同；Button只在挂载期观察该原生父对象的FontWeight并投射内部只读值，分离释放订阅。最终FontWeight Setter仍在AXAML，编译绑定使用注册的AvaloniaProperty accessor，无反射路径。
+
+该开关表示有效主题配置中存在对应Global/Own输入，不以数值等于默认值猜测缺省，也不自动把任意手工资源赋值认定为ThemeConfig覆盖。用于可继承属性时，控件文档必须说明缺省回退及实际投射；不能批量给所有Token添加此开关。
+
+## FontFamily 的继承兼容消费
+
+Button/Dropdown、Hyper、Split、Option/Group的最终FontFamily由ControlTheme MultiBinding选择：真实继承字体、WhenExplicit存在位、普通类型化资源值。无直接配置时保留祖先字体，明确配置同值也视为存在；清除后恢复当前祖先。普通资源值在存在位有效时继续遵循原生资源查找。局部资源覆盖应使用生成的强类型identity构造与模板相同的key，例如`ControlTokenResourceKey.Global(ButtonTokens.Identity, SharedTokenKind.FontFamily)`，不要用丢失owner-type资格的字符串identity替代字典key。
+
+Core内部ControlTypographyBindings通过编译Self observable观察实际父字体，目标控件仅用内部接口暴露受保护InheritanceParent；不猜逻辑父、不反射、不直接给目标FontFamily赋值。ParentProperty与逻辑挂载刷新，逻辑分离停止父订阅，原生绑定释放时移除事件和订阅，避免长寿命父字体源保留已移除控件。原有Button FontWeight实现保持。
+
+WhenExplicit是输入存在性合同，单独Unset仍不能保证Setter继承。该机制不应批量加到所有字段；每个控件须明确字体回退、资源覆盖及native Style/local优先级并独立验证。
+
+## 输入控件的有限字体选择
+
+LineEdit三档字号使用12输入向量：继承值、SizeType、IsCustomFontSize与中/小/大三组Own存在位、Global存在位、最终Own资源。SearchEdit没有对应Own字号，使用9输入向量，三组分别为Global存在位与最终Global资源。只接受这两个固定形态，不以字段缺省猜测激活，也不伪造Own；Custom取中档，IsCustomFontSize=true保持继承。三档最终字号仍由ControlTheme根Setter选择，普通应用Style及LocalValue保留优先级。
+
+TextBox、TextArea、SearchEdit字体族同样采用可选Global与真实继承回退。asset-only EmbeddedTextBox通过自身主题恢复组合父继承，避免复用公开TextBoxTheme时跨identity获取公开TextBox字体配置。这个排版继承使用真实InheritanceParent，与内部资源owner通过逻辑/模板路径解析的职责不同。

@@ -11,42 +11,59 @@ namespace AtomUI.Controls.Primitives;
 
 internal class WaveSpiritDecorator : Control
 {
-    public const string WaveSpiritPart = "PART_WaveSpirit";
-    
+
     #region 公共属性定义
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, CornerRadius>(nameof(CornerRadius));
 
     public static readonly StyledProperty<TimeSpan> SizeMotionDurationProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, TimeSpan>(nameof(SizeMotionDuration));
-    
+
     public static readonly StyledProperty<TimeSpan> OpacityMotionDurationProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, TimeSpan>(nameof(OpacityMotionDuration));
-    
+
     public static readonly StyledProperty<Easing> SizeEasingCurveProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, Easing>(nameof(SizeEasingCurve));
-    
+
     public static readonly StyledProperty<Easing> OpacityEasingCurveProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, Easing>(nameof(OpacityEasingCurve));
-    
+
     public static readonly StyledProperty<double> OriginOpacityProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, double>(nameof(OriginOpacity));
-    
+
     public static readonly StyledProperty<double> WaveRangeProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, double>(nameof(WaveRange));
-    
+
     public static readonly StyledProperty<IBrush?> WaveBrushProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, IBrush?>(nameof(WaveBrush));
-    
+
     public static readonly StyledProperty<WaveSpiritType> WaveTypeProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, WaveSpiritType>(nameof(WaveType));
-    
+
+    protected static readonly DirectProperty<WaveSpiritDecorator, double> LastWaveOpacityProperty =
+        AvaloniaProperty.RegisterDirect<WaveSpiritDecorator, double>(
+            nameof(LastWaveOpacity),
+            o => o.LastWaveOpacity,
+            (o, v) => o.LastWaveOpacity = v);
+
+    protected static readonly DirectProperty<WaveSpiritDecorator, Size> LastWaveSizeProperty =
+        AvaloniaProperty.RegisterDirect<WaveSpiritDecorator, Size>(
+            nameof(LastWaveSize),
+            o => o.LastWaveSize,
+            (o, v) => o.LastWaveSize = v);
+
+    protected static readonly DirectProperty<WaveSpiritDecorator, double> LastWaveRadiusProperty =
+        AvaloniaProperty.RegisterDirect<WaveSpiritDecorator, double>(
+            nameof(LastWaveRadius),
+            o => o.LastWaveRadius,
+            (o, v) => o.LastWaveRadius = v);
+
     public CornerRadius CornerRadius
     {
         get => GetValue(CornerRadiusProperty);
         set => SetValue(CornerRadiusProperty, value);
     }
-    
+
     public TimeSpan SizeMotionDuration
     {
         get => GetValue(SizeMotionDurationProperty);
@@ -58,77 +75,62 @@ internal class WaveSpiritDecorator : Control
         get => GetValue(OpacityMotionDurationProperty);
         set => SetValue(OpacityMotionDurationProperty, value);
     }
-    
+
     public Easing SizeEasingCurve
     {
         get => GetValue(SizeEasingCurveProperty);
         set => SetValue(SizeEasingCurveProperty, value);
     }
-    
+
     public Easing OpacityEasingCurve
     {
         get => GetValue(OpacityEasingCurveProperty);
         set => SetValue(OpacityEasingCurveProperty, value);
     }
-    
+
     public double OriginOpacity
     {
         get => GetValue(OriginOpacityProperty);
         set => SetValue(OriginOpacityProperty, value);
     }
-    
+
     public double WaveRange
     {
         get => GetValue(WaveRangeProperty);
         set => SetValue(WaveRangeProperty, value);
     }
-    
+
     public IBrush? WaveBrush
     {
         get => GetValue(WaveBrushProperty);
         set => SetValue(WaveBrushProperty, value);
     }
-    
+
     public WaveSpiritType WaveType
     {
         get => GetValue(WaveTypeProperty);
         set => SetValue(WaveTypeProperty, value);
     }
 
-    public static IBrush? ResolveWaveSpiritBrush(IBrush? borderBrush, IBrush? background)
+    private double _lastWaveOpacity;
+    protected double LastWaveOpacity
     {
-        if (IsValidWaveSpiritBrush(borderBrush))
-        {
-            return borderBrush;
-        }
-
-        if (IsValidWaveSpiritBrush(background))
-        {
-            return background;
-        }
-
-        return null;
+        get => _lastWaveOpacity;
+        set => SetAndRaise(LastWaveOpacityProperty, ref _lastWaveOpacity, value);
     }
 
-    private static bool IsValidWaveSpiritBrush(IBrush? brush)
+    private Size _lastWaveSize;
+    protected Size LastWaveSize
     {
-        if (brush is null || !(brush.Opacity > 0))
-        {
-            return false;
-        }
+        get => _lastWaveSize;
+        set => SetAndRaise(LastWaveSizeProperty, ref _lastWaveSize, value);
+    }
 
-        if (brush is not ISolidColorBrush solidBrush)
-        {
-            return false;
-        }
-
-        var color = solidBrush.Color;
-        var effectiveAlpha = color.A / 255d * brush.Opacity;
-        return effectiveAlpha > 0 &&
-               (color.R != byte.MaxValue ||
-                color.G != byte.MaxValue ||
-                color.B != byte.MaxValue ||
-                effectiveAlpha < 1);
+    private double _lastWaveRadiusSize;
+    protected double LastWaveRadius
+    {
+        get => _lastWaveRadiusSize;
+        set => SetAndRaise(LastWaveRadiusProperty, ref _lastWaveRadiusSize, value);
     }
     #endregion
 
@@ -152,56 +154,35 @@ internal class WaveSpiritDecorator : Control
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
-    protected static readonly DirectProperty<WaveSpiritDecorator, double> LastWaveOpacityProperty =
-        AvaloniaProperty.RegisterDirect<WaveSpiritDecorator, double>(
-            nameof(LastWaveOpacity),
-            o => o.LastWaveOpacity,
-            (o, v) => o.LastWaveOpacity = v);
-    
-    protected static readonly DirectProperty<WaveSpiritDecorator, Size> LastWaveSizeProperty =
-        AvaloniaProperty.RegisterDirect<WaveSpiritDecorator, Size>(
-            nameof(LastWaveSize),
-            o => o.LastWaveSize,
-            (o, v) => o.LastWaveSize = v);
-    
-    protected static readonly DirectProperty<WaveSpiritDecorator, double> LastWaveRadiusProperty =
-        AvaloniaProperty.RegisterDirect<WaveSpiritDecorator, double>(
-            nameof(LastWaveRadius),
-            o => o.LastWaveRadius,
-            (o, v) => o.LastWaveRadius = v);
-    
-    private double _lastWaveOpacity;
-    protected double LastWaveOpacity
-    {
-        get => _lastWaveOpacity;
-        set => SetAndRaise(LastWaveOpacityProperty, ref _lastWaveOpacity, value);
-    }
-    
-    private Size _lastWaveSize;
-    protected Size LastWaveSize
-    {
-        get => _lastWaveSize;
-        set => SetAndRaise(LastWaveSizeProperty, ref _lastWaveSize, value);
-    }
-    
-    private double _lastWaveRadiusSize;
-    protected double LastWaveRadius
-    {
-        get => _lastWaveRadiusSize;
-        set => SetAndRaise(LastWaveRadiusProperty, ref _lastWaveRadiusSize, value);
-    }
+    internal bool IsPlaying => _isPlaying;
     #endregion
-    
+
+    public const string WaveSpiritPart = "PART_WaveSpirit";
+
     private AbstractWavePainter? _wavePainter;
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isPlaying;
     private static readonly Easing DefaultEasingCurve = new CubicEaseOut();
 
-    internal bool IsPlaying => _isPlaying;
 
     static WaveSpiritDecorator()
     {
         AffectsRender<WaveSpiritDecorator>(LastWaveSizeProperty, LastWaveRadiusProperty, LastWaveOpacityProperty);
+    }
+
+    public static IBrush? ResolveWaveSpiritBrush(IBrush? borderBrush, IBrush? background)
+    {
+        if (IsValidWaveSpiritBrush(borderBrush))
+        {
+            return borderBrush;
+        }
+
+        if (IsValidWaveSpiritBrush(background))
+        {
+            return background;
+        }
+
+        return null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -214,11 +195,12 @@ internal class WaveSpiritDecorator : Control
         {
             CancelAnimation();
         }
-        
+
         if (this.IsAttachedToVisualTree())
         {
             if (change.Property == WaveTypeProperty)
             {
+                CancelAnimation();
                 BuildWavePainter(true);
             }
         }
@@ -239,7 +221,7 @@ internal class WaveSpiritDecorator : Control
             ConfigurePainterSize(Bounds.Size);
         }
     }
-    
+
     private void BuildWavePainter(bool force)
     {
         if (_wavePainter == null || force)
@@ -264,18 +246,20 @@ internal class WaveSpiritDecorator : Control
 
     private void ConfigureWavePainter()
     {
+        // The runtime painter is not an AvaloniaObject or template element. Project
+        // effective native inputs here; ControlTheme cannot bind its drawing fields.
         if (_wavePainter != null)
         {
             if (_wavePainter is RoundRectWavePainter roundWavePainter)
             {
                 roundWavePainter.CornerRadius = CornerRadius;
             }
-            _wavePainter.SizeEasingCurve       = DefaultEasingCurve;
-            _wavePainter.OpacityEasingCurve    = DefaultEasingCurve;
+            _wavePainter.SizeEasingCurve       = SizeEasingCurve ?? DefaultEasingCurve;
+            _wavePainter.OpacityEasingCurve    = OpacityEasingCurve ?? DefaultEasingCurve;
             _wavePainter.OriginOpacity         = Math.Clamp(OriginOpacity, 0.0, 1.0);
             _wavePainter.SizeMotionDuration    = SizeMotionDuration;
-            _wavePainter.OpacityMotionDuration = OpacityMotionDuration.Add(TimeSpan.FromMilliseconds(50));
-            _wavePainter.WaveRange             = Math.Min(WaveRange, 8);
+            _wavePainter.OpacityMotionDuration = OpacityMotionDuration;
+            _wavePainter.WaveRange             = WaveRange;
             _wavePainter.WaveBrush             = WaveBrush;
         }
     }
@@ -320,7 +304,7 @@ internal class WaveSpiritDecorator : Control
         base.OnDetachedFromVisualTree(e);
         CancelAnimation();
     }
-    
+
     public void Play()
     {
         if (_isPlaying ||
@@ -330,16 +314,17 @@ internal class WaveSpiritDecorator : Control
         {
             return;
         }
-        
-        if (SizeMotionDuration <= TimeSpan.Zero || OpacityMotionDuration <= TimeSpan.Zero)
+
+        if (SizeMotionDuration <= TimeSpan.Zero || OpacityMotionDuration <= TimeSpan.Zero ||
+            !double.IsFinite(WaveRange) || WaveRange <= 0)
         {
-            return; // Skip animation if durations are invalid
+            return; // Empty/invalid inputs must not construct degenerate geometry
         }
-        
+
         BuildWavePainter(false);
-        
+
         Debug.Assert(_wavePainter != null);
-        
+
         var              sizeAnimation    = new Animation();
         var              opacityAnimation = new Animation();
         AvaloniaProperty targetProperty;
@@ -382,6 +367,26 @@ internal class WaveSpiritDecorator : Control
         });
     }
 
+    private static bool IsValidWaveSpiritBrush(IBrush? brush)
+    {
+        if (brush is null || !(brush.Opacity > 0))
+        {
+            return false;
+        }
+
+        if (brush is not ISolidColorBrush solidBrush)
+        {
+            return false;
+        }
+
+        var color = solidBrush.Color;
+        var effectiveAlpha = color.A / 255d * brush.Opacity;
+        return effectiveAlpha > 0 &&
+               (color.R != byte.MaxValue ||
+                color.G != byte.MaxValue ||
+                color.B != byte.MaxValue ||
+                effectiveAlpha < 1);
+    }
     private void CancelAnimation()
     {
         _cancellationTokenSource?.Cancel();

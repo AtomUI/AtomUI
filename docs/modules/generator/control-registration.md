@@ -58,6 +58,8 @@ Control、TokenResourceExtension、TokenKey、OwnTokenKind 和生成的专用 Se
 同一片段的不同条件必须使用不同 key；不能用相同 key 的多条声明模拟 OR。
 生成的 typed identity 实际保存并验证 owner 类型，使仅使用生成 identity 的代码也具有真实类型依赖。
 
+内部共享 primitive 的 `OwnerTokenResourceExtension` 通过原生绑定沿实际模板/逻辑内容路线解析已登记公开owner，属于 Global 输入接线，不表示存在名为 Owner 的 Control。生成器按解析后的完整 CLR 类型识别 Core 的该扩展；其他命名空间中同短名扩展仍执行普通 owner 检查，不以字符串短名豁免错误。该入口不新增 Control descriptor 或全包保留条件。
+
 完整与选中路径调用同一单项 factory，不能先调用全量 manifest 再过滤。
 资产 factory 调用隐藏的 `ControlThemeAssetDescriptor.CreateGenerated`，传入 typed 元数据、编译期 global Token 名称快照
 和独立 contract fingerprint。编译证据使用稳定 metadata name；最终完整运行时 Type 身份由 Core 对当前被选中资产
@@ -183,3 +185,7 @@ Browser 发布由 [TypeMap Linker](../typemap-linker/overview.md)在官方标记
 
 最终发布验证必须执行 ThemeManager 启动、真实模板、Semantic Part 和主题切换，并证明未用 control/proxy/factory 被删除。
 Browser 的 trimmed interpreter 与 AOT 均为独立门禁；生成源码快照和构建成功不能替代运行验证。
+
+## 公共资源键数值
+
+TokenKind/Scoped TokenKey必须遵守[稳定资源ID合同](token-resource-keys.md)。生成器的名称集合与Schema存储顺序不再用于隐式决定内置公开枚举值；字段扩展需追加冻结记录，不能使既有编译literal改义。

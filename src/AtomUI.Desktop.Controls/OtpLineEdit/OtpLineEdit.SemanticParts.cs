@@ -12,7 +12,7 @@ namespace AtomUI.Desktop.Controls;
 [SemanticPart(
     "cell",
     SelectorClass = "semantic-cell",
-    SelectorRoute = "/template/ .semantic-cell-list > .semantic-scope-cell > .semantic-cell",
+    SelectorRoute = "/template/ .semantic-cell-list >> .semantic-scope-cell > .semantic-cell",
     ContractType = typeof(ContentControl),
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
@@ -20,7 +20,7 @@ namespace AtomUI.Desktop.Controls;
 [SemanticPart(
     "separator",
     SelectorClass = "semantic-separator",
-    SelectorRoute = "/template/ .semantic-cell-list > .semantic-scope-cell > .semantic-separator",
+    SelectorRoute = "/template/ .semantic-cell-list >> .semantic-scope-cell > .semantic-separator",
     ContractType = typeof(Border),
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",

@@ -17,7 +17,6 @@ namespace AtomUI.Desktop.Controls;
 
 internal class AddOnDecoratedBox : InputControlFrame
 {
-    public const string AddOnDecoratedBoxPart = "PART_AddOnDecoratedBox";
     
     #region 公共属性定义
 
@@ -106,17 +105,7 @@ internal class AddOnDecoratedBox : InputControlFrame
     internal static readonly StyledProperty<IBrush?> AddOnStatusIconBrushProperty =
         AvaloniaProperty.Register<AddOnDecoratedBox, IBrush?>(nameof(AddOnStatusIconBrush));
 
-    internal IBrush? AddOnStatusForeground
-    {
-        get => GetValue(AddOnStatusForegroundProperty);
-        set => SetValue(AddOnStatusForegroundProperty, value);
-    }
 
-    internal IBrush? AddOnStatusIconBrush
-    {
-        get => GetValue(AddOnStatusIconBrushProperty);
-        set => SetValue(AddOnStatusIconBrushProperty, value);
-    }
 
     internal static readonly DirectProperty<AddOnDecoratedBox, Thickness> InnerBoxBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<AddOnDecoratedBox, Thickness>(nameof(InnerBoxBorderThickness),
@@ -151,6 +140,9 @@ internal class AddOnDecoratedBox : InputControlFrame
     internal static readonly StyledProperty<double> CustomControlHeightProperty =
         AvaloniaProperty.Register<AddOnDecoratedBox, double>(nameof(CustomControlHeight), double.NaN);
 
+    internal static readonly StyledProperty<Thickness> PresetContentPaddingProperty =
+        AvaloniaProperty.Register<AddOnDecoratedBox, Thickness>(nameof(PresetContentPadding));
+
     internal static readonly StyledProperty<Thickness> ContentFramePaddingProperty =
         AvaloniaProperty.Register<AddOnDecoratedBox, Thickness>(nameof(ContentFramePadding));
 
@@ -166,6 +158,22 @@ internal class AddOnDecoratedBox : InputControlFrame
             o => o.EffectiveContentFramePadding,
             (o, v) => o.EffectiveContentFramePadding = v);
     
+    internal static readonly DirectProperty<AddOnDecoratedBox, Thickness> ContentMeasurementPaddingProperty =
+        AvaloniaProperty.RegisterDirect<AddOnDecoratedBox, Thickness>(
+            nameof(ContentMeasurementPadding), o => o.ContentMeasurementPadding);
+
+    internal IBrush? AddOnStatusForeground
+    {
+        get => GetValue(AddOnStatusForegroundProperty);
+        set => SetValue(AddOnStatusForegroundProperty, value);
+    }
+
+    internal IBrush? AddOnStatusIconBrush
+    {
+        get => GetValue(AddOnStatusIconBrushProperty);
+        set => SetValue(AddOnStatusIconBrushProperty, value);
+    }
+
     private Thickness _innerBoxBorderThickness;
 
     internal Thickness InnerBoxBorderThickness
@@ -220,6 +228,12 @@ internal class AddOnDecoratedBox : InputControlFrame
         set => SetValue(CustomControlHeightProperty, value);
     }
 
+    internal Thickness PresetContentPadding
+    {
+        get => GetValue(PresetContentPaddingProperty);
+        set => SetValue(PresetContentPaddingProperty, value);
+    }
+
     internal Thickness ContentFramePadding
     {
         get => GetValue(ContentFramePaddingProperty);
@@ -246,8 +260,18 @@ internal class AddOnDecoratedBox : InputControlFrame
         set => SetAndRaise(EffectiveContentFramePaddingProperty, ref _effectiveContentFramePadding, value);
     }
     
+    private Thickness _contentMeasurementPadding;
+
+    internal Thickness ContentMeasurementPadding
+    {
+        get => _contentMeasurementPadding;
+        private set => SetAndRaise(ContentMeasurementPaddingProperty, ref _contentMeasurementPadding, value);
+    }
+
     #endregion
     
+    public const string AddOnDecoratedBoxPart = "PART_AddOnDecoratedBox";
+
     private protected Control? _leftAddOn;
     private protected Control? _rightAddOn;
     private ContentPresenter? _leftAddOnPresenter;
@@ -292,6 +316,7 @@ internal class AddOnDecoratedBox : InputControlFrame
         if (change.Property == SizeTypeProperty ||
             change.Property == CustomControlHeightProperty ||
             change.Property == ContentFramePaddingProperty ||
+            change.Property == PresetContentPaddingProperty ||
             change.Property == CompactContentFramePaddingProperty ||
             change.Property == ContentMinHeightProperty ||
             change.Property == InnerBoxBorderThicknessProperty)
@@ -347,6 +372,18 @@ internal class AddOnDecoratedBox : InputControlFrame
                 CompactContentFramePadding.Top,
                 ContentFramePadding.Right,
                 CompactContentFramePadding.Bottom);
+        }
+
+        // Compact defaults may reduce the painted inset while the tag keeps its nominal
+        // design height. Larger explicit insets must still constrain the available content.
+        var actualVerticalPadding = ContentFramePadding.Top + ContentFramePadding.Bottom;
+        var nominalVerticalPadding = PresetContentPadding.Top + PresetContentPadding.Bottom;
+        var measurementPadding = new Thickness(ContentFramePadding.Left, ContentFramePadding.Top,
+            ContentFramePadding.Right,
+            ContentFramePadding.Bottom + Math.Max(0, nominalVerticalPadding - actualVerticalPadding));
+        if (ContentMeasurementPadding != measurementPadding)
+        {
+            ContentMeasurementPadding = measurementPadding;
         }
 
         if (EffectiveContentFramePadding != effectivePadding)

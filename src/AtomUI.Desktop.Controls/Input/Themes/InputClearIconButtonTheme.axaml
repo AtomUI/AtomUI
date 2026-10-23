@@ -9,22 +9,22 @@
         </ControlTheme.BasedOn>
         
         <Setter Property="IconWidth"
-                Value="{atom:SharedTokenResource IconSize}" />
+                Value="{atom:OwnerTokenResource IconSize}" />
         
         <Setter Property="IconHeight"
-                Value="{atom:SharedTokenResource IconSize}" />
+                Value="{atom:OwnerTokenResource IconSize}" />
 
         <Setter Property="IconBrush"
-                Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
         
         <Style Selector="^:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                    Value="{atom:OwnerTokenResource ColorTextTertiary}" />
         </Style>
         
         <Style Selector="^:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorText}" />
+                    Value="{atom:OwnerTokenResource ColorText}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

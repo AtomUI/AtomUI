@@ -35,12 +35,14 @@ public readonly struct ControlTokenAccessor
 
     public T GetGlobal<T>(SharedTokenKind token)
     {
-        return s_resolver.GetGlobal<T>(GetSnapshot(), (int)token);
+        var snapshot = GetSnapshot();
+        return s_resolver.GetGlobal<T>(snapshot, snapshot.Registry.GetSharedTokenSlot(token));
     }
 
     public T GetEffectiveGlobal<T>(SharedTokenKind token)
     {
-        return s_resolver.GetEffectiveGlobal<T>(GetSnapshot(), _controlSlot, (int)token);
+        var snapshot = GetSnapshot();
+        return s_resolver.GetEffectiveGlobal<T>(snapshot, _controlSlot, snapshot.Registry.GetSharedTokenSlot(token));
     }
 
     public T GetOwn<T, TTokenKind>(TTokenKind token)

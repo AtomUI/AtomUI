@@ -80,7 +80,7 @@ internal class RateCharacter : Control
 
     static RateCharacter()
     {
-        AffectsMeasure<RateCharacter>(CharacterProperty, FontSizeProperty, FontStyleProperty, FontWeightProperty);
+        AffectsMeasure<RateCharacter>(CharacterProperty, FontSizeProperty, FontFamilyProperty, FontStyleProperty, FontWeightProperty);
         AffectsRender<RateCharacter>(BackgroundProperty, ForegroundProperty);
     }
 

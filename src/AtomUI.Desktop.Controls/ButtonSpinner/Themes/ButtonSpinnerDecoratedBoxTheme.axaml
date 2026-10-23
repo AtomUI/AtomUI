@@ -9,6 +9,7 @@
             <atom:AddOnDecoratedBoxTheme TargetType="atom:ButtonSpinnerDecoratedBox" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="ContentPadding" Value="{CompiledBinding $self.PresetContentPadding}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:ButtonSpinnerDecoratedBox">
                 <DockPanel Name="RootLayout" LastChildFill="True"> 
@@ -155,17 +156,17 @@
             </Style>
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="ContentPadding"
+                <Setter Property="PresetContentPadding"
                         Value="{atom:ButtonSpinnerTokenResource InputPaddingLG}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="ContentPadding"
+                <Setter Property="PresetContentPadding"
                         Value="{atom:ButtonSpinnerTokenResource InputPadding}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="ContentPadding"
+                <Setter Property="PresetContentPadding"
                         Value="{atom:ButtonSpinnerTokenResource InputPaddingSM}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
             </Style>

@@ -6,6 +6,7 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
+using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -70,7 +71,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeState? _currentTheme;
     private Application? _application;
     private IResourceDictionary? _applicationResources;
-    private Style? _rootContextStyle;
+    private ThemeStyleHostLease? _rootStyleLease;
     private readonly Dictionary<IControlThemesProvider, List<ControlThemeResourceRegistration>> _stagedThemeResources = new();
     private readonly List<IControlThemesProvider> _registeredControlThemesProviders = [];
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
@@ -208,9 +209,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             // application's existing merged dictionaries or its explicit Resources overrides.
             _applicationResources = application.Styles.Resources;
             _applicationResources.MergedDictionaries.Insert(0, Resources);
-            _rootContextStyle = new Style(selector => selector.OfType<TopLevel>());
-            _rootContextStyle.Setters.Add(new Setter(ThemeScope.ContextProperty, RootContext));
-            application.Styles.Add(_rootContextStyle);
+            _rootStyleLease = ThemeStyleHostLease.Attach(application, RootContext);
             _applicationInitialized = true;
             SubscribeSystemAppearance(application);
         }
@@ -268,6 +267,19 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         VerifyTransitionAccess();
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ThemeId);
+
+        if ((request.Config?.BrandRequirements is not null || _initialRequest.Config?.BrandRequirements is not null) && _startupRegistry is not null &&
+            _compiledThemeCatalog is not null)
+        {
+            var brandDiagnostics = _compiledThemeCatalog.Contains(request.ThemeId)
+                ? ValidateBrandRequest(request, _startupRegistry.Revision,
+                    _compiledThemeCatalog.Get(request.ThemeId).Revision)
+                : [BrandDiagnostic("ATMTHM7205", "$.themeId", "The recipe base theme is not registered.")];
+            if (brandDiagnostics.Count != 0)
+            {
+                return Task.FromResult(RejectBrandRequest(request, brandDiagnostics));
+            }
+        }
 
         var requestKey = ThemeRequestCacheKey.Create(request);
         ThemeTransaction? transaction;
@@ -401,6 +413,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 currentRequest = _lastCommittedRequest!;
                 currentDiagnostics = _themeCatalogDiagnostics;
             }
+            using var presentationCapture = CaptureCommittedPresentation(scopeCapture);
             CatalogReloadPreparation prepared;
             try
             {
@@ -426,6 +439,20 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                         $"Theme catalog reload failed during preparation: " +
                         exception.GetBaseException().Message)],
                     exception);
+            }
+
+            if (prepared.Success)
+            {
+                try
+                {
+                    presentationCapture.Validate();
+                }
+                catch (Exception exception)
+                {
+                    prepared = CatalogReloadPreparation.Failed(
+                        [new ThemeDiagnostic("ATMTHM4203", ThemeDiagnosticSeverity.Error, nameof(ThemeManager), "$",
+                            $"Presentation hosts changed during catalog preparation: {exception.Message}")], exception);
+                }
             }
 
             if (prepared.Success && prepared.HasChanges && prepared.SnapshotChanged)
@@ -646,7 +673,19 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         await EnterTransactionExecutionGateAsync().ConfigureAwait(true);
         try
         {
-            return await ExecuteTransactionCoreAsync(transaction).ConfigureAwait(true);
+            var result = await ExecuteTransactionCoreAsync(transaction).ConfigureAwait(true);
+            var presentation = FinishPresentation(transaction.StyleBatch);
+            if (result.Status == ThemeTransitionStatus.Failed)
+            {
+                // Restore managed presentation before notifying failure observers.
+                var publishDiagnostics = result.PublishDiagnostics.ToList();
+                ThemeEventDispatcher.Dispatch(ThemeChangeFailed, this,
+                    new ThemeChangeFailedEventArgs(transaction.Request, result.Diagnostics, result.Exception),
+                    publishDiagnostics, nameof(ThemeChangeFailed));
+                return new ThemeTransitionResult(result.TransitionId, result.Status, result.State,
+                    result.Diagnostics, publishDiagnostics, result.Exception) { Presentation = presentation };
+            }
+            return result with { Presentation = presentation };
         }
         finally
         {
@@ -658,6 +697,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeTransaction transaction)
     {
         var committed = false;
+        using var presentationCapture = CaptureCommittedPresentation(transaction.ScopeCapture!);
         try
         {
             transaction.Phase = ThemeTransactionPhase.Prepare;
@@ -680,6 +720,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             {
                 return CreateFailedResult(transaction, preparation.Diagnostics, preparation.Exception);
             }
+            presentationCapture.Validate();
 
             var scopePreparation = PrepareScopeCapture(
                 preparation.Snapshot!,
@@ -702,6 +743,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             }
             transaction.PreparedScopes = scopePreparation.Snapshots;
 
+            PrepareCommitPayload(transaction);
+            transaction.StyleBatch = PrepareRootPresentation(transaction);
+
             lock (_transactionGate)
             {
                 if (!IsTransactionCurrent(transaction))
@@ -710,7 +754,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
 
                 if (_currentSnapshotKey is ThemeSnapshotCacheKey currentKey &&
-                    currentKey.Equals(preparation.SnapshotKey))
+                    currentKey.Equals(preparation.SnapshotKey) && !transaction.StyleBatch.HasChanges)
                 {
                     return new ThemeTransitionResult(
                         transaction.TransitionId,
@@ -722,7 +766,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
             }
 
-            PrepareCommitPayload(transaction);
+            transaction.StyleBatch.Prepare();
+            transaction.StyleBatch.WireAndActivate();
             lock (_transactionGate)
             {
                 if (!IsTransactionCurrent(transaction))
@@ -731,6 +776,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
 
                 transaction.Phase = ThemeTransactionPhase.CommitCore;
+                transaction.StyleBatch.Validate();
                 CommitCore(transaction);
                 committed = true;
             }
@@ -796,6 +842,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
     private void CommitCore(ThemeTransaction transaction)
     {
+        transaction.StyleBatch?.CommitPrepared();
         var preparation = transaction.Preparation!;
         var rootContext = transaction.PreparedRootContext!;
         if (!transaction.AddsResourceProvider)
@@ -908,19 +955,12 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         IReadOnlyList<ThemeDiagnostic> diagnostics,
         Exception? exception)
     {
-        var publishDiagnostics = new List<ThemeDiagnostic>();
-        ThemeEventDispatcher.Dispatch(
-            ThemeChangeFailed,
-            this,
-            new ThemeChangeFailedEventArgs(transaction.Request, diagnostics, exception),
-            publishDiagnostics,
-            nameof(ThemeChangeFailed));
         return new ThemeTransitionResult(
             transaction.TransitionId,
             ThemeTransitionStatus.Failed,
             _currentTheme,
             diagnostics,
-            publishDiagnostics,
+            Array.Empty<ThemeDiagnostic>(),
             exception);
     }
 
@@ -1011,6 +1051,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         {
             throw new InvalidOperationException("Theme mutations cannot run during package loading.");
         }
+        EnsurePresentationReady();
     }
 
     internal void RegisterContextLease(ThemeContextLease lease)
@@ -1092,11 +1133,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
         DisposeBoundary(_scopeGraph.DisposeAll);
         DisposeBoundary(() => _startupPackageIndex?.Release());
-        if (_rootContextStyle is { } rootContextStyle && application is not null)
-        {
-            DisposeBoundary(() => application.Styles.Remove(rootContextStyle));
-        }
-        _rootContextStyle = null;
+        CleanupPresentation(_rootStyleLease, "Application.StyleLease");
+        _rootStyleLease = null;
+        RetryPresentationCleanup();
         var applicationResources = _applicationResources;
         _applicationResources = null;
         if (applicationResources is not null)
@@ -1150,6 +1189,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         _currentTheme = null;
         _lastCommittedRequest = null;
         _lastCommittedRequestKey = null;
+        _styleAssetRegistry = Branding.ThemeStyleAssetRegistry.Empty;
         _followSystemLightRequest = null;
         _followSystemDarkRequest = null;
 
@@ -1157,6 +1197,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ControlThemeResolved = null;
         ThemeChangeFailed = null;
         ThemeCatalogChanged = null;
+        ThemePresentationChanged = null;
         _transactionExecutionGate.Dispose();
     }
 
@@ -1266,15 +1307,35 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             return registration;
         }
 
-        foreach (var staged in preparation.Snapshots)
+        var styles = new ThemeStyleBatch(CreateScopeStyleTargets(
+            parentContext.StyleInputs, capture, useLastValidConfig: false));
+        var generation = _generation;
+        try
         {
-            staged.Context.Commit(staged.Snapshot);
-            _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
+            styles.Prepare();
+            styles.WireAndActivate();
+            if (generation != _generation || !_scopeGraph.IsCurrent(capture))
+            {
+                throw new InvalidOperationException("Theme scopes changed during initial style activation.");
+            }
+            styles.Validate();
+            styles.CommitPrepared();
+            foreach (var staged in preparation.Snapshots)
+            {
+                staged.Context.Commit(staged.Snapshot);
+                _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
+            }
+            result = ThemeScopeUpdateResult.Succeeded(
+                transitionId, request, CreateScopeState(registration.Context.Snapshot, transitionId));
         }
-        result = ThemeScopeUpdateResult.Succeeded(
-            transitionId,
-            request,
-            CreateScopeState(registration.Context.Snapshot, transitionId));
+        catch (Exception exception)
+        {
+            result = ThemeScopeUpdateResult.Failed(transitionId, request,
+                CreateScopeState(registration.Context.Snapshot, transitionId),
+                [new ThemeDiagnostic("ATMTHM8004", ThemeDiagnosticSeverity.Error, nameof(ThemeManager), "$",
+                    $"Initial scope presentation failed: {exception.GetBaseException().Message}")], exception);
+        }
+        result.Presentation = FinishPresentation(styles);
         return registration;
     }
 
@@ -1393,6 +1454,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     {
         ArgumentNullException.ThrowIfNull(dispatchResult);
         await EnterTransactionExecutionGateAsync().ConfigureAwait(true);
+        ThemeStyleBatch? styles = null;
+        ThemeContext? targetContext = null;
         try
         {
             ThemeScopeUpdateResult result;
@@ -1410,9 +1473,11 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     dispatchResult(result);
                     return result;
                 }
+                targetContext = current.Context;
             }
 
-            result = ApplyScopeConfig(pending, generation, transitionId);
+            result = ApplyScopeConfig(pending, generation, transitionId, out styles);
+            result.Presentation = FinishPresentation(styles);
             dispatchResult(result);
             return result;
         }
@@ -1429,6 +1494,14 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     "$",
                     $"Theme scope update failed: {exception.GetBaseException().Message}")],
                 exception);
+            if (styles?.IsCommitted == true)
+            {
+                result = ThemeScopeUpdateResult.Succeeded(transitionId, CreateScopeRequest(pending.Config),
+                    CreateScopeState(targetContext!.Snapshot, transitionId),
+                    [new ThemeDiagnostic("ATMTHM7006", ThemeDiagnosticSeverity.Warning,
+                        nameof(ThemeManager), "$", $"Scope publish failed after commit: {exception.Message}")]);
+            }
+            result.Presentation = FinishPresentation(styles);
             dispatchResult(result);
             return result;
         }
@@ -1441,8 +1514,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeScopeUpdateResult ApplyScopeConfig(
         PendingThemeScopeUpdate pending,
         long generation,
-        long transitionId)
+        long transitionId,
+        out ThemeStyleBatch? styles)
     {
+        styles = null;
         if (!_scopeGraph.TryGetNode(pending.RegistrationId, out var node) ||
             !ReferenceEquals(node!.Provider, pending.Provider))
         {
@@ -1471,6 +1546,15 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
         var noOp = preparation.Snapshots.All(static staged =>
             SnapshotsEquivalent(staged.Context.Snapshot, staged.Snapshot));
+        styles = new ThemeStyleBatch(CreateScopeStyleTargets(
+            ResolveParentContext(capture.Nodes[0].Stamp.ParentRegistrationId).StyleInputs,
+            capture, useLastValidConfig: false));
+        noOp &= !styles.HasChanges;
+        if (!noOp)
+        {
+            styles.Prepare();
+            styles.WireAndActivate();
+        }
         lock (_transactionGate)
         {
             if (generation != _generation || !_scopeGraph.IsCurrent(capture))
@@ -1493,6 +1577,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     CreateScopeState(node.Context.Snapshot, transitionId));
             }
 
+            styles.Validate();
+            styles.CommitPrepared();
             foreach (var staged in preparation.Snapshots)
             {
                 staged.Context.Commit(staged.Snapshot);
@@ -1601,6 +1687,13 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeSnapshot parentSnapshot,
         ThemeConfig config)
     {
+        var brandDiagnostics = ValidateBrandConfig(config,
+            parentSnapshot.RegistryRevision, parentSnapshot.DefinitionRevision);
+        if (brandDiagnostics.Count != 0)
+        {
+            return new ThemeCompileResult(null, brandDiagnostics.Select(static item => new ThemeDefinitionDiagnostic(
+                item.Code, ThemeDefinitionDiagnosticSeverity.Error, item.Source, 0, 0, item.Path, item.Message)).ToArray(), null);
+        }
         if (config.Inherit &&
             config.Algorithms is null &&
             config.Tokens.Count == 0 &&
@@ -1700,6 +1793,11 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         try
         {
             var entry = (catalog ?? _compiledThemeCatalog!).Get(request.ThemeId);
+            var brandDiagnostics = ValidateBrandRequest(request, registry.Revision, entry.Revision);
+            if (brandDiagnostics.Count != 0)
+            {
+                return ThemeTransactionPreparation.Failed(brandDiagnostics);
+            }
             var normalizedRuntime = request.Config is null
                 ? runtimeDefaultConfig ?? _normalizedRuntimeDefaultConfig!
                 : ThemeConfigNormalizer.Normalize(AddDefaultFont(request.Config)!, registry);

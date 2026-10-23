@@ -36,4 +36,5 @@ public sealed record ThemeTransitionResult
     public IReadOnlyList<ThemeDiagnostic> Diagnostics { get; }
     public IReadOnlyList<ThemeDiagnostic> PublishDiagnostics { get; }
     public Exception? Exception { get; }
+    public ThemePresentationResult Presentation { get; init; } = ThemePresentationResult.Unchanged;
 }

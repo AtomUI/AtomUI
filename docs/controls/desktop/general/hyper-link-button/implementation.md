@@ -1,0 +1,9 @@
+# HyperLinkButton 实现
+
+Common/AbstractHyperLinkButton拥有公开链接动作、visited伪类、尺寸和图标契约；Desktop/Buttons/HyperLinkButton应用模板，HyperLinkButtonTheme提供状态与布局，HyperLinkButtonToken拥有独立Own默认。导航成功的异步结果只更新IsVisited，不重建主题或内容。
+
+默认模板组合loading图标、IconPresenter和内容呈现器。三档与Custom的属性投射、disabled/loading等选择器均由ControlTheme负责；模板替换必须保留所依赖的命名部件和行为。加载margin绑定跟随实际图标margin，不能把私有部件名称升级为公开Semantic Part。ControlTheme style Setter中的编译ElementName无法解析模板内命名部件，实际编译器报AVLN2000；反射命名绑定不作为AOT回退。因此保留有明确原因注释的同模板代码绑定，使用Template优先级，重模板时释放并替换。两个端点均属于当前模板，不持有外部资源host；AXAML负责图标margin，loading不再重复设置同一资源而压制实际源值，原生应用Style trigger/本地属性可覆盖。
+
+Own默认函数按字体→DIP布局行高→内边距的图执行；explicit存在位使下游默认读取已覆盖上游，显式Padding不被重算。源码位置为`src/AtomUI.Desktop.Controls/Buttons/HyperLinkButtonToken.cs`，基类为`src/AtomUI.Controls/Buttons/AbstractHyperLinkButton.cs`。修改字段须同步[Token合同](token.md)，完整模板和订阅修改须验证替换、分离与释放。
+
+Global尺寸、图标、motion与状态色由HyperLinkButton自己的类型化资源解析；两项Transition时长动态读取自身MotionDurationMid，不在主题载入时固化。

@@ -11,12 +11,8 @@
         <Style Selector="^:is(atom|CascaderAddOnDecoratedBox)">
             <Style Selector="^^[IsMultiple=True]">
                 <Style Selector="^[IsSelectionEmpty=False]">
-                    <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                        <Setter Property="Padding"
-                                Value="{Binding (atom:AddOnDecoratedBox).EffectiveContentFramePadding, RelativeSource={RelativeSource TemplatedParent}}" />
-                    </Style>
                     <Style Selector="^[SizeType=Large]">
-                        <Setter Property="ContentFramePadding"
+                        <Setter Property="PresetContentPadding"
                                 Value="{atom:SelectTokenResource MultiModePaddingLG}" />
                         <Setter Property="CompactContentFramePadding"
                                 Value="{atom:SelectTokenResource MultiModePaddingSM}" />
@@ -28,7 +24,7 @@
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                        <Setter Property="ContentFramePadding"
+                        <Setter Property="PresetContentPadding"
                                 Value="{atom:SelectTokenResource MultiModePadding}" />
                         <Setter Property="CompactContentFramePadding"
                                 Value="{atom:SelectTokenResource MultiModePaddingSM}" />
@@ -40,7 +36,7 @@
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Small]">
-                        <Setter Property="ContentFramePadding"
+                        <Setter Property="PresetContentPadding"
                                 Value="{atom:SelectTokenResource MultiModePaddingSM}" />
                         <Setter Property="CompactContentFramePadding"
                                 Value="{atom:SelectTokenResource MultiModePaddingSM}" />
@@ -55,23 +51,14 @@
                 
                 <Style Selector="^[IsSelectionEmpty=True]">
                     <Style Selector="^[SizeType=Large]">
-                        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                            <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePaddingLG}" />
-                        </Style>
+                        <Setter Property="PresetContentPadding" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
                     </Style>
                     <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                            <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePadding}" />
-                        </Style>
+                        <Setter Property="PresetContentPadding" Value="{atom:SelectTokenResource SingleModePadding}" />
 
                     </Style>
                     <Style Selector="^[SizeType=Small]">
-                        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                            <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePadding}" />
-                        </Style>
+                        <Setter Property="PresetContentPadding" Value="{atom:SelectTokenResource SingleModePadding}" />
                     </Style>
                 </Style>
             </Style>

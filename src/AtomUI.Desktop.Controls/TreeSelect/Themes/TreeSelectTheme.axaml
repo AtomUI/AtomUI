@@ -11,6 +11,9 @@
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                         Classes.semantic-scope-input="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                        ContentFramePadding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"
@@ -23,7 +26,6 @@
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         IsMultiple="{TemplateBinding IsMultiple}"
-                        CustomControlHeight="{TemplateBinding Height}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         IsSelectionEmpty="{TemplateBinding IsSelectionEmpty}"
@@ -108,7 +110,7 @@
                                                         MaxTagCount="{TemplateBinding MaxTagCount}"
                                                         IsResponsiveTagMode="{TemplateBinding IsResponsiveTagMode}"
                                                         CustomControlHeight="{TemplateBinding Height}"
-                                                        ContentFramePadding="{CompiledBinding $parent[atom:TreeSelectAddOnDecoratedBox].ContentFramePadding}"
+                                                        ContentFramePadding="{CompiledBinding $parent[atom:TreeSelectAddOnDecoratedBox].ContentMeasurementPadding}"
                                                         ContentMinHeight="{CompiledBinding $parent[atom:TreeSelectAddOnDecoratedBox].ContentMinHeight}"
                                                         InputBorderThickness="{CompiledBinding $parent[atom:TreeSelectAddOnDecoratedBox].InnerBoxBorderThickness}"
                                                         IsVisible="False"
@@ -199,6 +201,56 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+        </Style>
+        <Setter Property="BorderThickness" Value="{atom:TreeSelectTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:TreeSelectTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:TreeSelectTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:TreeSelectTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:TreeSelectTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:TreeSelectTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:TreeSelectTokenResource BorderRadiusSM}" />
+        </Style>
+
+        <Style Selector="^[IsMultiple=True]">
+            <Style Selector="^[IsSelectionEmpty=True]">
+                <Style Selector="^[SizeType=Large]">
+                    <Setter Property="Padding" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
+                </Style>
+                <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+                    <Setter Property="Padding" Value="{atom:SelectTokenResource SingleModePadding}" />
+                </Style>
+                <Style Selector="^[SizeType=Small]">
+                    <Setter Property="Padding" Value="{atom:SelectTokenResource SingleModePaddingSM}" />
+                </Style>
+            </Style>
+            <Style Selector="^[IsSelectionEmpty=False]">
+                <Style Selector="^[SizeType=Large]">
+                    <Setter Property="Padding" Value="{atom:SelectTokenResource MultiModePaddingLG}" />
+                </Style>
+                <Style Selector="^[SizeType=Middle]">
+                    <Setter Property="Padding" Value="{atom:SelectTokenResource MultiModePadding}" />
+                </Style>
+                <Style Selector="^[SizeType=Custom]">
+                    <Setter Property="Padding">
+                        <MultiBinding Converter="{x:Static atom:CustomInputPaddingConverter.Instance}">
+                            <atom:SelectTokenResource Kind="MultiModePadding" />
+                            <atom:SelectTokenResource Kind="MultiModePaddingSM" />
+                            <atom:SelectTokenResource Kind="MultipleItemHeight" />
+                            <CompiledBindingExtension Path="$self.Height" />
+                            <CompiledBindingExtension Path="$self.BorderThickness" />
+                            <CompiledBindingExtension Path="$self.StyleVariant" />
+                        </MultiBinding>
+                    </Setter>
+                </Style>
+                <Style Selector="^[SizeType=Small]">
+                    <Setter Property="Padding" Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                </Style>
+            </Style>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

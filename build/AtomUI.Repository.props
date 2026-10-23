@@ -9,6 +9,10 @@
     <Import Project="$(MSBuildThisFileDirectory)PackageValidation.props"
             Condition="'$(AtomUIPackageValidationBaselineVersion)' != '' or '$(EnablePackageValidation)' == 'true'" />
 
+    <ItemGroup>
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)metadata/token-resource-ids.tsv" Visible="false" />
+    </ItemGroup>
+
     <PropertyGroup>
         <AtomUIRepositoryBuild>true</AtomUIRepositoryBuild>
         <AtomUIToolchainProject>$(MSBuildThisFileDirectory)../src/AtomUI.Toolchain/AtomUI.Toolchain.csproj</AtomUIToolchainProject>

@@ -101,6 +101,11 @@ native popup 的透明 shadow buffer。overlay host 使用同一原则，避免 
 
 ## 6. 控件家族与集成关系
 
+两类 host 的默认 `FontFamily`、`FontSize`、`FontWeight`、`FontStyle` 来自实际
+`PlacementTarget` 的有效 `TextElement` 属性。已打开的弹层随 anchor 字体或 anchor 更换更新，
+内容自身的 local/style 字体按 Avalonia 原生优先级覆盖继承值。host 的前景色继续消费有效主题
+`ColorText`，不把主按钮的白色文字作为弹层默认前景。
+
 Flyout、MenuFlyout、TreeViewFlyout、PopupConfirm、ToolTip、ContextMenu、ComboBox、Select、Cascader、TreeSelect、
 AutoComplete、Mentions、Picker、菜单、NavMenu、Tour 与 ColorPicker 家族全部继承 content-owned 默认值。委托 Flyout 的
 DropdownButton、SplitButton、AvatarGroup、Transfer、TabControl 和 DataGrid 不创建第二套表面策略，也不重复写入默认值。

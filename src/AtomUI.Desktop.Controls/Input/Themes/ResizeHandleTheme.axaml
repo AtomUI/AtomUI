@@ -11,8 +11,8 @@
         </Setter>
         
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Height" Value="8" />
-        <Setter Property="Width" Value="8" />
+        <!-- Original glyph endpoints extend one reference unit beyond the handle. -->
+        <Setter Property="ClipToBounds" Value="False" />
         
     </ControlTheme>
 </ResourceDictionary>

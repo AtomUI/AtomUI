@@ -234,3 +234,9 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 Semantic Part 行为验证：
 
 - `tests/AtomUI.Desktop.Controls.Tests/TimePicker/TimePickerSemanticPartTests.cs`：descriptor 契约（TimePicker 11 个、RangeTimePicker 12 个 Part）、宿主/共享/内部主题静态 marker 清单、`popup.item` 运行时注入与滚动复用/rebuild 保持、生成 Style 命中触发区与弹层目标（含 `secondaryInput`、`popup.content`、`popup.column`）、弹层首次打开/关闭/重开 marker 保持、`ClockIdentifier` 12↔24 切换、清除模式与 footer 可见性不增删 marker、默认主题不消费 `.semantic-*`、尺寸基线失败回归。
+
+## 根表面主题投射
+
+TimePicker 与 RangeTimePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。

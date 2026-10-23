@@ -1,5 +1,8 @@
+using System.Reactive.Disposables;
+using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -29,6 +32,9 @@ public class IconTemplatePresenter : Control
     
     #endregion
     
+    private PathIcon? _icon;
+    private CompositeDisposable? _disposables;
+
     static IconTemplatePresenter()
     {
         AffectsMeasure<IconTemplatePresenter>( IconTemplateProperty);
@@ -36,43 +42,65 @@ public class IconTemplatePresenter : Control
         IconTemplateProperty.Changed.AddClassHandler<IconTemplatePresenter>((x, e) => x.HandleIconTemplateChanged(e));
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_icon != null)
+        {
+            ConfigureIcon(_icon);
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _disposables?.Dispose();
+        _disposables = null;
+    }
+
     private void HandleIconTemplateChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        var oldIconTemplate = (IconTemplate?)change.OldValue;
-        var newIconTemplate = (IconTemplate?)change.NewValue;
-        if (oldIconTemplate != null)
+        _disposables?.Dispose();
+        _disposables = null;
+        LogicalChildren.Clear();
+        VisualChildren.Clear();
+        _icon = ((IconTemplate?)change.NewValue)?.Build();
+        if (_icon != null)
         {
-            LogicalChildren.Clear();
-            VisualChildren.Clear();
-        }
-
-        if (newIconTemplate != null)
-        {
-            var pathIcon = newIconTemplate.Build();
-            if (pathIcon != null)
-            {
-                ConfigureIcon(pathIcon);
-            }
+            ConfigureIcon(_icon);
+            VisualChildren.Add(_icon);
+            LogicalChildren.Add(_icon);
         }
     }
 
     private void ConfigureIcon(PathIcon pathIcon)
     {
-        pathIcon[!WidthProperty]  = this[!WidthProperty];
-        pathIcon[!HeightProperty] = this[!HeightProperty];
+        // This runtime-built content is outside a ControlTemplate. An ordinary child
+        // Style cannot express the same Template binding priority; own and dispose
+        // these bindings so explicit child values win and discarded icons stop following.
+        _disposables?.Dispose();
+        _disposables = new CompositeDisposable(7);
+        _disposables.Add(BindUtils.RelayBind(this, WidthProperty, pathIcon, WidthProperty,
+            BindingMode.Default, BindingPriority.Template));
+        _disposables.Add(BindUtils.RelayBind(this, HeightProperty, pathIcon, HeightProperty,
+            BindingMode.Default, BindingPriority.Template));
         if (pathIcon is Icon icon)
         {
-            icon[!Icon.StrokeBrushProperty]          = this[!IconBrushProperty];
-            icon[!Icon.FillBrushProperty]            = this[!IconBrushProperty];
-            icon[!Icon.SecondaryStrokeBrushProperty] = this[!IconBrushProperty];
-            icon[!Icon.SecondaryFillBrushProperty]   = this[!IconBrushProperty];
-            icon[!Icon.FallbackBrushProperty]        = this[!IconBrushProperty];
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, Icon.StrokeBrushProperty,
+                BindingMode.Default, BindingPriority.Template));
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, Icon.FillBrushProperty,
+                BindingMode.Default, BindingPriority.Template));
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, Icon.SecondaryStrokeBrushProperty,
+                BindingMode.Default, BindingPriority.Template));
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, Icon.SecondaryFillBrushProperty,
+                BindingMode.Default, BindingPriority.Template));
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, icon, Icon.FallbackBrushProperty,
+                BindingMode.Default, BindingPriority.Template));
         }
         else
         {
-            pathIcon[!PathIcon.ForegroundProperty] = this[!IconBrushProperty];
+            _disposables.Add(BindUtils.RelayBind(this, IconBrushProperty, pathIcon, PathIcon.ForegroundProperty,
+                BindingMode.Default, BindingPriority.Template));
         }
-        VisualChildren.Add(pathIcon);
-        LogicalChildren.Add(pathIcon);
     }
 }

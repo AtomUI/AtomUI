@@ -2,6 +2,11 @@
 
 本文档记录 TimePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-23
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- TimePicker 与 RangeTimePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入。
+
 ## 2026-10-07
 
 - API / Behavior

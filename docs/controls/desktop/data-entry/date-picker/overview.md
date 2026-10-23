@@ -67,6 +67,11 @@ RangeDatePicker 的范围编辑使用端点轮转状态机。每次用户成功�
 
 ## 5. 视觉与主题模型
 
+DatePicker 与 RangeDatePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入，不借用另一个具体 picker 身份。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 | 场景 | 组合 |
 | --- | --- |
 | 单值 Date/Week | 单日期面板，Week 周列与整行反馈，Footer 按原条件。 |

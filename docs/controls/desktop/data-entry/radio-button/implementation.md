@@ -221,3 +221,11 @@ RadioButton 的交互事件应从输入源收敛到控件级语义事件：
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
 
 `AbstractOptionButton` 同样持有会话，覆盖 `OptionButtonGroup` 在容器挂载后赋予的初始 checked 外观；父组的选择模型、按压反馈和后续状态切换保持原有语义。
+
+## 10. OptionButton 精确主题接线
+
+OptionButton 的19个 Own 默认值由生成器构建依赖计划，静态方法显式声明字体→行高比例→内容留白，以及基础 ButtonPadding→内容留白。Small读取 ControlHeightSM，Large读取LG字体、比例及高度，不沿用历史高度平方或混用Middle输入。计算结果不依赖选中、方向或控件实例。
+
+OptionButtonTheme 的颜色、尺寸、间距与 Motion 输入均按 Item identity 读取；OptionButtonGroupTheme 按 Group identity 读取组合框体输入。动态时长复用 Core TokenTransitions，原生绑定持有实例生命周期。可选背景通过 AXAML MultiBinding 加无状态转换器表达，缺省返回透明画刷；不查找模板节点改属性，不新增状态同步或订阅。
+
+SelectionMode 的默认 AlwaysSelected 必须纳入测试和示例：未选中状态应选择另一个 Item，不能假定对唯一项设 IsChecked=false 后它仍未选中。方向、自绘组合边框与选择模型保持原实现。

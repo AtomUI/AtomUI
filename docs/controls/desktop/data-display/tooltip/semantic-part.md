@@ -71,7 +71,7 @@ Part 由生成 Style 借助 scope 路由从 `ToolTip` 穿透到共享模板命�
 | RuntimeCreated | `false` |
 | AtomUI 节点 | `ArrowIndicator#PART_ArrowIndicator`（共享 `ArrowDecoratedBox` 模板） |
 | 职责 | 指向锚定控件的箭头指示器 |
-| 相关 API | `IsArrowVisible`、`ArrowSize`、`Background`（`FilledColor` 模板绑定） |
+| 相关 API | `IsArrowVisible`、`ArrowSize`、`Background`（`FilledColor`模板绑定）；目标`ArrowIndicator.TipRadius`默认1.5 DIP，可设0尖角 |
 | 相关 Token | `ArrowDecoratedBoxToken.ArrowStrokeColor`、`ArrowDecoratedBoxToken.ArrowStrokeThickness`、`ArrowDecoratedBoxToken.ArrowSize` |
 | 稳定性 | stable since 6.2.0 |
 
@@ -84,7 +84,7 @@ Part 由生成 Style 借助 scope 路由从 `ToolTip` 穿透到共享模板命�
   `ArrowDecoratedBox`，由模板绑定流入内容盒；`Background` 由 `ToolTip` 的 `ToolTipBackground` 模板绑定流入。
 - `arrow`：箭头指示器 `ArrowIndicator`，填充色来自 `ArrowDecoratedBox` 的 `Background` 模板绑定，描边与尺寸来自
   `ArrowDecoratedBoxToken`。箭头不存在于 `ToolTipTheme.axaml` 自己的模板节点中，只通过共享
-  `ArrowDecoratedBox` 模板间接呈现。
+  `ArrowDecoratedBox` 模板间接呈现。`TipRadius`是[共享primitive](../../other/arrow-indicator/overview.md)的形态参数，通过`ToolTipArrowStyle`声明，不在代码中定位节点赋值。
 
 以下节点不属于任何 Semantic Part：
 
@@ -112,6 +112,7 @@ Style 类型。
         </atom:ToolTipContainerStyle>
         <atom:ToolTipArrowStyle x:SetterTargetType="atom:ArrowIndicator">
             <Setter Property="FilledColor" Value="#1890FF" />
+            <Setter Property="TipRadius" Value="0" />
         </atom:ToolTipArrowStyle>
     </Style>
 </StackPanel.Styles>

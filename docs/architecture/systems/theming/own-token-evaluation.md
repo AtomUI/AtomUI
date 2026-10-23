@@ -172,3 +172,7 @@ descriptor保留既有构造和`Evaluate(token, appearance)`，新增六参数�
 存在位的bit编号是按名称分配的Own slot，word为`slot >> 6`、bit为`slot & 63`。空span表示全部未指定；非空span必须恰好覆盖字段数且未使用的高位为0。Compiler先将合法显式值写入独立builder并设置位，再运行拓扑计划；被标记字段不调用默认函数。默认值不被记为显式值，移除覆盖即恢复依赖默认。不存在运行时依赖图或逐字段闭包。
 
 evaluator revision是生成期对层revision、默认函数身份/类型、依赖及重定义事实的确定摘要；函数实现语义变化由作者提升所在层revision，不解析任意函数体推导语义。它独立于按名称/type确定的schema和slot，进入Control缓存键并随descriptor Bind保留。XML v1与编译主题ABI v1不增加字段；当前动态codec允许的null用现有格式传入，求值器不得丢失其存在位，不在本批暗改所有codec的字面量语法。
+
+## 10. 公开资源ID与Schema slot
+
+Own默认依赖的slot是内部存储地址，公开TokenKind及Scoped TokenKey的整数是跨程序集资源身份，两者不能混用。内置公开ID由[生成器稳定合同](../../../modules/generator/token-resource-keys.md)冻结；新增字段追加资源ID，descriptor/default-plan继续使用自身slot。别名保留原资源ID并投影规范字段；Shared访问通过Registry映射到真实slot。不能以源码重编译后正确掩盖旧literal误指字段。

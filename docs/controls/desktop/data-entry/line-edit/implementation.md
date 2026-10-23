@@ -283,3 +283,21 @@ AOT 边界：
 ## 状态动效初始化
 
 共享 `InputControlFrame` 在构造时建立初始化会话，覆盖禁用、校验及初始外观同步，加载后恢复最新过渡集合；分离及模板变更时复位。`TextBox` 不再查找当前模板中不存在的 `InnerBoxDecorator` 并投递过渡开关。规则见 [共享状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+
+## 根表面主题投射
+
+LineEdit 根几何使用本身份的有效主题默认值并投射到 AddOn 内容 frame；TextBox 与 TextArea 的具体职责分别见其独立文档。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+### 根前景与字体消费
+
+根 Foreground 的默认来自当前 Control 的 Effective Global ColorText，通过框体继承链到达真实文本。根 FontFamily/FontSize/FontWeight/FontStyle 的原生实例输入保留；语义 input 的专用 Style 可声明覆写，禁用及错误状态仍由对应状态样式处理。其他组合 owner 的独立子控件合同在各家族分别定义。
+
+## LineEdit精确字体与继承
+
+LineEditTheme根级FontSize MultiBinding按SizeType选择Own三档最终资源，仅在对应Own或Global显式配置且IsCustomFontSize=false时启用；根级Setter保留普通Style优先级，不使用会压过它的条件Style。SizeType与IsCustomFontSize使用带LineEdit类型的CompiledBinding，兼容AOT。FontFamily复用可选Global Setter。
+
+未配置路径通过Core内部ControlTypographyBindings观察protected真实InheritanceParent，不能替换为逻辑Parent；AbstractTextInput只暴露内部只读桥，不写最终字体属性。观察器随父变化及附着重订阅，分离/释放停止父订阅。原生字体继承、LocalValue、普通Style、raw资源与清除恢复独立验证；Select过滤器借用LineEdit身份仍归其容器迁移。
+
+内部frame与操作按钮通过[共享输入架构](../input-control-architecture-design.md#内部资产的主题查询路线)消费真实公开owner的Global；Content附加区的逻辑路线与模板路线同属该合同，保留原生样式优先级和状态归一。

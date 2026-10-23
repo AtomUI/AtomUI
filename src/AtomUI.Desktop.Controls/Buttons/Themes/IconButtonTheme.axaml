@@ -29,13 +29,13 @@
 
     <Style Selector="^:is(atom|IconButton)">
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-        <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="IconWidth" Value="{atom:IconButtonTokenResource IconSizeSM}" />
+        <Setter Property="IconHeight" Value="{atom:IconButtonTokenResource IconSizeSM}" />
+        <Setter Property="CornerRadius" Value="{atom:IconButtonTokenResource BorderRadiusSM}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:IconButtonTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ atom|IconPresenter atom|Icon">
             <Setter Property="LoadingAnimation" Value="{TemplateBinding LoadingAnimation}" />
@@ -43,31 +43,31 @@
         </Style>
 
         <Setter Property="IconBrush"
-                Value="{atom:SharedTokenResource ColorIcon}" />
+                Value="{atom:IconButtonTokenResource ColorIcon}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="IconBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <TransformOperationsTransition Property="RenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions DurationKind="MotionDurationMid">
+                    <atom:SolidColorBrushTransition Property="Background" />
+                    <atom:SolidColorBrushTransition Property="IconBrush" />
+                    <TransformOperationsTransition Property="RenderTransform" />
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 
         <Style Selector="^:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIconHover}" />
+                    Value="{atom:IconButtonTokenResource ColorIconHover}" />
         </Style>
 
         <Style Selector="^:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorText}" />
+                    Value="{atom:IconButtonTokenResource ColorText}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:IconButtonTokenResource ColorTextDisabled}" />
         </Style>
     </Style>
 

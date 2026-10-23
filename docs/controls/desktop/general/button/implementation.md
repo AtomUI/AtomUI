@@ -12,6 +12,12 @@ Button 的实现目标是把兼容 API、正交 `Color + Variant` API、图标�
 
 Button.cs 保留公共属性、事件和接口实现入口；内部 helper 可以按职责拆分，但拆分不能改变 public API、模板契约、伪类或渲染结果。
 
+Own定义使用DependencyDefaultsV2，静态默认函数声明真实Own依赖。尺寸字体、布局行高、内边距及额外区域留白按有效上游求值，显式下游不被重新计算覆盖。每个终端保持独立identity及schema。
+
+可选FontWeight覆盖由ControlTheme的MultiBinding完成。Button只观察受保护的原生InheritanceParent并提供内部只读继承值；该父对象不一定是逻辑父节点，不能用普通祖先查找代替。订阅在逻辑挂载创建、分离释放；绑定通过注册属性的编译accessor读取，不使用反射。类型转换和缺省回退见[显式Own资源](../../../../modules/core/configured-token-resources.md)。
+
+Circle/Round只改变内部有效圆角，不在Measure中写公共CornerRadius。保留原有以测量目标高度计算圆角的几何，Stretch排列高度不能替代该输入；切回Default使用仍保留的公共圆角，再应用compact边缘裁切。
+
 ## 2. 源码文件结构
 
 主要源码：
@@ -234,3 +240,11 @@ Button 实现不得引入运行时反射、动态代码生成或非 AOT 友好�
   Avalonia 12 原生 class-only template selector 与 `x:SetterTargetType` 证明 icon/content marker 可编译并命中；批量
   Button 验证 class listener 结构预算和 detach 释放。
 - 文档改动：运行 `git diff --check`。
+
+## Global与派生身份
+
+ButtonTheme的高度、圆角、描边、图标、focus、loading与disabled Global输入按Button身份读取；Dropdown使用独立模板与身份。共享变体算法的reader按产品基类捕获Button或Dropdown，颜色/阴影Own经有限静态映射读取各自字段，不合并有效表或使用字符串反射。未注册的应用派生类保留产品基类合同。
+
+### 可选禁用描边与关联Flyout间距
+
+禁用特定描边由ControlTheme选择存在位/普通资源值，缺省回退通用BorderColorDisabled。Button.cs中的关联Flyout方法只负责非Visual关联对象的Target与订阅生命周期；仅实际Target owner绑定GutterToFlyout，绑定优先级Template，关闭/替换/分离释放，局部值仍优先。不能用Setter嵌套属性路径修改模板外另一个Flyout对象。未配置保留旧0间距，不更改RequestedPlacement。

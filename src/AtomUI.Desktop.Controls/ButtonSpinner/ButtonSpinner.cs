@@ -77,6 +77,9 @@ public partial class ButtonSpinner : Spinner,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ButtonSpinner>();
 
+    public static readonly StyledProperty<double> SpinnerHandleWidthProperty =
+        AvaloniaProperty.Register<ButtonSpinner, double>(nameof (SpinnerHandleWidth));
+
     public bool IsSpinEnabled
     {
         get => GetValue(IsSpinEnabledProperty);
@@ -177,12 +180,23 @@ public partial class ButtonSpinner : Spinner,
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    public double SpinnerHandleWidth
+    {
+        get => GetValue(SpinnerHandleWidthProperty);
+        set => SetValue(SpinnerHandleWidthProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
 
-    public static readonly StyledProperty<double> SpinnerHandleWidthProperty =
-        AvaloniaProperty.Register<ButtonSpinner, double>(nameof (SpinnerHandleWidth));
+    internal static readonly StyledProperty<Thickness> PresetPaddingProperty =
+        AvaloniaProperty.Register<ButtonSpinner, Thickness>(nameof(PresetPadding));
+
+    internal static readonly StyledProperty<CornerRadius> PresetCornerRadiusProperty =
+        AvaloniaProperty.Register<ButtonSpinner, CornerRadius>(nameof(PresetCornerRadius));
+
+
 
     internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty =
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<ButtonSpinner>();
@@ -196,12 +210,18 @@ public partial class ButtonSpinner : Spinner,
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<ButtonSpinner>();
 
-    public double SpinnerHandleWidth
+    internal Thickness PresetPadding
     {
-        get => GetValue(SpinnerHandleWidthProperty);
-        set => SetValue(SpinnerHandleWidthProperty, value);
+        get => GetValue(PresetPaddingProperty);
+        set => SetValue(PresetPaddingProperty, value);
     }
-    
+
+    internal CornerRadius PresetCornerRadius
+    {
+        get => GetValue(PresetCornerRadiusProperty);
+        set => SetValue(PresetCornerRadiusProperty, value);
+    }
+
     internal SpaceItemPosition? CompactSpaceItemPosition
     {
         get => GetValue(CompactSpaceItemPositionProperty);
@@ -232,6 +252,10 @@ public partial class ButtonSpinner : Spinner,
     private ButtonSpinnerHandle? _spinnerHandle;
     private bool _isFrameBorderBrushRelayed;
 
+    private IconButton? _decreaseButton;
+
+    private IconButton? _increaseButton;
+
     static ButtonSpinner()
     {
         IsSpinEnabledProperty.Changed.Subscribe(IsSpinEnabledChanged);
@@ -241,7 +265,6 @@ public partial class ButtonSpinner : Spinner,
     {
     }
     
-    private IconButton? _decreaseButton;
     private IconButton? DecreaseButton
     {
         get => _decreaseButton;
@@ -259,7 +282,6 @@ public partial class ButtonSpinner : Spinner,
         }
     }
     
-    private IconButton? _increaseButton;
     private IconButton? IncreaseButton
     {
         get => _increaseButton;
@@ -340,93 +362,6 @@ public partial class ButtonSpinner : Spinner,
         SetButtonUsage();
         ConfigureAddOns();
         RelayFrameBorderBrush();
-    }
-
-    /// <summary>
-    /// Relays the owner's root border brush onto the input frame as a local value so
-    /// application-level customization wins over the frame state machine, mirroring antd
-    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
-    /// owner value restores the state machine.
-    /// </summary>
-    private void RelayFrameBorderBrush()
-    {
-        var decoratedBox = DecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // Only hand the property back when this control is the one that took it over:
-            // a nested owner (for example NumericUpDown, whose spinner is a ButtonSpinner)
-            // may hold its own relay on the same frame node.
-            if (_isFrameBorderBrushRelayed)
-            {
-                decoratedBox.ClearValue(BorderBrushProperty);
-                _isFrameBorderBrushRelayed = false;
-            }
-            return;
-        }
-
-        decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        _isFrameBorderBrushRelayed = true;
-    }
-
-    private void HandleButtonCreated(object? sender, EventArgs e)
-    {
-        if (_spinnerHandle != null)
-        {
-            IncreaseButton = _spinnerHandle.IncreaseButton;
-            DecreaseButton = _spinnerHandle.DecreaseButton;
-        }
-    }
-
-    private void ConfigureAddOns()
-    {
-        if (LeftAddOn is PathIcon leftAddOnIcon)
-        {
-            var iconPresenter = new SizeTypeAwareIconPresenter
-            {
-                Icon = leftAddOnIcon
-            };
-            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
-            LeftAddOn                        = iconPresenter;
-        }
-        if (InnerLeftContent is PathIcon innerLeftContent)
-        {
-            var iconPresenter = new SizeTypeAwareIconPresenter
-            {
-                Icon = innerLeftContent
-            };
-            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
-            InnerLeftContent                 = iconPresenter;
-        }
-        if (RightAddOn is PathIcon rightAddOnIcon)
-        {
-            var iconPresenter = new SizeTypeAwareIconPresenter
-            {
-                Icon = rightAddOnIcon
-            };
-            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
-            RightAddOn                       = iconPresenter;
-        }
-        if (InnerRightContent is PathIcon innerRightContent)
-        {
-            var iconPresenter = new SizeTypeAwareIconPresenter
-            {
-                Icon = innerRightContent
-            };
-            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
-            InnerRightContent                = iconPresenter;
-        }
-    }
-    
-    private void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(ButtonSpinnerPseudoClass.Left, ButtonSpinnerLocation == ButtonSpinnerLocation.Left);
-        PseudoClasses.Set(ButtonSpinnerPseudoClass.Right, ButtonSpinnerLocation == ButtonSpinnerLocation.Right);
     }
     
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -511,38 +446,24 @@ public partial class ButtonSpinner : Spinner,
         SetButtonUsage();
     }
     
-    private static void IsSpinEnabledChanged(AvaloniaPropertyChangedEventArgs change)
+    protected virtual double GetBorderThicknessForCompactSpace()
     {
-        if (change.Sender is ButtonSpinner spinner)
+        if (!IsUsedInCompactSpace)
         {
-            var oldValue = (bool)change.OldValue!;
-            var newValue = (bool)change.NewValue!;
-            spinner.OnIsSpinEnabledChanged(oldValue, newValue);
+            return 0.0;
         }
-    }
     
-    private void SetButtonUsage()
-    {
-        if (IncreaseButton != null)
+        if (DecoratedBox == null || DecoratedBox.StyleVariant != InputControlStyleVariant.Outlined)
         {
-            IncreaseButton.IsEnabled = IsSpinEnabled && ((ValidSpinDirection & ValidSpinDirections.Increase) == ValidSpinDirections.Increase);
+            return 0.0;
         }
+    
+        // 都一样宽
+        return DecoratedBox.InnerBoxBorderThickness.Left;
+    }
 
-        if (DecreaseButton != null)
-        {
-            DecreaseButton.IsEnabled = IsSpinEnabled && ((ValidSpinDirection & ValidSpinDirections.Decrease) == ValidSpinDirections.Decrease);
-        }
-    }
-    
-    private void HandleButtonClick(object? sender, RoutedEventArgs e)
-    {
-        if (IsSpinEnabled)
-        {
-            var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
-            OnSpin(new SpinEventArgs(SpinEvent, direction));
-        }
-    }
-    
+    #region 实现 ICompactSpaceAware 接口
+
     void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
     {
         var isUsedInCompactSpace = position != null;
@@ -567,19 +488,131 @@ public partial class ButtonSpinner : Spinner,
 
     double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
     
-    protected virtual double GetBorderThicknessForCompactSpace()
+    #endregion
+
+    /// <summary>
+    /// Relays the owner's root border brush onto the input frame as a local value so
+    /// application-level customization wins over the frame state machine, mirroring antd
+    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
+    /// owner value restores the state machine.
+    /// </summary>
+    // An initially-Unset local compiled binding seeds the null metadata default on
+    // Avalonia 12; it cannot express the required optional LocalValue ownership and
+    // fallback to frame state styles. Keep the conditional write/clear for this slot.
+    private void RelayFrameBorderBrush()
     {
-        if (!IsUsedInCompactSpace)
+        var decoratedBox = DecoratedBox;
+        if (decoratedBox is null)
         {
-            return 0.0;
+            return;
         }
-    
-        if (DecoratedBox == null || DecoratedBox.StyleVariant != InputControlStyleVariant.Outlined)
+
+        var value = GetValue(BorderBrushProperty);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
         {
-            return 0.0;
+            // Only hand the property back when this control is the one that took it over:
+            // a nested owner (for example NumericUpDown, whose spinner is a ButtonSpinner)
+            // may hold its own relay on the same frame node.
+            if (_isFrameBorderBrushRelayed)
+            {
+                decoratedBox.ClearValue(BorderBrushProperty);
+                _isFrameBorderBrushRelayed = false;
+            }
+            return;
         }
+
+        decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
+        _isFrameBorderBrushRelayed = true;
+    }
+
+    private void HandleButtonCreated(object? sender, EventArgs e)
+    {
+        if (_spinnerHandle != null)
+        {
+            IncreaseButton = _spinnerHandle.IncreaseButton;
+            DecreaseButton = _spinnerHandle.DecreaseButton;
+        }
+    }
+
+    private void ConfigureAddOns()
+    {
+        if (LeftAddOn is PathIcon leftAddOnIcon)
+        {
+            var iconPresenter = new SizeTypeAwareIconPresenter
+            {
+                Icon = leftAddOnIcon
+            };
+            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
+            LeftAddOn                        = iconPresenter;
+        }
+        if (InnerLeftContent is PathIcon innerLeftContent)
+        {
+            var iconPresenter = new SizeTypeAwareIconPresenter
+            {
+                Icon = innerLeftContent
+            };
+            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
+            InnerLeftContent                 = iconPresenter;
+        }
+        if (RightAddOn is PathIcon rightAddOnIcon)
+        {
+            var iconPresenter = new SizeTypeAwareIconPresenter
+            {
+                Icon = rightAddOnIcon
+            };
+            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
+            RightAddOn                       = iconPresenter;
+        }
+        if (InnerRightContent is PathIcon innerRightContent)
+        {
+            var iconPresenter = new SizeTypeAwareIconPresenter
+            {
+                Icon = innerRightContent
+            };
+            iconPresenter[!SizeTypeProperty] = this[!SizeTypeProperty];
+            InnerRightContent                = iconPresenter;
+        }
+    }
+
     
-        // 都一样宽
-        return DecoratedBox.InnerBoxBorderThickness.Left;
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(ButtonSpinnerPseudoClass.Left, ButtonSpinnerLocation == ButtonSpinnerLocation.Left);
+        PseudoClasses.Set(ButtonSpinnerPseudoClass.Right, ButtonSpinnerLocation == ButtonSpinnerLocation.Right);
+    }
+
+
+    private static void IsSpinEnabledChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Sender is ButtonSpinner spinner)
+        {
+            var oldValue = (bool)change.OldValue!;
+            var newValue = (bool)change.NewValue!;
+            spinner.OnIsSpinEnabledChanged(oldValue, newValue);
+        }
+    }
+
+    
+    private void SetButtonUsage()
+    {
+        if (IncreaseButton != null)
+        {
+            IncreaseButton.IsEnabled = IsSpinEnabled && ((ValidSpinDirection & ValidSpinDirections.Increase) == ValidSpinDirections.Increase);
+        }
+
+        if (DecreaseButton != null)
+        {
+            DecreaseButton.IsEnabled = IsSpinEnabled && ((ValidSpinDirection & ValidSpinDirections.Decrease) == ValidSpinDirections.Decrease);
+        }
+    }
+
+
+    private void HandleButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (IsSpinEnabled)
+        {
+            var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
+            OnSpin(new SpinEventArgs(SpinEvent, direction));
+        }
     }
 }

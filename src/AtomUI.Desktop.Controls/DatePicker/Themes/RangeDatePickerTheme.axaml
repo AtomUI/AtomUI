@@ -19,6 +19,9 @@
                         Classes.semantic-scope-input="True"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         MinWidth="{TemplateBinding MinWidth}"
+                        ContentFramePadding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"
@@ -127,6 +130,19 @@
         </Setter>
         <Style Selector="^ /template/ atom|EmbeddedTextBox">
             <Setter Property="Padding" Value="0" />
+        </Style>
+        <Setter Property="BorderThickness" Value="{atom:RangeDatePickerTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:RangeDatePickerTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:RangeDatePickerTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:RangeDatePickerTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:RangeDatePickerTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:RangeDatePickerTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:RangeDatePickerTokenResource BorderRadiusSM}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -9,6 +9,9 @@
         <themes:TextBoxTheme TargetType="{x:Type atom:EmbeddedTextBox}" />
     </ControlTheme.BasedOn>
 
+    <!-- This asset-only input keeps its actual composite parent's typography;
+         a public TextBox configuration must not leak through BasedOn. -->
+    <Setter Property="FontFamily" Value="{x:Static atom:ControlTypographyBindings.InheritedFontFamily}" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />

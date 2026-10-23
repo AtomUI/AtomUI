@@ -108,3 +108,9 @@ Today/Now/Confirm 共用有效约束，但时间来源和确认行为按原规�
 基线包含逐步值、文本、焦点、面板、活动端点、确认、通知与 Popup 状态；新旧同序列比较。
 最终工作树分别验证模块、真实 Gallery、资源释放和 AOT；未执行项目不得写成已通过。
 [共享验收](../date-viewer/shared-panel-design.md#103-验收矩阵)要求的证据不能由普通单测替代。
+
+## 根表面主题投射
+
+DatePicker 与 RangeDatePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入，不借用另一个具体 picker 身份。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。

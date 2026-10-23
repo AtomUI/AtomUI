@@ -1,5 +1,17 @@
 # LineEdit Changelog
 
+## 2026-10-23
+
+- 内部输入框体及实际存在的clear/reveal按钮消费公开owner的有效Global，支持内容子树和重挂载，保留原状态与标准属性优先级。
+
+- Theme
+  - Transition 时长在实际 owner 上动态消费有效主题作用域；保留原生样式覆盖、默认时长与模板状态。共享框体使用其公开模板 owner，单选指示器保留 Mid/Fast 的独立输入。完整家族迁移与真实动画时序仍按专项任务验收。
+
+## 2026-10-23
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- LineEdit 根几何使用本身份的有效主题默认值并投射到 AddOn 内容 frame；TextBox 与 TextArea 的具体职责分别见其独立文档。
+
 ## 2026-10-19
 
 - Compatibility
@@ -100,3 +112,13 @@
   - Add LineEdit changelog and link the document set from the Data Entry category entry.
   - Document `CustomizableSizeType.Custom` as a Middle-baseline custom size path for LineEdit family controls.
   - Link SearchEdit's dedicated control documentation and clarify that SearchEdit's right external add-on slot is occupied by the search button.
+
+## 精确主题：LineEdit字体消费
+
+- LineEdit自身接通三档Own字号及有效Global字号/字体族的显式配置，未配置保留父级原生字体。
+- 根级主题Setter保留用户Style和LocalValue优先级；Custom使用中号，IsCustomFontSize退出字号主题，清除/重挂载恢复继承。
+- 不将Select过滤器借用LineEdit identity列为本分包已修复；它继续按容器owner独立迁移。
+
+## 默认状态文字颜色修复
+
+修正Filled/Borderless状态文字选择器的ScrollViewer类型，使既有错误/警告主题色命中实际AtomUI滚动容器及文本。2026-10-23用户已明确批准恢复默认错误/警告文字颜色这一视觉例外；不扩大到其他布局、边缘或主题往返差异。TextArea原来使用ContentLayout继承链，没有相同的选择器缺陷。

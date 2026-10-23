@@ -10,6 +10,9 @@
                 <atom:NumericUpDownSpinner
                     Name="PART_Spinner"
                     Classes.semantic-scope-spinner="True"
+                    Padding="{TemplateBinding Padding}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     IsSpinEnabled="{TemplateBinding AllowSpin}"
                     IsEnabled="{TemplateBinding IsEnabled}"
@@ -94,6 +97,9 @@
                     <atom:NumericUpDownSpinner
                         Name="PART_Spinner"
                         Classes.semantic-scope-spinner="True"
+                        Padding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         IsSpinEnabled="{TemplateBinding AllowSpin}"
                         IsEnabled="{TemplateBinding IsEnabled}"
@@ -121,7 +127,7 @@
                             <atom:AddOnContentPresenter
                                 Name="PART_InnerLeftContentPresenter"
                                 Classes.semantic-prefix="True"
-                                Margin="{atom:NumericUpDownTokenResource InputPadding}"
+                                Margin="{TemplateBinding Padding}"
                                 VerticalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
                                 HorizontalAlignment="Left"
@@ -187,6 +193,20 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+
+        <Setter Property="BorderThickness" Value="{atom:NumericUpDownTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:NumericUpDownTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:NumericUpDownTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:NumericUpDownTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:NumericUpDownTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:NumericUpDownTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:NumericUpDownTokenResource BorderRadiusSM}" />
+        </Style>
 
     </ControlTheme>
 </ResourceDictionary>

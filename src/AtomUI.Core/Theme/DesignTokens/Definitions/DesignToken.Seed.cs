@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Media;
+using Avalonia.Animation.Easings;
 
 namespace AtomUI.Theme.DesignTokens;
 
@@ -169,6 +170,14 @@ public partial class DesignToken
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public int MotionBase { get; set; } = 0;
+
+    /// <summary>波纹尺寸动画曲线。</summary>
+    [DesignTokenKind(DesignTokenKind.Seed)]
+    public Easing WaveSizeEasingCurve { get; set; } = new CubicEaseOut();
+
+    /// <summary>波纹透明度动画曲线。</summary>
+    [DesignTokenKind(DesignTokenKind.Seed)]
+    public Easing WaveOpacityEasingCurve { get; set; } = new CubicEaseOut();
 
     //  ----------   Style   ---------- //
 

@@ -72,8 +72,9 @@
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
         </Style>
         <Style Selector="^ /template/ atom|SplashProgressBar#Progress">
+            <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
             <Setter Property="Height" Value="4"/>
-            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}"/>
             <Setter Property="IndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}"/>
             <Setter Property="TrackBrush" Value="{atom:SharedTokenResource ColorFillSecondary}"/>
         </Style>

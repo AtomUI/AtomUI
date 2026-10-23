@@ -2,6 +2,16 @@
 
 本文档记录 SearchEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-23
+
+- 内部输入框体及实际存在的clear/reveal按钮消费公开owner的有效Global，支持内容子树和重挂载，保留原状态与标准属性优先级。
+
+- 显式控件Global FontFamily接入根字体，保留未配置继承、清除恢复和原生属性优先级。
+- 显式Global三档字号接入根Setter；Custom用中档，IsCustomFontSize退出主题字号。
+
+- 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
+- 根几何投射保持搜索按钮组合；padding 恢复必须同时恢复输入高度、按钮宽度、焦点和选择区。
+
 ## 2026-09-15
 
 - Documentation
@@ -80,3 +90,7 @@
   - Add SearchEdit implementation documentation covering search button event flow, SearchEditDecoratedBox, SearchButton, SearchEditPanel layout and maintenance invariants.
   - Document the former shared Token ownership model, superseded by the independent SearchEdit identity design on 2026-08-01.
   - Add SearchEdit changelog and link the document set from the Data Entry category entry.
+
+## 默认状态文字颜色修复
+
+修正Filled/Borderless状态文字选择器的ScrollViewer类型，使既有错误/警告主题色命中实际AtomUI滚动容器及文本。2026-10-23用户已明确批准恢复默认错误/警告文字颜色这一视觉例外；不扩大到其他布局、边缘或主题往返差异。TextArea原来使用ContentLayout继承链，没有相同的选择器缺陷。

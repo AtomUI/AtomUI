@@ -4,6 +4,14 @@
               x:Class="AtomUI.Desktop.Controls.Themes.TextBoxTheme"
               x:ClassModifier="internal"
               TargetType="atom:TextBox">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:TextBoxTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:TextBoxTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="Foreground" Value="{atom:TextBoxTokenResource ColorText}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TextBox">
             <atom:InputControlFrame
@@ -11,6 +19,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Padding="{TemplateBinding Padding}"
+                Foreground="{TemplateBinding Foreground}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                 StyleVariant="{TemplateBinding StyleVariant}"
@@ -40,7 +49,7 @@
                     <StackPanel
                         Orientation="Horizontal"
                         DockPanel.Dock="Right"
-                        Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                        Spacing="{atom:TextBoxTokenResource UniformlyPaddingXXS}">
                         <atom:InputClearIconButton
                             Name="PART_ClearButton"
                             IsVisible="{TemplateBinding IsEffectiveShowClearButton}" 
@@ -119,60 +128,60 @@
 
     <Style Selector="^:is(atom|TextBox)">
         <Style Selector="^ /template/ atom|AdaptiveSpacingDockPanel#ContentLayout.has-inner-left-content, ^ /template/ atom|AdaptiveSpacingDockPanel#ContentLayout.has-inner-right-content">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:TextBoxTokenResource SpacingXXS}" />
         </Style>
 
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="BorderThickness" Value="{atom:TextBoxTokenResource BorderThickness}" />
+        <Setter Property="SelectionBrush" Value="{atom:TextBoxTokenResource SelectionBackground}" />
+        <Setter Property="CaretBrush" Value="{atom:TextBoxTokenResource ColorText}" />
         <Setter Property="SelectionForegroundBrush"
-                Value="{atom:SharedTokenResource SelectionForeground}" />
+                Value="{atom:TextBoxTokenResource SelectionForeground}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:TextBoxTokenResource EnableMotion}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="ClipToBounds" Value="False" />
     
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="LineHeight" Value="{atom:TextBoxTokenResource FontHeightLG}" />
+            <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusLG}" />
             <Setter Property="Padding" Value="{atom:TextBoxTokenResource ContentPaddingLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="LineHeight" Value="{atom:TextBoxTokenResource FontHeight}" />
+            <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadius}" />
             <Setter Property="Padding" Value="{atom:TextBoxTokenResource ContentPadding}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="LineHeight" Value="{atom:TextBoxTokenResource FontHeightSM}" />
+            <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusSM}" />
             <Setter Property="Padding" Value="{atom:TextBoxTokenResource ContentPaddingSM}" />
         </Style>
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="LineHeight" Value="{atom:TextBoxTokenResource FontHeight}" />
+            <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadius}" />
         </Style>
     
         <Style Selector="^[IsCustomFontSize=False]">
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                <Setter Property="FontSize" Value="{atom:TextBoxTokenResource FontSizeLG}" />
+                <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="FontSize" Value="{atom:TextBoxTokenResource FontSize}" />
+                <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadius}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="FontSize" Value="{atom:TextBoxTokenResource FontSizeSM}" />
+                <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusSM}" />
             </Style>
         </Style>
     
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:TextBoxTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
             <Setter Property="Margin"
@@ -180,7 +189,7 @@
         </Style>
     
         <Style Selector="^ /template/ atom|TextBlock#TextCountIndicator">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+            <Setter Property="Foreground" Value="{atom:TextBoxTokenResource ColorTextPlaceholder}" />
         </Style>
 
         <!-- TextBox keeps its control-local token scope while the shared frame

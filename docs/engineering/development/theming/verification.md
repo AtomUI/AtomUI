@@ -58,6 +58,8 @@
 
 ## 逐Control主题合同摘要
 
+热查询性能必须包含实际应用Startup索引，不能仅以手工registry证明生产零分配。生成式Global、Own及scoped Own标量预热后检查分配，同时验证owner、ordinal边界及原生资源覆盖。可变值的必要复制单列；关闭motion的独立性能配方用于隔离绑定/查询成本，不能替代正常motion的视觉和时间线验收。
+
 复用现有overview/implementation/token/semantic-part文档，不另外建立永久消费白名单、逐测试登记库或运行时追踪数据库。仅记录该Control有意义的内容：
 
 | 必须回答 | 落点 |

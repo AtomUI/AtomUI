@@ -30,6 +30,21 @@ internal class SearchEditPanel : Panel
         }
     }
     
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var desiredSize = base.MeasureOverride(availableSize);
+        var contentHeight = _contentFrame?.DesiredSize.Height ?? 0;
+        var addOnHeight = _leftAddOn?.DesiredSize.Height ?? 0;
+        var buttonMinHeight = _searchButton is { IsVisible: true } button
+            ? button.MinHeight + button.Margin.Top + button.Margin.Bottom
+            : 0;
+
+        // Button.Height follows the arranged frame so its shape and width fit the input.
+        // Feeding that previous height back into measure prevents the input from shrinking
+        // after padding/font changes. Current content and minimums own the natural height.
+        return new Size(desiredSize.Width, Math.Max(Math.Max(contentHeight, addOnHeight), buttonMinHeight));
+    }
+
     protected override Size ArrangeOverride(Size finalSize)
     {
         var availableWidth  = Math.Max(0, finalSize.Width);

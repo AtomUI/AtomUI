@@ -35,14 +35,19 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
         var themeInputs = initContext.AdditionalTextsProvider
             .Where(static file => file.Path.EndsWith(AtomUI.Theme.Build.CompiledThemeInput.Extension, StringComparison.OrdinalIgnoreCase))
             .Select(static (file, token) => (file.Path, Text: file.GetText(token)?.ToString() ?? "")).Collect();
+        var resourceIdInputs = initContext.AdditionalTextsProvider
+            .Where(static file => string.Equals(System.IO.Path.GetFileName(file.Path), "token-resource-ids.tsv", StringComparison.OrdinalIgnoreCase))
+            .Select(static (file, token) => (file.Path, Text: file.GetText(token)?.ToString() ?? "")).Collect();
         var output = inputs.Combine(themeInputs).Combine(StartupReferenceReader.Create(initContext))
             .Combine(Localization.LocalizationCompilationProvider.Create(initContext))
+            .Combine(resourceIdInputs)
             .Select(static (combined, cancellationToken) =>
         {
-            var input = combined.Left.Left.Left;
-            var themeInputs = combined.Left.Left.Right;
-            var references = combined.Left.Right;
-            var localization = combined.Right;
+            var state = combined.Left;
+            var input = state.Left.Left.Left;
+            var themeInputs = state.Left.Left.Right;
+            var references = state.Left.Right;
+            var localization = state.Right;
             var compilation = input.Left.Left.Left;
             var options = input.Left.Left.Right;
             var declarations = input.Left.Right;
@@ -59,6 +64,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 return info;
             }).ToArray();
             var context = new GenerationOutput();
+            var resourceIds = TokenResourceOrdinals.Read(combined.Right, context.ReportDiagnostic, cancellationToken);
             if (compilation.GetTypeByMetadataName("AtomUI.Theme.Resources.TokenResourceExtension`1") is null)
             {
                 return context.Freeze();
@@ -108,7 +114,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 .Where(static symbol => symbol is not null).Select(symbol => SemanticControlDeclaration.Create(symbol!, cancellationToken)).ToArray();
             var globalNames = compilation.GetTypeByMetadataName("AtomUI.Theme.Resources.SharedTokenKind")?.GetMembers().OfType<IFieldSymbol>()
                 .Where(static field => field.HasConstantValue && field.Name != "value__")
-                .OrderBy(static field => Convert.ToInt64(field.ConstantValue, System.Globalization.CultureInfo.InvariantCulture))
+                .OrderBy(static field => field.Name, StringComparer.Ordinal)
                 .Select(static field => field.Name).ToArray() ?? Array.Empty<string>();
             if (info.SchemaTokens.Count > 0)
             {
@@ -172,7 +178,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 !SemanticPartStyleContract.HasCanonicalXmlnsDefinition(compilation.Assembly)).Write();
             }
 
-            new ResourceKeyClassWriter(context, info, catalog).Write();
+            new ResourceKeyClassWriter(context, info, catalog, compilation.AssemblyName ?? "", resourceIds).Write();
             return context.Freeze();
         }).WithTrackingName("ControlRegistrationOutput");
         initContext.RegisterImplementationSourceOutput(output, static (context, output) => output.Write(context));

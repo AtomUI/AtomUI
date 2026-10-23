@@ -86,7 +86,8 @@ descriptor，也不能通过继承关系自动获得其他 owner 的 owner-scope
 
 `input` 的最低 public `ContractType` 是 Avalonia `TextPresenter`，而不是 internal 实现细节。它适合定制 `Opacity`、
 `FontSize`、`FontWeight`、`FontStyle`、`TextAlignment` 和局部 Margin。文本 viewport、选择布局、caret 与密码显示仍属于文本输入
-内核，不通过 Semantic Style 改写其 ownership。
+内核，不通过 Semantic Style 改写其 ownership。字体 Setter 使用 `TextElement.FontSize`、`TextElement.FontWeight`、
+`TextElement.FontStyle` 等附加 Avalonia 属性；TextPresenter 上的 CLR wrapper 不等同于独立 AvaloniaProperty。
 
 ### 1.4 `suffix`
 
@@ -187,30 +188,8 @@ Button 级交互属性；清除命令仍必须进入 `NotifyClearButtonClicked()
 
 ### 1.8 `TextArea`
 
-`TextArea` 注册独立 descriptor，Part 集合为 `root`、`textarea`、`clear`、`count`。`clear`、`count` 的 selector、
-route、`ContractType` 与 LineEdit 同名 Part 一致（`TextArea*` Style 前缀）；`root` 由生成器隐式补齐。以下只列出
-差异字段：
-
-| 字段 | `textarea` |
-| --- | --- |
-| Owner | `TextArea` |
-| Part | `textarea` |
-| Selector | `.semantic-textarea` |
-| SelectorRoute | `/template/ .semantic-textarea` |
-| Style Type | `TextAreaTextareaStyle` |
-| ContractType | `TextPresenter` |
-| Cardinality | `Single` |
-| Customization | `Selector` |
-| CrossVisualRoot | `false` |
-| RuntimeCreated | `false` |
-| AtomUI 节点 | `InputTextPresenter#PART_TextPresenter` |
-| 职责 | 承载多行文本的输入、光标、选择与换行展示。 |
-| 相关 API | `Text`、`Lines`、`MinLines`、`MaxLines`、`IsAutoSize`、`IsResizable` |
-| 稳定性 | stable since 6.2.0 |
-
-`TextArea` 的 `count` 位于 owner 模板底部（DockPanel 下缘），route 为默认 `/template/ .semantic-count`；`clear`
-位于右侧 addon 区，route 与 LineEdit 同形。`TextArea` 不提供 `prefix` / `suffix` Part；resize handle 与
-`Placeholder` 文本不属于 Semantic Part。
+TextArea 的独立合同见[TextArea Semantic Part](../text-area/semantic-part.md)。root、textarea、clear、count
+属于 TextArea 自身 identity，不继承 LineEdit 的 prefix/suffix。
 
 ## 2. Selector 用法
 

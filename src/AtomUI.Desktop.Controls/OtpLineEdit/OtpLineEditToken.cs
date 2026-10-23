@@ -1,16 +1,11 @@
 using AtomUI.Theme.DesignTokens;
+using Avalonia.Animation.Easings;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class OtpLineEditToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 2)]
+internal sealed partial class OtpLineEditToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-
-    public OtpLineEditToken()
-
-    {
-    }
-
     public double CellWidth { get; set; }
 
     public double CellWidthLG { get; set; }
@@ -19,14 +14,31 @@ internal sealed class OtpLineEditToken : AbstractControlDesignToken
 
     public double CellGap { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    public TimeSpan CaretBlinkDuration { get; set; }
 
-        CellWidth               = EffectiveGlobalToken.ControlHeight;
-        CellWidthLG             = EffectiveGlobalToken.ControlHeightLG;
-        CellWidthSM             = EffectiveGlobalToken.ControlHeightSM;
-        CellGap                 = EffectiveGlobalToken.UniformlyPaddingXXS;
-    }
+    public Easing CaretBlinkEasing { get; set; } = new LinearEasing();
 
+    [ControlTokenDefault(nameof(CellWidth))]
+    private static double DefaultForCellWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
+
+    [ControlTokenDefault(nameof(CellWidthLG))]
+    private static double DefaultForCellWidthLG(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG;
+
+    [ControlTokenDefault(nameof(CellWidthSM))]
+    private static double DefaultForCellWidthSM(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
+
+    [ControlTokenDefault(nameof(CellGap))]
+    private static double DefaultForCellGap(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyPaddingXXS;
+
+    [ControlTokenDefault(nameof(CaretBlinkDuration))]
+    private static TimeSpan DefaultForCaretBlinkDuration(in ControlTokenDefaultContext context) =>
+        TimeSpan.FromSeconds(1);
+
+    [ControlTokenDefault(nameof(CaretBlinkEasing))]
+    private static Easing DefaultForCaretBlinkEasing(in ControlTokenDefaultContext context) =>
+        new LinearEasing();
 }

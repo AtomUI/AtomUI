@@ -12,7 +12,7 @@ LineEdit 输入家族使用三个控件级 Token scope：
 | `LineEditToken` | `LineEdit` | 单行输入框字号。 |
 | `TextAreaToken` | `TextArea` | 多行输入框字号、右侧附加 padding 和 resize handle 视觉。 |
 
-TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状态、密码 reveal、Form 状态、SearchEdit 运行状态、focus/hover/pressed 状态或 CompactSpace 运行时状态。输入表面边框、背景、圆角、shadow、error/warning、disabled 和 motion 由 `InputControlFrameTheme` 与 `SharedToken` 处理；运行时状态由 `AbstractTextInput`、Form 和 frame 状态模型处理。
+TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状态、密码 reveal、Form 状态、SearchEdit 运行状态、focus/hover/pressed 状态或 CompactSpace 运行时状态。输入表面边框、背景、圆角、shadow、error/warning、disabled 和 motion 由 `InputControlFrameTheme` 与各公开owner的Effective Global处理（SharedToken定义基础字段，不表示模板可以绕过owner直接读取）；运行时状态由 `AbstractTextInput`、Form 和 frame 状态模型处理。
 
 ## 2. Token 分类
 
@@ -30,7 +30,9 @@ TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状
 - `LineEdit.InputFontSizeLG`
 - `LineEdit.InputFontSizeSM`
 
-这些 Token 保持 LineEdit 单行输入框字号契约。当前默认计算语义与 TextBox 字号一致，供 `LineEdit` 及复用 LineEdit 输入壳体的组合控件独立覆盖。
+三个Own默认值分别派生自有效Global FontSize/FontSizeLG/FontSizeSM。LineEdit自身在相应Own或Global字号被显式配置时消费Own最终资源，Custom使用中号；未配置时保留真实继承父的原生字号，因此不能把Large默认强改成16。`IsCustomFontSize=true`退出字号主题，LocalValue与普通用户Style仍按原生优先级覆盖。清除配置、改变父字号及重挂载必须恢复真实继承。raw Own资源在该档显式配置激活后参与最终取值；不根据资源数值猜测配置来源。
+
+字体族使用LineEdit有效Global FontFamily的可选显式配置；未配置时同样保留原生继承。SelectFilterTextBox当前借用LineEdit字号是单列待迁移问题，不把它写成LineEdit公开owner接入成功，也不以修改Small默认字号消除身份问题。SearchEdit有独立主题和Global身份，本分包不对它注入LineEdit配置。
 
 ### 2.3 TextArea 字号 Token
 
@@ -53,7 +55,7 @@ TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状
 - `TextArea.ResizeIndicatorLineColor`
 - `TextArea.ResizeHandleSize`
 
-这些 Token 控制 TextArea 右下角 resize handle 的线条颜色和尺寸。它们只服务 `IsResizable=true` 的拖拽入口，不影响 TextArea 的自动高度算法或固定行数测量。
+这些 Token通过既有末层ResizeHandle控制TextArea右下角实际指示线颜色与命中/比例尺寸，描边来自TextArea有效Global LineWidth。它们只服务 `IsResizable=true` 的拖拽入口，不影响 TextArea 的自动高度算法或固定行数测量。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -71,11 +73,11 @@ TextBoxToken / LineEditToken / TextAreaToken
 各自文本尺寸、padding 和 resize 专属布局
 ```
 
-输入表面的边框、圆角、背景、hover/focus shadow、error/warning 和 disabled 状态由 `InputControlFrameTheme` 读取 `SharedToken`。TextBox 的内容 padding 由 `TextBoxTokenResource` 进入 `TextBoxTheme.axaml`；LineEdit 的单行字号由 `LineEditTokenResource` 消费；TextArea 的字号、右侧 padding 和 resize 视觉由 `TextAreaTokenResource` 及相关布局主题消费。
+输入表面的背景、hover/focus shadow、error/warning 和 disabled 状态由共享 `InputControlFrameTheme` 提供；边框厚度和圆角默认从公开 owner 的 Effective Global 进入原生属性，再投射到框体。TextBox 的内容 padding 由 `TextBoxTokenResource` 进入 `TextBoxTheme.axaml`；LineEdit 的单行字号由 `LineEditTokenResource` 消费；TextArea 的字号、右侧 padding 和 resize 视觉由 `TextAreaTokenResource` 及相关布局主题消费。
 
-TextArea 的多行字号由 `TextAreaTokenResource` 进入 `TextAreaTheme.axaml`。TextArea 右侧 padding 和 resize 视觉由 `TextAreaDecoratedBoxTheme.axaml`、`ResizeHandleTheme.axaml` 消费。
+TextArea 的多行字号由 `TextAreaTokenResource` 进入 `TextAreaTheme.axaml`。TextArea右侧padding由装饰框主题消费；resize颜色/尺寸/描边由TextAreaTheme声明到实际末层ResizeHandle，绘制与命中使用同一Bounds。
 
-SearchEdit 不定义独立 Token。它复用 `AbstractTextInput` 的状态与 LineEdit 的文本尺寸，输入表面由 `InputControlFrame` 统一表达，搜索按钮使用 Button 体系和 SearchButton 主题表达。
+SearchEdit 不定义独立 Own Token，但保留独立 Control Effective Global identity。它复用 `AbstractTextInput` 的状态与 LineEdit 的文本尺寸，输入表面由 `InputControlFrame` 统一表达，搜索按钮使用 Button 体系和 SearchButton 主题表达。
 
 ## 4. 控件家族影响
 
@@ -124,3 +126,15 @@ Token 变更要求：
 | 修改 resize Token | 验证 resize handle 可见性、拖拽命中、线条颜色和尺寸。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 根几何与 Effective Global 消费
+
+公开 owner 的 `Padding`、`BorderThickness`、`CornerRadius` 默认值从该 Control 的 Effective Global 读取，再以原生主题优先级投射到实际框体。共享框体继续负责状态色、focus/hover shadow、variant 与 CompactSpace；不能把它描述为跳过 owner 的全局几何入口。字号和其他消费链按各控件当前模板分别定义。本次未增加 Own 字段或改变 Token identity。详见 [共享输入架构的根几何合同](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+## 公开输入owner的Global资源
+
+TextBox/LineEdit/TextArea/SearchEdit自身模板的caret/selection/placeholder、状态文字、spacing、motion以及既有字体/行高读取，各自使用typed Global。字段仍来自共享Schema定义，不复制为Own，不把一个身份的配置传给另一个身份。内部frame与按钮等独立或复用owner继续按真实树拓扑逐项验证；四个根主题迁移不能代表它们完成。
+
+## 默认求值协议
+
+本Own定义使用DependencyDefaultsV2、Revision1，默认工厂以有效Global为输入，各字段没有Own之间的依赖；显式Own覆盖优先。名称、类型、公共资源编号及既有单位/范围保持，不因迁移另建别名。Global变化时重新计算未显式覆盖的默认值，清除Own后恢复对应公式。

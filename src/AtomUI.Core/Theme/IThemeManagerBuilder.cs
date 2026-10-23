@@ -2,6 +2,7 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Definitions.Compiled;
 using Avalonia.Media;
+using AtomUI.Theme.Branding;
 
 namespace AtomUI.Theme;
 
@@ -18,4 +19,6 @@ public interface IThemeManagerBuilder
     void UseUserThemeDirectory(string directory);
     void WithDefaultFontFamily(FontFamily fontFamily);
     void WithDefaultFontFamily(string fontFamily);
+    void AddThemeStyleAsset(ThemeStyleAssetRegistration registration) =>
+        throw new NotSupportedException("This builder does not support registered theme style assets.");
 }

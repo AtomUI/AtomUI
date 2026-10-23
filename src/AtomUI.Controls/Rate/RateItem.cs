@@ -147,6 +147,14 @@ internal class RateItem : TemplatedControl
         set => SetAndRaise(StarClipProperty, ref _starClip, value);
     }
 
+    private bool _isFocusStartItem;
+
+    internal bool IsFocusStartItem
+    {
+        get => _isFocusStartItem;
+        set => SetAndRaise(IsFocusStartItemProperty, ref _isFocusStartItem, value);
+    }
+
     internal double HoverScale
     {
         get => GetValue(HoverScaleProperty);
@@ -157,14 +165,6 @@ internal class RateItem : TemplatedControl
     {
         get => GetValue(HoverRenderTransformProperty);
         set => SetValue(HoverRenderTransformProperty, value);
-    }
-    
-    private bool _isFocusStartItem;
-
-    internal bool IsFocusStartItem
-    {
-        get => _isFocusStartItem;
-        set => SetAndRaise(IsFocusStartItemProperty, ref _isFocusStartItem, value);
     }
     
     #endregion
@@ -184,7 +184,12 @@ internal class RateItem : TemplatedControl
                 change.Property == StarColorProperty ||
                 change.Property == StarBgColorProperty ||
                 change.Property == SizeTypeProperty ||
-                change.Property == FontSizeProperty)
+                change.Property == FontSizeProperty ||
+                change.Property == FontFamilyProperty ||
+                change.Property == FontStyleProperty ||
+                change.Property == FontWeightProperty ||
+                change.Property == WidthProperty ||
+                change.Property == HeightProperty)
             {
                 ConfigureCharacterBrushes();
             }
@@ -256,6 +261,9 @@ internal class RateItem : TemplatedControl
                 Character  = character,
                 Foreground = brush,
                 FontSize   = double.IsNaN(Height) ? FontSize : Height,
+                FontFamily = FontFamily,
+                FontStyle  = FontStyle,
+                FontWeight = FontWeight,
             };
         }
         else if (Character is string str && str.Length >= 1)
@@ -265,6 +273,9 @@ internal class RateItem : TemplatedControl
                 Character  = str[0],
                 Foreground = brush,
                 FontSize   = double.IsNaN(Height) ? FontSize : Height,
+                FontFamily = FontFamily,
+                FontStyle  = FontStyle,
+                FontWeight = FontWeight,
             };
         }
 

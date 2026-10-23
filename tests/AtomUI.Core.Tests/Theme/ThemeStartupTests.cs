@@ -3,6 +3,7 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
+using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -165,10 +166,12 @@ public class ThemeStartupTests
             application.RequestedThemeVariant.ShouldBe(ThemeVariant.Light);
             manager.AvailableThemes.ShouldContain(theme =>
                 theme.Id == IThemeManager.DEFAULT_THEME_ID && theme.IsDefault);
-            application.Styles.OfType<Style>().ShouldContain(style =>
-                style.Setters.OfType<Setter>().Any(setter =>
-                    setter.Property == ThemeScope.ContextProperty &&
-                    ReferenceEquals(setter.Value, manager.RootContext)));
+            var host = new Window();
+            host.ApplyStyling();
+            host.GetValue(ThemeScope.ContextProperty).ShouldBeSameAs(manager.RootContext);
+            host.GetValue(ThemeStyleQualification.ActiveProperty)
+                .ShouldBeSameAs(manager.RootContext.Styles.Current.Activation);
+            host.Close();
 
             var frameworkValue = new object();
             manager.Resources["StartupThemeResource"] = frameworkValue;

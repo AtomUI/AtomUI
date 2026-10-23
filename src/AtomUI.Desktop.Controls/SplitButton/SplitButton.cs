@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using AtomUI.Theme.Resources;
+using System.Reactive.Disposables;
 using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -20,17 +21,13 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 public partial class SplitButton : ContentControl,
-                           ICommandSource, 
+                           ICommandSource,
                            ICustomizableSizeTypeAware,
                            IWaveSpiritAwareControl,
-                           ICompactSpaceAware
+                           ICompactSpaceAware,
+                           IThemeInheritanceSource
 {
     #region 公共属性定义
-
-    public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-        RoutedEvent.Register<SplitButton, RoutedEventArgs>(
-            nameof(Click),
-            RoutingStrategies.Bubble);
 
     public static readonly StyledProperty<ICommand?> CommandProperty =
         Avalonia.Controls.Button.CommandProperty.AddOwner<SplitButton>();
@@ -85,7 +82,7 @@ public partial class SplitButton : ContentControl,
 
     public static readonly StyledProperty<bool> IsPrimaryButtonTypeProperty =
         AvaloniaProperty.Register<SplitButton, bool>(nameof(IsPrimaryButtonType));
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SplitButton>();
 
@@ -97,12 +94,6 @@ public partial class SplitButton : ContentControl,
 
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<SplitButton>();
-    
-    public event EventHandler<RoutedEventArgs>? Click
-    {
-        add => AddHandler(ClickEvent, value);
-        remove => RemoveHandler(ClickEvent, value);
-    }
 
     public ICommand? Command
     {
@@ -161,16 +152,16 @@ public partial class SplitButton : ContentControl,
         set => SetValue(PlacementProperty, value);
     }
 
-    public PopupGravity PlacementGravity
-    {
-        get => GetValue(PlacementGravityProperty);
-        set => SetValue(PlacementGravityProperty, value);
-    }
-
     public PopupAnchor PlacementAnchor
     {
         get => GetValue(PlacementAnchorProperty);
         set => SetValue(PlacementAnchorProperty, value);
+    }
+
+    public PopupGravity PlacementGravity
+    {
+        get => GetValue(PlacementGravityProperty);
+        set => SetValue(PlacementGravityProperty, value);
     }
 
     public double GutterToFlyout
@@ -220,17 +211,11 @@ public partial class SplitButton : ContentControl,
         get => GetValue(IsPrimaryButtonTypeProperty);
         set => SetValue(IsPrimaryButtonTypeProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
-    }
-
-    public bool IsWaveSpiritEnabled
-    {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
     public bool ShouldUseOverlayPopup
@@ -249,24 +234,45 @@ public partial class SplitButton : ContentControl,
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
     }
 
+    public bool IsWaveSpiritEnabled
+    {
+        get => GetValue(IsWaveSpiritEnabledProperty);
+        set => SetValue(IsWaveSpiritEnabledProperty, value);
+    }
+
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+        RoutedEvent.Register<SplitButton, RoutedEventArgs>(
+            nameof(Click),
+            RoutingStrategies.Bubble);
+
+    public event EventHandler<RoutedEventArgs>? Click
+    {
+        add => AddHandler(ClickEvent, value);
+        remove => RemoveHandler(ClickEvent, value);
+    }
+
     #endregion
 
     #region 内部属性定义
-    
-    internal static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty = 
+
+    internal static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty =
         AvaloniaProperty.Register<SplitButton, IBrush?>(nameof (SplitSeparatorBrush));
 
     internal static readonly DirectProperty<SplitButton, ButtonType> EffectiveButtonTypeProperty =
         AvaloniaProperty.RegisterDirect<SplitButton, ButtonType>(nameof(EffectiveButtonType),
             o => o.EffectiveButtonType,
             (o, v) => o.EffectiveButtonType = v);
-    
-    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty =
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<SplitButton>();
-    
-    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty =
         CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<SplitButton>();
-    
+
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<SplitButton>();
 
@@ -283,19 +289,19 @@ public partial class SplitButton : ContentControl,
         get => _effectiveButtonType;
         set => SetAndRaise(EffectiveButtonTypeProperty, ref _effectiveButtonType, value);
     }
-    
+
     internal SpaceItemPosition? CompactSpaceItemPosition
     {
         get => GetValue(CompactSpaceItemPositionProperty);
         set => SetValue(CompactSpaceItemPositionProperty, value);
     }
-    
+
     internal Orientation CompactSpaceOrientation
     {
         get => GetValue(CompactSpaceOrientationProperty);
         set => SetValue(CompactSpaceOrientationProperty, value);
     }
-    
+
     internal bool IsUsedInCompactSpace
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
@@ -312,20 +318,29 @@ public partial class SplitButton : ContentControl,
         IsPrimaryButtonType && _secondaryButton is not null && !_isPointerOverSecondaryButton;
 
     #endregion
-    
+
     private Button? _primaryButton;
+
     private Button? _secondaryButton;
+
     private KeyGesture? _hotkey;
 
     private bool _commandCanExecute = true;
+
     private bool _isFlyoutOpen;
+
     private bool _isKeyboardPressed;
+
     private bool _isPointerOverSecondaryButton;
+
     private bool _isPinnedOpenRetryArmed;
+
     private readonly FlyoutStateHelper _flyoutStateHelper;
-    
+
     private CompositeDisposable? _flyoutBindingDisposables;
+
     private int _pinnedOpenGeneration;
+
     private Flyout? _registeredFlyout;
 
     static SplitButton()
@@ -348,7 +363,6 @@ public partial class SplitButton : ContentControl,
         _flyoutStateHelper[!FlyoutStateHelper.TriggerTypeProperty]     = this[!TriggerTypeProperty];
     }
 
-    internal virtual bool InternalIsChecked => false;
     protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
     protected override void OnInitialized()
@@ -357,33 +371,6 @@ public partial class SplitButton : ContentControl,
         if (OpenIndicator == null)
         {
             SetCurrentValue(OpenIndicatorProperty, new EllipsisOutlined());
-        }
-    }
-
-    void ICommandSource.CanExecuteChanged(object sender, EventArgs e)
-    {
-        CanExecuteChanged(sender, e);
-    }
-    
-    private void CanExecuteChanged(object? sender, EventArgs e)
-    {
-        var (command, parameter) = (Command, CommandParameter);
-        CanExecuteChanged(command, parameter);
-    }
-
-    private void CanExecuteChanged(ICommand? command, object? parameter)
-    {
-        if (!this.IsAttachedToLogicalTree())
-        {
-            return;
-        }
-
-        var canExecute = command is null || command.CanExecute(parameter);
-
-        if (canExecute != _commandCanExecute)
-        {
-            _commandCanExecute = canExecute;
-            UpdateIsEffectivelyEnabled();
         }
     }
 
@@ -410,72 +397,10 @@ public partial class SplitButton : ContentControl,
         _flyoutStateHelper.HideFlyout();
     }
 
-    /// <summary>
-    /// Registers all flyout events.
-    /// </summary>
-    /// <param name="flyout">The flyout to connect events to.</param>
-    private void RegisterFlyoutEvents(Flyout? flyout)
-    {
-        if (flyout == null || ReferenceEquals(_registeredFlyout, flyout))
-        {
-            return;
-        }
-
-        UnregisterFlyoutEvents(_registeredFlyout);
-
-        _registeredFlyout = flyout;
-        flyout.Opened += HandleFlyoutOpened;
-        flyout.Closed += HandleFlyoutClosed;
-
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = new CompositeDisposable(10);
-
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, flyout, Flyout.RequestedPlacementProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, Flyout.IsPopupPinnedOpenProperty));
-
-        _flyoutBindingDisposables.Add(flyout.GetPropertyChangedObservable(Popup
-                                                .RequestedPlacementProperty)
-                                            .Subscribe(HandleFlyoutPlacementPropertyChanged));
-
-        if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
-        {
-            QueuePinnedOpen();
-        }
-    }
-
-    /// <summary>
-    /// Explicitly unregisters all flyout events.
-    /// </summary>
-    /// <param name="flyout">The flyout to disconnect events from.</param>
-    private void UnregisterFlyoutEvents(Flyout? flyout)
-    {
-        if (flyout == null || !ReferenceEquals(_registeredFlyout, flyout))
-        {
-            return;
-        }
-
-        flyout.Opened -= HandleFlyoutOpened;
-        flyout.Closed -= HandleFlyoutClosed;
-
-        ++_pinnedOpenGeneration;
-        flyout.CloseForLifecycle();
-        _registeredFlyout = null;
-        _isFlyoutOpen     = false;
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = null;
-    }
-    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        
+
         if (_primaryButton != null)
         {
             _primaryButton.Click -= HandlePrimaryButtonClick;
@@ -505,7 +430,7 @@ public partial class SplitButton : ContentControl,
             QueuePinnedOpen();
         }
     }
-    
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -524,7 +449,7 @@ public partial class SplitButton : ContentControl,
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
-        
+
         // Control attached again, set Hotkey to create a hotkey manager for this control
         SetCurrentValue(HotKeyProperty, _hotkey);
 
@@ -534,7 +459,7 @@ public partial class SplitButton : ContentControl,
             CanExecuteChanged(this, EventArgs.Empty);
         }
     }
-    
+
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromLogicalTree(e);
@@ -548,7 +473,7 @@ public partial class SplitButton : ContentControl,
             Command.CanExecuteChanged -= CanExecuteChanged;
         }
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == CommandProperty)
@@ -618,6 +543,261 @@ public partial class SplitButton : ContentControl,
         base.OnPropertyChanged(change);
     }
 
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        var key = e.Key;
+
+        if (key == Key.Space || key == Key.Enter)
+        {
+            _isKeyboardPressed = true;
+            UpdatePseudoClasses();
+        }
+
+        base.OnKeyDown(e);
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        var key = e.Key;
+
+        if (key == Key.Space || key == Key.Enter)
+        {
+            _isKeyboardPressed = false;
+            UpdatePseudoClasses();
+
+            // Consider this a click on the primary button
+            if (IsEffectivelyEnabled)
+            {
+                OnClickPrimary(null);
+                e.Handled = true;
+            }
+        }
+        else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
+        {
+            OpenFlyout();
+            e.Handled = true;
+        }
+        else if (key == Key.F4 && IsEffectivelyEnabled)
+        {
+            OpenFlyout();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape && _isFlyoutOpen)
+        {
+            // If Flyout doesn't have focusable content, close the flyout here
+            // This is the same behavior as Button
+            CloseFlyout();
+            e.Handled = true;
+        }
+
+        base.OnKeyUp(e);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="Click" /> event when the primary button part is clicked.
+    /// </summary>
+    /// <param name="e">The event args from the internal Click event.</param>
+    protected virtual void OnClickPrimary(RoutedEventArgs? e)
+    {
+        var (command, parameter) = (Command, CommandParameter);
+        // Note: It is not currently required to check enabled status; however, this is a failsafe
+        if (IsEffectivelyEnabled)
+        {
+            var eventArgs = new RoutedEventArgs(ClickEvent);
+            RaiseEvent(eventArgs);
+
+            if (!eventArgs.Handled && command?.CanExecute(parameter) == true)
+            {
+                command.Execute(parameter);
+                eventArgs.Handled = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Invoked when the split button's flyout is opened.
+    /// </summary>
+    protected virtual void OnFlyoutOpened()
+    {
+        // Available for derived types
+    }
+
+    /// <summary>
+    /// Invoked when the split button's flyout is closed.
+    /// </summary>
+    protected virtual void OnFlyoutClosed()
+    {
+        // Available for derived types
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var size = base.ArrangeOverride(finalSize);
+
+        if (_primaryButton is not null && _secondaryButton is not null)
+        {
+            var originRect = _secondaryButton.Bounds;
+            var secondaryLeft = _primaryButton.Bounds.Right;
+            if (!IsPrimaryButtonType)
+            {
+                secondaryLeft -= _secondaryButton.BorderThickness.Left;
+            }
+            else
+            {
+                secondaryLeft += BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness.Left);
+            }
+
+            _secondaryButton.Arrange(new Rect(
+                secondaryLeft,
+                originRect.Y,
+                Math.Max(0, originRect.Right - secondaryLeft),
+                originRect.Height));
+        }
+
+        return size;
+    }
+
+    public override void Render(DrawingContext context)
+    {
+        if (IsPrimaryButtonType && _secondaryButton is not null)
+        {
+            var cornerRadius = (float)CornerRadius.TopLeft;
+            context.FillRectangle(SplitSeparatorBrush ?? Brushes.White, new Rect(0, 0, Bounds.Width, Bounds.Height),
+                cornerRadius);
+        }
+    }
+
+    protected virtual double GetBorderThicknessForCompactSpace()
+    {
+        if (!IsUsedInCompactSpace)
+        {
+            return 0.0;
+        }
+
+        return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
+    }
+
+    #region 实现 ThemeInheritance 接口
+
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 CommandSource 接口
+
+    void ICommandSource.CanExecuteChanged(object sender, EventArgs e)
+    {
+        CanExecuteChanged(sender, e);
+    }
+
+    #endregion
+
+    #region 实现 CompactSpace 接口
+
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace     = position != null;
+        CompactSpaceItemPosition = position;
+    }
+
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+
+    double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
+
+    #endregion
+
+    internal virtual bool InternalIsChecked => false;
+
+    private void CanExecuteChanged(object? sender, EventArgs e)
+    {
+        var (command, parameter) = (Command, CommandParameter);
+        CanExecuteChanged(command, parameter);
+    }
+
+    private void CanExecuteChanged(ICommand? command, object? parameter)
+    {
+        if (!this.IsAttachedToLogicalTree())
+        {
+            return;
+        }
+
+        var canExecute = command is null || command.CanExecute(parameter);
+
+        if (canExecute != _commandCanExecute)
+        {
+            _commandCanExecute = canExecute;
+            UpdateIsEffectivelyEnabled();
+        }
+    }
+
+    /// <summary>
+    /// Registers all flyout events.
+    /// </summary>
+    /// <param name="flyout">The flyout to connect events to.</param>
+    private void RegisterFlyoutEvents(Flyout? flyout)
+    {
+        if (flyout == null || ReferenceEquals(_registeredFlyout, flyout))
+        {
+            return;
+        }
+
+        UnregisterFlyoutEvents(_registeredFlyout);
+
+        _registeredFlyout = flyout;
+        flyout.Opened += HandleFlyoutOpened;
+        flyout.Closed += HandleFlyoutClosed;
+
+        _flyoutBindingDisposables?.Dispose();
+        _flyoutBindingDisposables = new CompositeDisposable(10);
+
+        // The supplied Flyout is a runtime non-visual object outside ControlTemplate;
+        // ControlTheme cannot target it. This bag is disposed when the flyout is unregistered.
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, flyout, Flyout.RequestedPlacementProperty));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout));
+        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, Flyout.IsPopupPinnedOpenProperty));
+
+        _flyoutBindingDisposables.Add(flyout.GetPropertyChangedObservable(Popup
+                                                .RequestedPlacementProperty)
+                                            .Subscribe(HandleFlyoutPlacementPropertyChanged));
+
+        if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+        {
+            QueuePinnedOpen();
+        }
+    }
+
+    /// <summary>
+    /// Explicitly unregisters all flyout events.
+    /// </summary>
+    /// <param name="flyout">The flyout to disconnect events from.</param>
+    private void UnregisterFlyoutEvents(Flyout? flyout)
+    {
+        if (flyout == null || !ReferenceEquals(_registeredFlyout, flyout))
+        {
+            return;
+        }
+
+        flyout.Opened -= HandleFlyoutOpened;
+        flyout.Closed -= HandleFlyoutClosed;
+
+        ++_pinnedOpenGeneration;
+        flyout.CloseForLifecycle();
+        _registeredFlyout = null;
+        _isFlyoutOpen     = false;
+        _flyoutBindingDisposables?.Dispose();
+        _flyoutBindingDisposables = null;
+    }
+
     private void SetupEffectiveButtonType()
     {
         if (IsPrimaryButtonType)
@@ -633,21 +813,21 @@ public partial class SplitButton : ContentControl,
     private void ConfigureButtonCornerRadius()
     {
         var effectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
-            CornerRadius, 
-            IsUsedInCompactSpace, 
+            CornerRadius,
+            IsUsedInCompactSpace,
             CompactSpaceItemPosition,
             CompactSpaceOrientation);
-        
+
         var primaryButtonCornerRadius = new CornerRadius(effectiveCornerRadius.TopLeft,
             0,
             0,
             effectiveCornerRadius.BottomLeft);
-        
+
         var secondaryButtonCornerRadius = new CornerRadius(0,
             effectiveCornerRadius.TopRight,
             effectiveCornerRadius.BottomRight,
             0);
-        
+
         if (_primaryButton is not null)
         {
             _primaryButton.CornerRadius = primaryButtonCornerRadius;
@@ -730,93 +910,6 @@ public partial class SplitButton : ContentControl,
                 _flyoutStateHelper.ShowFlyout(immediately: true);
             }
         });
-    }
-    
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        var key = e.Key;
-
-        if (key == Key.Space || key == Key.Enter)
-        {
-            _isKeyboardPressed = true;
-            UpdatePseudoClasses();
-        }
-
-        base.OnKeyDown(e);
-    }
-    
-    protected override void OnKeyUp(KeyEventArgs e)
-    {
-        var key = e.Key;
-
-        if (key == Key.Space || key == Key.Enter)
-        {
-            _isKeyboardPressed = false;
-            UpdatePseudoClasses();
-
-            // Consider this a click on the primary button
-            if (IsEffectivelyEnabled)
-            {
-                OnClickPrimary(null);
-                e.Handled = true;
-            }
-        }
-        else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
-        {
-            OpenFlyout();
-            e.Handled = true;
-        }
-        else if (key == Key.F4 && IsEffectivelyEnabled)
-        {
-            OpenFlyout();
-            e.Handled = true;
-        }
-        else if (e.Key == Key.Escape && _isFlyoutOpen)
-        {
-            // If Flyout doesn't have focusable content, close the flyout here
-            // This is the same behavior as Button
-            CloseFlyout();
-            e.Handled = true;
-        }
-
-        base.OnKeyUp(e);
-    }
-
-    /// <summary>
-    /// Invokes the <see cref="Click" /> event when the primary button part is clicked.
-    /// </summary>
-    /// <param name="e">The event args from the internal Click event.</param>
-    protected virtual void OnClickPrimary(RoutedEventArgs? e)
-    {
-        var (command, parameter) = (Command, CommandParameter);
-        // Note: It is not currently required to check enabled status; however, this is a failsafe
-        if (IsEffectivelyEnabled)
-        {
-            var eventArgs = new RoutedEventArgs(ClickEvent);
-            RaiseEvent(eventArgs);
-
-            if (!eventArgs.Handled && command?.CanExecute(parameter) == true)
-            {
-                command.Execute(parameter);
-                eventArgs.Handled = true;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Invoked when the split button's flyout is opened.
-    /// </summary>
-    protected virtual void OnFlyoutOpened()
-    {
-        // Available for derived types
-    }
-
-    /// <summary>
-    /// Invoked when the split button's flyout is closed.
-    /// </summary>
-    protected virtual void OnFlyoutClosed()
-    {
-        // Available for derived types
     }
 
     /// <summary>
@@ -927,33 +1020,6 @@ public partial class SplitButton : ContentControl,
                ReferenceEquals(target, _secondaryButton);
     }
 
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        var size = base.ArrangeOverride(finalSize);
-
-        if (_primaryButton is not null && _secondaryButton is not null)
-        {
-            var originRect = _secondaryButton.Bounds;
-            var secondaryLeft = _primaryButton.Bounds.Right;
-            if (!IsPrimaryButtonType)
-            {
-                secondaryLeft -= _secondaryButton.BorderThickness.Left;
-            }
-            else
-            {
-                secondaryLeft += BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness.Left);
-            }
-
-            _secondaryButton.Arrange(new Rect(
-                secondaryLeft,
-                originRect.Y,
-                Math.Max(0, originRect.Right - secondaryLeft),
-                originRect.Height));
-        }
-
-        return size;
-    }
-
     private void HandleSecondaryButtonPointerEntered(object? sender, PointerEventArgs e)
     {
         SetSeparatorVisibility(false);
@@ -971,36 +1037,4 @@ public partial class SplitButton : ContentControl,
         _isPointerOverSecondaryButton = !visible;
     }
 
-    public override void Render(DrawingContext context)
-    {
-        if (IsPrimaryButtonType && _secondaryButton is not null)
-        {
-            var cornerRadius = (float)CornerRadius.TopLeft;
-            context.FillRectangle(SplitSeparatorBrush ?? Brushes.White, new Rect(0, 0, Bounds.Width, Bounds.Height),
-                cornerRadius);
-        }
-    }
-    
-    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
-    {
-        IsUsedInCompactSpace     = position != null;
-        CompactSpaceItemPosition = position;
-    }
-
-    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
-    {
-        CompactSpaceOrientation = orientation;
-    }
-    
-    double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
-
-    protected virtual double GetBorderThicknessForCompactSpace()
-    {
-        if (!IsUsedInCompactSpace)
-        {
-            return 0.0;
-        }
-
-        return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
-    }
 }

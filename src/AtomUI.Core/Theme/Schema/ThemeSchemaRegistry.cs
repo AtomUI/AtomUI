@@ -15,7 +15,7 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<Type, ControlTokenDescriptor> _controlsByType;
     private readonly FrozenDictionary<ThemeAlgorithm, ThemeAlgorithmDescriptor> _algorithmsByAlgorithm;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
-    private readonly object?[] _sharedResourceKeys;
+    private readonly TokenDescriptor?[] _sharedTokenDescriptors;
     private readonly SchemaPrefixState _resourceKeySchemaPrefix;
 
     internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
@@ -223,7 +223,7 @@ internal sealed class ThemeSchemaRegistry
                                 .ToFrozenDictionary();
         _algorithmsByAlgorithm = algorithmMap.ToFrozenDictionary();
         _controlResourceSlotsByKey = CreateControlResourceSlotMap(controlArray);
-        _sharedResourceKeys = CreateSharedResourceKeys(globalArray);
+        _sharedTokenDescriptors = CreateSharedTokenDescriptors(globalArray);
     }
 
     public IReadOnlyList<TokenDescriptor> GlobalTokens { get; }
@@ -470,28 +470,31 @@ internal sealed class ThemeSchemaRegistry
         return _controlResourceSlotsByKey.TryGetValue(resourceKey, out controlSlot);
     }
 
-    internal object GetSharedResourceKey(SharedTokenKind kind)
+    internal object GetSharedResourceKey(SharedTokenKind kind) => GetSharedTokenDescriptor(kind).ResourceKey;
+
+    internal int GetSharedTokenSlot(SharedTokenKind kind) => GetSharedTokenDescriptor(kind).Slot;
+
+    private TokenDescriptor GetSharedTokenDescriptor(SharedTokenKind kind)
     {
-        var kindSlot = (int)kind;
-        if ((uint)kindSlot >= (uint)_sharedResourceKeys.Length ||
-            _sharedResourceKeys[kindSlot] is not { } key)
+        var id = (int)kind;
+        if ((uint)id >= (uint)_sharedTokenDescriptors.Length ||
+            _sharedTokenDescriptors[id] is not { } descriptor)
         {
             throw new ArgumentOutOfRangeException(nameof(kind));
         }
-        return key;
+        return descriptor;
     }
 
-    private static object?[] CreateSharedResourceKeys(
-        IReadOnlyList<TokenDescriptor> globalTokens)
+    private static TokenDescriptor?[] CreateSharedTokenDescriptors(IReadOnlyList<TokenDescriptor> globalTokens)
     {
         var kinds = Enum.GetValues<SharedTokenKind>();
         var length = kinds.Length == 0 ? 0 : kinds.Max(static kind => (int)kind) + 1;
-        var result = new object?[length];
+        var result = new TokenDescriptor?[length];
         foreach (var descriptor in globalTokens)
         {
             if (descriptor.ResourceKey is SharedTokenKind kind)
             {
-                result[(int)kind] = descriptor.ResourceKey;
+                result[(int)kind] = descriptor;
             }
         }
         return result;

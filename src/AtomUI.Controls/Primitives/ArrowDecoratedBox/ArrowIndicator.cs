@@ -8,8 +8,14 @@ namespace AtomUI.Controls;
 
 public class ArrowIndicator : Control
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> ArrowSizeProperty =
         AvaloniaProperty.Register<ArrowIndicator, double>(nameof(ArrowSize));
+
+    public static readonly StyledProperty<double> TipRadiusProperty =
+        AvaloniaProperty.Register<ArrowIndicator, double>(nameof(TipRadius), 1.5,
+            validate: static value => double.IsFinite(value) && value >= 0);
 
     public static readonly StyledProperty<IBrush?> FilledColorProperty =
         AvaloniaProperty.Register<ArrowIndicator, IBrush?>(nameof(FilledColor));
@@ -24,6 +30,13 @@ public class ArrowIndicator : Control
     {
         get => GetValue(ArrowSizeProperty);
         set => SetValue(ArrowSizeProperty, value);
+    }
+
+    /// <summary>The rounded arrow tip radius in DIPs. Zero produces a sharp tip.</summary>
+    public double TipRadius
+    {
+        get => GetValue(TipRadiusProperty);
+        set => SetValue(TipRadiusProperty, value);
     }
 
     public IBrush? FilledColor
@@ -44,13 +57,15 @@ public class ArrowIndicator : Control
         set => SetValue(StrokeThicknessProperty, value);
     }
 
+    #endregion
+
     private Geometry? _arrowGeometry;
     private IPen? _cachedPen;
 
     static ArrowIndicator()
     {
-        AffectsMeasure<ArrowIndicator>(ArrowSizeProperty);
-        AffectsRender<ArrowIndicator>(FilledColorProperty, StrokeBrushProperty, StrokeThicknessProperty);
+        AffectsMeasure<ArrowIndicator>(ArrowSizeProperty, TipRadiusProperty);
+        AffectsRender<ArrowIndicator>(ArrowSizeProperty, TipRadiusProperty, FilledColorProperty, StrokeBrushProperty, StrokeThicknessProperty);
         HorizontalAlignmentProperty.OverrideDefaultValue<ArrowIndicator>(HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<ArrowIndicator>(VerticalAlignment.Top);
     }
@@ -59,7 +74,7 @@ public class ArrowIndicator : Control
     {
         if (_arrowGeometry is null || force)
         {
-            _arrowGeometry = CommonShapeBuilder.BuildArrow(ArrowSize, 1.5);
+            _arrowGeometry = CommonShapeBuilder.BuildArrow(ArrowSize, TipRadius);
             var matrix = Matrix.CreateTranslation(_arrowGeometry.Bounds.X, -_arrowGeometry.Bounds.Y);
             _arrowGeometry.Transform =  new MatrixTransform(matrix);
         }
@@ -69,6 +84,15 @@ public class ArrowIndicator : Control
     {
         base.ApplyTemplate();
         BuildGeometry();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if ((change.Property == ArrowSizeProperty || change.Property == TipRadiusProperty) && _arrowGeometry is not null)
+        {
+            BuildGeometry(true);
+        }
     }
 
     protected override Size MeasureOverride(Size availableSize)

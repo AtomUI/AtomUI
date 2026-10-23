@@ -4,6 +4,14 @@
                     xmlns:antdicons="https://atomui.net/icons/antdesign"
                     x:ClassModifier="internal">
 <ControlTheme x:Key="{x:Type atom:HyperLinkButton}" TargetType="atom:HyperLinkButton">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:HyperLinkButtonTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:HyperLinkButtonTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
 
         <Setter Property="Template">
             <ControlTemplate>
@@ -43,19 +51,19 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:HyperLinkButtonTokenResource EnableMotion}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions DurationKind="MotionDurationMid">
+                    <atom:SolidColorBrushTransition Property="Background" />
+                    <atom:SolidColorBrushTransition Property="Foreground" />
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="Height" Value="{atom:HyperLinkButtonTokenResource ControlHeightLG}" />
             <Setter Property="FontSize" Value="{atom:HyperLinkButtonTokenResource ContentFontSizeLG}" />
             <Setter Property="Padding" Value="{atom:HyperLinkButtonTokenResource ContentPaddingLG}" />
             <Style Selector="^:icononly">
@@ -64,7 +72,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:HyperLinkButtonTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="{atom:HyperLinkButtonTokenResource ContentPadding}" />
             <Setter Property="FontSize" Value="{atom:HyperLinkButtonTokenResource ContentFontSize}" />
             <Style Selector="^:icononly">
@@ -73,7 +81,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="Height" Value="{atom:HyperLinkButtonTokenResource ControlHeightSM}" />
             <Setter Property="Padding" Value="{atom:HyperLinkButtonTokenResource ContentPaddingSM}" />
             <Setter Property="FontSize" Value="{atom:HyperLinkButtonTokenResource ContentFontSizeSM}" />
             <Style Selector="^:icononly">
@@ -82,7 +90,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:HyperLinkButtonTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="{atom:HyperLinkButtonTokenResource ContentPadding}" />
             <Setter Property="FontSize" Value="{atom:HyperLinkButtonTokenResource ContentFontSize}" />
             <Style Selector="^:icononly">
@@ -92,24 +100,24 @@
 
         <!--  text 和 icon 都存在的情况 -->
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSizeLG}" />
+            <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSizeLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
         </Style>
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^:icononly">
-            <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon, ^ /template/ atom|Icon#PART_LoadingIcon">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
                 <Setter Property="Margin" Value="0" />
             </Style>
             <Style Selector="^[SizeType=Large]">
@@ -139,7 +147,7 @@
         </Style>
 
         <Style Selector="^:not(:icononly)">
-            <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon, ^ /template/ atom|Icon#PART_LoadingIcon">
+            <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon">
                 <Setter Property="Margin" Value="{atom:HyperLinkButtonTokenResource IconMargin}" />
             </Style>
         </Style>
@@ -159,34 +167,34 @@
                 <Setter Property="IsVisible" Value="True" />
                 <Setter Property="LoadingAnimation" Value="Spin" />
             </Style>
-            <Setter Property="Opacity" Value="{atom:SharedTokenResource OpacityLoading}" />
+            <Setter Property="Opacity" Value="{atom:HyperLinkButtonTokenResource OpacityLoading}" />
         </Style>
 
         <Style Selector="^:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLink}" />
+            <Setter Property="Foreground" Value="{atom:HyperLinkButtonTokenResource ColorLink}" />
             <Style Selector="^/template/ Border#Frame">
                 <Setter Property="Background" Value="Transparent" />
             </Style>
 
             <Style Selector="^:pointerover">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLinkHover}" />
+                <Setter Property="Foreground" Value="{atom:HyperLinkButtonTokenResource ColorLinkHover}" />
             </Style>
 
             <Style Selector="^:pressed">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLinkActive}" />
+                <Setter Property="Foreground" Value="{atom:HyperLinkButtonTokenResource ColorLinkActive}" />
             </Style>
 
             <Style Selector="^:danger">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="Foreground" Value="{atom:HyperLinkButtonTokenResource ColorError}" />
 
                 <Style Selector="^:pointerover">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorHover}" />
+                            Value="{atom:HyperLinkButtonTokenResource ColorErrorHover}" />
                 </Style>
 
                 <Style Selector="^:pressed">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorActive}" />
+                            Value="{atom:HyperLinkButtonTokenResource ColorErrorActive}" />
                 </Style>
             </Style>
 
@@ -199,7 +207,7 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:HyperLinkButtonTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
                     Value="{atom:HyperLinkButtonTokenResource BorderColorDisabled}" />
 

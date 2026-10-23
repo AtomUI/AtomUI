@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:avap="using:Avalonia.Controls.Primitives"
     x:Class="AtomUI.Desktop.Controls.Themes.PopupRootTheme"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type PopupRoot}" TargetType="PopupRoot">
@@ -25,10 +26,11 @@
         <Setter Property="Background" Value="{x:Null}" />
         <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
         <Setter Property="TransparencyLevelHint" Value="Transparent" />
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="FontFamily" Value="{atom:SharedTokenResource FontFamily}" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="FontStyle" Value="Normal" />
+        <!-- The logical Popup ancestor crosses the visual root; native compiled bindings own owner changes and cleanup. -->
+        <Setter Property="FontSize" Value="{CompiledBinding $parent[avap:Popup].PlacementTarget.(TextElement.FontSize)}" />
+        <Setter Property="FontFamily" Value="{CompiledBinding $parent[avap:Popup].PlacementTarget.(TextElement.FontFamily)}" />
+        <Setter Property="FontWeight" Value="{CompiledBinding $parent[avap:Popup].PlacementTarget.(TextElement.FontWeight)}" />
+        <Setter Property="FontStyle" Value="{CompiledBinding $parent[avap:Popup].PlacementTarget.(TextElement.FontStyle)}" />
 
     </ControlTheme>
 </ResourceDictionary>

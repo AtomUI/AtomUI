@@ -1,5 +1,9 @@
 # Tooltip Changelog
 
+## 2026-10-23
+
+- `arrow`语义部件的共享`ArrowIndicator`支持`TipRadius`，通过`ToolTipArrowStyle`声明尖角或圆角，默认保持1.5 DIP。
+
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-10-03

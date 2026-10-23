@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
-using Avalonia.Media;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
@@ -60,7 +59,6 @@ internal class OtpLineEditCell : InputControlFrame
     #endregion
 
     private OtpTextBox? _textBox;
-    private Avalonia.Controls.Shapes.Rectangle? _caret;
     private OtpLineEdit? _owner;
 
     private const string CellActivePseudoClass = ":cell-active";
@@ -119,9 +117,7 @@ internal class OtpLineEditCell : InputControlFrame
         base.OnApplyTemplate(e);
 
         _textBox = Content as OtpTextBox;
-        _caret = e.NameScope.Find<Avalonia.Controls.Shapes.Rectangle>("PART_Caret");
         ConfigureTextBoxCursor();
-        UpdateCaretVisibility();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -132,13 +128,6 @@ internal class OtpLineEditCell : InputControlFrame
         {
             PseudoClasses.Set(CellActivePseudoClass, change.GetNewValue<bool>());
             IsInputFocusWithin = change.GetNewValue<bool>();
-            UpdateCaretVisibility();
-        }
-
-        if (change.Property == DisplayTextProperty ||
-            change.Property == IsEffectivelyEnabledProperty)
-        {
-            UpdateCaretVisibility();
         }
 
         if (change.Property == IsInputTargetProperty)
@@ -154,29 +143,10 @@ internal class OtpLineEditCell : InputControlFrame
         }
     }
 
-    private void UpdateCaretVisibility()
-    {
-        if (_caret is null)
-        {
-            return;
-        }
-
-        _caret.IsVisible = IsActive && IsEffectivelyEnabled;
-
-        // 有字符时插入点在字符右侧：右移半个字符 advance（数字等宽近似）
-        var offsetX = string.IsNullOrEmpty(DisplayText) ? 0 : FontSize * 0.30;
-        if (_caret.RenderTransform is TranslateTransform translate)
-        {
-            translate.X = offsetX;
-        }
-        else
-        {
-            _caret.RenderTransform = new TranslateTransform(offsetX, 0);
-        }
-    }
-
     private void ConfigureTextBoxCursor()
     {
+        // 目标 TextBox 位于运行时 Content 子树，TemplatedParent 为空，Cell 的
+        // ControlTheme /template/ 无法选择它；Content 替换也必须接入同一状态。
         if (_textBox is not null)
         {
             _textBox.SetCurrentValue(

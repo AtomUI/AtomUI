@@ -343,3 +343,9 @@ AOT 边界：
 - native validation error、Form 扩展状态、feedback 图标、CompactSpace 边框折叠和 popup open/close 事件取消。
 - `SelectSemanticPartTests`：descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、前缀部件内联呈现、popup 部件 marker 暴露。
 - 文档改动至少运行 `git diff --check` 并检查相对链接存在。
+
+## 根表面主题投射
+
+Custom 多选的紧凑 padding 在 owner 默认层计算，显式 padding 不再由内部 frame 自动压缩；标签名义测量预算保持独立。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。

@@ -29,7 +29,7 @@ Rate 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
+- Token 按字段定义从 Effective Global 派生或采用明确的内容默认值，不读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
 ## 4. 控件家族影响
@@ -56,3 +56,7 @@ Rate 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 字符 glyph 字体
+
+`CharacterFontFamily: FontFamily` 的默认值为 `FontFamily.Default`，保持原来脱离继承树的字符画刷使用的平台字形。它是内容字体的 Own 字段，不从普通 UI 的 Global.FontFamily 自动派生。`RateTheme` 把它设为根 FontFamily 的主题默认；原生根属性/Style 可覆盖，字重、字形继续消费对应原生输入。char/string 两条实际绘制路径在字体更新后重建快照；SVG Icon Character 保留自身矢量内容。此新增字段不表示 Rate 已完成 Own V2 迁移。

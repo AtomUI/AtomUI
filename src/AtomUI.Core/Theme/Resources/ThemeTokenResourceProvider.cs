@@ -1,5 +1,6 @@
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Schema;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
 
@@ -28,27 +29,13 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
     public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
         var snapshot = Snapshot;
+        if (key is ExplicitTokenResourceKey explicitKey)
+        {
+            return TryGetExplicitResource(snapshot, explicitKey.ResourceKey, theme, out value);
+        }
         if (key is ControlTokenResourceKey controlKey)
         {
-            var controlSlot = controlKey.ControlSlot;
-            if (!controlKey.IsBound)
-            {
-                ControlTokenDescriptor? descriptor;
-                if (controlKey.ControlType is { } controlType)
-                {
-                    if (!snapshot.Registry.TryGetControl(controlType, out descriptor))
-                    {
-                        throw new InvalidOperationException(
-                            $"Control type '{controlType.FullName}' is not registered in the active theme schema.");
-                    }
-                }
-                else if (!snapshot.Registry.TryGetControl(controlKey.Identity, out descriptor))
-                {
-                    throw new InvalidOperationException(
-                        $"Control Token identity '{controlKey.Identity}' is not registered in the active theme schema.");
-                }
-                controlSlot = descriptor.Slot;
-            }
+            var controlSlot = ResolveGlobalControlSlot(snapshot, controlKey);
 
             if ((uint)controlSlot >= (uint)snapshot.Controls.Count)
             {
@@ -109,6 +96,87 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
 
         value = null;
         return false;
+    }
+
+    private static int ResolveGlobalControlSlot(ThemeSnapshot snapshot, ControlTokenResourceKey controlKey)
+    {
+        var controlSlot = controlKey.ControlSlot;
+        if (!controlKey.IsBound)
+        {
+            ControlTokenDescriptor? descriptor;
+            if (controlKey.ControlType is { } controlType)
+            {
+                if (!snapshot.Registry.TryGetControl(controlType, out descriptor))
+                {
+                    throw new InvalidOperationException(
+                        $"Control type '{controlType.FullName}' is not registered in the active theme schema.");
+                }
+            }
+            else if (!snapshot.Registry.TryGetControl(controlKey.Identity, out descriptor))
+            {
+                throw new InvalidOperationException(
+                    $"Control Token identity '{controlKey.Identity}' is not registered in the active theme schema.");
+            }
+            controlSlot = descriptor.Slot;
+        }
+        return controlSlot;
+    }
+
+    private bool TryGetExplicitResource(ThemeSnapshot snapshot, object key, ThemeVariant? theme, out object? value)
+    {
+        if (key is ControlTokenResourceKey globalKey)
+        {
+            var globalSlot = ResolveGlobalControlSlot(snapshot, globalKey);
+            if ((uint)globalSlot >= (uint)snapshot.Controls.Count)
+            {
+                value = null;
+                return false;
+            }
+            var globalDescriptor = snapshot.Registry.Controls[globalSlot];
+            var globalResourceKey = snapshot.Registry.GetSharedResourceKey(globalKey.Kind);
+            var configured = snapshot.EffectiveConfig.GlobalTokens.Any(candidate =>
+                Equals(candidate.Descriptor.ResourceKey, globalResourceKey));
+            if (snapshot.EffectiveConfig.TryGetControl(globalDescriptor.Identity, out var globalConfig))
+            {
+                configured |= globalConfig.GlobalTokens.Any(candidate => Equals(candidate.Descriptor.ResourceKey, globalResourceKey));
+            }
+            if (!configured)
+            {
+                value = AvaloniaProperty.UnsetValue;
+                return true;
+            }
+            return TryGetResource(key, theme, out value);
+        }
+
+        var resourceKey = key is ControlOwnTokenResourceKey owned ? owned.ResourceKey : key;
+        if (!snapshot.Registry.TryGetControlResourceSlot(resourceKey, out var slot))
+        {
+            throw new InvalidOperationException("WhenExplicit requires a registered Control Global or Own Token resource.");
+        }
+        var descriptor = snapshot.Registry.Controls[slot];
+        if (key is ControlOwnTokenResourceKey ownerKey)
+        {
+            ControlTokenDescriptor? declared;
+            var registered = ownerKey.ControlType is { } controlType
+                ? snapshot.Registry.TryGetControl(controlType, out declared)
+                : snapshot.Registry.TryGetControl(ownerKey.Identity, out declared);
+            if (!registered || declared?.Slot != slot)
+            {
+                throw new InvalidOperationException("The explicit Own Token resource does not belong to its declared owner.");
+            }
+        }
+        var token = descriptor.OwnTokens.Single(candidate => Equals(candidate.ResourceKey, resourceKey));
+        var canonical = descriptor.GetCanonicalOwnToken(token);
+        if (!snapshot.EffectiveConfig.TryGetControl(descriptor.Identity, out var config) ||
+            !config.OwnTokens.Any(candidate => candidate.Descriptor.Slot == canonical.Slot))
+        {
+            // Found-but-unset stops outer resource-host fallback. Consumers must
+            // select their fallback explicitly: Unset alone does not preserve an
+            // inherited target value in every native binding expression.
+            value = AvaloniaProperty.UnsetValue;
+            return true;
+        }
+        return TryGetResource(key, theme, out value);
     }
 
     internal void PrepareSnapshot(ThemeSnapshot snapshot)

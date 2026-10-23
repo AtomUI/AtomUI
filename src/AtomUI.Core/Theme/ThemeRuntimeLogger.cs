@@ -9,10 +9,18 @@ internal static class ThemeRuntimeLogger
         string boundary,
         Exception exception)
     {
-        var logger = Logger.TryGet(LogEventLevel.Warning, AtomUILogArea.Theme);
-        logger?.Log(
-            source,
-            $"Theme publish boundary '{boundary}' failed: {exception}");
+        try
+        {
+            var logger = Logger.TryGet(LogEventLevel.Warning, AtomUILogArea.Theme);
+            logger?.Log(
+                source,
+                $"Theme publish boundary '{boundary}' failed: {exception}");
+        }
+        catch
+        {
+            // The caller still records the original diagnostic. A user-supplied logger
+            // must not interrupt committed publication or strand a transition's completion.
+        }
     }
 }
 

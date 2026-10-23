@@ -101,6 +101,17 @@ host 定位完成后再恢复 margin 占用，避免非对称 Margin 导致预�
 
 ## 6. 生命周期与模板接入
 
+host 排版在 `PopupRootTheme` 和 `OverlayPopupHostTheme` 的 ControlTheme Setter 中声明。
+`$parent[avap:Popup].PlacementTarget.(TextElement.FontSize)` 等四条 compiled binding
+沿真实 logical Popup ancestor 跨越 visual root，读取当前 anchor 的完整有效字体。
+Avalonia 的 style frame 管理订阅、target replacement 和卸载；没有额外代码 relay、全局订阅或反射 getter。
+字体 Setter 保持默认 Style 优先级，内容显式字体继续覆盖继承。
+
+关闭与释放必须区分：调用方仍持有 `Popup.Child` 时，Avalonia 可能保留其已关闭的 logical/composition host，
+native host 的定位请求也可能继续引用旧 anchor；这不是“Closed 后整个对象图立即可收集”的保证。
+本次字体接线的释放验收包括打开时 retarget 后旧 anchor 可收集，以及从容器移除并释放整个临时 Popup
+对象图后两类 host/anchor 可收集。禁止为满足错误的 GC 断言擅自清空调用方 Child 或改写 framework 私有字段。
+
 logical attach 时，`ShadowsAwareContainer` 创建一个 `CompositeDisposable`，统一持有 shadow 与 surface 两条 relay binding；
 重新 attach 前先释放旧 binding，logical detach 时对称释放。固定模板关系不能直接跨 Avalonia popup host 的 logical owner
 使用 `TemplateBinding` 表达，因此 binding 由实际 runtime container 持有。

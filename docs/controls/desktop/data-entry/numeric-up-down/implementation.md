@@ -191,3 +191,9 @@ Token 通过动态资源进入主题。NumericUpDown 不把实例状态、当前
 - `ShowButtonSpinner=false` 在 `Mode=Input` 和 `Mode=Spinner` 两种模板中都能隐藏步进入口，并支持运行时切换。
 - 模板切换后新 part 重新接入，旧 part 事件解绑。
 - 文档改动运行 `git diff --check`。
+
+## 根表面主题投射
+
+Input 模式投射根 inset 与外框几何；Spinner 模式保留左右 action 段的布局，根 padding 进入文本区。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。

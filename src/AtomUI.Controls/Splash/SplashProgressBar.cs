@@ -12,8 +12,10 @@ namespace AtomUI.Controls;
 /// 布局元素合成视觉的 Offset 等属性并移除其上的动画，进度块会停在布局原点。合成视觉的创建与尺寸依赖挂接后的合成器与布局结果，
 /// ControlTheme 无法表达，因此写在代码中。
 /// </summary>
-public class SplashProgressBar : Control
+public class SplashProgressBar : Control, IMotionAwareControl
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> ValueProperty =
         AvaloniaProperty.Register<SplashProgressBar, double>(nameof(Value), coerce: static (_, v) => Math.Clamp(v, 0d, 1d));
 
@@ -29,23 +31,17 @@ public class SplashProgressBar : Control
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         AvaloniaProperty.Register<SplashProgressBar, CornerRadius>(nameof(CornerRadius));
 
-    private const double IndeterminateSegmentRatio = 0.3;
-    private static readonly TimeSpan IndeterminateCycle = TimeSpan.FromSeconds(1.2);
+    public static readonly StyledProperty<TimeSpan> CycleDurationProperty =
+        AvaloniaProperty.Register<SplashProgressBar, TimeSpan>(nameof(CycleDuration), TimeSpan.FromSeconds(1.2),
+            coerce: static (_, value) => value < TimeSpan.Zero ? TimeSpan.Zero : value);
 
-    private CompositionCustomVisual? _indicatorVisual;
-    private CompositeDisposable? _effectiveVisibilitySubscriptions;
-    private bool _isEffectivelyVisible;
+    public static readonly StyledProperty<double> SegmentRatioProperty =
+        AvaloniaProperty.Register<SplashProgressBar, double>(nameof(SegmentRatio), 0.3,
+            coerce: static (_, value) => double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0);
 
-    static SplashProgressBar()
-    {
-        AffectsRender<SplashProgressBar>(ValueProperty, IsIndeterminateProperty, TrackBrushProperty,
-            IndicatorBrushProperty, CornerRadiusProperty);
-    }
-
-    public SplashProgressBar()
-    {
-        ClipToBounds = true;
-    }
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SplashProgressBar>(
+            new StyledPropertyMetadata<bool>(true));
 
     public double Value
     {
@@ -75,6 +71,41 @@ public class SplashProgressBar : Control
     {
         get => GetValue(CornerRadiusProperty);
         set => SetValue(CornerRadiusProperty, value);
+    }
+
+    public TimeSpan CycleDuration
+    {
+        get => GetValue(CycleDurationProperty);
+        set => SetValue(CycleDurationProperty, value);
+    }
+
+    public double SegmentRatio
+    {
+        get => GetValue(SegmentRatioProperty);
+        set => SetValue(SegmentRatioProperty, value);
+    }
+
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+
+    #endregion
+
+    private CompositionCustomVisual? _indicatorVisual;
+    private CompositeDisposable? _effectiveVisibilitySubscriptions;
+    private bool _isEffectivelyVisible;
+
+    static SplashProgressBar()
+    {
+        AffectsRender<SplashProgressBar>(ValueProperty, IsIndeterminateProperty, TrackBrushProperty,
+            IndicatorBrushProperty, CornerRadiusProperty);
+    }
+
+    public SplashProgressBar()
+    {
+        ClipToBounds = true;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -111,7 +142,10 @@ public class SplashProgressBar : Control
         base.OnPropertyChanged(change);
         if (change.Property == IsIndeterminateProperty ||
             change.Property == IndicatorBrushProperty ||
-            change.Property == CornerRadiusProperty)
+            change.Property == CornerRadiusProperty ||
+            change.Property == CycleDurationProperty ||
+            change.Property == SegmentRatioProperty ||
+            change.Property == IsMotionEnabledProperty)
         {
             SyncIndicator();
         }
@@ -131,14 +165,14 @@ public class SplashProgressBar : Control
     public override void Render(DrawingContext context)
     {
         var bounds = new Rect(Bounds.Size);
-        var radius = CornerRadius.TopLeft;
         if (TrackBrush is { } track)
         {
-            context.DrawRectangle(track, null, bounds, radius, radius);
+            context.DrawRectangle(track, null, new RoundedRect(bounds, CornerRadius));
         }
         if (!IsIndeterminate && IndicatorBrush is { } indicator && Value > 0)
         {
-            context.DrawRectangle(indicator, null, new Rect(0, 0, bounds.Width * Value, bounds.Height), radius, radius);
+            context.DrawRectangle(indicator, null,
+                new RoundedRect(new Rect(0, 0, bounds.Width * Value, bounds.Height), CornerRadius));
         }
     }
 
@@ -146,7 +180,7 @@ public class SplashProgressBar : Control
     {
         _indicatorVisual?.SendHandlerMessage(
             new IndicatorState(IsIndeterminate && _isEffectivelyVisible,
-                IndicatorBrush?.ToImmutable(), CornerRadius.TopLeft));
+                IndicatorBrush?.ToImmutable(), CornerRadius, IsMotionEnabled, CycleDuration, SegmentRatio));
     }
 
     private void HandleEffectiveVisibilityChanged(bool visible)
@@ -158,14 +192,18 @@ public class SplashProgressBar : Control
         }
     }
 
-    private sealed record IndicatorState(bool IsActive, IImmutableBrush? Brush, double Radius);
+    private sealed record IndicatorState(bool IsActive, IImmutableBrush? Brush, CornerRadius Radius,
+        bool IsMotionEnabled, TimeSpan CycleDuration, double SegmentRatio);
 
     /// <summary>运行在渲染线程：按合成时钟计算进度块位置并逐帧重绘，不依赖 UI 线程。</summary>
     private sealed class IndeterminateIndicatorHandler : CompositionCustomVisualHandler
     {
         private bool _isActive;
         private IImmutableBrush? _brush;
-        private double _radius;
+        private CornerRadius _radius;
+        private TimeSpan _cycleDuration;
+        private double _segmentRatio;
+        private bool _isAnimating;
 
         public override void OnMessage(object message)
         {
@@ -173,12 +211,15 @@ public class SplashProgressBar : Control
             {
                 return;
             }
-            var wasActive = _isActive;
+            var wasAnimating = _isAnimating;
             _isActive = state.IsActive;
             _brush = state.Brush;
             _radius = state.Radius;
+            _cycleDuration = state.CycleDuration;
+            _segmentRatio = state.SegmentRatio;
+            _isAnimating = _isActive && _brush is not null && state.IsMotionEnabled && _cycleDuration > TimeSpan.Zero && _segmentRatio > 0;
             Invalidate();
-            if (_isActive && !wasActive)
+            if (_isAnimating && !wasAnimating)
             {
                 RegisterForNextAnimationFrameUpdate();
             }
@@ -186,7 +227,7 @@ public class SplashProgressBar : Control
 
         public override void OnAnimationFrameUpdate()
         {
-            if (!_isActive)
+            if (!_isAnimating)
             {
                 return;
             }
@@ -201,12 +242,19 @@ public class SplashProgressBar : Control
             {
                 return;
             }
-            var segmentWidth = size.X * IndeterminateSegmentRatio;
-            var phase = CompositionNow.Ticks % IndeterminateCycle.Ticks / (double)IndeterminateCycle.Ticks;
+            var segmentWidth = size.X * _segmentRatio;
+            // Keep an indeterminate status visible without requesting animation frames
+            // when motion is disabled or the configured cycle is zero.
+            var phase = _isAnimating
+                ? CompositionNow.Ticks % _cycleDuration.Ticks / (double)_cycleDuration.Ticks : 0.5;
             var x = -segmentWidth + (size.X + segmentWidth) * phase;
             using (context.PushClip(new Rect(0, 0, size.X, size.Y)))
             {
-                context.DrawRectangle(_brush, null, new Rect(x, 0, segmentWidth, size.Y), _radius, _radius);
+                // ImmediateDrawingContext's convenience overload accepts uniform radii only.
+                // The public platform context preserves all four corners without geometry
+                // allocations on each composition frame (Avalonia 12.1.4).
+                context.PlatformImpl.DrawRectangle(_brush, null,
+                    new RoundedRect(new Rect(x, 0, segmentWidth, size.Y), _radius));
             }
         }
     }

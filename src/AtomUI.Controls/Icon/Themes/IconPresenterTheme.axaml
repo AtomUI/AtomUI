@@ -4,6 +4,6 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:IconPresenter}" TargetType="atom:IconPresenter">
-        <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
+        <Setter Property="IconBrush" Value="{atom:IconPresenterTokenResource ColorIconHover}" />
     </ControlTheme>
 </ResourceDictionary>

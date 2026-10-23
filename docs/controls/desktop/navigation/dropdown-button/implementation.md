@@ -1,6 +1,6 @@
 # DropdownButton 桌面版实现原理
 
-本文档描述 DropdownButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [DropdownButton 桌面版架构设计](overview.md)，Semantic Part 契约见 [DropdownButton Semantic Part 契约](semantic-part.md)，变化记录见 [DropdownButton Changelog](changelog.md)。DropdownButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
+本文档描述 DropdownButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [DropdownButton 桌面版架构设计](overview.md)，Semantic Part 契约见 [DropdownButton Semantic Part 契约](semantic-part.md)，变化记录见 [DropdownButton Changelog](changelog.md)。独立字段与默认依赖见[Token合同](token.md)。
 
 Popup 接入边界：`DropdownButton` 负责业务状态和内容准备，`DropdownFlyout` / `MenuFlyout` 仅作为 relay 适配层，Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -167,3 +167,9 @@ DropdownButton 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 精确主题身份
+
+DropdownButtonBaseTheme和DropdownButtonTheme分别消费同一Dropdown identity的Global/Own资源，不从Shared绕过控件配置。Button共享变体算法通过有限23项映射读取Dropdown自身颜色/阴影Own，Global也捕获Dropdown；未注册的应用派生类型继续使用已知产品基类的主题合同。映射不解析枚举字符串、不反射、不合并Button有效配置表。
+
+高度继续使用原固定Height，不能改成Button的MinHeight。波纹与Transition仍由原动态机制驱动，实例、焦点与打开状态不因资源更新重建。

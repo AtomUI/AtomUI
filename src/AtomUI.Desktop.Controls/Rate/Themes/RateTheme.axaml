@@ -23,6 +23,7 @@
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
+        <Setter Property="FontFamily" Value="{atom:RateTokenResource CharacterFontFamily}" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="StarColor" Value="{atom:RateTokenResource StarColor}" />

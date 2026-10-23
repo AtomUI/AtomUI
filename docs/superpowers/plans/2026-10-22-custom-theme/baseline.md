@@ -140,3 +140,7 @@ CT-00元数据集合与逐键字段记录已建立；owner未决及字段待决�
 本次原生补证与B10的媒体目录另分别清理12和6个文件，均removed=true、findings为空、audit_error=null。原生进程1657已核实退出；外部原生Demo、Roslyn合同probe及B10临时测试源码均已删除。清理后重新构建并精确运行既有Rendering ButtonFocus 1/1 PASS、零skip（570ms），仅有原文件已有xUnit1051警告。720个目录/视觉主键、1,195字段与编译manifest逐键及路径/任务校验通过，git diff --check通过；生产src/controlgallery/tests无最终差异，没有运行全量或提交。
 
 临时验证不建立永久失败测试或截图库。后续对应任务改码前依据相同配方重新采前证，改后保持同一有效断言和原始基线比较；未覆盖的产品及平台门槛继续保持未完成，不能用M0交接结论替代。
+
+## CT-12/CT-25 原生显示面补证
+
+[有限切换专项](buttons-native-stability-results.md)已在当前Mac用已验证PID/产物hash的NSWindow及ScreenCaptureKit取得40帧：每阶段8帧差异0，1DIP检错29220，B变化253549，A恢复0。该场景采样未发现自发持续闪动，不否定原35次脚本主动快速切换的用户观察，也不宣称全部原生输入/动效帧或其他平台通过。媒体、驱动和进程已清理。

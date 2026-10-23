@@ -14,6 +14,9 @@
                         Focusable="True"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
+                        ContentFramePadding="{TemplateBinding Padding}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"
@@ -215,6 +218,19 @@
                             Value="{atom:SharedTokenResource ColorWarningText}" />
                 </Style>
             </Style>
+        </Style>
+        <Setter Property="BorderThickness" Value="{atom:ComboBoxTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:ComboBoxTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:ComboBoxTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:ComboBoxTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:ComboBoxTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:ComboBoxTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:ComboBoxTokenResource BorderRadiusSM}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

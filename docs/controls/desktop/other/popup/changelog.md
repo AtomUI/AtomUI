@@ -2,6 +2,11 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-10-23
+
+- native/overlay host 默认完整字体在 ControlTheme 中绑定到当前 PlacementTarget，已打开更新与 retarget 同步生效；内容显式字体保持原生覆盖优先级。
+- 保留默认字体的逐阶段渲染结果；记录持有 Child 时的原生关闭缓存与真正释放整个 Popup 对象图的生命周期边界。
+
 ## 2026-10-03
 
 - Fixed

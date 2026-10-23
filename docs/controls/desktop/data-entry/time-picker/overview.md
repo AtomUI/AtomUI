@@ -125,6 +125,11 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+TimePicker 与 RangeTimePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 TimePicker 的视觉模型由 `InputControlFrame` 输入表面、InfoPicker 输入子控件、控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。输入表面状态由 shared frame 统一表达，TimePicker 主题只扩展时间面板、范围和弹层内容。
 
 | 主题文件 | 职责 |

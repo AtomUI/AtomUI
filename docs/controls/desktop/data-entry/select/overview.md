@@ -205,6 +205,11 @@ Disabled / invisible / window deactivated
 
 ## 5. 视觉与主题模型
 
+Custom 多选的紧凑 padding 在 owner 默认层计算，显式 padding 不再由内部 frame 自动压缩；标签名义测量预算保持独立。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 Select 的默认视觉由 Select 专属主题、`InputControlFrame` / AddOnDecoratedBox、ListView 和 PopupHost 协作完成。
 
 | 主题或资源 | 职责 |

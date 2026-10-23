@@ -11,7 +11,7 @@
 |---|---|
 | `Splash : TemplatedControl` | 属性 `Logo`、`BackgroundImage`（`IImage?`）、`Title`、`Message`（`string?`）、`Progress`（`double`，0–1）、`IsIndeterminate`（默认 `true`）、`Status`（`SplashStatus`）。布局完全由 ControlTheme 决定。可选模板部件 `PART_CloseButton`（任意元素）：错误态下点击即请求关闭。伪类 `:error`（`Status == Error`）、`:opaque`（平台不支持透明窗口）。 |
 | `SplashWindow : Avalonia.Controls.Window` | Splash 宿主窗口，资源完全自带：全局资源表、默认主题、可选自定义主题；不依赖任何 AtomUI 主题。错误态另支持 Esc 关闭。 |
-| `SplashProgressBar : Control` | 无模板，在 `Render` 中绘制轨道与确定进度；属性 `Value`、`IsIndeterminate`、`TrackBrush`、`IndicatorBrush`、`CornerRadius`。 |
+| `SplashProgressBar : Control` | 无模板，在 `Render` 中绘制轨道与确定进度；属性 `Value`、`IsIndeterminate`、`TrackBrush`、`IndicatorBrush`、`CornerRadius`、`CycleDuration`（默认1.2s）、`SegmentRatio`（默认0.3）、`IsMotionEnabled`（默认true）。 |
 | `SplashStatus` | `Loading`、`Error`。 |
 | `SplashMode` | `Off`、`Always`、`Auto`。 |
 | `SplashDefaultTheme` | 默认主题（x:Class 资源字典，公开）。 |
@@ -113,3 +113,13 @@ ControlTheme。它合并在默认主题之后，同键优先。两种写法：
   `-[CAMetalLayer nextDrawable]` 可阻塞渲染线程约 1 s（drawable 池耗尽后的系统超时），Splash 在此期间停顿。这是 Avalonia
   多窗口共用渲染线程的行为；Splash 会保持可见直到主窗体首帧完成，不会留下提前隐藏后的长时间空档。
 - **Wayland**：不允许应用定位窗口，Splash 的位置由合成器决定。
+
+## 共享主题消费补充
+
+进度条默认圆角读取准备阶段的 `BorderRadiusXS`，不再固定为 2；默认 Token 仍为 2。公开 `SplashProgressBar.CornerRadius` 的四角都进入确定进度绘制和不确定进度合成状态，不能只用 TopLeft 代表完整形状。ImmediateDrawingContext 的便捷绘制只接受统一半径，因此合成路径通过其公开平台 context 绘制 RoundedRect，保持同一四角语义与逐帧零 geometry 分配；依赖的 Avalonia 平台绘制签名须在升级时验证。启动样式仍不引用普通控件 Own 或自定义字体，准备结果不是提交后的 live ThemeContext。
+
+## 不确定进度的精确动效输入
+
+`CycleDuration` 与 `SegmentRatio` 是原生 styled property，可在自定义 Splash ControlTheme 的进度条 style Setter 中声明；无需建立普通 Control Own。周期负值归零，段长比限制到0–1，非有限比值为0。默认周期1.2s、段宽30%保持原轨迹。默认主题把 IsMotionEnabled 绑定准备阶段 Shared.EnableMotion，原生实例覆盖仍遵守 Avalonia 优先级。
+
+关闭动效或周期0时保留居中的静态不确定进度段，避免加载状态消失，同时不继续请求合成帧；比值0或无指示画刷也不维持循环。隐藏、确定进度及分离停止循环，重新显示按当前有效输入恢复；分离清理自定义合成视觉及可见性订阅。曲线不另设：此进度动画为线性传送，精确周期和比例通过公开输入定义。

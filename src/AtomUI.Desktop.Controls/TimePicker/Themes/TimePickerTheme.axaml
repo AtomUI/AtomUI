@@ -9,5 +9,18 @@
         </ControlTheme.BasedOn>
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
+        <Setter Property="BorderThickness" Value="{atom:TimePickerTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:TimePickerTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:TimePickerTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:TimePickerTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:TimePickerTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:TimePickerTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:TimePickerTokenResource BorderRadiusSM}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

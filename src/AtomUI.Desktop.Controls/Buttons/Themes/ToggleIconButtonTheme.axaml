@@ -40,41 +40,48 @@
     </Setter>
 
     <Style Selector="^:is(atom|ToggleIconButton)">
-        <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-        <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="IconWidth" Value="{atom:ToggleIconButtonTokenResource IconSizeSM}" />
+        <Setter Property="IconHeight" Value="{atom:ToggleIconButtonTokenResource IconSizeSM}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ToggleIconButtonTokenResource EnableMotion}" />
+        <Setter Property="CornerRadius" Value="{atom:ToggleIconButtonTokenResource BorderRadiusSM}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Background" Value="Transparent" />
 
-        <Setter Property="IconBrush"
-                Value="{atom:SharedTokenResource ColorIcon}" />
+        <Setter Property="NormalIconBrush" Value="{atom:ToggleIconButtonTokenResource ColorIcon}" />
+        <Setter Property="ActiveIconBrush" Value="{atom:ToggleIconButtonTokenResource ColorText}" />
+        <Setter Property="DisabledIconBrush" Value="{atom:ToggleIconButtonTokenResource ColorTextDisabled}" />
+        <Setter Property="SelectedIconBrush" Value="{CompiledBinding $self.NormalIconBrush, DataType={x:Type atom:ToggleIconButton}}" />
+        <Setter Property="IconBrush" Value="{CompiledBinding $self.NormalIconBrush, DataType={x:Type atom:ToggleIconButton}}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="IconBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <TransformOperationsTransition Property="RenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions DurationKind="MotionDurationMid">
+                    <atom:SolidColorBrushTransition Property="Background" />
+                    <atom:SolidColorBrushTransition Property="IconBrush" />
+                    <TransformOperationsTransition Property="RenderTransform" />
+                </atom:TokenTransitions>
             </Setter>
+        </Style>
+
+        <Style Selector="^:checked">
+            <Setter Property="IconBrush" Value="{CompiledBinding $self.SelectedIconBrush, DataType={x:Type atom:ToggleIconButton}}" />
         </Style>
 
         <Style Selector="^:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIconHover}" />
+                    Value="{atom:ToggleIconButtonTokenResource ColorIconHover}" />
         </Style>
 
         <Style Selector="^:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorText}" />
+                    Value="{CompiledBinding $self.ActiveIconBrush, DataType={x:Type atom:ToggleIconButton}}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{CompiledBinding $self.DisabledIconBrush, DataType={x:Type atom:ToggleIconButton}}" />
         </Style>
 
     </Style>

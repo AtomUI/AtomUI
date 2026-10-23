@@ -1,9 +1,9 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class LineEditToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class LineEditToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     /// <summary>
     /// 字体大小
@@ -20,12 +20,15 @@ internal sealed class LineEditToken : AbstractControlDesignToken
     /// </summary>
     public double InputFontSizeSM { get; set; }
     
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        InputFontSize   = EffectiveGlobalToken.FontSize;
-        InputFontSizeLG = EffectiveGlobalToken.FontSizeLG;
-        InputFontSizeSM = EffectiveGlobalToken.FontSizeSM;
-    }
+    [ControlTokenDefault(nameof(InputFontSize))]
+    private static double DefaultForInputFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
 
+    [ControlTokenDefault(nameof(InputFontSizeLG))]
+    private static double DefaultForInputFontSizeLG(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG;
+
+    [ControlTokenDefault(nameof(InputFontSizeSM))]
+    private static double DefaultForInputFontSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeSM;
 }

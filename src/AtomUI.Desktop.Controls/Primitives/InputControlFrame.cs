@@ -69,6 +69,12 @@ internal class InputControlFrame : ContentControl,
     }
 
 
+    public FormValidateStatus FormStatus
+    {
+        get => GetValue(FormStatusProperty);
+        internal set => SetCurrentValue(FormStatusProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -106,14 +112,13 @@ internal class InputControlFrame : ContentControl,
     internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty =
         CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<InputControlFrame>();
 
+    // Size presets supply defaults; owner template inputs retain native precedence.
+    internal static readonly StyledProperty<CornerRadius> SizeCornerRadiusProperty =
+        AvaloniaProperty.Register<InputControlFrame, CornerRadius>(nameof(SizeCornerRadius));
+
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<InputControlFrame>();
 
-    public FormValidateStatus FormStatus
-    {
-        get => GetValue(FormStatusProperty);
-        internal set => SetCurrentValue(FormStatusProperty, value);
-    }
 
     private InputControlStatus _effectiveStatus;
 
@@ -157,6 +162,12 @@ internal class InputControlFrame : ContentControl,
     {
         get => GetValue(CompactSpaceOrientationProperty);
         set => SetValue(CompactSpaceOrientationProperty, value);
+    }
+
+    internal CornerRadius SizeCornerRadius
+    {
+        get => GetValue(SizeCornerRadiusProperty);
+        set => SetValue(SizeCornerRadiusProperty, value);
     }
 
     internal bool IsUsedInCompactSpace

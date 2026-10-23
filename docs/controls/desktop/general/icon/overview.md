@@ -145,3 +145,7 @@ Icon 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+## 主题消费合同（2026-10-23）
+
+Presenter 的宿主画刷与尺寸以原生 Template 优先级投射，显式 child local 值保留优先权；`IconTemplatePresenter` 与 `IconPresenter` 使用同一优先级合同。丢弃/脱离时解除绑定，重挂后恢复当前宿主输入。

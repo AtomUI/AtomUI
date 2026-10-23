@@ -121,6 +121,11 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+根 padding、边宽、圆角投射到 AddOn 输入表面，编辑/非编辑结构及原有画刷状态合同保持。
+
+几何默认、原生优先级和组合边界见[共享输入表面](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+
 ComboBox 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |

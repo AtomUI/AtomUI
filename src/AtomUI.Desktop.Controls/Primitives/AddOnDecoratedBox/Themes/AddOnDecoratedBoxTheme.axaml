@@ -49,7 +49,8 @@
                 <atom:AddOnDecoratedBoxContentFrame
                         Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentFramePart}"
                         Classes.semantic-frame="True"
-                        BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
+                        TextElement.Foreground="{TemplateBinding Foreground}"
+                    BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
                         CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
@@ -91,8 +92,12 @@
     </Setter>
     <Style Selector="^:is(atom|AddOnDecoratedBox)">
         <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="ContentFramePadding" Value="{CompiledBinding $self.PresetContentPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+            <Setter Property="Padding" Value="{TemplateBinding EffectiveContentFramePadding}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
             <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
@@ -130,9 +135,7 @@
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
                 <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingLG}" />
             </Style>
-            <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingLG}" />
-            </Style>
+            <Setter Property="PresetContentPadding" Value="{atom:SharedTokenResource InputPaddingLG}" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
@@ -146,9 +149,7 @@
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
                 <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
             </Style>
-            <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
-            </Style>
+            <Setter Property="PresetContentPadding" Value="{atom:SharedTokenResource InputPadding}" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource FontHeight}" />
@@ -162,9 +163,7 @@
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
                 <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingSM}" />
             </Style>
-            <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingSM}" />
-            </Style>
+            <Setter Property="PresetContentPadding" Value="{atom:SharedTokenResource InputPaddingSM}" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource FontHeightSM}" />

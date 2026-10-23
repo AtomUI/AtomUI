@@ -8,6 +8,14 @@
             <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
         </ControlTheme.Resources>
 
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:TextAreaTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:TextAreaTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:TextAreaTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:TextArea">
                 <DockPanel LastChildFill="True"
@@ -23,6 +31,10 @@
                         <atom:TextAreaDecoratedBox
                             Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                             Classes.semantic-scope-input-frame="True"
+                            TextAreaFramePadding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
                             StyleVariant="{TemplateBinding StyleVariant}"
                             SizeType="{TemplateBinding SizeType}"
                             Status="{TemplateBinding Status}"
@@ -33,7 +45,6 @@
                             Focusable="True"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            IsResizable="{TemplateBinding IsResizable}"
                             IsAllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                             VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
@@ -51,7 +62,7 @@
                             <atom:TextAreaDecoratedBox.ContentRightAddOn>
                                 <StackPanel Orientation="Vertical"
                                             Classes.semantic-suffix="True"
-                                            Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                            Spacing="{atom:TextAreaTokenResource UniformlyPaddingXXS}">
                                     <atom:InputClearIconButton
                                         Name="PART_ClearButton"
                                         Classes.semantic-clear="True"
@@ -120,14 +131,21 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
+        <Style Selector="^ /template/ atom|ResizeHandle#PART_ResizeHandle">
+            <Setter Property="Width" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
+            <Setter Property="Height" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
+            <Setter Property="Foreground" Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
+            <Setter Property="ResizeIndicatorLineThickness" Value="{atom:TextAreaTokenResource LineWidth}" />
+        </Style>
+
+        <Setter Property="IsMotionEnabled" Value="{atom:TextAreaTokenResource EnableMotion}" />
+        <Setter Property="SelectionBrush" Value="{atom:TextAreaTokenResource SelectionBackground}" />
+        <Setter Property="CaretBrush" Value="{atom:TextAreaTokenResource ColorText}" />
         <Setter Property="SelectionForegroundBrush"
-                Value="{atom:SharedTokenResource SelectionForeground}" />
+                Value="{atom:TextAreaTokenResource SelectionForeground}" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
         <Setter Property="PlaceholderForeground"
-                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                Value="{atom:TextAreaTokenResource ColorTextPlaceholder}" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="MinLines" Value="1" />
@@ -141,19 +159,19 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:TextAreaTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>
@@ -161,31 +179,31 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:TextAreaTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
+            <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeightLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeight}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
+            <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeightSM}" />
             <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
                 <Setter Property="Margin" Value="0, 1, 0, 1" />
             </Style>
@@ -209,11 +227,11 @@
         <Style
             Selector="^ /template/ StackPanel#PART_LeftAddOnLayout, ^ /template/ StackPanel#PART_RightAddOnLayout">
             <Setter Property="Spacing"
-                    Value="{atom:SharedTokenResource UniformlyPaddingXXS}" />
+                    Value="{atom:TextAreaTokenResource UniformlyPaddingXXS}" />
         </Style>
 
         <Style Selector="^ /template/ atom|TextBlock#TextCountIndicator">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+            <Setter Property="Foreground" Value="{atom:TextAreaTokenResource ColorTextPlaceholder}" />
         </Style>
 
         <Style Selector="^[StyleVariant=Outlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True],
@@ -238,7 +256,21 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:TextAreaTokenResource ColorTextDisabled}" />
         </Style>
+        <Setter Property="BorderThickness" Value="{atom:TextAreaTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:TextAreaTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:TextAreaTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:TextAreaTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:TextAreaTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:TextAreaTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:TextAreaTokenResource BorderRadiusSM}" />
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

@@ -2,6 +2,8 @@ using System.Xml.Linq;
 using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -46,7 +48,7 @@ public class OtpLineEditSemanticPartTests
 
         var cell = descriptor.Parts.Single(static part => part.Name == "cell");
         cell.SelectorClass.ShouldBe("semantic-cell");
-        cell.SelectorRoute.ShouldBe("/template/ .semantic-cell-list > .semantic-scope-cell > .semantic-cell");
+        cell.SelectorRoute.ShouldBe("/template/ .semantic-cell-list >> .semantic-scope-cell > .semantic-cell");
         cell.ContractType.ShouldBe(typeof(ContentControl));
         cell.Cardinality.ShouldBe(SemanticPartCardinality.Multiple);
         cell.RuntimeCreated.ShouldBeTrue();
@@ -55,7 +57,7 @@ public class OtpLineEditSemanticPartTests
 
         var separator = descriptor.Parts.Single(static part => part.Name == "separator");
         separator.SelectorClass.ShouldBe("semantic-separator");
-        separator.SelectorRoute.ShouldBe("/template/ .semantic-cell-list > .semantic-scope-cell > .semantic-separator");
+        separator.SelectorRoute.ShouldBe("/template/ .semantic-cell-list >> .semantic-scope-cell > .semantic-separator");
         separator.ContractType.ShouldBe(typeof(Border));
         separator.Cardinality.ShouldBe(SemanticPartCardinality.Multiple);
         separator.RuntimeCreated.ShouldBeTrue();
@@ -87,12 +89,10 @@ public class OtpLineEditSemanticPartTests
     [Fact]
     public void Realized_Cells_Carry_The_Cell_Part_Marker()
     {
-        var otp = new AtomUIOtpLineEdit
-        {
-            Length = 6
-        };
+        var view = new OtpLineEditSemanticStylesView();
 
-        using var _ = Show(otp);
+        using var _ = Show(view);
+        var otp = view.GetVisualDescendants().OfType<AtomUIOtpLineEdit>().Single();
 
         otp.Classes.ShouldNotContain("semantic-root");
         var cells = otp.GetVisualDescendants()
@@ -101,6 +101,25 @@ public class OtpLineEditSemanticPartTests
                        .ToArray();
         cells.Length.ShouldBe(6);
         cells.ShouldAllBe(static cell => cell.IsAttachedToVisualTree());
+        foreach (var cell in cells)
+        {
+            cell.BorderBrush.ShouldNotBeNull().ShouldBeAssignableTo<ISolidColorBrush>().Color.ShouldBe(Colors.Fuchsia);
+            cell.Padding.ShouldBe(new Thickness(3));
+        }
+
+        var separators = otp.GetVisualDescendants().OfType<Border>()
+                            .Where(static node => node.Classes.Contains("semantic-separator"))
+                            .ToArray();
+        separators.Length.ShouldBe(6);
+        separators.ShouldAllBe(static node => node.Margin == new Thickness(9, 0, 0, 0));
+
+        var fixture = XDocument.Load(GetRepoFile(
+            "tests/AtomUI.Desktop.Controls.Tests/OtpLineEdit/OtpLineEditSemanticStylesView.axaml"));
+        fixture.Descendants().Count(static node => node.Name.LocalName == "OtpLineEditCellStyle").ShouldBe(1);
+        fixture.Descendants().Count(static node => node.Name.LocalName == "OtpLineEditSeparatorStyle").ShouldBe(1);
+        fixture.Descendants().Attributes().ShouldNotContain(static attribute =>
+            attribute.Name.LocalName == "Name" || attribute.Name.LocalName == "Loaded" ||
+            attribute.Name.LocalName == "Unloaded");
     }
 
     private static void AssertThemeMarkers(string relativePath, string[] expectedMarkers)
@@ -171,5 +190,13 @@ public class OtpLineEditSemanticPartTests
             window.Close();
             Dispatcher.UIThread.RunJobs();
         }
+    }
+}
+
+public partial class OtpLineEditSemanticStylesView : UserControl
+{
+    public OtpLineEditSemanticStylesView()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

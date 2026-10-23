@@ -11,6 +11,7 @@
 - 承接类型化主题包注册与默认赋值；保留动态 XML Reader/Binder，派生算法仅由现有运行时执行。
 - 定义生成式全局/Control Own Token schema、所有 Control 可覆盖完整 Global Token 的规则、不可变
   `ThemeSnapshot`、稳定资源键，以及 `SharedTokenResource`/`XxxTokenResource` 强类型资源扩展。
+- 支持[显式Own资源与继承回退](configured-token-resources.md)，区分资源缺省与原生Setter实际值。
 - 定义 Semantic Part 声明、不可变 descriptor、冻结 registry 与 `IThemeManager.SemanticParts` 运行时查询入口；
   Avalonia Selector 继续负责实际样式匹配。
 - 组合根 `IAtomUIBuilder` 的主题与本地化子 Builder，并把 `ILanguageManager`、`ILocalizer` 暴露给应用。
@@ -25,6 +26,7 @@
 |---|---|
 | `Theme/` | 唯一运行时 ThemeManager、五阶段事务、ThemeContext、作用域图、TopLevel lease/bridge 及公开主题入口 |
 | `Theme/Algorithms/` | 算法契约、默认/暗色/紧凑计算器、调色板和颜色计算辅助 |
+| `Theme/Branding/` | 显式编译资产登记、版本1品牌配方模型、手工JSON与同一runtime数据入口 |
 | `Theme/Configuration/` | ThemeConfig、ControlThemeConfig、配置规范化、继承与覆盖合并 |
 | `Theme/Definitions/` | 编译主题包 ABI/注册、主题来源、默认选择、动态 XML v1 读取、语法模型、Schema 绑定和 diagnostics |
 | `Theme/Schema/` | 生成式 Token schema、Control/算法 descriptor、ControlTheme asset descriptor 与 manifest 契约 |
@@ -34,7 +36,7 @@
 | `Theme/DesignTokens/` | 仅供编译阶段使用的 DesignToken、ControlToken builder、定义和 value converter |
 | `Localization/` | 根 Builder 的本地化扩展；Catalog、Snapshot、Manager 和资源扩展位于 `AtomUI.Localization` 项目 |
 | `Collections/` | ItemsSource 集合适配与弱事件转发 |
-| `Animations/` | Avalonia Transition 扩展；共享状态动效初始化的职责与接入边界见专项架构及验证文档 |
+| `Animations/` | Avalonia Transition 扩展及[主题时长消费](transition-durations.md)；共享状态动效初始化的职责与接入边界见专项架构及验证文档 |
 | `MotionScene/` | 进入、离开、移动、折叠等 Motion 抽象，以及供上层控件复用的 internal 动效执行生命周期词汇 |
 | `Assets/Themes/` | 内置主题定义 |
 | `Reflection/`、`Input/`、`Media/`、`Utils/` | 面向上层控件复用的内部工具 |
@@ -59,8 +61,12 @@ Core拥有[Own有效求值](../../architecture/systems/theming/own-token-evaluat
 Generator拥有依赖声明与强类型计划生成；具体Control包拥有实际视觉语义和消费者，Core不下沉产品Token。
 
 现行Token CommitCore保持静默引用交换、Publish保持不可回滚。品牌可恢复接线/预激活在其提交前处理，提交后的
-Token诊断与品牌表现结果区分；不能把原生Styles修改塞入CommitCore。新合同尚需源码迁移与机制验证，
+Token诊断与品牌表现结果区分；不能把原生Styles修改塞入CommitCore。具体Control消费迁移与全平台验证继续独立验收，
 当前证据由[主题验证边界](../../architecture/systems/theming/verification.md)维护，不由本模块概览宣告通过。
+
+内部 `ThemeStyleContext` 按实际宿主使用惰性创建，`ThemeStyleHostLease` 复用 Application、Provider 和现有独立窗口
+lease 的所有权，`ThemeStyleUpdate` 提供分阶段准备、接线、激活、恢复及退役原语。它们不修改 Token Snapshot；
+有效输入的继承/重置及版本1表现结果由同一Manager批次协调；公开品牌配方接口位于Theme/Branding，Token Snapshot继续只保留Token数据。
 
 ## 集合与 Motion 生命周期
 
@@ -125,3 +131,5 @@ ThemeManager 管理自己的主题资源字典与根 Context Style；Localizatio
 - [启动与注册链路](../../architecture/foundations/startup-and-registration.md)
 - [运行平台策略](../../architecture/foundations/runtime-platforms.md)
 - [统一图片加载系统](../../architecture/systems/image-loading/overview.md)
+
+主题托管表现的批次协调由 `ThemeManager.Presentation` 与 `Styling/ThemeStyleBatch` 拥有，Token Snapshot 不持有 Style/Visual。`IThemeManager` 增加版本1表现结果/事件及显式清理重试；Provider/Window/root 清理失败由统一有界责任表保留。详细合同及公开配方格式见[品牌协调](../../architecture/systems/theming/brand-recipes.md#41-统一表现协调的现行接口)。

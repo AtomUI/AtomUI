@@ -122,6 +122,9 @@ public partial class DesignToken : AbstractDesignToken
         ColorFocusBorder           = ColorPrimaryBorder;
         WaveAnimationRange         = LineWidth * 6;
         WaveStartOpacity           = 0.4;
+        WaveSizeMotionDuration     = MotionDurationSlow;
+        WaveOpacityMotionDuration  = MotionDurationSlow > TimeSpan.Zero
+            ? MotionDurationSlow.Add(TimeSpan.FromMilliseconds(50)) : TimeSpan.Zero;
 
         // Control
         ControlOutlineWidth = LineWidth * 2;
@@ -323,6 +326,8 @@ public partial class DesignToken : AbstractDesignToken
             MotionDurationMid      = TimeSpan.Zero;
             MotionDurationSlow     = TimeSpan.Zero;
             MotionDurationVerySlow = TimeSpan.Zero;
+            WaveSizeMotionDuration = TimeSpan.Zero;
+            WaveOpacityMotionDuration = TimeSpan.Zero;
         }
         if (!EnableWaveSpirit)
         {

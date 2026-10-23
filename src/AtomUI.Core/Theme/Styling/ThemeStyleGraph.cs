@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.Controls.Templates;
+using AtomUI.Theme.Branding;
 
 namespace AtomUI.Theme.Styling;
 
@@ -10,12 +12,13 @@ internal static class ThemeStyleGraph
     private static readonly ConditionalWeakTable<Style, object> s_prepared = new();
     private static readonly object s_marker = new();
 
-    internal static void Prepare(Style root, Selector qualifiedSelector)
+    internal static void Prepare(Style root, Selector qualifiedSelector,
+        ThemeStyleCapabilities capabilities = ThemeStyleCapabilities.QualifiedStyles)
     {
         Dispatcher.UIThread.VerifyAccess();
         var nodes = new List<Style>();
         var visited = new HashSet<Style>(ReferenceEqualityComparer.Instance);
-        Validate(root, null, nodes, visited);
+        Validate(root, null, nodes, visited, capabilities);
 
         var originalSelector = root.Selector;
         root.Selector = qualifiedSelector;
@@ -49,7 +52,8 @@ internal static class ThemeStyleGraph
         Style node,
         Style? expectedParent,
         List<Style> nodes,
-        HashSet<Style> visited)
+        HashSet<Style> visited,
+        ThemeStyleCapabilities capabilities)
     {
         if (!visited.Add(node))
         {
@@ -62,6 +66,19 @@ internal static class ThemeStyleGraph
         if (s_prepared.TryGetValue(node, out _))
         {
             throw new InvalidOperationException("A managed style node can only be prepared once.");
+        }
+
+        foreach (var entry in node.Setters)
+        {
+            if (entry is not Setter setter || setter.Property is null || setter.Property.IsDirect || setter.Property.IsReadOnly)
+            {
+                throw new InvalidOperationException("A qualified asset requires writable styled-property setters.");
+            }
+            if (setter.Value is IControlTemplate or IDataTemplate or ControlTheme &&
+                (capabilities & ThemeStyleCapabilities.CompiledTemplates) == 0)
+            {
+                throw new InvalidOperationException("Template setters require the declared compiled-template capability.");
+            }
         }
 
         var resources = node.Resources;
@@ -77,7 +94,7 @@ internal static class ThemeStyleGraph
             {
                 throw new InvalidOperationException("The managed style profile only supports native Style nodes.");
             }
-            Validate(childStyle, node, nodes, visited);
+            Validate(childStyle, node, nodes, visited, capabilities);
         }
     }
 }

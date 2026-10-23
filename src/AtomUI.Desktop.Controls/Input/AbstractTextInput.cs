@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -24,7 +25,8 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
                                            IFormItemAware,
                                            IFormItemFeedbackAware,
                                            IInputControlStatusAware,
-                                           IInputControlStyleVariantAware
+                                           IInputControlStyleVariantAware,
+                                           IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -372,6 +374,14 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
         return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
     }
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 ICompactSpaceAware 接口
+
     void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
     {
         SetCurrentValue(IsUsedInCompactSpaceProperty, position is not null);
@@ -384,6 +394,8 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
     }
 
     double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
+
+    #endregion
 
     #region 实现 FormItem 接口
 
@@ -494,6 +506,10 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
     /// application-level customization wins over the frame state machine, mirroring antd
     /// inline styles.root semantics. An unset owner value restores the state machine.
     /// </summary>
+    // ControlTheme cannot preserve this optional LocalValue contract: on Avalonia 12,
+    // an initially-Unset local compiled binding seeds the null metadata default instead
+    // of leaving state styles active. Lower binding priorities also change the explicit
+    // root-brush-over-hover contract. Keep the conditional write/clear without subscriptions.
     private void RelayRootSurfaceBrush(AvaloniaProperty property)
     {
         if (_inputControlFrame is null)

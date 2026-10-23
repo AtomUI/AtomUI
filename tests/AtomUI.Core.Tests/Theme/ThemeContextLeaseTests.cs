@@ -1,4 +1,5 @@
 using AtomUI.Theme;
+using AtomUI.Theme.Styling;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Shouldly;
@@ -18,8 +19,11 @@ public class ThemeContextLeaseTests
             var host = new Window();
 
             using var lease = ThemeContextLease.Attach(host, context);
+            host.ApplyStyling();
 
             host.GetValue(ThemeScope.ContextProperty).ShouldBeSameAs(context);
+            host.GetValue(ThemeStyleQualification.ActiveProperty)
+                .ShouldBeSameAs(context.Styles.GetValue(ThemeStyleContext.ActivationProperty));
             host.RequestedThemeVariant.ShouldBe(ThemeVariant.Light);
             host.Resources.MergedDictionaries
                 .OfType<ThemeContextResourceBridge>()
@@ -63,6 +67,8 @@ public class ThemeContextLeaseTests
             lease.Dispose();
 
             host.IsSet(ThemeScope.ContextProperty).ShouldBeFalse();
+            host.IsSet(ThemeStyleQualification.ActiveProperty).ShouldBeFalse();
+            host.Styles.ShouldBeEmpty();
             host.Resources.MergedDictionaries
                 .OfType<ThemeContextResourceBridge>()
                 .ShouldBeEmpty();

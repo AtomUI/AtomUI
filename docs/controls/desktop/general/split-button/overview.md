@@ -166,3 +166,5 @@ Token 说明：
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 确认没有新增专属 Token，主题仍复用 SharedToken 或关联控件 Token。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+组件Own的语义及默认依赖见[Token合同](token.md)，组合节点按各自identity消费。

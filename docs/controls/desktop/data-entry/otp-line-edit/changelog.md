@@ -2,6 +2,14 @@
 
 本文档记录 OtpLineEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-23
+
+- 追加独立CaretBlinkDuration/CaretBlinkEasing Own及V2修订2，保留旧四ID，默认1s线性往返不变；非正周期为静态可见输入反馈，装饰motion开关不改变既有光标节奏。三个关键帧保持AXAML声明，每光标持有原生动画Style，隐藏暂停、detach退役及可变缓动隔离遵循框架生命周期。
+- 将caret显隐移入ControlTheme，保持活动且启用的合同；修复主题字号热更新后，已填字符的caret右移量停留在旧字号的问题，保留既有默认几何与blink曲线。
+- 光标宽度、下划线底边和分隔符左间距接入有效Global，默认1/1/4不变；分隔符默认Margin移至共享ControlTheme，允许专用Style覆盖。
+- 修正cell/separator部件路由以越过生成容器，补全部件正式契约及编译AXAML命中验证。
+- 根与cell的45处资源改为OtpLineEdit有效Global，接通三档高度/字号、状态颜色、选区、占位符、操作间距及motion，保留四个Own和原生属性优先级。
+
 ## 2026-09-16
 
 - Behavior

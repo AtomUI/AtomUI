@@ -3,10 +3,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:LineEdit}" TargetType="atom:LineEdit">
+    <ControlTheme x:Key="{x:Type atom:LineEdit}" TargetType="atom:LineEdit" x:DataType="atom:LineEdit">
         <ControlTheme.Resources>
             <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
         </ControlTheme.Resources>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:LineEditTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <CompiledBindingExtension Path="$self.IsCustomFontSize" />
+                <atom:LineEditTokenResource Kind="InputFontSize" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="InputFontSize" />
+                <atom:LineEditTokenResource Kind="InputFontSizeSM" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="FontSizeSM" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="InputFontSizeSM" />
+                <atom:LineEditTokenResource Kind="InputFontSizeLG" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="FontSizeLG" WhenExplicit="True" />
+                <atom:LineEditTokenResource Kind="InputFontSizeLG" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="Foreground" Value="{atom:LineEditTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:AddOnDecoratedBox
@@ -18,6 +43,10 @@
                     RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
+                    ContentFramePadding="{TemplateBinding Padding}"
+                    Foreground="{TemplateBinding Foreground}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
                     StyleVariant="{TemplateBinding StyleVariant}"
                     SizeType="{TemplateBinding SizeType}"
                     Status="{TemplateBinding Status}"
@@ -44,7 +73,7 @@
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
                                     Classes.semantic-suffix="True"
-                                    Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                    Spacing="{atom:LineEditTokenResource UniformlyPaddingXXS}">
                             <atom:InputClearIconButton
                                 Classes.semantic-clear="True"
                                 Name="PART_ClearButton"
@@ -76,7 +105,7 @@
                             <atom:TextBlock Name="TextCountIndicator"
                                             Classes.semantic-count="True"
                                             VerticalAlignment="Center"
-                                            Foreground="{atom:SharedTokenResource ColorTextPlaceholder}"
+                                            Foreground="{atom:LineEditTokenResource ColorTextPlaceholder}"
                                             Text="{Binding $parent[atom:LineEdit].CountText}"
                                             IsVisible="{Binding $parent[atom:LineEdit].IsShowCount}" />
                         </StackPanel>
@@ -127,57 +156,71 @@
 
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="SelectionBrush" Value="{atom:LineEditTokenResource SelectionBackground}" />
+        <Setter Property="CaretBrush" Value="{atom:LineEditTokenResource ColorText}" />
         <Setter Property="SelectionForegroundBrush"
-                Value="{atom:SharedTokenResource SelectionForeground}" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                Value="{atom:LineEditTokenResource SelectionForeground}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:LineEditTokenResource ColorTextPlaceholder}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:LineEditTokenResource BorderThickness}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="Padding" Value="{atom:LineEditTokenResource InputPaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:LineEditTokenResource BorderRadiusLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{atom:LineEditTokenResource InputPadding}" />
+            <Setter Property="CornerRadius" Value="{atom:LineEditTokenResource BorderRadius}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="Padding" Value="{atom:LineEditTokenResource InputPaddingSM}" />
+            <Setter Property="CornerRadius" Value="{atom:LineEditTokenResource BorderRadiusSM}" />
+        </Style>
+
+        <Setter Property="IsMotionEnabled" Value="{atom:LineEditTokenResource EnableMotion}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="ClipToBounds" Value="False" />
 
         <Style Selector="^[StyleVariant=Borderless]">
             <Style Selector="^[Status=Error]">
-                <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
+                <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:LineEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
-                <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
+                <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:LineEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
-                <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
+                <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:LineEditTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>
         <Style Selector="^[StyleVariant=Filled]">
             <Style Selector="^[Status=Error]">
-                <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
+                <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:LineEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
-                <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
+                <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:LineEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
-                <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
+                <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:LineEditTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>

@@ -56,6 +56,7 @@ internal static class AtomUIDiagnosticIds
     public const string ControlTokenDefaultSignature = "ATOMUIGEN042";
     public const string ControlTokenDefaultDependency = "ATOMUIGEN043";
     public const string ControlTokenAliasDeclaration = "ATOMUIGEN044";
+    public const string TokenResourceOrdinalContract = "ATOMUIGEN045";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";
     public const string LocalizationInvalidCatalog = "ATOMUILOC003";

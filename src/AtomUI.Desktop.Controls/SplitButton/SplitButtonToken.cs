@@ -2,14 +2,12 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class SplitButtonToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class SplitButtonToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public double GutterToFlyout { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        GutterToFlyout = EffectiveGlobalToken.UniformlyMarginXXS;
-    }
+    [ControlTokenDefault(nameof(GutterToFlyout))]
+    private static double DefaultForGutterToFlyout(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXXS;
 }

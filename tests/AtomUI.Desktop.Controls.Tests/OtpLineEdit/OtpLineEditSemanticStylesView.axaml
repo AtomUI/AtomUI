@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.OtpLineEdit.OtpLineEditSemanticStylesView">
+    <UserControl.Styles>
+        <Style Selector="atom|OtpLineEdit">
+            <atom:OtpLineEditCellStyle>
+                <Setter Property="BorderBrush" Value="#FF00FF" />
+                <Setter Property="Padding" Value="3" />
+            </atom:OtpLineEditCellStyle>
+            <atom:OtpLineEditSeparatorStyle>
+                <Setter Property="Margin" Value="9,0,0,0" />
+            </atom:OtpLineEditSeparatorStyle>
+        </Style>
+    </UserControl.Styles>
+    <atom:OtpLineEdit Width="480" Text="123456" Separator="-" IsMotionEnabled="False" />
+</UserControl>

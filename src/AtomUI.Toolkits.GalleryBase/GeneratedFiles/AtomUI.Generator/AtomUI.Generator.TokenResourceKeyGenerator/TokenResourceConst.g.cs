@@ -258,6 +258,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -284,7 +288,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -549,6 +553,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -575,7 +583,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -840,6 +848,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -866,7 +878,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -879,25 +891,25 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 
     public enum GalleryShowCaseHeaderTokenKind
     {
-        HeaderMargin,
-        HeaderSpacing,
-        MetadataCornerRadius,
-        MetadataItemSpacing,
-        MetadataLabelWidth,
-        MetadataLineHeight,
-        MetadataLineSpacing,
-        MetadataMinHeight,
-        MetadataPadding,
-        MetadataPairSpacing,
-        MetadataValueFontFamily,
-        MetadataValueWidth,
-        SubtitleFontSize,
-        SummarySpacing,
-        TagItemSpacing,
-        TagLineSpacing,
-        TagsMargin,
-        TitleFontSize,
-        TitleFontWeight,
+        HeaderMargin = 0,
+        HeaderSpacing = 1,
+        MetadataCornerRadius = 2,
+        MetadataItemSpacing = 3,
+        MetadataLabelWidth = 4,
+        MetadataLineHeight = 5,
+        MetadataLineSpacing = 6,
+        MetadataMinHeight = 7,
+        MetadataPadding = 8,
+        MetadataPairSpacing = 9,
+        MetadataValueFontFamily = 10,
+        MetadataValueWidth = 11,
+        SubtitleFontSize = 12,
+        SummarySpacing = 13,
+        TagItemSpacing = 14,
+        TagLineSpacing = 15,
+        TagsMargin = 16,
+        TitleFontSize = 17,
+        TitleFontWeight = 18,
     }
 
     public enum GalleryShowCaseHeaderTokenKey
@@ -1154,6 +1166,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -1199,7 +1215,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1468,6 +1484,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -1494,7 +1514,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1507,9 +1527,9 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 
     public enum GalleryStickyTabsHostTokenKind
     {
-        StickyBackground,
-        StickyBorderBrush,
-        StickyContentPadding,
+        StickyBackground = 0,
+        StickyBorderBrush = 1,
+        StickyContentPadding = 2,
     }
 
     public enum GalleryStickyTabsHostTokenKey
@@ -1766,6 +1786,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -1795,7 +1819,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1812,8 +1836,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 
     public enum GalleryWindowTitleBarTokenKind
     {
-        MenuFontWeight,
-        MenuMargin,
+        MenuFontWeight = 0,
+        MenuMargin = 1,
     }
 
     public enum GalleryWindowTitleBarTokenKey
@@ -2070,6 +2094,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2098,7 +2126,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2367,6 +2395,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2393,7 +2425,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2658,6 +2690,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2684,7 +2720,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2949,6 +2985,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2975,7 +3015,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2988,15 +3028,15 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 
     public enum ShowCaseItemTokenKind
     {
-        BadgePreviewMargin,
-        CardCornerRadius,
-        CardPadding,
-        CardShadow,
-        DeferredPlaceholderCornerRadius,
-        DeferredPlaceholderHeight,
-        DescriptionMargin,
-        PreviewMargin,
-        TitleFontWeight,
+        BadgePreviewMargin = 0,
+        CardCornerRadius = 1,
+        CardPadding = 2,
+        CardShadow = 3,
+        DeferredPlaceholderCornerRadius = 4,
+        DeferredPlaceholderHeight = 5,
+        DescriptionMargin = 6,
+        PreviewMargin = 7,
+        TitleFontWeight = 8,
     }
 
     public enum ShowCaseItemTokenKey
@@ -3253,6 +3293,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3288,7 +3332,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3305,11 +3349,11 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 
     public enum ShowCasePanelTokenKind
     {
-        ColumnGap,
-        ContentMargin,
-        MaxColumns,
-        MinItemWidth,
-        RowGap,
+        ColumnGap = 0,
+        ContentMargin = 1,
+        MaxColumns = 2,
+        MinItemWidth = 3,
+        RowGap = 4,
     }
 
     public enum ShowCasePanelTokenKey
@@ -3566,6 +3610,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3597,7 +3645,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3614,10 +3662,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 
     public enum ShowCaseZoomOverlayTokenKind
     {
-        CardPadding,
-        DescriptionMargin,
-        HeaderMargin,
-        TitleFontWeight,
+        CardPadding = 0,
+        DescriptionMargin = 1,
+        HeaderMargin = 2,
+        TitleFontWeight = 3,
     }
 
     public enum ShowCaseZoomOverlayTokenKey
@@ -3874,6 +3922,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveOpacityEasingCurve = (int)SharedTokenKind.WaveOpacityEasingCurve,
+        WaveOpacityMotionDuration = (int)SharedTokenKind.WaveOpacityMotionDuration,
+        WaveSizeEasingCurve = (int)SharedTokenKind.WaveSizeEasingCurve,
+        WaveSizeMotionDuration = (int)SharedTokenKind.WaveSizeMotionDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3904,7 +3956,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 259u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }

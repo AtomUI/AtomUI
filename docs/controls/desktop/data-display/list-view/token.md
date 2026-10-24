@@ -36,9 +36,9 @@ ListViewToken 当前按 ListView 语义分为六类。
 
 默认映射：
 
-- 普通和 hover 使用 `SharedToken.ColorTextSecondary`。
-- selected 使用 `SharedToken.ColorText`。
-- disabled 使用 `SharedToken.ColorTextDisabled`。
+- 普通和 hover 使用 `Global.ColorTextSecondary`。
+- selected 使用 `Global.ColorText`。
+- disabled 使用 `Global.ColorTextDisabled`。
 
 组标题文字不使用这些 Token，而使用 `GroupHeaderColor`。
 
@@ -53,8 +53,8 @@ ListViewToken 当前按 ListView 语义分为六类。
 默认映射：
 
 - 普通背景使用透明色。
-- hover 背景使用 `SharedToken.ColorBgTextHover`。
-- selected 背景使用 `SharedToken.ControlItemBgActive`。
+- hover 背景使用 `Global.ColorBgTextHover`。
+- selected 背景使用 `Global.ControlItemBgActive`。
 
 `ItemHoverBg` 和 `ItemSelectedBg` 是 ListView public styled property，theme 默认值来自这些 Token，允许实例级覆盖。组标题保持普通背景，不应用 hover / selected 背景规则。
 
@@ -83,7 +83,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 - `GroupHeaderColor`
 - `SelectedIndicatorMargin`
 
-`GroupHeaderColor` 控制组标题项文字颜色，默认来自 `SharedToken.ColorTextDescription`。
+`GroupHeaderColor` 控制组标题项文字颜色，默认来自 `Global.ColorTextDescription`。
 
 `SelectedIndicatorMargin` 控制 selected indicator 与内容区域之间的距离。图标颜色和尺寸来自 SharedToken，不在 ListViewToken 中重复定义。
 
@@ -134,3 +134,11 @@ ListViewToken 变更验证：
 - `PaginationMargin` 在 top、bottom 和 both 分页器场景下保持稳定间距。
 - `GroupHeaderColor` 在分组列表中可读且弱于普通条目。
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。
+
+## 精确默认与禁用文字
+
+本文Global指实际ListView身份的有效Global。Own采用DependencyDefaultsV2/Revision1，每字段静态函数只读取所声明的Global输入；保留字段、类型、资源ID和原默认公式，显式Own（含透明/零边距）不会被缺省重算覆盖。本轮字段没有Own间依赖，不添加虚构依赖。
+
+ItemDisabledColor进入原disabled选择器下的ContentPresenter.Foreground，保持原节点与优先级。其默认随本控件有效Global.ColorTextDisabled，明确Own优先；清除恢复有效默认。普通/hover/selected及其他公开子Control的Global职责保持，不能把此颜色修复作为整个列表家族验收。
+
+兼容说明：disabled文本现在与普通/hover/selected文字一样由所属列表Own管理。此前直接通过Shared/条目Global的ColorTextDisabled绕过该Own的配置，应改为对应列表的ItemDisabledColor或生成专用Style；默认颜色不变。继承这些基础主题的Candidate/Cascader过滤项、Select候选项、Transfer项与GroupHeader按当前声明复用该Own，完整业务Host与其他owner接线仍须各家族验证。

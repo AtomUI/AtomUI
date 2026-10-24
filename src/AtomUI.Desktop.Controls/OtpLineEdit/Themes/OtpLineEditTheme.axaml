@@ -3,7 +3,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:OtpLineEdit}" TargetType="atom:OtpLineEdit">
+    <ControlTheme x:Key="{x:Type atom:OtpLineEdit}" TargetType="atom:OtpLineEdit" x:DataType="atom:OtpLineEdit">
+        <Setter Property="Foreground" Value="{atom:OtpLineEditTokenResource ColorText}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OtpLineEditTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OtpLineEditTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:OtpLineEditTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OtpLineEditTokenResource Kind="FontSize" />
+                <atom:OtpLineEditTokenResource Kind="FontSizeSM" WhenExplicit="True" />
+                <atom:OtpLineEditTokenResource Kind="FontSizeSM" />
+                <atom:OtpLineEditTokenResource Kind="FontSizeLG" WhenExplicit="True" />
+                <atom:OtpLineEditTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
         <ControlTheme.Resources>
             <ControlTheme x:Key="OtpLineEditSeparatorBorderTheme" TargetType="Border">
                 <Setter Property="Margin">
@@ -108,6 +128,10 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="IsMotionEnabled" Value="{atom:OtpLineEditTokenResource EnableMotion}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{atom:OtpLineEditTokenResource ColorTextDisabled}" />
+        </Style>
 
     </ControlTheme>
 </ResourceDictionary>

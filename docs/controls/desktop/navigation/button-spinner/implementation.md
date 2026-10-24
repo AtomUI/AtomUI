@@ -190,3 +190,5 @@ ButtonSpinner 的交互事件应从输入源收敛到控件级语义事件：
 尺寸预设先提供内部默认参数，再由原生 Padding/CornerRadius 决定有效值；内容 inset 与 handle 的方向/占位分别处理。
 
 几何默认、原生优先级和组合边界见[共享输入表面](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+附加区域的背景、描边、三档padding/行高与内容面板SpacingXXS由实际公开owner的Effective Global提供。内部SizeTypeAwareIconPresenter拥有附加图标的尺寸默认；模板IconPresenter通过TemplateBinding消费宽高，并保留自身公开画刷identity。Custom只保留基础IconSize，显式宽高和child本地值遵循原生优先级。NumericUpDown使用的内部NumericUpDownSpinner未独立注册，其共享附加区域沿树归NumericUpDown。

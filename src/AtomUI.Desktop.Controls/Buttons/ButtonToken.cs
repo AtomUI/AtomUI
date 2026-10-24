@@ -153,22 +153,22 @@ internal sealed partial class ButtonToken : AbstractControlDesignToken, IControl
     public Thickness ContentPaddingSM { get; set; }
 
     /// <summary>
-    /// 按钮右边一个额外的区域内容控件间的间隔
+    /// 历史保留：额外内容间隔；当前 Button 无公开额外内容区域，不参与渲染。
     /// </summary>
     public double ExtraContentItemSpacing { get; set; }
     
     /// <summary>
-    /// 按钮右边一个额外的区域对右侧的小号外边距
+    /// 历史保留：小号额外内容边距；当前 Button 无公开额外内容区域，不参与渲染。
     /// </summary>
     public Thickness ExtraContentMarginSM { get; set; }
 
     /// <summary>
-    /// 按钮右边一个额外的区域对右侧的外边距
+    /// 历史保留：额外内容边距；当前 Button 无公开额外内容区域，不参与渲染。
     /// </summary>
     public Thickness ExtraContentMargin { get; set; }
 
     /// <summary>
-    /// 按钮右边一个额外的区域对右侧的大号外边距
+    /// 历史保留：大号额外内容边距；当前 Button 无公开额外内容区域，不参与渲染。
     /// </summary>
     public Thickness ExtraContentMarginLG { get; set; }
 
@@ -203,7 +203,7 @@ internal sealed partial class ButtonToken : AbstractControlDesignToken, IControl
     public Thickness IconEndMargin { get; set; }
 
     /// <summary>
-    /// 按钮组边框颜色
+    /// 历史保留：按钮组接缝颜色；当前 Button 无对应组区域，不参与渲染。
     /// </summary>
     public Color GroupBorderColor { get; set; }
 

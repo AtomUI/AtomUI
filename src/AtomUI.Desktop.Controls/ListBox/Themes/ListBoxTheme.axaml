@@ -57,9 +57,9 @@
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="ItemHoverBg" Value="{atom:ListBoxTokenResource ItemHoverBgColor}" />
         <Setter Property="ItemSelectedBg" Value="{atom:ListBoxTokenResource ItemSelectedBgColor}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="Padding" Value="{atom:ListBoxTokenResource ContentPadding}" />
         <Setter Property="FilterHighlightForeground" Value="{atom:ListBoxTokenResource FilterHighlightColor}" />
         
@@ -70,18 +70,18 @@
         </Setter>
         
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource PaddingXL}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource PaddingXL}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-            <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
         </Style>
         
         <Setter Property="ItemTemplate">

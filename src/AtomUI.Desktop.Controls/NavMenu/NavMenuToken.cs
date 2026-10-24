@@ -61,7 +61,7 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     public CornerRadius SubMenuItemBorderRadius { get; set; }
     
     /// <summary>
-    /// 快捷键颜色
+    /// 历史保留：快捷键颜色；当前 NavMenu 无快捷键文字节点，不参与渲染。
     /// </summary>
     public Color KeyGestureColor { get; set; }
     
@@ -97,26 +97,31 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     
     /// <summary>
     /// 危险菜单项文字颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字悬浮颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemHoverColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字选中颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemSelectedColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字激活颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemActiveBg { get; set; }
     
     /// <summary>
     /// 危险菜单项文字选中颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemSelectedBg { get; set; }
     
@@ -272,6 +277,7 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     
     /// <summary>
     /// 暗色模式下的危险菜单项文字颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DarkDangerItemColor { get; set; }
     
@@ -317,21 +323,25 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     
     /// <summary>
     /// 暗色模式下的危险菜单项选中背景
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DarkDangerItemSelectedBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项悬浮文字背景
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DarkDangerItemHoverColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项选中文字颜色
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DarkDangerItemSelectedColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项激活态背景
+    /// 历史保留：当前 NavMenu 无公开危险项入口，不参与渲染。
     /// </summary>
     public Color DarkDangerItemActiveBg { get; set; }
 

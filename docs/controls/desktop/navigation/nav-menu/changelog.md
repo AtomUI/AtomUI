@@ -46,6 +46,11 @@
 - Inline Collapsed 根宽度改由原生 Animation 驱动内部布局值，移除16ms延时循环与逐帧Dispatcher投递；保留CubicEaseOut、主题时长、尺寸coercion和选中/展开路径语义。
 - 反转在取消前捕获当前呈现宽度；Mode切换取消旧宽度执行，避免临时宽度继续影响新的布局模式。动画绑定释放后由当前请求完成一次收尾，保留base Width/MinWidth及绑定。
 
+## 2026-10-24
+
+- KeyGestureColor归Reserved，保留名称、类型、资源ID及配置往返；当前没有快捷键文字节点，不作为可用调节项展示。继续源码核定后，十个DangerItem/DarkDangerItem色字段同样归Reserved；当前无危险项入口，不新增功能。
+
+
 ## 2026-09-14
 
 - 修复根菜单卸载后，外部持有的节点/分组经资源宿主和属性订阅保留整个菜单的问题。挂载作用域统一管理资源 attachment 与数据绑定，重新挂载恢复最新资源、数据和原选择；资源回调删除节点后不再恢复旧绑定。

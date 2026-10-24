@@ -46,6 +46,10 @@ CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品�
 业务布局、模板内容、动态资源覆盖和尺寸语义必须完整；普通主题修改不能让农历次级行与业务条重叠。
 状态选择在 Theme Selector，资源更新由 scoped owner 链传播，不能以静态值规避生命周期。
 
+CalendarToken与LunarCalendarToken均采用DependencyDefaultsV2 Revision1，各十一项名称／类型／默认／资源ID／slot保持。普通Calendar各字段继续读取原有效Global或常量。农历MiniContentHeight读取有效Own MiniDateCellSize，FullCellMinHeight和RangeBarTopOffset读取有效Own SecondaryTextLineHeight；明确下游值优先，清除后根据仍有效的上游重新计算。MiniMonthCellWidth继续独立取有效Global ControlHeightLG×2，不自动跟随MiniDateCellSize。
+
+MiniContentHeight的0是明确高度输入；SecondaryTextLineHeight须遵守文字LineHeight的正数合同，不能因其他尺寸接受0就推断该字段也接受0。非法行高的配置诊断和完整极值状态仍需专项验收。业务条位置按实际日期行几何加RangeBarTopOffset计算；行高与避让同时增长时，绝对Y变化包含此前行的增长，不能只比较绝对Y是否增加一个行高差值。
+
 ## 6. 验证策略
 
 覆盖 Month/Year × Mini/Fullscreen、普通/农历、ShowWeek、Cell/FullCell 模板与业务条。

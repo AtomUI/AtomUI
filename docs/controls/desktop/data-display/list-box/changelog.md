@@ -3,6 +3,11 @@
 本文档记录 ListBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-24
+
+- Own默认改为DependencyDefaultsV2/Revision1，保留缺省值、字段/类型及资源ID。
+- ItemDisabledColor接通实际disabled文字，其有效Global默认、明确Own/透明值及清除均进入原style Setter。
+
 ## 2026-10-20
 
 - Fixed

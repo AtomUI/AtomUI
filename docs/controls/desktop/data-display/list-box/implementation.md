@@ -2,6 +2,8 @@
 
 本文档描述 ListBox 桌面版的内部源码结构、状态流转、容器生命周期、过滤、点击、空状态和 CandidateList 复用边界。公共设计与 API 契约见 [ListBox 桌面版架构设计](overview.md)，Semantic Part 契约见 [ListBox Semantic Part 契约](semantic-part.md)，Token 语义见 [ListBox Token 设计](token.md)，变化记录见 [ListBox Changelog](changelog.md)。
 
+Token默认由生成的V2静态计划求值，所有既有Own保持原字段和资源ID；本轮14字段仅有Global输入。disabled内容前景在既有ControlTheme style Setter读取自身ItemDisabledColor，不写本地值、不增加状态事件或资源订阅。容器、数据与回收逻辑未因该修复改动。
+
 ## 1. 实现定位
 
 ListBox 的实现目标是在 Avalonia `ListBox` 基类上增加 AtomUI 的视觉、Token、空状态、选中指示器、过滤高亮和候选列表复用能力，并保持 Avalonia selection model 与 keyboard navigation 语义稳定。

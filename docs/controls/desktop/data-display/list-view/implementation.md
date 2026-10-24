@@ -2,6 +2,8 @@
 
 本文档描述 ListView 桌面版的内部源码结构、数据视图归一、选择状态、分页、分组、过滤、容器生命周期、虚拟化上下文和主题接入。公共设计与 API 契约见 [ListView 桌面版架构设计](overview.md)，完整 Semantic Part 公共契约见 [ListView Semantic Part 契约](semantic-part.md)，完整选择设计见 [ListView 选择模型设计](selection-model-design.md)，Token 语义见 [ListView Token 设计](token.md)，变化记录见 [ListView Changelog](changelog.md)。
 
+Token默认由生成的V2静态计划求值，所有既有Own保持原字段和资源ID；本轮16字段仅有Global输入。disabled内容前景在既有ControlTheme style Setter读取自身ItemDisabledColor，不写本地值、不增加状态事件或资源订阅。容器、数据与回收逻辑未因该修复改动。
+
 ## 1. 实现定位
 
 ListView 的实现目标是在 Avalonia `ItemsControl` 基础上增加 AtomUI 数据视图列表能力，并保持 public API、主题契约和容器生命周期稳定。实现文档覆盖 `ListView`、`ListViewItem`、选择 partial、分页 partial、虚拟化上下文、`ListCollectionView` 协作、ListView token 和 AXAML theme。

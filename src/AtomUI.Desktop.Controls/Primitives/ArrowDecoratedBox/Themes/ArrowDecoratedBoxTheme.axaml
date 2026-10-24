@@ -43,15 +43,15 @@
     </Setter>
 
     <Style Selector="^:is(atom|ArrowDecoratedBox)">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ArrowDecoratedBoxTokenResource EnableMotion}" />
+        <Setter Property="Foreground" Value="{atom:ArrowDecoratedBoxTokenResource ColorText}" />
+        <Setter Property="Background" Value="{atom:ArrowDecoratedBoxTokenResource ColorBgElevated}" />
+        <Setter Property="BorderBrush" Value="{atom:ArrowDecoratedBoxTokenResource ColorBorderSecondary}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="MinHeight" Value="{atom:ArrowDecoratedBoxTokenResource ControlHeight}" />
         <Setter Property="Padding" Value="{atom:ArrowDecoratedBoxTokenResource ContentPadding}" />
         <Setter Property="ArrowSize" Value="{atom:ArrowDecoratedBoxTokenResource ArrowSize}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:ArrowDecoratedBoxTokenResource BorderRadius}" />
 
         <!--  带边框状态下浮动箭头无法与边框融合呈现,内置主题直接隐藏箭头  -->
         <Style Selector="^:bordered">

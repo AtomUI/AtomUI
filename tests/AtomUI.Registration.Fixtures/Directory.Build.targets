@@ -10,4 +10,19 @@
             <AtomUIRegistrationToolCandidate Include="$(FixtureTypeMapBackendOverride)" Kind="Backend" />
         </ItemGroup>
     </Target>
+    <!-- Shared repository outputs can expose the same byte-identical SDK assembly via
+         both its package path and a ProjectReference output. Canonicalize the final
+         fingerprinted endpoint list before the SDK creates its unique-key boot map. -->
+    <Target Name="DeduplicateFixtureBrowserWasmStaticWebAssets"
+            AfterTargets="ResolveWasmOutputs"
+            BeforeTargets="_GenerateBuildWasmBootJson;_AddWasmStaticWebAssets"
+            Condition="'$(TargetPlatformIdentifier)' == 'browser'">
+        <RemoveDuplicates Inputs="@(WasmStaticWebAsset)">
+            <Output TaskParameter="Filtered" ItemName="_FixtureUniqueWasmStaticWebAsset" />
+        </RemoveDuplicates>
+        <ItemGroup>
+            <WasmStaticWebAsset Remove="@(WasmStaticWebAsset)" />
+            <WasmStaticWebAsset Include="@(_FixtureUniqueWasmStaticWebAsset)" />
+        </ItemGroup>
+    </Target>
 </Project>

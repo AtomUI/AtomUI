@@ -5,6 +5,27 @@
     xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Timeline}" TargetType="atom:Timeline">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:TimelineTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:TimelineTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:TimelineTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:TimelineTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:TimelineTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:TimelineTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
@@ -36,9 +57,9 @@
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="TemplatedControl.BorderBrush"
-                Value="{atom:SharedTokenResource ColorBorder}" />
+                Value="{atom:TimelineTokenResource ColorBorder}" />
         <Setter Property="TemplatedControl.Background"
-                Value="{atom:SharedTokenResource ColorBgContainer}" />
+                Value="{atom:TimelineTokenResource ColorBgContainer}" />
 
     </ControlTheme>
 </ResourceDictionary>

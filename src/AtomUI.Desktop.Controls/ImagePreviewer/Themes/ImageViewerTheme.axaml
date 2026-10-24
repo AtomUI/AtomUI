@@ -107,11 +107,11 @@
 
         <Style Selector="^[IsMotionEnabled=True][SuppressTransformAnimation=False]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <TransformOperationsTransition Property="ImageRenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <DoubleTransition Property="ImageTranslateX" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
                     <DoubleTransition Property="ImageTranslateY" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

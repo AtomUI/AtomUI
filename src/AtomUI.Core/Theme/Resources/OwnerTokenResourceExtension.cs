@@ -15,6 +15,7 @@ namespace AtomUI.Theme.Resources;
 internal sealed class OwnerTokenResourceExtension : MarkupExtension
 {
     public SharedTokenKind Kind { get; set; }
+    public bool WhenControlExplicit { get; set; }
 
     public OwnerTokenResourceExtension() { }
 
@@ -23,9 +24,10 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
         Kind = kind;
     }
 
-    public override object ProvideValue(IServiceProvider serviceProvider) => CreateBinding(Kind);
+    public override object ProvideValue(IServiceProvider serviceProvider) =>
+        CreateBinding(Kind, WhenControlExplicit, WhenControlExplicit);
 
-    internal static BindingBase CreateBinding(SharedTokenKind kind)
+    internal static BindingBase CreateBinding(SharedTokenKind kind, bool whenExplicit = false, bool controlOnly = false)
     {
         var source = new ClrPropertyInfo("OwnerTokenValue", value =>
         {
@@ -46,9 +48,9 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
                     return (Context: context, Key: ResolveResourceKey(owner, context, kind));
                 })
                 .DistinctUntilChanged()
-                .Select(source => source.Context is null
+                .Select(source => source.Context is null || (whenExplicit && source.Key is SharedTokenKind)
                     ? Observable.Return<object?>(AvaloniaProperty.UnsetValue)
-                    : owner.GetResourceObservable(source.Key))
+                    : owner.GetResourceObservable(whenExplicit ? new ExplicitTokenResourceKey(source.Key, controlOnly) : source.Key))
                 .Switch();
         }, null, typeof(IObservable<object?>));
         return new CompiledBindingExtension(new CompiledBindingPathBuilder().Self()

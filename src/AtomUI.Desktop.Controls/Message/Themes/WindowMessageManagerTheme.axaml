@@ -54,7 +54,7 @@
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="translate(0px, 0px)" />
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <DoubleTransition Property="Width"
                                       Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}"
                                       Easing="0.645,0.045,0.355,1" />
@@ -64,7 +64,7 @@
                     <TransformOperationsTransition Property="RenderTransform"
                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}"
                                                    Easing="0.645,0.045,0.355,1" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
             <Style Selector="^.stack-hidden">
                 <Setter Property="Opacity" Value="0" />

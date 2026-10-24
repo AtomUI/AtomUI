@@ -4,6 +4,8 @@
 
 ## 2026-10-23
 
+- 附加区域背景、描边、padding/行高及内容面板间距接入实际owner的Effective Global；内部NumericUpDownSpinner沿树使用NumericUpDown身份。
+- 附加图标由内部包装层消费三档IconSize，保留公开IconPresenter画刷身份、Custom基础尺寸和原生显式宽高优先级。
 - 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。
 - 尺寸预设先提供内部默认参数，再由原生 Padding/CornerRadius 决定有效值；内容 inset 与 handle 的方向/占位分别处理。
 

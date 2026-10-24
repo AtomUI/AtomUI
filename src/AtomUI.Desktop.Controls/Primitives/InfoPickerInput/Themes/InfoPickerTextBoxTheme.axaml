@@ -10,7 +10,7 @@
     </ControlTheme.BasedOn>
 
     <Setter Property="Padding" Value="0" />
-    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
 
     <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
         <Setter Property="Margin" Value="0" />

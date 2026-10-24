@@ -2,11 +2,13 @@ using AtomUI.Controls;
 using AtomUI.Controls.Commons;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
+using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class Timeline : AbstractTimeline
+public partial class Timeline : AbstractTimeline, IThemeInheritanceSource
 {
     public Timeline()
     {
@@ -47,4 +49,12 @@ public partial class Timeline : AbstractTimeline
         item.Classes.Add(TimelineSemanticParts.ItemClass);
         return item;
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent. Its Setters own
+    // the final typography values; this bridge only exposes their actual source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 }

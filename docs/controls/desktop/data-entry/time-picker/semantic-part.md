@@ -42,7 +42,7 @@ Semantic owner：单值 `TimePicker` 与范围 `RangeTimePicker`（语义对齐�
 - `popup.*` 除 `popup.root` 外统一声明 `RuntimeCreated=true`（presenter 子树在运行时组装，生成器豁免宿主模板
   marker 校验，由控件行为测试兜底），其中 `popup.root` 为宿主模板静态节点、`RuntimeCreated=false`。
 - **TimeView 子树类名避让**：`TimeView` 同时被 DatePicker 带时间弹层内嵌（`DatePickerPresenterTheme.axaml` 与
-  `TimedRangeDatePickerPresenterTheme.axaml`）。因此落在 TimeView 子树内的三个 marker 类名使用 `time-` 中缀
+  `RangeDatePickerPresenterTheme.axaml`）。因此落在 TimeView 子树内的三个 marker 类名使用 `time-` 中缀
   （`semantic-time-content` / `semantic-time-column` / `semantic-time-item`），避开 DatePicker 家族已声明的
   `semantic-popup-content` / `semantic-popup-body` / `semantic-cell` 等类名，防止 DatePicker 弹层上下文中的
   契约误命中（详见 §6 对照差异）。

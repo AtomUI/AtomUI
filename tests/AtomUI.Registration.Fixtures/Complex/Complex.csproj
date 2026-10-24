@@ -8,4 +8,8 @@
         <ProjectReference Include="../ThirdParty/ThirdParty.csproj" />
         <PackageReference Include="Avalonia.Headless" Condition="'$(FixtureRealDesktop)' != 'true'" />
     </ItemGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="../Shared/ProductFixtureStyles.axaml" Link="ProductFixtureStyles.axaml" />
+        <Compile Include="../Shared/ProductFixtureStyles.axaml.cs" Link="ProductFixtureStyles.axaml.cs" />
+    </ItemGroup>
 </Project>

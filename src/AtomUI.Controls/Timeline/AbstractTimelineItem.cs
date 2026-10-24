@@ -9,23 +9,18 @@ namespace AtomUI.Controls.Commons;
 
 public abstract class AbstractTimelineItem : ContentControl
 {
-    public const string OrderOddPC = "order-odd";
-    public const string OrderEvenPC = "order-even";
-    public const string OrderFirstPC = "order-first";
-    public const string OrderLastPC = "order-last";
-    public const string PendingItemPC = "pending-item";
-        
+
     #region 公共属性定义
 
     public static readonly StyledProperty<string?> LabelProperty =
         AvaloniaProperty.Register<AbstractTimelineItem, string?>(nameof(Label));
-    
+
     public static readonly StyledProperty<PathIcon?> IndicatorIconProperty =
         AvaloniaProperty.Register<AbstractTimelineItem, PathIcon?>(nameof(IndicatorIcon));
-    
+
     public static readonly StyledProperty<IBrush?> IndicatorColorProperty =
         AvaloniaProperty.Register<AbstractTimelineItem, IBrush?>(nameof(IndicatorColor));
-    
+
     public string? Label
     {
         get => GetValue(LabelProperty);
@@ -37,7 +32,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => GetValue(IndicatorIconProperty);
         set => SetValue(IndicatorIconProperty, value);
     }
-    
+
     public IBrush? IndicatorColor
     {
         get => GetValue(IndicatorColorProperty);
@@ -45,51 +40,57 @@ public abstract class AbstractTimelineItem : ContentControl
     }
     #endregion
 
+    public const string OrderOddPC = "order-odd";
+    public const string OrderEvenPC = "order-even";
+    public const string OrderFirstPC = "order-first";
+    public const string OrderLastPC = "order-last";
+    public const string PendingItemPC = "pending-item";
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<Orientation> OrientationProperty =
         AbstractTimeline.OrientationProperty.AddOwner<AbstractTimelineItem>();
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, TimelineMode> ModeProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, TimelineMode>(nameof(Mode), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, TimelineMode> ModeProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, TimelineMode>(nameof(Mode),
             o => o.Mode,
             (o, v) => o.Mode = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsOddProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsOdd), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsOddProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsOdd),
             o => o.IsOdd,
             (o, v) => o.IsOdd = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsFirstProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsFirst), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsFirstProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsFirst),
             o => o.IsFirst,
             (o, v) => o.IsFirst = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsLastProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsLast), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsLastProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsLast),
             o => o.IsLast,
             (o, v) => o.IsLast = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> NextIsPendingProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(NextIsPending), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> NextIsPendingProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(NextIsPending),
             o => o.NextIsPending,
             (o, v) => o.NextIsPending = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsReverseProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsReverse), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsReverseProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsReverse),
             o => o.IsReverse,
             (o, v) => o.IsReverse = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsPendingProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsPending), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsPendingProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsPending),
             o => o.IsPending,
             (o, v) => o.IsPending = v);
-    
-    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsLabelLayoutProperty = 
-        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsLabelLayout), 
+
+    internal static readonly DirectProperty<AbstractTimelineItem, bool> IsLabelLayoutProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTimelineItem, bool>(nameof(IsLabelLayout),
             o => o.IsLabelLayout,
             (o, v) => o.IsLabelLayout = v);
-        
+
     internal Orientation Orientation
     {
         get => GetValue(OrientationProperty);
@@ -103,7 +104,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => _mode;
         set => SetAndRaise(ModeProperty, ref _mode, value);
     }
-    
+
     private bool _isOdd;
 
     internal bool IsOdd
@@ -111,7 +112,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => _isOdd;
         set => SetAndRaise(IsOddProperty, ref _isOdd, value);
     }
-    
+
     private bool _isFirst;
 
     internal bool IsFirst
@@ -119,7 +120,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => _isFirst;
         set => SetAndRaise(IsFirstProperty, ref _isFirst, value);
     }
-    
+
     private bool _isLast;
 
     internal bool IsLast
@@ -127,7 +128,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => _isLast;
         set => SetAndRaise(IsLastProperty, ref _isLast, value);
     }
-    
+
     private bool _nextIsPending;
 
     internal bool NextIsPending
@@ -143,7 +144,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => _isReverse;
         set => SetAndRaise(IsReverseProperty, ref _isReverse, value);
     }
-    
+
     private bool _isPending = false;
 
     internal bool IsPending
@@ -151,7 +152,7 @@ public abstract class AbstractTimelineItem : ContentControl
         get => _isPending;
         set => SetAndRaise(IsPendingProperty, ref _isPending, value);
     }
-    
+
     private bool _isLabelLayout = false;
 
     internal bool IsLabelLayout
@@ -168,7 +169,8 @@ public abstract class AbstractTimelineItem : ContentControl
         // ContentControl 默认 ClipToBounds=true 会把这溢出的 rail 段切断。
         ClipToBoundsProperty.OverrideDefaultValue<AbstractTimelineItem>(false);
         AffectsArrange<AbstractTimelineItem>(ModeProperty, OrientationProperty);
-        AffectsMeasure<AbstractTimelineItem>(IsReverseProperty);
+        // Padding is consumed by this control's custom MeasureOverride, not a template Border.
+        AffectsMeasure<AbstractTimelineItem>(IsReverseProperty, PaddingProperty);
     }
 
     protected override Size MeasureOverride(Size availableSize)

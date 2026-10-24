@@ -17,30 +17,30 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="Background" Value="{atom:HyperLinkTextBlockTokenResource ColorBgContainer}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:HyperLinkTextBlockTokenResource EnableMotion}" />
         
         <Style Selector="^[IsEnabled=True]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLink}" />
+            <Setter Property="Foreground" Value="{atom:HyperLinkTextBlockTokenResource ColorLink}" />
             
             <Style Selector="^:pointerover">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLinkHover}" />
+                <Setter Property="Foreground" Value="{atom:HyperLinkTextBlockTokenResource ColorLinkHover}" />
             </Style>
             
             <Style Selector="^:pressed">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLinkActive}" />
+                <Setter Property="Foreground" Value="{atom:HyperLinkTextBlockTokenResource ColorLinkActive}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:HyperLinkTextBlockTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

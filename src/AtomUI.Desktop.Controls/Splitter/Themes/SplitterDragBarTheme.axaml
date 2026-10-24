@@ -6,7 +6,7 @@
     <ControlTheme x:Key="{x:Type atom:SplitterDragBar}" TargetType="atom:SplitterDragBar">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="LineThickness" Value="{atom:SplitterTokenResource HandleLineThickness}" />
-        <Setter Property="LineCornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}" />
+        <Setter Property="LineCornerRadius" Value="{atom:OwnerTokenResource BorderRadiusXS}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}">

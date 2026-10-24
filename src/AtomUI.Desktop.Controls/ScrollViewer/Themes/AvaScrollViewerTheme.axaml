@@ -47,11 +47,6 @@
                                Grid.Column="1"
                                Background="{atom:SharedTokenResource ColorBgContainer}"
                                Opacity="0">
-                            <Panel.Transitions>
-                                <Transitions>
-                                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
-                                </Transitions>
-                            </Panel.Transitions>
                         </Panel>
                     </Grid>
                 </atom:ScopeAwareOverlayLayerPanel>
@@ -60,6 +55,14 @@
         
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="ClipToBounds" Value="False" />
+        <Style Selector="^ /template/ Panel#ScrollBarsSeparator">
+            <Setter Property="Transitions">
+                <atom:TokenTransitions>
+                    <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
+                </atom:TokenTransitions>
+            </Setter>
+        </Style>
+
         <Style Selector="^[IsExpanded=true] /template/ Panel#ScrollBarsSeparator">
             <Setter Property="Opacity" Value="1" />
         </Style>

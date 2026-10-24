@@ -34,6 +34,37 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 
 时间列默认 `ItemWidth=ControlHeightLG × 1.4`，`ItemHeight=ControlHeight-4`，时段列默认同宽；默认高度基线为 28、列宽为 56。`ItemPadding` 将行文本按列宽与行高的差值定位，行两侧间距与圆角由 TimeViewCell 主题表达。候选、悬停、输入有效性和 `IsNeedConfirm` / `IsChangeOnScroll` 不进入 Token。
 
+### 有效 Own 与真实消费
+
+TimePickerToken 使用 DependencyDefaultsV2（Revision1），保留8个字段的名称、类型、资源ID、slot及未配置默认。PeriodHostWidth读取有效ItemWidth；ItemPadding读取有效ItemWidth和ItemHeight，明确下游值优先，清除恢复相应默认。没有新增TimeView identity或外部API。
+
+| 字段 | 默认输入 | 实际区域／边界 |
+| --- | --- | --- |
+| ItemHeight | 有效Global ControlHeight-4 | 时间行最小高度、列布局行高、header高度；正行高热更新保持逻辑视口／分数偏移，非法值边界仍待单独核定 |
+| ItemWidth | 有效Global ControlHeightLG×1.4 | 时／分／秒列宿主宽度 |
+| PeriodHostWidth | 有效Own ItemWidth | 12小时制AM/PM列宿主宽度，24小时制该列隐藏 |
+| ItemPadding | (有效Own ItemWidth-ItemHeight)/2的left Thickness | 时间行内间距；不承诺所有自定义宽高下文字精确居中 |
+| ButtonsMargin | 有效Global UniformlyMarginXS的top Thickness | TimePickerPresenter内PART_ButtonsLayout.Margin，服务单值／范围时间弹层 |
+| HeaderMargin | 常量bottom3 | TimeView header；时间弹层中通常隐藏，日期嵌入面板可显示 |
+| RangePickerArrowMargin | 有效Global UniformlyMarginXS的horizontal Thickness | RangeTimePicker可选Own覆盖；缺省／清除保留原InfoPickerInput有效Own |
+| RangePickerIndicatorThickness | 有效Global LineWidthFocus | RangeTimePicker指示条可选Own厚度，0值有效；回退规则同上 |
+
+时段列此前误读ItemWidth；footer此前借用DatePicker.ButtonsPanelMargin。修复后，TimePicker.PeriodHostWidth和ButtonsMargin实际生效，DatePicker字段不再改变时间footer。DatePicker自己的日期footer继续消费原字段。TimeView还复用于DatePicker／RangeDatePicker带时间弹层，这些时间子区域共享TimePicker角色的Own几何；各公开宿主及公开TimeViewCell的Global身份不因此合并。
+
+## 公开 TimeViewCell 的 Global 消费
+
+Cell没有独立Own字段，字体族／字号在明确配置后取本身份有效Global，缺省保持真实祖先字体，不引入字号预设或自定义字号标志。圆角取本身份BorderRadiusSM。时分秒行几何仍为TimePicker Own角色，不因字体配置而改变循环行高或列宽。
+
+普通／hover文字使用ColorTextSecondary，普通背景ColorTransparent、hover背景ColorBgTextHover；selected文字ColorText及背景ControlItemBgActive。只有Cell直接配置相应Global字段时切换来源，否则保留原ListView角色的有效配色，包含已有ListView Own／control Global和根Global组合。ColorTextDisabled同样须Cell直接明确配置，未配置保留原禁用外观；不能因原Name selector无效就默认改灰。清除恢复旧角色，透明色也视为明确值。
+
+以上最终Setter均在ControlTheme，禁用Foreground通过owner原模板绑定传到真实ContentPresenter。未配置时disabled Setter不激活，避免改变原应用Style优先级。实例本地值及生成的TimePickerPopupItemStyle等专用Style仍按原生优先级覆盖；Semantic Part定制使用AXAML专用Style，不通过代码查找行修改样式。内部TimeView的其他Global及完整日期家族状态仍单独验收。
+
+ButtonsMargin作用在footer内部布局Panel，不等同于生成的popup.footer Style对外层Border设置Margin。应用应按实际区域配置，语义样式仍只用生成专用Style在AXAML声明；不找节点赋样式值。0间距是明确输入，清除回到默认8。
+
+RangePickerArrowMargin与RangePickerIndicatorThickness是RangeTimePicker的可选Own覆盖：明确配置TimePicker字段时优先使用该值，缺省或清除回到原InfoPickerInput的有效Own值，包含已有的控件Global配置。两组默认仍为水平margin8、指示条厚度2，不新增RangeTimePicker Own身份。单值TimePicker和RangeDatePicker不消费此覆盖。0是明确输入；margin保留原Thickness允许的负值语义，不统一禁止。
+
+活动指示条宽度和水平位置跟随实际活动输入框，底边对齐实际框体底边；margin或厚度热更新不能产生旧宽度、旧坐标或底边溢出。几何变化不会提交范围时间，Start/End切换仍使用正常过渡。重套模板的旧部件保留属于另列的生命周期问题，尚未宣称验收通过。
+
 ## 4. 控件家族影响
 
 调整 TimePicker Token 时必须评估以下范围：

@@ -22,6 +22,7 @@
 - `src/AtomUI.Desktop.Controls/Timeline/Timeline.cs`
 - `src/AtomUI.Desktop.Controls/Timeline/TimelineItem.cs`
 - `src/AtomUI.Desktop.Controls/Timeline/TimelineToken.cs`
+- `src/AtomUI.Desktop.Controls/Timeline/TimelineIndicatorThemeBindings.cs`
 
 职责边界：
 
@@ -51,6 +52,18 @@
 - TimelineSectionPanel 只负责单项内部布局，不修改集合级状态。
 - TimelineIndicator 只消费布局和视觉属性排列 rail/圆点/图标并决定掩膜，不参与容器顺序计算。
 - Template part 是视觉协作对象，生命周期受 ControlTemplate 和 `OnApplyTemplate` 管理。
+
+### Indicator 主题与布局边界
+
+`TimelineIndicatorThemeBindings` 只提供有限转换器及现有 AvaloniaProperty 的静态引用。Common primitive 的 internal 静态字段不能直接被 XAML 的 `x:Static` 解析，Desktop 桥接引用供 AXAML 使用；不注册新属性、不反射、不在代码中建立样式绑定。
+
+- dot 的默认 BorderThickness、CornerRadius，以及 dot／IconPresenter 的明确色和默认色回退，全部由 ControlTheme Setter 声明。Arrange 不再写样式本地值；生成的 `TimelineItemIconStyle` 可覆盖描边／圆角，移除后恢复默认。
+- dot 排列盒仍为 `IndicatorDotSize + IndicatorDotBorderWidth`，默认半径为盒边长的一半。rail 中心、跨出项间距的范围及 `ClipToBounds=false` 保持。图标宿主按自身 DesiredSize 排列，专用 Style 的边框／内边距进入实测盒，而非只取子 IconPresenter 的尺寸。
+- `IndicatorMinHeight` 是由 FontSize 与 RelativeLineHeight 计算的 DirectProperty 布局状态；它不是资源绑定或新增主题参数。公共颜色不再被模板应用阶段固化。资源订阅使用原生宿主；重挂 scope 会更新 owner，移除后不保留旧项或部件。
+
+Timeline／TimelineItem 用内部只读桥接暴露真实 InheritanceParent，Core 编译 Self observable 观察继承字体与前景。最终 FontFamily／FontSize／Foreground 由各自 ControlTheme 的存在位 MultiBinding 选择，不在 C# 给 Part 赋值。Parent 或逻辑挂载变化刷新源，分离停止父订阅，绑定释放移除事件；长寿命 parent/provider 不应保留移除的 item、title 或 content presenter。字体与前景的本地值和生成专用 Style 保留原生优先级。
+
+AbstractTimelineItem 在自己的 MeasureOverride／ArrangeOverride 消费 Padding，因此 Padding 必须声明 AffectsMeasure；只让 section 的 AxisOverflow 触发 Arrange 会留下旧 DesiredSize。Own 全部置零再清除时曾出现中间图标项 Padding 已恢复20而 DesiredHeight仍为19（原39），后续项上移20；仅重新测量该项即可恢复完整画面。修复在属性失效声明处，不手动重建页面或在资源回调中逐项 InvalidateMeasure。
 
 ## 4. 状态与数据流
 

@@ -16,12 +16,16 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `MenuPopupMinWidth`、`MenuPopupMaxWidth`、`MenuTearOffHeight`、`ItemHeight`、`ItemIconSize`、`TopLevelItemFontSizeSM` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `MenuPopupMinWidth`、`MenuPopupMaxWidth`、`ItemHeight`、`ItemIconSize`、`TopLevelItemFontSizeSM` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `MenuPopupContentPadding`、`ItemMargin`、`ItemIconMarginInlineEnd`、`ItemPaddingInline`、`TopLevelItemPaddingSM`、`TopLevelItemPadding` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `MenuPopupBgColor`、`ItemColor`、`KeyGestureColor`、`ItemHoverColor`、`ItemDisabledColor`、`DangerItemColor` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `MenuPopupBgColor`、`ItemColor`、`KeyGestureColor`、`ItemHoverColor`、`ItemDisabledColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuPopupContentPadding`、`MenuPopupMinWidth`、`MenuPopupMaxWidth`、`MenuPopupBgColor`、`ItemBorderRadius`、`TopLevelItemBorderRadiusSM` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+`DangerItemColor`、`DangerItemHoverColor`、`MenuTearOffHeight`归Reserved：当前Menu没有公开危险项或tear-off入口，三项没有实际渲染消费者。保留名称、类型、资源ID、默认公式和配置往返，Token表及主题工作台标记历史保留且不可编辑，不作为有效调节项展示，也不为接通字段新增功能。未来启用须另定公开API/Part及默认兼容合同。
+
+Menu的`KeyGestureColor`继续用于实际`InputGestureText`；这与NavMenu没有快捷键文字节点的同名保留字段不同。NavMenu的十个危险色字段也没有公开入口，另按自身字段归Reserved；不以同名推定功能已公开。
 
 ## 3. 控件专项模型中的 Token 使用
 

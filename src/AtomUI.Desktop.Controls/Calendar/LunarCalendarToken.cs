@@ -3,8 +3,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class LunarCalendarToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class LunarCalendarToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public double MiniContentHeight { get; set; }
     public double MiniDateCellSize { get; set; }
@@ -18,32 +18,57 @@ internal sealed class LunarCalendarToken : AbstractControlDesignToken
     public double FullCellMinHeight { get; set; }
     public double RangeBarTopOffset { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    [ControlTokenDefault(nameof(MiniContentHeight), nameof(MiniDateCellSize))]
+    private static double DefaultForMiniContentHeight(in ControlTokenDefaultContext context, double miniDateCellSize) =>
+        context.Global.FontHeightSM + (miniDateCellSize + context.Global.UniformlyMarginXS) * 6;
+
+    [ControlTokenDefault(nameof(MiniDateCellSize))]
+    private static double DefaultForMiniDateCellSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG;
+
+    [ControlTokenDefault(nameof(MiniMonthCellWidth))]
+    private static double DefaultForMiniMonthCellWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 2;
+
+    [ControlTokenDefault(nameof(SecondaryTextFontSize))]
+    private static double DefaultForSecondaryTextFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeSM;
+
+    [ControlTokenDefault(nameof(SecondaryTextLineHeight))]
+    private static double DefaultForSecondaryTextLineHeight(in ControlTokenDefaultContext context) =>
+        context.Global.FontHeightSM;
+
+    [ControlTokenDefault(nameof(SecondaryTextColor))]
+    private static Color DefaultForSecondaryTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextTertiary;
+
+    [ControlTokenDefault(nameof(WeekendTextColor))]
+    private static Color DefaultForWeekendTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(HolidayMarkerColor))]
+    private static Color DefaultForHolidayMarkerColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(WorkdayMarkerColor))]
+    private static Color DefaultForWorkdayMarkerColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextTertiary;
+
+    [ControlTokenDefault(nameof(FullCellMinHeight), nameof(SecondaryTextLineHeight))]
+    private static double DefaultForFullCellMinHeight(in ControlTokenDefaultContext context, double secondaryTextLineHeight)
     {
-        base.CalculateTokenValues(isDarkMode);
-
-        MiniDateCellSize = EffectiveGlobalToken.ControlHeightLG;
-        MiniContentHeight = EffectiveGlobalToken.FontHeightSM +
-                            (MiniDateCellSize + EffectiveGlobalToken.UniformlyMarginXS) * 6;
-        MiniMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 2;
-        SecondaryTextFontSize = EffectiveGlobalToken.FontSizeSM;
-        SecondaryTextLineHeight = EffectiveGlobalToken.FontHeightSM;
-        SecondaryTextColor = EffectiveGlobalToken.ColorTextTertiary;
-        WeekendTextColor = EffectiveGlobalToken.ColorError;
-        HolidayMarkerColor = EffectiveGlobalToken.ColorError;
-        WorkdayMarkerColor = EffectiveGlobalToken.ColorTextTertiary;
-
         var calendarContentHeight =
-            (EffectiveGlobalToken.FontHeightSM + EffectiveGlobalToken.UniformlyMarginXS) * 3 +
-            EffectiveGlobalToken.LineWidth * 2;
-        FullCellMinHeight = EffectiveGlobalToken.ControlHeightSM +
-                            calendarContentHeight +
-                            EffectiveGlobalToken.UniformlyPaddingXS / 2 +
-                            EffectiveGlobalToken.LineWidthBold +
-                            SecondaryTextLineHeight +
-                            EffectiveGlobalToken.UniformlyMarginXXS;
-        RangeBarTopOffset = EffectiveGlobalToken.ControlHeightSM +
-                            SecondaryTextLineHeight +
-                            EffectiveGlobalToken.UniformlyMarginXXS;
+            (context.Global.FontHeightSM + context.Global.UniformlyMarginXS) * 3 +
+            context.Global.LineWidth * 2;
+        return context.Global.ControlHeightSM +
+               calendarContentHeight +
+               context.Global.UniformlyPaddingXS / 2 +
+               context.Global.LineWidthBold +
+               secondaryTextLineHeight +
+               context.Global.UniformlyMarginXXS;
     }
+
+    [ControlTokenDefault(nameof(RangeBarTopOffset), nameof(SecondaryTextLineHeight))]
+    private static double DefaultForRangeBarTopOffset(in ControlTokenDefaultContext context, double secondaryTextLineHeight) =>
+        context.Global.ControlHeightSM + secondaryTextLineHeight + context.Global.UniformlyMarginXXS;
 }

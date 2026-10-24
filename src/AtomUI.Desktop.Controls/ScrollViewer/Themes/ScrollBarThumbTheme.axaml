@@ -15,11 +15,11 @@
 
     <Style Selector="^[IsMotionEnabled=True]">
         <Setter Property="Transitions">
-            <Transitions>
+            <atom:TokenTransitions>
                 <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
                 <DoubleTransition Property="Width" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
                 <DoubleTransition Property="Height" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-            </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
 

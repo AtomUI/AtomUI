@@ -62,3 +62,5 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 ## 根几何与 Effective Global 消费
 
 公开 owner 的 `Padding`、`BorderThickness`、`CornerRadius` 默认值从该 Control 的 Effective Global 读取，再以原生主题优先级投射到实际框体。共享框体继续负责状态色、focus/hover shadow、variant 与 CompactSpace；不能把它描述为跳过 owner 的全局几何入口。字号和其他消费链按各控件当前模板分别定义。本次未增加 Own 字段或改变 Token identity。详见 [共享输入架构的根几何合同](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+附加区的背景/描边、padding/行高及内容面板间距消费实际owner的Effective Global；附加图标三档尺寸为IconSizeSM/IconSize/IconSizeLG，不新增Own字段。内部包装层的Custom只保留基础IconSize，显式尺寸优先；公开IconPresenter的画刷仍属于它自己的identity。NumericUpDown的内部spinner按外层NumericUpDown解析共享区域的Global，不能与独立公开ButtonSpinner混同。

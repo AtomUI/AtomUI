@@ -18,6 +18,11 @@
 - Changed
   - 区分水平顶层 SlideUp、独立菜单 placement/RTL ZoomBig，以及 Dropdown 根层与固定原点子菜单。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-24
+
+- DangerItemColor、DangerItemHoverColor和MenuTearOffHeight明确归Reserved，保留字段/资源/配置兼容，不新增危险项或tear-off功能；KeyGestureColor继续为有效快捷键文字入口。
+
+
 ## 2026-09-18
 
 - 修复 pin 向所有兄弟项传播导致的开合冲突；同级活动链由 owner 维护，普通关闭使用 coercion 而非关闭后回弹。

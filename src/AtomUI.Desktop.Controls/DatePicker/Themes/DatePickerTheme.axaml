@@ -7,6 +7,13 @@
         <ControlTheme.BasedOn>
             <atom:InfoPickerInputTheme TargetType="atom:DatePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:DatePickerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:DatePickerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
         <Setter Property="BorderThickness" Value="{atom:DatePickerTokenResource BorderThickness}" />

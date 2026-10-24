@@ -13,6 +13,15 @@ on:
         default: false
         type: boolean
 
+      all_platforms:
+        description: Also verify selected tests and native fixtures on Windows and Linux
+        default: false
+        type: boolean
+      browser:
+        description: Publish and execute the trimmed Browser fixture in Chromium
+        default: false
+        type: boolean
+
 permissions:
   contents: read
 
@@ -22,8 +31,12 @@ concurrency:
 
 jobs:
   verify:
-    name: Selected tests and impact report
-    runs-on: macos-14
+    name: ${{ inputs.all_platforms && format('Selected tests and impact report ({0})', matrix.os) || 'Selected tests and impact report' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.all_platforms && '["macos-latest", "windows-latest", "ubuntu-24.04"]' || '["macos-14"]') }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     env:
       PYTHONDONTWRITEBYTECODE: '1'
@@ -35,6 +48,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
       - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
@@ -52,7 +68,7 @@ jobs:
           fi
           # run performs the inventory audit and runs tooling regressions when
           # the selector/policy changes; avoid repeating either in separate steps.
-          python3 scripts/verification/test.py run "${scope[@]}" --fresh --tests-only
+          python scripts/verification/test.py run "${scope[@]}" --fresh --tests-only
       - name: Materialize real theme assets
         shell: bash
         run: |
@@ -63,10 +79,131 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: affected-verification
+          name: ${{ inputs.all_platforms && format('affected-verification-{0}-{1}', runner.os, runner.arch) || 'affected-verification' }}
           path: |
             .artifacts/verification/latest.json
             .artifacts/verification/history.json
             .artifacts/verification/theme-assets.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  native:
+    name: NativeAOT fixture (${{ matrix.os }})
+    if: github.event_name == 'workflow_dispatch' && inputs.all_platforms
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      PLATFORM_EVIDENCE: .artifacts/verification/platform
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Install Linux native prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang build-essential zlib1g-dev libssl-dev libbrotli-dev libfontconfig1 libfreetype6 libx11-6 libice6 libsm6 libxi6 libxcursor1 libxrandr2 libxrender1 libxext6 libxfixes3 libgl1 libegl1 xvfb
+      - name: Install macOS native prerequisites
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install openssl@3 brotli
+          echo "LIBRARY_PATH=$(brew --prefix openssl@3)/lib:$(brew --prefix brotli)/lib:${LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+      - name: Publish and execute the real OS fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PLATFORM_EVIDENCE"
+          git rev-parse HEAD > "$PLATFORM_EVIDENCE/source-sha.txt"
+          fixture_rid="$(python -c 'import platform; arch = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"; print({"Darwin":"osx", "Windows":"win", "Linux":"linux"}[platform.system()] + "-" + arch)')"
+          fixture_root="$RUNNER_TEMP/atomui-native-fixture"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            fixture_root="$(cygpath -u "$RUNNER_TEMP")/atomui-native-fixture"
+          fi
+          dotnet build src/AtomUI.Toolchain/AtomUI.Toolchain.csproj -c Release -t:BuildManagedToolchain 2>&1 | tee "$PLATFORM_EVIDENCE/toolchain.log"
+          dotnet publish tests/AtomUI.Registration.Fixtures/Complex/Complex.csproj -c Release -r "$fixture_rid" --self-contained true -p:PublishAot=true -p:FixtureRealDesktop=true -o "$fixture_root" 2>&1 | tee "$PLATFORM_EVIDENCE/publish.log"
+          fixture_executable="$fixture_root/AtomUI.Registration.Fixtures"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            fixture_executable="$fixture_executable.exe"
+          fi
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            xvfb-run -a "$fixture_executable" 2>&1 | tee "$PLATFORM_EVIDENCE/runtime.log"
+          else
+            "$fixture_executable" 2>&1 | tee "$PLATFORM_EVIDENCE/runtime.log"
+          fi
+          python - <<'PYCODE'
+          import os
+          from pathlib import Path
+          lines = (Path(os.environ['PLATFORM_EVIDENCE']) / 'runtime.log').read_text().splitlines()
+          if 'PRODUCT_PASS selected' not in lines:
+              raise SystemExit('The actual native fixture did not complete its assertions.')
+          PYCODE
+      - name: Preserve native fixture evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-fixture-${{ runner.os }}-${{ runner.arch }}
+          path: .artifacts/verification/platform/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  browser:
+    name: Browser fixture (${{ matrix.mode }})
+    if: github.event_name == 'workflow_dispatch' && inputs.browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [interpreted, aot]
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      BROWSER_MODE: ${{ matrix.mode }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Install the SDK Browser workload
+        shell: bash
+        run: dotnet workload install wasm-tools
+      - name: Publish and execute the actual Browser fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          browser_evidence=".artifacts/verification/browser-$BROWSER_MODE"
+          mkdir -p "$browser_evidence"
+          git rev-parse HEAD > "$browser_evidence/source-sha.txt"
+          browser_aot=false
+          if [[ "$BROWSER_MODE" == "aot" ]]; then
+            browser_aot=true
+          fi
+          browser_publish="$RUNNER_TEMP/atomui-browser-$BROWSER_MODE"
+          dotnet build src/AtomUI.Toolchain/AtomUI.Toolchain.csproj -c Release -t:BuildManagedToolchain 2>&1 | tee "$browser_evidence/toolchain.log"
+          dotnet publish tests/AtomUI.Registration.Fixtures/Browser/Browser.csproj -c Release -p:RunAOTCompilation="$browser_aot" -o "$browser_publish" 2>&1 | tee "$browser_evidence/publish.log"
+          python scripts/verification/verify-browser-fixture.py --root "$browser_publish/wwwroot" --receipt tests/AtomUI.Registration.Fixtures/Browser/obj/Release/net10.0-browser/AtomUI.TypeMap.receipt.json --output "$browser_evidence/runtime" --mode "$BROWSER_MODE"
+      - name: Preserve Browser fixture evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-fixture-${{ matrix.mode }}
+          path: .artifacts/verification/browser-${{ matrix.mode }}/
           if-no-files-found: ignore
           retention-days: 14

@@ -8,6 +8,27 @@
                                      VerticalAlignment="Center" 
                                      TextWrapping="Wrap"/>
     <ControlTheme x:Key="{x:Type atom:TimelineItem}" TargetType="atom:TimelineItem">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:TimelineItemTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:TimelineItemTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:TimelineItemTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:TimelineItemTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:TimelineItemTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:TimelineItemTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atomc:TimelineItemPanel Name="RootLayout"
@@ -19,7 +40,7 @@
                                                 Orientation="{TemplateBinding Orientation}"
                                                 IsLabelLayout="{TemplateBinding IsLabelLayout}"
                                                 AxisOverflow="{TemplateBinding Padding}"
-                                                IndicatorSpacing="{atom:SharedTokenResource UniformlyPaddingXS}">
+                                                IndicatorSpacing="{atom:TimelineItemTokenResource UniformlyPaddingXS}">
                         <StackPanel Name="Header" Classes.semantic-item-header="True">
                             <atom:TextBlock Name="Label"
                                             Classes.semantic-item-title="True"
@@ -125,6 +146,11 @@
         <Style Selector="^[Orientation=Vertical][IsPending=True][IsReverse=True]">
             <Setter Property="Padding"
                     Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
+        </Style>
+
+        <!-- Preserve the historical native minimum (0) unless explicitly configured. -->
+        <Style Selector="^[IsLast=True] /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="MinHeight" Value="{atom:TimelineTokenResource LastItemContentMinHeight, WhenExplicit=True}" />
         </Style>
 
         <!-- 对齐上游 li:last-child：最后一个节点不保留下内边距 -->

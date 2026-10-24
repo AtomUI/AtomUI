@@ -4,7 +4,29 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
 
-    <ControlTheme x:Key="{x:Type atom:NumericUpDown}" TargetType="atom:NumericUpDown">
+    <ControlTheme x:Key="{x:Type atom:NumericUpDown}" TargetType="atom:NumericUpDown" x:DataType="atom:NumericUpDown">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:NumericUpDownTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:NumericUpDownTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}" ConverterParameter="PresetFallback">
+                <!-- Keep the embedded input's 14-DIP default; IsCustomFontSize opts out to actual inheritance. -->
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <CompiledBindingExtension Path="$self.IsCustomFontSize" />
+                <atom:NumericUpDownTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:NumericUpDownTokenResource Kind="FontSize" />
+                <atom:NumericUpDownTokenResource Kind="FontSizeSM" WhenExplicit="True" />
+                <atom:NumericUpDownTokenResource Kind="FontSizeSM" />
+                <atom:NumericUpDownTokenResource Kind="FontSizeLG" WhenExplicit="True" />
+                <atom:NumericUpDownTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:NumericUpDownTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:NumericUpDownSpinner
@@ -32,7 +54,12 @@
                     SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
                     CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                     CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
-                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                    FontSize="{TemplateBinding FontSize}"
+                    FontFamily="{TemplateBinding FontFamily}"
+                    FontWeight="{TemplateBinding FontWeight}"
+                    FontStyle="{TemplateBinding FontStyle}"
+                    Foreground="{TemplateBinding Foreground}">
                     <atom:ButtonSpinner.InnerLeftContent>
                         <atom:AddOnContentPresenter
                             Name="PART_InnerLeftContentPresenter"
@@ -47,7 +74,7 @@
                                     Name="PART_SuffixGroup"
                                     Classes.semantic-suffix="True"
                                     DockPanel.Dock="Right"
-                                    Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                    Spacing="{atom:NumericUpDownTokenResource UniformlyPaddingXXS}">
                             <atom:InputClearIconButton
                                 Name="PART_ClearButton"
                                 Classes.semantic-clear="True"
@@ -80,12 +107,12 @@
                             AcceptsReturn="False"
                             DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                             SizeType="Custom"
-                            IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
+                            IsCustomFontSize="True"
                             IsReadOnly="{TemplateBinding IsReadOnly}"
                             Text="{TemplateBinding Text, Mode=TwoWay}"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                        />
+                            Foreground="{TemplateBinding Foreground}" />
                         </atom:NumericUpDownInputPanel>
                 </atom:NumericUpDownSpinner>
             </ControlTemplate>
@@ -119,7 +146,12 @@
                         SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                         CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
-                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                        FontSize="{TemplateBinding FontSize}"
+                        FontFamily="{TemplateBinding FontFamily}"
+                        FontWeight="{TemplateBinding FontWeight}"
+                        FontStyle="{TemplateBinding FontStyle}"
+                        Foreground="{TemplateBinding Foreground}">
                         <atom:ButtonSpinner.InnerLeftContent>
                             <!-- Spinner 模式下 prefix 渲染在 −/+ 手柄之间的输入区内；
                                  外边距跟随手柄的 InputPadding token。空内容时 presenter
@@ -139,7 +171,7 @@
                                         Classes.semantic-suffix="True"
                                         DockPanel.Dock="Right"
                                         Margin="0,0,8,0"
-                                        Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                        Spacing="{atom:NumericUpDownTokenResource UniformlyPaddingXXS}">
                                 <atom:InputClearIconButton
                                     Name="PART_ClearButton"
                                     Classes.semantic-clear="True"
@@ -172,13 +204,13 @@
                                 AcceptsReturn="False"
                                 DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                 SizeType="Custom"
-                                IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
+                                IsCustomFontSize="True"
                                 IsReadOnly="{TemplateBinding IsReadOnly}"
                                 Text="{TemplateBinding Text, Mode=TwoWay}"
                                 TextAlignment="Center"
                                 PlaceholderText="{TemplateBinding PlaceholderText}"
                             PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                            />
+                                Foreground="{TemplateBinding Foreground}" />
                         </atom:NumericUpDownInputPanel>
                     </atom:NumericUpDownSpinner>
                 </ControlTemplate>
@@ -187,12 +219,12 @@
         </Style>
 
         <Setter Property="IsMotionEnabled"
-                Value="{atom:SharedTokenResource EnableMotion}" />
+                Value="{atom:NumericUpDownTokenResource EnableMotion}" />
         <Setter Property="SpinnerHandleWidth"
                 Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:NumericUpDownTokenResource ColorTextPlaceholder}" />
 
         <Setter Property="BorderThickness" Value="{atom:NumericUpDownTokenResource BorderThickness}" />
         <Style Selector="^[SizeType=Large]">

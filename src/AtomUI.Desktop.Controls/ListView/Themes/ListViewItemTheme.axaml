@@ -79,7 +79,7 @@
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:ListViewTokenResource ItemDisabledColor}" />
             </Style>
         </Style>
 
@@ -104,10 +104,10 @@
 
     <Style Selector="^[IsMotionEnabled=True]">
         <Setter Property="Transitions">
-            <Transitions>
+            <atom:TokenTransitions>
                 <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                 <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-            </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
 </ControlTheme>

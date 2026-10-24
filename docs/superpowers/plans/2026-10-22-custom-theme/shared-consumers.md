@@ -29,21 +29,21 @@ Icon、Splash、TextSelectionHandle及VisualBrush文字还需核对owner、有�
 ### S3 框体与组合投射
 
 - [x] 建立InputControlFrame/AddOn与每个public owner的输入→默认/状态→真实目标表，先跑既有失败B03和对应状态/variant/compact/addon/size。
-- [ ] 正确Effective Global来自公开owner；root Padding/BorderThickness/CornerRadius/排版及状态落到真实frame；等价关系迁至AXAML，避免本地值压制实例或专用Style。
+- [x] 正确Effective Global来自公开owner；root Padding/BorderThickness/CornerRadius/排版及状态落到真实frame；等价关系迁至AXAML，避免本地值压制实例或专用Style。
 - [x] 保持默认视觉及输入/焦点/选择/尺寸/裁剪/滚动；Custom只退出接管维度。适用owner清单完整，不用单LineEdit通过替代Select等分支。
 
-几何与组合投射已验收，见[框体结果](shared-consumers-frame-results.md)。完整根排版/前景消费与 S4 合并核对后再勾选第二项。
+几何、组合投射与完整根排版/前景已分别取得证据，见[框体结果](shared-consumers-frame-results.md)及[总出口](shared-consumers-final-results.md)。
 
 ### S4 Icon/文字/其他共享对象
 
-- [ ] 审核IconPresenter/IconTemplate/VisualBrush、Splash、TextSelectionHandle、绘制缓存与字体；每条真实输入/owner/释放链记录并按失败前证修复。
-- [ ] 明确共享和Control Effective Global取值；无独立Own对象保持已有identity边界；Theme/Part定制沿原生优先级。
+- [x] 审核IconPresenter/IconTemplate/VisualBrush、Splash、TextSelectionHandle、绘制缓存与字体；每条真实输入/owner/释放链记录并按失败前证修复。
+- [x] 明确共享和Control Effective Global取值；无独立Own对象保持已有identity边界；Theme/Part定制沿原生优先级。
 
 ### S5 出口
 
-- [ ] 实际消费者清单、每条修复/未决项及兼容表；更新对应正式模块/控件文档和必要Gallery，不留“setter存在但不消费”。
-- [ ] 逐包脚本化默认前后0差异、动态A→B→A、值/几何/实际像素、必要输入和释放；临时源/驱动/媒体/专用产物清理。
-- [ ] 清理后仅受影响模块精确filter及必要NET8；作者自审，更新tasks/results。整体CT-10仅在全部上述包验收后完成。
+- [x] 实际消费者清单、每条修复/未决项及兼容表；更新对应正式模块/控件文档和必要Gallery，不留“setter存在但不消费”。
+- [x] 逐包脚本化默认前后0差异、动态A→B→A、值/几何/实际像素、必要输入和释放；临时源/驱动/媒体/专用产物清理。
+- [x] 清理后仅受影响模块精确filter及必要NET8；作者自审，更新tasks/results。整体CT-10仅在全部上述包验收后完成。
 
 ## 已授权修复的兼容边界
 
@@ -59,4 +59,17 @@ S1实际失败、兼容和清理证据见[箭头结果](shared-consumers-arrow-r
 
 S2实际失败、逐阶段兼容、原生缓存边界和清理证据见[跨根字体结果](shared-consumers-font-results.md)。
 
-S4 已验收分包见 [图标、文字与共享绘制结果](shared-consumers-typography-results.md)。S3 全 owner 字体/字段与 S5 总出口保持开放；CT-11 可在已就绪共享机制上独立推进，家族逐项验证完成后回填这两个出口，不把包级结果冒充全 owner 完成。
+S4 前序[图标、文字与共享绘制结果](shared-consumers-typography-results.md)与本轮[总出口](shared-consumers-final-results.md)共同覆盖实际消费；104项目录逐项裁定见[消费者表](shared-consumers-catalog.md)。
+
+### 共享附加区域与尺寸图标补包
+
+- [x] 核定 AddOnDecoratedBox 的实际 owner/模板差异，修复 29 处共享资源及 ButtonSpinnerContentPanel 的间距覆盖；不改变状态、模板和原生优先级。
+- [x] 尺寸默认在内部 SizeTypeAware 包装层消费 owner；公开 IconPresenter 保留独立画刷身份；三档/Custom、同 Context 换 owner、显式 child 与释放验证。
+- [x] 原始三份 AXAML 同套临时验证 19 FAIL/1 PASS → 20/20 PASS；临时测试删除，全局用例净增 0。
+- [x] 明暗28默认对照及Mac AOT/JIT30帧均0，媒体/驱动清理，最终focused296/NET8零警告与作者自审完成，见[结果](shared-consumers-addon-results.md)。
+
+### 根排版与总出口补齐
+
+10个选择/日期/数值/公开spinner owner的字体族、字号、完整typeface、前景、原生Style/实例覆盖、配置恢复、同Context迁移/兄弟隔离及GC已通过。Select/Cascader/TreeSelect的Small保留原FontSize=14；NumericUpDown保持真实文本14默认，同时IsCustomFontSize允许真实继承。内部spinner与公开子Control的身份边界分别验证。
+
+共享登记对象及原生/framework/布局设施全部列入104项裁定。完整家族Own、业务交互状态和平台专项按CT-11–CT-26继续交付，不再把本任务的根消费出口挂到家族等待。最终清理/验证及作者审查见[总结果](shared-consumers-final-results.md)。

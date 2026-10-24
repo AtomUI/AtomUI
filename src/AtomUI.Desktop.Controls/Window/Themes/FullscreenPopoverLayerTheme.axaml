@@ -98,7 +98,7 @@
         </Style>
 
         <Style Selector="^ /template/ atom|CaptionButton">
-            <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+            <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
             <Setter Property="IsWindowActive" Value="True" />
             <Setter Property="IconWidth" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />
             <Setter Property="IconHeight" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />

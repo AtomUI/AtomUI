@@ -1,0 +1,43 @@
+# CT-16 日期／时间控件执行计划
+
+沿现有feature/custom-theme主agent执行，不建分支/worktree、不提交。目录22项metadata（9 ProductControl、12 InternalTarget、1工具边界），5个Own终端51字段：DatePicker3、TimePicker8、DateViewer18、Calendar11、LunarCalendar11。每个真实公开owner、内部目标、方向／尺寸／模式／弹层仍单独验收，不将一包迁移计作完整家族通过。
+
+## D1 TimePicker 宽度、间距与有效 Own 依赖
+
+源码范围：TimePickerToken.cs、TimeViewTheme.axaml、TimePickerPresenterTheme.axaml；先真实编译TimeView与Presenter并取得T36失败。PeriodHost错误读取ItemWidth；按钮内布局错误借用DatePicker.ButtonsPanelMargin，自己的ButtonsMargin未消费。改为TimePicker.PeriodHostWidth／ButtonsMargin，原默认56／8等完整值、名称、类型、ID、slot保持。旧DatePicker字段不再泄漏控制时间footer，这一所有权修复作为兼容说明，不更改DatePicker字段。
+
+TimePicker8字段迁DependencyDefaultsV2 Revision1：PeriodHostWidth依赖有效ItemWidth；ItemPadding依赖有效ItemWidth与ItemHeight；其余Global／常量公式保持。明确下游优先，清除恢复，0值按字段实际合同判断；ItemHeight的循环列算法需要正行高，不用统一规则给全部几何字段杜撰范围。RangePickerArrowMargin／RangePickerIndicatorThickness目前复制通用InfoPickerInput字段但未消费，保留名称／默认，不在D1假装已接通，交D3判定实际范围输入合同与兼容回退。
+
+保留时分秒循环、AM/PM非循环、SelectorRowCount、真实viewport/extent/offset、隐藏滚动条而不禁滚动、输入／候选／确认状态、键盘、嵌套滚动边界和普通motion。先采默认、已有合法配置、12/24小时及header/footer状态的Skia旧新基线；实际Token默认／ID／slot、专用Style优先级、已有实例更新／恢复、兄弟／reparent／GC及当前Mac NativeAOT分别取证。语义样式演示只用生成专用Style的AXAML，Part查找只读。临时测试与外部驱动／媒体清理后，精确TimePicker模块验证、NET8、文档／CSV和作者自审。
+
+## D2 时间列动态几何与 Global
+
+TimeView／TimeViewCell／DateTimePickerPanel的实际Global owner、字型、选中／禁用／悬停、自绘／裁剪与循环几何逐项核查。候选风险：动态ItemHeight刷新行后是否重新对齐选择中心、0行高的算法边界；TimeViewCell禁用selector使用PART_ContentPresenter而真实名ContentPresenter；借用ListView配色是否符合公开Cell身份。必须先复现，不能以换模板、关循环／动效、删高度或禁滚动避开。
+
+动态行高的完整UX合同先区分“当前选值”和“正在浏览的视口”：未滚动时保持选值居中；手动滚动且IsChangeOnScroll=false时，切换行高应保留当前可见值及分数偏移，不强行跳回选值，也不提交新值。循环重定位、短步长补行和AM/PM非循环边界保持；有尚未执行的显式SelectedValue定位请求时，该请求不能被几何恢复覆盖。初始挂载和已打开弹层分别验证，正行高／非法几何边界按字段合同处理，不添加全局钳制。
+
+D2拆为A几何和B公开TimeViewCell消费。B必须保留未明确配置的原生字体继承、ListView历史配色及已有ListView Own定制；不得直接换成数值不同的Global默认。使用现有WhenExplicit存在位，让Cell自己的Global颜色／字体覆盖在明确配置时生效，清除回到旧合同。普通／hover／selected的颜色输入分别核对ColorTextSecondary／ColorBgTextHover／ColorText／ControlItemBgActive／ColorTransparent。禁用真实ContentPresenter目标也只在明确ColorTextDisabled配置时改变，未配置维持原样；不能借修正错误Name擅自改变默认禁用外观。前景的普通本地属性与生成专用Semantic Style优先级保持，禁止code-behind找Part赋样式。
+
+B先使用真实公开Cell建立配置／清除、hover／selected／disabled及字型继承的失败证明，再验证TimePicker生成专用PopupItemStyle的AXAML，锁定Style类型、关键Setter及无Name/Loaded/Unloaded回退；还要在真实时间列及弹层检验消费与命中、reparent／释放和AOT。不能将代码生成的行误当成模板部件；若Style route不匹配真实拓扑，修正route而不是改成代码赋值。内部TimeView的Global role另按实际组合路径判定，不用Cell身份推导全部日期家族已通过。
+
+## D3 范围时间输入与其余日期家族
+
+核对RangeTimePicker与InfoPickerInput共用的箭头margin／active indicator、两项TimePicker历史字段、直接Global及Own存在位的回退优先级，保持原默认和既有有效Generic配置。随后DatePicker／DateViewer／Calendar／LunarCalendar剩余43字段、字体、range条、header公开子Control、完整状态／尺寸／scope／释放与各Host逐项展开。原生最终显示面及其他平台按CT25保留证据边界。
+
+D3-A先将两项历史TimePicker Own核定为RangeTimePicker的OptionalOverride：TimePicker Own明确输入优先，缺省／清除回到原InfoPickerInput Own有效值，保留其既有Own／control Global组合。只在RangeTimePicker派生ControlTheme声明选择，不改Generic RangeInfoPickerInputTheme，也不影响RangeDatePicker。不能直接改读TimePicker默认而覆盖旧Generic有效配置；不为RangeTimePicker伪造新Own定义或新增ID。有限Thickness／double选择必须保留0及负Thickness（按原字段范围），不用数值等于默认判缺省。
+
+先在真实RangeTimePicker验证两个缺失消费者的失败，Generic正对照、双配置优先／清除、RangeDatePicker兄弟隔离与0值；渲染保留两个输入、箭头、active indicator、尺寸档位、焦点、实际Start/End切换及弹层，正常motion。默认／旧Generic设置的旧新Skia对照、当前Mac AOT、scope／释放、专用Style形态及最终临时清理后精确验证，分别记录，不替代完整家族验收。后续D3-B处理其余43字段及DateViewer/Lunar实际Own依赖。
+
+D3-A实际复现后扩展：旧Generic margin变化会改变输入宽度而根尺寸不变，原指示条留下旧宽度／旧X；厚度单独更新仍保留旧Y，超出实际框体底边。因此允许在共享RangeInfoPickerInput发布实际几何，并将Rectangle最终绑定放回ControlTheme；既有通用Token来源不变，TimePicker覆盖仍只在派生主题。原版与候选共同复现的重套模板保留问题单列CT25，不计作已修复或完整释放通过。
+
+### D3-B 四个日期 Own 终端
+
+DatePicker3、DateViewer18、Calendar11、LunarCalendar11共43字段迁DependencyDefaultsV2 Revision1，保留类型／名称／ID／slot及明暗默认。DateViewer.CellRowHeight依赖有效Own CellHeight；LunarCalendar.MiniContentHeight依赖有效MiniDateCellSize，FullCellMinHeight与RangeBarTopOffset依赖有效SecondaryTextLineHeight。其余公式仍读对应有效Global或常量，不从相似名称臆造依赖；例如独立DateViewer.PanelWidth的原公式不改成CellWidth派生。
+
+先通过实际scoped资源、真实DateViewer行距及LunarCalendar Mini／Fullscreen布局复现上游明确值未传入下游的失败；下游明确值优先，清除恢复，0／空值按字段合同分别验证。对Calendar与DatePicker无Own依赖的字段仍要有实际消费及默认对照，不以迁语法算家族完成。采集四终端明暗86行资源／ID／slot基线和真实单／双日期面板、日期弹层、普通／农历Mini与Fullscreen／Month与Year状态，保留现有约束、业务条、内容和正常motion。动态状态、Global、语义Style及平台不足单列后续包；不能拿资源相等代替实际布局或业务行为。验证后删除专属临时源／媒体／备份，执行明确日期模块focused检查及NET8，更新正式文档／目录与作者自审。
+
+### D4-A DateViewer／RangeDateViewer 基础 Global 消费
+
+将DateViewerTheme／HeaderTheme、DatePanelTheme、DateViewerCellTheme内26处直接Shared Global投射到实际公开owner的有效Global。内部Panel／Header／Cell没有新独立身份；单选／范围viewer各自的Global隔离，Calendar内的公开DateViewer继续保留其身份，Calendar专用Cell主题和Lunar专用内容另在D4-B核定组合投射，不从目录猜owner。既有DateViewer Own来源、公共ID、硬编码内容语义、子Button／IconButton身份和默认值不改。四个已使用TokenTransitions的集合继续现有逐owner时长消费，转换为style Setter的声明保持。
+
+先以两种公开viewer建立真实普通／选中／禁用／Content surface／周标题、页头／页脚、radius和motion的控制级配置反例；共享Global正对照、专用生成Cell Style编译AXAML及本地值、配置清除／兄弟／重挂与释放分别验证。正常动效、完整相同轨迹的明暗默认／状态／已有配置前后Skia与当前Mac AOT检查必须执行；实际点击／键盘、范围选择和业务日期不受主题变更影响。可选字体、Calendar专用组合主题、页头／页脚固定线宽与极值诊断在后续对应消费者核定，不将本26处接线冒充完整日期家族完成。清理临时源码／驱动／媒体后聚焦DateViewer模块与NET8，文档／目录及作者自审。

@@ -9,6 +9,8 @@
 DateViewer/RangeDateViewer 是 public 控件，内部 DatePanel、DatePanelSession、DateViewerHeader、
 DateViewerCell 与纯日期算法实现浏览和激活。托管时宿主提供投影、接收意图，选择 owner 不转移到 Cell。
 
+基础主题的26处直接Global通过OwnerTokenResource解析实际公开viewer，源选择沿当前模板／逻辑owner链，挂载、scope和重挂更新由既有原生绑定生命周期处理。单选／范围Global隔离，Own仍使用原DateViewer定义；公开子Button不借用viewer身份。Calendar专用Cell主题及Lunar内容的显式投射另按组合合同核定，不能从基础主题接线推断全部日历家族已通过。
+
 ## 2. 源码文件结构
 
 源码根为 [DateViewer](../../../../../src/AtomUI.Desktop.Controls/DateViewer)。
@@ -33,6 +35,8 @@ DateViewerCell 与纯日期算法实现浏览和激活。托管时宿主提供�
 公共 owner 把外部属性转成 DatePanelInput；DatePanelSession 合并焦点、Hover 与宿主投影。
 DatePanelAlgorithms 生成 DatePanelModel/DateViewerCellModel，DatePanel 将模型映射到有界容器池。
 DateViewerCell 只保留对应模型与内容上下文，激活统一交给 session。
+
+十八项Own默认由生成的DependencyDefaultsV2入口求值，CellRowHeight读取有效Own CellHeight。实际Cell的MinHeight与周标题节距消费该行距；受父级拉伸时实际行高可更大，自然高度下会随新最小值增长。明确下游值及清除由同一主题快照处理，不在Cell代码中复制默认算法。
 
 RangeDateViewer 的两个 DatePanel 共用一份 session；单端点、活动端点与完整原子范围由公共 owner 管理。
 内部协作对象不成为第二个可写 Value，也不成为用户注册入口。

@@ -30,7 +30,7 @@ internal sealed class MenuToken : AbstractControlDesignToken
     public double MenuPopupMaxWidth { get; set; }
 
     /// <summary>
-    /// 分离菜单项的高度
+    /// 历史保留：分离菜单项高度；当前没有公开 tear-off 入口，不参与渲染。
     /// </summary>
     public double MenuTearOffHeight { get; set; }
 
@@ -65,12 +65,12 @@ internal sealed class MenuToken : AbstractControlDesignToken
     public Color ItemDisabledColor { get; set; }
 
     /// <summary>
-    /// 危险菜单项文字颜色
+    /// 历史保留：危险菜单项文字颜色；当前 Menu 无危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemColor { get; set; }
 
     /// <summary>
-    /// 危险菜单项文字悬浮颜色
+    /// 历史保留：危险菜单项悬浮颜色；当前 Menu 无危险项入口，不参与渲染。
     /// </summary>
     public Color DangerItemHoverColor { get; set; }
 

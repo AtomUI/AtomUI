@@ -37,3 +37,7 @@
 - [ ] 默认每个适用状态前后零未解释/未经批准像素差异；同实例主题往返保留focus、输入、checked/open/loading状态。合法原生交互位置变化与原缺陷修复分别记录。
 - [ ] 关闭/分离/重模板/替换与GC验证；当前Mac NativeAOT实际运行及NET8构建，其他平台准确挂CT-25。
 - [ ] 删除临时测试、驱动、埋点和全部媒体，之后只跑本包明确focused测试；成员布局audit、文档链接、diff check及作者自审。结果回填总任务和问题处置表，不因一个按钮通过宣告整个家族通过。
+
+## 历史五字段兼容裁定
+
+完整源码搜索确认Button的四ExtraContent字段无模板消费者，RightExtraContent仅为internal未接线属性；GroupBorderColor无当前公开Button.Group等价区域。分别归Reserved与Legacy，保留字段名、类型、资源ID、V2默认函数和配置往返；不创造新区域，不映射到CompactSpace或Dropdown。正式合同及XML摘要已同步，审计CSV精确五行CompatibilityRetained。CT23的字段目录必须显示历史保留且不可编辑。此为兼容分类/注释改动，未改变运行语句，无新增测试；完整按钮loading/持续动效与家族出口继续推进。

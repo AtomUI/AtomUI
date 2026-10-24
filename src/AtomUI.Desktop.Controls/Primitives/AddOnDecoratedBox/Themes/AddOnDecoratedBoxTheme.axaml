@@ -91,7 +91,7 @@
         </ControlTemplate>
     </Setter>
     <Style Selector="^:is(atom|AddOnDecoratedBox)">
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Setter Property="ContentFramePadding" Value="{CompiledBinding $self.PresetContentPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -100,24 +100,24 @@
         </Style>
 
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillAlter}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
         </Style>
 
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillAlter}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
         </Style>
 
         <Style Selector="^ /template/ atom|AdaptiveSpacingDockPanel#ContentLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
         </Style>
 
         <!-- 右侧后缀区默认前景色：作为下拉箭头（SelectHandle 继承链）与后缀内容的默认颜色，
              用户 suffix Part Style 在 suffix 容器上以更高优先级覆写 -->
         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
             <Setter Property="TextElement.Foreground"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                    Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
         </Style>
 
         <!--
@@ -130,58 +130,58 @@
 
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingLG}" />
+                <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingLG}" />
             </Style>
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingLG}" />
+                <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingLG}" />
             </Style>
-            <Setter Property="PresetContentPadding" Value="{atom:SharedTokenResource InputPaddingLG}" />
+            <Setter Property="PresetContentPadding" Value="{atom:OwnerTokenResource InputPaddingLG}" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
+                <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightLG}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource FontHeightLG}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
+                <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPadding}" />
             </Style>
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
+                <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPadding}" />
             </Style>
-            <Setter Property="PresetContentPadding" Value="{atom:SharedTokenResource InputPadding}" />
+            <Setter Property="PresetContentPadding" Value="{atom:OwnerTokenResource InputPadding}" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource FontHeight}" />
+                <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource FontHeight}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingSM}" />
+                <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingSM}" />
             </Style>
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPaddingSM}" />
+                <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingSM}" />
             </Style>
-            <Setter Property="PresetContentPadding" Value="{atom:SharedTokenResource InputPaddingSM}" />
+            <Setter Property="PresetContentPadding" Value="{atom:OwnerTokenResource InputPaddingSM}" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
-                <Setter Property="Margin" Value="{atom:SharedTokenResource InputContentMargin}" />
+                <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
+                <Setter Property="Margin" Value="{atom:OwnerTokenResource InputContentMargin}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Error]">
-            <Setter Property="AddOnStatusForeground" Value="{atom:SharedTokenResource ColorErrorText}" />
-            <Setter Property="AddOnStatusIconBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="AddOnStatusForeground" Value="{atom:OwnerTokenResource ColorErrorText}" />
+            <Setter Property="AddOnStatusIconBrush" Value="{atom:OwnerTokenResource ColorError}" />
         </Style>
         <Style Selector="^[EffectiveStatus=Warning]">
-            <Setter Property="AddOnStatusForeground" Value="{atom:SharedTokenResource ColorWarningText}" />
-            <Setter Property="AddOnStatusIconBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+            <Setter Property="AddOnStatusForeground" Value="{atom:OwnerTokenResource ColorWarningText}" />
+            <Setter Property="AddOnStatusIconBrush" Value="{atom:OwnerTokenResource ColorWarning}" />
         </Style>
         <Style Selector="^:disabled">
-            <Setter Property="AddOnStatusForeground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
-            <Setter Property="AddOnStatusIconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="AddOnStatusForeground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+            <Setter Property="AddOnStatusIconBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         </Style>
     </Style>
 </ControlTheme>

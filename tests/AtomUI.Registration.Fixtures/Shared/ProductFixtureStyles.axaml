@@ -1,0 +1,9 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:part="clr-namespace:AtomUI.Theme.Styling;assembly=AtomUI.Registration.Fixtures.ThirdParty"
+        x:Class="AtomUI.Registration.Fixtures.ProductFixtureStyles"
+        x:ClassModifier="internal">
+    <Style Selector="Control">
+        <part:SemanticOnlyLeafStyle />
+    </Style>
+</Styles>

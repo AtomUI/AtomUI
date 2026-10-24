@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+using AtomUI.Theme.Resources;
+using System.Globalization;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
@@ -32,7 +33,8 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
                              IFormItemAware,
                              IInputControlStatusAware,
                              IInputControlStyleVariantAware,
-                             ICustomizableSizeTypeAware
+                             ICustomizableSizeTypeAware,
+                                     IThemeInheritanceSource
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -40,19 +42,19 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
 
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<NumericUpDown>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<NumericUpDown>();
 
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AddOnDecoratedBox.RightAddOnProperty.AddOwner<NumericUpDown>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<NumericUpDown>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> InnerLeftContentTemplateProperty =
         AvaloniaProperty.Register<NumericUpDown, IDataTemplate?>(nameof(InnerLeftContentTemplate));
-    
+
     public static readonly StyledProperty<IDataTemplate?> InnerRightContentTemplateProperty =
         AvaloniaProperty.Register<NumericUpDown, IDataTemplate?>(nameof(InnerRightContentTemplate));
 
@@ -73,7 +75,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
 
     public static readonly StyledProperty<bool> IsStringModeProperty =
         AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsStringMode));
-    
+
     public static readonly StyledProperty<bool> IsKeyboardEnabledProperty =
         AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsKeyboardEnabled), true);
 
@@ -95,7 +97,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         get => GetValue(LeftAddOnProperty);
         set => SetValue(LeftAddOnProperty, value);
     }
-    
+
     public object? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
@@ -108,19 +110,19 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         get => GetValue(RightAddOnProperty);
         set => SetValue(RightAddOnProperty, value);
     }
-    
+
     public object? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
-    
+
     public object? InnerLeftContentTemplate
     {
         get => GetValue(InnerLeftContentTemplateProperty);
         set => SetValue(InnerLeftContentTemplateProperty, value);
     }
-    
+
     public object? InnerRightContentTemplate
     {
         get => GetValue(InnerRightContentTemplateProperty);
@@ -150,7 +152,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -188,38 +190,38 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     }
 
     #endregion
-    
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<double> SpinnerHandleWidthProperty =
         ButtonSpinner.SpinnerHandleWidthProperty.AddOwner<NumericUpDown>();
-    
+
     internal static readonly StyledProperty<bool> IsCustomFontSizeProperty =
         AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsCustomFontSize));
-    
+
     internal static readonly DirectProperty<NumericUpDown, bool> IsEffectiveShowClearButtonProperty =
         AvaloniaProperty.RegisterDirect<NumericUpDown, bool>(nameof(IsEffectiveShowClearButton),
             o => o.IsEffectiveShowClearButton,
             (o, v) => o.IsEffectiveShowClearButton = v);
-    
-    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty =
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<NumericUpDown>();
-    
-    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty =
         CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<NumericUpDown>();
-    
-    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<NumericUpDown>();
 
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<NumericUpDown>();
-    
+
     internal double SpinnerHandleWidth
     {
         get => GetValue(SpinnerHandleWidthProperty);
         set => SetValue(SpinnerHandleWidthProperty, value);
     }
-    
+
     private bool _isEffectiveShowClearButton;
 
     internal bool IsEffectiveShowClearButton
@@ -227,19 +229,19 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         get => _isEffectiveShowClearButton;
         set => SetAndRaise(IsEffectiveShowClearButtonProperty, ref _isEffectiveShowClearButton, value);
     }
-    
+
     internal SpaceItemPosition? CompactSpaceItemPosition
     {
         get => GetValue(CompactSpaceItemPositionProperty);
         set => SetValue(CompactSpaceItemPositionProperty, value);
     }
-    
+
     internal Orientation CompactSpaceOrientation
     {
         get => GetValue(CompactSpaceOrientationProperty);
         set => SetValue(CompactSpaceOrientationProperty, value);
     }
-    
+
     internal bool IsUsedInCompactSpace
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
@@ -251,9 +253,9 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         get => GetValue(FormStatusProperty);
         private set => SetCurrentValue(FormStatusProperty, value);
     }
-    
+
     #endregion
-    
+
     private EventHandler? _formValueChanged;
     private IconButton? _clearButton;
     private TextBox? _textBoxPart;
@@ -319,7 +321,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     {
         ValueChangedEvent.AddClassHandler<NumericUpDown>((textBox, args) => textBox.HandleValueChanged());
     }
-    
+
     public NumericUpDown()
     {
         _textConverter = new NumericUpDownTextConverter(this);
@@ -443,6 +445,12 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
 
         base.OnKeyDown(e);
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     #region 实现 CompactSpace 接口
 
@@ -595,9 +603,9 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
                 innerLeftContent, ContentPresenter.ContentTemplateProperty));
         }
 
-        // InnerRightContent / InnerRightContentTemplate and the text box IsCustomFontSize are
-        // template-bound in the ControlTheme (the parts sit in direct template content where
-        // TemplatedParent propagates), so no code relay is needed for them.
+        // InnerRightContent / InnerRightContentTemplate are template-bound. Root FontSize owns
+        // the theme default; the embedded text box opts out of its independent TextBox
+        // size preset so its TemplateBinding can consume that root value.
 
         if (e.NameScope.Find<NumericUpDownInputPanel>("PART_InputPanel") is { } inputPanel &&
             _buttonSpinner?.DecoratedBox is { } decoratedBox)
@@ -635,7 +643,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
             SetCurrentValue(IsEffectiveShowClearButtonProperty, false);
             return;
         }
-        
+
         SetCurrentValue(IsEffectiveShowClearButtonProperty, !IsReadOnly && !string.IsNullOrEmpty(Text));
     }
 
@@ -885,5 +893,5 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
             return _owner.FormatDisplayText(raw, culture);
         }
     }
-    
+
 }

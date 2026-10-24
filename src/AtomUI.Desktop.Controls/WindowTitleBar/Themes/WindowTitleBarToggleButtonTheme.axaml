@@ -49,7 +49,7 @@
     <Setter Property="Padding" Value="{atom:WindowTitleBarTokenResource CaptionButtonPadding}" />
     <Setter Property="IconWidth" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />
     <Setter Property="IconHeight" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />
-    <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+    <Setter Property="CornerRadius" Value="{atom:WindowTitleBarToggleButtonTokenResource BorderRadiusSM}" />
     <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ActiveBgColor}" />
     <Setter Property="IconBrush" Value="{atom:WindowTitleBarTokenResource ActiveColor}" />
 
@@ -71,7 +71,7 @@
 
     <Style Selector="^:disabled">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+        <Setter Property="IconBrush" Value="{atom:WindowTitleBarToggleButtonTokenResource ColorTextDisabled}" />
     </Style>
 
     <Style Selector="^[HostMotionEnabled=False]">
@@ -113,7 +113,7 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="IconBrush" Value="{atom:WindowTitleBarToggleButtonTokenResource ColorTextDisabled}" />
         </Style>
     </Style>
 </ControlTheme>

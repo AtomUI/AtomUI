@@ -50,24 +50,24 @@
                         <Panel Name="ScrollBarsSeparator"
                                Grid.Row="1"
                                Grid.Column="1"
-                               Background="{atom:SharedTokenResource ColorBgContainer}"
+                               Background="{atom:ScrollViewerTokenResource ColorBgContainer}"
                                Opacity="{TemplateBinding ScrollBarsSeparatorOpacity}" />
                     </Grid>
                 </atom:ScopeAwareOverlayLayerPanel>
             </ControlTemplate>
         </Setter>
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ScrollViewerTokenResource EnableMotion}" />
         <Setter Property="IsLiteMode" Value="False" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="ScrollBarsSeparatorOpacity" Value="0" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <DoubleTransition Property="ScrollBarsSeparatorOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
                     <DoubleTransition Property="ScrollBarOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

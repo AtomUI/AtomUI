@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ListViewToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ListViewToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     /// <summary>
     /// List 内边距
@@ -86,36 +86,68 @@ internal sealed class ListViewToken : AbstractControlDesignToken
     /// 列表项选中标记的外间距
     /// </summary>
     public Thickness SelectedIndicatorMargin { get; set; }
-    
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
-        var colorTextSecondary = EffectiveGlobalToken.ColorTextSecondary;
-        var colorBgTextHover   = EffectiveGlobalToken.ColorBgTextHover;
 
-        ItemColor         = colorTextSecondary;
-        ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
+    [ControlTokenDefault(nameof(ContentPadding))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(0);
 
-        ItemBgColor         = EffectiveGlobalToken.ColorTransparent;
-        ItemHoverBgColor    = colorBgTextHover;
-        ItemSelectedBgColor = EffectiveGlobalToken.ControlItemBgActive;
+    [ControlTokenDefault(nameof(ItemColor))]
+    private static Color DefaultForItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
 
-        ItemDisabledColor = colorTextDisabled;
+    [ControlTokenDefault(nameof(ItemHoverColor))]
+    private static Color DefaultForItemHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
 
-        ItemPaddingLG = new Thickness(EffectiveGlobalToken.UniformlyPadding, 0);
-        ItemPaddingSM = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        ItemPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
+    [ControlTokenDefault(nameof(ItemSelectedColor))]
+    private static Color DefaultForItemSelectedColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
 
-        ContentPadding          = new Thickness(0);
-        ItemMargin              = new Thickness(0);
-        PaginationMargin        = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
-        GroupHeaderColor        = EffectiveGlobalToken.ColorTextDescription;
-        GroupHeaderPadding      = new Thickness(
-            EffectiveGlobalToken.UniformlyPaddingSM,
-            EffectiveGlobalToken.UniformlyPaddingXS);
-        SelectedIndicatorMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0, 0, 0);
-    }
-    
+    [ControlTokenDefault(nameof(ItemDisabledColor))]
+    private static Color DefaultForItemDisabledColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(ItemBgColor))]
+    private static Color DefaultForItemBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTransparent;
+
+    [ControlTokenDefault(nameof(ItemHoverBgColor))]
+    private static Color DefaultForItemHoverBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgTextHover;
+
+    [ControlTokenDefault(nameof(ItemSelectedBgColor))]
+    private static Color DefaultForItemSelectedBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(ItemPaddingSM))]
+    private static Thickness DefaultForItemPaddingSM(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(ItemPadding))]
+    private static Thickness DefaultForItemPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingSM, 0);
+
+    [ControlTokenDefault(nameof(ItemPaddingLG))]
+    private static Thickness DefaultForItemPaddingLG(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPadding, 0);
+
+    [ControlTokenDefault(nameof(ItemMargin))]
+    private static Thickness DefaultForItemMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0);
+
+    [ControlTokenDefault(nameof(PaginationMargin))]
+    private static Thickness DefaultForPaginationMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginXS);
+
+    [ControlTokenDefault(nameof(GroupHeaderColor))]
+    private static Color DefaultForGroupHeaderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(GroupHeaderPadding))]
+    private static Thickness DefaultForGroupHeaderPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingSM, context.Global.UniformlyPaddingXS);
+
+    [ControlTokenDefault(nameof(SelectedIndicatorMargin))]
+    private static Thickness DefaultForSelectedIndicatorMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXXS, 0, 0, 0);
 }

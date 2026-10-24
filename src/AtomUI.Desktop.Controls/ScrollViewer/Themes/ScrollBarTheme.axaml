@@ -95,7 +95,7 @@
             </Setter>
         </Style>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ScrollBarTokenResource EnableMotion}" />
         <Style Selector="^:vertical">
             <Style Selector="^ /template/ Border#Frame">
                 <Setter Property="Margin"

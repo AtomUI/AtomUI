@@ -75,3 +75,17 @@ The Complex desktop/Browser fixture also creates NumericUpDown in Spinner mode a
 Cold package consumption includes an ordinary author named-resource regression: removing its explicit ResourceInclude must fail normal compilation with located ATOMUIREG004; the unchanged explicit-include author then runs untrimmed and with full CoreCLR trimming. Metadata inspection confirms a separate unused exported control is present before trimming and absent afterwards. The same consumer uses a separate typed-key-only dependency; an IL check follows its compiled AXAML factory and requires the real provider ldtoken, and actual trim must preserve that provider without any provider typeof/constructor in host C#. This fixture adds no authored TypeMap or rooting descriptor.
 
 The ordinary author also exports a desktop-only named resource through a real ResourceDictionary class carrying the standard platform attribute. Its portable AuthorControl remains available in Browser, while FixtureDesktopOverlay is absent; ordinary/fulltrim desktop verifies that the same resource class loads. Complex real-desktop mode uses an AtomUI Window with a title-bar AddOn and exercises the OTP internal text-box theme; Minimal size inputs remain unchanged.
+
+The source `ThirdParty` fixture declares its five existing single-field public Token IDs in its own `token-resource-ids.tsv`, merged with the repository contract as an AdditionalFile. Each `FixtureValue` keeps ID 0. The fixture contract does not add fixture scopes to the shipped product ID registry or disable diagnostics; ordinary external package consumers continue to use their own authoring contract.
+
+The source ProductApp/BrowserApp hosts are partial and use the generated startup image hook. Browser registers `ProductApp.Configure` through `UseAtomUI`, matching Desktop. The semantic-only registration trigger is a generated `SemanticOnlyLeafStyle` in compiled `Shared/ProductFixtureStyles.axaml`, loaded on the Application instance during Initialize; it has no code-behind Part property customization.
+
+The source fixture checks enabled package declaration order and resolves the five selected third-party identities through the actual runtime registry. It does not read the legacy eager `ControlPackages` list or treat an unselected manifest declaration as runtime retention. Desktop has an explicit `[STAThread]` entry point for the Windows OLE contract.
+
+To execute a published Browser fixture automatically, run the gate immediately after that mode's publish, before another publish can replace its receipt:
+
+```sh
+python3 scripts/verification/verify-browser-fixture.py --root /absolute/publish/wwwroot --receipt tests/AtomUI.Registration.Fixtures/Browser/obj/Release/net10.0-browser/AtomUI.TypeMap.receipt.json --output /absolute/new-evidence-directory --mode interpreted
+```
+
+Use `--mode aot` for the Mono AOT output. The evidence directory must be new. The helper waits for the real DOM assertion with a bounded wall-clock timeout, then stops its own Chrome process tree and local server. A temporary observer in the served HTML reports actual DOM/error/User Agent data; it does not add a product pass marker. Software rendering and these fixture assertions do not establish visual or performance acceptance. `verify-affected.yml` exposes this as the explicit `browser` input, alongside `all_platforms` for actual native OS fixtures; neither path publishes NuGet packages.

@@ -45,3 +45,7 @@ W4 Docker Linux arm64／SDK10.0.402复现原模块291通过／18失败，完整T
 清理后Linux SDK10.0.402／arm64：DataGrid309通过43.788秒，NavMenuInlineCollapsed及窗口合同23通过6.578秒；Mac SDK10.0.300：NavMenu与窗口313通过15.766秒、DataGrid309通过30.782秒、Core三个精确类14通过、标题栏Skia渲染1通过。NET8 Release零警告／错误。非UTF-8 locale且禁用Python UTF-8模式的四路径tooling iterate通过47.941秒。10个C#文件全文件成员／控制流审计（两控件式声明）问题0。当前Docker容器及匿名产物卷均已删除，没有研发源码副本。
 
 作者自审按时钟、取消／回收、关闭重入、编码边界、测试宿主的可用内容区／弹层及文档逐项检查。已同步NavMenu实现与changelog，无公共API／Token／Gallery演示变化。默认原生显示面、其他CT25旧失败及完整控件家族仍开放。后续修复尚未提交，首轮CI结论仍为失败；需用户审查本批快照后再推送已有分支并复跑验证，不创建新分支或worktree，不发布NuGet。
+
+## 批准后的执行状态
+
+以上为提交前审查记录。用户随后明确批准该20文件快照的两个提交、推送与验证；已创建938f6e3c9（成员布局）和1fe3358ec（行为及验证宿主），聚合patch与批准快照一致，并推送既有分支。[第二轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40061147545)五个运行时任务通过，Mac原两个失败与Linux原DataGrid失败均消失；三个选测任务在后续位置失败，继续按[第二轮后续包](platform-second-followups.md)处理。该次提交批准已执行完毕，后续提交需另行审查。

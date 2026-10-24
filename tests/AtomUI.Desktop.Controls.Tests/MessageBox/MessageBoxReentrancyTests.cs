@@ -338,7 +338,19 @@ public class MessageBoxReentrancyTests
 
                 PumpUntil(() => window.GetVisualDescendants().OfType<DialogSurface>().Any());
                 var surface = window.GetVisualDescendants().OfType<DialogSurface>().Single();
-                surface.MinWidth.ShouldBe(410);
+                // Keep the original narrow owner, then verify the same surface restores its themed minimum.
+                foreach (var ownerWidth in new[] { 480d, 700d, 480d })
+                {
+                    window.Width = ownerWidth;
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    var availableWidth = window.ClientSize.Width -
+                                         window.FrameShadowThickness.Left - window.FrameShadowThickness.Right -
+                                         window.VisibleFrameBorderThickness.Left - window.VisibleFrameBorderThickness.Right;
+                    surface.MinWidth.ShouldBe(Math.Min(410, availableWidth));
+                    surface.Bounds.Width.ShouldBeGreaterThanOrEqualTo(surface.MinWidth);
+                    surface.Bounds.Width.ShouldBeLessThanOrEqualTo(availableWidth);
+                }
 
                 FindStandardButton(window, DialogStandardButton.Ok)!
                     .RaiseEvent(new RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));

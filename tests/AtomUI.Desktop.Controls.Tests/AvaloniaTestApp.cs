@@ -36,7 +36,8 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         .UseSkia()
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
                          .UseAtomUI(builder => builder.UseDesktopControls()
                                                       .UseImageLoading(options =>
                                                       {

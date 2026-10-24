@@ -479,8 +479,10 @@ public class OverlayDialogPresenterTests
                         surfaceBounds.Width.ShouldBe(previousWidth, 0.01);
                     }
                     naturalWidth = surfaceBounds.Width;
-                    surfaceBounds.Center.X.ShouldBe(window.ClientSize.Width / 2, 1);
-                    surfaceBounds.Center.Y.ShouldBe(window.ClientSize.Height / 2, 1);
+                    var availableFrame = new Rect(window.ClientSize).Deflate(window.FrameShadowThickness)
+                                                                   .Deflate(window.VisibleFrameBorderThickness);
+                    surfaceBounds.Center.X.ShouldBe(availableFrame.Center.X, 1);
+                    surfaceBounds.Center.Y.ShouldBe(availableFrame.Center.Y, 1);
                     surface.GetVisualDescendants().OfType<OverlayDialogHeader>().Single().Title.ShouldBe("新建");
 
                     var mask = window.GetVisualDescendants().OfType<OverlayDialogMask>().Single();

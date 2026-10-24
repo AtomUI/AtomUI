@@ -161,7 +161,7 @@ class Planner:
                 if path in self.repo.tests:
                     selected[path].add("Changed test file: " + path)
                 else:
-                    choose([str(Path(owner).parent) + "/**/*.cs"], "Test project/helper/input change: " + path)
+                    choose([Path(owner).parent.as_posix() + "/**/*.cs"], "Test project/helper/input change: " + path)
             area, root = self.area(path)
             if area:
                 handled = True

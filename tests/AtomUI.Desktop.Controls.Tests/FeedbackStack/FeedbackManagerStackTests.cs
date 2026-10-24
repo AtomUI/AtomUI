@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AtomUI.Controls.Primitives;
@@ -607,6 +608,7 @@ public class FeedbackManagerStackTests
                 new Point(latest.Bounds.Width / 2, latest.Bounds.Height / 2),
                 window).ShouldNotBeNull();
 
+            WaitForRenderCommit(window);
             window.MouseMove(originalStackPoint);
             Dispatcher.UIThread.RunJobs();
             window.UpdateLayout();
@@ -622,6 +624,7 @@ public class FeedbackManagerStackTests
             var resizedStackPoint = latest.TranslatePoint(
                 new Point(latest.Bounds.Width / 2, latest.Bounds.Height / 2),
                 window).ShouldNotBeNull();
+            WaitForRenderCommit(window);
             window.MouseMove(resizedStackPoint);
             Dispatcher.UIThread.RunJobs();
             window.UpdateLayout();
@@ -810,6 +813,22 @@ public class FeedbackManagerStackTests
         references.Card.IsAlive.ShouldBeFalse();
         references.MotionActor.IsAlive.ShouldBeFalse();
         references.CallbackOwner.IsAlive.ShouldBeFalse();
+    }
+
+    private static void WaitForRenderCommit(TopLevel owner)
+    {
+        // Input hit testing reads compositor state; layout alone can still expose the old window width.
+        var commit = ElementComposition.GetElementVisual(owner)!.Compositor.RequestCommitAsync();
+        var timeout = System.Diagnostics.Stopwatch.StartNew();
+        while (!commit.IsCompleted && timeout.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+            Thread.Yield();
+        }
+        commit.IsCompleted.ShouldBeTrue("The pending composition must reach the render thread before pointer input.");
+        commit.GetAwaiter().GetResult();
+        Dispatcher.UIThread.RunJobs();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

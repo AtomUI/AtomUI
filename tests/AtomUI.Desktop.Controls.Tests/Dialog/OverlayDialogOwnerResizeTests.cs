@@ -116,7 +116,7 @@ public sealed class OverlayDialogOwnerResizeTests
                     var surfaceCenter = surface.TranslatePoint(
                         new Point(surface.Bounds.Width / 2, surface.Bounds.Height / 2), owner)
                         .ShouldNotBeNull();
-                    surfaceCenter.Y.ShouldBe(owner.ClientSize.Height / 2, 1);
+                    surfaceCenter.Y.ShouldBe(GetAvailableFrame(owner).Center.Y, 1);
                     dialog.OffsetX.ShouldBe(0);
                     dialog.OffsetY.ShouldBe(0);
                     editor.Text.ShouldBe("unchanged draft");
@@ -169,15 +169,15 @@ public sealed class OverlayDialogOwnerResizeTests
                 Wait(presenter.ShowAsync(CancellationToken.None).AsTask());
                 Pump(owner);
 
-                AssertSurfaceCenter(owner, presenter.Surface, new Point(780, 530));
+                AssertSurfaceCenter(owner, presenter.Surface, GetAvailableFrame(owner).Center + new Vector(160, 120));
 
                 owner.Width = 940;
                 owner.Height = 640;
                 Pump(owner);
 
                 var constrainedPosition = presenter.Surface.TranslatePoint(default, owner).ShouldNotBeNull();
-                constrainedPosition.X.ShouldBe(180, 1);
-                constrainedPosition.Y.ShouldBe(140, 1);
+                constrainedPosition.X.ShouldBe(GetAvailableFrame(owner).Right - 760, 1);
+                constrainedPosition.Y.ShouldBe(GetAvailableFrame(owner).Bottom - 500, 1);
                 dialog.OffsetX.ShouldBe(160);
                 dialog.OffsetY.ShouldBe(120);
 
@@ -185,7 +185,7 @@ public sealed class OverlayDialogOwnerResizeTests
                 owner.Height = 820;
                 Pump(owner);
 
-                AssertSurfaceCenter(owner, presenter.Surface, new Point(780, 530));
+                AssertSurfaceCenter(owner, presenter.Surface, GetAvailableFrame(owner).Center + new Vector(160, 120));
                 dialog.OffsetX.ShouldBe(160);
                 dialog.OffsetY.ShouldBe(120);
             }
@@ -196,6 +196,13 @@ public sealed class OverlayDialogOwnerResizeTests
                 owner.Close();
             }
         });
+    }
+
+    private static Rect GetAvailableFrame(AtomUI.Desktop.Controls.Window owner)
+    {
+        // Overlay placement excludes the transparent shadow and visible frame on every OS.
+        return new Rect(owner.ClientSize).Deflate(owner.FrameShadowThickness)
+                                         .Deflate(owner.VisibleFrameBorderThickness);
     }
 
     private static void AssertSurfaceCenter(

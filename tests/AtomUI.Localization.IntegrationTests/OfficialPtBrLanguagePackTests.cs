@@ -678,8 +678,9 @@ public sealed class OfficialPtBrLanguagePackTests
         }
 
         var fileName = path[corePropertiesPrefix.Length..];
-        return fileName.IndexOf('/') < 0 &&
-               Guid.TryParse(fileName[..^".psmdcp".Length], out _);
+        return fileName.Equals("nuget.psmdcp", StringComparison.Ordinal) ||
+               (fileName.IndexOf('/') < 0 &&
+                Guid.TryParse(fileName[..^".psmdcp".Length], out _));
     }
 
     private static string ReadAtomUiVersion(string repositoryRoot)

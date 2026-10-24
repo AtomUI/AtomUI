@@ -512,8 +512,9 @@ public sealed class LanguagePackEndToEndTests
         }
 
         var fileName = path[corePropertiesPrefix.Length..];
-        return fileName.IndexOf('/') < 0 &&
-               Guid.TryParse(fileName[..^".psmdcp".Length], out _);
+        return fileName.Equals("nuget.psmdcp", StringComparison.Ordinal) ||
+               (fileName.IndexOf('/') < 0 &&
+                Guid.TryParse(fileName[..^".psmdcp".Length], out _));
     }
 
     internal static bool IsUnexpectedBuildOrRuntimeAsset(string path)

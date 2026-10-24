@@ -200,10 +200,9 @@ public class StepsCompressionTests
                     var itemSubHeaderText = itemSubHeaderPresenter.GetVisualDescendants()
                                                                  .OfType<Avalonia.Controls.TextBlock>()
                                                                  .First();
-                    // The long content wraps under compression, so the content
-                    // presenter width equals the body width while it stays below the
-                    // DescriptionMaxWidth cap.
-                    var bodyWidth = FindControl(item, "ContentPresenter").Bounds.Width;
+                    // Section owns the heading's available width. Wrapped description text
+                    // can request less space (84 pixels inside a 101-pixel section on Linux).
+                    var bodyWidth = FindControl(item, "Section").Bounds.Width;
 
                     if (bodyWidth >= subHeaderTextSingleLineWidth - 0.5)
                     {

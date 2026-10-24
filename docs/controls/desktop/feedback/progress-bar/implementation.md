@@ -184,6 +184,10 @@ track 仍按 `StrokeLineCap` 阈值隐藏，避免显示不可见的小块。
 line 和 steps 的 indicator Panel 分别由 `LineProgressPanel` 和 `StepsProgressPanel` 直接排列到 `GetExtraInfoRect`；circle 和 dashboard 的 indicator Panel 使用 owner 宽度并按当前
 文本或状态图标高度垂直居中。Panel 的 Bounds 表达可见信息区域，不承担整个 owner 的坐标容器职责。
 
+普通 line 的模板 indicator 先按当前 LayoutScaling 对信息尺寸执行与实际子节点一致的向上取整，再计算末端锚点，避免取整后的文字区越过 owner。兼容自绘路径保留原逻辑度量。
+
+普通 line 的文本尺寸缓存使用格式化后的 `Percentage`，同时包含 `FontFamily`、`FontSize`、`FontStyle` 和 `FontWeight`；字体、范围、值、格式、状态、图标尺寸、位置或方向变化时刷新度量和 body 布局。字体变大所需的交叉轴空间通过 DesiredSize 提供，内嵌轨道厚度同时适配实际文本；不把计算尺寸写回调用方 Min/Max 约束。
+
 内嵌文本颜色由当前背景色可读性决定。当前实现只对 solid brush 进行可读性计算；渐变画刷不会参与该颜色推导。
 
 ### 7.4 步骤线形视觉

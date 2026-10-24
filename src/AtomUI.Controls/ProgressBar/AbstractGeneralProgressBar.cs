@@ -98,6 +98,10 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             targetHeight = StrokeThickness;
+            if (_progressBody is not null && IsProgressInfoVisible)
+            {
+                targetHeight = Math.Max(targetHeight, _extraInfoSize.Height + LineProgressPadding * 2);
+            }
             if (!PercentPosition.IsInner && IsProgressInfoVisible)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
@@ -118,6 +122,10 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         else
         {
             targetWidth = StrokeThickness;
+            if (_progressBody is not null && IsProgressInfoVisible)
+            {
+                targetWidth = Math.Max(targetWidth, _extraInfoSize.Width + LineProgressPadding * 2);
+            }
             if (!PercentPosition.IsInner && IsProgressInfoVisible)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
@@ -256,7 +264,9 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         {
             if (Orientation == Orientation.Horizontal)
             {
-                strokeThickness = MinHeight;
+                strokeThickness = HasTemplateProgressVisuals
+                    ? Math.Max(MinHeight, _extraInfoSize.Height + LineProgressPadding * 2)
+                    : MinHeight;
             }
             else
             {
@@ -454,14 +464,19 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected override Rect GetExtraInfoRect(Rect controlRect)
     {
+        // Template children round their allocated size up before rounding their origin.
+        // Anchor against that actual size so a trailing label cannot extend past the bar.
+        var extraInfoSize = HasTemplateProgressVisuals && UseLayoutRounding
+            ? LayoutHelper.RoundLayoutSizeUp(_extraInfoSize, LayoutHelper.GetLayoutScale(this))
+            : _extraInfoSize;
         double offsetX      = 0;
         double offsetY      = 0;
         double targetWidth  = 0;
         double targetHeight = 0;
         if (IsProgressInfoVisible)
         {
-            targetWidth  = _extraInfoSize.Width;
-            targetHeight = _extraInfoSize.Height;
+            targetWidth  = extraInfoSize.Width;
+            targetHeight = extraInfoSize.Height;
         }
 
         if (Orientation == Orientation.Horizontal)
@@ -550,7 +565,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             }
         }
 
-        return new Rect(new Point(offsetX, offsetY), _extraInfoSize);
+        return new Rect(new Point(offsetX, offsetY), extraInfoSize);
     }
 
     protected override Size CalculateExtraInfoSize(double fontSize)
@@ -564,7 +579,8 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
                 return new Size(LineInfoIconSize, LineInfoIconSize);
             }
 
-            var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+            var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Percentage), fontSize,
+                FontFamily, FontStyle, FontWeight);
             if (PercentPosition.IsInner)
             {
                 if (Orientation == Orientation.Vertical)
@@ -594,6 +610,19 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
+        if (_progressBody is not null &&
+            (change.Property == FontSizeProperty || change.Property == FontFamilyProperty ||
+             change.Property == FontStyleProperty || change.Property == FontWeightProperty ||
+             change.Property == ValueProperty || change.Property == MinimumProperty ||
+             change.Property == MaximumProperty || change.Property == ProgressTextFormatProperty ||
+             change.Property == StatusProperty || change.Property == LineInfoIconSizeProperty ||
+             change.Property == PercentPositionProperty || change.Property == OrientationProperty))
+        {
+            _extraInfoSize = CalculateExtraInfoSize(FontSize);
+            CalculateStrokeThickness();
+            InvalidateMeasure();
+            _progressBody.InvalidateArrange();
+        }
         if (change.Property == StrokeBrushProperty ||
             change.Property == ForegroundProperty ||
             change.Property == PercentPositionProperty ||

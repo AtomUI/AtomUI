@@ -39,7 +39,7 @@ DateViewerTheme/RangeDateViewerTheme 消费表面、外层 padding 和双面板�
 Compact 使用自然宽度，Content 解除固定面板宽度并由外部测量宽度展开列。
 DateViewerCellTheme 消费日期行距、值框尺寸、ContentCellMinHeight、Content 前景间距与状态色；范围背景和预览使用同一范围资源。
 
-Header 内的Button／IconButton继续自己的公开身份和预设，HeaderHorizontalPadding负责外围左右间距。范围Header目前按PanelWidth放置，Content实际面板宽度的对齐问题另行整改。
+Header 内的Button／IconButton继续自己的公开身份和预设，HeaderHorizontalPadding负责外围左右间距。范围Header跟随对应DatePanel的实际宽度；Compact由PanelWidth决定自然宽度，Content随实际列布局展开，不另复制一份页头宽度公式。专用Header Style仍可明确覆盖Width。
 内容模板只接管内容，不能以 Token 替代模型状态。
 
 ## 4. 控件家族影响

@@ -99,6 +99,7 @@ Public API / ItemsSource / Command / Event
 - 模板应用时获取 part、建立事件订阅和绑定，并先释放旧 part 订阅。
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
+- `IsPopupPinnedOpen` 由 `TourTheme` 的 `TemplateBinding` 向 `PART_Popup` 传递。Popup 翻转状态回传到私有 owner 状态的代码绑定，在每次模板重建前统一释放；`TemplateBinding` 不支持该 `OneWayToSource` 回传。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
 稳定 template part 接入点：
@@ -136,6 +137,8 @@ Tour 的交互事件应从输入源收敛到控件级语义事件：
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
+
+同一目标连续步骤若仍请求相同 placement，Popup 不一定重新发出 `PositionFlipped`。此时必须沿用当前实际横纵翻转配置箭头；只有目标或请求位置发生变化时才按新的请求初始化，随后接受实际定位结果。否则卡片已经翻到目标上方，箭头仍可能错误地指向上方。
 
 ## 8. 资源、性能与 AOT 边界
 

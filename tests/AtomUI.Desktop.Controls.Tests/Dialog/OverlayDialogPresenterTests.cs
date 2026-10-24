@@ -948,14 +948,20 @@ public class OverlayDialogPresenterTests
                                             .OfType<MotionActor>()
                                             .Single(actor => actor.Name == "PART_SurfaceMotionActor");
 
-                var closeTask = presenter.CloseAsync().AsTask();
-                PumpUntil(() => showTask.IsCompleted);
-
-                showTask.IsCompleted.ShouldBeTrue();
+                Task? closeTask = null;
+                // A dispatcher turn can include both motions. Observe the opening's
+                // completion directly instead of assuming that polling stops between them.
+                var openingSettled = showTask.ContinueWith(_ =>
+                {
+                    (closeTask?.IsCompleted ?? false).ShouldBeFalse();
+                    surfaceActor.Opacity.ShouldBe(1);
+                    surfaceActor.MotionTransform.ShouldBeNull();
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+                closeTask = presenter.CloseAsync().AsTask();
                 closeTask.IsCompleted.ShouldBeFalse();
-                surfaceActor.Opacity.ShouldBe(1);
-                surfaceActor.MotionTransform.ShouldBeNull();
                 WaitWithDispatcherPump(closeTask);
+                WaitWithDispatcherPump(openingSettled);
+                showTask.IsCompleted.ShouldBeTrue();
 
                 WaitWithDispatcherPump(presenter.DisposeAsync().AsTask());
             }

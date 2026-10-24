@@ -16,14 +16,24 @@
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="{TemplateBinding PanelSpacing}"
                                 IsVisible="{TemplateBinding ShowHeader}">
                         <viewer:DateViewerHeader Classes.semantic-header="True"
-                                                 Width="{atom:DateViewerTokenResource PanelWidth}"
                                                  Context="{TemplateBinding HeaderContext}"
-                                                 HeaderTemplate="{TemplateBinding HeaderTemplate}" />
+                                                 HeaderTemplate="{TemplateBinding HeaderTemplate}">
+                            <viewer:DateViewerHeader.Styles>
+                                <Style x:SetterTargetType="viewer:DateViewerHeader">
+                                    <Setter Property="Width" Value="{CompiledBinding #PART_PrimaryPanel.Bounds.Width}" />
+                                </Style>
+                            </viewer:DateViewerHeader.Styles>
+                        </viewer:DateViewerHeader>
                         <viewer:DateViewerHeader Classes.semantic-header="True"
-                                                 Width="{atom:DateViewerTokenResource PanelWidth}"
                                                  Context="{TemplateBinding SecondaryHeaderContext}"
                                                  HeaderTemplate="{TemplateBinding HeaderTemplate}"
-                                                 IsVisible="{TemplateBinding HasSecondaryPanel}" />
+                                                 IsVisible="{TemplateBinding HasSecondaryPanel}">
+                            <viewer:DateViewerHeader.Styles>
+                                <Style x:SetterTargetType="viewer:DateViewerHeader">
+                                    <Setter Property="Width" Value="{CompiledBinding #PART_SecondaryPanel.Bounds.Width}" />
+                                </Style>
+                            </viewer:DateViewerHeader.Styles>
+                        </viewer:DateViewerHeader>
                     </StackPanel>
                     <StackPanel Classes.semantic-body="True" Orientation="Horizontal" Spacing="{TemplateBinding PanelSpacing}">
                     <viewer:DatePanel Classes.semantic-content="True" Name="PART_PrimaryPanel"
@@ -56,10 +66,15 @@
                         CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
                     <DockPanel LastChildFill="True">
                         <viewer:DateViewerHeader DockPanel.Dock="Top" Classes.semantic-header="True"
-                                                 Width="{atom:DateViewerTokenResource PanelWidth}"
                                                  Context="{TemplateBinding HeaderContext}"
                                                  HeaderTemplate="{TemplateBinding HeaderTemplate}"
-                                                 IsVisible="{TemplateBinding ShowHeader}" />
+                                                 IsVisible="{TemplateBinding ShowHeader}">
+                            <viewer:DateViewerHeader.Styles>
+                                <Style x:SetterTargetType="viewer:DateViewerHeader">
+                                    <Setter Property="Width" Value="{CompiledBinding #PART_PrimaryPanel.Bounds.Width}" />
+                                </Style>
+                            </viewer:DateViewerHeader.Styles>
+                        </viewer:DateViewerHeader>
                         <Panel Classes.semantic-body="True">
                             <viewer:DatePanel Classes.semantic-content="True" Name="PART_PrimaryPanel"
                                               Session="{TemplateBinding PanelSession}"

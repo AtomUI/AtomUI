@@ -52,6 +52,8 @@ RuntimeCreated 的 Cell 在 DatePanel 容器池中创建；CrossNestedOwners 允
 ShowHeader=false 隐藏 Header 区域，层级或面板数量变化时第二 Header 随第二面板可见性变化。
 HeaderTemplate 替换内容，但 header marker 保持由 owner 模板拥有。
 适合字体、前景和有限布局调整；Header 内部按钮、Name 和 ContentControl 不属于独立 Part。
+范围Header默认跟随对应日期面板宽度；生成的`RangeDateViewerHeaderStyle`可声明Width／Height等布局Setter，
+失活该Style的资格后恢复实际面板对齐。单面板、双面板与HeaderTemplate使用同一公开入口。
 
 ### body
 

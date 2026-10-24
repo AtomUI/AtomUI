@@ -997,40 +997,38 @@ public partial class NavMenu : ItemsControl,
 
         var cancellationTokenSource = new CancellationTokenSource();
         _inlineCollapsedWidthMotionCancellationTokenSource = cancellationTokenSource;
-        _ = RunInlineCollapsedWidthMotionAsync(startWidth, targetWidth, duration, cancellationTokenSource);
+        RunInlineCollapsedWidthMotion(startWidth, targetWidth, duration, cancellationTokenSource);
     }
 
-    private async Task RunInlineCollapsedWidthMotionAsync(double startWidth,
-                                                          double targetWidth,
-                                                          TimeSpan duration,
-                                                          CancellationTokenSource cancellationTokenSource)
+    private void RunInlineCollapsedWidthMotion(double startWidth,
+                                               double targetWidth,
+                                               TimeSpan duration,
+                                               CancellationTokenSource cancellationTokenSource)
     {
+        // ControlTheme cannot calculate the measured start width or interrupted trajectory.
+        // Tick on the UI dispatcher so unrelated thread-pool work cannot stall layout frames.
         var easing = new CubicEaseOut();
         var startTimestamp = Stopwatch.GetTimestamp();
-        try
+        var timer = DispatcherTimer.Run(() =>
         {
-            while (true)
+            if (!ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
             {
-                await Task.Delay(InlineCollapsedWidthMotionFrameInterval, cancellationTokenSource.Token);
-
-                var progress = ResolveInlineCollapsedWidthMotionProgress(startTimestamp, duration);
-                if (progress >= 1d)
-                {
-                    break;
-                }
-
-                ApplyInlineCollapsedWidthMotionFrame(
-                    InterpolateInlineCollapsedWidth(startWidth, targetWidth, easing.Ease(progress)),
-                    cancellationTokenSource);
+                return false;
             }
-        }
-        catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
-        {
-            // A newer inline collapsed transition owns the layout width now.
-            return;
-        }
 
-        Dispatcher.UIThread.Post(() => CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource));
+            var progress = ResolveInlineCollapsedWidthMotionProgress(startTimestamp, duration);
+            if (progress >= 1d)
+            {
+                CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource);
+                return false;
+            }
+
+            ApplyInlineCollapsedWidthMotionFrame(
+                InterpolateInlineCollapsedWidth(startWidth, targetWidth, easing.Ease(progress)),
+                cancellationTokenSource);
+            return true;
+        }, InlineCollapsedWidthMotionFrameInterval, DispatcherPriority.Normal);
+        cancellationTokenSource.Token.Register(static subscription => ((IDisposable)subscription!).Dispose(), timer);
     }
 
     private static double ResolveInlineCollapsedWidthMotionProgress(long startTimestamp, TimeSpan duration)
@@ -1052,13 +1050,10 @@ public partial class NavMenu : ItemsControl,
     private void ApplyInlineCollapsedWidthMotionFrame(double width,
                                                       CancellationTokenSource cancellationTokenSource)
     {
-        Dispatcher.UIThread.Post(() =>
+        if (ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
         {
-            if (ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
-            {
-                InlineCollapsedLayoutWidth = width;
-            }
-        });
+            InlineCollapsedLayoutWidth = width;
+        }
     }
 
     private void CompleteInlineCollapsedWidthMotion(double targetWidth,

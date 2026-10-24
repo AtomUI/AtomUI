@@ -1,5 +1,6 @@
 using AtomUI;
 using AtomUI.Registration;
+using AtomUI.Theme;
 using Avalonia;
 #if !REAL_DESKTOP
 using Avalonia.Headless;
@@ -47,6 +48,13 @@ internal static class Program
         }
         verification.GetAwaiter().GetResult();
         window.Close();
+#if REAL_DESKTOP && COMPLEX
+        if (window.GetValue(ThemeScope.ContextProperty) is not null)
+        {
+            throw new InvalidOperationException("PRODUCT_FAIL closed native window recreated its theme context");
+        }
+        Console.WriteLine("PRODUCT_CHECK closed native window releases its theme context");
+#endif
         Console.WriteLine("PRODUCT_PASS " + (ControlRegistrationRuntime.IsTrimmed ? "selected" : "full"));
     }
 }

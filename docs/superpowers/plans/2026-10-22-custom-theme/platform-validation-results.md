@@ -1,6 +1,6 @@
 # CT-25 多平台验证入口与当前 Mac 产品夹具结果
 
-本分包完成可审查的多平台工作流、真实 Browser 运行验证器及既有产品夹具接线；**尚未调度远端 Actions，Windows／Linux 未通过验收，CT-25 整体保持进行中**。执行范围见[方案](platform-validation.md)。用户允许使用 AtomUI/AtomUI Actions，指定 AtomUI 凭证，禁止发布到 nuget.org。
+本分包完成多平台工作流、真实 Browser 运行验证器及既有产品夹具接线，241文件快照经用户批准以cfb1d6668提交推送，已执行首轮Actions。**五个运行时任务通过，三个选测任务失败，CT-25整体保持进行中**。执行范围见[方案](platform-validation.md)，修复记录见[后续包](platform-followups.md)。用户允许使用AtomUI/AtomUI Actions，指定AtomUI凭证，禁止发布到nuget.org。
 
 ## 工作流与产品夹具
 
@@ -34,4 +34,4 @@ Browser SDK 的四个重复端点经追踪确认：包路径和共享 ProjectRef
 
 清理后 Build.Tasks 三个精确注册／门禁类 23 项通过，GalleryBase 注册类 1 项通过，Gallery 两个源读取类 10 项通过。四个 C# 文件结构检查无问题（无控件声明），所有控制流保留大括号。作者自审发现检查名称可能影响既有 required check，已保持默认原名；最终 YAML／七个 Bash 块解析通过，tooling iterate 49.321 秒通过。共享 Minimal 宿主四项断言及 PRODUCT_PASS full 通过，确认非 Complex 的共享入口仍可运行。没有运行本地 change／全量回归。
 
-当前源码仍未提交，远端没有 feature/custom-theme。必须先经用户审查并取得提交、具体远端分支创建和推送授权，才能让 Actions 验证当前候选；不能把远端旧代码的绿色结果算到当前源码。CT-25 既有重套模板保留失败、原生边缘像素以及各家族出口继续保留，未由本分包关闭。
+上述本地审查时源码尚未提交、远端没有feature/custom-theme。随后用户对具体241文件快照明确回复“我同意”，该快照以cfb1d6668提交并推送，调度[首轮验证](https://github.com/AtomUI/AtomUI/actions/runs/40053351877)。三个真实OS NativeAOT和两种Browser模式通过；Windows选测在BOM项目解析前置失败，Linux选测DataGrid18项失败，Mac选测Desktop两项失败，整体CI未通过。实际运行与[后续包](platform-followups.md)持续记录；不能把五个运行门禁等同于全部平台验收。CT-25既有重套模板保留失败、原生边缘像素以及各家族出口继续保留，未由本分包关闭。

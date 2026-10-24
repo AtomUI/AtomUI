@@ -97,10 +97,10 @@ def main(argv=None):
         return subprocess.call([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(root / "scripts/verification/tests"), "-v"], cwd=root)
     if args.command == "metrics":
         history = output / "history.json"
-        print(history.read_text() if history.exists() else "No verification history yet.")
+        print(history.read_text(encoding="utf-8-sig") if history.exists() else "No verification history yet.")
         return 0
     repository = Repository(root)
-    policy = json.loads((root / "scripts/verification/test-policy.json").read_text())
+    policy = json.loads((root / "scripts/verification/test-policy.json").read_text(encoding="utf-8-sig"))
     if args.command == "check":
         candidates = [o for o in policy["obligations"] if o["id"] == args.id]
         if not candidates:

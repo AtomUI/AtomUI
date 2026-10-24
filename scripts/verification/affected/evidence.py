@@ -37,7 +37,7 @@ def output_manifest(repository, projects, configuration="Debug"):
                     files.add(path)
         for path in list(files):
             if path.name.endswith(".deps.json"):
-                deps = json.loads(path.read_text())
+                deps = json.loads(path.read_text(encoding="utf-8-sig"))
                 for target in deps.get("targets", {}).values():
                     for library in target.values():
                         for section in ("runtime", "native", "resources", "runtimeTargets"):
@@ -109,5 +109,5 @@ def write_json(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     temporary.replace(path)

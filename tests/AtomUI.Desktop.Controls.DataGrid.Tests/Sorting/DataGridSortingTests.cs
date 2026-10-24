@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
+using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.DataGrid.Sorting;
 
@@ -165,7 +166,7 @@ public class DataGridSortingTests
             CanUserResize = columnCanResize,
             Width = new DataGridLength(120)
         });
-        var window = new Window { Width = width + 40, Height = 280, Content = grid };
+        var window = new AvaloniaWindow { Width = width + 40, Height = 280, Content = grid };
         window.Show();
         PumpUntil(() => grid.LoadState == DataGridLoadState.Ready && DisplayedAges(grid).Length == rows.Count);
         return new GridContext(grid, window, source);
@@ -184,7 +185,7 @@ public class DataGridSortingTests
             .OfType<DataGridSortIndicator>()
             .Last(indicator => indicator.IsVisible && indicator.Bounds.Width > 0 && indicator.Bounds.Height > 0);
 
-    private static void Click(Control control, Window window, Point? localPoint = null)
+    private static void Click(Control control, AvaloniaWindow window, Point? localPoint = null)
     {
         var point = control.TranslatePoint(
             localPoint ?? new Point(control.Bounds.Width / 2, control.Bounds.Height / 2),
@@ -225,7 +226,7 @@ public class DataGridSortingTests
 
     private sealed record GridContext(
         global::AtomUI.Desktop.Controls.DataGrid Grid,
-        Window Window,
+        AvaloniaWindow Window,
         DataGridLocalSource<SortRow> Source)
     {
         public void Close()

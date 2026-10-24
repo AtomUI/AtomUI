@@ -1355,6 +1355,8 @@ public class NavMenuInlineCollapsedTests
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
         while (DateTime.UtcNow < deadline)
         {
+            // RunJobs alone does not advance idle dispatcher timers in the headless host.
+            Dispatcher.UIThread.Post(static () => { }, DispatcherPriority.Background);
             Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
             if (Math.Abs(control.Bounds.Width - expectedWidth) <= 0.5)
             {
@@ -1372,6 +1374,7 @@ public class NavMenuInlineCollapsedTests
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(1);
         while (DateTime.UtcNow < deadline)
         {
+            Dispatcher.UIThread.Post(static () => { }, DispatcherPriority.Background);
             Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
             if (control.Bounds.Width > lowerBound + 0.5 &&
                 control.Bounds.Width < upperBound - 0.5)
@@ -1391,6 +1394,7 @@ public class NavMenuInlineCollapsedTests
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(1);
         while (DateTime.UtcNow < deadline)
         {
+            Dispatcher.UIThread.Post(static () => { }, DispatcherPriority.Background);
             Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
             if (double.IsNaN(menu.InlineCollapsedLayoutWidth))
             {

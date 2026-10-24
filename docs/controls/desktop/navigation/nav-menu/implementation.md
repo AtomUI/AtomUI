@@ -399,6 +399,8 @@ open path cache 应记录路径语义而不是持有容器引用。容器可能�
 
 折叠视觉由 theme 层表达：顶层 header 隐藏标题和箭头，icon 使用 `CollapsedIconSize` 居中；没有 icon 的顶层项从 `NodeHeader` 显示首字符。顶层叶子项的 `EffectiveCollapsedTooltip` 附加到真实 header control，显式节点 `Tooltip` 优先，未设置时回退到 `NodeHeader`；带子菜单节点使用 popup，不同时显示折叠 Tooltip。根分组标题隐藏，分组容器把 owner 已解析的 effective inline-collapsed 状态继续投影给子 entry，使任意层透明根分组都保持顶层折叠视觉；节点或 popup 内的非根分组从其 owner 接收 `false`，继续显示普通 vertical 标题和 item。root 宽度约束属于控件布局状态，由 C# metadata coercion 表达，以保留用户的 base `Width` / binding。inline collapsed 宽度过渡由内部 `InlineCollapsedLayoutWidth` motion 临时接管 coercion 输入，完成后必须清理回 `double.NaN`，让稳态宽度重新由 `InlineCollapsedWidth` 或用户原始 `Width` / binding 决定。C# 层不应为了折叠视觉改写 `Header` 或临时替换 `HeaderTemplate`。
 
+宽度motion由UI线程的`DispatcherTimer`每16ms推进，以`Stopwatch`墙钟计算进度并使用`CubicEaseOut`。时长继续读取Application的Shared `MotionDurationMid`，缺失时为200ms。起点来自当前实际宽度，展开终点来自用户base Width或最近展开宽度；这些测量及中断轨迹无法由ControlTheme等价计算。CTS身份限定唯一有效motion，改向、停用动效和卸载都取消旧timer，完成时清除临时宽度。后台worker繁忙不阻止仍在处理任务的UI产生中间布局帧。
+
 ### 7.10 内容展开的共享接入边界
 
 `NavMenuItem.SetInlineChildItemsOpenAsync` 将目标状态、方向和有效时长提交给 Core 内部

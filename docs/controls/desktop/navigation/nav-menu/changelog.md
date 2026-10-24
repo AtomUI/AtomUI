@@ -4,6 +4,8 @@
 
 ## 2026-10-24
 
+- Inline折叠宽度动效改由UI DispatcherTimer推进，避免后台线程池繁忙时跳过中间布局帧；保持原时长、曲线、base Width和取消／卸载语义。
+- 整理NavMenu公开属性、内部协作API、接口实现与私有方法的声明顺序，保持成员合同及默认值。
 - KeyGestureColor归Reserved，保留名称、类型、资源ID及配置往返；当前没有快捷键文字节点，不作为可用调节项展示。继续源码核定后，十个DangerItem/DarkDangerItem色字段同样归Reserved；当前无危险项入口，不新增功能。
 
 ## 2026-09-14

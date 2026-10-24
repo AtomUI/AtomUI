@@ -2,6 +2,10 @@
 
 本文记录 DateViewer 家族的设计、API、主题与文档变化，不替代发布说明。
 
+## 2026-10-24
+
+- 十八个历史Own字段迁至有效依赖默认；CellRowHeight根据有效CellHeight重新派生，明确行距优先并支持清除恢复。默认值、资源ID／slot及其他独立Global公式保持。
+
 ## 2026-10-04
 
 - API / Token
@@ -14,6 +18,7 @@
   - 范围 Preview 改为覆盖 committed Cell 视觉状态，反向编辑时只显示规范化后的两个预览端点，不再同时显示旧端点。
   - 使用单一视觉端点状态连接 selected 与 Preview，避免 Hover 时主色端点闪烁。
 - Theme
+  - 基础DateViewer／RangeDateViewer的26处文字、状态、圆角、motion及页头／页脚Global改读实际公开owner；保留Own定义、资源编号、子Button身份与选择／输入状态。
   - Content 单元格改用状态表面、完整列宽范围/周背景、前景内容三个绘制层；留白由 DateViewerToken 从共享 Token 推导，移除范围背景的负 Margin，并改用 AtomUI 的圆角筛选 converter。
   - 默认 Header 使用 paddingXS 作为左右内边距，双月导航箭头不再贴住面板边缘，标题仍居中且底部分隔线保持全宽。
   - Content 中普通 Today 单元格即使受日期边界或 DisabledDate 禁用，仍保留主色顶边、浅主色整格背景和主色日期文字；禁用只控制可选择性。日期值框在 Content 中不绘制额外边框。

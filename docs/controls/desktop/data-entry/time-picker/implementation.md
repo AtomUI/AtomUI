@@ -102,6 +102,8 @@ Public API / ItemsSource / Command / Event
 
 `DateTimePickerPanel` 使用物理 ScrollViewer 拥有视口、extent 和 offset。时、分、秒列由 `ShouldLoop=true` 声明循环，行容器按允许值及步长生成并复用；短序列补足实际循环行以覆盖整个视口，AM/PM 保持非循环。循环行按当前 offset 的最近周期定位，越过外侧滚动周期后按整周期重定位，保留可见值、分数偏移和提交状态，首尾没有占位空白。候选选择（包括点击同值）请求对应项垂直居中的滚动位置；普通 offset 变化不推导候选，只有显式 `IsChangeOnScroll` 才选择中心附近的有效值，取整后值未变时保留小幅触控板偏移以允许累计。列内 ScrollViewer 先处理焦点的 BringIntoView 请求，TimeView 截止剩余请求，避免请求沿弹层逻辑父链推动宿主页面滚动。
 
+运行时正行高变化按旧行高记录可见逻辑行及分数偏移，新的extent生效后再恢复；短循环补行改变容器数也保留逻辑位置。尚未滚动时选值继续居中，已浏览时保留视口，不强行回到选值。明确SelectedValue定位请求优先；几何恢复不提交候选，即使启用IsChangeOnScroll，随后的正常滚动仍按原合同选择。detach清除待恢复位置。没有以旧像素offset直接套用新行高，也不在资源变化时重建TimeView。
+
 Pointer 判断使用剪裁后的 ScrollContentPresenter 视口，不能使用完整时间列表 Bounds；行间空白和尾部空白结束当前悬停预览。模板固定属性、footer 可见性/可用性、文字对齐、圆角与布局均声明在 ControlTheme。运行时生成行的 motion 协作使用显式 AvaloniaProperty 绑定，其生命周期随行容器结束。
 
 ## 5. 生命周期与模板接入
@@ -113,6 +115,12 @@ Pointer 判断使用剪裁后的 ScrollContentPresenter 视口，不能使用完
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
+
+时间几何的Own角色属于TimePicker：时分秒列读取ItemWidth，AM/PM读取PeriodHostWidth，行读取ItemHeight／ItemPadding，header读取HeaderMargin。内部TimeView同时用于日期带时间面板；不能为复用而伪造其独立Token identity。单值／范围时间的footer在TimePickerPresenter内消费TimePicker.ButtonsMargin，日期footer保持DatePicker自己的ButtonsPanelMargin，不借用同名近似字段。
+
+TimePickerToken的有效依赖默认通过静态函数生成，不再以一次全量CalculateTokenValues覆盖读取旧上游。PeriodHostWidth依赖ItemWidth，ItemPadding依赖ItemWidth／ItemHeight；明确下游保留。循环列、滚动条、选值／候选／确认或ClockIdentifier生命周期保持。内部TimeView其他Global及非法行高边界仍按CT16后续专项验证，不因默认值相同而宣称整个家族完成。
+
+公开TimeViewCell通过只读InheritanceParent接口桥接实际字型继承，AXAML选择继承或明确Global字体。颜色保留旧ListView角色回退，只有Cell直接Global输入触发新来源，防止根Global绕过旧ListView明确配置。原错误PART_ContentPresenter禁用selector移除；内部bool在AXAML将disabled Style限定到明确ColorTextDisabled配置，owner.Foreground经原TemplateBinding投射到真实ContentPresenter。缺省不新增禁用条件Setter，既有应用Style不会被一条值相同但优先级更高的回退Setter遮住。没有代码样式绑定或公开新属性；有限IBrush存在性转换只服务此条件。
 
 - presenter 应在 TimeView part 可用后按 `constraints -> effective selection -> display anchor -> button state` 的顺序回放状态。模板重套用、运行时切换 `ClockIdentifier`、增量变化和受控值变化都必须进入同一同步入口。
 
@@ -189,7 +197,7 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 | --- | --- |
 | 完整尺寸分支 | `SizeType` 为 `CustomizableSizeType`（`Large` / `Middle` / `Small` / `Custom`），由 `InfoPickerInput` 经 `AddOwner` 提供；`Middle` / `Custom` 使用默认字号，`Large` / `Small` 映射 `FontSizeLG` / `FontSizeSM`。 |
 | 布局 owner | 触发区高度基线由共享 `AddOnDecoratedBox`（`InputControlFrame`）的按档 `MinHeight` 拥有，`PART_InfoInputBox` / `PART_SecondaryInfoInputBox` 垂直 stretch，自身不持有固定 `Height`；宽度由 owner 的 `PreferredInputWidth` 驱动（显式 `Width` 或 `Stretch` 时为 `NaN`），`prefix` / `suffix` 是内联 add-on，不拥有独立尺寸。 |
-| 布局型 Part 约束 | `input` / `secondaryInput` 的 Semantic Style 参与自然测量，但不得反向改变触发区档位高度；`popup.column` 的 `Width` Setter 覆盖列宿主档位宽度（`ItemWidth` / `PeriodHostWidth`）并参与列布局测量；格子高度由 `DateTimePickerPanel.ItemHeight`（TimePickerToken `ItemHeight`）统一拥有，`popup.item` 的 Semantic Style 只覆盖视觉属性，不承诺 item 级高度；`popup.container` 的 `Padding`、`popup.footer` 的 `Margin` 按 presenter 模板既有 Token（`ButtonsPanelMargin`）为基线做增量覆盖。 |
+| 布局型 Part 约束 | `input` / `secondaryInput` 的 Semantic Style 参与自然测量，但不得反向改变触发区档位高度；`popup.column` 的 `Width` Setter 覆盖列宿主档位宽度（`ItemWidth` / `PeriodHostWidth`）并参与列布局测量；格子高度由 `DateTimePickerPanel.ItemHeight`（TimePickerToken `ItemHeight`）统一拥有，`popup.item` 的 Semantic Style 只覆盖视觉属性，不承诺 item 级高度；`popup.container` 的 `Padding`、`popup.footer` 的 `Margin` 按 presenter 模板既有 Token（时间footer为TimePicker.ButtonsMargin）为基线做增量覆盖。 |
 | 状态矩阵 | 清除模式（clear 可见性）、`IsNeedConfirm` / `IsShowNow`（footer 可见性）、`ClockIdentifier` 12↔24（时段列可见性 + 时间列重建）、`MinuteIncrement` / `SecondIncrement`（item 值序列）、disabled / validation 状态均只切换可见性或视觉值，不增删 marker。 |
 | 外部映射 | Ant Design `size=default|small|large` 对应 AtomUI `Middle` / `Small` / `Large` 完整分支；Ant Design 无 custom 档，AtomUI `Custom` 是本地扩展，语义 Setter 在所有档位行为一致。 |
 | 失败回归 | 最小回归：在 `SizeType=Small` 下经 `TimePickerInputStyle` 设置显式 `Padding`，断言 owner 触发区实测高度仍等于该档 `AddOnDecoratedBox` 基线（输入框被裁剪对齐而不是撑破行高）。若尺寸基线被错误建立在输入框自身 `Height` 上，该断言红灯（控件高度随语义 Padding 漂移）；以“档位基线归 AddOnDecoratedBox、输入框只参与自然测量”的单一根因修复恢复。 |
@@ -240,3 +248,7 @@ Semantic Part 行为验证：
 TimePicker 与 RangeTimePicker 分别提供本身份的几何默认值；共享 InfoPicker 模板只投射根输入。
 
 几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+范围输入的两项TimePicker Own通过派生ControlTheme的有限三输入选择器接入：原InfoPickerInput有效值、TimePicker明确输入存在位、TimePicker有效值。根仅发布运行期实际活动输入宽度、水平位置与框体底边；Rectangle的Width、Canvas.Left和Canvas.Top均由ControlTheme绑定，Top是框体底边减当前Height。Arrange后的重新取样处理内容宽度变化，叶子Height绑定处理厚度单独变化。不能在代码中对Rectangle设置样式或靠移除裁剪避开溢出。
+
+此几何修复同时适用于RangeDatePicker的原通用配置，TimePicker Own覆盖仅属于RangeTimePicker。原版与改版均复现重套模板后旧部件保留；复用图标的旧TemplatedParent和旧模板Style激活器的引用链已单列到CT-25，尚未完成释放验收。

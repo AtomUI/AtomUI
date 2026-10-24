@@ -57,7 +57,7 @@
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_ButtonsLayout">
-            <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+            <Setter Property="Margin" Value="{atom:TimePickerTokenResource ButtonsMargin}" />
         </Style>
         
     </ControlTheme>

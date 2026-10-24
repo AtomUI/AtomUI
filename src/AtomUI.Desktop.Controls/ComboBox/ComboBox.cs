@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 ﻿using System.Collections.Specialized;
 using AtomUI.Controls;
@@ -25,31 +26,32 @@ public partial class ComboBox : AvaloniaComboBox,
                         IInputControlStatusAware,
                         IInputControlStyleVariantAware,
                         IFormItemAware,
-                        IFormItemFeedbackAware
+                        IFormItemFeedbackAware,
+                                     IThemeInheritanceSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<ComboBox>();
 
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AddOnDecoratedBox.RightAddOnProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
         AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentLeftAddOnTemplateProperty =
         AddOnDecoratedBox.ContentLeftAddOnTemplateProperty.AddOwner<ComboBox>();
 
     public static readonly StyledProperty<object?> ContentRightAddOnProperty =
         AddOnDecoratedBox.ContentRightAddOnProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<ComboBox>();
 
@@ -64,13 +66,13 @@ public partial class ComboBox : AvaloniaComboBox,
 
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         TextBox.IsAllowClearProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<double> OptionFontSizeProperty =
         AvaloniaProperty.Register<ComboBox, double>(nameof(OptionFontSize));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ComboBox>();
-    
+
     public static readonly StyledProperty<int> DropDownDisplayPageSizeProperty =
         AvaloniaProperty.Register<ComboBox, int>(nameof (DropDownDisplayPageSize), 10);
 
@@ -111,7 +113,7 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(LeftAddOnProperty);
         set => SetValue(LeftAddOnProperty, value);
     }
-    
+
     public IDataTemplate? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
@@ -123,19 +125,19 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(RightAddOnProperty);
         set => SetValue(RightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
-    
+
     public object? ContentLeftAddOn
     {
         get => GetValue(ContentLeftAddOnProperty);
         set => SetValue(ContentLeftAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentLeftAddOnTemplate
     {
         get => GetValue(ContentLeftAddOnTemplateProperty);
@@ -147,7 +149,7 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(ContentRightAddOnProperty);
         set => SetValue(ContentRightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentRightAddOnTemplate
     {
         get => GetValue(ContentRightAddOnTemplateProperty);
@@ -177,7 +179,7 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
-    
+
     public double OptionFontSize
     {
         get => GetValue(OptionFontSizeProperty);
@@ -189,7 +191,7 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public int DropDownDisplayPageSize
     {
         get => GetValue(DropDownDisplayPageSizeProperty);
@@ -257,19 +259,19 @@ public partial class ComboBox : AvaloniaComboBox,
     #endregion
 
     #region 内部属性定义
-    
+
     internal static readonly DirectProperty<ComboBox, double> EffectivePopupWidthProperty =
         AvaloniaProperty.RegisterDirect<ComboBox, double>(
             nameof(EffectivePopupWidth),
             o => o.EffectivePopupWidth,
             (o, v) => o.EffectivePopupWidth = v);
-    
+
     internal static readonly StyledProperty<double> ItemHeightProperty =
         AvaloniaProperty.Register<ComboBox, double>(nameof(ItemHeight));
-    
+
     internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
         AvaloniaProperty.Register<ComboBox, Thickness>(nameof(PopupContentPadding));
-    
+
     internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<ComboBox, FormValidateFeedback?>(nameof(FormFeedback));
 
@@ -290,7 +292,7 @@ public partial class ComboBox : AvaloniaComboBox,
         AvaloniaProperty.RegisterDirect<ComboBox, bool>(
             nameof(IsEffectiveEmptyVisible),
             o => o.IsEffectiveEmptyVisible);
-    
+
     private double _effectivePopupWidth;
 
     internal double EffectivePopupWidth
@@ -298,19 +300,19 @@ public partial class ComboBox : AvaloniaComboBox,
         get => _effectivePopupWidth;
         set => SetAndRaise(EffectivePopupWidthProperty, ref _effectivePopupWidth, value);
     }
-    
+
     internal double ItemHeight
     {
         get => GetValue(ItemHeightProperty);
         set => SetValue(ItemHeightProperty, value);
     }
-    
+
     internal Thickness PopupContentPadding
     {
         get => GetValue(PopupContentPaddingProperty);
         set => SetValue(PopupContentPaddingProperty, value);
     }
-    
+
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
@@ -370,6 +372,8 @@ public partial class ComboBox : AvaloniaComboBox,
     // Keep popup closing after SelectionChanged callbacks finish updating bound state.
     private bool _selectionFromEventInProgress;
 
+    private EventHandler? _formValueChanged;
+
     static ComboBox()
     {
         TextInputEvent.AddClassHandler<ComboBox>(
@@ -412,7 +416,7 @@ public partial class ComboBox : AvaloniaComboBox,
         ConfigureEffectiveFilterEnabled();
         RefreshFilteredItemVisibility();
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -483,7 +487,7 @@ public partial class ComboBox : AvaloniaComboBox,
             _popup.IsOpen = true;
         }
     }
-    
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -534,7 +538,7 @@ public partial class ComboBox : AvaloniaComboBox,
         ApplySemanticItemMarker(comboBoxItem);
         return comboBoxItem;
     }
-    
+
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         if (item is ComboBoxItem)
@@ -559,12 +563,12 @@ public partial class ComboBox : AvaloniaComboBox,
                     comboBoxItem.SetCurrentValue(ComboBoxItem.ContentProperty, item);
                 }
             }
-            
+
             if (ItemTemplate != null)
             {
                 comboBoxItem[!ComboBoxItem.ContentTemplateProperty] = this[!ItemTemplateProperty];
             }
-            
+
             comboBoxItem[!ComboBoxItem.SizeTypeProperty]        = this[!SizeTypeProperty];
             comboBoxItem[!ComboBoxItem.FontSizeProperty]        = this[!OptionFontSizeProperty];
             comboBoxItem[!ComboBoxItem.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
@@ -575,11 +579,6 @@ public partial class ComboBox : AvaloniaComboBox,
             // CreateContainerForItemOverride，因此在这里兜底注入同一 marker（重复添加是幂等操作）。
             ApplySemanticItemMarker(comboBoxItem);
         }
-    }
-
-    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
-    {
-        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
     }
 
     protected override void ClearContainerForItemOverride(Control element)
@@ -716,7 +715,7 @@ public partial class ComboBox : AvaloniaComboBox,
 
         base.OnKeyDown(e);
     }
-    
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         if (!IsDropDownOpen)
@@ -734,7 +733,7 @@ public partial class ComboBox : AvaloniaComboBox,
             TrySetCandidateFromContainer(comboBoxItem);
         }
     }
-    
+
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         if (e.Source == this
@@ -787,9 +786,14 @@ public partial class ComboBox : AvaloniaComboBox,
         EffectivePopupWidth = e.NewSize.Width;
     }
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     #region 实现 FormItem 接口
-    
-    private EventHandler? _formValueChanged;
+
     event EventHandler? IFormItemAware.ValueChanged
     {
         add => _formValueChanged += value;
@@ -802,7 +806,7 @@ public partial class ComboBox : AvaloniaComboBox,
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
     void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
-    
+
     protected virtual void NotifyFormValueChanged(object? value)
     {
         _formValueChanged?.Invoke(this, EventArgs.Empty);
@@ -830,7 +834,7 @@ public partial class ComboBox : AvaloniaComboBox,
             SetCurrentValue(FormStatusProperty, status);
         }
     }
-    
+
     protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
     {
         FormFeedback = value;
@@ -943,7 +947,6 @@ public partial class ComboBox : AvaloniaComboBox,
             _isFrameBackgroundRelayed = value;
         }
     }
-
 
     /// <summary>
     /// 按业务状态打开弹层。开合不再由模板 <c>IsOpen</c> 绑定承担，因为模板充气阶段的绑定求值
@@ -1659,4 +1662,10 @@ public partial class ComboBox : AvaloniaComboBox,
     }
 
     private readonly record struct FilterVisibilityState(bool IsSet, bool Value);
+
+    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
+    {
+        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
+    }
+
 }

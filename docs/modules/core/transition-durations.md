@@ -24,9 +24,13 @@
 
 ## 当前迁移边界
 
-已接入 Button、DropdownButtonBase、共享 InputControlFrame 与 RadioIndicator；实际类型、模板 owner、混合时长、作用域往返、本地覆盖及对象释放已验证。其余 literal 消费者仍按所属家族逐条迁移并取得默认视觉对照，不能批量替换后宣告全控件完成。初始化 StateMotion 的 Animation 优先级抑制保留，不能为观察方便移除。
+Button、DropdownButtonBase、共享 InputControlFrame 与 RadioIndicator 之后，其余83组Token时长集合也已接入，覆盖74个Desktop、DataGrid、ColorPicker及GalleryBase主题文件。编译资产逐项物化及代表实际模板已验证；每个家族的完整状态、弹层、连续动画与输入仍须分别验收。初始化 StateMotion 的 Animation 优先级抑制保留，不能为观察方便移除。
 
-本轮默认明暗、尺寸、禁用、输入错误以及悬停/按下终态均保持零像素差异。动态时长的属性值验收与真实动画时间线验收分别记录；此文不表示所有平台或时钟后端已通过。实施结果见[CT-11 结果](../../superpowers/plans/2026-10-22-custom-theme/motion-transitions-results.md)。
+IndicatorScrollBarThumb 的旧实际时长为0。其集合在style Setter声明 `UnconfiguredDuration="0:0:0"`：已登记owner的规范配置明确提供Mid时才启用该时长，清除恢复0；独立未登记primitive仍为0。配置存在性复用已有规范化资源合同，不按默认数值猜测。原生Avalonia ScrollViewer分隔区保持Fast默认100ms，集合从模板内容迁至style Setter，视口、范围及滚动条合同不变。
+
+GalleryBase编译主题通过Core的友元边界访问此内部扩展，与现有产品包相同。工厂与绑定仍是内部实现，不新增公开反射入口。GalleryBase展示缩放的180ms及Gallery进度演示的300ms属于各自编写的内容时序，不能机械替换成控件Global时长。
+
+默认明暗、尺寸、禁用、输入错误以及悬停/按下终态按分包保留。动态时长的属性值验收与真实动画时间线验收分别记录；此文不表示所有平台或时钟后端已通过。初始机制见[CT-11 结果](../../superpowers/plans/2026-10-22-custom-theme/motion-transitions-results.md)，后续路径及专项见[消费目录](../../superpowers/plans/2026-10-22-custom-theme/motion-transition-catalog.md)和[扩展结果](../../superpowers/plans/2026-10-22-custom-theme/motion-consumers-expanded-results.md)。
 
 ## 波纹 Global 输入
 

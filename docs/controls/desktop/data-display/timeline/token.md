@@ -40,6 +40,36 @@ Timeline 的控件专项模型通过 Theme 消费 Token：
 - Horizontal 内容与轴线之间的 gap 直接使用 `SharedToken.UniformlyPaddingXS`，不为同一全局间距复制 Timeline 专属 Token。
 - `IndicatorSize`、`IndicatorDotSize`、`IndicatorDotBorderWidth`、`IndicatorTailWidth` 和 `IndicatorTailColor` 同时服务 Vertical 与 Horizontal renderer。
 
+### 有效默认与实际消费
+
+`TimelineToken` 使用 `DependencyDefaultsV2`（Revision 1）。11 个字段的名称、类型、资源 ID、slot 与未配置明暗默认保持；仅 `ItemPaddingBottomLG` 有 Own 依赖，读取有效 `ItemPaddingBottom`，显式 LG 再覆盖派生值。
+
+| 字段 | 默认输入／公式 | 消费区域与边界 |
+| --- | --- | --- |
+| `IndicatorTailColor` | 有效 Global `ColorSplit` | 两方向 rail 背景 |
+| `IndicatorTailWidth` | 有效 Global `LineWidthBold` | 两方向 rail 排列宽度 |
+| `ItemPaddingBottom` | 有效 Global `UniformlyPadding * 1.25` 的 bottom Thickness | Vertical 普通项；末项不保留 |
+| `ItemPaddingBottomLG` | 有效 Own `ItemPaddingBottom * 2` | Vertical 非倒序的 pending 前项、倒序的 pending 自身 |
+| `LastItemContentMinHeight` | 资源默认为有效 Global `ControlHeightLG * 1.2` | **OptionalOverride**：仅明确配置 Own 时，应用到两方向最后可见项的 ContentPresenter；未配置保留原生 MinHeight=0 |
+| `IndicatorSize` | 有效 Global `SizeMS` | 轴线槽及图标尺寸 |
+| `IndicatorDotSize` | 常量 8 | 内置 dot 几何 |
+| `IndicatorStartModeMargin` | 有效 Global `UniformlyMargin` 的 right Thickness | Vertical Start |
+| `IndicatorEndModeMargin` | 同上，left Thickness | Vertical End |
+| `IndicatorMiddleModeMargin` | 同上，horizontal Thickness | Vertical Alternate／双侧 label |
+| `IndicatorDotBorderWidth` | 有效 Global `LineWidth * 3` | dot 默认描边；排列盒边长仍为 dotSize + borderWidth |
+
+`LastItemContentMinHeight` 的历史资源默认在标准主题下是 48，但此前没有实际消费者；自动应用会改变已有布局，因此保留资源值，通过 `WhenExplicit=True` 启用。明确值 73 生效，明确值 0 仍为 0，清除后回到 0；应用的 `TimelineItemContentStyle` 可覆盖该默认 Setter，不依赖找节点赋值。
+
+内部 Indicator 的 `ColorPrimary`、`ColorBgContainer` 和 `RelativeLineHeight` 读取实际公开 `TimelineItem` 的有效 Global；Timeline Own 几何仍属于 `Timeline`。`IndicatorColor=null` 实时回退到有效 Primary，公开明确颜色优先；清除颜色后继续回退，不在模板应用时复制本地值。独立内部 primitive 没有注册 owner 时使用 Shared 回退。两种公开 owner 的配置职责不合并。
+
+### 公开 owner 的排版与框体
+
+Timeline 和 TimelineItem 的 FontFamily、FontSize、ColorText 各自读取本 identity 的有效 Global，仅在明确配置时启用；未配置时保留实际继承父的字体和前景。没有 SizeType／IsCustomFontSize 新 API；字体大小不是按名称推断的三档值。清除恢复当前祖先，公开本地值及专用 Title／Content Style 的原生优先级保持。FontWeight／FontStyle 继续沿原生继承传播。
+
+根已有 Background／BorderBrush 读取 Timeline 的 ColorBgContainer／ColorBorder；不自动增加原来为0的边框或圆角。section 的 IndicatorSpacing 读取公开 TimelineItem 的 UniformlyPaddingXS。节点掩膜的背景仍属于 Item：仅设置 root 背景不会复制到 Item；若配方要求同色，可设置共同全局 ColorBgContainer，或分别配置两个 owner。公共 root Background 本地值的含义也不等于设置条目掩膜。
+
+明确配置为0的 Own 几何／间距和 alpha=0 的轨迹颜色仍按实际输入消费，不以 false／0／透明替换为默认值。Own 的 dot 盒、rail 宽度、icon 尺寸、末项高度、pending 间距及三种 margin 的运行覆盖见 [P2 结果](../../../../superpowers/plans/2026-10-22-custom-theme/timeline-typography-results.md)。
+
 ## 4. 控件家族影响
 
 调整 Timeline Token 时必须评估以下范围：

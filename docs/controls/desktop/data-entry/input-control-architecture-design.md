@@ -1,5 +1,7 @@
 # 输入控件共享架构设计
 
+组合根排版已接通控制 Effective Global 与原生样式优先级：选择、日期时间、数值和公开 ButtonSpinner 的字体族未明确配置时沿真实继承父更新，根前景经模板到达实际输入与框体。NumericUpDown 保持原真实文本 14 DIP 默认，内部 EmbeddedTextBox 不再覆盖根字号；内部 NumericUpDownSpinner 不接受公开 ButtonSpinner 的可选默认。各 owner 的三档差异及释放合同见[共享主题消费](../../../modules/controls/shared-theme-consumers.md)。
+
 本文档定义 AtomUI 桌面数据录入控件共享的文本输入逻辑层、输入表面视觉层、状态归一、组合控件边界、Token 资源边界和 Form/native validation 集成规则。`LineEdit` 输入家族的具体 API 与 TextArea 行为见 [LineEdit 桌面版架构设计](line-edit/overview.md)；Select、NumericUpDown、DatePicker、TimePicker、Cascader、TreeSelect 等控件只在各自文档中描述业务状态和专用布局，不重复定义本架构的输入表面规则。
 
 ## 1. 设计定位
@@ -147,6 +149,7 @@ Avalonia 元数据默认值与主题生效后的 getter 不等同：主题提供
 | TextBox | Padding、边宽和 CompactSpace 派生圆角投射到 InputControlFrame。 |
 | LineEdit / SearchEdit / ComboBox / Select / Cascader / TreeSelect | Padding 投射到内容 frame；边宽、圆角继续经过 AddOn/variant/CompactSpace 的既有几何分配。 |
 | DatePicker / TimePicker 及范围入口 | 具体 owner 提供 Effective Global 默认值，共享 InfoPicker 模板只投射输入。 |
+| 活动范围指示条 | 共享RangeInfoPickerInput发布实际活动输入宽度、X及框体底边；ControlTheme绑定Rectangle几何。TimePicker的两个范围Own明确配置只覆盖RangeTimePicker，缺省／清除保留原通用InfoPickerInput Own。 |
 | TextArea | 外框保持零 padding；owner padding 进入内层内容区，保留右侧操作区、滚动和 resize 的空间分配。 |
 | ButtonSpinner / NumericUpDown | 内容 inset 与 handle 占位分离；数值 Spinner 模式保持 action 段无额外 padding，文本区使用 owner inset。 |
 
@@ -211,6 +214,10 @@ TextBox/LineEdit/TextArea/SearchEdit 的 Foreground 默认使用具体公开 own
 ### 内部资产的主题查询路线
 
 InputControlFrame、InputClearIconButton及RevealButton没有独立公开主题身份。主题内使用OwnerTokenResource：优先沿TemplatedParent，内容子树没有该关系时沿逻辑Parent，直到真实注册的公开Control；公开子Button继续保有自己的identity。不能因为内部节点位于ContentRightAddOn而直接读Shared，也不把LineEdit身份配置复制给SearchEdit。
+
+AddOnDecoratedBox的附加区背景/描边、三档内边距/行高、槽间距、后缀默认前景与状态文字/图标色遵循同一路线。派生ButtonSpinnerContentPanel的间距同样来自实际owner。SearchEdit的ContentLayout是DockPanel，没有间距属性；TextArea没有外侧addon。NumericUpDownSpinner是内部未独立注册节点，其附加区归NumericUpDown；实际公开ButtonSpinner仍使用自己的identity。
+
+运行时包装PathIcon的SizeTypeAwareIconPresenter在自身ControlTheme上消费实际owner的三档IconSize，并通过TemplateBinding投射Width/Height。Custom退出尺寸预设，只保留基础IconSize，原生显式宽高及child显式值仍由Avalonia处理优先级。模板中的公开IconPresenter继续使用自身画刷身份，不能从其self查询外层输入的尺寸。
 
 资源绑定在上下文、当前父/模板父和逻辑挂载变化时重新解析，并按上下文/资源键去重；资源值仍由Avalonia原生observable与绑定优先级处理，不代码设置最终样式。只读解析依赖注册元数据与实际树拓扑，不能通过单个AXAML静态AncestorType覆盖全部复用owner；编译绑定避免反射，分离/重挂载由原生绑定生命周期释放。未为每条资源订阅所有祖先，也不建立全局强引用控件缓存。
 

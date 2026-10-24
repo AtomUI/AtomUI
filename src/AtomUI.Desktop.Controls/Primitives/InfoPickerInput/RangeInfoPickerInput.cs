@@ -32,18 +32,16 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     
     internal static readonly StyledProperty<double> RangePickerIndicatorOpacityProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangePickerIndicatorOpacity), 0d);
+
+    internal static readonly StyledProperty<double> RangePickerIndicatorWidthProperty =
+        AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangePickerIndicatorWidth), double.NaN);
     
-    internal double RangePickerIndicatorOpacity
-    {
-        get => GetValue(RangePickerIndicatorOpacityProperty);
-        set => SetValue(RangePickerIndicatorOpacityProperty, value);
-    }
 
     internal static readonly StyledProperty<double> PickerIndicatorOffsetXProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(PickerIndicatorOffsetX), double.NaN);
     
-    internal static readonly StyledProperty<double> PickerIndicatorOffsetYProperty =
-        AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(PickerIndicatorOffsetY));
+    internal static readonly StyledProperty<double> PickerIndicatorFrameBottomProperty =
+        AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(PickerIndicatorFrameBottom));
     
     internal static readonly StyledProperty<string?> SecondaryTextProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, string?>(nameof(SecondaryText));
@@ -56,16 +54,28 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         set => SetAndRaise(RangeActivatedPartProperty, ref _rangeActivatedPart, value);
     }
     
+    internal double RangePickerIndicatorOpacity
+    {
+        get => GetValue(RangePickerIndicatorOpacityProperty);
+        set => SetValue(RangePickerIndicatorOpacityProperty, value);
+    }
+
+    internal double RangePickerIndicatorWidth
+    {
+        get => GetValue(RangePickerIndicatorWidthProperty);
+        set => SetValue(RangePickerIndicatorWidthProperty, value);
+    }
+
     internal double PickerIndicatorOffsetX
     {
         get => GetValue(PickerIndicatorOffsetXProperty);
         set => SetValue(PickerIndicatorOffsetXProperty, value);
     }
     
-    internal double PickerIndicatorOffsetY
+    internal double PickerIndicatorFrameBottom
     {
-        get => GetValue(PickerIndicatorOffsetYProperty);
-        set => SetValue(PickerIndicatorOffsetYProperty, value);
+        get => GetValue(PickerIndicatorFrameBottomProperty);
+        set => SetValue(PickerIndicatorFrameBottomProperty, value);
     }
     
 
@@ -77,16 +87,17 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 
     #endregion
         
+    private protected Rectangle? RangePickerIndicator;
+    private protected PathIcon? RangePickerArrow;
+    private protected TextBox? SecondaryInfoInputBox;
+
     private readonly StateMotionSession _stateMotion;
 
     static RangeInfoPickerInput()
     {
-        AffectsArrange<RangeInfoPickerInput>(PickerIndicatorOffsetXProperty, PickerIndicatorOffsetYProperty);
+        AffectsArrange<RangeInfoPickerInput>(PickerIndicatorOffsetXProperty);
     }
     
-    private protected Rectangle? RangePickerIndicator;
-    private protected PathIcon? RangePickerArrow;
-    private protected TextBox? SecondaryInfoInputBox;
 
     public override void Clear()
     {
@@ -221,17 +232,19 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     {
         var borderThickness = DecoratedBox?.BorderThickness ?? default;
         var size            = base.ArrangeOverride(finalSize).Inflate(borderThickness);
-        if (RangePickerIndicator is not null)
+        if (DecoratedBox is { } frame)
         {
-            if (!MathUtils.AreClose(Canvas.GetLeft(RangePickerIndicator), PickerIndicatorOffsetX))
+            // A stretched frame can exceed DesiredSize. The theme subtracts the
+            // live indicator height, which need not invalidate this owner's measure.
+            var bottom = frame.TranslatePoint(new Point(0, frame.Bounds.Height), this)?.Y ?? frame.Bounds.Bottom;
+            if (!MathUtils.AreClose(PickerIndicatorFrameBottom, bottom))
             {
-                Canvas.SetLeft(RangePickerIndicator, PickerIndicatorOffsetX);
-            }
-            if (!MathUtils.AreClose(Canvas.GetTop(RangePickerIndicator), PickerIndicatorOffsetY))
-            {
-                Canvas.SetTop(RangePickerIndicator, PickerIndicatorOffsetY);
+                PickerIndicatorFrameBottom = bottom;
             }
         }
+        // Theme geometry can resize either endpoint without changing the active
+        // part. Read its arranged bounds before publishing the indicator output.
+        SetupPickerIndicatorPosition();
 
         return size;
     }
@@ -239,15 +252,6 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     protected override Size MeasureOverride(Size availableSize)
     {
         var size = base.MeasureOverride(availableSize);
-        if (DecoratedBox is not null && RangePickerIndicator is not null)
-        {
-            var indicatorOffsetY = DecoratedBox.DesiredSize.Height - RangePickerIndicator.Height;
-            if (!MathUtils.AreClose(PickerIndicatorOffsetY, indicatorOffsetY))
-            {
-                PickerIndicatorOffsetY = indicatorOffsetY;
-            }
-        }
-    
         if (double.IsNaN(PickerIndicatorOffsetX))
         {
             if (_rangeActivatedPart == RangeActivatedPart.None)
@@ -321,9 +325,11 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 
     private void SetRangePickerIndicatorWidth(double width)
     {
-        if (RangePickerIndicator is not null && !MathUtils.AreClose(RangePickerIndicator.Width, width))
+        // Active endpoints are private runtime template references. Publish their
+        // computed geometry; ControlTheme owns the final rectangle properties.
+        if (RangePickerIndicator is not null && !MathUtils.AreClose(RangePickerIndicatorWidth, width))
         {
-            RangePickerIndicator.Width = width;
+            RangePickerIndicatorWidth = width;
         }
     }
 

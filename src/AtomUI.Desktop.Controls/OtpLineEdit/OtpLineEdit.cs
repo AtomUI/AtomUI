@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -21,7 +22,8 @@ public partial class OtpLineEdit : TemplatedControl,
                                    IInputControlStyleVariantAware,
                                    IInputControlStatusAware,
                                    IFormItemAware,
-                                   IFormItemFeedbackAware
+                                   IFormItemFeedbackAware,
+                                   IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -456,6 +458,52 @@ public partial class OtpLineEdit : TemplatedControl,
         }
     }
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected native inheritance parent. The theme
+    // owns the final font Setters; this bridge only exposes their actual source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 FormItem 接口
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value)
+    {
+        SetCurrentValue(TextProperty, value?.ToString());
+    }
+
+    object? IFormItemAware.GetFormValue()
+    {
+        return Text;
+    }
+
+    void IFormItemAware.ClearFormValue()
+    {
+        Clear();
+    }
+
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status)
+    {
+        SetCurrentValue(FormStatusProperty, status);
+    }
+
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value)
+    {
+        if (!ReferenceEquals(FormFeedback, value))
+        {
+            FormFeedback = value;
+        }
+    }
+
+    #endregion
+
     private void HandleDescendantTextInput(object? sender, TextInputEventArgs e)
     {
         if (ReferenceEquals(e.Source, this) || !IsCellInputSource(e.Source))
@@ -795,42 +843,4 @@ public partial class OtpLineEdit : TemplatedControl,
             IsFormFeedbackVisible = false;
         }
     }
-
-    #region 实现 FormItem 接口
-
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    void IFormItemAware.SetFormValue(object? value)
-    {
-        SetCurrentValue(TextProperty, value?.ToString());
-    }
-
-    object? IFormItemAware.GetFormValue()
-    {
-        return Text;
-    }
-
-    void IFormItemAware.ClearFormValue()
-    {
-        Clear();
-    }
-
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status)
-    {
-        SetCurrentValue(FormStatusProperty, status);
-    }
-
-    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value)
-    {
-        if (!ReferenceEquals(FormFeedback, value))
-        {
-            FormFeedback = value;
-        }
-    }
-
-    #endregion
 }

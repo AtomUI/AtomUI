@@ -445,9 +445,9 @@
         </Style>
         <Style Selector="^[Type=Navigation][IsMotionEnabled=True] /template/ atom|PixelAlignedBorder#NavigationActiveIndicator">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" Easing="CubicEaseOut" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
         <Style Selector="^[Type=Navigation][Orientation=Vertical] /template/ atom|StepsNavigationArrow#NavigationArrow">
@@ -472,9 +472,9 @@
         </Style>
         <Style Selector="^[Type=Inline][IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
         <Style Selector="^[Type=Inline] /template/ atom|StepsItemLayoutPanel">

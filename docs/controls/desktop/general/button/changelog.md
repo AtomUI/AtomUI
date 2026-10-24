@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-10-24
+
+- Compatibility
+  - ExtraContent四字段归类Reserved，GroupBorderColor归类Legacy；保留资源和配置兼容，明确其没有实际视觉区域。不得作为有效调节项展示，也不借用Dropdown或CompactSpace区域。
+
 ## 2026-10-23
 
 - Theme

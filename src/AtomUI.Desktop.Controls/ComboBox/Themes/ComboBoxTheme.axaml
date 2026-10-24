@@ -3,7 +3,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:ComboBox}" TargetType="atom:ComboBox">
+    <ControlTheme x:Key="{x:Type atom:ComboBox}" TargetType="atom:ComboBox" x:DataType="atom:ComboBox">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:ComboBoxTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:ComboBoxTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.PresetFontSizeConverter}">
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:ComboBoxTokenResource Kind="FontSize" />
+                <atom:ComboBoxTokenResource Kind="FontSizeSM" />
+                <atom:ComboBoxTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:ComboBoxTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -15,6 +31,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         ContentFramePadding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -41,7 +58,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                              <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:ComboBoxTokenResource SpacingXS}">
                                  <atom:AddOnContentPresenter
                                      Name="PART_ContentRightAddOnPresenter"
                                      Content="{CompiledBinding $parent[atom:ComboBox].ContentRightAddOn}"
@@ -89,9 +106,9 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Padding="0"
-                                CaretBrush="{atom:SharedTokenResource ColorText}"
-                                SelectionBrush="{atom:SharedTokenResource SelectionBackground}"
-                                SelectionForegroundBrush="{atom:SharedTokenResource SelectionForeground}"
+                                CaretBrush="{atom:ComboBoxTokenResource ColorText}"
+                                SelectionBrush="{atom:ComboBoxTokenResource SelectionBackground}"
+                                SelectionForegroundBrush="{atom:ComboBoxTokenResource SelectionForeground}"
                                 Text="{TemplateBinding Text, Mode=TwoWay}"
                                 PlaceholderText="{TemplateBinding PlaceholderText}"
                                 PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
@@ -133,7 +150,7 @@
                                 <Border
                                     Name="PART_EmptyIndicator"
                                     Classes.semantic-popup-empty="True"
-                                    Padding="{atom:SharedTokenResource Padding}"
+                                    Padding="{atom:ComboBoxTokenResource Padding}"
                                     IsVisible="{TemplateBinding IsEffectiveEmptyVisible}">
                                     <atom:Empty
                                         HorizontalAlignment="Center"
@@ -152,19 +169,12 @@
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ComboBoxTokenResource EnableMotion}" />
         <Setter Property="PopupContentPadding" Value="{atom:ComboBoxTokenResource PopupContentPadding}" />
-        <Setter Property="OptionFontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="OptionFontSize" Value="{atom:ComboBoxTokenResource FontSize}" />
+        <Setter Property="ItemHeight" Value="{atom:ComboBoxTokenResource ControlHeight}" />
         
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                 <Setter Property="Margin" Value="0, 1, 0, 1" />
             </Style>
@@ -185,7 +195,7 @@
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:ComboBoxTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
@@ -194,13 +204,13 @@
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:ComboBoxTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:ComboBoxTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>
@@ -209,13 +219,13 @@
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:ComboBoxTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:ComboBoxTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>

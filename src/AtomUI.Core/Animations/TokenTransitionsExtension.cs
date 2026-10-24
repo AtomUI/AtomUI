@@ -15,7 +15,7 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Animations;
 
-// Internal prototype: bind at the Control's style Setter, where native resources have
+// Bind at the Control's style Setter, where native resources have
 // an owner. TransitionBase has no resource host and must not share mutable duration.
 internal sealed class TokenTransitionsExtension : MarkupExtension
 {
@@ -24,6 +24,10 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
     public BindingBase? Duration { get; set; }
 
     public SharedTokenKind? DurationKind { get; set; }
+
+    // Preserve an existing inert default while allowing directly configured duration
+    // inputs to opt in. Presence uses the existing normalized Token resource contract.
+    public TimeSpan? UnconfiguredDuration { get; set; }
 
     [Content]
     public IList<TransitionBase> Children { get; } = new List<TransitionBase>();
@@ -64,7 +68,7 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
                 {
                     slot = kinds.Count;
                     kinds.Add(kind.Value);
-                    bindings.Add(OwnerTokenResourceExtension.CreateBinding(kind.Value));
+                    bindings.Add(OwnerTokenResourceExtension.CreateBinding(kind.Value, UnconfiguredDuration.HasValue));
                 }
                 slots[i] = slot + 1;
             }
@@ -72,7 +76,7 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
         var result = new MultiBinding
         {
             Mode = BindingMode.OneWay,
-            Converter = new OwnerConverter(factories, slots, bindings.Count + 1)
+            Converter = new OwnerConverter(factories, slots, bindings.Count + 1, UnconfiguredDuration)
         };
         result.Bindings.Add(new CompiledBindingExtension(new CompiledBindingPathBuilder().Self().Build()));
         foreach (var binding in bindings)
@@ -146,7 +150,8 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
         throw new NotSupportedException($"No AOT easing copy is defined for '{easing.GetType()}'.");
     }
 
-    private sealed class OwnerConverter(Func<TransitionBase>[] factories, int[] slots, int valueCount) : IMultiValueConverter
+    private sealed class OwnerConverter(Func<TransitionBase>[] factories, int[] slots, int valueCount,
+                                       TimeSpan? unconfiguredDuration) : IMultiValueConverter
     {
         // Weak owner keys keep the style definition from retaining discarded controls.
         // This caches only per-owner native objects; the binding engine owns priority.
@@ -155,7 +160,8 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
         public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (values.Count != valueCount || values[0] is not Control owner ||
-                slots.Any(slot => slot != 0 && values[slot] is not TimeSpan))
+                slots.Any(slot => slot != 0 && values[slot] is not TimeSpan &&
+                                  !(unconfiguredDuration.HasValue && ReferenceEquals(values[slot], AvaloniaProperty.UnsetValue))))
             {
                 return AvaloniaProperty.UnsetValue;
             }
@@ -164,7 +170,8 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
             {
                 if (slots[i] != 0)
                 {
-                    ((TransitionBase)transitions[i]).Duration = (TimeSpan)values[slots[i]]!;
+                    ((TransitionBase)transitions[i]).Duration = values[slots[i]] is TimeSpan duration
+                        ? duration : unconfiguredDuration.GetValueOrDefault();
                 }
             }
             return transitions;

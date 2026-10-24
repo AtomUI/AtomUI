@@ -30,7 +30,7 @@ public class TimelineThemeTests
         timelineTheme.ShouldContain("BorderThickness=\"{TemplateBinding BorderThickness}\"");
         itemTheme.ShouldContain("Orientation=\"{TemplateBinding Orientation}\"");
         itemTheme.ShouldContain(
-            "IndicatorSpacing=\"{atom:SharedTokenResource UniformlyPaddingXS}\"");
+            "IndicatorSpacing=\"{atom:TimelineItemTokenResource UniformlyPaddingXS}\"");
         itemTheme.ShouldContain("Selector=\"^[Orientation=Vertical]\"");
         itemTheme.ShouldContain("Selector=\"^[Orientation=Horizontal]\"");
     }

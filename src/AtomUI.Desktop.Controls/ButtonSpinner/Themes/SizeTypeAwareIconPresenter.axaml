@@ -5,6 +5,8 @@
     xmlns:primitives="using:AtomUI.Desktop.Controls.Primitives">
     <ControlTheme x:Key="{x:Type primitives:SizeTypeAwareIconPresenter}"
                   TargetType="primitives:SizeTypeAwareIconPresenter">
+        <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:IconPresenter
@@ -16,28 +18,16 @@
         </Setter>
 
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-                <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSizeLG}" />
-                <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSizeLG}" />
-            </Style>
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSizeLG}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSizeLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-                <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSize}" />
-                <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSize}" />
-            </Style>
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-                <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
-                <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
-            </Style>
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSizeSM}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSizeSM}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

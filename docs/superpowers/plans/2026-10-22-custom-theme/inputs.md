@@ -87,3 +87,15 @@ B2A已按最终AXAML版本完成专项、清理及聚焦检查，见[光标状�
 - 默认几何/非闪烁全RGBA0；动态比较必须记录真实相位/周期和曲线，不用关闭动画或同相位挑帧掩盖新旧差异。JIT/当前Mac NativeAOT实际消费及mutable隔离，临时源/媒体清理后OTP/Core受影响精确filter、NET8、成员审计和正式文档；其他原生显示/平台不推断通过。若最小原型不能保留默认时间线，先留证诊断，不擅自批准差异。
 
 B2B已验收，见[时间线结果](input-otp-blink-results.md)：7临时+66既有检查通过，明暗16张静态新旧RGBA0，当前Mac AOT实跑与JIT十八图0；真实周期/缓动/隐藏相位、motion=false、负/零值、清除及GC通过。临时验证清理后OTP66、NET8零警告、成员审计及正式文档链接通过。继续C排版，完整家族与CT25出口仍开放。
+
+### G3-C 根与分隔符排版
+
+保留未配置时根/分隔符对真实父字体与字号的继承，cell继续既有Large16/Middle14/Small12/Custom14的自身预设，不能为统一字号改变默认separator。明确配置OtpLineEdit有效Global FontFamily及对应三档FontSize时，根/分隔符进入该输入；cell继续已有typed Global消费，同一实例清除分别恢复原继承/预设。复用ControlTypographyBindings的8输入可选字号向量（无IsCustomFontSize API），AXAML完成最终Setter，根仅提供内部只读继承源。不添加Own字段、旗标或资源ID。根FontSize与cell独立预设的既有职责不扩成新的跨优先级中继；需要改cell字体的应用使用专用Cell Style。
+
+临时验证先证明Global字体族与separator字号不消费；同时锁定未配置父字号、各尺寸cell、typeface、Style/local覆盖、清除/换父及GC。真实Skia明暗四尺寸/四variant和输入状态前后与往返比较，正常光标时间线保持；当前Mac NativeAOT实跑，临时源/驱动/媒体清理后OTP/Core精确filter、NET8与成员审计。若发现独立公共子Control身份或实际typeface丢失，先取得失败再定最小接线。
+
+G3-C字体专项完成，前后、AOT、清理及最终聚焦结果见[根与分隔符排版](input-otp-typography-results.md)。旧默认暗色separator前景缺陷于2026-10-24获用户批准，按[颜色计划](input-otp-color.md)执行独立分包；完整输入选择家族/CT25仍开放。
+
+### G3-D 已批准的分隔符颜色
+
+[颜色结果](input-otp-color-results.md)：普通／禁用有效Global在根ControlTheme声明，默认与批准原型四图完全一致；7临时RED→GREEN、96cell实际输入／几何／优先级及38帧Mac AOT-JIT通过。原生直接Style移除与栅格边缘分别记录CT25，不能计作完整家族完成。

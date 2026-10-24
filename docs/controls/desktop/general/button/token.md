@@ -121,7 +121,7 @@ Text Token 必须保持以下语义：
 - `DefaultShadow`
 - `GroupBorderColor`
 
-DefaultShadow进入默认按钮实际阴影。GroupBorderColor的历史含义对应组内接缝，当前Button没有Ant旧Button.Group等价区域；不得把它改成整个Button的BorderBrush或静默影响CompactSpace。该字段保留ID/类型/默认值，兼容处置待审查，不列为已验收的有效定制入口。
+DefaultShadow进入默认按钮实际阴影。GroupBorderColor的历史含义对应组内接缝，当前Button没有Ant旧Button.Group等价区域；不得把它改成整个Button的BorderBrush或静默影响CompactSpace。该字段归类Legacy，保留ID/类型/默认值及配置往返，不作为可调视觉入口。
 
 ## 3. Button 多彩模型中的 Token 使用
 
@@ -204,4 +204,6 @@ DefaultBorderColorDisabled用于EffectiveColor=Default、EffectiveVariant=Outlin
 
 GutterToFlyout用于Button.Flyout关联的AtomUI Flyout/MenuFlyout，只有Flyout实际Target为该Button且该Own明确配置时投射MarginToAnchor，支持0与打开期间更新。未配置保留旧Flyout默认0；Token历史默认资源值4不自动改变已有弹层位置。Flyout本地MarginToAnchor优先，RequestedPlacement=null仍保留Avalonia默认定位模式。原生Avalonia Flyout没有这个Margin合同，不注入。非Visual Flyout不在模板子树，代码绑定有具体原因注释，跟随Target并在关闭/替换/分离释放。共享Flyout只使用当前Target owner。
 
-ExtraContentItemSpacing、ExtraContentMargin/SM/LG没有对应Button实际区域；保持资源兼容，不能作为已生效能力展示。与GroupBorderColor的正式兼容决策和工作台可编辑状态须在最终交付审查明确，不以“保留字段”冒充严格Token接入完成。
+ExtraContentItemSpacing、ExtraContentMargin/SM/LG归类Reserved：当前Button没有公开额外内容区域，内部RightExtraContent属性也没有模板消费者。四字段保留名称、类型、公开资源ID、默认函数及配置导入导出；不补造内容区域，不影响DropdownButton自身的有效ExtraContentMargin系列。
+
+这四项与Legacy的GroupBorderColor在控件Token表和主题工作台中须标为历史保留且不可编辑，不能显示为可用视觉调节项。已有配置仍可读取、原样往返；保留字段不表示它们改变画面。未来若公开对应功能，须另行定义API、Semantic Part及默认兼容合同后再启用，不能复用同名字段擅自改变现有布局。

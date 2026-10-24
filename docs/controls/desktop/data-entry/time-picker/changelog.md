@@ -2,6 +2,14 @@
 
 本文档记录 TimePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-24
+
+- TimePicker历史8字段迁至有效依赖默认；PeriodHostWidth与ButtonsMargin接通实际时间列／footer，DatePicker自己的footer保持原合同。
+- 行高热更新及短循环补行保留浏览的逻辑值／分数偏移，显式选择定位优先，几何恢复不触发时间提交。
+- RangeTimePicker接通明确的范围箭头margin与指示条厚度Own覆盖，缺省／清除保留旧InfoPickerInput配置；修复通用范围输入热更新后的指示条旧宽度、旧坐标及底边溢出，保留正常过渡与已提交值。
+- 公开TimeViewCell接入明确Global字体与状态颜色；默认继承及旧ListView配色入口保持。禁用色只在Cell直接配置时启用owner Setter，经原模板绑定传给文字，保留本地值及专用Semantic Style优先级。
+- 区分内部TimeView／Presenter与公开TimeViewCell，修正文档中的模板部件及footer Token归属。
+
 ## 2026-10-23
 
 - 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。

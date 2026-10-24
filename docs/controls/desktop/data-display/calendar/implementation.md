@@ -74,6 +74,8 @@ Calendar 提交策略维护月首/月末禁用、日号截断、周号行首和�
 overlay 使用面板的拓扑与实际 arrange 几何，不按 Value 再计算一份网格。
 农历只做内容与有效支持范围投影，详见 [农历设计](lunar-calendar-design.md)。
 
+普通Calendar与农历Own均通过生成的DependencyDefaultsV2入口求值。农历Mini高度读取有效MiniDateCellSize，完整单元最小高度和范围条避让读取有效SecondaryTextLineHeight；adapter继续使用原动态资源绑定将它们传给既有展示属性，未新增事件或缓存。完整行最小值增长会同时改变日期行坐标，因此范围条避让必须相对实际所在日期行验证。内部Token直接公式测试使用生成EvaluateDefaults入口，保留独立输入与原有期望值。
+
 ## 9. 资源、性能与 AOT
 
 静态主题引用 DateViewer 的资产；农历资源属于农历消费，不强制独立面板保留 Provider 或历法表。

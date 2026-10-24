@@ -58,27 +58,27 @@
             <!-- 基础单元格视觉 -->
             <Style Selector="^ /template/ Border#PART_Item">
                 <Setter Property="Transitions">
-                    <Transitions>
+                    <atom:TokenTransitions>
                         <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-                    </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
             <Style Selector="^ /template/ Border#PART_CellInner">
                 <Setter Property="MinWidth" Value="{atom:SharedTokenResource ControlHeightSM}" />
                 <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
                 <Setter Property="Transitions">
-                    <Transitions>
+                    <atom:TokenTransitions>
                         <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
                         <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-                    </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
             <Style Selector="^ /template/ atom|TextBlock#PART_Value">
                 <!-- Foreground inherits from the cell; state colors belong to the cell theme. -->
                 <Setter Property="Transitions">
-                    <Transitions>
+                    <atom:TokenTransitions>
                         <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-                    </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
 

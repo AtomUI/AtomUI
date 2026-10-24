@@ -1,0 +1,6 @@
+AtomUI.TokenResourceIds	1
+AtomUI.Registration.Fixtures.ThirdParty	Fixture.ThirdParty.EnumOnlyToken	FixtureValue	0
+AtomUI.Registration.Fixtures.ThirdParty	Fixture.ThirdParty.ExtensionOnlyToken	FixtureValue	0
+AtomUI.Registration.Fixtures.ThirdParty	Fixture.ThirdParty.IdentityOnlyToken	FixtureValue	0
+AtomUI.Registration.Fixtures.ThirdParty	Fixture.ThirdParty.TokenKeyOnlyToken	FixtureValue	0
+AtomUI.Registration.Fixtures.ThirdParty	Fixture.ThirdParty.TokenOnlyToken	FixtureValue	0

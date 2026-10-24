@@ -4,7 +4,7 @@
     xmlns:atom="https://atomui.net"
     xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atomc:TimelineIndicator}" TargetType="atomc:TimelineIndicator">
+    <ControlTheme x:Key="{x:Type atomc:TimelineIndicator}" TargetType="atomc:TimelineIndicator" x:DataType="atomc:TimelineIndicator">
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -15,8 +15,7 @@
                     <Border Name="PART_Dot"
                             Classes.semantic-item-icon="True"
                             IsHitTestVisible="False"
-                            Background="{atom:SharedTokenResource ColorBgContainer}"
-                            BorderBrush="{TemplateBinding IndicatorColor}" />
+                            Background="{atom:OwnerTokenResource ColorBgContainer}" />
                     <Border Name="PART_IconHost"
                             Classes.semantic-item-icon="True"
                             IsVisible="False">
@@ -28,10 +27,10 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="RelativeLineHeight" Value="{atom:SharedTokenResource RelativeLineHeight}"/>
+        <Setter Property="RelativeLineHeight" Value="{atom:OwnerTokenResource RelativeLineHeight}"/>
         <Setter Property="IndicatorDotBorderWidth" Value="{atom:TimelineTokenResource IndicatorDotBorderWidth}"/>
         <Setter Property="IndicatorDotSize" Value="{atom:TimelineTokenResource IndicatorDotSize}"/>
-        <Setter Property="DefaultIndicatorColor" Value="{atom:SharedTokenResource ColorPrimary}"/>
+        <Setter Property="DefaultIndicatorColor" Value="{atom:OwnerTokenResource ColorPrimary}"/>
         <Setter Property="IndicatorTailWidth" Value="{atom:TimelineTokenResource IndicatorTailWidth}"/>
         <Setter Property="IndicatorTailColor" Value="{atom:TimelineTokenResource IndicatorTailColor}"/>
 
@@ -40,8 +39,29 @@
             <Setter Property="Height" Value="{atom:TimelineTokenResource IndicatorSize}"/>
         </Style>
 
+        <Style Selector="^ /template/ Border#PART_Dot">
+            <Setter Property="BorderThickness" Value="{TemplateBinding IndicatorDotBorderWidth, Converter={x:Static atom:TimelineIndicatorThemeBindings.DotBorderThickness}}" />
+            <Setter Property="CornerRadius">
+                <MultiBinding Converter="{x:Static atom:TimelineIndicatorThemeBindings.DotCornerRadius}">
+                    <TemplateBinding Property="{x:Static atom:TimelineIndicatorThemeBindings.DotSizeProperty}" />
+                    <TemplateBinding Property="{x:Static atom:TimelineIndicatorThemeBindings.DotBorderWidthProperty}" />
+                </MultiBinding>
+            </Setter>
+            <Setter Property="BorderBrush">
+                <MultiBinding Converter="{x:Static atom:TimelineIndicatorThemeBindings.IndicatorBrush}">
+                    <TemplateBinding Property="{x:Static atomc:TimelineIndicator.IndicatorColorProperty}" />
+                    <TemplateBinding Property="{x:Static atom:TimelineIndicatorThemeBindings.DefaultColorProperty}" />
+                </MultiBinding>
+            </Setter>
+        </Style>
+
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-            <Setter Property="IconBrush" Value="{TemplateBinding IndicatorColor}"/>
+            <Setter Property="IconBrush">
+                <MultiBinding Converter="{x:Static atom:TimelineIndicatorThemeBindings.IndicatorBrush}">
+                    <TemplateBinding Property="{x:Static atomc:TimelineIndicator.IndicatorColorProperty}" />
+                    <TemplateBinding Property="{x:Static atom:TimelineIndicatorThemeBindings.DefaultColorProperty}" />
+                </MultiBinding>
+            </Setter>
         </Style>
 
         <Style Selector="^:icon-present /template/ Border#PART_Dot">
@@ -50,7 +70,7 @@
 
         <Style Selector="^:icon-present /template/ Border#PART_IconHost">
             <Setter Property="IsVisible" Value="True"/>
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}"/>
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainer}"/>
         </Style>
 
     </ControlTheme>

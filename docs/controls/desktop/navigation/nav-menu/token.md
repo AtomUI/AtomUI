@@ -39,7 +39,7 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `ItemDisabledColor`
 - `HorizontalItemHoverColor`
 - `HorizontalItemSelectedColor`
-- `KeyGestureColor`
+- `KeyGestureColor`（Reserved：当前无快捷键文字节点，保留配置兼容，不是可用视觉入口）
 - `GroupTitleColor`
 - `GroupTitleLineHeight`
 - `GroupTitleFontSize`
@@ -124,7 +124,7 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 ### 2.8 Dark 与 Danger Token
 
 - `DarkItemColor`
-- `DarkDangerItemColor`
+- `DarkDangerItemColor`（Reserved：当前无公开危险项入口）
 - `DarkItemBg`
 - `DarkSubMenuItemBg`
 - `DarkItemSelectedColor`
@@ -133,15 +133,15 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `DarkGroupTitleColor`
 - `DarkItemHoverColor`
 - `DarkItemDisabledColor`
-- `DarkDangerItemSelectedBg`
-- `DarkDangerItemHoverColor`
-- `DarkDangerItemSelectedColor`
-- `DarkDangerItemActiveBg`
-- `DangerItemColor`
-- `DangerItemHoverColor`
-- `DangerItemSelectedColor`
-- `DangerItemActiveBg`
-- `DangerItemSelectedBg`
+- `DarkDangerItemSelectedBg`（Reserved：当前无公开危险项入口）
+- `DarkDangerItemHoverColor`（Reserved：当前无公开危险项入口）
+- `DarkDangerItemSelectedColor`（Reserved：当前无公开危险项入口）
+- `DarkDangerItemActiveBg`（Reserved：当前无公开危险项入口）
+- `DangerItemColor`（Reserved：当前无公开危险项入口）
+- `DangerItemHoverColor`（Reserved：当前无公开危险项入口）
+- `DangerItemSelectedColor`（Reserved：当前无公开危险项入口）
+- `DangerItemActiveBg`（Reserved：当前无公开危险项入口）
+- `DangerItemSelectedBg`（Reserved：当前无公开危险项入口）
 
 Dark token 服务 NavMenu dark style，不应由 light token 自动反推。Danger token 保留菜单危险语义的主题能力；即使当前节点模型没有公开危险节点 API，也不应随意删除或重命名。
 
@@ -253,3 +253,7 @@ Token 变更要求：
 | 修改 popup Token | 覆盖 vertical/horizontal popup 背景、尺寸、padding 和 overlay popup 行为。 |
 | 修改 horizontal Token | 覆盖 active indicator、top-level margin、line height 和 dark selected background。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
+
+## 未公开能力的兼容字段
+
+KeyGestureColor和十个DangerItem/DarkDangerItem颜色字段归Reserved。当前NavMenu条目/数据/状态与模板没有快捷键文字或危险项入口，不能把导出字段当作已公开能力。保留名称、类型、ID、原默认计算及配置往返；Token表/工作台标记历史保留且不可编辑。未来启用须另定义API、状态、Semantic Part和默认兼容合同。Menu的实际KeyGestureColor节点不受此分类影响。

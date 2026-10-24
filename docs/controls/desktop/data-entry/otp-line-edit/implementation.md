@@ -2,7 +2,11 @@
 
 根和cell模板通过OtpLineEdit typed Global读取自身高度、字号、颜色、状态、selection、placeholder、操作间距与motion。内部OtpTextBox的Foreground/FontSize继续由cell投射，数据模板不借用LineEdit/TextBox公开identity。Own六字段负责cell宽度/间距与光标时间线，不复制三档高度和字体。更新作用于已有cell与文本，根/CellBorderBrush及CellWidth中继和专用Semantic Style保持原生优先级。光标绘制/时间线、separator布局与根排版分别按实际合同处理。
 
+根排版Setter由ControlTheme的有限MultiBinding选择明确Global与真实继承回退；内部IThemeInheritanceSource只暴露受保护的InheritanceParent，不写最终属性或猜逻辑父。未配置根/分隔符的继承字号与cell三档预设分别保留。复用Core的挂载/分离及父源订阅清理，代码不追加独立字体订阅；重挂与清除读取当前父值。原生Style/local、typeface及已存在cell引用保持，字号更新继续驱动separator原有墨迹测量。
+
 本文档描述 OtpLineEdit 桌面版一次性验证码输入控件的内部状态同步、模板接入、cell 生成、粘贴分发、Form 和 native validation 集成。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [OtpLineEdit 桌面版架构设计](overview.md)，Token 语义见 [OtpLineEdit Token 设计](token.md)，变化记录见 [OtpLineEdit Changelog](changelog.md)。
+
+分隔符前景在根ControlTheme声明：普通状态使用OtpLineEdit有效Global ColorText，禁用使用ColorTextDisabled，再经原生Foreground继承传给separator。根本地Foreground和专用OtpLineEditSeparatorStyle内的TextElement.Foreground保持各自优先级；显式透明颜色有效。cell文字继续自身输入表面状态颜色，分隔符内容、墨迹测量、字体与输入值不变。
 
 ## 1. 实现定位
 

@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -22,9 +23,18 @@ public abstract class AbstractSelect : TemplatedControl,
                                        IInputControlStatusAware,
                                        IInputControlStyleVariantAware,
                                        IFormItemAware,
-                                       IFormItemFeedbackAware
+                                       IFormItemFeedbackAware,
+                                     IThemeInheritanceSource
 {
     #region 公共属性定义
+
+    /// <summary>
+    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Popup.IsPopupPinnedOpenProperty.AddOwner<AbstractSelect>();
+
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsAllowClear));
 
@@ -146,6 +156,16 @@ public abstract class AbstractSelect : TemplatedControl,
         AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(
             nameof(IsLoading),
             o => o.IsLoading);
+
+    /// <summary>
+    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
 
     public bool IsAllowClear
     {
@@ -395,6 +415,8 @@ public abstract class AbstractSelect : TemplatedControl,
         get => _isLoading;
         protected set => SetAndRaise(IsLoadingProperty, ref _isLoading, value);
     }
+
+
     #endregion
 
     #region 公共事件定义
@@ -479,13 +501,6 @@ public abstract class AbstractSelect : TemplatedControl,
 
     internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<AbstractSelect, FormValidateFeedback?>(nameof(FormFeedback));
-
-    /// <summary>
-    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
-    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
-    /// </summary>
-    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        Popup.IsPopupPinnedOpenProperty.AddOwner<AbstractSelect>();
 
     private double _itemHeight;
 
@@ -597,15 +612,6 @@ public abstract class AbstractSelect : TemplatedControl,
         set => SetValue(FormFeedbackProperty, value);
     }
 
-    /// <summary>
-    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
-    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
-    /// </summary>
-    public bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
-    }
     #endregion
 
     private protected readonly CompositeDisposable SubscriptionsOnOpen = new ();
@@ -699,57 +705,6 @@ public abstract class AbstractSelect : TemplatedControl,
         if (IsDropDownOpen && Popup != null && !Popup.IsOpen)
         {
             OpeningDropDown(false);
-        }
-    }
-
-    /// <summary>
-    /// Relays the owner's root surface brushes onto the input frame as local values so
-    /// application-level customization wins over the frame state machine, mirroring the input
-    /// family (<c>AbstractTextInput.RelayRootSurfaceBrush</c>) and the upstream root
-    /// border/background semantics. An unset owner value restores the state machine.
-    /// </summary>
-    private void RelayRootSurfaceBrush(AvaloniaProperty property)
-    {
-        var decoratedBox = _addOnDecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(property);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // Only hand the property back when this control is the one that took it over: a
-            // nested owner may hold its own relay on the same frame node.
-            if (IsRelayed(property))
-            {
-                decoratedBox.ClearValue(property);
-                SetRelayed(property, false);
-            }
-
-            return;
-        }
-
-        decoratedBox.SetValue(property, value, BindingPriority.LocalValue);
-        SetRelayed(property, true);
-    }
-
-    private bool IsRelayed(AvaloniaProperty property)
-    {
-        return ReferenceEquals(property, BorderBrushProperty)
-            ? _isFrameBorderBrushRelayed
-            : _isFrameBackgroundRelayed;
-    }
-
-    private void SetRelayed(AvaloniaProperty property, bool value)
-    {
-        if (ReferenceEquals(property, BorderBrushProperty))
-        {
-            _isFrameBorderBrushRelayed = value;
-        }
-        else
-        {
-            _isFrameBackgroundRelayed = value;
         }
     }
 
@@ -943,6 +898,12 @@ public abstract class AbstractSelect : TemplatedControl,
         DropDownClosed?.Invoke(this, eventArgs);
     }
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     #region 实现 CompactSpace 接口
 
     void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
@@ -1104,5 +1065,57 @@ public abstract class AbstractSelect : TemplatedControl,
             PopupPlacement = PlacementMode.TopEdgeAlignedRight;
         }
     }
+
+    /// <summary>
+    /// Relays the owner's root surface brushes onto the input frame as local values so
+    /// application-level customization wins over the frame state machine, mirroring the input
+    /// family (<c>AbstractTextInput.RelayRootSurfaceBrush</c>) and the upstream root
+    /// border/background semantics. An unset owner value restores the state machine.
+    /// </summary>
+    private void RelayRootSurfaceBrush(AvaloniaProperty property)
+    {
+        var decoratedBox = _addOnDecoratedBox;
+        if (decoratedBox is null)
+        {
+            return;
+        }
+
+        var value = GetValue(property);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            // Only hand the property back when this control is the one that took it over: a
+            // nested owner may hold its own relay on the same frame node.
+            if (IsRelayed(property))
+            {
+                decoratedBox.ClearValue(property);
+                SetRelayed(property, false);
+            }
+
+            return;
+        }
+
+        decoratedBox.SetValue(property, value, BindingPriority.LocalValue);
+        SetRelayed(property, true);
+    }
+
+    private bool IsRelayed(AvaloniaProperty property)
+    {
+        return ReferenceEquals(property, BorderBrushProperty)
+            ? _isFrameBorderBrushRelayed
+            : _isFrameBackgroundRelayed;
+    }
+
+    private void SetRelayed(AvaloniaProperty property, bool value)
+    {
+        if (ReferenceEquals(property, BorderBrushProperty))
+        {
+            _isFrameBorderBrushRelayed = value;
+        }
+        else
+        {
+            _isFrameBackgroundRelayed = value;
+        }
+    }
+
 
 }

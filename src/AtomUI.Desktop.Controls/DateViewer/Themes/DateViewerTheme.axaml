@@ -39,9 +39,9 @@
         </ControlTemplate>
     </Setter>
     <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_DefaultFooter">
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
-        <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+        <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
     </Style>
     <Style Selector="^[Presentation=Content]">
         <Setter Property="HorizontalAlignment" Value="Stretch" />

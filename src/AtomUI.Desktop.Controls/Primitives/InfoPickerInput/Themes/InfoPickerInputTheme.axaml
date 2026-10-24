@@ -2,7 +2,16 @@
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.InfoPickerInputTheme"
-              TargetType="atom:InfoPickerInput">
+              TargetType="atom:InfoPickerInput" x:DataType="atom:InfoPickerInput">
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.PresetFontSizeConverter}">
+            <CompiledBindingExtension Path="$self.SizeType" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+            <atom:OwnerTokenResource Kind="FontSizeSM" />
+            <atom:OwnerTokenResource Kind="FontSizeLG" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:InfoPickerInput">
             <Panel>
@@ -12,6 +21,7 @@
                     Classes.semantic-scope-input="True"
                     MinWidth="{TemplateBinding MinWidth}"
                     ContentFramePadding="{TemplateBinding Padding}"
+                    Foreground="{TemplateBinding Foreground}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -43,7 +53,7 @@
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
                                     Classes.semantic-suffix="True"
-                                    Spacing="{atom:SharedTokenResource SpacingXS}">
+                                    Spacing="{atom:OwnerTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
                                 Name="PART_ClearUpButton"
                                 Classes.semantic-scope-handle="True" />
@@ -66,7 +76,8 @@
                                           Text="{TemplateBinding Text}"
                                           PlaceholderText="{TemplateBinding PlaceholderText}"
                                           DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                                          IsReadOnly="{TemplateBinding IsReadOnly}" />
+                                          IsReadOnly="{TemplateBinding IsReadOnly}"
+                                          Foreground="{TemplateBinding Foreground}" />
                 </atom:AddOnDecoratedBox>
 
                 <atom:Popup Name="PART_Popup"
@@ -94,42 +105,37 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsArrowVisible" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                        Value="{atom:OwnerTokenResource ColorTextTertiary}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ atom|InfoPickerTextBox">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
             <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
-                <Setter Property="MaxHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
+                <Setter Property="MaxHeight" Value="{atom:OwnerTokenResource FontHeightLG}" />
             </Style>
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
         </Style>
         <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
-                <Setter Property="MaxHeight" Value="{atom:SharedTokenResource FontHeight}" />
+                <Setter Property="MaxHeight" Value="{atom:OwnerTokenResource FontHeight}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
-                <Setter Property="MaxHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
+                <Setter Property="MaxHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
             </Style>
         </Style>
 

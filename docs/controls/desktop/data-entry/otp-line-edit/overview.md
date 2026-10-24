@@ -164,7 +164,9 @@ OtpLineEdit 使用“根输入控件 + cell presenter + separator + action 区�
 - `IsMasked=true` 只改变字符展示，不改变 `Text`、复制、Form 值或 Completed 事件。
 - `Separator` 只占据视觉布局位置，不参与输入、复制、验证或长度计算。
 
-`OtpLineEditToken` 定义 cell 宽度和 cell 间距。separator 的默认外边距属于模板布局常量；边框、背景、focus shadow、disabled、error、warning 等输入表面语义由 `InputControlFrameTheme` 与 SharedToken 统一提供，cell 文本字号复用 SharedToken 的输入字号。
+`OtpLineEditToken` 定义cell宽度、间距及独立光标时间线。输入表面、selection、placeholder、三档字号、高度和separator左间距消费OtpLineEdit有效Global，内部cell不借用另一公开输入控件的identity。
+
+根与separator未配置时保留祖先字体/字号；cell保留Large16、Middle14、Small12、Custom14的默认预设。明确配置有效Global FontFamily和对应FontSize字段后，现有根、separator与cell更新，清除分别恢复原继承与预设。cell的尺寸字号是独立预设，应用直接定制cell字体时使用专用Cell Style；根FontSize原有职责不扩成跨原生优先级的cell中继。
 
 ## 6. 控件家族或集成关系
 
@@ -205,6 +207,8 @@ OtpLineEdit 以 `Text` 表达完整验证码。内部 cell 的显示字符由 `T
 粘贴文本按 `Formatter` 和 `InputMode` 处理后，从 active cell 起写入。已有字符按位置被覆盖，未覆盖位置保持原值。该模型避免粘贴时先清空再逐格恢复导致的闪烁，也避免内部 cell 与根 `Text` 不同步。
 
 ### 8.3 分隔符模型
+
+分隔符默认普通／禁用颜色分别跟随OtpLineEdit有效ColorText／ColorTextDisabled，暗色主题下保持可见；定制颜色使用根Foreground或[专用Separator Style](semantic-part.md)，cell状态配色保持。
 
 设置 `Separator` 后，分隔符自动插入到每个 cell 之间，只由视觉 host 渲染，不参与焦点导航、输入位置、`Text.Length`、复制、Form 值或验证。
 

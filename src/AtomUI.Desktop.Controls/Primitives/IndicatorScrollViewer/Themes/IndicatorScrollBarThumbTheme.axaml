@@ -11,15 +11,21 @@
                 <Border Name="Frame"
                         Background="{TemplateBinding Background}"
                         CornerRadius="{TemplateBinding CornerRadius}">
-                    <Border.Transitions>
-                        <Transitions>
-                            <atom:SolidColorBrushTransition Property="Background" Easing="LinearEasing" Duration="{atom:SharedTokenResource MotionDurationMid}"/>
-                        </Transitions>
-                    </Border.Transitions>
                 </Border>
             </ControlTemplate>
         </Setter>
                 
+        <!-- The previous non-host duration binding was inert (0ms). Keep that
+             default, and opt in through an explicitly configured owner duration. -->
+        <Style Selector="^ /template/ Border#Frame">
+            <Setter Property="Transitions">
+                <atom:TokenTransitions UnconfiguredDuration="0:0:0">
+                    <atom:SolidColorBrushTransition Property="Background" Easing="LinearEasing"
+                                                   Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                </atom:TokenTransitions>
+            </Setter>
+        </Style>
+
         <Setter Property="Background" Value="{atom:ScrollViewerTokenResource ThumbBg}"/>
         <Setter Property="CornerRadius" Value="{atom:ScrollViewerTokenResource IndicatorThumbCornerRadius}"/>
         <Setter Property="MinHeight"

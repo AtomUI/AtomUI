@@ -449,7 +449,7 @@ Timeline 没有 `SizeType` 分档，视觉基线由 TimelineToken 与全局 toke
 - 节点间距 `ItemPaddingBottom`（item 的下内边距，对齐上游 `li` 的 `paddingBottom`；指示器经 `AxisOverflow` 延伸
   到间距区保持 rail 连续），Pending 邻接升级为 `ItemPaddingBottomLG`，最后一个 Item 不保留（对齐上游
   `li:last-child`）。
-  最小高度 `LastItemContentMinHeight`。
+  `LastItemContentMinHeight` 仅在明确 Own 配置时应用到末项 content；未配置维持原生最小高度 0，见 [Token 合同](token.md)。
 - Start/End/Alternate 指示器外边距分别为 `IndicatorStartModeMargin`、`IndicatorEndModeMargin`、
   `IndicatorMiddleModeMargin`。
 - 根背景 `ColorBgContainer`、边框 `ColorBorder`；IndicatorSpacing 使用 SharedToken `UniformlyPaddingXS`。
@@ -465,8 +465,6 @@ Pending 邻接大内边距语义不被覆盖破坏；覆盖 `itemRail` 的 `Back
 - 可见项视觉顺序算法（过滤隐藏项、`IsReverse`、Alternate 奇偶、首尾与 Pending 邻接）与
   `IsOdd` / `IsFirst` / `IsLast` / `NextIsPending` / `IsLabelLayout` / `IsPending` 等 internal 投影属性
   是行为状态，不是 Part。
-- 内置圆点 `Border#PART_Dot` 与图标宿主框 `Border#PART_IconHost`：圆点是 `IndicatorIcon` 为 null 时的默认
-  视觉，定制入口是 `IndicatorColor` / `IndicatorIcon`；宿主框是掩膜实现细节。
 - `TimelineItem` 容器自身不作为独立 owner：上游无独立 Semantic DOM Props，其职责由 `item` 等 Part 表达。
 - `TimelineIndicator`（`.semantic-indicator` 只作为 route 跳点）、`TimelineItemPanel`、
   `TimelineSectionPanel`、`TimelineStackPanel`、`ScrollViewer`、`ItemsPresenter`、`Border#Frame` 等模板
@@ -475,6 +473,10 @@ Pending 邻接大内边距语义不被覆盖破坏；覆盖 `itemRail` 的 `Back
 - 用户 `ContentTemplate` 生成的子树、`PendingIcon` 的具体图标内容。
 - 上游 "Timeline Items" 逐项 classNames 注入 API：AtomUI 无对应机制，item 级 Part 已 Multiple 覆盖
   （Gallery "Timeline Items" 预览是其结构呈现，不是注入 API 的对应物）。
+
+`PART_Dot` 与 `PART_IconHost` 是 `itemIcon` 的两个互斥可见载体，均可由生成的 `TimelineItemIconStyle` 命中。默认描边、圆角来自 ControlTheme，Arrange 不写回本地值；图标宿主按包含 border/padding 的自身 DesiredSize 排列。具体图标内容仍由 `IndicatorIcon`／`PendingIcon` 提供，不扩大为新的 Part。
+
+`TimelineItemTitleStyle`／`TimelineItemContentStyle` 可声明 FontFamily、FontSize、Foreground，优先于根／项的默认主题 Setter；移除后恢复当前主题或继承值。content 的样式先作用于 ContentPresenter，再沿原生继承影响文本；调用方提供的子 Control 仍保留自己的 identity、本地值和主题合同，不通过遍历 Content 子树强制覆盖。
 
 Semantic Style 服从 Avalonia 原生属性优先级。Timeline 没有颜色状态机：节点颜色、边距与内边距由主题
 selector 按方向、Mode、首尾与 Pending 邻接状态设置，用户 Semantic Style setter（`StyleTrigger`）覆盖主题

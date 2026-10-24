@@ -94,7 +94,7 @@
                 Value="{atom:SharedTokenResource MotionDurationMid}" />
         <Setter Property="ClipToBounds" Value="False" />
 <Setter Property="Transitions">
-            <Transitions>
+            <atom:TokenTransitions>
                 <TransformOperationsTransition Property="RenderTransform"
                                                Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
                                                Easing="0.645,0.045,0.355,1" />
@@ -104,7 +104,7 @@
                 <DoubleTransition Property="{x:Static atom:FeedbackStackPanel.StackClipProgressProperty}"
                                   Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
                                   Easing="0.645,0.045,0.355,1" />
-            </Transitions>
+            </atom:TokenTransitions>
         </Setter>
 
         <Style Selector="^[IsMotionEnabled=False]">

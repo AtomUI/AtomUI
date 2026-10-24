@@ -3,7 +3,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:ButtonSpinner}" TargetType="atom:ButtonSpinner">
+    <ControlTheme x:Key="{x:Type atom:ButtonSpinner}" TargetType="atom:ButtonSpinner" x:DataType="atom:ButtonSpinner">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:ButtonSpinnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:ButtonSpinnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:ButtonSpinnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:ButtonSpinnerTokenResource Kind="FontSize" />
+                <atom:ButtonSpinnerTokenResource Kind="FontSizeSM" WhenExplicit="True" />
+                <atom:ButtonSpinnerTokenResource Kind="FontSizeSM" />
+                <atom:ButtonSpinnerTokenResource Kind="FontSizeLG" WhenExplicit="True" />
+                <atom:ButtonSpinnerTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:ButtonSpinnerTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ButtonSpinnerDecoratedBox
@@ -19,6 +39,7 @@
                     ContentRightAddOn="{TemplateBinding InnerRightContent}"
                     ContentRightAddOnTemplate="{TemplateBinding InnerRightContentTemplate}"
                     ContentPadding="{TemplateBinding Padding}"
+                    Foreground="{TemplateBinding Foreground}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -56,7 +77,7 @@
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="SpinnerHandleWidth"
                 Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ButtonSpinnerTokenResource EnableMotion}" />
 
         <Setter Property="Padding" Value="{CompiledBinding $self.PresetPadding}" />
         <Setter Property="CornerRadius" Value="{CompiledBinding $self.PresetCornerRadius}" />

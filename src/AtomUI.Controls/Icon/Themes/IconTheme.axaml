@@ -14,22 +14,22 @@
         </Setter>
         
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-        <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-        <Setter Property="FillBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
-        <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
+        <Setter Property="Height" Value="{atom:IconTokenResource IconSize}" />
+        <Setter Property="Width" Value="{atom:IconTokenResource IconSize}" />
+        <Setter Property="FillBrush" Value="{atom:IconTokenResource ColorIconHover}" />
+        <Setter Property="StrokeBrush" Value="{atom:IconTokenResource ColorIconHover}" />
         <Setter Property="StrokeWidth" Value="{atom:IconTokenResource StrokeWidth}" />
         <Setter Property="StrokeLineCap" Value="{atom:IconTokenResource StrokeLineCap}" />
         <Setter Property="StrokeLineJoin" Value="{atom:IconTokenResource StrokeLineJoin}" />
         
         <Style Selector="^[IconTheme=TwoTone]">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="FillBrush" Value="{atom:SharedTokenResource ColorInfoBg}" />
+            <Setter Property="StrokeBrush" Value="{atom:IconTokenResource ColorPrimary}" />
+            <Setter Property="FillBrush" Value="{atom:IconTokenResource ColorInfoBg}" />
         </Style>
         
         <Style Selector="^[IconTheme=MultiColor]">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
-            <Setter Property="FillBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="StrokeBrush" Value="{atom:IconTokenResource ColorIconHover}" />
+            <Setter Property="FillBrush" Value="{atom:IconTokenResource ColorPrimary}" />
         </Style>
         
         <Setter Property="SecondaryFillBrush" Value="{atom:IconTokenResource SecondaryFillColor}" />

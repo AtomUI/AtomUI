@@ -1,0 +1,33 @@
+# CT-14 容器与导航消费执行计划
+
+沿现有feature/custom-theme工作树，单agent实施，不创建分支/worktree、不提交。目录85项metadata、258个Own字段（不是85个独立公开owner）是范围输入，不能仅以示例名单缩小。实际公开identity、内部owner与抽象/布局节点分别按既有注册合同处理。
+
+## N1 历史未公开能力
+
+先处理T37：完整搜索确认NavMenu.KeyGestureColor没有快捷键文字节点；Menu的DangerItemColor/DangerItemHoverColor没有危险项入口，MenuTearOffHeight没有tear-off入口。仅这四字段归Reserved，保留名称、类型、ID、默认函数与配置往返，XML/正式文档/CSV标明未消费，CT23字段目录不可编辑。Menu.KeyGestureColor有真实InputGestureText，继续Active；NavMenu其他危险项字段须独立核定，不能从同名推定功能已公开。此包不新增危险项、快捷键或tear-off功能，不改运行语句，无新增测试必要。
+
+## N2 实际字体、Global 与内部 owner
+
+按ListBox/ListView、Tree/Transfer、Menu/NavMenu、Tab/TabStrip、Cascader/TreeSelect、Breadcrumb/Pagination/Expander/Segmented分组。先实际失败、原状态默认基线，再整改各ControlTheme与代码创建子对象；保留回收、方向、selected/open、组标题、滚动/裁剪及输入。SelectFilterTextBox虽然保留LineEdit Own回退，但各真实组合已用TemplateBinding或代码Content关系传递root字体；先证明哪条实际链仍受其影响，不以字符串存在推定失败。
+
+CT10的共享表面/字体/内部路由和CT11的83集合仅提供机制。各实际公开child保留自身身份，内部对象解析实际owner；若代码绑定不能由AXAML等价表达，写明真实树拓扑及释放原因，不通过找Part直接改值。
+
+## N3 Own 默认、尺寸与语义部件
+
+按258字段的实际默认依赖和消费者逐项决定Active/Derived/Reserved/Legacy，迁移V2时保留默认值、类型、ID及显式下游。每个Custom入口分别核定其拥有的尺寸，三档与方向/Min/Max保持。所有Part定制使用生成专用Style并证明命中及关键Setter，不用Loaded/Name代码回退。
+
+## N4 家族出口
+
+实际Window/适用Popup同实例明暗、尺寸/密度、选中/展开/禁用/输入及配置往返；新旧默认0未解释差异，连续动画与真实输入单独观测，回填CT11具体路径。验证滚动条/viewport/extent/回收/换父/重模板/关闭及GC。各包临时测试与媒体清理后，只跑显式模块filter、NET8及当前Mac NativeAOT；其他平台归CT25，最终正式文档/CSV/总表/自审同步。
+
+N1的四字段已同步XML、正式Token/changelog及CSV的CompatibilityRetained分类，没有运行语句变化或新增测试；CT23可编辑目录仍须实现保留项规则。Menu快捷键节点与资源引用已核实。N2–N4尚未验收，不能把兼容分类记作整个CT14完成。
+
+### N2-A ListBox/ListView 禁用色与默认函数
+
+先对实际disabled ContentPresenter证明各自ItemDisabledColor未消费，以及root有效Global的ColorTextDisabled没有进入其Own默认消费。只改原style Setter的资源输入，保持disabled选择器、节点、尺寸、状态和优先级；ListView现有其他Own已使用自身identity，不能假定继承了ListBox主题。两终端14/16字段均只依赖Global，迁移为V2 Revision1的30个静态默认函数，保留旧默认、字段、类型和ID，无需虚构Own间依赖。
+
+实现前保存明暗60个实际Compiler默认值/ID和八根四尺寸基线；实现后逐值相同。临时验证实际Own、Global、显式0/透明及清除、兄弟和重新启用；Skia默认/选择/悬停/输入及配置往返、viewport/extent/可见滚动条/回收，当前Mac NativeAOT实际运行；临时源/驱动/媒体清理后ListBox/ListView/相关Menu分类聚焦及NET8、文档/CSV/自审。该包不代替其余Global、完整列表家族及CT14全部验收。
+
+N1补查纠正：NavMenu十个DangerItem/DarkDangerItem字段也仅有声明和默认赋值，实际条目/数据/状态及模板没有危险项入口；先前文档中的“已公开危险项合同”描述不成立，已改正。这十字段独立归Reserved，与原T37四项合计14项保留，不改变代码行为。XML摘要已在源回放结束后同步；工作台不可编辑规则仍属CT23。
+
+N2-A专项及清理出口已通过，见[列表结果](container-list-results.md)：30默认V2、实际禁用色/五继承主题、28 NativeAOT/JIT帧0、原生差异对照、最终262项/NET8；完整N2其他Global/字体/业务Host、N3及N4仍开放。

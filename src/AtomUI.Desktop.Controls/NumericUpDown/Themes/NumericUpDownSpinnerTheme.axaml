@@ -9,6 +9,9 @@
     <ControlTheme x:Key="{x:Type atom:NumericUpDownSpinner}"
                   TargetType="atom:NumericUpDownSpinner"
                   BasedOn="{StaticResource {x:Type atom:ButtonSpinner}}">
+        <Setter Property="FontFamily" Value="{x:Static atom:ControlTypographyBindings.InheritedFontFamily}" />
+        <Setter Property="FontSize" Value="{x:Static atom:ControlTypographyBindings.InheritedFontSize}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Style Selector="^[IsButtonSpinnerFloatable=False]">
             <Setter Property="Template">
                 <ControlTemplate TargetType="atom:NumericUpDownSpinner">
@@ -22,6 +25,7 @@
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
                         ContentRightAddOn="{TemplateBinding InnerRightContent}"
                         ContentRightAddOnTemplate="{TemplateBinding InnerRightContentTemplate}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"

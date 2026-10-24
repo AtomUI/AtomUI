@@ -632,7 +632,8 @@
     "scripts/verification/tests/**",
     "scripts/verification/test.py",
     "scripts/verification/test-policy.json",
-    ".github/workflows/verify-affected.yml"
+    ".github/workflows/verify-affected.yml",
+    "scripts/verification/verify-browser-fixture.py"
   ],
   "obligations": [
     {

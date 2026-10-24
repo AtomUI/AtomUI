@@ -269,7 +269,7 @@
     </Style>
 
     <Style Selector="^:is(atom|WindowTitleBar)">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:WindowTitleBarTokenResource EnableMotion}" />
         <Setter Property="Padding" Value="{atom:WindowTitleBarTokenResource TitleBarPadding}" />
         <Setter Property="Height" Value="{atom:WindowTitleBarTokenResource Height}" />
 
@@ -281,7 +281,7 @@
             <Setter Property="Foreground" Value="{atom:WindowTitleBarTokenResource InactiveColor}" />
         </Style>
 
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ColorBgContainer}" />
 
         <Style Selector="^ /template/ ContentPresenter#PART_Logo">
             <Setter Property="Width" Value="{atom:WindowTitleBarTokenResource LogoSize}" />
@@ -295,10 +295,10 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:SolidColorBrushTransition Property="Foreground"
                                                     Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

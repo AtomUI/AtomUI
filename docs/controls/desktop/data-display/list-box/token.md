@@ -38,11 +38,11 @@ ListBoxToken 当前按 ListBox 语义分为五类。
 
 默认映射：
 
-- 普通和 hover 使用 `SharedToken.ColorTextSecondary`。
-- selected 使用 `SharedToken.ColorText`。
-- disabled 使用 `SharedToken.ColorTextDisabled`。
+- 普通和 hover 使用 `Global.ColorTextSecondary`。
+- selected 使用 `Global.ColorText`。
+- disabled 使用 `Global.ColorTextDisabled`。
 
-disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presenter；维护时必须保持 disabled 文本可读性稳定。
+disabled内容presenter使用本控件的ItemDisabledColor，默认读取其有效Global.ColorTextDisabled；明确Own覆盖、透明值及清除必须进入实际文字，不再绕过Own直接读取Shared/子节点Global。
 
 ### 2.3 条目背景 Token
 
@@ -55,8 +55,8 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 默认映射：
 
 - 普通背景使用透明色。
-- hover 背景使用 `SharedToken.ColorBgTextHover`。
-- selected 背景使用 `SharedToken.ControlItemBgActive`。
+- hover 背景使用 `Global.ColorBgTextHover`。
+- selected 背景使用 `Global.ControlItemBgActive`。
 
 `ItemHoverBg` 和 `ItemSelectedBg` 是 ListBox public styled property，theme 默认值来自这些 Token，允许实例级覆盖。
 
@@ -80,7 +80,7 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 
 - `FilterHighlightColor`
 
-`FilterHighlightColor` 控制过滤命中文本高亮前景，默认来自 `SharedToken.ColorError`。过滤是否命中、过滤词、隐藏未命中项和 `FilterResultCount` 属于运行时状态，不进入 Token。
+`FilterHighlightColor` 控制过滤命中文本高亮前景，默认来自 `Global.ColorError`。过滤是否命中、过滤词、隐藏未命中项和 `FilterResultCount` 属于运行时状态，不进入 Token。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -130,3 +130,11 @@ ListBoxToken 变更验证：
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。
 - `FilterHighlightColor` 能传递到过滤高亮文本。
 - CandidateList 和 Cascader filter list 继承后的视觉语义稳定。
+
+## 精确默认与禁用文字
+
+本文Global指实际ListBox身份的有效Global。Own采用DependencyDefaultsV2/Revision1，每字段静态函数只读取所声明的Global输入；保留字段、类型、资源ID和原默认公式，显式Own（含透明/零边距）不会被缺省重算覆盖。本轮字段没有Own间依赖，不添加虚构依赖。
+
+ItemDisabledColor进入原disabled选择器下的ContentPresenter.Foreground，保持原节点与优先级。其默认随本控件有效Global.ColorTextDisabled，明确Own优先；清除恢复有效默认。普通/hover/selected及其他公开子Control的Global职责保持，不能把此颜色修复作为整个列表家族验收。
+
+兼容说明：disabled文本现在与普通/hover/selected文字一样由所属列表Own管理。此前直接通过Shared/条目Global的ColorTextDisabled绕过该Own的配置，应改为对应列表的ItemDisabledColor或生成专用Style；默认颜色不变。继承这些基础主题的Candidate/Cascader过滤项、Select候选项、Transfer项与GroupHeader按当前声明复用该Own，完整业务Host与其他owner接线仍须各家族验证。

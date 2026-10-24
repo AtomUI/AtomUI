@@ -2,6 +2,15 @@
 
 本文档记录 Timeline 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-24
+
+- 接通 Timeline／公开 TimelineItem 各自的明确 Global 字体、字号与文字色；未配置保持真实祖先继承，清除恢复当前值，保留公开本地值和专用 Title／Content Style。根背景／边框与条目 section 间距改读对应公开 owner；不自动增加边框或圆角，未配置暗色文字保持旧表现。
+- 修复 Item 自用 Padding 缺少测量失效声明，避免明确间距／零值清除后保留旧 DesiredSize、后续项位置及滚动 extent。
+- 将 dot 描边／圆角与颜色 fallback 移至 ControlTheme，修复专用 itemIcon Style 被 Arrange 覆盖、默认色固化及后赋 IndicatorColor 不更新；内部 Global 跟随公开 TimelineItem owner，图标宿主使用含边框的实测盒。
+- Timeline 11 个 Own 迁移有效依赖默认（Revision 1），pending 大间距读取有效 ItemPaddingBottom。名称、类型、资源 ID、slot 和明暗默认不变。
+- 接通 LastItemContentMinHeight 的明确 Own 配置；保留未配置时末项实际 MinHeight=0、历史资源默认 48，以及专用 itemContent Style 优先级。
+- 专项验证和平台边界见 [CT-15 执行计划](../../../../superpowers/plans/2026-10-22-custom-theme/feedback-consumers.md)；完整家族及原生最终显示面继续验收。
+
 ## 2026-09-18
 
 - 将 header/title/content 默认对齐移至 ControlTheme，移除布局阶段的 LocalValue 写入，支持专用 Semantic Style 覆盖、移除及动态方向/Mode 切换。

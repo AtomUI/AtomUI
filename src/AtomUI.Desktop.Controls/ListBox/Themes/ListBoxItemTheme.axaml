@@ -49,7 +49,7 @@
         <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemColor}" />
         <Setter Property="Background" Value="{atom:ListBoxTokenResource ItemBgColor}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
 
         <Style Selector="^:pointerover:not(:disabled)">
@@ -63,40 +63,40 @@
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#SelectedIndicator">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Margin" Value="{atom:ListBoxTokenResource SelectedIndicatorMargin}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPaddingLG}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPadding}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPaddingSM}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:ListBoxTokenResource ItemDisabledColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

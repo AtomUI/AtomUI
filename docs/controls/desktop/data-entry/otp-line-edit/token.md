@@ -50,6 +50,10 @@ SizeType=Large/Middle/Small选择对应cell宽度，字号使用OtpLineEdit有�
 
 mask 字符使用与 cell 文本相同的字体和字号，不定义独立 mask Token。placeholder 使用输入家族占位文本颜色，不定义独立 placeholder Token。
 
+根FontFamily与根/分隔符FontSize使用可选Global消费：规范配置明确提供对应字段才覆盖真实InheritanceParent，清除恢复当前祖先。SizeType选择FontSizeLG/FontSize/FontSizeSM，Custom跟随Middle；未配置时不把cell预设强加给separator。cell自身的原字号预设及专用Cell Style优先级保持。根的普通Style与LocalValue仍优先，FontStyle/Weight/Stretch沿原生继承进入实际文字和separator；无新增Own或资源ID。机制见[显式资源与继承](../../../../modules/core/configured-token-resources.md)。
+
+分隔符前景在根ControlTheme声明：普通状态使用OtpLineEdit有效Global ColorText，禁用使用ColorTextDisabled，再经原生Foreground继承传给separator。根本地Foreground和专用OtpLineEditSeparatorStyle内的TextElement.Foreground保持各自优先级；显式透明颜色有效。cell文字继续自身输入表面状态颜色，分隔符内容、墨迹测量、字体与输入值不变。
+
 ## 4. 控件家族影响
 
 OtpLineEditToken 影响以下控件或主题：

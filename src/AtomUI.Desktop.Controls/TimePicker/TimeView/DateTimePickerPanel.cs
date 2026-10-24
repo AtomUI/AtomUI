@@ -112,6 +112,7 @@ internal class DateTimePickerPanel : Panel
             var changed = _selectedValue != selected;
             _selectedValue = selected;
             RefreshSelection();
+            _scrollPosition = null;
             _scrollTarget = (_selectedValue - MinimumValue) / Increment;
             ApplyScrollTarget();
             if (changed)
@@ -166,6 +167,8 @@ internal class DateTimePickerPanel : Panel
     private int _increment = 1;
     private int _selectedValue;
     private int? _scrollTarget;
+    private double? _scrollPosition;
+    private double? _geometryScrollOffset;
     private ScrollViewer? _scroller;
     private int ValueCount => Math.Max(1, (MaximumValue - MinimumValue) / Increment + 1);
     private double LoopHeight => Children.Count * ItemHeight;
@@ -185,6 +188,11 @@ internal class DateTimePickerPanel : Panel
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ItemHeightProperty && _scroller is { Viewport.Height: > 0 } &&
+            change.GetOldValue<double>() is > 0 and var oldHeight)
+        {
+            PreserveScrollPosition(oldHeight);
+        }
         if (change.Property == ItemHeightProperty || change.Property == PanelTypeProperty ||
             change.Property == ItemFormatProperty || change.Property == AmTextProperty || change.Property == PmTextProperty ||
             change.Property == ShouldLoopProperty)
@@ -209,6 +217,10 @@ internal class DateTimePickerPanel : Panel
             // viewport while wrapping. Reuse these containers during scrolling.
             var visibleCount = (int)Math.Ceiling((_scroller?.Viewport.Height ?? 0) / ItemHeight) + 2;
             count *= Math.Max(1, (int)Math.Ceiling((double)visibleCount / count));
+        }
+        if (Children.Count > 0 && Children.Count != count && _scroller is { Viewport.Height: > 0 })
+        {
+            PreserveScrollPosition(ItemHeight);
         }
         while (Children.Count < count)
         {
@@ -318,19 +330,46 @@ internal class DateTimePickerPanel : Panel
         }
         _scroller = null;
         _scrollTarget = null;
+        _scrollPosition = null;
+        _geometryScrollOffset = null;
         base.OnDetachedFromVisualTree(e);
+    }
+
+    private void PreserveScrollPosition(double height)
+    {
+        if (_scrollTarget is null && _scrollPosition is null)
+        {
+            var position = Offset.Y / height;
+            _scrollPosition = ShouldLoop ? position % ValueCount : position;
+        }
     }
 
     private void ApplyScrollTarget()
     {
-        if (_scrollTarget is { } index && _scroller is { } scroller && scroller.Viewport.Height > 0)
+        if ((_scrollTarget is not null || _scrollPosition is not null) &&
+            _scroller is { } scroller && scroller.Viewport.Height > 0)
         {
-            var target = (ShouldLoop ? LoopHeight : 0) + index * ItemHeight;
-            if (scroller.Extent.Height - scroller.Viewport.Height >= target)
+            // Arrange can precede the ScrollViewer's extent update. Applying the
+            // new row position against the old extent would clamp and lose it.
+            var extent = Math.Max(scroller.Viewport.Height, DesiredSize.Height);
+            if (Math.Abs(scroller.Extent.Height - extent) > 0.000001)
             {
-                _scrollTarget = null;
-                scroller.SetCurrentValue(ScrollViewer.OffsetProperty, new Vector(0, target));
+                return;
             }
+            var restoringGeometry = _scrollTarget is null;
+            var position = _scrollTarget ?? _scrollPosition!.Value;
+            var target = (ShouldLoop ? LoopHeight : 0) + position * ItemHeight;
+            if (target > extent - scroller.Viewport.Height)
+            {
+                return;
+            }
+            _scrollTarget = null;
+            _scrollPosition = null;
+            if (restoringGeometry && target != Offset.Y)
+            {
+                _geometryScrollOffset = target;
+            }
+            scroller.SetCurrentValue(ScrollViewer.OffsetProperty, new Vector(0, target));
         }
     }
 
@@ -344,6 +383,15 @@ internal class DateTimePickerPanel : Panel
         {
             ApplyScrollTarget();
             return;
+        }
+        if (_geometryScrollOffset is { } geometryOffset && args.OffsetDelta.Y != 0)
+        {
+            _geometryScrollOffset = null;
+            if (Offset.Y == geometryOffset)
+            {
+                InvalidateArrange();
+                return;
+            }
         }
         if (ShouldLoop && args.OffsetDelta.Y != 0)
         {

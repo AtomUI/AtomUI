@@ -8,7 +8,7 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 
 [DateViewerToken.cs](../../../../../src/AtomUI.Desktop.Controls/DateViewer/DateViewerToken.cs)通过 ControlDesignToken
 注册并生成 DateViewerTokenResource/TokenKind。Token 类是 internal，应用使用生成资源入口；
-公共面板不依赖 DatePicker Token。DateViewer 与 RangeDateViewer 共享同一组资源。
+公共面板不依赖 DatePicker Token。DateViewer 与 RangeDateViewer 继续共享这组Own资源；直接Global按当前公开DateViewer／RangeDateViewer身份分别消费。
 
 ## 2. Token 分类
 
@@ -30,7 +30,7 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 | 日期正文 | DateBodyPadding | 左右为 UniformlyPadding + UniformlyPaddingXXS / 2、上下为 UniformlyPaddingXS，默认 18、8。 |
 | 范围布局 | PanelSpacing | UniformlyMargin，双面板及双 Header 间距。 |
 
-主色、文字、禁用透明度、圆角与边框直接消费 SharedToken。日期值、PanelKind、活动端点、Hover 值与业务禁用
+主色、文字、禁用颜色、圆角与边框由基础主题读取实际公开owner的有效Global。内部DatePanel／DateViewerHeader／DateViewerCell不新建公开身份；普通、选中、禁用、范围／Content状态分别消费对应字段。页头／页脚使用该owner的ColorBorderSecondary与ControlHeightLG，星期文字经DatePanel前景继承。日期值、PanelKind、活动端点、Hover 值与业务禁用
 结果不进入 Token；本组没有独立 Motion Token。
 
 ## 3. 控件专项模型中的 Token 使用
@@ -39,7 +39,7 @@ DateViewerTheme/RangeDateViewerTheme 消费表面、外层 padding 和双面板�
 Compact 使用自然宽度，Content 解除固定面板宽度并由外部测量宽度展开列。
 DateViewerCellTheme 消费日期行距、值框尺寸、ContentCellMinHeight、Content 前景间距与状态色；范围背景和预览使用同一范围资源。
 
-Header 默认使用 SharedToken 导航按钮，并通过 HeaderHorizontalPadding 保留左右间距；范围每个 Header 按单面板宽度与间距对齐。
+Header 内的Button／IconButton继续自己的公开身份和预设，HeaderHorizontalPadding负责外围左右间距。范围Header目前按PanelWidth放置，Content实际面板宽度的对齐问题另行整改。
 内容模板只接管内容，不能以 Token 替代模型状态。
 
 ## 4. 控件家族影响
@@ -52,6 +52,8 @@ Header 默认使用 SharedToken 导航按钮，并通过 HeaderHorizontalPadding
 十八个生成资源名、类型与含义构成定制契约。局部资源覆盖、资源移除、主题切换和 Token 动态变化
 须保持可用；不能复制静态颜色规避资源生命周期。宿主产品输出仍需按完整视觉基线验证，
 公共面板独立尺寸不能充当 Picker 尺寸等价证据。
+
+DateViewerToken采用DependencyDefaultsV2 Revision1，十八个字段的默认值、资源ID与slot保持。CellRowHeight以有效Own CellHeight加有效Global的三倍UniformlyPaddingXXS计算；明确CellRowHeight优先，清除后按仍有效的CellHeight重新计算。CellRowHeight的0是明确最小值输入，不代表忽略单元内容的自然高度。PanelWidth保持原Global列宽公式，不因同名CellWidth配置自动改变；各内容留白也保持原独立Global公式。
 
 ## 6. 验证策略
 

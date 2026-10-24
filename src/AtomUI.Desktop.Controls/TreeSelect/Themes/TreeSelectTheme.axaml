@@ -3,7 +3,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect">
+    <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect" x:DataType="atom:TreeSelect">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:TreeSelectTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:TreeSelectTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.PresetFontSizeConverter}">
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:TreeSelectTokenResource Kind="FontSize" />
+                <atom:TreeSelectTokenResource Kind="FontSize" />
+                <atom:TreeSelectTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:TreeSelectTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -12,6 +28,7 @@
                         Classes.semantic-scope-input="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         ContentFramePadding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -46,7 +63,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:TreeSelectTokenResource SpacingXS}">
                                 <atom:SelectMaxCountIndicator
                                     Name="PART_SelectMaxCountIndicator"
                                     MaxCount="{CompiledBinding $parent[atom:TreeSelect].MaxCount}"
@@ -95,7 +112,8 @@
                                 atom:OverflowTip.Text="{Binding Text, RelativeSource={RelativeSource Self}}"
                                 atom:OverflowTip.ShowDelay="{TemplateBinding OverflowTipDelay}"
                                 atom:OverflowTip.Placement="{TemplateBinding OverflowTipPlacement}"
-                                atom:OverflowTip.PlacementTarget="{Binding $parent[atom:TreeSelectAddOnDecoratedBox]}" />
+                                atom:OverflowTip.PlacementTarget="{Binding $parent[atom:TreeSelectAddOnDecoratedBox]}"
+                                Foreground="{TemplateBinding Foreground}" />
                             <atom:SelectTagAwareTextBox Name="SelectedItemsBox"
                                                         Classes.semantic-scope-tags="True"
                                                         HorizontalAlignment="Stretch"
@@ -133,33 +151,23 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="FilterHighlightForeground"
-                Value="{atom:SharedTokenResource ColorPrimary}" />
+                Value="{atom:TreeSelectTokenResource ColorPrimary}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:TreeSelectTokenResource EnableMotion}" />
         <Setter Property="PopupContentPadding"
                 Value="{atom:SelectTokenResource PopupContentPadding}" />
-        <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="ItemHeight" Value="{atom:TreeSelectTokenResource ControlHeight}" />
         <Setter Property="PlaceholderForeground"
-                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
-
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
+                Value="{atom:TreeSelectTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
                     Value="{atom:PopupTokenResource MarginToAnchor}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:TreeSelectTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
@@ -200,7 +208,7 @@
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:TreeSelectTokenResource ColorTextDisabled}" />
         </Style>
         <Setter Property="BorderThickness" Value="{atom:TreeSelectTokenResource BorderThickness}" />
         <Style Selector="^[SizeType=Large]">

@@ -4,7 +4,23 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:Cascader}" TargetType="atom:Cascader">
+    <ControlTheme x:Key="{x:Type atom:Cascader}" TargetType="atom:Cascader" x:DataType="atom:Cascader">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:CascaderTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:CascaderTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.PresetFontSizeConverter}">
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:CascaderTokenResource Kind="FontSize" />
+                <atom:CascaderTokenResource Kind="FontSize" />
+                <atom:CascaderTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:CascaderTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -13,6 +29,7 @@
                         Classes.semantic-scope-input="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         ContentFramePadding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -47,7 +64,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:CascaderTokenResource SpacingXS}">
                                 <atom:SelectMaxCountIndicator
                                     Name="PART_SelectMaxCountIndicator"
                                     MaxCount="{CompiledBinding $parent[atom:Cascader].MaxCount}"
@@ -106,7 +123,8 @@
                                 atom:OverflowTip.Text="{TemplateBinding SelectedOptionPath}"
                                 atom:OverflowTip.ShowDelay="{TemplateBinding OverflowTipDelay}"
                                 atom:OverflowTip.Placement="{TemplateBinding OverflowTipPlacement}"
-                                atom:OverflowTip.PlacementTarget="{Binding $parent[atom:CascaderAddOnDecoratedBox]}" />
+                                atom:OverflowTip.PlacementTarget="{Binding $parent[atom:CascaderAddOnDecoratedBox]}"
+                                Foreground="{TemplateBinding Foreground}" />
                             <atom:SelectTagAwareTextBox Name="SelectedOptionsBox"
                                                         Classes.semantic-scope-tags="True"
                                                         HorizontalAlignment="Stretch"
@@ -173,11 +191,11 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:CascaderTokenResource EnableMotion}" />
         <Setter Property="MaxPopupHeight" Value="{atom:CascaderTokenResource DropdownHeight}" />
-        <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="ItemHeight" Value="{atom:CascaderTokenResource ControlHeight}" />
         <Setter Property="PlaceholderForeground"
-                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                Value="{atom:CascaderTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^[IsEffectiveEmptyVisible=True]">
             <Setter Property="IsPopupMatchSelectWidth"
@@ -188,16 +206,6 @@
             <Setter Property="Width" Value="{atom:CascaderTokenResource ControlWidth}" />
         </Style>
 
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
-
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
                     Value="{atom:PopupTokenResource MarginToAnchor}" />
@@ -205,7 +213,7 @@
                     Value="{atom:PopupTokenResource PopupRootShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:CascaderTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
@@ -219,12 +227,12 @@
                 <Style Selector="^ /template/ TextBlock#SingleSelectResultPresenter">
                     <Setter Property="IsVisible" Value="True" />
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorText}" />
+                            Value="{atom:CascaderTokenResource ColorText}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
                     <Style Selector="^ /template/ TextBlock#SingleSelectResultPresenter">
                         <Setter Property="Foreground"
-                                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                                Value="{atom:CascaderTokenResource ColorTextPlaceholder}" />
                     </Style>
                 </Style>
             </Style>
@@ -232,12 +240,12 @@
                 <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                     <Setter Property="IsVisible" Value="True" />
                     <Setter Property="PlaceholderForeground"
-                            Value="{atom:SharedTokenResource ColorText}" />
+                            Value="{atom:CascaderTokenResource ColorText}" />
                 </Style>
                 <Style Selector="^[IsDropDownOpen=True]">
                     <Style Selector="^ /template/ atom|SelectFilterTextBox#PART_SingleFilterInput">
                         <Setter Property="PlaceholderForeground"
-                                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                                Value="{atom:CascaderTokenResource ColorTextPlaceholder}" />
                     </Style>
                 </Style>
             </Style>
@@ -279,10 +287,10 @@
         </Setter>
         
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:CascaderTokenResource ColorTextDisabled}" />
             <Style Selector="^ /template/ TextBlock#SingleSelectResultPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:CascaderTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
         <Setter Property="BorderThickness" Value="{atom:CascaderTokenResource BorderThickness}" />

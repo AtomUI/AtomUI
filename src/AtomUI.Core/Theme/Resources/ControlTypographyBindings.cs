@@ -35,8 +35,16 @@ internal static class ControlTypographyBindings
                 null, typeof(IObservable<double>)), PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
             .StreamObservable<double>().Build());
 
+    public static readonly BindingBase InheritedForeground = new CompiledBindingExtension(
+        new CompiledBindingPathBuilder().Self().Property(
+            new ClrPropertyInfo("InheritedForegroundSource", value => ObserveInherited((Control)value, TextElement.ForegroundProperty),
+                null, typeof(IObservable<IBrush?>)), PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
+            .StreamObservable<IBrush?>().Build());
+
     public static readonly IMultiValueConverter FontFamilyConverter = new OptionalFontFamilyConverter();
     public static readonly IMultiValueConverter FontSizeConverter = new OptionalFontSizeConverter();
+    public static readonly IMultiValueConverter PresetFontSizeConverter = new SizeTypeFontSizeConverter();
+    public static readonly IMultiValueConverter ForegroundConverter = new OptionalForegroundConverter();
 
     private static IObservable<T> ObserveInherited<T>(Control owner, StyledProperty<T> property) => Observable.Create<T>(observer =>
     {
@@ -83,7 +91,13 @@ internal static class ControlTypographyBindings
         public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             object inherited = values.Count > 0 && values[0] is double size ? size : AvaloniaProperty.UnsetValue;
-            if ((values.Count != 9 && values.Count != 12) || values[2] is not false ||
+            // Owners without size presets supply inheritance, presence and value.
+            if (values.Count == 3)
+            {
+                return values[1] is double && values[2] is double scalar ? scalar : inherited;
+            }
+            var hasCustomFlag = values.Count != 8;
+            if ((values.Count != 8 && values.Count != 9 && values.Count != 12) || (hasCustomFlag && values[2] is not false) ||
                 values[1] is not CustomizableSizeType sizeType)
             {
                 return inherited;
@@ -96,9 +110,32 @@ internal static class ControlTypographyBindings
                 CustomizableSizeType.Large => 2,
                 _ => 0
             };
-            var offset = 3 + group * stride;
+            var offset = (hasCustomFlag ? 3 : 2) + group * stride;
             var isExplicit = values[offset] is double || (stride == 3 && values[offset + 1] is double);
-            return isExplicit && values[offset + stride - 1] is double configured ? configured : inherited;
+            // Some composite inputs historically rendered the middle preset even when
+            // their root inherited a different size. Keep that default, while the
+            // IsCustomFontSize opt-out above still returns actual inheritance.
+            var fallback = parameter is "PresetFallback" && values[(hasCustomFlag ? 3 : 2) + stride - 1] is double preset
+                ? preset : inherited;
+            return isExplicit && values[offset + stride - 1] is double configured ? configured : fallback;
+        }
+    }
+
+    private sealed class SizeTypeFontSizeConverter : IMultiValueConverter
+    {
+        public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (values.Count != 4 || values[0] is not CustomizableSizeType sizeType)
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
+            var offset = sizeType switch
+            {
+                CustomizableSizeType.Small => 2,
+                CustomizableSizeType.Large => 3,
+                _ => 1
+            };
+            return values[offset] is double size ? size : AvaloniaProperty.UnsetValue;
         }
     }
 
@@ -108,6 +145,16 @@ internal static class ControlTypographyBindings
         {
             var inherited = values.Count > 0 && values[0] is FontFamily family ? family : FontFamily.Default;
             return values.Count == 3 && values[1] is FontFamily && values[2] is FontFamily configured
+                ? configured : inherited;
+        }
+    }
+
+    private sealed class OptionalForegroundConverter : IMultiValueConverter
+    {
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+        {
+            var inherited = values.Count > 0 ? values[0] : AvaloniaProperty.UnsetValue;
+            return values.Count == 3 && values[1] is IBrush && values[2] is IBrush configured
                 ? configured : inherited;
         }
     }

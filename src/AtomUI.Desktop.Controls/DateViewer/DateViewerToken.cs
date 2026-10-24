@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class DateViewerToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class DateViewerToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public Color PanelBg { get; set; }
     public Color CellHoverBg { get; set; }
@@ -26,31 +26,82 @@ internal sealed class DateViewerToken : AbstractControlDesignToken
     public Thickness DateBodyPadding { get; set; }
     public double PanelSpacing { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    [ControlTokenDefault(nameof(PanelBg))]
+    private static Color DefaultForPanelBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(CellHoverBg))]
+    private static Color DefaultForCellHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgHover;
+
+    [ControlTokenDefault(nameof(CellRangeBg))]
+    private static Color DefaultForCellRangeBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(PanelWidth))]
+    private static double DefaultForPanelWidth(in ControlTokenDefaultContext context)
     {
-        base.CalculateTokenValues(isDarkMode);
-        PanelBg = EffectiveGlobalToken.ColorBgContainer;
-        CellHoverBg = EffectiveGlobalToken.ControlItemBgHover;
-        CellRangeBg = EffectiveGlobalToken.ControlItemBgActive;
-        var dateColumnWidth = EffectiveGlobalToken.ControlHeightSM * 1.5;
-        var bodyHorizontalPadding = EffectiveGlobalToken.UniformlyPadding + EffectiveGlobalToken.UniformlyPaddingXXS / 2;
-        PanelWidth = dateColumnWidth * 7 + bodyHorizontalPadding * 2;
-        CellHeight = EffectiveGlobalToken.ControlHeightSM;
-        CellWidth = EffectiveGlobalToken.ControlHeightSM;
-        CellRowHeight = CellHeight + EffectiveGlobalToken.UniformlyPaddingXXS * 3;
-        PeriodCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;
-        PeriodCellPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        ContentCellMinHeight = EffectiveGlobalToken.ControlHeightLG * 2;
-        var contentSurfaceInset = EffectiveGlobalToken.UniformlyMarginXXS;
-        var contentHorizontalInset = contentSurfaceInset + EffectiveGlobalToken.UniformlyPaddingXS;
-        var contentTopInset = EffectiveGlobalToken.LineWidthBold + EffectiveGlobalToken.UniformlyPaddingXS / 2;
-        ContentCellSurfaceMargin = new Thickness(contentSurfaceInset, 0);
-        ContentCellTopBorderThickness = new Thickness(0, EffectiveGlobalToken.LineWidthBold, 0, 0);
-        ContentCellValueMargin = new Thickness(contentHorizontalInset, contentTopInset, contentHorizontalInset, 0);
-        ContentCellContentMargin = new Thickness(contentHorizontalInset, 0);
-        PanelPadding = new Thickness(0);
-        HeaderHorizontalPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        DateBodyPadding = new Thickness(bodyHorizontalPadding, EffectiveGlobalToken.UniformlyPaddingXS);
-        PanelSpacing = EffectiveGlobalToken.UniformlyMargin;
+        var dateColumnWidth = context.Global.ControlHeightSM * 1.5;
+        var bodyHorizontalPadding = context.Global.UniformlyPadding + context.Global.UniformlyPaddingXXS / 2;
+        return dateColumnWidth * 7 + bodyHorizontalPadding * 2;
     }
+
+    [ControlTokenDefault(nameof(CellHeight))]
+    private static double DefaultForCellHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
+
+    [ControlTokenDefault(nameof(CellWidth))]
+    private static double DefaultForCellWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
+
+    [ControlTokenDefault(nameof(CellRowHeight), nameof(CellHeight))]
+    private static double DefaultForCellRowHeight(in ControlTokenDefaultContext context, double cellHeight) =>
+        cellHeight + context.Global.UniformlyPaddingXXS * 3;
+
+    [ControlTokenDefault(nameof(PeriodCellWidth))]
+    private static double DefaultForPeriodCellWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 1.5;
+
+    [ControlTokenDefault(nameof(PeriodCellPadding))]
+    private static Thickness DefaultForPeriodCellPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(ContentCellMinHeight))]
+    private static double DefaultForContentCellMinHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 2;
+
+    [ControlTokenDefault(nameof(ContentCellSurfaceMargin))]
+    private static Thickness DefaultForContentCellSurfaceMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXXS, 0);
+
+    [ControlTokenDefault(nameof(ContentCellTopBorderThickness))]
+    private static Thickness DefaultForContentCellTopBorderThickness(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.LineWidthBold, 0, 0);
+
+    [ControlTokenDefault(nameof(ContentCellValueMargin))]
+    private static Thickness DefaultForContentCellValueMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXXS + context.Global.UniformlyPaddingXS,
+            context.Global.LineWidthBold + context.Global.UniformlyPaddingXS / 2,
+            context.Global.UniformlyMarginXXS + context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(ContentCellContentMargin))]
+    private static Thickness DefaultForContentCellContentMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXXS + context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(PanelPadding))]
+    private static Thickness DefaultForPanelPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(0);
+
+    [ControlTokenDefault(nameof(HeaderHorizontalPadding))]
+    private static Thickness DefaultForHeaderHorizontalPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(DateBodyPadding))]
+    private static Thickness DefaultForDateBodyPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPadding + context.Global.UniformlyPaddingXXS / 2,
+            context.Global.UniformlyPaddingXS);
+
+    [ControlTokenDefault(nameof(PanelSpacing))]
+    private static double DefaultForPanelSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMargin;
 }

@@ -63,14 +63,14 @@
     <ControlTheme x:Key="{x:Type atom:TourLayer}" TargetType="atom:TourLayer">
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:RectTransition Property="TargetRegion"
                                          Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
                                          Easing="CubicEaseOut" />
                     <DoubleTransition Property="TargetRegionCornerRadius"
                                       Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
                                       Easing="CubicEaseOut" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

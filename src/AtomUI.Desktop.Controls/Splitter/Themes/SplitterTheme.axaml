@@ -29,6 +29,6 @@
         <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="HandleSize" Value="{atom:SplitterTokenResource SplitBarHandleSize}" />
         <Setter Property="LineThickness" Value="{atom:SplitterTokenResource HandleLineThickness}" />
-        <Setter Property="LineCornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}" />
+        <Setter Property="LineCornerRadius" Value="{atom:SplitterTokenResource BorderRadiusXS}" />
     </ControlTheme>
 </ResourceDictionary>

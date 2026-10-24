@@ -151,8 +151,10 @@ python3 scripts/verification/test.py metrics
 是 CI 例外，仍使用 `test.py --tests-only` 生成机器可读证据。agent 本地最终全量只使用带进度、ETA、继续收集失败的脚本。
 全量脚本失败时通过 `[DIAGNOSTICS]` 输出系统临时目录中的项目日志路径，保留完整异常、断言与清理阶段的栈；
 不得只根据测试名推断失败原因。成功项目日志自动清理，失败日志在完成排障后清理，不写入仓库测试产物目录。
+手工入口的 `all_platforms` 与 `browser` 默认关闭。前者额外运行 Windows/Linux/macOS 的选中测试和真实 OS NativeAOT 产品夹具，后者分别发布 trimmed interpreter／Mono AOT 并由 Chrome 执行 Browser 夹具。Browser 必须在实际页面 `pre#result` 出现 `PRODUCT_PASS browser` 并有对应 TypeMap 回执；页面加载或编译完成不算运行通过。只上传文本日志／回执，不发布 NuGet。夹具运行只证明该夹具合同，完整视觉、交互、性能和各家族义务仍单独验证。
+
 CI 没有定期全量任务，不改仓库 branch protection；是否要求该 job 通过由仓库管理员配置。
-该 job 明确命名为 `Selected tests and impact report`，使用 `--tests-only`，成功只表示选中的测试阶段通过；
+默认 job 保留 `Selected tests and impact report` 名称，手工多平台时追加运行平台，使用 `--tests-only`，成功只表示选中的测试阶段通过；
 专项义务仍保留在 JSON 中，必须由发布/平台检查单独覆盖。这个 job 不承担发布可用性 gate，不能把它的绿色结果
 当成 NativeAOT、package 或平台行为已经验证。普通本地 `run` 不带此参数，专项未满足时仍返回 pending/退出码 2。
 

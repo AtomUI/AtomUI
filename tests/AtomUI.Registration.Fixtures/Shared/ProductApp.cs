@@ -1,4 +1,5 @@
 using AtomUI.Desktop.Controls;
+using AtomUI.Registration;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -26,10 +27,10 @@ using AvaloniaScrollViewer = Avalonia.Controls.ScrollViewer;
 
 namespace AtomUI.Registration.Fixtures;
 
-public class ProductApp : Application
+public partial class ProductApp : Application
 {
     private Button _button = null!;
-    private IReadOnlyList<ControlPackageRegistration> _packages = null!;
+    private IReadOnlyList<EnabledControlPackage> _packages = null!;
     private IAtomUIBuilder _builder = null!;
 #if COMPLEX
     private Expander _expander = null!;
@@ -41,13 +42,6 @@ public class ProductApp : Application
     private OtpLineEdit _otp = null!;
 #endif
 #endif
-    // 本夹具工程不引用 AtomUI 生成器，按公开契约手写挂接。
-    public override void RegisterServices()
-    {
-        base.RegisterServices();
-        ApplicationStartup.Attach(this);
-    }
-
     private static IAtomUIBuilder? s_configuredBuilder;
 
     /// <summary>宿主在 BuildAvaloniaApp 链末尾登记产品配置。</summary>
@@ -66,7 +60,6 @@ public class ProductApp : Application
         // builds. Exercise the enum observably so this scenario actually requires its CLR type.
         Console.WriteLine(TokenKeyOnlyTokenKey.FixtureValue);
         GC.KeepAlive(new ExtensionOnlyTokenResourceExtension());
-        Styles.Add(new SemanticOnlyLeafStyle());
         builder.UseFixtureControls();
 #endif
     }
@@ -76,10 +69,13 @@ public class ProductApp : Application
         // Configure 在 Attach 之前同步执行，此时 builder 已就绪。
         _builder = s_configuredBuilder ?? throw new InvalidOperationException(
             "PRODUCT_FAIL the host did not register AtomUI configuration before startup.");
-        _packages = ((ThemeManagerBuilder)_builder.Theme).ControlPackages;
+        _packages = ((ThemeManagerBuilder)_builder.Theme).PackageDeclarations;
 #if COMPLEX
+        Styles.Add(new ProductFixtureStyles());
         if (!this.TryFindResource(typeof(ButtonSpinner), out var spinnerBase) || spinnerBase is not Avalonia.Styling.ControlTheme original)
+        {
             throw new InvalidOperationException("PRODUCT_FAIL ButtonSpinner base theme missing");
+        }
         Resources[typeof(ButtonSpinner)] = new Avalonia.Styling.ControlTheme(typeof(ButtonSpinner))
         {
             BasedOn = original,
@@ -120,7 +116,8 @@ public class ProductApp : Application
         Require(_button.Template is not null && _button.GetVisualDescendants().Any(), "Button template executes");
         var manager = this.GetThemeManager()!;
         Require(manager.CurrentTheme is not null, "ThemeManager initialized");
-        Require(_packages[0].Id == "AtomUI.Controls.Common" && _packages[1].Id == "AtomUI.Desktop.Controls", "Common commits before Desktop");
+        Require(_packages.Count >= 2 && _packages[0].Definition.Id == "AtomUI.Controls.Common" &&
+                _packages[1].Definition.Id == "AtomUI.Desktop.Controls", "Common commits before Desktop");
 #if COMPLEX
         _button.Resources[ButtonTokenKind.ContentFontSize] = 23d;
         _button.UpdateLayout();
@@ -177,11 +174,17 @@ public class ProductApp : Application
         Require(Equals(spinner.Tag, "application-spinner-theme"), "NumericUpDown inherits application ButtonSpinner theme replacement");
         Require(_numeric.CornerRadius == new CornerRadius(11) && !spinner.IsMotionEnabled,
                 "NumericUpDown local customization survives inherited theme");
-        var thirdParty = _packages.Single(p => p.Id == "Fixture.ThirdParty");
-        Require(thirdParty.Controls.Any(c => c.Identity.Id == "TokenOnly") && thirdParty.Controls.Any(c => c.Identity.Id == "IdentityOnly"), "token-only and typed-identity-only registration");
-        Require(thirdParty.Controls.Any(c => c.Identity.Id == "EnumOnly") &&
-                thirdParty.Controls.Any(c => c.Identity.Id == "TokenKeyOnly") &&
-                thirdParty.Controls.Any(c => c.Identity.Id == "ExtensionOnly"), "own-enum-only, TokenKey-only and extension-only registration");
+        Require(_packages.Any(p => p.Definition.Id == "Fixture.ThirdParty"), "third-party package enabled");
+        // Query selected runtime descriptors, rather than the full declaration manifest: a
+        // declaration alone would not prove that trimming retained the selected fragment.
+        var registry = ((ThemeManager)manager).RootContext.Snapshot.Registry;
+        Require(registry.TryGetControl(new ControlTokenIdentity("Fixture.ThirdParty", "TokenOnly"), out _) &&
+                registry.TryGetControl(new ControlTokenIdentity("Fixture.ThirdParty", "IdentityOnly"), out _),
+                "token-only and typed-identity-only registration");
+        Require(registry.TryGetControl(new ControlTokenIdentity("Fixture.ThirdParty", "EnumOnly"), out _) &&
+                registry.TryGetControl(new ControlTokenIdentity("Fixture.ThirdParty", "TokenKeyOnly"), out _) &&
+                registry.TryGetControl(new ControlTokenIdentity("Fixture.ThirdParty", "ExtensionOnly"), out _),
+                "own-enum-only, TokenKey-only and extension-only registration");
         Require(_button.TryFindResource(EnumOnlyTokenKind.FixtureValue, out var enumValue) && Equals(enumValue, 31d), "boxed-enum-only own resource materializes");
         Require(_button.TryFindResource(ControlTokenResourceKey.Own(new ControlTokenIdentity("Fixture.ThirdParty", "TokenOnly"), TokenOnlyTokenKind.FixtureValue), out var tokenValue) && Equals(tokenValue, 17d), "token-only own resource materializes");
         var semantic = manager.SemanticParts.Controls.Single(c => c.Identity.Id == "SemanticOnly").Parts.Single(p => p.Name == "leaf");
@@ -196,12 +199,22 @@ public class ProductApp : Application
         Require(_button.FontSize == 29d, "scoped token update reaches template");
 #endif
         await Task.CompletedTask;
-        try { _builder.UseDesktopControls(); throw new Exception("Frozen registry accepted late entry"); }
-        catch (InvalidOperationException e) { Require(e.Message.Contains("frozen", StringComparison.Ordinal), "Registry frozen after startup"); }
+        try
+        {
+            _builder.UseDesktopControls();
+            throw new Exception("Frozen registry accepted late entry");
+        }
+        catch (InvalidOperationException e)
+        {
+            Require(e.Message.Contains("frozen", StringComparison.Ordinal), "Registry frozen after startup");
+        }
     }
     private static void Require(bool value, string message)
     {
-        if (!value) throw new InvalidOperationException("PRODUCT_FAIL " + message);
+        if (!value)
+        {
+            throw new InvalidOperationException("PRODUCT_FAIL " + message);
+        }
         Console.WriteLine("PRODUCT_CHECK " + message);
     }
 }

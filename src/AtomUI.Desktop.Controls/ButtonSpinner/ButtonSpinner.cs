@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
@@ -26,39 +27,40 @@ public partial class ButtonSpinner : Spinner,
                                      ICompactSpaceAware,
                                      ICustomizableSizeTypeAware,
                                      IInputControlStatusAware,
-                                     IInputControlStyleVariantAware
+                                     IInputControlStyleVariantAware,
+                                     IThemeInheritanceSource
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsSpinEnabledProperty =
         AvaloniaProperty.Register<ButtonSpinner, bool>(nameof(IsSpinEnabled), true);
-    
+
     public static readonly StyledProperty<bool> IsButtonSpinnerVisibleProperty =
         AvaloniaProperty.Register<ButtonSpinner, bool>(nameof(IsButtonSpinnerVisible), true);
-    
+
     public static readonly StyledProperty<ButtonSpinnerLocation> ButtonSpinnerLocationProperty =
         AvaloniaProperty.Register<ButtonSpinner, ButtonSpinnerLocation>(nameof(ButtonSpinnerLocation), ButtonSpinnerLocation.Right);
 
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<ButtonSpinner>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<ButtonSpinner>();
 
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AddOnDecoratedBox.RightAddOnProperty.AddOwner<ButtonSpinner>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<ButtonSpinner>();
 
     public static readonly StyledProperty<object?> InnerLeftContentProperty =
         AvaloniaProperty.Register<ButtonSpinner, object?>(nameof(InnerLeftContent));
-    
+
     public static readonly StyledProperty<IDataTemplate?> InnerLeftContentTemplateProperty =
         AvaloniaProperty.Register<ButtonSpinner, IDataTemplate?>(nameof(InnerLeftContentTemplate));
 
     public static readonly StyledProperty<object?> InnerRightContentProperty =
         AvaloniaProperty.Register<ButtonSpinner, object?>(nameof(InnerRightContent));
-    
+
     public static readonly StyledProperty<IDataTemplate?> InnerRightContentTemplateProperty =
         AvaloniaProperty.Register<ButtonSpinner, IDataTemplate?>(nameof(InnerRightContentTemplate));
 
@@ -70,11 +72,11 @@ public partial class ButtonSpinner : Spinner,
 
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<ButtonSpinner>();
-    
+
     public static readonly StyledProperty<bool> IsButtonSpinnerFloatableProperty =
         AvaloniaProperty.Register<ButtonSpinner, bool>(nameof (IsButtonSpinnerFloatable), false);
-    
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
+
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ButtonSpinner>();
 
     public static readonly StyledProperty<double> SpinnerHandleWidthProperty =
@@ -97,7 +99,7 @@ public partial class ButtonSpinner : Spinner,
         get => GetValue(ButtonSpinnerLocationProperty);
         set => SetValue(ButtonSpinnerLocationProperty, value);
     }
-    
+
     [DependsOn(nameof(LeftAddOnTemplate))]
     public object? LeftAddOn
     {
@@ -110,14 +112,14 @@ public partial class ButtonSpinner : Spinner,
         get => GetValue(LeftAddOnTemplateProperty);
         set => SetValue(LeftAddOnTemplateProperty, value);
     }
-        
+
     [DependsOn(nameof(RightAddOnTemplate))]
     public object? RightAddOn
     {
         get => GetValue(RightAddOnProperty);
         set => SetValue(RightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
@@ -130,13 +132,13 @@ public partial class ButtonSpinner : Spinner,
         get => GetValue(InnerLeftContentProperty);
         set => SetValue(InnerLeftContentProperty, value);
     }
-    
+
     public IDataTemplate? InnerLeftContentTemplate
     {
         get => GetValue(InnerLeftContentTemplateProperty);
         set => SetValue(InnerLeftContentTemplateProperty, value);
     }
-    
+
     [DependsOn(nameof(InnerRightContentTemplate))]
     public object? InnerRightContent
     {
@@ -167,19 +169,19 @@ public partial class ButtonSpinner : Spinner,
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
-    
+
     public bool IsButtonSpinnerFloatable
     {
         get => GetValue(IsButtonSpinnerFloatableProperty);
         set => SetValue(IsButtonSpinnerFloatableProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public double SpinnerHandleWidth
     {
         get => GetValue(SpinnerHandleWidthProperty);
@@ -227,13 +229,13 @@ public partial class ButtonSpinner : Spinner,
         get => GetValue(CompactSpaceItemPositionProperty);
         set => SetValue(CompactSpaceItemPositionProperty, value);
     }
-    
+
     internal Orientation CompactSpaceOrientation
     {
         get => GetValue(CompactSpaceOrientationProperty);
         set => SetValue(CompactSpaceOrientationProperty, value);
     }
-    
+
     internal bool IsUsedInCompactSpace
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
@@ -247,7 +249,7 @@ public partial class ButtonSpinner : Spinner,
     }
 
     #endregion
-    
+
     internal ButtonSpinnerDecoratedBox? DecoratedBox;
     private ButtonSpinnerHandle? _spinnerHandle;
     private bool _isFrameBorderBrushRelayed;
@@ -260,11 +262,11 @@ public partial class ButtonSpinner : Spinner,
     {
         IsSpinEnabledProperty.Changed.Subscribe(IsSpinEnabledChanged);
     }
-    
+
     public ButtonSpinner()
     {
     }
-    
+
     private IconButton? DecreaseButton
     {
         get => _decreaseButton;
@@ -281,7 +283,7 @@ public partial class ButtonSpinner : Spinner,
             }
         }
     }
-    
+
     private IconButton? IncreaseButton
     {
         get => _increaseButton;
@@ -318,7 +320,7 @@ public partial class ButtonSpinner : Spinner,
                 ConfigureAddOns();
             }
         }
-        
+
         if (change.Property == ButtonSpinnerLocationProperty)
         {
             UpdatePseudoClasses();
@@ -363,7 +365,7 @@ public partial class ButtonSpinner : Spinner,
         ConfigureAddOns();
         RelayFrameBorderBrush();
     }
-    
+
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -388,7 +390,7 @@ public partial class ButtonSpinner : Spinner,
             }
         }
     }
-    
+
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
@@ -435,32 +437,38 @@ public partial class ButtonSpinner : Spinner,
             }
         }
     }
-    
+
     protected override void OnValidSpinDirectionChanged(ValidSpinDirections oldValue, ValidSpinDirections newValue)
     {
         SetButtonUsage();
     }
-    
+
     protected virtual void OnIsSpinEnabledChanged(bool oldValue, bool newValue)
     {
         SetButtonUsage();
     }
-    
+
     protected virtual double GetBorderThicknessForCompactSpace()
     {
         if (!IsUsedInCompactSpace)
         {
             return 0.0;
         }
-    
+
         if (DecoratedBox == null || DecoratedBox.StyleVariant != InputControlStyleVariant.Outlined)
         {
             return 0.0;
         }
-    
+
         // 都一样宽
         return DecoratedBox.InnerBoxBorderThickness.Left;
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     #region 实现 ICompactSpaceAware 接口
 
@@ -477,7 +485,7 @@ public partial class ButtonSpinner : Spinner,
             CompactSpaceItemPosition = position;
         }
     }
-    
+
     void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
     {
         if (CompactSpaceOrientation != orientation)
@@ -487,7 +495,7 @@ public partial class ButtonSpinner : Spinner,
     }
 
     double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
-    
+
     #endregion
 
     /// <summary>
@@ -574,7 +582,7 @@ public partial class ButtonSpinner : Spinner,
         }
     }
 
-    
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(ButtonSpinnerPseudoClass.Left, ButtonSpinnerLocation == ButtonSpinnerLocation.Left);
@@ -592,7 +600,7 @@ public partial class ButtonSpinner : Spinner,
         }
     }
 
-    
+
     private void SetButtonUsage()
     {
         if (IncreaseButton != null)

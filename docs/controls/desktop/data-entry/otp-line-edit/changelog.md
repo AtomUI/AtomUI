@@ -2,6 +2,11 @@
 
 本文档记录 OtpLineEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-24
+
+- 分隔符默认前景改用有效ColorText／ColorTextDisabled，修复暗色下继承黑色不可见；该默认视觉修复经用户明确批准。保留根本地值和专用Separator Style优先级，cell颜色、字体及输入保持。
+- 根FontFamily及分隔符三档字号接通明确的有效Global配置；缺省和清除保留真实祖先继承，cell既有预设和专用Style保持。最终字体Setter位于ControlTheme，内部只读继承桥不新增公开API或Own字段。
+
 ## 2026-10-23
 
 - 追加独立CaretBlinkDuration/CaretBlinkEasing Own及V2修订2，保留旧四ID，默认1s线性往返不变；非正周期为静态可见输入反馈，装饰motion开关不改变既有光标节奏。三个关键帧保持AXAML声明，每光标持有原生动画Style，隐藏暂停、detach退役及可变缓动隔离遵循框架生命周期。

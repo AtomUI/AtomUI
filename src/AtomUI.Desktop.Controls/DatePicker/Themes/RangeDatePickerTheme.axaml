@@ -8,6 +8,13 @@
         <ControlTheme.BasedOn>
             <atom:RangeInfoPickerInputTheme TargetType="atom:RangeDatePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:RangeDatePickerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:RangeDatePickerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
         <Setter Property="Template">
@@ -20,6 +27,7 @@
                         IsEnabled="{TemplateBinding IsEnabled}"
                         MinWidth="{TemplateBinding MinWidth}"
                         ContentFramePadding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -52,7 +60,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:RangeDatePickerTokenResource SpacingXS}">
                                 <atom:PickerClearUpButton
                                     Name="PART_ClearUpButton"
                                     Classes.semantic-scope-handle="True" />
@@ -76,7 +84,8 @@
                                                   DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Text="{TemplateBinding Text}"
-                                                  PlaceholderText="{TemplateBinding PlaceholderText}" />
+                                                  PlaceholderText="{TemplateBinding PlaceholderText}"
+                                                  Foreground="{TemplateBinding Foreground}" />
                             <antdicons:SwapRightOutlined
                                 Name="PART_RangePickerArrow"
                                 Grid.Column="1" />
@@ -97,7 +106,8 @@
                                 DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                 IsReadOnly="{TemplateBinding IsReadOnly}"
                                 Text="{TemplateBinding SecondaryText}"
-                                PlaceholderText="{TemplateBinding SecondaryPlaceholderText}" />
+                                PlaceholderText="{TemplateBinding SecondaryPlaceholderText}"
+                                Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </atom:AddOnDecoratedBox>
                     <Canvas>

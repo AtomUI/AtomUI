@@ -10,11 +10,11 @@
             <Panel>
                 <ContentControl Content="{TemplateBinding Context}" ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 IsVisible="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                <atom:PixelAlignedBorder BorderBrush="{atom:OwnerTokenResource ColorBorderSecondary}"
                                          BorderThickness="0,0,0,1"
                                          Padding="{atom:DateViewerTokenResource HeaderHorizontalPadding}"
                            IsVisible="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}">
-                    <Grid MinHeight="{atom:SharedTokenResource ControlHeightLG}" DataContext="{TemplateBinding Context}"
+                    <Grid MinHeight="{atom:OwnerTokenResource ControlHeightLG}" DataContext="{TemplateBinding Context}"
                           x:DataType="atom:DateViewerHeaderContext">
                         <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
                                      AutomationProperties.Name="{atom:DateViewerLangResource ChoosePeriod}"

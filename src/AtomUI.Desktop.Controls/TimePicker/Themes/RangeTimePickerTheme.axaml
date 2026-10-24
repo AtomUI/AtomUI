@@ -8,6 +8,13 @@
         <ControlTheme.BasedOn>
             <atom:RangeInfoPickerInputTheme TargetType="atom:RangeTimePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:RangeTimePickerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:RangeTimePickerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="MarginToAnchor" Value="{atom:InfoPickerInputTokenResource RangeMarginToAnchor}" />
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
@@ -21,6 +28,7 @@
                         IsEnabled="{TemplateBinding IsEnabled}"
                         MinWidth="{TemplateBinding MinWidth}"
                         ContentFramePadding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -53,7 +61,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:RangeTimePickerTokenResource SpacingXS}">
                                 <atom:PickerClearUpButton
                                     Name="PART_ClearUpButton"
                                     Classes.semantic-scope-handle="True" />
@@ -77,7 +85,8 @@
                                                   DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Text="{TemplateBinding Text}"
-                                                  PlaceholderText="{TemplateBinding PlaceholderText}" />
+                                                  PlaceholderText="{TemplateBinding PlaceholderText}"
+                                                  Foreground="{TemplateBinding Foreground}" />
                             <antdicons:SwapRightOutlined
                                 Name="PART_RangePickerArrow"
                                 Grid.Column="1" />
@@ -98,7 +107,8 @@
                                 DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                 IsReadOnly="{TemplateBinding IsReadOnly}"
                                 Text="{TemplateBinding SecondaryText}"
-                                PlaceholderText="{TemplateBinding SecondaryPlaceholderText}" />
+                                PlaceholderText="{TemplateBinding SecondaryPlaceholderText}"
+                                Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </atom:AddOnDecoratedBox>
                     <Canvas>
@@ -127,6 +137,24 @@
         </Setter>
         <Style Selector="^ /template/ atom|EmbeddedTextBox">
             <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
+            <Setter Property="Margin">
+                <MultiBinding Converter="{x:Static atom:RangeTimePickerThemeBindings.OptionalGeometry}">
+                    <atom:InfoPickerInputTokenResource Kind="RangePickerArrowMargin" />
+                    <atom:TimePickerTokenResource Kind="RangePickerArrowMargin" WhenExplicit="True" />
+                    <atom:TimePickerTokenResource Kind="RangePickerArrowMargin" />
+                </MultiBinding>
+            </Setter>
+        </Style>
+        <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
+            <Setter Property="Height">
+                <MultiBinding Converter="{x:Static atom:RangeTimePickerThemeBindings.OptionalGeometry}">
+                    <atom:InfoPickerInputTokenResource Kind="RangePickerIndicatorThickness" />
+                    <atom:TimePickerTokenResource Kind="RangePickerIndicatorThickness" WhenExplicit="True" />
+                    <atom:TimePickerTokenResource Kind="RangePickerIndicatorThickness" />
+                </MultiBinding>
+            </Setter>
         </Style>
         <Setter Property="BorderThickness" Value="{atom:RangeTimePickerTokenResource BorderThickness}" />
         <Style Selector="^[SizeType=Large]">

@@ -212,10 +212,10 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

@@ -7,8 +7,8 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// Calendar 控件的 Design Token，承载产品视觉语义。
 /// </summary>
-[ControlDesignToken]
-internal sealed class CalendarToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class CalendarToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     public CalendarToken()
@@ -67,28 +67,54 @@ internal sealed class CalendarToken : AbstractControlDesignToken
     /// </summary>
     public double RangeBarHeight { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    [ControlTokenDefault(nameof(FullBg))]
+    private static Color DefaultForFullBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(FullPanelBg))]
+    private static Color DefaultForFullPanelBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(ItemActiveBg))]
+    private static Color DefaultForItemActiveBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(YearControlWidth))]
+    private static double DefaultForYearControlWidth(in ControlTokenDefaultContext context) =>
+        80;
+
+    [ControlTokenDefault(nameof(MonthControlWidth))]
+    private static double DefaultForMonthControlWidth(in ControlTokenDefaultContext context) =>
+        70;
+
+    [ControlTokenDefault(nameof(YearMonthCellWidth))]
+    private static double DefaultForYearMonthCellWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 1.5;
+
+    [ControlTokenDefault(nameof(MiniContentHeight))]
+    private static double DefaultForMiniContentHeight(in ControlTokenDefaultContext context) =>
+        256;
+
+    [ControlTokenDefault(nameof(WeekHeaderHeight))]
+    private static double DefaultForWeekHeaderHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM * 0.75 + context.Global.UniformlyPaddingXXS;
+
+    [ControlTokenDefault(nameof(WeekHeaderPadding))]
+    private static Thickness DefaultForWeekHeaderPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyPaddingSM, context.Global.UniformlyPaddingXXS);
+
+    [ControlTokenDefault(nameof(FullCellMinHeight))]
+    private static double DefaultForFullCellMinHeight(in ControlTokenDefaultContext context)
     {
-        base.CalculateTokenValues(isDarkMode);
-
-        var dateContentHeight = (EffectiveGlobalToken.FontHeightSM + EffectiveGlobalToken.UniformlyMarginXS) * 3 +
-                                EffectiveGlobalToken.LineWidth * 2;
-
-        FullBg = EffectiveGlobalToken.ColorBgContainer;
-        FullPanelBg = EffectiveGlobalToken.ColorBgContainer;
-        ItemActiveBg = EffectiveGlobalToken.ControlItemBgActive;
-        YearControlWidth = 80;
-        MonthControlWidth = 70;
-        YearMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;
-        MiniContentHeight = 256;
-        WeekHeaderHeight = EffectiveGlobalToken.ControlHeightSM * 0.75 +
-                           EffectiveGlobalToken.UniformlyPaddingXXS;
-        WeekHeaderPadding = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingSM,
-            EffectiveGlobalToken.UniformlyPaddingXXS);
-        FullCellMinHeight = EffectiveGlobalToken.ControlHeightSM +
-                            dateContentHeight +
-                            EffectiveGlobalToken.UniformlyPaddingXS / 2 +
-                            EffectiveGlobalToken.LineWidthBold;
-        RangeBarHeight = EffectiveGlobalToken.ControlHeightSM - EffectiveGlobalToken.UniformlyMarginXXS;
+        var dateContentHeight = (context.Global.FontHeightSM + context.Global.UniformlyMarginXS) * 3 +
+                                context.Global.LineWidth * 2;
+        return context.Global.ControlHeightSM +
+               dateContentHeight +
+               context.Global.UniformlyPaddingXS / 2 +
+               context.Global.LineWidthBold;
     }
+
+    [ControlTokenDefault(nameof(RangeBarHeight))]
+    private static double DefaultForRangeBarHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM - context.Global.UniformlyMarginXXS;
 }

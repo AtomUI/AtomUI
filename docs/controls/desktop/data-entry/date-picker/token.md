@@ -12,6 +12,8 @@ DatePicker 的日期正文直接消费 [DateViewer Token](../date-viewer/token.m
 
 日期面板背景、Cell 尺寸、Hover、范围背景与面板宽度归 DateViewer 所有；Picker 用 RangePanelSpacing 把产品双面板间距固定为原体验的 20。Picker 不再注册旧 CalendarView 的 Cell、Header、MonthView 或 RangeCalendar 资源别名。
 
+DatePickerToken采用DependencyDefaultsV2 Revision1，三项字段继续使用原独立有效Global／常量公式，名称、类型、默认、资源ID和slot保持。没有从相似名称引入Own依赖；迁移本身不代表全部Picker形态已完成视觉验收。
+
 ## 消费边界
 
 Presenter 主题组合 DateViewer/RangeDateViewer、TimeView 与 Footer。固定布局和可见性放在 ControlTheme；动态颜色和尺寸通过对应控件的 Token 资源解析。候选值、活动端点和确认进度不进入 Token。

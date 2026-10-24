@@ -83,6 +83,8 @@ public enum TimelineMode
 
 控件专属或内部伪类包括 `OrderEvenPC`、`OrderFirstPC`、`OrderLastPC`、`OrderOddPC`、`PendingItemPC`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
+公开 Timeline 与 TimelineItem 各自消费本 identity 的明确 Global FontFamily、FontSize、ColorText；未配置保留实际父节点的继承值，清除回到当前祖先。公开本地值及生成的 Title／Content Style 保留原生优先级，没有新增字号预设 API。根框体颜色与 Item 掩膜颜色属于各自 owner；配方若要求一致，配置共同全局值或两个 owner。未配置暗色文字仍保持旧表现，具体边界见 [Token](token.md)。
+
 ## 4. 行为与状态模型
 
 Timeline 的状态流按以下路径收敛：

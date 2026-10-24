@@ -30,14 +30,14 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_InfoIconPresenter">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                    Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
         </Style>
 
         <Style Selector="^ /template/ StackPanel#IconLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}" />
         </Style>
 
     </ControlTheme>

@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TimelineToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TimelineToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     /// <summary>
     /// Timeline 轨迹颜色
@@ -28,7 +28,7 @@ internal sealed class TimelineToken : AbstractControlDesignToken
     public Thickness ItemPaddingBottomLG { get; set; }
     
     /// <summary>
-    /// 最后一个Item的Content最小高度
+    /// 最后一个 Item 的 Content 最小高度；仅明确 Own 配置时应用，未配置保留原生 0。
     /// </summary>
     public double LastItemContentMinHeight { get; set; }
 
@@ -62,24 +62,47 @@ internal sealed class TimelineToken : AbstractControlDesignToken
     /// </summary>
     public double IndicatorDotBorderWidth { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(IndicatorTailColor))]
+    private static Color DefaultForIndicatorTailColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorSplit;
 
-        IndicatorTailColor = EffectiveGlobalToken.ColorSplit;
-        IndicatorTailWidth = EffectiveGlobalToken.LineWidthBold;
+    [ControlTokenDefault(nameof(IndicatorTailWidth))]
+    private static double DefaultForIndicatorTailWidth(in ControlTokenDefaultContext context) =>
+        context.Global.LineWidthBold;
 
-        IndicatorDotBorderWidth = EffectiveGlobalToken.LineWidth * 3;
-        ItemPaddingBottom       = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyPadding * 1.25);
-        ItemPaddingBottomLG     = ItemPaddingBottom * 2;
-        
-        IndicatorStartModeMargin  = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);
-        IndicatorEndModeMargin    = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0, 0, 0);
-        IndicatorMiddleModeMargin = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0);
+    [ControlTokenDefault(nameof(ItemPaddingBottom))]
+    private static Thickness DefaultForItemPaddingBottom(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, 0, context.Global.UniformlyPadding * 1.25);
 
-        LastItemContentMinHeight = EffectiveGlobalToken.ControlHeightLG * 1.2;
-        IndicatorSize            = EffectiveGlobalToken.SizeMS;
-        IndicatorDotSize         = 8;
-    }
-    
+    [ControlTokenDefault(nameof(ItemPaddingBottomLG), nameof(ItemPaddingBottom))]
+    private static Thickness DefaultForItemPaddingBottomLG(in ControlTokenDefaultContext context, Thickness itemPaddingBottom) =>
+        itemPaddingBottom * 2;
+
+    [ControlTokenDefault(nameof(LastItemContentMinHeight))]
+    private static double DefaultForLastItemContentMinHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 1.2;
+
+    [ControlTokenDefault(nameof(IndicatorSize))]
+    private static double DefaultForIndicatorSize(in ControlTokenDefaultContext context) =>
+        context.Global.SizeMS;
+
+    [ControlTokenDefault(nameof(IndicatorDotSize))]
+    private static double DefaultForIndicatorDotSize(in ControlTokenDefaultContext context) =>
+        8;
+
+    [ControlTokenDefault(nameof(IndicatorStartModeMargin))]
+    private static Thickness DefaultForIndicatorStartModeMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMargin, 0);
+
+    [ControlTokenDefault(nameof(IndicatorEndModeMargin))]
+    private static Thickness DefaultForIndicatorEndModeMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMargin, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(IndicatorMiddleModeMargin))]
+    private static Thickness DefaultForIndicatorMiddleModeMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMargin, 0);
+
+    [ControlTokenDefault(nameof(IndicatorDotBorderWidth))]
+    private static double DefaultForIndicatorDotBorderWidth(in ControlTokenDefaultContext context) =>
+        context.Global.LineWidth * 3;
 }

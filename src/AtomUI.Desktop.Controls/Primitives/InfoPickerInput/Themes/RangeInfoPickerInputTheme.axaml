@@ -17,6 +17,7 @@
                     IsEnabled="{TemplateBinding IsEnabled}"
                     MinWidth="{TemplateBinding MinWidth}"
                     ContentFramePadding="{TemplateBinding Padding}"
+                    Foreground="{TemplateBinding Foreground}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -40,7 +41,7 @@
                     IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
-                                    Spacing="{atom:SharedTokenResource SpacingXS}">
+                                    Spacing="{atom:OwnerTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
                                 Name="PART_ClearUpButton" />
                             <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
@@ -62,7 +63,8 @@
                                               DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                               IsReadOnly="{TemplateBinding IsReadOnly}"
                                               Text="{TemplateBinding Text}"
-                                              PlaceholderText="{TemplateBinding PlaceholderText}" />
+                                              PlaceholderText="{TemplateBinding PlaceholderText}"
+                                              Foreground="{TemplateBinding Foreground}" />
                         <antdicons:SwapRightOutlined
                             Name="PART_RangePickerArrow"
                             Grid.Column="1" />
@@ -82,7 +84,8 @@
                             DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                             IsReadOnly="{TemplateBinding IsReadOnly}"
                             Text="{TemplateBinding SecondaryText}"
-                            PlaceholderText="{TemplateBinding SecondaryPlaceholderText}" />
+                            PlaceholderText="{TemplateBinding SecondaryPlaceholderText}"
+                            Foreground="{TemplateBinding Foreground}" />
                     </Grid>
                 </atom:AddOnDecoratedBox>
                 <Canvas>
@@ -116,18 +119,18 @@
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|InfoPickerTextBox">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorText}" />
+                        Value="{atom:OwnerTokenResource ColorText}" />
             </Style>
             <Style Selector="^[RangeActivatedPart=Start]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                            Value="{atom:OwnerTokenResource ColorTextTertiary}" />
                 </Style>
             </Style>
             <Style Selector="^[RangeActivatedPart=End]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_SecondaryInfoInputBox">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                            Value="{atom:OwnerTokenResource ColorTextTertiary}" />
                 </Style>
             </Style>
         </Style>
@@ -135,52 +138,60 @@
         <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
             <Setter Property="Margin"
                     Value="{atom:InfoPickerInputTokenResource RangePickerArrowMargin}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="FillBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
+                    Value="{atom:OwnerTokenResource ColorIcon}" />
             <Setter Property="StrokeBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
+                    Value="{atom:OwnerTokenResource ColorIcon}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
                 <Setter Property="FillBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
                 <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
 
         <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
+            <Setter Property="Width" Value="{TemplateBinding RangePickerIndicatorWidth}" />
+            <Setter Property="Canvas.Left" Value="{TemplateBinding PickerIndicatorOffsetX}" />
+            <Setter Property="Canvas.Top">
+                <MultiBinding Converter="{x:Static atom:RangeInfoPickerInputThemeBindings.IndicatorTop}">
+                    <TemplateBinding Property="{x:Static atom:RangeInfoPickerInputThemeBindings.FrameBottomProperty}" />
+                    <CompiledBindingExtension Path="$self.Height" />
+                </MultiBinding>
+            </Setter>
             <Setter Property="Height"
                     Value="{atom:InfoPickerInputTokenResource RangePickerIndicatorThickness}" />
         </Style>
 
         <Style Selector="^[EffectiveStatus=Default]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Error]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Warning]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorWarning}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <DoubleTransition Property="PickerIndicatorOffsetX" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <DoubleTransition Property="RangePickerIndicatorOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

@@ -3,7 +3,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:Select}" TargetType="atom:Select">
+    <ControlTheme x:Key="{x:Type atom:Select}" TargetType="atom:Select" x:DataType="atom:Select">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:SelectTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:SelectTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.PresetFontSizeConverter}">
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:SelectTokenResource Kind="FontSize" />
+                <atom:SelectTokenResource Kind="FontSize" />
+                <atom:SelectTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:SelectTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -12,6 +28,7 @@
                         Classes.semantic-scope-input="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         ContentFramePadding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -46,7 +63,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:SelectTokenResource SpacingXS}">
                                 <atom:SelectMaxCountIndicator
                                     Name="PART_SelectMaxCountIndicator"
                                     MaxCount="{CompiledBinding $parent[atom:Select].MaxCount}"
@@ -96,7 +113,8 @@
                                                       atom:OverflowTip.Text="{Binding Text, RelativeSource={RelativeSource Self}}"
                                                       atom:OverflowTip.ShowDelay="{TemplateBinding OverflowTipDelay}"
                                                       atom:OverflowTip.Placement="{TemplateBinding OverflowTipPlacement}"
-                                                      atom:OverflowTip.PlacementTarget="{Binding $parent[atom:SelectAddOnDecoratedBox]}" />
+                                                      atom:OverflowTip.PlacementTarget="{Binding $parent[atom:SelectAddOnDecoratedBox]}"
+                                                      Foreground="{TemplateBinding Foreground}" />
                             <atom:SelectResultOptionsBox
                                 Name="SelectedOptionsBox"
                                 Classes.semantic-scope-tags="True"
@@ -139,23 +157,13 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SelectTokenResource EnableMotion}" />
         <Setter Property="PopupContentPadding"
                 Value="{atom:SelectTokenResource PopupContentPadding}" />
-        <Setter Property="OptionFontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="OptionFontSize" Value="{atom:SelectTokenResource FontSize}" />
+        <Setter Property="ItemHeight" Value="{atom:SelectTokenResource ControlHeight}" />
         <Setter Property="PlaceholderForeground"
-                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
-
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
+                Value="{atom:SelectTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor"
@@ -163,7 +171,7 @@
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:SelectTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
@@ -220,7 +228,7 @@
         </Setter>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:SelectTokenResource ColorTextDisabled}" />
         </Style>
 
         <Setter Property="BorderThickness" Value="{atom:SelectTokenResource BorderThickness}" />

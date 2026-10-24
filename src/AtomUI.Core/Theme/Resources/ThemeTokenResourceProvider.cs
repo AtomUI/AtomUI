@@ -31,7 +31,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
         var snapshot = Snapshot;
         if (key is ExplicitTokenResourceKey explicitKey)
         {
-            return TryGetExplicitResource(snapshot, explicitKey.ResourceKey, theme, out value);
+            return TryGetExplicitResource(snapshot, explicitKey.ResourceKey, explicitKey.ControlOnly, theme, out value);
         }
         if (key is ControlTokenResourceKey controlKey)
         {
@@ -122,7 +122,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
         return controlSlot;
     }
 
-    private bool TryGetExplicitResource(ThemeSnapshot snapshot, object key, ThemeVariant? theme, out object? value)
+    private bool TryGetExplicitResource(ThemeSnapshot snapshot, object key, bool controlOnly, ThemeVariant? theme, out object? value)
     {
         if (key is ControlTokenResourceKey globalKey)
         {
@@ -134,7 +134,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
             }
             var globalDescriptor = snapshot.Registry.Controls[globalSlot];
             var globalResourceKey = snapshot.Registry.GetSharedResourceKey(globalKey.Kind);
-            var configured = snapshot.EffectiveConfig.GlobalTokens.Any(candidate =>
+            var configured = !controlOnly && snapshot.EffectiveConfig.GlobalTokens.Any(candidate =>
                 Equals(candidate.Descriptor.ResourceKey, globalResourceKey));
             if (snapshot.EffectiveConfig.TryGetControl(globalDescriptor.Identity, out var globalConfig))
             {

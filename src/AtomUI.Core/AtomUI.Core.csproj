@@ -41,6 +41,7 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras"/>
+        <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>

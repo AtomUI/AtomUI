@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+using AtomUI.Theme.Resources;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using Avalonia;
@@ -22,30 +23,38 @@ public abstract class InfoPickerInput : TemplatedControl,
                                         IInputControlStatusAware,
                                         IInputControlStyleVariantAware,
                                         ICustomizableSizeTypeAware,
-                                        IFormItemFeedbackAware
+                                        IFormItemFeedbackAware,
+                                     IThemeInheritanceSource
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<bool> IsPickerOpenProperty =
+        AvaloniaProperty.Register<InfoPickerInput, bool>(nameof(IsPickerOpen), coerce: CoerceIsPickerOpen);
+
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Popup.IsPopupPinnedOpenProperty.AddOwner<InfoPickerInput>();
+
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<InfoPickerInput>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<InfoPickerInput>();
 
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AddOnDecoratedBox.RightAddOnProperty.AddOwner<InfoPickerInput>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<InfoPickerInput>();
-    
+
     public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
         AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<InfoPickerInput>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentLeftAddOnTemplateProperty =
         AddOnDecoratedBox.ContentLeftAddOnTemplateProperty.AddOwner<InfoPickerInput>();
 
     public static readonly StyledProperty<object?> ContentRightAddOnProperty =
         AddOnDecoratedBox.ContentRightAddOnProperty.AddOwner<InfoPickerInput>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<InfoPickerInput>();
 
@@ -60,7 +69,7 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(PlaceholderText));
-    
+
     public static readonly StyledProperty<PathIcon?> InfoIconProperty =
         AvaloniaProperty.Register<InfoPickerInput, PathIcon?>(nameof(InfoIcon));
 
@@ -83,16 +92,28 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<InfoPickerInput>();
-    
+
     public static readonly StyledProperty<Control?> PickerPresenterProperty =
         AvaloniaProperty.Register<InfoPickerInput, Control?>(nameof(PickerPresenter));
-    
+
+    public bool IsPickerOpen
+    {
+        get => GetValue(IsPickerOpenProperty);
+        set => SetValue(IsPickerOpenProperty, value);
+    }
+
+    public bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
+
     public object? LeftAddOn
     {
         get => GetValue(LeftAddOnProperty);
         set => SetValue(LeftAddOnProperty, value);
     }
-    
+
     public IDataTemplate? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
@@ -104,19 +125,19 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(RightAddOnProperty);
         set => SetValue(RightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
-    
+
     public object? ContentLeftAddOn
     {
         get => GetValue(ContentLeftAddOnProperty);
         set => SetValue(ContentLeftAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentLeftAddOnTemplate
     {
         get => GetValue(ContentLeftAddOnTemplateProperty);
@@ -128,7 +149,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(ContentRightAddOnProperty);
         set => SetValue(ContentRightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentRightAddOnTemplate
     {
         get => GetValue(ContentRightAddOnTemplateProperty);
@@ -158,7 +179,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(PlaceholderTextProperty);
         set => SetValue(PlaceholderTextProperty, value);
     }
-    
+
     public PathIcon? InfoIcon
     {
         get => GetValue(InfoIconProperty);
@@ -206,47 +227,46 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(PickerPresenterProperty);
         set => SetValue(PickerPresenterProperty, value);
     }
+
+
+
+
     #endregion
 
     #region 内部属性定义
 
     internal static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(Text));
-    
+
     internal static readonly DirectProperty<InfoPickerInput, double> PreferredInputWidthProperty =
         AvaloniaProperty.RegisterDirect<InfoPickerInput, double>(nameof(PreferredInputWidth),
             o => o.PreferredInputWidth,
             (o, v) => o.PreferredInputWidth = v);
-    
+
     internal static readonly DirectProperty<InfoPickerInput, bool> IsClearButtonVisibleProperty =
         AvaloniaProperty.RegisterDirect<InfoPickerInput, bool>(nameof(IsClearButtonVisible),
             o => o.IsClearButtonVisible,
             (o, v) => o.IsClearButtonVisible = v);
-    
-    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty =
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<InfoPickerInput>();
-    
-    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty =
         CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<InfoPickerInput>();
-    
-    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<InfoPickerInput>();
 
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<InfoPickerInput>();
-    
+
     internal static readonly StyledProperty<IFormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<InfoPickerInput, IFormValidateFeedback?>(nameof (FormFeedback));
-    
+
     internal static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<InfoPickerInput, bool>(nameof(ShouldUseOverlayPopup), true);
 
-    public static readonly StyledProperty<bool> IsPickerOpenProperty =
-        AvaloniaProperty.Register<InfoPickerInput, bool>(nameof(IsPickerOpen), coerce: CoerceIsPickerOpen);
 
-    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        Popup.IsPopupPinnedOpenProperty.AddOwner<InfoPickerInput>();
-    
     internal static readonly DirectProperty<InfoPickerInput, bool> IsArrowVisibleEffectiveProperty =
         AvaloniaProperty.RegisterDirect<InfoPickerInput, bool>(nameof(IsArrowVisibleEffective),
             o => o.IsArrowVisibleEffective,
@@ -257,17 +277,17 @@ public abstract class InfoPickerInput : TemplatedControl,
             nameof(EffectiveStatus),
             o => o.EffectiveStatus,
             (o, v) => o.EffectiveStatus = v);
-    
+
     internal static readonly DirectProperty<InfoPickerInput, bool> IsPopupHorizontalFlippedProperty =
         AvaloniaProperty.RegisterDirect<InfoPickerInput, bool>(nameof(IsPopupHorizontalFlipped),
             o => o.IsPopupHorizontalFlipped,
             (o, v) => o.IsPopupHorizontalFlipped = v);
-    
+
     internal static readonly DirectProperty<InfoPickerInput, bool> IsPopupVerticalFlippedProperty =
         AvaloniaProperty.RegisterDirect<InfoPickerInput, bool>(nameof(IsPopupVerticalFlipped),
             o => o.IsPopupVerticalFlipped,
             (o, v) => o.IsPopupVerticalFlipped = v);
-    
+
     internal static readonly StyledProperty<ArrowPosition> ArrowPositionProperty =
         ArrowDecoratedBox.ArrowPositionProperty.AddOwner<InfoPickerInput>();
 
@@ -298,13 +318,13 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(CompactSpaceItemPositionProperty);
         set => SetValue(CompactSpaceItemPositionProperty, value);
     }
-    
+
     internal Orientation CompactSpaceOrientation
     {
         get => GetValue(CompactSpaceOrientationProperty);
         set => SetValue(CompactSpaceOrientationProperty, value);
     }
-    
+
     internal bool IsUsedInCompactSpace
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
@@ -316,31 +336,20 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => GetValue(FormStatusProperty);
         private set => SetCurrentValue(FormStatusProperty, value);
     }
-    
+
     internal IFormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
         set => SetValue(FormFeedbackProperty, value);
     }
-    
+
     internal bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
-    public bool IsPickerOpen
-    {
-        get => GetValue(IsPickerOpenProperty);
-        set => SetValue(IsPickerOpenProperty, value);
-    }
 
-    public bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
-    }
-    
     private bool _isArrowVisibleEffective;
 
     internal bool IsArrowVisibleEffective
@@ -364,7 +373,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => _isPopupHorizontalFlipped;
         private set => SetAndRaise(IsPopupHorizontalFlippedProperty, ref _isPopupHorizontalFlipped, value);
     }
-    
+
     private bool _isPopupVerticalFlipped;
 
     internal bool IsPopupVerticalFlipped
@@ -372,7 +381,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         get => _isPopupVerticalFlipped;
         private set => SetAndRaise(IsPopupVerticalFlippedProperty, ref _isPopupVerticalFlipped, value);
     }
-    
+
     internal ArrowPosition ArrowPosition
     {
         get => GetValue(ArrowPositionProperty);
@@ -395,7 +404,8 @@ public abstract class InfoPickerInput : TemplatedControl,
     private IDisposable? _popupPinnedOpenBinding;
     private int _popupLifecycleCloseDepth;
     private Control? _ownedPickerPresenter;
-    
+
+    private EventHandler? _formValueChanged;
 
     static InfoPickerInput()
     {
@@ -417,42 +427,11 @@ public abstract class InfoPickerInput : TemplatedControl,
         SetPickerOpenIfChanged(false);
     }
 
-    private void HandleIsPickerOpenChanged(AvaloniaPropertyChangedEventArgs args)
-    {
-        var isOpen = args.NewValue is true;
-        if (isOpen)
-        {
-            EnsurePickerPresenter();
-            CurrentValidSelected = false;
-            NotifyFlyoutAboutToShow();
-            NotifyPickerOpened();
-        }
-        else
-        {
-            NotifyFlyoutAboutToClose(CurrentValidSelected);
-            NotifyPickerClosed();
-        }
-        UpdatePseudoClasses();
-        ApplyPopupOpenState(isOpen);
-    }
-
-    private void HandleFlyoutAboutToShow(object? sender, EventArgs args)
-    {
-    }
-
     protected virtual void NotifyFlyoutAboutToShow()
     {
     }
 
-    private void HandleFlyoutAboutToClose(object? sender, EventArgs args)
-    {
-    }
-
     protected virtual void NotifyFlyoutAboutToClose(bool selectedIsValid)
-    {
-    }
-
-    private void HandleFlyoutOpened(object? sender, EventArgs args)
     {
     }
 
@@ -462,10 +441,6 @@ public abstract class InfoPickerInput : TemplatedControl,
     }
 
     protected virtual void NotifyFlyoutOpened()
-    {
-    }
-
-    private void HandleFlyoutClosed(object? sender, EventArgs args)
     {
     }
 
@@ -546,11 +521,8 @@ public abstract class InfoPickerInput : TemplatedControl,
             ApplyPopupOpenState(true);
         }
     }
-    
-    private void HandleDecoratedBoxTemplateApplied(object? sender, TemplateAppliedEventArgs args)
-    {
-        PickerInnerBox = DecoratedBox!.ContentFrame;
-    }
+
+
 
     protected override void OnPointerReleased(PointerReleasedEventArgs args)
     {
@@ -574,7 +546,7 @@ public abstract class InfoPickerInput : TemplatedControl,
             }
         }
     }
-    
+
     protected bool ClickInClearUpButtonWithClearMode(PointerReleasedEventArgs args)
     {
         if (PickerClearUpButton != null)
@@ -583,64 +555,6 @@ public abstract class InfoPickerInput : TemplatedControl,
             return sourceControl.FindLogicalAncestorOfType<InputClearIconButton>() is not null;
         }
         return false;
-    }
-
-    private bool IsPointerInInfoInputBox(Point position)
-    {
-        if (PickerInnerBox is not null)
-        {
-            var pos = PickerInnerBox.TranslatePoint(new Point(0, 0), this);
-            if (!pos.HasValue)
-            {
-                return false;
-            }
-        
-            var targetWidth  = PickerInnerBox.Bounds.Width;
-            var targetHeight = PickerInnerBox.Bounds.Height;
-            var startOffsetX = pos.Value.X;
-            var endOffsetX   = startOffsetX + targetWidth;
-            var offsetY      = pos.Value.Y;
-            if (ContentLeftAddOn is Control leftContent)
-            {
-                var leftContentPos = leftContent.TranslatePoint(new Point(0, 0), this);
-                if (leftContentPos.HasValue)
-                {
-                    startOffsetX = leftContentPos.Value.X + leftContent.Bounds.Width;
-                }
-            }
-            
-            targetWidth = endOffsetX - startOffsetX;
-            var bounds = new Rect(new Point(startOffsetX, offsetY), new Size(targetWidth, targetHeight));
-            return bounds.Contains(position);
-        }
-    
-        return false;
-    }
-
-    private void SetupContentRightAddOnBindings(TemplateAppliedEventArgs e)
-    {
-        _contentRightAddOnBindings?.Dispose();
-        _contentRightAddOnBindings = new CompositeDisposable();
-
-        if (PickerClearUpButton is { } clearUpButton)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, IsClearButtonVisibleProperty, clearUpButton,
-                PickerClearUpButton.IsInClearModeProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                PickerClearUpButton.IconProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, FormFeedbackProperty, clearUpButton,
-                PickerClearUpButton.FormFeedbackProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                Visual.IsVisibleProperty, value => value is not null));
-        }
-
-        if (e.NameScope.Find<ContentPresenter>("PART_ContentRightAddOnPresenter") is { } contentPresenter)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnProperty, contentPresenter,
-                ContentPresenter.ContentProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnTemplateProperty,
-                contentPresenter, ContentPresenter.ContentTemplateProperty));
-        }
     }
 
     protected virtual void ConfigureIsClearButtonVisible()
@@ -676,40 +590,6 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     protected virtual void NotifyFlyoutPresenterCleared(Control flyoutPresenter)
     {
-    }
-
-    private void EnsurePickerPresenter()
-    {
-        if (PickerPresenter is not null)
-        {
-            return;
-        }
-
-        var pickerPresenter = CreatePickerPresenter();
-        _ownedPickerPresenter = pickerPresenter;
-        SetCurrentValue(PickerPresenterProperty, pickerPresenter);
-        NotifyPickerPresenterCreated(pickerPresenter);
-    }
-
-    private void ClearOwnedPickerPresenter()
-    {
-        var pickerPresenter = _ownedPickerPresenter;
-        if (pickerPresenter is null)
-        {
-            return;
-        }
-
-        if (IsPickerOpen)
-        {
-            SetPickerOpenIfChanged(false);
-        }
-
-        NotifyPickerPresenterCleared(pickerPresenter);
-        if (ReferenceEquals(PickerPresenter, pickerPresenter))
-        {
-            SetCurrentValue(PickerPresenterProperty, null);
-        }
-        _ownedPickerPresenter = null;
     }
 
     protected virtual void SetupPopupProperties()
@@ -761,24 +641,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
     }
 
-    private void HandleWindowDeactivated(object? sender, EventArgs e)
-    {
-        SetPickerOpenIfChanged(false);
-    }
-
-    private void HandleDecoratedBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
-    {
-        if (args.Property == AddOnDecoratedBox.IsInnerBoxHoverProperty)
-        {
-            ConfigureIsClearButtonVisible();
-        }
-    }
-
-    private void HandleClearRequest(object? sender, EventArgs args)
-    {
-        NotifyClearButtonClicked();
-    }
-
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ClosePickerForLifecycle();
@@ -801,73 +663,18 @@ public abstract class InfoPickerInput : TemplatedControl,
         ClearOwnedPickerPresenter();
     }
 
-    private void ClosePickerForLifecycle()
-    {
-        try
-        {
-            ++_popupLifecycleCloseDepth;
-            PickerPopup?.CloseForLifecycle();
-            SetPickerOpenIfChanged(false);
-        }
-        finally
-        {
-            --_popupLifecycleCloseDepth;
-        }
-    }
-
     protected virtual bool ShowClearButtonPredicate()
     {
         return false;
     }
-    
-    private static PlacementMode CoercePickerPlacement(object o, PlacementMode value)
-    {
-        if (value == PlacementMode.Pointer ||
-            value == PlacementMode.Custom ||
-            value == PlacementMode.AnchorAndGravity ||
-            value == PlacementMode.Center) 
-        {
-            return PlacementMode.BottomEdgeAlignedLeft;
-        }
 
-        return value;
-    }
 
-    private static bool CoerceIsPickerOpen(AvaloniaObject sender, bool value)
-    {
-        return !value &&
-               sender is InfoPickerInput { IsPopupPinnedOpen: true, _popupLifecycleCloseDepth: 0 }
-            ? true
-            : value;
-    }
-    
-    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
-    {
-        var isUsedInCompactSpace = position != null;
-        if (IsUsedInCompactSpace != isUsedInCompactSpace)
-        {
-            IsUsedInCompactSpace = isUsedInCompactSpace;
-        }
 
-        if (CompactSpaceItemPosition != position)
-        {
-            CompactSpaceItemPosition = position;
-        }
-    }
-    
-    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
-    {
-        if (CompactSpaceOrientation != orientation)
-        {
-            CompactSpaceOrientation = orientation;
-        }
-    }
 
-    double ICompactSpaceAware.GetBorderThickness()
-    {
-        return GetBorderThicknessForCompactSpace();
-    }
-    
+
+
+
+
     protected virtual double GetBorderThicknessForCompactSpace()
     {
         if (!IsUsedInCompactSpace)
@@ -883,7 +690,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         // 都一样宽
         return _addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -934,6 +741,307 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
     }
 
+
+
+
+
+
+
+
+
+    protected void ConfigureShowArrowEffective()
+    {
+        var isArrowVisibleEffective = IsArrowVisible && PopupUtils.CanEnabledArrow(PickerPlacement);
+        if (IsArrowVisibleEffective != isArrowVisibleEffective)
+        {
+            SetCurrentValue(IsArrowVisibleEffectiveProperty, isArrowVisibleEffective);
+        }
+    }
+
+    protected void ConfigureArrowPosition()
+    {
+        var arrowPosition = PopupUtils.CalculateArrowPosition(PickerPlacement, null, null);
+        if (arrowPosition.HasValue)
+        {
+            arrowPosition = ArrowPositionUtils.FlipArrowPosition(arrowPosition.Value, IsPopupHorizontalFlipped, IsPopupVerticalFlipped);
+            if (ArrowPosition != arrowPosition)
+            {
+                SetCurrentValue(ArrowPositionProperty, arrowPosition);
+            }
+        }
+    }
+
+    #region 实现 ICompactSpaceAware 接口
+
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        var isUsedInCompactSpace = position != null;
+        if (IsUsedInCompactSpace != isUsedInCompactSpace)
+        {
+            IsUsedInCompactSpace = isUsedInCompactSpace;
+        }
+
+        if (CompactSpaceItemPosition != position)
+        {
+            CompactSpaceItemPosition = position;
+        }
+    }
+
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        if (CompactSpaceOrientation != orientation)
+        {
+            CompactSpaceOrientation = orientation;
+        }
+    }
+
+    double ICompactSpaceAware.GetBorderThickness()
+    {
+        return GetBorderThicknessForCompactSpace();
+    }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 FormItem 接口
+
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
+
+    protected virtual void NotifyFormValueChanged(object? value)
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return null;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (FormStatus != status)
+        {
+            SetCurrentValue(FormStatusProperty, status);
+        }
+    }
+
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        if (!ReferenceEquals(FormFeedback, value))
+        {
+            FormFeedback = value;
+        }
+    }
+    #endregion
+    private void HandleIsPickerOpenChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        var isOpen = args.NewValue is true;
+        if (isOpen)
+        {
+            EnsurePickerPresenter();
+            CurrentValidSelected = false;
+            NotifyFlyoutAboutToShow();
+            NotifyPickerOpened();
+        }
+        else
+        {
+            NotifyFlyoutAboutToClose(CurrentValidSelected);
+            NotifyPickerClosed();
+        }
+        UpdatePseudoClasses();
+        ApplyPopupOpenState(isOpen);
+    }
+
+    private void HandleFlyoutAboutToShow(object? sender, EventArgs args)
+    {
+    }
+
+    private void HandleFlyoutAboutToClose(object? sender, EventArgs args)
+    {
+    }
+
+    private void HandleFlyoutOpened(object? sender, EventArgs args)
+    {
+    }
+
+    private void HandleFlyoutClosed(object? sender, EventArgs args)
+    {
+    }
+
+    private void HandleDecoratedBoxTemplateApplied(object? sender, TemplateAppliedEventArgs args)
+    {
+        PickerInnerBox = DecoratedBox!.ContentFrame;
+    }
+
+    private bool IsPointerInInfoInputBox(Point position)
+    {
+        if (PickerInnerBox is not null)
+        {
+            var pos = PickerInnerBox.TranslatePoint(new Point(0, 0), this);
+            if (!pos.HasValue)
+            {
+                return false;
+            }
+
+            var targetWidth  = PickerInnerBox.Bounds.Width;
+            var targetHeight = PickerInnerBox.Bounds.Height;
+            var startOffsetX = pos.Value.X;
+            var endOffsetX   = startOffsetX + targetWidth;
+            var offsetY      = pos.Value.Y;
+            if (ContentLeftAddOn is Control leftContent)
+            {
+                var leftContentPos = leftContent.TranslatePoint(new Point(0, 0), this);
+                if (leftContentPos.HasValue)
+                {
+                    startOffsetX = leftContentPos.Value.X + leftContent.Bounds.Width;
+                }
+            }
+
+            targetWidth = endOffsetX - startOffsetX;
+            var bounds = new Rect(new Point(startOffsetX, offsetY), new Size(targetWidth, targetHeight));
+            return bounds.Contains(position);
+        }
+
+        return false;
+    }
+
+    private void SetupContentRightAddOnBindings(TemplateAppliedEventArgs e)
+    {
+        _contentRightAddOnBindings?.Dispose();
+        _contentRightAddOnBindings = new CompositeDisposable();
+
+        if (PickerClearUpButton is { } clearUpButton)
+        {
+            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, IsClearButtonVisibleProperty, clearUpButton,
+                PickerClearUpButton.IsInClearModeProperty));
+            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
+                PickerClearUpButton.IconProperty));
+            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, FormFeedbackProperty, clearUpButton,
+                PickerClearUpButton.FormFeedbackProperty));
+            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
+                Visual.IsVisibleProperty, value => value is not null));
+        }
+
+        if (e.NameScope.Find<ContentPresenter>("PART_ContentRightAddOnPresenter") is { } contentPresenter)
+        {
+            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnProperty, contentPresenter,
+                ContentPresenter.ContentProperty));
+            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnTemplateProperty,
+                contentPresenter, ContentPresenter.ContentTemplateProperty));
+        }
+    }
+
+    private void EnsurePickerPresenter()
+    {
+        if (PickerPresenter is not null)
+        {
+            return;
+        }
+
+        var pickerPresenter = CreatePickerPresenter();
+        _ownedPickerPresenter = pickerPresenter;
+        SetCurrentValue(PickerPresenterProperty, pickerPresenter);
+        NotifyPickerPresenterCreated(pickerPresenter);
+    }
+
+    private void ClearOwnedPickerPresenter()
+    {
+        var pickerPresenter = _ownedPickerPresenter;
+        if (pickerPresenter is null)
+        {
+            return;
+        }
+
+        if (IsPickerOpen)
+        {
+            SetPickerOpenIfChanged(false);
+        }
+
+        NotifyPickerPresenterCleared(pickerPresenter);
+        if (ReferenceEquals(PickerPresenter, pickerPresenter))
+        {
+            SetCurrentValue(PickerPresenterProperty, null);
+        }
+        _ownedPickerPresenter = null;
+    }
+
+    private void HandleWindowDeactivated(object? sender, EventArgs e)
+    {
+        SetPickerOpenIfChanged(false);
+    }
+
+    private void HandleDecoratedBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property == AddOnDecoratedBox.IsInnerBoxHoverProperty)
+        {
+            ConfigureIsClearButtonVisible();
+        }
+    }
+
+    private void HandleClearRequest(object? sender, EventArgs args)
+    {
+        NotifyClearButtonClicked();
+    }
+
+    private void ClosePickerForLifecycle()
+    {
+        try
+        {
+            ++_popupLifecycleCloseDepth;
+            PickerPopup?.CloseForLifecycle();
+            SetPickerOpenIfChanged(false);
+        }
+        finally
+        {
+            --_popupLifecycleCloseDepth;
+        }
+    }
+
+    private static PlacementMode CoercePickerPlacement(object o, PlacementMode value)
+    {
+        if (value == PlacementMode.Pointer ||
+            value == PlacementMode.Custom ||
+            value == PlacementMode.AnchorAndGravity ||
+            value == PlacementMode.Center)
+        {
+            return PlacementMode.BottomEdgeAlignedLeft;
+        }
+
+        return value;
+    }
+
+    private static bool CoerceIsPickerOpen(AvaloniaObject sender, bool value)
+    {
+        return !value &&
+               sender is InfoPickerInput { IsPopupPinnedOpen: true, _popupLifecycleCloseDepth: 0 }
+            ? true
+            : value;
+    }
 
     private void ApplyPopupOpenState(bool isOpen)
     {
@@ -990,77 +1098,6 @@ public abstract class InfoPickerInput : TemplatedControl,
             EffectiveStatus = effectiveStatus;
         }
     }
-    
-    protected void ConfigureShowArrowEffective()
-    {
-        var isArrowVisibleEffective = IsArrowVisible && PopupUtils.CanEnabledArrow(PickerPlacement);
-        if (IsArrowVisibleEffective != isArrowVisibleEffective)
-        {
-            SetCurrentValue(IsArrowVisibleEffectiveProperty, isArrowVisibleEffective);
-        }
-    }
 
-    protected void ConfigureArrowPosition()
-    {
-        var arrowPosition = PopupUtils.CalculateArrowPosition(PickerPlacement, null, null);
-        if (arrowPosition.HasValue)
-        {
-            arrowPosition = ArrowPositionUtils.FlipArrowPosition(arrowPosition.Value, IsPopupHorizontalFlipped, IsPopupVerticalFlipped);
-            if (ArrowPosition != arrowPosition)
-            {
-                SetCurrentValue(ArrowPositionProperty, arrowPosition);
-            }
-        }
-    }
-    
-    #region 实现 FormItem 接口
-    
-    private EventHandler? _formValueChanged;
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
 
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
-
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
-    
-    protected virtual void NotifyFormValueChanged(object? value)
-    {
-        _formValueChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void NotifySetFormValue(object? value)
-    {
-    }
-
-    protected virtual object? NotifyGetFormValue()
-    {
-        return null;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (FormStatus != status)
-        {
-            SetCurrentValue(FormStatusProperty, status);
-        }
-    }
-    
-    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
-    {
-        if (!ReferenceEquals(FormFeedback, value))
-        {
-            FormFeedback = value;
-        }
-    }
-    #endregion
 }

@@ -5,6 +5,20 @@
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter"/>
     <ControlTheme x:Key="{x:Type atom:TimeViewCell}" TargetType="atom:TimeViewCell">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:TimeViewCellTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:TimeViewCellTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:TimeViewCellTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:TimeViewCellTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <ContentPresenter Name="ContentPresenter"
@@ -22,36 +36,81 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Margin" Value="4,0" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:TimeViewCellTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
-        <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
+        <!-- Preserve the legacy ListView role until this public Cell has its own
+             explicit Global color. A shared Global value must not bypass an
+             existing ListView Own or control-Global override. -->
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <atom:ListViewTokenResource Kind="ItemColor" />
+                <atom:OwnerTokenResource Kind="ColorTextSecondary" WhenControlExplicit="True" />
+                <atom:TimeViewCellTokenResource Kind="ColorTextSecondary" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Background">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <atom:ListViewTokenResource Kind="ItemBgColor" />
+                <atom:OwnerTokenResource Kind="ColorTransparent" WhenControlExplicit="True" />
+                <atom:TimeViewCellTokenResource Kind="ColorTransparent" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="MinHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
         <Setter Property="Padding" Value="{atom:TimePickerTokenResource ItemPadding}" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemHoverColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
+            <Setter Property="Foreground">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                    <atom:ListViewTokenResource Kind="ItemHoverColor" />
+                    <atom:OwnerTokenResource Kind="ColorTextSecondary" WhenControlExplicit="True" />
+                    <atom:TimeViewCellTokenResource Kind="ColorTextSecondary" />
+                </MultiBinding>
+            </Setter>
+            <Setter Property="Background">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                    <atom:ListViewTokenResource Kind="ItemHoverBgColor" />
+                    <atom:OwnerTokenResource Kind="ColorBgTextHover" WhenControlExplicit="True" />
+                    <atom:TimeViewCellTokenResource Kind="ColorBgTextHover" />
+                </MultiBinding>
+            </Setter>
         </Style>
         
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
+            <Setter Property="Foreground">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                    <atom:ListViewTokenResource Kind="ItemSelectedColor" />
+                    <atom:OwnerTokenResource Kind="ColorText" WhenControlExplicit="True" />
+                    <atom:TimeViewCellTokenResource Kind="ColorText" />
+                </MultiBinding>
+            </Setter>
+            <Setter Property="Background">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                    <atom:ListViewTokenResource Kind="ItemSelectedBgColor" />
+                    <atom:OwnerTokenResource Kind="ControlItemBgActive" WhenControlExplicit="True" />
+                    <atom:TimeViewCellTokenResource Kind="ControlItemBgActive" />
+                </MultiBinding>
+            </Setter>
         </Style>
         
-        <Style Selector="^:disabled">
-            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
-            </Style>
+        <!-- Apply to the owner so local properties and dedicated Semantic styles
+             retain priority. Inactive means no disabled Setter at all: a
+             fallback Setter would still change native style precedence. -->
+        <Setter Property="IsDisabledColorExplicit">
+            <MultiBinding Converter="{x:Static atom:TimeViewCellThemeBindings.HasBrush}">
+                <atom:OwnerTokenResource Kind="ColorTextDisabled" WhenControlExplicit="True" />
+            </MultiBinding>
+        </Setter>
+        <Style Selector="^[IsDisabledColorExplicit=True]:disabled">
+            <Setter Property="Foreground" Value="{atom:TimeViewCellTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
+                <atom:TokenTransitions>
                     <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

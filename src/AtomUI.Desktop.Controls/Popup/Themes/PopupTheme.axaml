@@ -6,7 +6,7 @@
     <ControlTheme x:Key="{x:Type atom:Popup}" TargetType="atom:Popup">
         <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
         <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="MotionDuration" Value="{atom:PopupTokenResource MotionDurationMid}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:PopupTokenResource EnableMotion}" />
     </ControlTheme>
 </ResourceDictionary>

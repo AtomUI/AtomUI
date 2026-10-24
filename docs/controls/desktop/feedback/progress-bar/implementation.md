@@ -21,7 +21,8 @@ ProgressBar 的实现基于 Avalonia `RangeBase`。AtomUI 负责把 `Minimum`、
 - `AbstractGeneralStepsProgressBar.cs`：线形步骤进度的 chunk 尺寸、步骤视觉同步和百分比文本布局。
 - `StepsProgressPanel.cs`：步骤 runtime Rectangle 的数量同步、Brush 投影、track/indicator 布局和 owner 订阅生命周期。
 - `AbstractCircleProgress.cs`：圆形尺寸、圆形文本和状态图标布局、圆形 thickness 计算。
-- `CircleProgressPanel.cs`：圆形与仪表盘 Path viewport 的统一 Measure/Arrange owner。
+- `CircleProgressPanel.cs`：圆形与仪表盘 Path viewport 及信息区域的统一 Measure/Arrange owner。
+- `CircleProgressIndicatorPanel.cs`：圆形信息内容的测量及居中，保留实际 Panel 语义目标。
 - `AbstractGeneralCircleProgress.cs`：圆形 rail/track/success 的连续或分段 Geometry。
 - `AbstractGeneralDashboardProgress.cs`：仪表盘缺口角度和 rail/track/success Geometry。
 
@@ -52,7 +53,7 @@ owner 不直接对子节点调用 `Measure` 或 `Arrange`。
 `ArrangeOverride` 中再次排列 indicator。Steps 百分比始终位于轨道外部，标签直接继承 owner 的 `Foreground`；
 只有支持内嵌百分比的普通 line 使用 `PercentageLabelColor` 做背景可读性计算。
 
-`AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并设置圆形内部文本 / 图标大小。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - StrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
+`AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并计算圆形内部文本 / 图标的有效尺寸。运行期计算结果通过内部只读属性暴露：ControlTheme 用编译绑定设置默认 FontSize，图标由模板 Style 的 TemplateBinding 设置宽高；调用方本地 FontSize 与专用 Indicator Style 保持各自优先级，尺寸计算不再写入这些本地值。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - StrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
 
 `AbstractGeneralCircleProgress` 和 `AbstractGeneralDashboardProgress` 负责圆弧 Geometry。它们把进度比例转换为角度，并根据 `StepCount` / `StepGap` 决定连续 PathGeometry 或组合分段 Geometry，再投影到静态 Shape。
 
@@ -119,7 +120,7 @@ IsCompleted + pseudo classes
 - 为线形状态图标设置默认 `CloseCircleFilled` 和 `CheckCircleFilled`。
 
 `AbstractCircleProgress.OnApplyTemplate` 获取 rail/track/success Path，刷新 Geometry，并为圆形状态图标设置默认
-`CloseOutlined` 和 `CheckOutlined`。
+`CloseOutlined` 和 `CheckOutlined`。圆形 Success／Exception 仅显示对应状态图标，Normal／Active 显示百分比并在完成后切换成功图标；Exception 完成后仍使用错误色，禁用色优先。
 
 圆形主题采用 concrete leaf Template ownership：`AbstractCircleProgressTheme` 只维护共享 Token 和按 `PART_*` Name 命中的
 Shape/Icon selector；`CircleProgressTheme` 与 `DashboardProgressTheme` 各自声明完整 `ControlTemplate` 和静态 Semantic marker。
@@ -182,7 +183,7 @@ track 仍按 `StrokeLineCap` 阈值隐藏，避免显示不可见的小块。
 外部百分比模式会为 label 或状态图标预留起点、中间或终点空间。内嵌模式会先计算当前 indicator rect，再把文本放在已完成进度区域内。垂直内嵌模式会交换文本尺寸，并通过主题旋转文本。
 
 line 和 steps 的 indicator Panel 分别由 `LineProgressPanel` 和 `StepsProgressPanel` 直接排列到 `GetExtraInfoRect`；circle 和 dashboard 的 indicator Panel 使用 owner 宽度并按当前
-文本或状态图标高度垂直居中。Panel 的 Bounds 表达可见信息区域，不承担整个 owner 的坐标容器职责。
+内容 DesiredSize 的高度垂直居中。内部 CircleProgressIndicatorPanel 负责测量可见文本／图标并居中排列，状态切换不依赖 Canvas 缓存的本地宽高或旧坐标；旧 Canvas 自定义模板仍保留原兼容路径。Panel 的 Bounds 表达可见信息区域，不承担整个 owner 的坐标容器职责。
 
 普通 line 的模板 indicator 先按当前 LayoutScaling 对信息尺寸执行与实际子节点一致的向上取整，再计算末端锚点，避免取整后的文字区越过 owner。兼容自绘路径保留原逻辑度量。
 
@@ -238,6 +239,9 @@ ProgressBar 不依赖运行时反射、字符串 binding、动态类型扫描或
 资源边界：
 
 - 默认颜色来自 `ProgressBarToken` 和 SharedToken。
+- ProgressBarToken 使用 DependencyDefaultsV2／revision 1 默认依赖计划，保留13字段的名称、类型、slot、resource key和默认值；四个公开Control identity继续共用原ProgressBar Own scope。
+- Circle／Dashboard普通前景仅在CircleTextColor明确Own配置时覆盖，否则回退原ColorTextLabel；有效disabled及调用方本地Foreground保留原生优先级。
+- 普通Round line的rail／track／success仅在LineBorderRadius明确Own配置时应用其值（含零），否则模板converter保留原1000胶囊值；schema默认100及Flat／Steps行为不变，专用Part Style仍可覆盖。
 - `TrailColor` 会写入 `GrooveBrush` local value；清空后恢复主题资源。
 - 状态图标由 `IconPresenter` 承载，默认图标在模板应用后以 template priority 设置。
 

@@ -67,3 +67,9 @@ Progress的6份临时源、13份完成的辅助脚本／源备份及10轮586份�
 只读Linux容器、匿名编译产物卷和完成的运行helper在最终检查后清理。默认视觉修复均已有独立批准；Progress的限定7像素Headless合成重复采样差异仍待用户答复，不能填作验收通过。源码审查没有新增Critical／Important问题，不代替此视觉门槛。当前本包尚未获得Git提交授权，不自动提交或推送。
 
 最终工具检查显式指定Windows清单测试文件的iterate路径，fresh执行通过（iteration-passed，48.2秒，无scope扩大或复用旧receipt）；当前10份触及C#文件成员布局审计问题0，`git diff --check`通过。所有当前批准的默认修复与剩余7像素待决范围均在独立结果页明列。
+
+## 已批准执行及第四轮CI
+
+34文件快照SHA256 7b37ac68d59e07698ae7229137dd9a83fdb7f5d489ecf573200c53d03fa2506f获得用户明确批准，按既定方案创建fc9896fb6（纯成员布局）及e9bc9e707（其余修复与文档），提交后的全部34个blob逐一核对原快照一致，已推送既有feature/custom-theme。后续P1源码、测试App和Range失败临时测试均未混入。
+
+[第四轮验证Actions](https://github.com/AtomUI/AtomUI/actions/runs/40089581608)于2026-10-24T11:21:32Z启动，source=e9bc9e707，base=19eef870b9db62b1eb1c3b0897619ee8d466af46、full=false、all_platforms=true、browser=true。仅调用Verify affected changes，未运行NuGet或Gallery发布工作流。3选测／3原生NativeAOT／2Browser全部已启动，当前不报告成功；结果按实际完成状态补记。此次授权已执行，不延伸到后续P1提交。

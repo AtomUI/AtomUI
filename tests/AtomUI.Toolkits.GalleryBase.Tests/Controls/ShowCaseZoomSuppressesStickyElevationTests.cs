@@ -147,7 +147,7 @@ public class ShowCaseZoomSuppressesStickyElevationTests
     private static void PumpRendering(Avalonia.Controls.Window window)
     {
         Dispatcher.UIThread.RunJobs();
-        window.CaptureRenderedFrame();
+        using var frame = window.CaptureRenderedFrame();
         Dispatcher.UIThread.RunJobs();
     }
 

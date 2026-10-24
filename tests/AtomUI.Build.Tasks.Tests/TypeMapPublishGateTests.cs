@@ -1,11 +1,19 @@
+using System.Diagnostics;
 using AtomUI.Build.Tasks.Isolation;
 using Shouldly;
 using Xunit;
 
 namespace AtomUI.Build.Tasks.Tests;
 
-public class TypeMapPublishGateTests
+public class TypeMapPublishGateTests : IClassFixture<ManagedNativeCompilerFixture>
 {
+    private readonly ManagedNativeCompilerFixture _compilerFixture;
+
+    public TypeMapPublishGateTests(ManagedNativeCompilerFixture compilerFixture)
+    {
+        _compilerFixture = compilerFixture;
+    }
+
     [Fact]
     public void Incorrect_actual_linker_binary_is_rejected()
     {
@@ -32,17 +40,10 @@ public class TypeMapPublishGateTests
     [InlineData("not-a-version", "v10.0", false)]
     public void Desktop_native_compiler_matches_target_and_typemap_introduction_version(string reportedVersion, string targetVersion, bool accepted)
     {
-        if (OperatingSystem.IsWindows())
-        {
-            Assert.Skip("The fake compiler is a POSIX shell script.");
-            return;
-        }
         var directory = Directory.CreateTempSubdirectory("atomui-fake-ilc-");
         try
         {
-            var compiler = Path.Combine(directory.FullName, "ilc");
-            File.WriteAllText(compiler, "#!/bin/sh\necho '" + reportedVersion + "'\n");
-            File.SetUnixFileMode(compiler, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            var compiler = _compilerFixture.CreateCompiler(directory.FullName, reportedVersion);
 
             var result = TaskProcessHost.Execute(new TaskRequest
             {
@@ -104,5 +105,104 @@ public class TypeMapPublishGateTests
             accepted.Success.ShouldBeFalse();
             accepted.Diagnostics.ShouldContain(d => d.Code == "ATOMUIREG006" && d.Message.Contains("absolute"));
         }
+    }
+}
+
+// One native apphost per class keeps all six existing version cases executable on every OS.
+public sealed class ManagedNativeCompilerFixture : IDisposable
+{
+    private readonly DirectoryInfo _directory;
+    private readonly string _outputDirectory;
+
+    public ManagedNativeCompilerFixture()
+    {
+        _directory = Directory.CreateTempSubdirectory("atomui-test-native-compiler-");
+        _outputDirectory = Path.Combine(_directory.FullName, "output");
+        try
+        {
+            foreach (var name in new[] { "Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props" })
+            {
+                File.WriteAllText(Path.Combine(_directory.FullName, name), "<Project />");
+            }
+            File.WriteAllText(Path.Combine(_directory.FullName, "NuGet.Config"),
+                "<configuration><packageSources><clear /></packageSources></configuration>");
+            var project = Path.Combine(_directory.FullName, "ilc.csproj");
+            File.WriteAllText(project, """
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>net10.0</TargetFramework>
+                        <OutputType>Exe</OutputType>
+                        <UseAppHost>true</UseAppHost>
+                        <IsPackable>false</IsPackable>
+                    </PropertyGroup>
+                </Project>
+                """);
+            File.WriteAllText(Path.Combine(_directory.FullName, "Program.cs"), """
+                if (args.Length != 1 || args[0] != "--version")
+                {
+                    return 2;
+                }
+                System.Console.WriteLine(System.IO.File.ReadAllText(
+                    System.IO.Path.Combine(System.AppContext.BaseDirectory, "version.txt")));
+                return 0;
+                """);
+
+            var repository = new DirectoryInfo(AppContext.BaseDirectory);
+            while (!File.Exists(Path.Combine(repository.FullName, "AtomUI.slnx")))
+            {
+                repository = repository.Parent ?? throw new InvalidOperationException("Cannot locate the repository SDK configuration.");
+            }
+            using var build = Process.Start(new ProcessStartInfo("dotnet")
+            {
+                WorkingDirectory = repository.FullName,
+                ArgumentList =
+                {
+                    "build", project, "--output", _outputDirectory, "--nologo", "--verbosity", "quiet",
+                    "--disable-build-servers", "-p:NuGetAudit=false"
+                },
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }) ?? throw new InvalidOperationException("Cannot start the compiler fixture build.");
+            var output = build.StandardOutput.ReadToEndAsync();
+            var errors = build.StandardError.ReadToEndAsync();
+            if (!build.WaitForExit(60_000))
+            {
+                build.Kill(entireProcessTree: true);
+                build.WaitForExit();
+                throw new TimeoutException("Compiler fixture build exceeded 60 seconds.");
+            }
+            var buildOutput = output.GetAwaiter().GetResult();
+            var buildErrors = errors.GetAwaiter().GetResult();
+            if (build.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Compiler fixture build failed: {buildOutput} {buildErrors}");
+            }
+        }
+        catch
+        {
+            _directory.Delete(recursive: true);
+            throw;
+        }
+    }
+
+    public string CreateCompiler(string directory, string reportedVersion)
+    {
+        foreach (var file in Directory.EnumerateFiles(_outputDirectory))
+        {
+            var target = Path.Combine(directory, Path.GetFileName(file));
+            File.Copy(file, target);
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(target, File.GetUnixFileMode(file));
+            }
+        }
+        File.WriteAllText(Path.Combine(directory, "version.txt"), reportedVersion);
+        return Path.Combine(directory, OperatingSystem.IsWindows() ? "ilc.exe" : "ilc");
+    }
+
+    public void Dispose()
+    {
+        _directory.Delete(recursive: true);
     }
 }

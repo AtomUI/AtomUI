@@ -27,7 +27,7 @@
                           Stroke="{TemplateBinding SuccessStrokeBrush}"
                           StrokeThickness="{TemplateBinding StrokeThickness}"
                           StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}" />
-                    <Canvas Name="PART_ProgressIndicator"
+                    <atomc:CircleProgressIndicatorPanel Name="PART_ProgressIndicator"
                             Classes.semantic-indicator="True"
                             IsVisible="{TemplateBinding IsProgressInfoVisible}">
                         <LayoutTransformControl Name="PART_LayoutTransformControl">
@@ -52,7 +52,7 @@
                             Icon="{TemplateBinding SuccessCompletedIcon}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
-                    </Canvas>
+                    </atomc:CircleProgressIndicatorPanel>
                 </atomc:CircleProgressPanel>
             </ControlTemplate>
         </Setter>

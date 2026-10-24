@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ProgressBarToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ProgressBarToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -47,26 +47,55 @@ internal sealed class ProgressBarToken : AbstractControlDesignToken
     public double LineInfoIconSize { get; set; }
     public double LineInfoIconSizeSM { get; set; }
 
-    public ProgressBarToken()
+    [ControlTokenDefault(nameof(DefaultColor))]
+    private static Color DefaultForDefaultColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorInfo;
 
-    {
-    }
+    [ControlTokenDefault(nameof(RemainingColor))]
+    private static Color DefaultForRemainingColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillSecondary;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(CircleTextColor))]
+    private static Color DefaultForCircleTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
 
-        CircleTextColor  = EffectiveGlobalToken.ColorText;
-        DefaultColor     = EffectiveGlobalToken.ColorInfo;
-        RemainingColor   = EffectiveGlobalToken.ColorFillSecondary;
-        LineBorderRadius = new CornerRadius(100); // magic for capsule shape, should be a very large number
-        // 这两个要通过计算
-        CircleMinimumIconSize     = EffectiveGlobalToken.SizeXS;
-        CircleMinimumTextFontSize = EffectiveGlobalToken.FontSizeSM - 2;
-        LineInfoIconSize          = EffectiveGlobalToken.IconSize;
-        LineInfoIconSizeSM        = EffectiveGlobalToken.IconSizeSM;
-        LineExtraInfoMargin       = EffectiveGlobalToken.ControlPaddingHorizontalSM;
-        LineProgressPadding       = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
-    }
-    
+    [ControlTokenDefault(nameof(LineBorderRadius))]
+    private static CornerRadius DefaultForLineBorderRadius(in ControlTokenDefaultContext context) =>
+        new CornerRadius(100);
+
+    [ControlTokenDefault(nameof(CircleMinimumTextFontSize))]
+    private static double DefaultForCircleMinimumTextFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeSM - 2;
+
+    [ControlTokenDefault(nameof(CircleMinimumIconSize))]
+    private static double DefaultForCircleMinimumIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.SizeXS;
+
+    [ControlTokenDefault(nameof(ProgressStepMinWidth))]
+    private static double DefaultForProgressStepMinWidth(in ControlTokenDefaultContext context) =>
+        0;
+
+    [ControlTokenDefault(nameof(ProgressStepMarginInlineEnd))]
+    private static Thickness DefaultForProgressStepMarginInlineEnd(in ControlTokenDefaultContext context) =>
+        default;
+
+    [ControlTokenDefault(nameof(ProgressActiveMotionDuration))]
+    private static double DefaultForProgressActiveMotionDuration(in ControlTokenDefaultContext context) =>
+        0;
+
+    [ControlTokenDefault(nameof(LineExtraInfoMargin))]
+    private static double DefaultForLineExtraInfoMargin(in ControlTokenDefaultContext context) =>
+        context.Global.ControlPaddingHorizontalSM;
+
+    [ControlTokenDefault(nameof(LineProgressPadding))]
+    private static double DefaultForLineProgressPadding(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyPaddingXXS / 2;
+
+    [ControlTokenDefault(nameof(LineInfoIconSize))]
+    private static double DefaultForLineInfoIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.IconSize;
+
+    [ControlTokenDefault(nameof(LineInfoIconSizeSM))]
+    private static double DefaultForLineInfoIconSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.IconSizeSM;
 }

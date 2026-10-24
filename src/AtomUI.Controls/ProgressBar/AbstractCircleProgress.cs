@@ -14,12 +14,6 @@ namespace AtomUI.Controls.Commons;
 
 public abstract class AbstractCircleProgress : AbstractProgressBar
 {
-    // 默认的大小推荐，针对 SizeType
-    protected const double LARGE_CIRCLE_SIZE = 120;
-    protected const double MIDDLE_CIRCLE_SIZE = 90;
-    protected const double SMALL_CIRCLE_SIZE = 60;
-    protected const double CIRCLE_MIN_STROKE_THICKNESS = 3;
-
     #region 公共属性定义
 
     public static readonly StyledProperty<int> StepCountProperty =
@@ -88,6 +82,30 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     }
 
     #endregion
+
+    #region 内部协作 API
+
+    internal Rect GetCircleProgressPathRect(Size size)
+    {
+        var strokeThickness = double.IsFinite(StrokeThickness)
+            ? Math.Max(0, StrokeThickness)
+            : 0;
+        var width = Math.Floor(Math.Max(0, size.Width - strokeThickness));
+        var height = Math.Floor(Math.Max(0, size.Height - strokeThickness));
+        return new Rect(
+            (size.Width - width) / 2,
+            (size.Height - height) / 2,
+            width,
+            height);
+    }
+
+    #endregion
+
+    // 默认的大小推荐，针对 SizeType
+    protected const double LARGE_CIRCLE_SIZE = 120;
+    protected const double MIDDLE_CIRCLE_SIZE = 90;
+    protected const double SMALL_CIRCLE_SIZE = 60;
+    protected const double CIRCLE_MIN_STROKE_THICKNESS = 3;
 
     private ProgressPath? _progressRail;
     private ProgressPath? _progressTrack;
@@ -445,20 +463,6 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     private protected void RefreshTemplateProgressVisuals()
     {
         UpdateTemplateProgressVisuals(Bounds.Size);
-    }
-
-    internal Rect GetCircleProgressPathRect(Size size)
-    {
-        var strokeThickness = double.IsFinite(StrokeThickness)
-            ? Math.Max(0, StrokeThickness)
-            : 0;
-        var width = Math.Floor(Math.Max(0, size.Width - strokeThickness));
-        var height = Math.Floor(Math.Max(0, size.Height - strokeThickness));
-        return new Rect(
-            (size.Width - width) / 2,
-            (size.Height - height) / 2,
-            width,
-            height);
     }
 
     private void UpdateTemplateProgressVisuals(Size size)

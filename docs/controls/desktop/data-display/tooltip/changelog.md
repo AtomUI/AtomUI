@@ -1,5 +1,9 @@
 # Tooltip Changelog
 
+## 2026-10-24
+
+- OverflowTip 按文本实际可见矩形判断祖先裁剪，修复 presenter 宽于裁剪输入区域时漏掉提示；动态裁剪与变换会重新计算，卸载时释放祖先订阅。
+
 ## 2026-10-23
 
 - `arrow`语义部件的共享`ArrowIndicator`支持`TipRadius`，通过`ToolTipArrowStyle`声明尖角或圆角，默认保持1.5 DIP。

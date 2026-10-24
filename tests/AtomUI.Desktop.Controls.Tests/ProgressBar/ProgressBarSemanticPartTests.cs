@@ -613,6 +613,23 @@ public class ProgressBarSemanticPartTests
             AssertLineVisualBounds(horizontalWithoutIndicator);
             AssertLineVisualBounds(vertical);
             AssertLineVisualBounds(verticalInner);
+
+            foreach (var fontSize in new[] { 17.3, 21.25, 14.0 })
+            {
+                horizontal.FontSize = fontSize;
+                horizontalInner.FontSize = fontSize;
+                Dispatcher.UIThread.RunJobs();
+                AssertLineVisualBounds(horizontal);
+                AssertLineVisualBounds(horizontalInner);
+                foreach (var owner in new[] { horizontal, horizontalInner })
+                {
+                    var indicator = FindSemanticControls<Panel>(owner, IndicatorClass).ShouldHaveSingleItem();
+                    var label = owner.GetVisualDescendants().OfType<Label>()
+                                     .Single(control => control.Name == "PART_PercentageLabel");
+                    label.Bounds.Width.ShouldBeLessThanOrEqualTo(indicator.Bounds.Width);
+                    label.Bounds.Height.ShouldBeLessThanOrEqualTo(indicator.Bounds.Height);
+                }
+            }
         }
         finally
         {

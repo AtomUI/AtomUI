@@ -43,7 +43,7 @@ public class DashedBorderClipContentTests
     [Fact]
     public void Clip_Is_Not_Applied_When_The_Platform_Cannot_Hit_Test_The_Rounded_Figure()
     {
-        var border = new DashedBorder
+        var border = new GeometryHitTestIncapableBorder
         {
             Width                     = 200,
             Height                    = 100,
@@ -55,9 +55,8 @@ public class DashedBorderClipContentTests
 
         ShowInWindow(border, () =>
         {
-            // Platforms whose geometry containment cannot represent rounded figures
-            // (the headless test platform) degrade to not applying the clip so that
-            // pointer input over the content keeps working.
+            // Exercise the capability fallback independently of the active renderer.
+            // Rounded geometry must not block input when containment is unsupported.
             border.Child!.Clip.ShouldBeNull();
         });
     }
@@ -179,6 +178,11 @@ public class DashedBorderClipContentTests
     private sealed class GeometryHitTestCapableBorder : DashedBorder
     {
         protected override bool SupportsGeometryClipHitTesting(Geometry figure) => true;
+    }
+
+    private sealed class GeometryHitTestIncapableBorder : DashedBorder
+    {
+        protected override bool SupportsGeometryClipHitTesting(Geometry figure) => false;
     }
 
     private static void AssertRectClose(Rect actual, Rect expected)

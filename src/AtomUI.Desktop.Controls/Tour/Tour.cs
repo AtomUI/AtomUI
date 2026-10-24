@@ -356,7 +356,7 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     private TourStepsView? _stepsView;
     private CompositeDisposable? _indicatorDisposables;
     private Control? _scrollBlockedTarget;
-    private IDisposable? _popupPinnedOpenBinding;
+    private IDisposable? _popupFlippedBindings;
 
     static Tour()
     {
@@ -497,6 +497,8 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
 
             if (change.NewValue is TourIndicator newIndicator)
             {
+                // Indicator is caller-provided content, outside this ControlTemplate's selector tree.
+                // These owner-to-content bindings therefore live until replacement or detach.
                 _indicatorDisposables = new CompositeDisposable();
                 _indicatorDisposables.Add(BindUtils.RelayBind(this, StepCountProperty, newIndicator, TourIndicator.StepCountProperty));
                 _indicatorDisposables.Add(BindUtils.RelayBind(this, CurrentIndexProperty, newIndicator, TourIndicator.ActiveIndexProperty));
@@ -554,22 +556,21 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        _popupFlippedBindings?.Dispose();
+        _popupFlippedBindings = null;
         if (_popup != null)
         {
-            _popupPinnedOpenBinding?.Dispose();
-            _popupPinnedOpenBinding = null;
             _popup.PositionFlipped -= HandlePositionFlipped;
         }
         _popup = e.NameScope.Find<Popup>("PART_Popup");
         if (_popup != null)
         {
-            _popupPinnedOpenBinding = BindUtils.RelayBind(
-                this,
-                IsPopupPinnedOpenProperty,
-                _popup,
-                Popup.IsPopupPinnedOpenProperty);
-            this[!IsPopupHorizontalFlippedProperty] = _popup[!Popup.IsHorizontalFlippedProperty];
-            this[!IsPopupVerticalFlippedProperty] = _popup[!Popup.IsVerticalFlippedProperty];
+            // These values flow from a runtime popup back to private owner setters.
+            // TemplateBinding has no OneWayToSource mode; a reflection binding cannot access
+            // those setters safely under AOT. The bindings belong to this template instance.
+            _popupFlippedBindings = new CompositeDisposable(
+                this.Bind(IsPopupHorizontalFlippedProperty, _popup.GetObservable(Popup.IsHorizontalFlippedProperty)),
+                this.Bind(IsPopupVerticalFlippedProperty, _popup.GetObservable(Popup.IsVerticalFlippedProperty)));
             _popup.PositionFlipped += HandlePositionFlipped;
             // _popup.CustomPlacementCallback = parameters =>
             // {
@@ -777,7 +778,12 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             }
 
             ConfigurePopupOffset(stepPlacement);
-            ConfigureArrowPosition(popupPlacement);
+            // Unchanged placement inputs need not raise another PositionFlipped event.
+            // Preserve the physical popup's current direction when only its step content changes.
+            var sameAnchor = _popup.PlacementTarget == target && _popup.RequestedPlacement == popupPlacement;
+            ConfigureArrowPosition(popupPlacement,
+                sameAnchor && _popup.IsHorizontalFlipped,
+                sameAnchor && _popup.IsVerticalFlipped);
             _popup.RequestedPlacement = popupPlacement;
         }
 

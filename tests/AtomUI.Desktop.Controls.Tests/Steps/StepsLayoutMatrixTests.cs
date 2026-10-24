@@ -36,18 +36,22 @@ public class StepsLayoutMatrixTests
     public void Every_Layout_Combination_Uses_One_Finite_Semantic_Tree(Desktop.Controls.StepsType type)
     {
         foreach (var orientation in Enum.GetValues<Orientation>())
-        foreach (var titlePlacement in Enum.GetValues<Orientation>())
-        foreach (var sizeType in new[] { AtomUISizeType.Middle, AtomUISizeType.Small })
         {
-            try
+            foreach (var titlePlacement in Enum.GetValues<Orientation>())
             {
-                AssertLayoutCombination(type, orientation, titlePlacement, sizeType);
-            }
-            catch (Exception exception)
-            {
-                throw new InvalidOperationException(
-                    $"Steps layout failed for type={type}, orientation={orientation}, titlePlacement={titlePlacement}, sizeType={sizeType}.",
-                    exception);
+                foreach (var sizeType in new[] { AtomUISizeType.Middle, AtomUISizeType.Small })
+                {
+                    try
+                    {
+                        AssertLayoutCombination(type, orientation, titlePlacement, sizeType);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new InvalidOperationException(
+                            $"Steps layout failed for type={type}, orientation={orientation}, titlePlacement={titlePlacement}, sizeType={sizeType}.",
+                            exception);
+                    }
+                }
             }
         }
     }
@@ -260,10 +264,10 @@ public class StepsLayoutMatrixTests
             foreach (var item in items)
             {
                 GetIndicator(item).Bounds.Center.Y.ShouldBe(centerY, 0.01);
-                FindControl(item, "HeaderPresenter").Bounds.Center.Y.ShouldBe(centerY, 0.01);
+                AssertCenteredOnIndicatorRow(item, FindControl(item, "HeaderPresenter"));
             }
 
-            FindControl(items[1], "SubHeaderPresenter").Bounds.Center.Y.ShouldBe(centerY, 0.01);
+            AssertCenteredOnIndicatorRow(items[1], FindControl(items[1], "SubHeaderPresenter"));
 
             foreach (var item in items.Take(2))
             {
@@ -319,7 +323,8 @@ public class StepsLayoutMatrixTests
             subHeader.Margin.Top.ShouldBe(0);
             subHeader.Margin.Right.ShouldBe(0);
             subHeader.Margin.Bottom.ShouldBe(0);
-            subHeader.Bounds.Center.Y.ShouldBe(header.Bounds.Center.Y, 0.01);
+            AssertCenteredOnIndicatorRow(second, header);
+            AssertCenteredOnIndicatorRow(second, subHeader);
         });
     }
 
@@ -351,7 +356,7 @@ public class StepsLayoutMatrixTests
             foreach (var item in items)
             {
                 GetIndicator(item).Bounds.Center.Y.ShouldBe(rowCenterY, 0.01);
-                FindControl(item, "HeaderPresenter").Bounds.Center.Y.ShouldBe(rowCenterY, 0.01);
+                AssertCenteredOnIndicatorRow(item, FindControl(item, "HeaderPresenter"));
                 FindControl(item, "ContentPresenter").Bounds.Y.ShouldBe(contentY, 0.01);
             }
 
@@ -401,7 +406,9 @@ public class StepsLayoutMatrixTests
             var first = steps.Items[0].ShouldBeOfType<Desktop.Controls.StepsItem>();
 
             first.Bounds.Y.ShouldBeGreaterThan(0);
-            first.Bounds.Center.Y.ShouldBe(steps.Bounds.Center.Y, 0.01);
+            var expectedTop = LayoutHelper.RoundLayoutValue(
+                (steps.Bounds.Height - first.Bounds.Height) / 2, LayoutHelper.GetLayoutScale(first));
+            first.Bounds.Top.ShouldBe(expectedTop);
         });
     }
 
@@ -555,6 +562,17 @@ public class StepsLayoutMatrixTests
         var intersection = GetBoundsInItem(first, item).Intersect(GetBoundsInItem(second, item));
         (intersection.Width > 0 && intersection.Height > 0).ShouldBeFalse(
             $"{first.Name ?? first.GetType().Name} overlaps {second.Name ?? second.GetType().Name}.");
+    }
+
+    private static void AssertCenteredOnIndicatorRow(Desktop.Controls.StepsItem item, Control control)
+    {
+        var row = GetBoundsInItem(GetIndicator(item), item);
+        var bounds = GetBoundsInItem(control, item);
+        // Integer origins cannot give odd-height text and an even-height indicator
+        // exactly the same center. Check the independently rounded intended origin.
+        var expectedTop = LayoutHelper.RoundLayoutValue(
+            row.Center.Y - bounds.Height / 2, LayoutHelper.GetLayoutScale(control));
+        bounds.Top.ShouldBe(expectedTop);
     }
 
     private static void Relayout()

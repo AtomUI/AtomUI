@@ -1,6 +1,7 @@
 """Keep the release regression entry point aligned with real test projects."""
 
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -15,21 +16,33 @@ class FullRegressionInventoryTests(unittest.TestCase):
             for project in (root / "tests").glob("*/*.csproj")
             if project.parent.name.endswith((".Tests", "IntegrationTests"))
         }
+        bash = shutil.which("bash")
+        self.assertIsNotNone(bash, "The inventory check requires Bash")
         with tempfile.TemporaryDirectory() as directory:
             bin_dir = Path(directory)
-            (bin_dir / "dotnet").write_text(
-                '#!/bin/sh\ncase " $* " in\n'
-                '  *" --list-tests "*) printf "    SampleTest\\n" ;;\n'
-                '  *) printf "  Passed SampleTest\\n" ;;\n'
-                'esac\n'
-            )
-            (bin_dir / "sleep").write_text("#!/bin/sh\nexit 0\n")
+            with (bin_dir / "dotnet").open("w", encoding="utf-8", newline="\n") as stub:
+                stub.write(
+                    '#!/bin/sh\ncase " $* " in\n'
+                    '  *" --list-tests "*) printf "    SampleTest\\n" ;;\n'
+                    '  *) printf "  Passed SampleTest\\n" ;;\n'
+                    'esac\n'
+                )
+            with (bin_dir / "sleep").open("w", encoding="utf-8", newline="\n") as stub:
+                stub.write("#!/bin/sh\nexit 0\n")
             (bin_dir / "dotnet").chmod(0o755)
             (bin_dir / "sleep").chmod(0o755)
             environment = os.environ.copy()
-            environment["PATH"] = f"{bin_dir}:{environment['PATH']}"
+            environment["PATH"] = os.pathsep.join([str(bin_dir), environment["PATH"]])
             result = subprocess.run(
-                [str(root / "scripts/run-full-regression.sh")],
+                [
+                    bash, "-c",
+                    # Verify the command stubs before starting the inventory-only shell run.
+                    'if [[ ! "$(command -v dotnet)" -ef "$1/dotnet" || '
+                    '! "$(command -v sleep)" -ef "$1/sleep" ]]; then '
+                    'echo "Inventory requires temporary dotnet and sleep stubs" >&2; exit 1; fi; '
+                    'exec "$BASH" "$2"',
+                    "inventory", bin_dir.as_posix(), (root / "scripts/run-full-regression.sh").as_posix(),
+                ],
                 cwd=root,
                 env=environment,
                 capture_output=True,

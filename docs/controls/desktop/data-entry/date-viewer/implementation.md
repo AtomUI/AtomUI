@@ -137,6 +137,11 @@ Automation 同样通过有效模型与激活防线。Hover 从 Panel 的实际�
 Header NavigateCommand 使用 int，ChangePanelCommand 使用 DateViewerPanelKind；
 公开命令不暴露内部 action 类型。Range Header 的上下文以各自显示锚点生成。
 
+RangeDateViewer 的双面板及单面板模板中，Header 的 Width 通过模板名字范围内的编译绑定读取对应
+DatePanel.Bounds.Width。绑定位于各 Header 自身的无 Selector Style setter，既跟随 Compact Own 宽度及
+Content 实际列宽，也允许生成的专用 Header Style 覆盖；不在节点上设置会阻断 Style 的本地 Width。
+模板重建后绑定解析新面板，ShowWeek、Presentation 与布局变化沿同一条实际宽度路径更新。
+
 ## 8. 内部算法与关键流程
 
 Date、Month、Quarter、Year 四种网格的周期、槽位和下钻规则由 DatePanelAlgorithms 提供。

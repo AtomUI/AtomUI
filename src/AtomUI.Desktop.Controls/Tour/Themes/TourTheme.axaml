@@ -11,6 +11,7 @@
                             WindowManagerAddShadowHint="False"
                             IsLightDismissEnabled="False"
                             IsMotionEnabled="False"
+                            IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
                             ShouldUseOverlayLayer="True">
                     <atom:ArrowDecoratedBox Name="{x:Static atom:AbstractArrowDecoratedBox.ArrowDecoratorPart}"
                                             Classes.semantic-popup-root="True"

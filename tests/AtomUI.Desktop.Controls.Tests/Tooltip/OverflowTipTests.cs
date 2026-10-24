@@ -278,7 +278,21 @@ public class OverflowTipTests
         OverflowTip.SetIsEnabled(presenter, true);
         OverflowTip.SetText(presenter, value);
 
-        ShowInWindow(panel, () => ToolTip.GetTip(presenter).ShouldBe(value));
+        ShowInWindow(panel, () =>
+        {
+            var originalBounds = presenter.Bounds;
+            ToolTip.GetTip(presenter).ShouldBe(value);
+
+            panel.Width = 400;
+            Dispatcher.UIThread.RunJobs();
+            ToolTip.GetTip(presenter).ShouldBeNull();
+            presenter.Bounds.ShouldBe(originalBounds);
+
+            panel.Width = 90;
+            Dispatcher.UIThread.RunJobs();
+            ToolTip.GetTip(presenter).ShouldBe(value);
+            presenter.Bounds.ShouldBe(originalBounds);
+        });
     }
 
     [Fact]

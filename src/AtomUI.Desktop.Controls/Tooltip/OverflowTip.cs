@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Presenters;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -159,6 +160,7 @@ public sealed class OverflowTip : AvaloniaObject
 
         private readonly Control _owner;
         private readonly CompositeDisposable _subscriptions = new();
+        private readonly CompositeDisposable _viewportSubscriptions = new();
 
         private bool _isApplyingTip;
         private bool _ownsTip;
@@ -182,11 +184,16 @@ public sealed class OverflowTip : AvaloniaObject
             _subscriptions.Add(_owner.GetObservable(TextElement.FontWeightProperty).Subscribe(_ => Update()));
             _subscriptions.Add(_owner.GetObservable(ToolTip.TipProperty).Subscribe(HandleToolTipChanged));
             SubscribeTargetTextChanges();
+            if (_owner.IsAttachedToVisualTree())
+            {
+                SubscribeViewportChanges();
+            }
         }
 
         public void Dispose()
         {
             ClearOwnedTip();
+            _viewportSubscriptions.Dispose();
             _subscriptions.Dispose();
         }
 
@@ -235,12 +242,53 @@ public sealed class OverflowTip : AvaloniaObject
 
         private void HandleAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
+            SubscribeViewportChanges();
             Update();
         }
 
         private void HandleDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
+            _viewportSubscriptions.Clear();
             ClearOwnedTip();
+        }
+
+        private void SubscribeViewportChanges()
+        {
+            _viewportSubscriptions.Clear();
+            foreach (var visual in _owner.GetSelfAndVisualAncestors())
+            {
+                visual.PropertyChanged += HandleViewportPropertyChanged;
+                _viewportSubscriptions.Add(Disposable.Create(() => visual.PropertyChanged -= HandleViewportPropertyChanged));
+                if (visual.RenderTransform is Transform transform)
+                {
+                    transform.Changed += HandleViewportGeometryChanged;
+                    _viewportSubscriptions.Add(Disposable.Create(() => transform.Changed -= HandleViewportGeometryChanged));
+                }
+                if (visual.Clip is { } clip)
+                {
+                    clip.Changed += HandleViewportGeometryChanged;
+                    _viewportSubscriptions.Add(Disposable.Create(() => clip.Changed -= HandleViewportGeometryChanged));
+                }
+            }
+        }
+
+        private void HandleViewportPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+        {
+            if (args.Property == Visual.RenderTransformProperty || args.Property == Visual.ClipProperty)
+            {
+                SubscribeViewportChanges();
+                Update();
+            }
+            else if (args.Property == Visual.BoundsProperty || args.Property == Visual.ClipToBoundsProperty ||
+                     args.Property == Visual.RenderTransformOriginProperty || args.Property == Visual.IsVisibleProperty)
+            {
+                Update();
+            }
+        }
+
+        private void HandleViewportGeometryChanged(object? sender, EventArgs args)
+        {
+            Update();
         }
 
         private void HandleToolTipChanged(object? value)
@@ -383,6 +431,46 @@ public sealed class OverflowTip : AvaloniaObject
         }
 
         private double ResolveAvailableWidth()
+        {
+            var width = ResolveTextViewportWidth();
+            if (!IsUsableWidth(width))
+            {
+                return width;
+            }
+
+            var paddingLeft = _owner switch
+            {
+                AvaloniaTextBox textBox => textBox.Padding.Left,
+                AvaloniaTextBlock textBlock => textBlock.Padding.Left,
+                _ => 0
+            };
+            var visible = new Rect(paddingLeft, 0, width, _owner.Bounds.Height);
+            foreach (var visual in _owner.GetSelfAndVisualAncestors())
+            {
+                if (!visual.IsVisible)
+                {
+                    return 0;
+                }
+
+                Rect? clip = visual.ClipToBounds ? new Rect(visual.Bounds.Size) : null;
+                if (visual.Clip is { } geometry)
+                {
+                    clip = clip?.Intersect(geometry.Bounds) ?? geometry.Bounds;
+                }
+                if (clip.HasValue)
+                {
+                    if (visual.TransformToVisual(_owner) is not { } transform)
+                    {
+                        return double.NaN;
+                    }
+                    visible = visible.Intersect(clip.Value.TransformToAABB(transform));
+                }
+            }
+
+            return visible.Width;
+        }
+
+        private double ResolveTextViewportWidth()
         {
             if (_owner is AvaloniaTextBox textBox)
             {

@@ -4,6 +4,7 @@ using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -337,7 +338,12 @@ public class MessageSemanticPartTests
         var top    = contentOrigin.Y - listOrigin.Y;
         var right  = (listOrigin.X + manager.Bounds.Width) - (contentOrigin.X + listContent.Bounds.Width);
         var bottom = (listOrigin.Y + manager.Bounds.Height) - (contentOrigin.Y + listContent.Bounds.Height);
-        left.ShouldBe(right);
+        // A 73-pixel queue in a 600-pixel host has a 263.5-pixel ideal inset.
+        // Avalonia rounds its origin to 264; the remaining 263 pixels stay on the right.
+        var idealInset = (manager.Bounds.Width - listContent.Bounds.Width) / 2;
+        var expectedLeft = LayoutHelper.RoundLayoutValue(idealInset, LayoutHelper.GetLayoutScale(manager));
+        left.ShouldBe(expectedLeft);
+        right.ShouldBe(manager.Bounds.Width - listContent.Bounds.Width - expectedLeft);
         left.ShouldBeGreaterThan(0);
         top.ShouldBeGreaterThan(0);
         bottom.ShouldBeGreaterThan(0);

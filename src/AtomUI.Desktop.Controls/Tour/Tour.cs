@@ -94,6 +94,14 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     public static readonly StyledProperty<TourIndicator?> IndicatorProperty =
         AvaloniaProperty.Register<Tour, TourIndicator?>(nameof(Indicator));
     
+    /// <summary>
+    /// Gets or sets a value indicating whether the tour popup remains open without requiring
+    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
+    /// parts can be inspected and highlighted.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Popup.IsPopupPinnedOpenProperty.AddOwner<Tour>();
+
     public IEnumerable<ITourStepOption>? StepsSource
     {
         get => GetValue(StepsSourceProperty);
@@ -211,10 +219,23 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         set => SetValue(IndicatorProperty, value);
     }
     
+    public bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
+
     [Content]
     public ItemCollection Steps { get; } = new();
     public ItemCollection CustomActions { get; } = new();
     
+    #endregion
+
+    #region 公共事件定义
+
+    /// <inheritdoc />
+    public event EventHandler? CrossRootsChanged;
+
     #endregion
 
     #region 内部属性定义
@@ -251,14 +272,6 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             o => o.CurrentMaskColor,
             (o, v) => o.CurrentMaskColor = v);
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the tour popup remains open without requiring
-    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
-    /// parts can be inspected and highlighted.
-    /// </summary>
-    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        Popup.IsPopupPinnedOpenProperty.AddOwner<Tour>();
-    
     private Rect _targetClipBounds;
 
     internal Rect TargetClipBounds
@@ -313,12 +326,6 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         private set => SetAndRaise(CurrentMaskColorProperty, ref _currentMaskColor, value);
     }
 
-    public bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
-    }
-
     #endregion
 
     #region ISemanticPartCrossRootProvider 实现
@@ -334,9 +341,6 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             ? new Visual[] { layer }
             : Array.Empty<Visual>();
     }
-
-    /// <inheritdoc />
-    public event EventHandler? CrossRootsChanged;
 
     private void RaiseCrossRootsChanged()
     {

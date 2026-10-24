@@ -48,6 +48,39 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
     }
     #endregion
 
+    #region 内部协作 API
+
+    internal Rect GetLineProgressBarRect(Size size)
+    {
+        _grooveRect = GetProgressBarRect(new Rect(default, size));
+        return _grooveRect;
+    }
+
+    internal Rect GetLineTrackRect(Rect grooveRect, double value)
+    {
+        var range = Orientation == Orientation.Horizontal ? grooveRect.Width : grooveRect.Height;
+        var deflateValue = range * (1 - CalculateProgressRatio(value));
+        return Orientation == Orientation.Horizontal
+            ? grooveRect.Deflate(new Thickness(0, 0, deflateValue, 0))
+            : grooveRect.Deflate(new Thickness(0, 0, 0, deflateValue));
+    }
+
+    internal Rect GetLineProgressIndicatorRect(Size size)
+    {
+        return IsProgressInfoVisible
+            ? GetExtraInfoRect(new Rect(default, size))
+            : default;
+    }
+
+    internal bool IsLineTrackVisible(Rect rect)
+    {
+        return Orientation == Orientation.Horizontal
+            ? StrokeLineCap == PenLineCap.Round ? rect.Width >= rect.Height / 2 : rect.Width >= 1
+            : StrokeLineCap == PenLineCap.Round ? rect.Height >= rect.Width / 2 : rect.Height >= 1;
+    }
+
+    #endregion
+
     private LineProgressPanel? _progressBody;
 
     private protected override bool HasTemplateProgressVisuals => _progressBody is not null;
@@ -686,32 +719,5 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         UpdatePseudoClasses();
     }
 
-    internal Rect GetLineProgressBarRect(Size size)
-    {
-        _grooveRect = GetProgressBarRect(new Rect(default, size));
-        return _grooveRect;
-    }
 
-    internal Rect GetLineTrackRect(Rect grooveRect, double value)
-    {
-        var range = Orientation == Orientation.Horizontal ? grooveRect.Width : grooveRect.Height;
-        var deflateValue = range * (1 - CalculateProgressRatio(value));
-        return Orientation == Orientation.Horizontal
-            ? grooveRect.Deflate(new Thickness(0, 0, deflateValue, 0))
-            : grooveRect.Deflate(new Thickness(0, 0, 0, deflateValue));
-    }
-
-    internal Rect GetLineProgressIndicatorRect(Size size)
-    {
-        return IsProgressInfoVisible
-            ? GetExtraInfoRect(new Rect(default, size))
-            : default;
-    }
-
-    internal bool IsLineTrackVisible(Rect rect)
-    {
-        return Orientation == Orientation.Horizontal
-            ? StrokeLineCap == PenLineCap.Round ? rect.Width >= rect.Height / 2 : rect.Width >= 1
-            : StrokeLineCap == PenLineCap.Round ? rect.Height >= rect.Width / 2 : rect.Height >= 1;
-    }
 }

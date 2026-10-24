@@ -13,7 +13,7 @@ using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
 public sealed class OverflowTip : AvaloniaObject
 {
-    #region 附加属性定义
+    #region 公共属性定义
 
     public static readonly AttachedProperty<bool> IsEnabledProperty =
         AvaloniaProperty.RegisterAttached<OverflowTip, Control, bool>("IsEnabled");

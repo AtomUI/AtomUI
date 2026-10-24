@@ -65,7 +65,11 @@
 
         <Style Selector="^[StrokeLineCap=Round]">
             <Style Selector="^ /template/ Border#PART_ProgressRail, ^ /template/ Border#PART_ProgressTrack, ^ /template/ Border#PART_ProgressSuccess">
-                <Setter Property="CornerRadius" Value="1000" />
+                <Setter Property="CornerRadius">
+                    <MultiBinding Converter="{x:Static atom:ProgressBarThemeBindings.OptionalLineBorderRadius}">
+                        <atom:ProgressBarTokenResource Kind="LineBorderRadius" WhenExplicit="True" />
+                    </MultiBinding>
+                </Setter>
             </Style>
         </Style>
         

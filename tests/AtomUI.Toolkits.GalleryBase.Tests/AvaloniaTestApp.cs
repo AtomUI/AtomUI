@@ -37,7 +37,9 @@ public static class TestAppBuilder
     {
         return AppBuilder.Configure<TestApplication>()
                          .UseReactiveUI(_ => { })
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         // StreamGeometry clipping must use the real geometry implementation for pointer tests.
+                         .UseSkia()
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
                          .UseAtomUI(builder =>
                          {
                              builder.UseDesktopControls();

@@ -49,6 +49,14 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractCircleProgress, double>(
             nameof(CircleMinimumIconSize));
 
+    internal static readonly DirectProperty<AbstractCircleProgress, double> ExtraInfoFontSizeProperty =
+        AvaloniaProperty.RegisterDirect<AbstractCircleProgress, double>(
+            nameof(ExtraInfoFontSize), owner => owner.ExtraInfoFontSize);
+
+    internal static readonly DirectProperty<AbstractCircleProgress, double> ExtraInfoIconSizeProperty =
+        AvaloniaProperty.RegisterDirect<AbstractCircleProgress, double>(
+            nameof(ExtraInfoIconSize), owner => owner.ExtraInfoIconSize);
+
     internal static readonly DirectProperty<AbstractCircleProgress, PenLineCap> ShapeStrokeLineCapProperty =
         AvaloniaProperty.RegisterDirect<AbstractCircleProgress, PenLineCap>(
             nameof(ShapeStrokeLineCap),
@@ -71,6 +79,22 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     {
         get => GetValue(CircleMinimumIconSizeProperty);
         set => SetValue(CircleMinimumIconSizeProperty, value);
+    }
+
+    private double _extraInfoFontSize = LARGE_CIRCLE_SIZE * 0.15 + 6;
+
+    internal double ExtraInfoFontSize
+    {
+        get => _extraInfoFontSize;
+        private set => SetAndRaise(ExtraInfoFontSizeProperty, ref _extraInfoFontSize, value);
+    }
+
+    private double _extraInfoIconSize = LARGE_CIRCLE_SIZE / 4.5;
+
+    internal double ExtraInfoIconSize
+    {
+        get => _extraInfoIconSize;
+        private set => SetAndRaise(ExtraInfoIconSizeProperty, ref _extraInfoIconSize, value);
     }
 
     private PenLineCap _shapeStrokeLineCap;
@@ -268,8 +292,15 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             {
                 var circleSize = CalculateCircleSize();
                 CalculateStrokeThickness(circleSize);
-                SetupExtraInfoFontSize(circleSize);
-                SetupExtraInfoIconSize(circleSize);
+                UpdateExtraInfoMetrics(circleSize);
+            }
+            else if (change.Property == CircleMinimumTextFontSizeProperty ||
+                     change.Property == CircleMinimumIconSizeProperty)
+            {
+                UpdateExtraInfoMetrics(CalculateCircleSize());
+                NotifyHandleExtraInfoVisibility();
+                InvalidateMeasure();
+                ProgressIndicator?.InvalidateMeasure();
             }
         }
 
@@ -290,35 +321,26 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         }
     }
 
-    private void SetupExtraInfoFontSize(double circleSize)
+    private void UpdateExtraInfoMetrics(double circleSize)
     {
-        var fontSize = circleSize * 0.15 + 6;
-        if (fontSize < CircleMinimumTextFontSize)
-        {
-            fontSize = CircleMinimumTextFontSize;
-        }
-
-        FontSize = fontSize;
-    }
-
-    private void SetupExtraInfoIconSize(double circleSize)
-    {
-        var calculatedSize = Math.Max(circleSize / 4.5, CircleMinimumIconSize);
-        if (ExceptionCompletedIconPresenter is not null)
-        {
-            ExceptionCompletedIconPresenter.Width  = calculatedSize;
-            ExceptionCompletedIconPresenter.Height = calculatedSize;
-        }
-
-        if (SuccessCompletedIconPresenter is not null)
-        {
-            SuccessCompletedIconPresenter.Width  = calculatedSize;
-            SuccessCompletedIconPresenter.Height = calculatedSize;
-        }
+        // ControlTheme cannot perform the runtime size calculation, which also uses
+        // the internal effective-size selection. It projects these values instead
+        // of code assigning FontSize or template-part dimensions at local priority.
+        ExtraInfoFontSize = Math.Max(circleSize * 0.15 + 6, CircleMinimumTextFontSize);
+        ExtraInfoIconSize = Math.Max(circleSize / 4.5, CircleMinimumIconSize);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
+        if (ProgressIndicator is CircleProgressIndicatorPanel)
+        {
+            // The template panels own information layout, including child-size changes
+            // that do not invalidate this fixed-size owner. Keep Canvas layout below
+            // for existing custom templates.
+            var templateSize = base.ArrangeOverride(finalSize);
+            UpdateTemplateProgressVisuals(finalSize);
+            return templateSize;
+        }
         Rect progressIndicatorRect = default;
         if (IsProgressInfoVisible)
         {
@@ -428,8 +450,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     {
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
-        SetupExtraInfoFontSize(circleSize);
-        SetupExtraInfoIconSize(circleSize);
+        UpdateExtraInfoMetrics(circleSize);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

@@ -26,6 +26,8 @@ ProgressBarToken 不承载以下状态：
 
 `DefaultColor` 是普通进度段默认颜色，默认来自 SharedToken `ColorInfo`。`RemainingColor` 是剩余轨道颜色，默认来自 SharedToken `ColorFillSecondary`。`CircleTextColor` 表示圆形进度文本颜色语义，默认来自 SharedToken `ColorText`。
 
+`CircleTextColor` 仅在 Own 明确配置时覆盖 CircleProgress／DashboardProgress 的普通前景；未配置时保留原 `ColorTextLabel` 回退，禁用前景和调用方本地 `Foreground` 优先级保持原生行为。它不改变线形百分比或步骤进度的文字颜色。
+
 状态色不在 ProgressBarToken 中重复定义：
 
 - 成功色使用 SharedToken `ColorSuccess`。
@@ -38,7 +40,7 @@ ProgressBarToken 不承载以下状态：
 - `LineExtraInfoMargin`
 - `LineProgressPadding`
 
-`LineBorderRadius` 表示线形进度胶囊形圆角语义。默认模板的 rail/track/success `Border` 根据 `StrokeLineCap` 选择胶囊或直角视觉，Token 仍属于线形主题契约。
+`LineBorderRadius` 表示普通线形进度圆角。`StrokeLineCap=Round` 且该 Own 明确配置时，rail／track／success 使用配置值，包含明确的零圆角；未配置时保留原模板的 1000 胶囊值。schema 默认值仍为 100，未配置值不会直接替换旧模板。Flat 分支保持直角，专用 Semantic Part Style 继续可以覆盖对应部件；此字段不改变 StepsProgressBar 的矩形步骤。
 
 `LineExtraInfoMargin` 表示线形进度条和百分比文本或状态图标之间的距离。`LineProgressPadding` 表示内嵌百分比文本和进度条边缘之间的内部 padding。
 
@@ -54,7 +56,7 @@ ProgressBarToken 不承载以下状态：
 - `CircleMinimumTextFontSize`
 - `CircleMinimumIconSize`
 
-圆形进度会根据圆形实际尺寸动态计算内部文本字号和状态图标尺寸，并用这两个 Token 作为下限，避免小尺寸圆形中文本或图标失去可读性。
+圆形进度会根据圆形实际尺寸动态计算内部文本字号和状态图标尺寸，并用这两个 Token 作为下限，避免小尺寸圆形中文本或图标失去可读性。Own 下限运行期变化会立即更新有效尺寸及测量；调用方本地 FontSize 不会被 resize 覆盖，清除本地值后恢复当前计算值。专用 Indicator Style 的图标宽高可以覆盖模板默认值，退出 Style 后恢复当前 Own 计算值。
 
 ### 2.5 内部 Token 槽位
 
@@ -67,7 +69,7 @@ Token 使用路径：
 ```text
 SharedToken
     ↓
-ProgressBarToken.CalculateTokenValues()
+ProgressBarToken 的 DependencyDefaultsV2／revision 1 默认依赖计划
     ↓
 AbstractProgressBarTheme / AbstractLineProgressTheme / AbstractCircleProgressTheme
     ↓
@@ -93,6 +95,8 @@ direct render + template part layout
 - `CircleMinimumTextFontSize` 使用小号字体减小值。
 - `CircleMinimumIconSize` 使用 XS 尺寸。
 - 图标尺寸使用 SharedToken icon size。
+
+13 个既有字段保留原名称、类型、slot、resource key 和默认值。V2 以当前 owner 的有效 Global 输入计算默认依赖，明确 Own 值保留存在位；四种公开控件维持各自 Control identity，Own 配置继续共用既有 ProgressBar 家族 scope，不创建四份重复 schema。剩余尺寸／间距的动态消费仍须按实际形态验证，不能从默认计划迁移推定全部消费者已验收。
 
 ## 4. 控件家族影响
 

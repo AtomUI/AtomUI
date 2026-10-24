@@ -10,7 +10,12 @@
 
 ## 2026-10-24
 
+- Theme
+  - 迁移13个既有Own字段至DependencyDefaultsV2／revision 1，保持名称、类型、资源编号、slot及默认值。
+  - 接通明确Own CircleTextColor和普通Round line的LineBorderRadius，保留未配置回退、本地前景及专用Part Style优先级；两项配置开始生效的视觉变化已获用户批准。
 - Fix
+  - 圆形／仪表盘最小字号与图标配置即时生效，保留本地 FontSize 跨 resize 及专用 Indicator Style 的优先级。
+  - 圆形／仪表盘结果状态仅显示对应图标，修复 Success／100 图标缺失及 Exception／100 错用成功色；信息面板随实际内容测量并居中。
   - 按实际布局取整尺寸计算普通线形百分比末端位置，防止标签越过进度条边界。
   - 按实际百分比及完整字体属性更新普通线形文字留位；动态字体、范围和格式变化后同步模板布局，保留调用方 Min/Max 约束。
 

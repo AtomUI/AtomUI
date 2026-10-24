@@ -11,10 +11,28 @@
     </ControlTheme.BasedOn>
 
     <Style Selector="^:is(atomc|AbstractCircleProgress)">
+        <Setter Property="FontSize"
+                Value="{CompiledBinding $self.ExtraInfoFontSize, DataType={x:Type atomc:AbstractCircleProgress}}" />
+        <!-- The historical text role remains ColorTextLabel until this family Own is explicit. -->
+        <Style Selector="^:not(:disabled)">
+            <Setter Property="Foreground">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                    <atom:SharedTokenResource Kind="ColorTextLabel" />
+                    <atom:ProgressBarTokenResource Kind="CircleTextColor" WhenExplicit="True" />
+                    <atom:ProgressBarTokenResource Kind="CircleTextColor" />
+                </MultiBinding>
+            </Setter>
+        </Style>
+
         <Setter Property="CircleMinimumTextFontSize"
                 Value="{atom:ProgressBarTokenResource CircleMinimumTextFontSize}" />
         <Setter Property="CircleMinimumIconSize"
                 Value="{atom:ProgressBarTokenResource CircleMinimumIconSize}" />
+
+        <Style Selector="^ /template/ atom|IconPresenter">
+            <Setter Property="Width" Value="{TemplateBinding ExtraInfoIconSize}" />
+            <Setter Property="Height" Value="{TemplateBinding ExtraInfoIconSize}" />
+        </Style>
 
         <Style Selector="^ /template/ Path#PART_ProgressRail">
             <Setter Property="Stroke"
@@ -54,6 +72,26 @@
         <Style Selector="^ /template/ atom|IconPresenter:disabled">
             <Setter Property="IconBrush"
                     Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
+        </Style>
+
+        <Style Selector="^[Status=Exception] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="^[Status=Success] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="^[Status=Success][IsCompleted=True] /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+        <Style Selector="^[Status=Exception]:not(:disabled)">
+            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
         </Style>
 
     </Style>

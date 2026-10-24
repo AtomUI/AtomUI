@@ -36,6 +36,12 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
+                         // Keep Skia redraw damage separate: merging text updates into one clip
+                         // can change antialiased pixels of otherwise unchanged progress paths.
+                         .With(new global::Avalonia.Rendering.Composition.CompositionOptions
+                         {
+                             UseRegionDirtyRectClipping = true
+                         })
                          .UseSkia()
                          .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
                          .UseAtomUI(builder => builder.UseDesktopControls()

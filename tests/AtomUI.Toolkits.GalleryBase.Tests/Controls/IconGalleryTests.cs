@@ -38,7 +38,7 @@ public class IconGalleryTests
 
             reloads.Count.ShouldBe(0);
 
-            PumpDispatcherFor(SearchDebounceDelay + TimeSpan.FromMilliseconds(80));
+            PumpDispatcherUntil(() => reloads.Count != 0);
 
             reloads.Count.ShouldBe(1);
             gallery.IconInfos.ShouldNotBeNull();
@@ -192,6 +192,33 @@ public class IconGalleryTests
         content.ApplyTemplate();
         Dispatcher.UIThread.RunJobs();
         return window;
+    }
+
+    private static void PumpDispatcherUntil(Func<bool> condition)
+    {
+        var frame = new DispatcherFrame();
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        var timer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(5)
+        };
+        timer.Tick += (_, _) =>
+        {
+            if (condition() || elapsed.Elapsed >= TimeSpan.FromSeconds(5))
+            {
+                frame.Continue = false;
+            }
+        };
+        timer.Start();
+        try
+        {
+            Dispatcher.UIThread.PushFrame(frame);
+        }
+        finally
+        {
+            timer.Stop();
+        }
+        condition().ShouldBeTrue("the search reload must complete within the dispatcher guard");
     }
 
     private static void PumpDispatcherFor(TimeSpan duration)

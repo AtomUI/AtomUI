@@ -30,6 +30,12 @@ internal sealed class CircleProgressPanel : Panel
         var pathRect = owner.GetCircleProgressPathRect(finalSize);
         foreach (var child in Children)
         {
+            if (child is CircleProgressIndicatorPanel)
+            {
+                var height = child.DesiredSize.Height;
+                child.Arrange(new Rect(0, (finalSize.Height - height) / 2, finalSize.Width, height));
+                continue;
+            }
             child.Arrange(child.Name is AbstractProgressBar.ProgressRailPart or
                                       AbstractProgressBar.ProgressTrackPart or
                                       AbstractProgressBar.ProgressSuccessPart

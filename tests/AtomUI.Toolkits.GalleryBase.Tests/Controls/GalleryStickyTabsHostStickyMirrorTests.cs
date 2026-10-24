@@ -92,11 +92,14 @@ public class GalleryStickyTabsHostStickyMirrorTests
         // 吸顶条就在视口顶部
         stripRect.Y.ShouldBeLessThan(100);
 
-        ClickTab(window, tabStrip, 1);
+        ClickTab(window, tabStrip, 1, 0.1);
         tabStrip.SelectedIndex.ShouldBe(1);
 
         ClickTab(window, tabStrip, 0);
         tabStrip.SelectedIndex.ShouldBe(0);
+
+        ClickTab(window, tabStrip, 1, 0.9);
+        tabStrip.SelectedIndex.ShouldBe(1);
     }
 
     [Fact]
@@ -157,21 +160,30 @@ public class GalleryStickyTabsHostStickyMirrorTests
 
     private static void ScrollTo(AvaloniaWindow window, GalleryStickyTabsHost host, double offset)
     {
-        FindPageScrollViewer(host).Offset = new Vector(0, offset);
+        var scrollViewer = FindPageScrollViewer(host);
+        scrollViewer.Offset = new Vector(0, offset);
         Dispatcher.UIThread.RunJobs();
         // 让合成器服务端同步 readback，命中测试依赖它
-        window.CaptureRenderedFrame();
+        using var frame = window.CaptureRenderedFrame();
         Dispatcher.UIThread.RunJobs();
+        scrollViewer.Offset.Y.ShouldBe(offset);
+        scrollViewer.Extent.Height.ShouldBeGreaterThan(scrollViewer.Viewport.Height);
+        scrollViewer.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.ScrollBar>()
+                    .Single(bar => bar.Name == "PART_VerticalScrollBar").IsVisible.ShouldBeTrue();
     }
 
-    private static void ClickTab(AvaloniaWindow window, AtomUITabStrip tabStrip, int index)
+    private static void ClickTab(AvaloniaWindow window, AtomUITabStrip tabStrip, int index, double horizontalFraction = 0.5)
     {
         var item = tabStrip.Items.OfType<AtomUITabStripItem>().Skip(index).First();
         var container = tabStrip.ContainerFromItem(item) as AtomUITabStripItem ?? item;
-        var localCenter = new Point(container.Bounds.Width / 2, container.Bounds.Height / 2);
+        var localCenter = new Point(container.Bounds.Width * horizontalFraction, container.Bounds.Height / 2);
         var center = container.TranslatePoint(localCenter, window)
                      ?? throw new InvalidOperationException("tab container is not attached to the window");
+        var hit = window.InputHitTest(center) as Visual;
+        hit.ShouldNotBeNull("the click must reach the real tab through the original window clipping chain");
+        hit!.GetVisualAncestors().Prepend(hit).ShouldContain(container);
         Click(window, center);
+        container.IsPointerOver.ShouldBeTrue();
         Dispatcher.UIThread.RunJobs();
     }
 

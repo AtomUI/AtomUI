@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
+using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.DataGrid.Sorting;
 
@@ -94,7 +95,7 @@ public class DataGridSortColumnSelectedRowCellStyleIssue454Tests
     /// <summary>
     /// 构造 issue #454 场景：三行数据，选中第一行（John Brown）后点击 Age 列排序指示器排序。
     /// </summary>
-    private static (global::AtomUI.Desktop.Controls.DataGrid Grid, Window Window,
+    private static (global::AtomUI.Desktop.Controls.DataGrid Grid, AvaloniaWindow Window,
         ObservableCollection<SortRow> Rows) CreateGridWithFirstRowSelectedAndSortedByAge()
     {
         var rows = new ObservableCollection<SortRow>
@@ -140,7 +141,7 @@ public class DataGridSortColumnSelectedRowCellStyleIssue454Tests
             [],
             []);
 
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width = 520,
             Height = 280,
@@ -208,7 +209,7 @@ public class DataGridSortColumnSelectedRowCellStyleIssue454Tests
         };
     }
 
-    private static void Click(Control control, Window window)
+    private static void Click(Control control, AvaloniaWindow window)
     {
         var point = control.TranslatePoint(
             new Point(control.Bounds.Width / 2, control.Bounds.Height / 2),

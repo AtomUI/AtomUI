@@ -6,10 +6,16 @@ namespace AtomUI.Theme;
 
 internal static class ThemeScope
 {
+    #region 公共属性定义
+
     public static readonly AttachedProperty<ThemeContext?> ContextProperty =
         AvaloniaProperty.RegisterAttached<ThemeConfigProvider, StyledElement, ThemeContext?>(
             "Context",
             inherits: true);
+
+    #endregion
+
+    #region 内部协作 API
 
     internal static ThemeContext? ResolveContext(
         StyledElement owner,
@@ -22,7 +28,10 @@ internal static class ThemeScope
         }
 
         var root = knownRoot ?? FindLogicalRoot(owner);
-        if (root is not TopLevel topLevel)
+        // Clearing a closing root can re-enter through resource bindings. Its
+        // platform lifetime has ended; resolving here must not recreate context.
+        // A not-yet-shown or hidden root still has its platform implementation.
+        if (root is not TopLevel { PlatformImpl: not null } topLevel)
         {
             return null;
         }
@@ -42,6 +51,8 @@ internal static class ThemeScope
         topLevel.SetValue(ContextProperty, rootContext);
         return rootContext;
     }
+
+    #endregion
 
     private static ILogicalRoot? FindLogicalRoot(StyledElement owner)
     {

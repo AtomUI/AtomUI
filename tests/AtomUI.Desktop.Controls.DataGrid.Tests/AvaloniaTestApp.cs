@@ -28,7 +28,9 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         // Rounded window clips need real geometry for pointer hit testing.
+                         .UseSkia()
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
                          .UseAtomUI(builder =>
                          {
                              builder.UseDesktopControls();
@@ -41,4 +43,10 @@ public static class TestAppBuilder
 }
 
 // 本工程引用生成器：应用类声明为 partial，由生成器补上 RegisterServices 挂接。
-internal sealed partial class TestApplication : Application;
+internal sealed partial class TestApplication : Application
+{
+    public override void Initialize()
+    {
+        Resources.Add(typeof(Avalonia.Controls.Window), new ComponentWindowTheme());
+    }
+}

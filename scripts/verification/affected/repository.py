@@ -121,7 +121,7 @@ class Repository:
     def text(self, path):
         if path not in self._texts:
             candidate = self.root / path
-            self._texts[path] = candidate.read_text(errors="replace") if candidate.is_file() else ""
+            self._texts[path] = candidate.read_text(encoding="utf-8-sig", errors="replace") if candidate.is_file() else ""
         return self._texts[path]
 
     def is_file(self, path):

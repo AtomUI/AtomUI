@@ -51,7 +51,7 @@ def execute(command, cwd, log, timeout, announce):
     """No shell; keep output on disk temporarily, surface progress and failure tail."""
     announce("Running: " + subprocess.list2cmdline([str(c) for c in command]))
     start = time.monotonic()
-    with Path(log).open("w+") as stream:
+    with Path(log).open("w+", encoding="utf-8", errors="replace") as stream:
         process = subprocess.Popen(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT,
                                    start_new_session=os.name != "nt")
         try:
@@ -135,7 +135,7 @@ def run_specialist_check(repo, check, command, output, timeout=3600, announce=No
                 result["error"] = str(error)
         path = output / "specialist.json"
         try:
-            evidence = json.loads(path.read_text()) if path.exists() else {}
+            evidence = json.loads(path.read_text(encoding="utf-8-sig")) if path.exists() else {}
         except (OSError, ValueError):
             evidence = {}
         evidence[check["id"]] = result
@@ -147,7 +147,7 @@ def matching_specialist_checks(repo, plan, output):
     if not plan["obligations"]:
         return []
     try:
-        evidence = json.loads((output / "specialist.json").read_text())
+        evidence = json.loads((output / "specialist.json").read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
         return []
     context = specialist_context(repo)
@@ -195,7 +195,7 @@ def run_verification(repo, plan, output, dotnet=None, reuse=True, configuration=
 
             if reuse and receipt_path.is_file():
                 try:
-                    receipt = json.loads(receipt_path.read_text())
+                    receipt = json.loads(receipt_path.read_text(encoding="utf-8-sig"))
                 except (ValueError, OSError):
                     receipt = {}
                 if receipt.get("input_fingerprint") == key and receipt.get("outputs") == current_outputs():
@@ -245,7 +245,7 @@ def run_verification(repo, plan, output, dotnet=None, reuse=True, configuration=
             # Bounded compact history supports latency tracking without accumulating raw logs.
             history_path = output / "history.json"
             try:
-                history = json.loads(history_path.read_text()) if history_path.exists() else []
+                history = json.loads(history_path.read_text(encoding="utf-8-sig")) if history_path.exists() else []
             except (OSError, ValueError):
                 history = []
             history.append({"time_utc": report["time_utc"], "status": report["status"], "scope": plan["scope"], "test_projects": len(plan["tests"]), "selected_classes": sum(len(j["classes"]) for j in plan["tests"]), "passed": sum(j["passed"] for j in report["test_results"]), "timings": report["timings"]})

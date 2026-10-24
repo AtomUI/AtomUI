@@ -214,7 +214,7 @@ public class NavMenuThemeContractTests
         navMenuSource.ShouldNotContain("Layoutable.MaxWidthProperty");
         navMenuSource.ShouldNotContain("Layoutable.WidthProperty,\n                BindingMode.OneWay,\n                BindingPriority.Animation");
         navMenuSource.ShouldContain("WidthProperty.OverrideMetadata<NavMenu>");
-        navMenuSource.ShouldContain("RunInlineCollapsedWidthMotionAsync");
+        navMenuSource.ShouldContain("RunInlineCollapsedWidthMotion(");
 
         navMenuThemeSource.ShouldContain("<Setter Property=\"InlineCollapsedWidth\" Value=\"{atom:NavMenuTokenResource InlineCollapsedWidth}\" />");
         navMenuThemeSource.ShouldNotContain("<DoubleTransition Property=\"Width\"");

@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
+using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.DataGrid.Layout;
 
@@ -31,7 +32,7 @@ public class DataGridFrameCornerRadiusTests
         grid.Height             = 260;
         grid.IsHideOnSinglePage = true;
 
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width   = 420,
             Height  = 340,
@@ -73,7 +74,7 @@ public class DataGridFrameCornerRadiusTests
         grid.Height             = 260;
         grid.IsHideOnSinglePage = true;
 
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width   = 420,
             Height  = 340,
@@ -124,7 +125,7 @@ public class DataGridFrameCornerRadiusTests
             Height              = 180
         };
 
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width   = 420,
             Height  = 260,
@@ -164,7 +165,7 @@ public class DataGridFrameCornerRadiusTests
     public void Header_Separator_And_Header_Cell_Separators_Apply_Border_Brushes()
     {
         var grid = CreateGridWithRows(isFrameBorderVisible: false);
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width   = 420,
             Height  = 260,
@@ -198,7 +199,7 @@ public class DataGridFrameCornerRadiusTests
     public void Last_Displayed_Row_Does_Not_Draw_Bottom_Grid_Line_When_Frame_Owns_Bottom_Border()
     {
         var grid = CreateGridWithRows(isFrameBorderVisible: true);
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width   = 420,
             Height  = 260,
@@ -235,7 +236,7 @@ public class DataGridFrameCornerRadiusTests
     public void Last_Displayed_Row_Keeps_Bottom_Grid_Line_When_Frame_Border_Is_Hidden()
     {
         var grid = CreateGridWithRows(isFrameBorderVisible: false);
-        var window = new Window
+        var window = new AvaloniaWindow
         {
             Width   = 420,
             Height  = 260,

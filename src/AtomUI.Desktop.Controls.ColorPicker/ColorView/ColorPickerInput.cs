@@ -99,6 +99,7 @@ internal class ColorPickerInput : TemplatedControl
                 input.Value?.ToString(input.FormatString, input.NumberFormat ?? CultureInfo.CurrentCulture.NumberFormat));
         }
         _hasPendingInput = false;
+        _hasDetachedInputChanges = false;
         IsInputValid = true;
     }
 
@@ -203,7 +204,7 @@ internal class ColorPickerInput : TemplatedControl
     }
 
     private bool _hasPendingInput;
-    private ComboBox? _colorFormatComboBox;
+    private bool _hasDetachedInputChanges;
     private NumericUpDown? _alphaInput;
     private LineEdit? _hexValueInput;
     private NumericUpDown? _hValueInput;
@@ -239,44 +240,34 @@ internal class ColorPickerInput : TemplatedControl
             input.PropertyChanged -= HandleConfirmationInputChanged;
             input.PropertyChanged += HandleConfirmationInputChanged;
         }
+        if (_hasDetachedInputChanges)
+        {
+            ResetInput();
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property != ColorValueProperty && change.Property != FormatProperty)
+        {
+            return;
+        }
+        if (change.Property == ColorValueProperty && _ignoringConfigureValues)
+        {
+            return;
+        }
+        // Editable fields may contain invalid or uncommitted text, so a template
+        // binding cannot replace them unconditionally. Record authoritative changes
+        // while detached, including A -> B -> A, and consume them on the next attach.
+        // With no such change the existing draft, validation and caret stay intact.
         if (this.IsAttachedToVisualTree())
         {
-            if (change.Property == ColorValueProperty)
-            {
-                if (_ignoringConfigureValues)
-                {
-                    return;
-                }
-                ResetInput();
-            }
-            else if (change.Property == FormatProperty)
-            {
-                ConfigureComboBoxSelected();
-            }
+            ResetInput();
         }
-    }
-
-    private void ConfigureComboBoxSelected()
-    {
-        if (_colorFormatComboBox != null)
+        else
         {
-            if (Format == ColorFormat.Hex)
-            {
-                _colorFormatComboBox.SelectedIndex = 0;
-            }
-            else if (Format == ColorFormat.Hsva)
-            {
-                _colorFormatComboBox.SelectedIndex = 1;
-            }
-            else if (Format == ColorFormat.Rgba)
-            {
-                _colorFormatComboBox.SelectedIndex = 2;
-            }
+            _hasDetachedInputChanges = true;
         }
     }
 
@@ -431,13 +422,7 @@ internal class ColorPickerInput : TemplatedControl
             _bValueInput.ValueChanged -= HandleBValueInputValueChanged;
         }
 
-        if (_colorFormatComboBox != null)
-        {
-            _colorFormatComboBox.SelectionChanged -= HandleFormatChanged;
-        }
-
         base.OnApplyTemplate(e);
-        _colorFormatComboBox = e.NameScope.Find<ComboBox>("PART_ColorFormatComboBox");
         _alphaInput = e.NameScope.Find<NumericUpDown>("PART_AlphaInput");
         _hexValueInput = e.NameScope.Find<LineEdit>("PART_HexValueInput");
         _hValueInput = e.NameScope.Find<NumericUpDown>("PART_HValueInput");
@@ -446,12 +431,6 @@ internal class ColorPickerInput : TemplatedControl
         _rValueInput = e.NameScope.Find<NumericUpDown>("PART_RValueInput");
         _gValueInput = e.NameScope.Find<NumericUpDown>("PART_GValueInput");
         _bValueInput = e.NameScope.Find<NumericUpDown>("PART_BValueInput");
-
-        if (_colorFormatComboBox != null)
-        {
-            _colorFormatComboBox.SelectionChanged += HandleFormatChanged;
-            ConfigureComboBoxSelected();
-        }
 
         if (_alphaInput != null)
         {
@@ -497,17 +476,6 @@ internal class ColorPickerInput : TemplatedControl
             input.PropertyChanged += HandleConfirmationInputChanged;
         }
         ResetInput();
-    }
-
-    private void HandleFormatChanged(object? sender, SelectionChangedEventArgs args)
-    {
-        if (_colorFormatComboBox?.SelectedItem is ComboBoxItem comboBoxItem &&
-            comboBoxItem.Tag is ColorFormat colorFormat)
-        {
-            SetCurrentValue(FormatProperty, colorFormat);
-            using var scope = BeginIgnoringConfigureValues();
-            ResetInput();
-        }
     }
 
     private void ConfigureColorValues()

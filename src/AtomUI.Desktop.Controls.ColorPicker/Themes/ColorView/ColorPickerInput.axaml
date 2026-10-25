@@ -10,7 +10,8 @@
                     <atom:ComboBox Name="PART_ColorFormatComboBox" 
                                    StyleVariant="Borderless" 
                                    SizeType="Small" 
-                                   SelectedIndex="0"
+                                   SelectedValueBinding="{CompiledBinding Tag, DataType={x:Type atom:ComboBoxItem}}"
+                                   SelectedValue="{TemplateBinding Format, Mode=TwoWay}"
                                    DockPanel.Dock="Left"
                                    IsVisible="{TemplateBinding IsFormatEnabled}">
                         <atom:ComboBoxItem Tag="{x:Static atom:ColorFormat.Hex}">HEX</atom:ComboBoxItem>

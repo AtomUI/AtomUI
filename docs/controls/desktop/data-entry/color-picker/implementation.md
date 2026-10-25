@@ -159,7 +159,9 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 
 纯色和渐变View的属性回调必须调用基类，确保公开Alpha可见性／可用性更新到实际输入与滑块；画刷刷新由基类统一处理。隐藏格式选择器保留当前格式，不能向Format枚举属性写入布尔值。
 
-格式选择事件通过`SetCurrentValue`更新输入区Format，保留与公开面板属性之间的双向模板绑定；不能以CLR setter覆盖该绑定，否则首次切换后后续公开格式和重置将失效。
+格式选择在ColorPickerInput的ControlTheme中声明：编译型SelectedValueBinding读取ComboBoxItem.Tag，SelectedValue与输入区Format使用原生双向TemplateBinding，再由既有双向模板绑定连接公开面板Format。格式映射不再由控件代码维护SelectedIndex或SelectionChanged订阅；重模板时由原生模板生命周期释放旧绑定。
+
+输入区离树期间记录外部ColorValue／Format是否发生变化，回树时只在有此类变化时按当前值刷新，并清除待回放状态。即使离树A→B→A也代表外部覆盖；没有外部变化时保留无效／有效草稿、校验及光标，不能无条件ResetInput。字段可能包含无效或尚未提交的编辑文本，因此字段值的条件同步属于代码边界，不能以无条件展示绑定覆盖；格式选择本身仍由ControlTheme声明。重新应用模板或显式ResetInput同样清除待回放状态。
 
 确认模式的输入事件收敛为候选编辑、确认、取消三类操作。候选编辑不通知 Form；确认先同步有效输入，再写回宿主，随后对非空值发出一次 `ValueSelected`，最后请求关闭。关闭回调不能重复提交或再次发出选择事件。默认模式仍按原有 `ValueSyncStrategy` 与关闭事件处理，完整矩阵见 [确认与取消设计](confirmation-design.md)。
 

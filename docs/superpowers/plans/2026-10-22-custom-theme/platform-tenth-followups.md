@@ -1,5 +1,9 @@
 # 第十批跟进：C4/C5与平台选测
 
+当前执行记录：用户已分别批准重挂六对Alpha变化及本批两个提交、推送、Actions。17文件冻结快照e004f1d5daca已逐blob验证；纯布局提交abd62d8492fe、修复提交9e085594030f已推送现有远端分支。[第十轮Actions](https://github.com/AtomUI/AtomUI/actions/runs/40163904747)针对9e085594运行，full=false，不发布NuGet。下文待审措辞记录提交前状态；C6不在本批范围。
+
+第十轮最终结果：三NativeAOT与两Browser成功；三OS选测失败，完整失败明细及阶段journal已收集。Windows／Linux的前八项目5664项、DataGrid309和Desktop4128均通过；Windows本地化其余4项通过，原import路径断言已通过，Official最后预期负例子进程退出1后清理仍因build-host.log占用失败（54条stage全部配对）。Linux同项再次触及600秒总体限制，full／partial／dormant构建分别153.67／128.37／129.40秒，active构建开始后约24秒触及总限，53条journal留下该PID未配对；没有把它当单个子进程300秒超时或网络故障。Mac本地化5项466.265秒通过，前十项目5878项通过；Gallery411/412，Tour语义预览popup.root卡片在hover前未命中，原1280×900场景的本机两项原流程通过，尚未复现根因，不宣称已修复。Windows／Linux未执行后续Gallery项目，不计未运行项为通过；不调整超时、不吞清理错误或更改包消费断言。
+
 沿现有feature/custom-theme和checkout，不创建分支／worktree，不使用subagent，不发布NuGet。作者自审；无独立子agent评审。Git提交／推送／Actions必须按本批具体快照另获批准，前九批授权均不扩大。
 
 ## 问题及最终范围

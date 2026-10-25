@@ -44,6 +44,8 @@ Token 按控件语义分类维护：
 
 这些角色不新增Own字段或资源编号。触发色块按所属公开Picker身份解析，Popup中的选择环按独立公开View身份解析；宿主、View及其他owner的专属Global各自隔离，general Global和作用域继承仍适用。选择环的明暗笔画颜色继续使用现有ColorPickerHandlerLightColor／ColorPickerHandlerDarkColor，禁用色块透明度继续由ColorBlockDisabledOpacity控制。
 
+透明棋盘的 tile size 消费既有 `TransparentBgSize`，间隔颜色消费有效 Global `ColorFillSecondary`。资源输入与派生 DrawingBrush 在同一实例离树、覆盖改变、回树及覆盖撤回时保持一致；明确0继续按原几何值传递。资源身份、作用域及默认值不因绘制缓存改变，色谱键盘焦点框复用框架现有焦点主题，不增加 ColorPicker Own Token。 单分量滑轨键盘直接使用继承的 SmallChange／LargeChange 与范围属性，不增加 Token 或资源映射。
+
 ## 3. 控件专项模型中的 Token 使用
 
 ColorPicker 的控件专项模型通过 Theme 消费 Token：

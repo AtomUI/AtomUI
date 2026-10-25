@@ -163,6 +163,23 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 
 输入区离树期间记录外部ColorValue／Format是否发生变化，回树时只在有此类变化时按当前值刷新，并清除待回放状态。即使离树A→B→A也代表外部覆盖；没有外部变化时保留无效／有效草稿、校验及光标，不能无条件ResetInput。字段可能包含无效或尚未提交的编辑文本，因此字段值的条件同步属于代码边界，不能以无条件展示绑定覆盖；格式选择本身仍由ControlTheme声明。重新应用模板或显式ResetInput同样清除待回放状态。
 
+色谱的 `Focusable=true` 在自身 ControlTheme 声明，焦点框由现有 AdornerLayer 根据 `:focus-visible` 创建和释放；色谱不创建自己的焦点视觉、事件订阅或补偿聚焦。普通步长下，LTR 的 Left／Up 映射如下；Right／Down 反向，RTL 仅将水平增量反向。
+
+| 分量模式 | Left | Up |
+| --- | --- | --- |
+| HueSaturation | Hue −1° | Saturation +0.01 |
+| SaturationHue | Saturation +0.01 | Hue −1° |
+| HueValue | Hue −1° | Value +0.01 |
+| ValueHue | Value +0.01 | Hue −1° |
+| SaturationValue | Saturation −0.01 | Value +0.01 |
+| ValueSaturation | Value +0.01 | Saturation −0.01 |
+
+VS 的饱和度轴向下递增，不能复用其他非 Hue 轴的方向规则。分量选择、Ctrl 的本地化颜色增量及 wrap／退化范围继续由现有键盘 helper 处理；非方向键交回基类。模板重建或离树重挂后的焦点导航依赖框架自身生命周期，旧色谱及旧焦点 adorner 不由面板保存。
+
+具体 `ColorSlider.OnKeyDown` 读取继承的 SmallChange／LargeChange、Minimum／Maximum 和 FlowDirection，通过 SetCurrentValue 进入已有 Value→颜色通知链。未修饰的数值键在边界也会标记 Handled；已处理、禁用及修饰键不更新。入口仅放在具体单分量控件，避免共享 AbstractColorSlider 改变 GradientColorSlider 的多 stop 编辑。此逻辑属于路由输入与运行时数值更新，不能由模板 Setter 等价表达；没有新增焦点绑定、字段或订阅。Alpha 沿用模板现有 IsRoundingEnabled=true，RoundComponentValues 对 HSV 各分量的原有舍入同样保留。
+
+方向键与指针共用既有颜色更新路径：控件已加载且 Alpha 与模式剩余分量同时为0时，先按原可见颜色初始化规则提高 Alpha／剩余分量；其他颜色保持这两个分量。输入区的百分比显示仍沿用既有字节量化与格式规则，不能把编辑草稿的整数百分比当作精确颜色 Alpha。
+
 确认模式的输入事件收敛为候选编辑、确认、取消三类操作。候选编辑不通知 Form；确认先同步有效输入，再写回宿主，随后对非空值发出一次 `ValueSelected`，最后请求关闭。关闭回调不能重复提交或再次发出选择事件。默认模式仍按原有 `ValueSyncStrategy` 与关闭事件处理，完整矩阵见 [确认与取消设计](confirmation-design.md)。
 
 ## 7. 内部算法与关键流程
@@ -175,12 +192,13 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - 色谱内部`PART_LayoutRoot`使用Canvas提供测量边界；按实际绘制尺寸更新的子层不能以旧位图尺寸撑住下一轮自然测量。原有SizingPanel、矩形与透明输入Canvas保留，宽度缩小和加宽配置撤回均须检查同实例尺寸与指针命中。
 - `ColorSlider`只提交最新颜色／布局请求的后台位图，较早请求晚完成不得覆盖当前内容；脱离视觉树时的结果不能写回，重新挂载时即使Bounds和颜色没有再次通知也要按当前值重算。过期任务继续释放自身像素缓冲，不处置较新位图。运行时像素生成属于控件绘制边界，不能由ControlTheme绑定替代。
 - `ColorSpectrum`的UI线程请求代次同时覆盖后台生成与同步fast路径。后台完成时先核对代次，再创建当前位图；分量、尺寸及范围元数据来自同一启动快照，不能按完成时的当前属性解释旧像素。旧请求失效后仍释放自己的临时缓冲。
-- 色谱范围沿用`min >= max`时min为唯一值的约定；生成像素和已应用map元数据必须使用同一归一范围。零跨度的选择环比例与单像素轴比例取0，避免NaN；共享键盘增量helper在等值／倒置范围直接返回该分量min，保留其余分量。范围修复与下述公开View分量接线是独立切片，均不表示现有键盘焦点路径已接通。
+- 色谱范围沿用`min >= max`时min为唯一值的约定；生成像素和已应用map元数据必须使用同一归一范围。零跨度的选择环比例与单像素轴比例取0，避免NaN；共享键盘增量helper在等值／倒置范围直接返回该分量min，保留其余分量。
 - `AbstractColorPickerView.ColorSpectrumComponents` 默认采用 `SaturationValue`，与历史模板实际显示的饱和度／明度面板和色相滑轨一致。兼容变化在于：读取未显式配置的属性现在得到 `SaturationValue`，此前得到的 `HueSaturation` 与实际面板不一致。希望使用色相／饱和度面板的调用方须显式设置 `HueSaturation`。
 - 普通与渐变View的ControlTemplate通过`TemplateBinding`把该属性传给实际Spectrum；第三滑轨的`ColorComponent`通过模板内显式`CompiledBinding #ColorSpectrum.ThirdComponent`消费剩余分量，避免反射绑定或代码同步。HS／SH剩余Value，HV／VH剩余Saturation，SV／VS剩余Hue。模式切换保留当前HSV与Alpha；不新增公开签名、Token或Semantic Part。
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 - `ColorBlock` 的空颜色斜线使用最终 Bounds 定位端点，不计入外部 Margin，也不使用测量阶段的尺寸代替绘制区域。
+- 滑轨与 ColorBlock 的透明棋盘画刷是 interval color 和 tile size 的派生值，输入在离树时改变也立即更新既有缓存引用；保留模板回树不依赖同值通知、强制重模板或延迟刷新。ControlTheme 继续拥有标量资源绑定，运行时 DrawingBrush 由既有最多32项的值缓存生成，不持有控件或资源宿主。
 - 渐变触发文字的正常前景由 owner `Foreground` 投射到 `PART_ColorTextPanel`，默认读取有效 `ColorText`。当前活动节点沿用 `ColorTextDisabled` 的弱化语义；禁用时文本区统一读取有效禁用色。文字生成及选择变化只同步内部节点标记，颜色由主题声明，不能把当前画刷写成本地快照。
 - 渐变文字由 formatter 运行时生成，未加入 owner 的 `TemplatedParent` 链；节点状态样式声明在模板中 `WrapPanel.Styles` 的逻辑子树作用域。`description` 专用 Style 作用于面板，正常文字继承其前景；formatter 明确设置的本地前景继续遵循 Avalonia 原生样式优先级。
 - 颜色候选与提交值的隔离、输入有效性检查、渐变深复制、外部值更新及 pinned 操作转换统一遵循 [确认与取消设计](confirmation-design.md)，不套用日期专用编辑会话。

@@ -4,7 +4,12 @@
 
 ## 2026-10-25（待完整家族验收）
 
-- API／Theme（C8 验证中）：`AbstractColorPickerView.ColorSpectrumComponents` 的默认读取值由 `HueSaturation` 改为 `SaturationValue`，保持历史实际默认面板；此公开默认值变化已获用户批准。两类 View 声明式接通六模式及其剩余 H／S／V 滑轨，显式 HS 配置现在实际显示 HS 面板。未新增公开签名、Token或Part；键盘可达性另行处理，视觉和真实宿主验收结果另记，当前不表示完整家族完成。
+- Behavior（C10设计及有限视觉已批准，本机切片出口完成）：具体 ColorSlider 接通未修饰方向键、PageUp／Down、Home／End，读取已有步长和边界；RTL仅反转水平键。保留绑定、单次颜色通知及既有 Alpha 舍入，多 stop 渐变轨道保持原合同；不新增公开签名、Token或Part。
+
+- Behavior／Theme（C9短设计及有限视觉已批准，完整家族待验收）：色谱通过ControlTheme参与自然Tab／ShiftTab和指针聚焦，复用AtomUI默认焦点框，移除无目标的FocusEllipse选择器；修正VS模式上下键饱和度方向，保持其他模式、RTL、步长、Ctrl和原边界语义。
+- Fix：透明棋盘派生画刷跟随离树期间的实际颜色／尺寸输入更新，修复同模板重挂后属性已变化而slider／ColorPreview仍使用旧tile；沿用有界缓存，无新字段、订阅、Token或Part。24项临时检查已删除，清理后原27项及NET8 Release零警告通过；31对有限自然差异和棋盘视觉已获单独批准，NativeAOT首轮输入缺失保留为未解释记录。
+
+- API／Theme（C8 本机切片／审查及本轮跨平台CI通过，完整家族未完成）：`AbstractColorPickerView.ColorSpectrumComponents` 的默认读取值由 `HueSaturation` 改为 `SaturationValue`，保持历史实际默认面板；此公开默认值变化已获用户批准。两类 View 声明式接通六模式及其剩余 H／S／V 滑轨，显式 HS 配置现在实际显示 HS 面板。未新增公开签名、Token或Part；键盘可达性另行处理，视觉和真实宿主验收结果另记，当前不表示完整家族完成。
 
 - Fix：历史GradientColorPicker.SetPresetColor的Func委托通过强类型适配写入既有Action附加属性，修复非空formatter赋值时的ArgumentException；保持公开签名、null与样式优先级。支持重复更新和复用输出控件，清除后恢复默认文字。
 

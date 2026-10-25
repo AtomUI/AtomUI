@@ -6,7 +6,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -149,14 +148,13 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
         {
             _emptyColorPen = null;
         }
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == TransparentBgIntervalColorProperty ||
+            change.Property == TransparentBgSizeProperty ||
+            change.Property == IsEmptyColorModeProperty)
         {
-            if (change.Property == TransparentBgIntervalColorProperty ||
-                change.Property == TransparentBgSizeProperty ||
-                change.Property == IsEmptyColorModeProperty)
-            {
-                ConfigureTransparentBgBrush();
-            }
+            // This runtime-generated cached drawing must follow its inputs even
+            // off-tree; a retained template does not republish unchanged values.
+            ConfigureTransparentBgBrush();
         }
 
         if (change.Property == SizeProperty)

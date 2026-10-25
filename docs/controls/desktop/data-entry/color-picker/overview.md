@@ -119,6 +119,10 @@ Public API / inherited command / item source / user input
 - 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
 - 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
 
+普通与渐变面板中的二维色谱参加自然 Tab／Shift+Tab 导航，并支持指针聚焦。键盘聚焦使用 AtomUI 默认焦点框；方向键沿当前六种分量模式的可见轴移动选择环，RTL 只反转水平轴。既有 Ctrl 增量、边界与退化范围规则继续适用；正常非退化颜色保持 Alpha 与未编辑分量，零 Alpha 且剩余分量为零时沿用色谱原有的可见颜色初始化规则。该交互属于面板内部色谱，不把内部节点提升为公开 Semantic Part。
+
+单分量及 Alpha 滑轨支持未修饰方向键（SmallChange，默认1）、PageUp／PageDown（LargeChange，默认10）和 Home／End。RTL 只反转水平键；到边界钳制、不环绕。滑轨或其滑块自然获得焦点后沿同一冒泡入口更新，保留已有绑定与颜色舍入规则；Ctrl／Alt／Shift 及其他键继续原路由。该行为不扩展到渐变多 stop 轨道。
+
 ## 5. 视觉与主题模型
 
 ColorPicker 的视觉模型由控件模板、ControlTheme、SharedToken 和 ColorPicker Own Token 共同构成。

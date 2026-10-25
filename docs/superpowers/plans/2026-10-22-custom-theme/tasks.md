@@ -152,3 +152,15 @@ CT-21/CT-23使用现有[GalleryBase](../../../../src/AtomUI.Toolkits.GalleryBase
 | Token准备提前创建表现属性通知；外层cleanup尚不能报告完整品牌状态 | CT-08B惰性创建；CT-08C统一协调和版本1结果 | 外层失败责任已接管，恢复/退役故障和重试通过；完整品牌公开入口仍属CT-09 |
 
 任务拆分以独立可审查的合同为准：一项默认依赖、一条真实消费链或一个状态/形态合同可以独立交付；不按文件数量或任意固定工期拆分。暂不估算全项目日期，先以CT-00–CT-02确定真实规模。
+
+2026-10-25最新：C8的30对限定差异已获用户接受，全部临时驱动／媒体清理并通过审计；获批第十五批15文件原样提交393d718b3、推送后运行[Actions40188740837](https://github.com/AtomUI/AtomUI/actions/runs/40188740837)。C8本机切片出口完成，三OS／两Browser实际结果仍待本轮；键盘审计及完整CT19／CT25继续，不计作家族完成。
+
+第十五轮最终：获批393d718b3的[Actions40188740837](https://github.com/AtomUI/AtomUI/actions/runs/40188740837)8个job全成功；Windows／Linux／Mac选测各6405／6405、Gallery各412／412，三NativeAOT及两Browser通过，三平台本地化各27组子进程阶段完整配对。该轮不含后续C9及透明棋盘生命周期研发；CT19／CT25完整出口继续。用户已批准[C9色谱键盘短设计](color-spectrum-keyboard.md)，自然焦点和方向反例正在分阶段验证。
+
+CT19追加[C9与棋盘格结果](color-spectrum-keyboard-results.md)：已批准的自然焦点／默认adorner与VS方向修复、两类可见棋盘离树更新已实现。原焦点8项失败与四组有效VS Up反例、两类slider／ColorBlock重挂反例均转GREEN，24项扩展检查通过并删除；清理后原ColorPicker27项、NET8 Release零警告及3文件成员审计通过。正式168帧、56组1DIP全检出；四组默认／四组最终reset为0，独立直接Skia56组A/A／16恢复／16旧新兼容为0，32对状态表一致。[31对自然限定差异](color-spectrum-keyboard-noise-review.md)及棋盘重挂视觉已送单独审查，媒体尚在仓库外等回复。真实Mac managed388；NativeAOT首轮383／388的四事件缺失未证明原因，trace与原二进制复跑各388通过不抹去首轮；滑轨键盘、原生最终像素及完整家族继续，Git本批未授权。
+
+2026-10-25用户明确允许C9棋盘格重挂视觉修复及表内31对限定差异；457张PNG和manifest共458文件已清理，Git媒体审计clean，C9临时源／外部驱动已删除。既有原27项、NET8 Release及成员审计证据保持。用户同时批准[C10单分量滑轨短设计](color-slider-keyboard.md)，按[实施计划](color-slider-keyboard-plan.md)继续；两项授权均不包含Git，C9首轮AOT输入缺失及完整家族／原生最终显示面仍开放。
+
+CT19 [C10单分量键盘结果](color-slider-keyboard-results.md)验证中：具体ColorSlider单一入口复用既有步长／边界及颜色链，不改共享多stop；空值与双stop正常数据分别原8键盘RED／候选26 GREEN，独立原Alpha舍入2项保留。真实Mac managed／NativeAOT各八窗口5688项、1248次目标按键均送达。自然384帧的128组1DIP全部检出、八新旧默认0、216对公共树记录一致；有限72对1–20像素／单通道≤2的合成差异正在独立直接Skia核对，尚未申请扩大任何既有批准。临时C#及媒体待完成判断后清理；C9首轮AOT缺失原因与完整CT19／CT25仍开放，没有新Git授权。
+
+2026-10-25 C10最新：用户已接受[72对精确限定自然差异](color-slider-keyboard-noise-review.md)；[本机切片结果](color-slider-keyboard-results.md)完成。空值／正常双stop数据各26项、Mac managed／NativeAOT各5688项／各1248次目标按键通过；640帧的128组1DIP全检出，直接128AA／32恢复／40兼容0，416对公开树记录一致。两份临时C#、外部驱动及645张PNG／manifest共646文件已清理；最终原ColorPicker27项、NET8 Release零警告、四控件完整成员及媒体审计／文档／作者另步自审通过。当前等待新的具体Git审查，不能沿用第十五批授权；完整CT19／CT25及C9首轮AOT原因仍开放。

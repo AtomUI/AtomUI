@@ -20,10 +20,10 @@ C4补充216帧中，旧版Dark Gradient空草稿的main／AA相差1722像素，A
 
 ### Task 1: 原顺序反例、最小修复及完整消费复验
 
-- [ ] 在Temporary/CT19SliderBitmap暂停较早红色请求，放行最新白色／尺寸请求，再结束旧请求；真实Bitmap保持最新白／尺寸。另查detach／reattach；旧代码必须有效RED。
+- [x] 在Temporary/CT19SliderBitmap暂停较早红色请求，放行最新白色／尺寸请求，再结束旧请求；真实Bitmap保持最新白／尺寸。另查detach／reattach；旧代码必须有效RED。
 - [x] 按成员审计先保存纯布局等价证据，再增加最小请求版本并保留原释放边界；不改变Token、模板、事件或输入几何。
-- [ ] 删除门闩和Task观测挂钩，用真实公开两picker重放C4补充完整历史和独立AA／1DIP／恢复，区分新的预期像素与合成问题。
-- [ ] Mac managed／NativeAOT、清理后的精确ColorPicker模块、NET8和成员审计；文档同步，默认视觉变化单独交审，不自动提交。
+- [x] 删除门闩和Task观测挂钩，用真实公开两picker重放C4补充完整历史和独立AA／1DIP／恢复，区分新的预期像素与合成问题。
+- [x] Mac managed／NativeAOT、清理后的精确ColorPicker模块、NET8和成员审计；文档同步，默认视觉变化单独交审，不自动提交。
 
 ## 原顺序反例及最小候选
 
@@ -48,3 +48,7 @@ ColorSlider只补公共事件region，Roslyn全部成员／imports token完全�
 同一最终源码的Mac NSWindow scale2，公共ColorPickerView明／暗managed／NativeAOT各82项通过，包括保留实例脱离改三种颜色再返回、实际Alpha Bitmap RGB和物理尺寸、选择环2→6→0→2及原生实际变体。原生宿主和临时Task观测工程均已删除，媒体留到视觉审查后清理。NET8 Release零警告／错误、ColorBlock和ColorSlider两文件成员审计零问题；Core资源原两模块17项、Desktop原三模块23项通过。补拍临时源删除后的Desktop最终检查仍需执行，产品源SHA与上述Core／NET8输入相同，不以此前临时assembly认证清理后的Desktop输入。
 
 补拍发现另一独立旧问题：公共ColorPickerView离树改色后，HEX文字仍#FFFFFF，旧版与候选完全相同，而Spectrum／公开Value已改。该差异不由本次Alpha重挂更新造成，不把它写为输入区已修复；另列CT19 C6继续检查ColorPickerInput的挂载／有效输入同步和实际光标、格式、确认态。C5只申请上述六对Alpha变化，不代替公共View、Gradient活动节点或完整家族生命周期验收。
+
+## 分包结案
+
+用户已明确允许重挂六对Alpha位图变化；媒体及临时源／Task观测／工程已清理，帧SHA与数值保留。最终清理后Desktop23项5.0879秒、Core17项1.8225秒、NET8 Release零警告／错误、两控件成员审计零问题。C5已随获批第十批提交9e0855940推送，不再等待视觉或Git批准；实际Windows完整出口及CT19家族仍开放。独立HEX／格式输入问题见已获视觉批准的[C6结果](color-picker-input-lifecycle-results.md)，该切片不在第十批提交中。

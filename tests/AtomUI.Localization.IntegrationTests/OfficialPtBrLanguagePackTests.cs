@@ -71,6 +71,7 @@ public sealed class OfficialPtBrLanguagePackTests
         var toolingPackageVersion = packageVersion + ".tooling";
         Directory.CreateDirectory(feed);
         Directory.CreateDirectory(toolingFeed);
+        Exception? primaryFailure = null;
 
         try
         {
@@ -86,7 +87,7 @@ public sealed class OfficialPtBrLanguagePackTests
             var fullConsumer = CreateConsumerProject(
                 repositoryRoot,
                 temporaryRoot,
-                "full-consumer",
+                "full",
                 packageVersion,
                 toolingPackageVersion,
                 includeDataGrid: true,
@@ -97,7 +98,8 @@ public sealed class OfficialPtBrLanguagePackTests
                 feed,
                 toolingFeed,
                 fullConsumer,
-                "full");
+                "full",
+                buildSourceProjects: true);
             File.Exists(Path.Combine(fullOutput, "AtomUI.Desktop.Controls.DataGrid.dll"))
                 .ShouldBeTrue();
             File.Exists(Path.Combine(fullOutput, "AtomUI.Desktop.Controls.ColorPicker.dll"))
@@ -106,7 +108,7 @@ public sealed class OfficialPtBrLanguagePackTests
             var partialConsumer = CreateConsumerProject(
                 repositoryRoot,
                 temporaryRoot,
-                "partial-consumer",
+                "partial",
                 packageVersion,
                 toolingPackageVersion,
                 includeDataGrid: false,
@@ -117,7 +119,8 @@ public sealed class OfficialPtBrLanguagePackTests
                 feed,
                 toolingFeed,
                 partialConsumer,
-                "partial");
+                "partial",
+                buildSourceProjects: false);
             AssertPartialConsumerGraph(partialConsumer, partialOutput, packageVersion);
 
             var corruptedFeed = Path.Combine(temporaryRoot, "corrupted-feed");
@@ -127,7 +130,7 @@ public sealed class OfficialPtBrLanguagePackTests
             var dormantConsumer = CreateConsumerProject(
                 repositoryRoot,
                 temporaryRoot,
-                "dormant-corrupted-consumer",
+                "dormant-corrupted",
                 packageVersion,
                 toolingPackageVersion,
                 includeDataGrid: false,
@@ -138,12 +141,13 @@ public sealed class OfficialPtBrLanguagePackTests
                 corruptedFeed,
                 toolingFeed,
                 dormantConsumer,
-                "dormant-corrupted");
+                "dormant-corrupted",
+                buildSourceProjects: false);
 
             var activeConsumer = CreateConsumerProject(
                 repositoryRoot,
                 temporaryRoot,
-                "active-corrupted-consumer",
+                "active-corrupted",
                 packageVersion,
                 toolingPackageVersion,
                 includeDataGrid: true,
@@ -159,17 +163,20 @@ public sealed class OfficialPtBrLanguagePackTests
                 repositoryRoot,
                 temporaryRoot,
                 activeConsumer,
-                "active-corrupted");
+                "active-corrupted",
+                buildSourceProjects: false);
             activeResult.ExitCode.ShouldNotBe(0);
             activeResult.Output.ShouldContain("ATOMUILOC006");
             activeResult.Output.ShouldContain("referenced Catalog");
         }
+        catch (Exception error)
+        {
+            primaryFailure = error;
+            throw;
+        }
         finally
         {
-            if (Directory.Exists(temporaryRoot))
-            {
-                Directory.Delete(temporaryRoot, recursive: true);
-            }
+            LanguagePackTestCleanup.Delete(temporaryRoot, primaryFailure);
         }
     }
 
@@ -367,12 +374,13 @@ public sealed class OfficialPtBrLanguagePackTests
     private static string CreateConsumerProject(
         string repositoryRoot,
         string temporaryRoot,
-        string name,
+        string identity,
         string packageVersion,
         string toolingPackageVersion,
         bool includeDataGrid,
         bool includeColorPicker)
     {
+        var name = identity + "-consumer";
         var projectDirectory = Path.Combine(temporaryRoot, name);
         Directory.CreateDirectory(projectDirectory);
         var projectPath = Path.Combine(projectDirectory, name + ".csproj");
@@ -404,6 +412,9 @@ public sealed class OfficialPtBrLanguagePackTests
                 new XElement(
                     "PropertyGroup",
                     new XElement("TargetFramework", "net10.0"),
+                    // A command-line override also changes every source reference's restore inputs.
+                    // Keep each corrupted-feed consumer isolated without rewriting shared restore inputs.
+                    new XElement("RestorePackagesPath", ConsumerPackagesPath(temporaryRoot, identity)),
                     new XElement("Nullable", "enable"),
                     new XElement("ImplicitUsings", "enable")),
                 new XElement(
@@ -542,7 +553,8 @@ public sealed class OfficialPtBrLanguagePackTests
         string feed,
         string toolingFeed,
         string projectPath,
-        string identity)
+        string identity,
+        bool buildSourceProjects)
     {
         await RestoreConsumer(
             repositoryRoot,
@@ -555,7 +567,8 @@ public sealed class OfficialPtBrLanguagePackTests
             repositoryRoot,
             temporaryRoot,
             projectPath,
-            identity);
+            identity,
+            buildSourceProjects);
         result.ExitCode.ShouldBe(0, FormatFailure(result, "failed"));
         return ConsumerOutputPath(temporaryRoot, identity);
     }
@@ -568,6 +581,10 @@ public sealed class OfficialPtBrLanguagePackTests
         string projectPath,
         string identity)
     {
+        var project = XDocument.Load(projectPath);
+        project.Root!.Element("PropertyGroup")!.SetElementValue(
+            "RestoreAdditionalProjectSources", $"{feed};{toolingFeed}");
+        project.Save(projectPath);
         await RunProcess(
             $"Restore {identity} consumer",
             repositoryRoot,
@@ -578,8 +595,6 @@ public sealed class OfficialPtBrLanguagePackTests
             "--disable-build-servers",
             "-m:1",
             "-nr:false",
-            $"-p:RestoreAdditionalProjectSources={feed}%3B{toolingFeed}",
-            $"-p:RestorePackagesPath={ConsumerPackagesPath(temporaryRoot, identity)}",
             $"-p:RestoreAdditionalProjectFallbackFolders={GlobalPackagesPath()}");
     }
 
@@ -587,7 +602,8 @@ public sealed class OfficialPtBrLanguagePackTests
         string repositoryRoot,
         string temporaryRoot,
         string projectPath,
-        string identity)
+        string identity,
+        bool buildSourceProjects)
     {
         return RunProcessUnchecked(
             $"Build {identity} consumer",
@@ -601,8 +617,10 @@ public sealed class OfficialPtBrLanguagePackTests
             "-m:1",
             "-nr:false",
             "-p:Configuration=Debug",
+            // The full consumer first builds every source module. Each later consumer
+            // still compiles its own package graph, using those same source artifacts.
+            $"-p:BuildProjectReferences={buildSourceProjects}",
             $"-p:OutputPath={ConsumerOutputPath(temporaryRoot, identity)}",
-            $"-p:RestorePackagesPath={ConsumerPackagesPath(temporaryRoot, identity)}",
             $"-p:RestoreAdditionalProjectFallbackFolders={GlobalPackagesPath()}");
     }
 

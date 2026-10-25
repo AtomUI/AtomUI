@@ -81,7 +81,9 @@ public class InputSuffixVerticalCenteringTests
     private static double AbsCenter(Visual visual)
     {
         var transformed = visual.GetTransformedBounds();
-        return transformed.HasValue ? transformed.Value.Bounds.Center.Y : -1;
+        return transformed.HasValue
+            ? transformed.Value.Transform.Transform(transformed.Value.Bounds.Center).Y
+            : -1;
     }
 
     private static string DescribeKids(Visual owner)

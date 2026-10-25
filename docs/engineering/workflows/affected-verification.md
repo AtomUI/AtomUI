@@ -99,6 +99,8 @@ runner 用临时 solution 汇总选中项目，一次构建共享依赖；构建
 
 测试进程失败或TRX验收失败时，runner在原始结果删除前将非通过用例的名称、class、outcome、错误与调用栈写入latest.json的failed_test_results。每个失败项目保留计数和complete／evidence_errors；没有、损坏或计数不一致的TRX明确标为不完整，不用空清单表示全部失败已收集。原命令错误及非零退出仍保留，不生成成功receipt。该字段不受命令日志末尾16KB展示限制。
 
+选测CI显式设置`ATOMUI_LOCALIZATION_STAGE_TRACE`，将本地化包消费夹具的子进程阶段记录到`.artifacts/verification/localization-stages.jsonl`并作为文字artifact保存。每条包含阶段ID、进程ID、UTC、既有命令、开始／完成／取消／阶段超时与耗时；总测试超时发生前已写出的开始和完成记录可用于判断最后阶段及累计开销。不设置该变量时没有journal IO；写入失败只报告诊断，不替代原子进程结果或异常。它不更改用例选择、120s／300s阶段限制、总体测试超时或包消费断言，也不能单独表示超时已经修复。
+
 | 状态 | 含义 | 退出码 |
 | --- | --- | --- |
 | `passed` | 本次计划内检查完成，不代表整个仓库已验证 | 0 |

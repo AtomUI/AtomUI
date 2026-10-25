@@ -10,6 +10,7 @@ namespace AtomUI.Localization.IntegrationTests;
 
 public sealed class LanguagePackEndToEndTests
 {
+    private static readonly object s_stageTraceLock = new();
     private static readonly TimeSpan s_stageTimeout = TimeSpan.FromSeconds(120);
     // Isolated consumers compile the full control graph without shared checkout outputs.
     private static readonly TimeSpan s_buildStageTimeout = TimeSpan.FromMinutes(5);
@@ -618,6 +619,8 @@ public sealed class LanguagePackEndToEndTests
         using var process = Process.Start(startInfo) ?? throw new InvalidOperationException(
             $"The '{stage}' process could not be started.");
         var stopwatch = Stopwatch.StartNew();
+        var stageId = Guid.NewGuid().ToString("N");
+        WriteProcessStageTrace("start", stageId, stage, command, process.Id, TimeSpan.Zero, null);
         var standardOutput = process.StandardOutput.ReadToEndAsync();
         var standardError = process.StandardError.ReadToEndAsync();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
@@ -641,6 +644,8 @@ public sealed class LanguagePackEndToEndTests
             var outcome = TestContext.Current.CancellationToken.IsCancellationRequested
                 ? "was cancelled"
                 : "timed out";
+            WriteProcessStageTrace(outcome == "was cancelled" ? "cancelled" : "timed_out",
+                stageId, stage, command, process.Id, stopwatch.Elapsed, null);
             throw new TimeoutException(
                 FormatFailure(
                     stage,
@@ -660,7 +665,45 @@ public sealed class LanguagePackEndToEndTests
             process.ExitCode,
             await standardOutput,
             await standardError);
+        WriteProcessStageTrace("completed", stageId, stage, command, process.Id, result.Elapsed, result.ExitCode);
         return result;
+    }
+
+    private static void WriteProcessStageTrace(
+        string eventName, string stageId, string stage, string command, int processId,
+        TimeSpan elapsed, int? exitCode)
+    {
+        var configured = Environment.GetEnvironmentVariable("ATOMUI_LOCALIZATION_STAGE_TRACE");
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return;
+        }
+        try
+        {
+            var path = Path.GetFullPath(configured);
+            var entry = JsonSerializer.Serialize(new
+            {
+                version = 1,
+                @event = eventName,
+                stage_id = stageId,
+                stage,
+                command,
+                process_id = processId,
+                time_utc = DateTimeOffset.UtcNow,
+                elapsed_seconds = elapsed.TotalSeconds,
+                exit_code = exitCode
+            });
+            lock (s_stageTraceLock)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.AppendAllText(path, entry + Environment.NewLine);
+            }
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            // Optional diagnostics must preserve the original child result or timeout.
+            Console.Error.WriteLine($"Stage journal could not be written: {error.Message}");
+        }
     }
 
     private static string FormatCommand(string executable, IReadOnlyList<string> arguments)

@@ -263,7 +263,13 @@ public class DatePanelAlgorithmTests
     [Fact]
     public void Picker_Weekday_Headers_Are_Two_Letter_Labels_And_Week_Prefix_Is_Empty()
     {
-        var model = Build("Date", new DateTime(2026, 10, 2), unit: "Week");
+        var input = Input("Date", new DateTime(2026, 10, 2), "Week");
+        // NLS and ICU supply different en-US shortest names. Specify the culture
+        // data this two-letter ordering case exercises instead of assuming either.
+        var culture = (CultureInfo)CultureInfo.GetCultureInfo("en-US").Clone();
+        culture.DateTimeFormat.ShortestDayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+        Set(input, "Culture", culture);
+        var model = BuildInput(input);
         Get<IReadOnlyList<string>>(model, "ColumnHeaders").ShouldBe(["", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]);
     }
 

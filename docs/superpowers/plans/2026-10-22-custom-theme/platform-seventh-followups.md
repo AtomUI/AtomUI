@@ -109,3 +109,7 @@ W14临时源已清理后，原RowHeaderRecycleIssue475模块Mac9项4.397s通过�
 ## 清理后的Mac结果
 
 当前Gallery整个受影响项目412项54.335s通过（精确namespace filter，非仓库全量回归），此前9项均已核对合同并处理。LayoutPanel保持原源码，没有短列表产品扩展；StepsProgressBar仅取整锚点修复。明暗最终采样完整切换算法，20项比较全通过，默认Light238／Dark239像素已获用户明确批准；临时源码／旧源备份及最终24张媒体均已删除，文字SHA和数值保留。W14原模块9项通过，实际Windows仍待CI。
+
+## 已批准执行
+
+用户明确批准本批两个提交、推送及验证Actions。纯布局提交f0549a3a9与最终实现提交5c7c4a2cc均已创建，63个最终Git blob与dd13dc4a4c15审查快照逐一相同，随后推送既有远端feature/custom-theme并确认远端SHA。验证运行https://github.com/AtomUI/AtomUI/actions/runs/40155448673，full=false、三OS／两Browser，无NuGet发布。首轮已结束：Mac选测6290项及五运行时通过；真实Windows Grid309全通过，Desktop剩11项测试合同失败；Linux Desktop4128全通过，后续本地包消费总体600000ms超时，当前请求同SHA复验。三组测试诊断与42项清理后结果见[第八轮后续](platform-eighth-followups.md)。此后新研发不沿用本批提交授权。

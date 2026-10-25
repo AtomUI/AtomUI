@@ -65,6 +65,13 @@ public class PopupMarginPlacementTests
         try
         {
             window.Show();
+            // Windows only supplies a CSD Window template. Exercise the supported
+            // non-CSD Linux template in this headless placement case, preserving
+            // the same AtomUI host, content and placement geometry.
+            if (!csd && window.OsType == OsType.Windows)
+            {
+                window.SetValue(AtomUIWindow.OsTypeProperty, OsType.Linux);
+            }
             window.IsCsdEnabled = csd;
             if (csd)
             {

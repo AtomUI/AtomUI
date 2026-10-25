@@ -1,5 +1,9 @@
 # 第十一轮候选：平台失败的根因与取证
 
+执行记录：用户已批准13文件快照4025598cde51，已创建提交0c6d8445679e并核对全部blob，推送已有远端分支，远端SHA一致。[第十一轮Actions](https://github.com/AtomUI/AtomUI/actions/runs/40168600469)正在运行三OS／两Browser，full=false，不发布NuGet；下文待审措辞为冻结前记录。本批授权已执行，后续ColorSpectrum不在提交中。
+
+最终结果：八个job均结束，三NativeAOT／两Browser、Mac／Linux选测通过，后两者各6290项；仅Windows选测失败。Windows前八项目5664项及本地化其余4项通过，Official四消费断言完成，仅清理build-host.log失败；实际Restart Manager返回三个.NET Host占用PID5944／5124／5164，同三dotnet随后出现在runner遗留清理记录。三OS各54条journal全部配对。后续consumer构建Windows约6／6／5秒、Linux约6／6／6秒、Mac约4／4／3秒，负例各exit1；Linux本轮未再超时，Mac原Tour本轮通过，但没有据此声称那一次命中失败根因已查明。[第十二轮候选](platform-twelfth-followups.md)继续Windows子进程生命周期，不放宽清理或包断言。
+
 沿现有feature/custom-theme／checkout，无新分支、worktree或subagent，不发布NuGet，不自行提交。第十轮全部job已结束，授权已用完；新的Git快照须完成本地审查后单独提交用户批准。
 
 ## 已知失败与待证明假设

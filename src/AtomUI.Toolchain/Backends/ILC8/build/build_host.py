@@ -255,6 +255,8 @@ def build(args):
 <ItemGroup><Content Remove="@(Content)" Condition="'{str(args.managed_only).lower()}' == 'true'"/><Compile Remove="Program.cs"/><Compile Include="{xml(generated)}/Program.cs"/><Compile Include="{xml(MODULE)}/Adapter/*.cs"/>{reader_sources}</ItemGroup>
 </Project>''')
     command = [args.dotnet, 'build', str(project), '-c', 'Release',
+        # Reusable child nodes can inherit build-host.log beyond this build on Windows.
+        '--disable-build-servers', '-nr:false',
         '-p:DirectoryBuildPropsPath=' + str(generated / 'tool.props'),
         '-p:DirectoryBuildTargetsPath=' + str(generated / 'tool.targets'),
         # The default checkout lives below the AtomUI repository. Its parent central-package

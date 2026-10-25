@@ -15,6 +15,7 @@ namespace AtomUI.Theme.Resources;
 internal sealed class OwnerTokenResourceExtension : MarkupExtension
 {
     public SharedTokenKind Kind { get; set; }
+    public bool WhenExplicit { get; set; }
     public bool WhenControlExplicit { get; set; }
 
     public OwnerTokenResourceExtension() { }
@@ -25,7 +26,7 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
     }
 
     public override object ProvideValue(IServiceProvider serviceProvider) =>
-        CreateBinding(Kind, WhenControlExplicit, WhenControlExplicit);
+        CreateBinding(Kind, WhenExplicit || WhenControlExplicit, WhenControlExplicit);
 
     internal static BindingBase CreateBinding(SharedTokenKind kind, bool whenExplicit = false, bool controlOnly = false)
     {

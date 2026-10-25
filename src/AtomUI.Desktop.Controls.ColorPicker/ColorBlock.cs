@@ -6,15 +6,12 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 {
-    private static readonly IPen EmptyColorPen = new ImmutablePen(Colors.Red.ToUInt32(), 2);
-
     #region 公共属性定义
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
@@ -81,6 +78,12 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             o => o.IsCustomSize,
             (o, v) => o.IsCustomSize = v);
 
+    internal static readonly StyledProperty<IBrush?> EmptyColorStrokeProperty =
+        AvaloniaProperty.Register<ColorBlock, IBrush?>(nameof(EmptyColorStroke), Brushes.Red);
+
+    internal static readonly StyledProperty<double> EmptyColorStrokeThicknessProperty =
+        AvaloniaProperty.Register<ColorBlock, double>(nameof(EmptyColorStrokeThickness), 2);
+
     private IBrush? _transparentBgBrush;
 
     internal IBrush? TransparentBgBrush
@@ -109,14 +112,28 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
         set => SetAndRaise(IsCustomSizeProperty, ref _isCustomSize, value);
     }
 
+    internal IBrush? EmptyColorStroke
+    {
+        get => GetValue(EmptyColorStrokeProperty);
+        set => SetValue(EmptyColorStrokeProperty, value);
+    }
+
+    internal double EmptyColorStrokeThickness
+    {
+        get => GetValue(EmptyColorStrokeThicknessProperty);
+        set => SetValue(EmptyColorStrokeThicknessProperty, value);
+    }
+
     #endregion
 
     private IDisposable? _widthValue;
     private IDisposable? _heightValue;
+    private Pen? _emptyColorPen;
 
     static ColorBlock()
     {
-        AffectsRender<ColorBlock>(TransparentBgBrushProperty, IsEmptyColorModeProperty);
+        AffectsRender<ColorBlock>(TransparentBgBrushProperty, IsEmptyColorModeProperty,
+            EmptyColorStrokeProperty, EmptyColorStrokeThicknessProperty);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -128,6 +145,10 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == EmptyColorStrokeProperty || change.Property == EmptyColorStrokeThicknessProperty)
+        {
+            _emptyColorPen = null;
+        }
         if (this.IsAttachedToVisualTree())
         {
             if (change.Property == TransparentBgIntervalColorProperty ||
@@ -147,7 +168,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 
     public override void Render(DrawingContext context)
     {
-        if (IsEmptyColorMode)
+        if (IsEmptyColorMode && EmptyColorStroke is not null && EmptyColorStrokeThickness > 0)
         {
             using var optionState = context.PushRenderOptions(new RenderOptions
             {
@@ -155,7 +176,8 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             });
             var startPoint = new Point(2, Bounds.Height - 2);
             var endPoint = new Point(Bounds.Width - 2, 2);
-            context.DrawLine(EmptyColorPen, startPoint, endPoint);
+            _emptyColorPen ??= new Pen(EmptyColorStroke, EmptyColorStrokeThickness);
+            context.DrawLine(_emptyColorPen, startPoint, endPoint);
         }
     }
 

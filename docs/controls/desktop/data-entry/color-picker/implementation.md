@@ -171,6 +171,7 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - Template part 重新应用时的状态回放。
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
 - 色谱内部`PART_LayoutRoot`使用Canvas提供测量边界；按实际绘制尺寸更新的子层不能以旧位图尺寸撑住下一轮自然测量。原有SizingPanel、矩形与透明输入Canvas保留，宽度缩小和加宽配置撤回均须检查同实例尺寸与指针命中。
+- `ColorSlider`只提交最新颜色／布局请求的后台位图，较早请求晚完成不得覆盖当前内容；脱离视觉树时的结果不能写回，重新挂载时即使Bounds和颜色没有再次通知也要按当前值重算。过期任务继续释放自身像素缓冲，不处置较新位图。运行时像素生成属于控件绘制边界，不能由ControlTheme绑定替代。
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 - `ColorBlock` 的空颜色斜线使用最终 Bounds 定位端点，不计入外部 Margin，也不使用测量阶段的尺寸代替绘制区域。
@@ -179,6 +180,12 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - 颜色候选与提交值的隔离、输入有效性检查、渐变深复制、外部值更新及 pinned 操作转换统一遵循 [确认与取消设计](confirmation-design.md)，不套用日期专用编辑会话。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
+
+### 自绘空值标记与选择环
+
+ColorBlock保持原空值斜线坐标和默认红色2 DIP。ControlTheme将所属登记owner的有效LineWidthBold投射到内部绘制线宽，明确0时不生成斜线；有效ColorError只在配置明确提供该角色时投射，未明确提供及撤回配置保留历史红色。ColorBlock按实际画刷与线宽惰性创建自身Pen，输入变化仅清理该缓存并使绘制失效，配置状态由原资源宿主绑定管理。
+
+Spectrum选择环在自身ControlTheme的style setter消费LineWidthBold，默认2 DIP。Popup View是独立公开主题owner，宿主Picker的专属Global不会跨越该身份替代View的配置；general Global、View专属Global和scope重挂载沿既有解析链更新。角色颜色使用算法之后的有效值，不能将原始输入色当作暗色算法输出。此接线不增加公开API、Own Token或Semantic Part。
 
 ## 8. 资源、性能与 AOT 边界
 

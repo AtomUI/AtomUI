@@ -240,6 +240,7 @@ public sealed class LanguagePackEndToEndTests
                     string.Equals(element.Name.LocalName, "Import", StringComparison.Ordinal))
                 .Select(static import => (string?)import.Attribute("Project"))
                 .Where(static project => project is not null)
+                .Select(static project => project!.Replace('\\', '/'))
                 .ToArray();
             generatedImports.ShouldContain(
                 $"$(NuGetPackageRoot)/acme.optionalcomponent.i18n.jajp/{packageVersion}/" +

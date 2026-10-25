@@ -23,3 +23,11 @@
 作者另步自审复核UI owner与后台buffer边界、guard在创建Bitmap之前、归一元数据与像素同源、默认fast、原始测试处置及公开API；没有独立agent评审，遵守用户禁用subagent的指令。C8的Components默认／接线和既有键盘路径不在本批。
 
 拟在既有分支创建上述两个提交、推送，并在第十三轮结束后用AtomUI凭证运行三OS／两Browser验证Actions（full=false）。不取消或重试第十三轮。原始／纯布局／候选文本仅供本批分离Git审查，临时驱动、媒体和全部产物排除。
+
+## 授权执行
+
+用户已明确批准两个提交、推送及第十三轮之后的验证。按冻结快照6660f5f830a9创建纯布局3240285cc与最终修复3e7efb341eebc9d28a1604c14bcbda5a4fb5b54b，逐项核对批准blob及两级父提交后推送既有feature/custom-theme，远端SHA已确认。第十三轮仍运行，因此第十四轮仅保存获批待调度记录，尚未调度、取消或重试任何运行。Git提交不表示CT19／CT25完整验收；C8未包含。纯布局／原始／候选的6份专用文本备份在批准提交后已退休，Git提交与冻结manifest为审查依据，临时测试／驱动源码无残留。
+
+## 第十四轮实际结果
+
+第十三轮结束后，复核远端仍为获批 3e7efb341，已按原授权调度[第十四轮 Actions40176913761](https://github.com/AtomUI/AtomUI/actions/runs/40176913761)，没有取消／重试其他运行，没有发布包。整轮已完成：Windows／Linux 选测各 6405 项全通过、三平台 NativeAOT 和两种 Browser 通过；Mac 选测 6405 项中 6404 通过，仅 Gallery `TimelineSemanticPartHighlightTests.Timeline_Semantic_Preview_Highlights_The_Nine_Part_Set` 卡片命中失败。第十三轮 Windows Tour 本轮通过，但不能凭单轮通过关闭其间歇性命中问题；Timeline 与 Tour 的原始几何失败均继续定位。C8 源码仍只在本地未提交，未包含在本轮。

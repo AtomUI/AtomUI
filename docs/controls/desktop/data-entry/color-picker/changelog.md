@@ -4,6 +4,8 @@
 
 ## 2026-10-25（待完整家族验收）
 
+- API／Theme（C8 验证中）：`AbstractColorPickerView.ColorSpectrumComponents` 的默认读取值由 `HueSaturation` 改为 `SaturationValue`，保持历史实际默认面板；此公开默认值变化已获用户批准。两类 View 声明式接通六模式及其剩余 H／S／V 滑轨，显式 HS 配置现在实际显示 HS 面板。未新增公开签名、Token或Part；键盘可达性另行处理，视觉和真实宿主验收结果另记，当前不表示完整家族完成。
+
 - Fix：历史GradientColorPicker.SetPresetColor的Func委托通过强类型适配写入既有Action附加属性，修复非空formatter赋值时的ArgumentException；保持公开签名、null与样式优先级。支持重复更新和复用输出控件，清除后恢复默认文字。
 
 - Theme

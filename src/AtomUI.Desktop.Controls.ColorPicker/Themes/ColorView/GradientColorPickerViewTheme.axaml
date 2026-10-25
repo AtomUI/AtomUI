@@ -45,7 +45,7 @@
                             <StackPanel Orientation="Vertical" Name="ColorPickerContainer" ClipToBounds="False">
                                 <atom:ColorSpectrum
                                     Name="ColorSpectrum"
-                                    Components="SaturationValue"
+                                    Components="{TemplateBinding ColorSpectrumComponents}"
                                     HsvColor="{TemplateBinding HsvValue, Mode=TwoWay}"
                                     MaxHue="{TemplateBinding MaxHue}"
                                     MaxSaturation="{TemplateBinding MaxSaturation}"
@@ -61,6 +61,7 @@
                                                      Margin="0, 2, 0, 2" />
                                     <Panel Name="SliderContainer" ClipToBounds="False">
                                         <atom:ColorSlider Name="ColorSpectrumThirdComponentSlider" DockPanel.Dock="Top"
+                                                          ColorComponent="{CompiledBinding #ColorSpectrum.ThirdComponent}"
                                                           ColorModel="Hsva"
                                                           VerticalAlignment="Top"
                                                           HsvColor="{TemplateBinding HsvValue, Mode=TwoWay}"

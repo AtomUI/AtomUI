@@ -52,6 +52,10 @@ CT25追加[第十一批](platform-eleventh-followups.md)：消费工程私有NuG
 
 CT19追加[C7色谱结果](color-spectrum-lifecycle-results.md)：异步与fast统一请求顺序、归一范围／退化轴及共享helper完成，受控26项、有效亮暗514项和Mac managed／NativeAOT各184项通过。140帧与28组1DIP、独立直接Skia及公开输入对照完成；所示修复与41对限定合成差异获用户批准，全部临时驱动／工程／媒体已清理，最终Release23项、NET8及成员审计通过。C7切片待独立Git审查，C8的公开Components默认与实际模板不一致、既有键盘可达性继续；完整CT19未关闭。
 
+最新执行：C7已随获批第十四批分为纯布局3240285cc与修复3e7efb341并推送。[第十三轮](platform-thirteenth-followups.md)Windows原Linker删除失败未复现，6404／6405通过，仅Gallery Tour卡片命中失败；Mac／Linux各6405通过。[第十四轮](platform-fourteenth-followups.md)Windows／Linux各6405全通过、Mac6404／6405，仅Gallery Timeline卡片命中失败；两轮的三平台NativeAOT及两Browser均通过。Tour／Timeline间歇性命中问题仍按实际几何定位，不能因另一次通过而关闭CT25。
+
+CT19 [C8短设计](color-spectrum-components.md)的SV公开默认值与六模式接线已获用户明确批准；[结果](color-spectrum-components-results.md)记录14项有效RED→GREEN、扩展22项通过并删除、清理后ColorPicker27项及NET8 Release零警告通过。192帧包含有效亮暗候选494项、64组1DIP全检出；真实Mac managed／NativeAOT各310项通过。独立直接Skia32组A/A、12组恢复与6组新旧默认／SV／恢复均0；[30对自然合成限定差异](color-spectrum-components-noise-review.md)（2–23像素／通道最大2）已提交用户单独审查，不继承C1–C7批准。媒体／外部工程待审查后清理，Git未授权；既有键盘及完整家族仍开放。CT25 [第十五批调查](platform-fifteenth-followups.md)已建立排队滚动更新的两项有效RED→GREEN，原用例与临时探针5项通过，探针删除后原三个精确用例3秒通过；仅修改两个Gallery测试的实际帧准备，未改产品输入／布局，实际平台确认待下一轮获批CI。
+
 状态规则：`未开始`→`规划中`→`进行中`→`最终审查中`→`已完成`。有真实外部障碍才标`受阻`并写明条件；依赖尚未满足不伪报外部阻塞。每项开始、验证、清理和审查后在此表更新状态和证据链接，详细步骤在其子计划勾选，实际数值写入结果记录。中途问题或状态问答不会撤销继续执行授权；处理后回到当前任务，不以一条总结代替继续工作。提交须单独遵守用户的明确提交指令。用户已明确要求后续所有工作由主agent独立完成，不再使用subagent；后续最终审查由作者另起审查步骤执行，如实标明自审边界。
 
 CT-13追加[G3-B1结果](input-otp-geometry-results.md)：三处OTP几何与专用Cell/Separator Style命中接通；明暗六默认阶段/清除RGBA0，实际输入与NativeAOT Headless/Skia通过、JIT/AOT十八图0。临时测试/工程/媒体清理后OTP66与NET8零警告通过。B2/C与整个家族保持进行中。

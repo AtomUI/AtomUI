@@ -26,3 +26,11 @@
 ## 用户授权后的执行记录
 
 用户明确批准第十三批4文件提交、推送及验证Actions。按冻结快照c8f0fcbf1398创建提交f24a9aba7710f3d192f50c6c3eb8e9a488deb087，逐项核对树中的blob及父提交b8325380f671，再推送既有feature/custom-theme并确认远端SHA。已调度[第十三轮Actions40175124825](https://github.com/AtomUI/AtomUI/actions/runs/40175124825)，三OS／两Browser、full=false，不发布NuGet，C7未纳入。此为执行后的未提交文字补充，不改写获批提交；Windows原失败与整轮最终结果仍待CI。
+
+## 第十三轮实际结果
+
+整轮已完成，七个 job 成功，仅 Windows 选测失败。Mac／Linux 各 6405 项、三平台 NativeAOT 与两种 Browser 通过；Windows 先前 12 项目 5993 项全部通过，包括原坏 IL 反例和 Linker 选测 88 项。原 Empty.dll 删除失败本轮未复现，本地化实际消费与清理继续通过；三平台子进程记录各 27 组 start／completed 完整配对。
+
+Windows 随后的 Gallery 项目 412 项中 411 通过，唯一失败为 `TourSemanticPartHighlightTests.Tour_Semantic_Preview_Highlights_Parts_With_Pinned_Popup_And_Mask` 的首张 popup.root 卡片命中检查。保留完整失败几何：卡片中心 (1013.5,373.5)，卡片矩阵平移 (788,338)，实际命中相邻 PART_Row 矩阵平移 (788,267)，均 scale1。此证据尚不证明事件处理错误或产品修复；按原几何、裁剪与实际命中继续定位，不削弱原滚动／悬停合同。Windows 本轮合计 6404／6405 通过，不能报告整个 CT25 完成。
+
+已在本轮结束后按既有第十四批授权调度 [第十四轮 Actions40176913761](https://github.com/AtomUI/AtomUI/actions/runs/40176913761)，源码为已批准并推送的 3e7efb341eebc9d28a1604c14bcbda5a4fb5b54b；C8 未包含在内。

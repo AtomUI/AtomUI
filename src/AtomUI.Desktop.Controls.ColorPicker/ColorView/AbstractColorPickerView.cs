@@ -107,12 +107,6 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         set => SetValue(IsClearEnabledProperty, value);
     }
 
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-
     public bool IsAlphaEnabled
     {
         get => GetValue(IsAlphaEnabledProperty);
@@ -135,6 +129,12 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     {
         get => GetValue(IsColorSpectrumSliderVisibleProperty);
         set => SetValue(IsColorSpectrumSliderVisibleProperty, value);
+    }
+
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
     }
 
     public int MaxHue
@@ -180,7 +180,11 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     }
     #endregion
 
+    #region 公共事件定义
+
     public event EventHandler? ColorValueCleared;
+
+    #endregion
 
     #region 内部属性定义
 
@@ -207,6 +211,15 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
             nameof(HsvColorWithoutAlphaBrush),
             o => o.HsvColorWithoutAlphaBrush);
 
+    internal static readonly StyledProperty<bool> IsNeedConfirmProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(IsNeedConfirm));
+
+    internal static readonly StyledProperty<bool> CanConfirmProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(CanConfirm), true);
+
+    internal static readonly StyledProperty<bool> IsEmptyDraftProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(IsEmptyDraft));
+
     internal HsvColor HsvValue
     {
         get => GetValue(HsvValueProperty);
@@ -214,34 +227,23 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     }
 
     private bool _isAlphaEffectiveVisible;
-    private readonly SolidColorBrush _hsvColorBrush = new(Colors.White);
-    private readonly SolidColorBrush _hsvColorWithoutAlphaBrush = new(Colors.White);
-
     internal bool IsAlphaEffectiveVisible
     {
         get => _isAlphaEffectiveVisible;
         set => SetAndRaise(IsAlphaEffectiveVisibleProperty, ref _isAlphaEffectiveVisible, value);
     }
 
+    private readonly SolidColorBrush _hsvColorBrush = new(Colors.White);
     internal IBrush HsvColorBrush => _hsvColorBrush;
 
+    private readonly SolidColorBrush _hsvColorWithoutAlphaBrush = new(Colors.White);
     internal IBrush HsvColorWithoutAlphaBrush => _hsvColorWithoutAlphaBrush;
-    #endregion
-
-    internal static readonly StyledProperty<bool> IsNeedConfirmProperty =
-        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(IsNeedConfirm));
 
     internal bool IsNeedConfirm
     {
         get => GetValue(IsNeedConfirmProperty);
         set => SetValue(IsNeedConfirmProperty, value);
     }
-
-    internal static readonly StyledProperty<bool> CanConfirmProperty =
-        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(CanConfirm), true);
-
-    internal static readonly StyledProperty<bool> IsEmptyDraftProperty =
-        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(IsEmptyDraft));
 
     internal bool CanConfirm
     {
@@ -255,15 +257,25 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         set => SetValue(IsEmptyDraftProperty, value);
     }
 
+    internal bool IsEditing { get; private set; }
+
+    #endregion
+
+    #region 内部事件定义
+
     internal event EventHandler? ConfirmRequested;
     internal event EventHandler? CancelRequested;
-    internal bool IsEditing { get; private set; }
+
+    #endregion
+
+    #region 内部协作 API
 
     internal void BeginEdit()
     {
         IsEditing = true;
         _colorInput?.ResetInput();
     }
+
     internal void EndEdit() => IsEditing = false;
 
     internal void RequestConfirm()
@@ -286,13 +298,15 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         CancelRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    private Avalonia.Controls.Button? _confirmButton;
-    private Avalonia.Controls.Button? _cancelButton;
-    private ColorPickerInput? _colorInput;
-
     internal virtual void NotifyInputColorEdited()
     {
     }
+
+    #endregion
+
+    private Avalonia.Controls.Button? _confirmButton;
+    private Avalonia.Controls.Button? _cancelButton;
+    private ColorPickerInput? _colorInput;
 
     private void HandleInputColorEdited(object? sender, EventArgs args)
     {
@@ -407,6 +421,8 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         }
     }
 
+    #region 内部协作 API
+
     internal static Color CoerceColor(AvaloniaObject instance, Color value)
     {
         if (instance is AbstractColorPickerView colorView)
@@ -416,6 +432,8 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
 
         return value;
     }
+
+    #endregion
 
     private static HsvColor CoerceHsvColor(AvaloniaObject instance, HsvColor value)
     {

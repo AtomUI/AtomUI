@@ -47,3 +47,9 @@
 第七轮最终Mac选测6290项全通过；Linux前八项目5664项全通过（含Desktop4128／Grid309），其后OfficialPtBr_Package_Graph_Is_Consumable在600000ms总体超时，同项目另4项通过，完整摘要complete=true。没有证据据此改产品或延长超时，已对同SHA5c7c4a2cc的原Linux job请求一次复验；保留首轮失败，不把重试申请记通过。三NativeAOT和两Browser已通过。
 
 提交计划：仅三个测试及本轮平台状态文档，在现有feature/custom-theme创建一个提交，推送并运行三OS／两Browser原验证；不包含C4临时测试、未完成绘制改动或产物，不发布NuGet。须用户审查明确批准后才执行。
+
+## 已批准执行
+
+用户明确批准6文件快照6f3279c323bc。创建67da90e37后逐一核对最终6个blob与批准SHA相同，推送既有远端feature/custom-theme并确认SHA；第七轮Linux同SHA复验完成后再启动[第八轮40158855102](https://github.com/AtomUI/AtomUI/actions/runs/40158855102)，未取消取证中的job。三OS／两Browser、full=false，无NuGet发布。C4及新的阶段journal研发不在该提交中，不能沿用本批Git批准。
+
+第七轮Linux同SHA重试仍OfficialPtBr在600000ms总体超时；没有把它改记为网络故障或通过。[阶段取证计划](platform-localization-timeout.md)保留原消费者和全部超时边界，下一步取得实际阶段开销后再处理。

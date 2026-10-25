@@ -249,6 +249,8 @@ Current、Cover、距离当前项从近到远的顺序提交。不得用控件�
 6. 提交成功时先保存新租约和状态，再释放旧租约，避免 cache entry 在 visual 切换中提前销毁。
 7. detach、Source 清空或控件释放时取消 waiter 并释放租约；重新 attach 后按当前 Source 重新请求。
 
+UI投递使用所属Visual.Dispatcher；没有Visual的Previewer entry保存创建线程的dispatcher。进度、成功与失败提交不在后台重新解析全局UI dispatcher，避免旧应用迟到回调在宿主隔离重置期间创建新的全局UI线程；原generation及租约校验继续在所属dispatcher执行。
+
 同来源替换最终失败时释放暂存旧租约并提交 Failed；暂存只优化 Loading 过渡，不改变终态语义。主 Source 与
 FallbackSource 的规范化身份相同则不发起第二次相同请求。
 

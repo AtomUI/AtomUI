@@ -53,7 +53,7 @@ owner 不直接对子节点调用 `Measure` 或 `Arrange`。
 `ArrangeOverride` 中再次排列 indicator。Steps 百分比始终位于轨道外部，标签直接继承 owner 的 `Foreground`；
 只有支持内嵌百分比的普通 line 使用 `PercentageLabelColor` 做背景可读性计算。
 
-`AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并计算圆形内部文本 / 图标的有效尺寸。运行期计算结果通过内部只读属性暴露：ControlTheme 用编译绑定设置默认 FontSize，图标由模板 Style 的 TemplateBinding 设置宽高；调用方本地 FontSize 与专用 Indicator Style 保持各自优先级，尺寸计算不再写入这些本地值。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - StrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
+`AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并按当前格式化 Percentage、FontFamily、FontSize、FontStyle 和 FontWeight 判断圆形内部文字是否放得下。文字或字体变化会刷新测量；状态改变时重新读取当前百分比，避免退出 Exception 后保留旧标签。运行期计算结果通过内部只读属性暴露：ControlTheme 用编译绑定设置默认 FontSize，图标由模板 Style 的 TemplateBinding 设置宽高；调用方本地 FontSize 与专用 Indicator Style 保持各自优先级，尺寸计算不再写入这些本地值。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - StrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
 
 `AbstractGeneralCircleProgress` 和 `AbstractGeneralDashboardProgress` 负责圆弧 Geometry。它们把进度比例转换为角度，并根据 `StepCount` / `StepGap` 决定连续 PathGeometry 或组合分段 Geometry，再投影到静态 Shape。
 
@@ -183,7 +183,7 @@ track 仍按 `StrokeLineCap` 阈值隐藏，避免显示不可见的小块。
 外部百分比模式会为 label 或状态图标预留起点、中间或终点空间。内嵌模式会先计算当前 indicator rect，再把文本放在已完成进度区域内。垂直内嵌模式会交换文本尺寸，并通过主题旋转文本。
 
 line 和 steps 的 indicator Panel 分别由 `LineProgressPanel` 和 `StepsProgressPanel` 直接排列到 `GetExtraInfoRect`；circle 和 dashboard 的 indicator Panel 使用 owner 宽度并按当前
-内容 DesiredSize 的高度垂直居中。内部 CircleProgressIndicatorPanel 负责测量可见文本／图标并居中排列，状态切换不依赖 Canvas 缓存的本地宽高或旧坐标；旧 Canvas 自定义模板仍保留原兼容路径。Panel 的 Bounds 表达可见信息区域，不承担整个 owner 的坐标容器职责。
+内容 DesiredSize 的高度垂直居中。内部 CircleProgressIndicatorPanel 负责测量可见文本／图标并居中排列，测量前根据当前激活图标的实际宽高更新适配标志，ControlTheme 按原状态规则消费该标志；未激活图标不影响当前信息的可见性。专用 Indicator Style 改变图标尺寸后，即使 owner 仍为固定尺寸也会重新判断是否放得下。状态切换不依赖 Canvas 缓存的本地宽高或旧坐标；旧 Canvas 自定义模板仍保留原兼容路径。Panel 的 Bounds 表达可见信息区域，不承担整个 owner 的坐标容器职责。
 
 普通 line 的模板 indicator 先按当前 LayoutScaling 对信息尺寸执行与实际子节点一致的向上取整，再计算末端锚点，避免取整后的文字区越过 owner。兼容自绘路径保留原逻辑度量。
 

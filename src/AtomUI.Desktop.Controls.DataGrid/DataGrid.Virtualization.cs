@@ -597,7 +597,7 @@ public partial class DataGrid
             _committingRangePresentation = false;
         }
 
-        ApplyRangeVerticalOffset(desiredOffset, nextFirst);
+        ApplyRangeVerticalOffset(desiredOffset, nextFirst, normalizeDisplayedRows: true);
 
         if (viewportAnchor.HasValue)
         {
@@ -606,7 +606,7 @@ public partial class DataGrid
                 0,
                 Math.Max(0, GetRangeExtent() - CellsEstimatedHeight));
             _rangeDesiredOffset = restoredOffset;
-            ApplyRangeVerticalOffset(restoredOffset, nextFirst);
+            ApplyRangeVerticalOffset(restoredOffset, nextFirst, normalizeDisplayedRows: true);
         }
 
         DisplayData.NumTotallyDisplayedScrollingElements =
@@ -891,9 +891,15 @@ public partial class DataGrid
                 : snapshot.CommittedViewport.FirstVisibleIndex);
     }
 
-    private void ApplyRangeVerticalOffset(double offset, int firstVisibleSlot)
+    private void ApplyRangeVerticalOffset(double offset, int firstVisibleSlot, bool normalizeDisplayedRows = false)
     {
         NegVerticalOffset = Math.Max(0, offset - GetRangeOffset(firstVisibleSlot));
+        if (normalizeDisplayedRows)
+        {
+            // Measured heights can move the desired offset past the committed first
+            // row. Finish the displayed viewport before publishing scrollbar changes.
+            NormalizeDisplayedRowsOffset(offset);
+        }
         SetVerticalOffset(offset);
     }
 

@@ -42,6 +42,8 @@
 `ImagePreviewer` 与 `ImageGroupPreviewer` 只负责不同封面入口；dialog/overlay 负责宿主资源；`ImageViewer` 负责交互；renderer 只绘制
 已提交图片。任何类型都不能同时拥有 item 配置、底层缓存和视觉宿主生命周期。
 
+entry在所属UI线程创建时保存该线程的dispatcher，Full／Thumbnail进度及异步结果提交始终投递到它；AsyncImage的加载controller使用所属Visual.Dispatcher。迟到回调不重新解析全局UI dispatcher，避免应用或测试宿主隔离切换时把工作线程注册为另一应用的UI线程。generation、dispose和结果lease校验仍在原提交路径执行。
+
 ## 4. 状态与数据流
 
 ### 4.1 ItemsSource 物化

@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace AtomUI.Controls;
 
@@ -290,7 +289,7 @@ internal sealed class ImageLoadController : IDisposable
     {
         try
         {
-            Dispatcher.UIThread.Post(() =>
+            _host.Visual.Dispatcher.Post(() =>
             {
                 if (generation == Volatile.Read(ref _generation) && _host.IsImageLoadAttached)
                 {
@@ -313,7 +312,7 @@ internal sealed class ImageLoadController : IDisposable
         ImageLoadResult? pending = result;
         try
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            await _host.Visual.Dispatcher.InvokeAsync(() =>
             {
                 var owned = pending!;
                 pending = null;
@@ -347,7 +346,7 @@ internal sealed class ImageLoadController : IDisposable
         ImageLoadError error,
         bool isFallback)
     {
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        await _host.Visual.Dispatcher.InvokeAsync(() =>
         {
             if (generation != Volatile.Read(ref _generation) || !_host.IsImageLoadAttached)
             {

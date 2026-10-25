@@ -118,16 +118,22 @@ public class DataGridRowHeaderRecycleIssue475Tests
         grid.RowHeaderContentTemplate = ItemHeaderTemplate();
         grid.RowDetailsTemplate = new FuncDataTemplate<Row>((_, _) => new Border { Height = 30 });
         grid.RowDetailsVisibilityMode = detailsVisibility;
-        var unloadedDetails = 0;
-        grid.UnloadingRowDetails += (_, _) => unloadedDetails++;
+        var phase = "initial layout";
+        var unloadedDetails = new List<string>();
+        grid.UnloadingRowDetails += (_, args) => unloadedDetails.Add(
+            $"{phase}: row={args.Row.Index}, first={grid.DisplayData.FirstScrollingSlot}, " +
+            $"last={grid.DisplayData.LastScrollingSlot}, viewport={grid.CellsEstimatedHeight:0.##}, " +
+            $"ready={grid.LoadState}, stale={grid.IsDataStale}, " +
+            $"measure={grid.IsMeasureValid}, arrange={grid.IsArrangeValid}");
         var window = Show(grid);
         try
         {
             var rows = DisplayedRows(grid);
             var oldHeaders = rows.Select(HeaderText).ToArray();
+            phase = "replace header template";
             grid.RowHeaderContentTemplate = new FuncDataTemplate<Row>((_, _) => new TextBlock { Text = "new" });
             Dispatcher.UIThread.RunJobs();
-            unloadedDetails.ShouldBe(0);
+            unloadedDetails.ShouldBeEmpty();
             AssertHeaders(grid, _ => "new");
             foreach (var header in oldHeaders)
             {
@@ -135,10 +141,11 @@ public class DataGridRowHeaderRecycleIssue475Tests
                 header.GetVisualParent().ShouldBeNull();
             }
 
+            phase = "restore header template";
             grid.RowHeaderContentTemplate = ItemHeaderTemplate();
             Dispatcher.UIThread.RunJobs();
             AssertHeaders(grid, row => row.Label);
-            unloadedDetails.ShouldBe(0);
+            unloadedDetails.ShouldBeEmpty();
         }
         finally
         {

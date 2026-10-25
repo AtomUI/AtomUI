@@ -8,6 +8,7 @@ namespace AtomUI.Desktop.Controls;
 
 internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
 {
+    private readonly Dispatcher _dispatcher;
     private ImageCancellationState? _fullCancellation;
     private ImageCancellationState? _thumbnailCancellation;
     private ImageRequestPriorityState? _fullPriorityState;
@@ -32,6 +33,9 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
     internal ImagePreviewEntry(ImagePreviewItem item)
     {
         Item = item ?? throw new ArgumentNullException(nameof(item));
+        // Entries are created with their UI owner. Keep late callbacks on that
+        // dispatcher rather than resolving another application's global UI thread.
+        _dispatcher = Dispatcher.CurrentDispatcher;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -408,7 +412,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
             ImageLoadResult? pending = result;
             try
             {
-                await Dispatcher.UIThread.InvokeAsync(() =>
+                await _dispatcher.InvokeAsync(() =>
                 {
                     var owned = pending!;
                     pending = null;
@@ -472,7 +476,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
             ImageLoadResult? pending = result;
             try
             {
-                await Dispatcher.UIThread.InvokeAsync(() =>
+                await _dispatcher.InvokeAsync(() =>
                 {
                     var owned = pending!;
                     pending = null;
@@ -653,7 +657,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Dispatcher.UIThread.Post(() =>
+            _dispatcher.Post(() =>
             {
                 if (!_disposed && generation == _fullGeneration && FullState == ImageLoadState.Loading)
                 {
@@ -673,7 +677,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Dispatcher.UIThread.Post(() =>
+            _dispatcher.Post(() =>
             {
                 if (!_disposed && generation == _thumbnailGeneration && ThumbnailState == ImageLoadState.Loading)
                 {

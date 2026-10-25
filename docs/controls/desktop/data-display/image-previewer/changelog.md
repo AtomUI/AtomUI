@@ -2,6 +2,10 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-24
+
+- Fix：Full／Thumbnail的进度与结果提交保留所属UI dispatcher，避免迟到后台回调在应用隔离空窗重新创建全局UI dispatcher；保留原generation、取消及结果lease规则。
+
 ## 2026-10-21
 
 - 修复快速连续点击旋转时图片角度倒转、来回摆动的问题：`Scale=1` 时不再向 `RenderTransform` 写入无意义的 Scale 操作，避免 Avalonia 的 TransformOperations 插值在动画重定向后退化为矩阵分解并归一化旋转角。

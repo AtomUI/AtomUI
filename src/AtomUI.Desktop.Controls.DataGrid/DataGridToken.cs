@@ -1,12 +1,11 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed partial class DataGridToken : AbstractControlDesignToken, IControlTokenAliases
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class DataGridToken : AbstractControlDesignToken, IControlTokenAliases, IControlTokenDefaults
 {
     
     public DataGridToken()
@@ -278,140 +277,4 @@ internal sealed partial class DataGridToken : AbstractControlDesignToken, IContr
     internal CornerRadius TableTopLeftColumnCornerRadius { get; set; }
     
     #endregion
-    
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var colorFillSecondarySolid = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillSecondary, EffectiveGlobalToken.ColorBgContainer);
-        var colorFillContentSolid = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillContent, EffectiveGlobalToken.ColorBgContainer);
-        var colorFillAlterSolid = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillAlter, EffectiveGlobalToken.ColorBgContainer);
-
-        var baseColorAction      = EffectiveGlobalToken.ColorIcon;
-        var baseColorActionHover = EffectiveGlobalToken.ColorIconHover;
-        
-        var expandIconHalfInner = EffectiveGlobalToken.ControlInteractiveSize / 2 - EffectiveGlobalToken.LineWidth;
-        var expandIconSize      = expandIconHalfInner * 2 + EffectiveGlobalToken.LineWidth * 3;
-
-        HeaderBg                    = colorFillAlterSolid;
-        HeaderColor                 = EffectiveGlobalToken.ColorTextHeading;
-        HeaderSortActiveBg          = colorFillSecondarySolid;
-        HeaderSortHoverBg           = colorFillContentSolid;
-        BodySortBg                  = colorFillAlterSolid;
-        RowHoverBg                  = colorFillAlterSolid;
-        RowSelectedBg               = EffectiveGlobalToken.ControlItemBgActive;
-        RowSelectedHoverBg          = EffectiveGlobalToken.ControlItemBgActiveHover;
-        RowExpandedBg               = EffectiveGlobalToken.ColorFillAlter;
-        CellPadding                 = EffectiveGlobalToken.Padding;
-        // 对齐 AntD：中等尺寸单元格横向 paddingXS、纵向 paddingSM（12x8）。
-        CellPaddingMD               = new Thickness(
-            EffectiveGlobalToken.PaddingXS.Left,
-            EffectiveGlobalToken.PaddingSM.Top,
-            EffectiveGlobalToken.PaddingXS.Right,
-            EffectiveGlobalToken.PaddingSM.Bottom);
-        CellPaddingSM               = EffectiveGlobalToken.PaddingXS;
-        BorderColor                 = EffectiveGlobalToken.ColorBorderSecondary;
-        HeaderBorderRadius          = EffectiveGlobalToken.BorderRadiusLG;
-        FooterBg                    = colorFillAlterSolid;
-        FooterColor                 = EffectiveGlobalToken.ColorTextHeading;
-        CellFontSize                = EffectiveGlobalToken.FontSize;
-        CellFontSizeMD              = EffectiveGlobalToken.FontSize;
-        CellFontSizeSM              = EffectiveGlobalToken.FontSize;
-        HeaderSplitColor            = EffectiveGlobalToken.ColorBorderSecondary;
-        FixedHeaderSortActiveBg     = colorFillSecondarySolid;
-        HeaderFilterHoverBg         = EffectiveGlobalToken.ColorFillContent;
-        FilterDropdownMenuBg        = EffectiveGlobalToken.ColorBgContainer;
-        FilterDropdownBg            = EffectiveGlobalToken.ColorBgContainer;
-        ExpandIconBg                = EffectiveGlobalToken.ColorBgContainer;
-        SelectionColumnWidth        = EffectiveGlobalToken.ControlHeight;
-        ExpandIconMargin            = new Thickness(0, 
-            (EffectiveGlobalToken.FontSize * EffectiveGlobalToken.FontHeight - EffectiveGlobalToken.LineWidth * 3) / 2 -
-            Math.Ceiling((EffectiveGlobalToken.FontSizeSM * 1.4 - EffectiveGlobalToken.LineWidth * 3) / 2),
-            0, 
-            0);
-        HeaderIconColor = ColorUtils.FromRgbF(
-            baseColorAction.GetAlphaF() * EffectiveGlobalToken.OpacityLoading,
-            baseColorAction.GetRedF(),
-            baseColorAction.GetGreenF(),
-            baseColorAction.GetBlueF());
-        HeaderIconHoverColor = ColorUtils.FromRgbF(
-            baseColorActionHover.GetAlphaF() * EffectiveGlobalToken.OpacityLoading,
-            baseColorAction.GetRedF(),
-            baseColorAction.GetGreenF(),
-            baseColorAction.GetBlueF());
-        ExpandIconHalfInner       = expandIconHalfInner;
-        ExpandIconSize            = expandIconSize;
-        RowReorderIndicatorSize   = EffectiveGlobalToken.SizeMD; // TODO 需要根据 SizeType 做一定的调整
-        ExpandIconScale           = EffectiveGlobalToken.ControlInteractiveSize / expandIconSize;
-        SortIconSize              = EffectiveGlobalToken.FontHeight / 2.5;
-        SortIndicatorLayoutMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
-        FilterIndicatorPadding    = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.UniformlyPaddingXS);
-        
-        // 别名控件初始化
-        TableFontSize = CellFontSize;
-        TableBg       = EffectiveGlobalToken.ColorBgContainer;
-        TableRadius   = HeaderBorderRadius;
-        
-        TablePadding                   = CellPadding;
-        TablePaddingMiddle             = CellPaddingMD;
-        TablePaddingSmall              = CellPaddingSM;
-        TableBorderColor               = BorderColor;
-        TableHeaderTextColor           = HeaderColor;
-        TableHeaderBg                  = HeaderBg;
-        TableFooterTextColor           = FooterColor;
-        TableFooterBg                  = FooterBg;
-        TableHeaderCellSplitColor      = HeaderSplitColor;
-        TableHeaderSortBg              = HeaderSortActiveBg;
-        TableHeaderSortHoverBg         = HeaderSortHoverBg;
-        TableBodySortBg                = BodySortBg;
-        TableFixedHeaderSortActiveBg   = FixedHeaderSortActiveBg;
-        TableHeaderFilterActiveBg      = HeaderFilterHoverBg;
-        TableFilterDropdownBg          = FilterDropdownBg;
-        TableRowHoverBg                = RowHoverBg;
-        TableSelectedRowBg             = RowSelectedBg;
-        TableSelectedRowHoverBg        = RowSelectedHoverBg;
-        TableTopLeftColumnCornerRadius = new CornerRadius(EffectiveGlobalToken.BorderRadiusLG.TopLeft, 0, 0, 0);
-
-        TableFontSizeMiddle       = CellFontSizeMD;
-        TableFontSizeSmall        = CellFontSizeSM;
-        TableSelectionColumnWidth = SelectionColumnWidth;
-        TableExpandIconBg         = ExpandIconBg;
-        TableExpandColumnWidth    = EffectiveGlobalToken.ControlInteractiveSize + EffectiveGlobalToken.UniformlyPadding * 2;
-        TableExpandedRowBg        = RowExpandedBg;
-        
-        // Dropdown
-        // TODO 暂未使用
-        TableFilterDropdownWidth               = 120;
-        TableFilterDropdownHeight              = 264;
-        TableFilterDropdownSearchWidth         = 140;
-        TableFilterButtonSpacing               = EffectiveGlobalToken.UniformlyMarginXS;
-        TableFilterButtonContainerMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        TableFilterButtonLayoutSeparatorMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
-        TableFilterDropdownPadding             = EffectiveGlobalToken.PaddingXS;
-        // 对齐 AntD fixed.ts：冻结列分界阴影为 inset 10px 0 8px -8px（左）与 inset -10px 0 8px -8px（右）。
-        LeftFrozenShadows = new BoxShadows(new BoxShadow
-        {
-            OffsetX = 10,
-            OffsetY = 0,
-            Blur    = 8,
-            Spread  = -8,
-            IsInset = true,
-            Color   = EffectiveGlobalToken.ColorSplit
-        });
-        RightFrozenShadows = new BoxShadows(new BoxShadow
-        {
-            OffsetX = -10,
-            OffsetY = 0,
-            Blur    = 8,
-            Spread  = -8,
-            IsInset = true,
-            Color   = EffectiveGlobalToken.ColorSplit
-        });
-        ColumnReorderActiveBg = colorFillContentSolid;
-
-        PaginationMargin   = new Thickness(0, EffectiveGlobalToken.UniformlyMargin);
-        PaginationMarginSM = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
-        PaginationPanelMargin   = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0);
-        PaginationPanelMarginSM = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0);
-    }
-    
 }

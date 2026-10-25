@@ -83,7 +83,23 @@
         </Style>
 
         <Style Selector="^[Status=Success][IsCompleted=True] /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
-            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="IsVisible" Value="{TemplateBinding IsStatusIconVisible}" />
+        </Style>
+
+        <Style Selector="^[Status=Success] /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
+            <Setter Property="IsVisible" Value="{TemplateBinding IsStatusIconVisible}" />
+        </Style>
+
+        <Style Selector="^[Status=Normal][IsCompleted=True] /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
+            <Setter Property="IsVisible" Value="{TemplateBinding IsStatusIconVisible}" />
+        </Style>
+
+        <Style Selector="^[Status=Active][IsCompleted=True] /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
+            <Setter Property="IsVisible" Value="{TemplateBinding IsStatusIconVisible}" />
+        </Style>
+
+        <Style Selector="^[Status=Exception] /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
+            <Setter Property="IsVisible" Value="{TemplateBinding IsStatusIconVisible}" />
         </Style>
 
         <Style Selector="^[Status=Exception]:not(:disabled)">

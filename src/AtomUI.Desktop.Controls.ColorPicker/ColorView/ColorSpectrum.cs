@@ -19,6 +19,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ColorSpectrum : TemplatedControl
 {
+    #region 公共属性定义
+
     /// <summary>
     /// Defines the <see cref="Color"/> property.
     /// </summary>
@@ -223,6 +225,8 @@ internal class ColorSpectrum : TemplatedControl
         set => SetValue(MinValueProperty, value);
     }
 
+    private ColorComponent _thirdComponent = ColorComponent.Component3; // HsvComponent.Value
+
     /// <summary>
     /// Gets the third HSV color component that is NOT displayed by the spectrum.
     /// This is automatically calculated from the <see cref="Components"/> property.
@@ -239,17 +243,22 @@ internal class ColorSpectrum : TemplatedControl
         private set => SetAndRaise(ThirdComponentProperty, ref _thirdComponent, value);
     }
 
+    #endregion
+
+    #region 公共事件定义
+
     /// <summary>
     /// Event for when the selected color changes within the spectrum.
     /// </summary>
     public event EventHandler<ColorChangedEventArgs>? ColorChanged;
+
+    #endregion
 
     private bool _updatingColor;
     private bool _updatingHsvColor;
     private bool _isPointerPressed;
     private bool _shouldShowLargeSelection;
     private IReadOnlyList<Hsv> _hsvValues = Array.Empty<Hsv>();
-    private ColorComponent _thirdComponent = ColorComponent.Component3; // HsvComponent.Value
 
     private IDisposable? _layoutRootDisposable;
     private IDisposable? _selectionEllipsePanelDisposable;

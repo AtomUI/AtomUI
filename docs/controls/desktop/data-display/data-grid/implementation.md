@@ -670,3 +670,7 @@ DataGridMenuFilterFlyout 与 DataGridTreeFilterFlyout 继承 Flyout 的配置入
 
 筛选 Flyout 在其配置作用域以低优先级值提供独立默认定义；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+### 滚动后的静止指针命中
+
+RowsPresenter在滚动布局更新后请求所属Window刷新最终scene的指针命中。同窗口请求合并，跨窗口独立；不轮询重绘。更新悬停不能改动滚动条、冻结列、选择或滚动链，隐藏／重新显示及关闭窗口后的回收均按既有显示生命周期处理。

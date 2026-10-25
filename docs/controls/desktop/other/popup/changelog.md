@@ -63,6 +63,11 @@
   - 入场替代离场保持当前值，关闭 completion 与排队 Close 均核对请求版本和表面身份。
   - Direct Popup 同时支持 visual attach 就绪，不依赖 rooted logical owner。
 
+## 2026-10-25（待完整验收）
+
+- ArrowDecoratedBox 脱离前断开框架合成节点的旧父链，避免复用内容保留旧 host；应用提供的合成子树及公开 Popup.Child 关闭合同保持。
+
+
 ## 2026-10-23
 
 - native/overlay host 默认完整字体在 ControlTheme 中绑定到当前 PlacementTarget，已打开更新与 retarget 同步生效；内容显式字体保持原生覆盖优先级。

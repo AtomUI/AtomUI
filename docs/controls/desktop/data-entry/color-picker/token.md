@@ -18,10 +18,25 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ColorPickerWidth`、`ColorSpectrumHeight`、`ColorPickerHandlerSizeLG`、`ColorPickerHandlerSize`、`ColorPickerHandlerSizeSM`、`ColorPickerSliderSize` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ColorPickerPresetColorGroupPadding`、`TriggerPadding`、`TriggerTextMargin`、`SliderContainerMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ColorPickerWidth`、`ColorSpectrumHeight`、`ColorPickerInsetShadow`、`ColorPickerHandlerSizeLG`、`ColorPickerHandlerSize`、`ColorPickerHandlerSizeSM` |
+| 颜色与状态视觉 | 选择环明暗颜色和禁用色块透明度。 | `ColorPickerHandlerLightColor`、`ColorPickerHandlerDarkColor`、`ColorBlockDisabledOpacity` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ColorPickerInsetShadow`、`ColorBlockInnerShadows` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 默认依赖与明确覆盖
+
+24个字段使用版本化依赖默认计划，保持名称、类型、slot和既有资源编号。每个默认只在本层有效合并结果没有明确提供该字段时执行；下游默认读取已经合并的上游Own与ColorPicker Effective Global，而不是重新读取库内常量。0是明确值，不能作为“未配置”的标记。
+
+| 下游默认 | 有效输入与公式 | 现有消费者 |
+| --- | --- | --- |
+| `CheckedMarkSize` | `ColorPickerPresetColorSize × 0.6` | 预设色项的勾号Width／Height |
+| `ColorPickerSliderSize` | `ColorPickerHandlerSizeSM` | 纯色及渐变滑块Height |
+| `ColorPickerSliderThumbSize` | `ColorPickerHandlerSizeSM + LineWidth × 2` | 滑块拇指Width／Height |
+| `ColorPickerPreviewSize` | `ColorPickerSliderTrackSize × 2 + UniformlyMarginSM` | 面板内ColorPreview色块Size |
+
+明确设置下游时，该值优先；只提供上游时，以上现行公式随其更新；删除覆盖后重新求默认。默认Global下四项依次为14.399999999999999、12、14、28，保留原浮点运算结果而不增加取整。字体、边框、阴影及其它尺寸默认继续读取各自原有Global输入，不增加截断或最小值规则。
+
+`ColorPickerAlphaInputWidth`和`ColorPickerInputNumberHandleWidth`保留原名称、double类型、44／16默认值及资源编号。输入模板对7个NumericUpDown声明式消费按钮宽度，默认仍为16；Alpha宽度只在Own明确提供时应用该值，未明确配置继续历史实际宽度48，明确44或0均生效，删除配置恢复48。HSV／RGB三通道输入宽度仍为48，字体11及间距5保留。输入容器默认宽262；Alpha实际可见且明确宽于48时，以262加上超出48的部分自然扩展，避免固定宽度通道覆盖Alpha；隐藏Alpha或删除配置回到262。可选资源缺失时由局部纯转换器返回兼容默认48，避免Unset遮盖先前Setter而产生NaN；不把资源默认44误称为历史控件宽度，也不增设最小值或取整。
 
 ## 3. 控件专项模型中的 Token 使用
 

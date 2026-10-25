@@ -707,6 +707,14 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         base.OnDetachedFromVisualTree(e);
     }
 
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        // The framework clears old TemplateBindings before OnApplyTemplate.
+        // Retiring input nodes must not publish that clearing as a user edit.
+        ReleaseInputHandlers();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ReleaseInputHandlers();
@@ -716,8 +724,21 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         {
             SetValue(InfoIconProperty, new ClockCircleOutlined(), BindingPriority.Template);
         }
-        RefreshRangeTexts();
+        // Root text already projects the live edit. Reformatting committed values
+        // here would publish a transient rollback before the presenter reattaches.
+        if (_pickerPresenter?.IsEditing != true)
+        {
+            RefreshRangeTexts();
+        }
         CalculatePreferredWidth();
+        if (PickerPopup is not null && RangeActivatedPart != RangeActivatedPart.None)
+        {
+            // Replay the surviving endpoint onto the new input part at the existing
+            // Local priority; a ControlTheme setter has different precedence. The
+            // endpoint-change hook would reset the edit and caller's PickerPlacement.
+            PickerPopup.PlacementTarget = RangeActivatedPart == RangeActivatedPart.End
+                ? SecondaryInfoInputBox : InfoInputBox;
+        }
     }
     
     #region 实现 FormItem 接口

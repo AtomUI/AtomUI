@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .evidence import fingerprint, output_fingerprint, output_manifest, read_trx, write_json
+from .evidence import fingerprint, output_fingerprint, output_manifest, read_trx, read_trx_failures, write_json
 
 
 class RunLock:
@@ -160,7 +160,7 @@ def run_verification(repo, plan, output, dotnet=None, reuse=True, configuration=
     dotnet = dotnet or ["dotnet"]
     output = Path(output)
     started = time.monotonic()
-    report = {"version": 1, "status": "blocked", "time_utc": datetime.now(timezone.utc).isoformat(), "plan": plan, "test_results": [], "timings": {"preparation": round(preparation_seconds, 3)}, "errors": [], "reused": False}
+    report = {"version": 1, "status": "blocked", "time_utc": datetime.now(timezone.utc).isoformat(), "plan": plan, "test_results": [], "failed_test_results": [], "timings": {"preparation": round(preparation_seconds, 3)}, "errors": [], "reused": False}
     current_outputs = lambda: output_fingerprint(repo.root, configuration, framework, output_manifest(repo, plan["builds"], configuration)) if plan["builds"] else {"files": 0, "sha256": "no-dotnet-build"}
     with RunLock(output):
         try:
@@ -220,8 +220,15 @@ def run_verification(repo, plan, output, dotnet=None, reuse=True, configuration=
                     settings = temporary / ("tests-" + str(index) + ".runsettings")
                     write_settings(settings, job["classes"])
                     command = dotnet + ["test", str(repo.root / job["project"]), "--configuration", configuration, "--framework", framework, "--no-build", "--no-restore", "--nologo", "--settings", str(settings), "--logger", "trx", "--results-directory", str(directory), "-m:1", "-nr:false"]
-                    duration = execute(command, repo.root, temporary / ("tests-" + str(index) + ".log"), timeout, announce)
-                    evidence = read_trx(directory, job["classes"])
+                    test_started = time.monotonic()
+                    try:
+                        duration = execute(command, repo.root, temporary / ("tests-" + str(index) + ".log"), timeout, announce)
+                        evidence = read_trx(directory, job["classes"])
+                    except (OSError, ValueError, RuntimeError, TimeoutError, subprocess.SubprocessError, ET.ParseError):
+                        failure = read_trx_failures(directory)
+                        failure.update(project=job["project"], seconds=round(time.monotonic() - test_started, 3))
+                        report["failed_test_results"].append(failure)
+                        raise
                     evidence.update(project=job["project"], seconds=duration)
                     report["test_results"].append(evidence)
                     announce(str(evidence["passed"]) + " tests passed: " + job["project"] + " (" + str(duration) + "s)")

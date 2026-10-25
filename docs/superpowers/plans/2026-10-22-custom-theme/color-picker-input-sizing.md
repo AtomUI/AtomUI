@@ -1,0 +1,33 @@
+# CT19 C2：两个历史Own输入尺寸的消费
+
+现有ColorPickerInput主题对7个NumericUpDown统一写死Width48、SpinnerHandleWidth16；ColorPickerAlphaInputWidth默认44及ColorPickerInputNumberHandleWidth默认16没有消费者。复用既有WhenExplicit兼容合同，不更改字段、24项默认或公共API。
+
+## 行为和方案
+
+按钮宽度直接读取ColorPickerInputNumberHandleWidth，其默认16与原模板一致。Alpha宽度只在有效Own明确提供ColorPickerAlphaInputWidth时应用；未明确配置继续旧48，显式44／0均生效，删除配置恢复48。不把资源默认44误称为旧默认控件宽度。其余HSV／RGB输入仍48，字体11、间距5、总宽262、格式选择、值和输入行为保持。
+
+修改Themes/ColorView/ColorPickerInput.axaml，并以ColorView/ColorPickerInputThemeBindings.cs的纯转换器处理Unset到旧48的兼容回退。先用Temporary/CT19InputSizing实际模板的默认、明确44／88／0、handle24／0、格式切换和重置建立失败；候选验证两种View、公有值保持及最终尺寸。若WhenExplicit的Unset不能自然退回既有48，改用现有声明式fallback机制，不能使用code-behind找节点设置尺寸。
+
+实际输入／hover几何用相应框架事件并检查到达；样式／字段配置走ThemeConfigProvider。前后真实Skia同历史、A/A及1DIP，差异单列审查。当前Mac managed／AOT按风险补实际模板和资源。不得修改冻结30、B08两文件或C1 Token文件。
+
+完成后更新既有Token／实现／changelog，删除临时源、专用工程及媒体（待审查媒体明确保留），执行清理后的ColorPicker精确测试、NET8和diff检查。作者审查、不自动提交、不发布NuGet。完整CT19、旧SetPresetColor委托形状及所有平台仍有剩余工作，CT24暂缓。
+
+## 相关格式绑定缺陷
+
+真实历史暴露ColorPickerInput.HandleFormatChanged以Format属性setter覆盖模板绑定：首次Rgba后再次Hsva实际仍Rgba，回Hex也未生效。独立临时Repeated_public_format_changes用五次公开Format切换锁定目标Format和ComboBox索引；旧实现第二次即失败。属于本切片格式／恢复合同，需在ColorPickerInput.cs改用SetCurrentValue保留既有绑定，同时单独列明后续格式场景的预期视觉差异。旧版比较仍保留原断链；不把原样保留错误状态当成默认恢复。
+
+宿主1200×820，窗口RequestedThemeVariant与配置算法同时切Light／Dark，保留完整默认palette。旧820×650和未切顶层variant的截图是驱动诊断、不能作为最终Dark/恢复证据。
+
+## 加宽时的输入几何
+
+视觉审查发现首候选Alpha88与固定48通道输入重叠37 DIP，独立Rgba／Hsva两项反例失败，不能将“token已生效”当作产品通过。输入行未明确配置、Alpha不显示或宽度不大于48时继续262；可见且明确加宽时按262+max(0,AlphaWidth-48)自然扩展，保留所有通道48、间距和完整Alpha输入，而不是裁掉内容或缩小字体。0本身不钳制。该宽度变化仅覆盖明确加宽配置，需列出整面板的预期重排并审查。原C2视觉及原生数字只说明首候选，最终证据重跑。
+
+## 面板属性回调合同
+
+Alpha隐藏检查证明两个派生View.OnPropertyChanged漏调基类，公开IsAlphaVisible／IsAlphaEnabled未传到有效可见性；两类View各1项旧反例失败。恢复基类回调并去掉重复Hsv画刷刷新。基类旧IsFormatEnabled分支把bool写入枚举且此前未执行；删除该无效分支，按原公开行为保持当前Format，仅隐藏／恢复选择器，两项兼容用例原／候选均通过。新增可见性／加宽几何检查与相邻20项合计37项通过，不能代替最终像素和原生证据。
+
+AbstractColorPickerView同步纯成员布局：保持所有注册表达式及顺序、两个画刷初始化相对顺序不变；移位wrapper、区域及协作方法，以成员审计结果为门禁。其余两个View只加专用区域不移动注册。最终A/B还原输入与三个View的原源码，共5文件；候选6产品文件独立记录hash。
+
+## 色谱尺寸反馈
+
+六文件19项及44组A/A通过，但同实例还原的整图有14万像素残留，不能接受。两类View的新增反例均证实Spectrum在Own88撤回后仍302×160而非原262×160。ColorSpectrum绘图后将内部SizingPanel／输入Canvas／矩形尺寸写成上一轮实际宽高，普通Panel测量将其重新当作自然尺寸，形成只增不减的反馈。计划只将PART_LayoutRoot改为测量中性的Canvas，保留Panel基类查找、所有子层、输入透明背景、固定高度、绘图和事件路径，以单变量旧失败／新通过、Standalone左右中指针输入及全窗口还原比较验证。新增第7产品文件为ColorSpectrumTheme.axaml；不修改1700行绘图实现。

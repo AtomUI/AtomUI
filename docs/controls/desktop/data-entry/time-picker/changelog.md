@@ -21,6 +21,12 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-25（待完整验收）
+
+- 有效模板替换保留复用 presenter、打开／固定状态及输入草稿、焦点和选区，退休旧 Popup、绑定与非复用部件；模板完成后再装配 pin／打开，避免原生同步布局重入。
+- 范围时间重建后接回实际起／终点输入锚点，保留明确 placement，不以提交值临时覆盖活动文本。
+
+
 ## 2026-10-24
 
 - TimePicker历史8字段迁至有效依赖默认；PeriodHostWidth与ButtonsMargin接通实际时间列／footer，DatePicker自己的footer保持原合同。

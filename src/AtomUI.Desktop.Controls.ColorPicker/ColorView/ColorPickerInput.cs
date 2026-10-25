@@ -58,6 +58,8 @@ internal class ColorPickerInput : TemplatedControl
     }
     #endregion
 
+    #region 内部属性定义
+
     internal static readonly StyledProperty<bool> IsNeedConfirmProperty =
         AbstractColorPickerView.IsNeedConfirmProperty.AddOwner<ColorPickerInput>();
 
@@ -76,9 +78,15 @@ internal class ColorPickerInput : TemplatedControl
         private set => SetCurrentValue(IsInputValidProperty, value);
     }
 
+    #endregion
+
+    #region 内部事件定义
+
     internal event EventHandler? ColorInputEdited;
 
-    private bool _hasPendingInput;
+    #endregion
+
+    #region 内部协作 API
 
     internal void ResetInput()
     {
@@ -111,6 +119,8 @@ internal class ColorPickerInput : TemplatedControl
         }
         return true;
     }
+
+    #endregion
 
     private bool TryReadInput(out HsvColor color)
     {
@@ -192,6 +202,7 @@ internal class ColorPickerInput : TemplatedControl
             _rValueInput, _gValueInput, _bValueInput }.OfType<Control>();
     }
 
+    private bool _hasPendingInput;
     private ComboBox? _colorFormatComboBox;
     private NumericUpDown? _alphaInput;
     private LineEdit? _hexValueInput;
@@ -493,7 +504,7 @@ internal class ColorPickerInput : TemplatedControl
         if (_colorFormatComboBox?.SelectedItem is ComboBoxItem comboBoxItem &&
             comboBoxItem.Tag is ColorFormat colorFormat)
         {
-            Format = colorFormat;
+            SetCurrentValue(FormatProperty, colorFormat);
             using var scope = BeginIgnoringConfigureValues();
             ResetInput();
         }

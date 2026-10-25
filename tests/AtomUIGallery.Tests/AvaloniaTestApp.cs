@@ -30,7 +30,9 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         // Linux window clips require real geometry for pointer hit testing.
+                         .UseSkia()
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
                          .UseAtomUI(builder =>
                          {
                              builder.UseDesktopControls();

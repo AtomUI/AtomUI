@@ -70,6 +70,10 @@ Public API / ItemsSource / Command / Event
 
 ## 5. 生命周期与模板接入
 
+IconPresenter 换图、挂载及卸载时同步实际图标的 TemplatedParent：退休图标先解除旧归属，复用图标进入新 presenter 后使用当前模板 owner。归属变化经 Core Reflection 的限定兼容清除 Avalonia12.1.4 遗留的 TemplatedParentTheme 帧，避免复用 InfoIcon 反向持有已替换的 PickerClearUpButton 和旧输入树。兼容只涉及已知固定成员并有精确 DynamicDependency，不用全局事件或 owner 强引用缓存。
+
+尺寸及画刷仍通过原 Template 优先级的 relay 投射。图标是运行时 Content，普通子 Style 的优先级不能等价替代；换图／卸载对称释放，图标本地尺寸和画刷覆盖保持。模板归属修复不新增 Semantic Part 定制入口。
+
 生命周期规则：
 
 - 构造阶段只注册必要状态，不依赖 template part。

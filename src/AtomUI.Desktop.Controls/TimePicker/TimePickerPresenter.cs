@@ -71,6 +71,8 @@ internal class TimePickerPresenter : PickerPresenterBase
     private TimeView? _timeView;
     private TimeSpan? _pendingOpenDisplayTime;
 
+    #region 内部协作 API
+
     internal void ResetOpenPanelState()
     {
         IsEditing = true;
@@ -143,6 +145,8 @@ internal class TimePickerPresenter : PickerPresenterBase
         InputText = null;
         base.OnConfirmed();
     }
+
+    #endregion
 
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
@@ -308,7 +312,12 @@ internal class TimePickerPresenter : PickerPresenterBase
     {
         base.OnAttachedToVisualTree(e);
         AttachTemplateEventHandlers();
-        ResetOpenPanelState();
+        // Reparenting the open presenter keeps the current edit. A real opening
+        // is initialized by the owner; attachment must not discard its draft.
+        if (!IsEditing)
+        {
+            ResetOpenPanelState();
+        }
         ApplyPendingOpenPanelState();
     }
 

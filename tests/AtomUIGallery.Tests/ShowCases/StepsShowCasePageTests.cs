@@ -218,6 +218,19 @@ public class StepsShowCasePageTests
             var host = page.GetVisualDescendants().OfType<GalleryShowCaseHost>().Single();
             host.SelectedTab = GalleryShowCaseTab.SemanticParts;
             Dispatcher.UIThread.RunJobs();
+            // The filling contract applies when the card list overflows the available height.
+            var semanticPreview = page.GetVisualDescendants().OfType<SemanticPartPreview>().Single();
+            var descriptions = semanticPreview.PartDescriptions.ToArray();
+            semanticPreview.PartDescriptions.Clear();
+            foreach (var description in descriptions)
+            {
+                semanticPreview.PartDescriptions.Add(new SemanticPartDescription
+                {
+                    Path = description.Path,
+                    OwnerType = description.OwnerType,
+                    Description = description.Description + "\nFirst detail line.\nSecond detail line.\nThird detail line."
+                });
+            }
             Relayout();
 
             var preview = page.GetVisualDescendants().OfType<SemanticPartPreview>().Single();

@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using AtomUI.Data;
+using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -54,6 +55,7 @@ public class IconPresenter : Control
             ((ISetLogicalParent)oldChild).SetParent(null);
             LogicalChildren.Remove(oldChild);
             VisualChildren.Remove(oldChild);
+            TemplatePartThemeCompatibility.SetTemplatedParent(oldChild, null);
         }
 
         if (newChild is PathIcon pathIcon)
@@ -67,6 +69,7 @@ public class IconPresenter : Control
         base.OnAttachedToVisualTree(e);
         if (Icon != null)
         {
+            TemplatePartThemeCompatibility.SetTemplatedParent(Icon, TemplatedParent);
             ConfigureIcon(Icon);
         }
     }
@@ -76,6 +79,10 @@ public class IconPresenter : Control
         base.OnDetachedFromVisualTree(e);
         _disposables?.Dispose();
         _disposables = null;
+        if (Icon is not null)
+        {
+            TemplatePartThemeCompatibility.SetTemplatedParent(Icon, null);
+        }
     }
 
     private void AddIcon(PathIcon pathIcon)
@@ -83,6 +90,7 @@ public class IconPresenter : Control
         ConfigureIcon(pathIcon);
         ((ISetLogicalParent)pathIcon).SetParent(null);
         pathIcon.SetVisualParent(null);
+        TemplatePartThemeCompatibility.SetTemplatedParent(pathIcon, TemplatedParent);
         VisualChildren.Add(pathIcon);
         LogicalChildren.Add(pathIcon);
     }

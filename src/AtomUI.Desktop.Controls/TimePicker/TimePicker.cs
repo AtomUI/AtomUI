@@ -459,6 +459,14 @@ public partial class TimePicker : InfoPickerInput
         base.OnDetachedFromVisualTree(e);
     }
 
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        // The framework clears old TemplateBindings before OnApplyTemplate.
+        // Retiring input nodes must not publish that clearing as a user edit.
+        ReleaseInputHandlers();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ReleaseInputHandlers();

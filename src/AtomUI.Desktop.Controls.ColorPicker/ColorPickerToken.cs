@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-public sealed class ColorPickerToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+public sealed partial class ColorPickerToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -144,52 +144,117 @@ public sealed class ColorPickerToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ColorPickerWidth = 234;
-        ColorPickerHandlerSizeLG = 32; // 用在触摸屏上
-        ColorPickerHandlerSize = 16;
-        ColorPickerHandlerSizeSM = 12;
-        ColorPickerAlphaInputWidth = 44;
-        ColorPickerInputNumberHandleWidth = 16;
-        ColorPickerPresetColorSize = 24;
-        CheckedMarkSize = ColorPickerPresetColorSize * 0.6;
-        ColorPickerPresetPanelWidth = 220;
-        ColorPickerSliderSize = ColorPickerHandlerSizeSM;
-        ColorPickerSliderTrackSize = 8;
-        ColorPickerSliderThumbSize = ColorPickerHandlerSizeSM + EffectiveGlobalToken.LineWidth * 2;
-        ColorPickerPreviewSize = ColorPickerSliderTrackSize * 2 + EffectiveGlobalToken.UniformlyMarginSM;
-        ColorPickerInsetShadow = new BoxShadows(new BoxShadow()
+    [ControlTokenDefault(nameof(ColorPickerWidth))]
+    private static double DefaultForColorPickerWidth(in ControlTokenDefaultContext context) =>
+        234;
+
+    [ControlTokenDefault(nameof(ColorSpectrumHeight))]
+    private static double DefaultForColorSpectrumHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 4;
+
+    [ControlTokenDefault(nameof(ColorPickerInsetShadow))]
+    private static BoxShadows DefaultForColorPickerInsetShadow(in ControlTokenDefaultContext context) =>
+        new(new BoxShadow
         {
             IsInset = true,
             OffsetX = 0,
             OffsetY = 0,
             Blur = 1,
             Spread = 0,
-            Color = EffectiveGlobalToken.ColorTextQuaternary
+            Color = context.Global.ColorTextQuaternary
         });
 
-        ColorBlockInnerShadows = new BoxShadows(new BoxShadow()
+    [ControlTokenDefault(nameof(ColorPickerHandlerSizeLG))]
+    private static double DefaultForColorPickerHandlerSizeLG(in ControlTokenDefaultContext context) =>
+        32; // Touch selector size.
+
+    [ControlTokenDefault(nameof(ColorPickerHandlerSize))]
+    private static double DefaultForColorPickerHandlerSize(in ControlTokenDefaultContext context) =>
+        16;
+
+    [ControlTokenDefault(nameof(ColorPickerHandlerSizeSM))]
+    private static double DefaultForColorPickerHandlerSizeSM(in ControlTokenDefaultContext context) =>
+        12;
+
+    [ControlTokenDefault(nameof(ColorPickerHandlerLightColor))]
+    private static Color DefaultForColorPickerHandlerLightColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
+
+    [ControlTokenDefault(nameof(ColorPickerHandlerDarkColor))]
+    private static Color DefaultForColorPickerHandlerDarkColor(in ControlTokenDefaultContext context) =>
+        Color.Parse("#22075e");
+
+    [ControlTokenDefault(nameof(ColorPickerSliderSize), nameof(ColorPickerHandlerSizeSM))]
+    private static double DefaultForColorPickerSliderSize(in ControlTokenDefaultContext context, double colorPickerHandlerSizeSM) =>
+        colorPickerHandlerSizeSM;
+
+    [ControlTokenDefault(nameof(ColorPickerSliderTrackSize))]
+    private static double DefaultForColorPickerSliderTrackSize(in ControlTokenDefaultContext context) =>
+        8;
+
+    [ControlTokenDefault(nameof(ColorPickerSliderThumbSize), nameof(ColorPickerHandlerSizeSM))]
+    private static double DefaultForColorPickerSliderThumbSize(in ControlTokenDefaultContext context, double colorPickerHandlerSizeSM) =>
+        colorPickerHandlerSizeSM + context.Global.LineWidth * 2;
+
+    [ControlTokenDefault(nameof(ColorPickerPreviewSize), nameof(ColorPickerSliderTrackSize))]
+    private static double DefaultForColorPickerPreviewSize(in ControlTokenDefaultContext context, double colorPickerSliderTrackSize) =>
+        colorPickerSliderTrackSize * 2 + context.Global.UniformlyMarginSM;
+
+    [ControlTokenDefault(nameof(ColorPickerAlphaInputWidth))]
+    private static double DefaultForColorPickerAlphaInputWidth(in ControlTokenDefaultContext context) =>
+        44;
+
+    [ControlTokenDefault(nameof(ColorPickerInputNumberHandleWidth))]
+    private static double DefaultForColorPickerInputNumberHandleWidth(in ControlTokenDefaultContext context) =>
+        16;
+
+    [ControlTokenDefault(nameof(ColorPickerPresetColorSize))]
+    private static double DefaultForColorPickerPresetColorSize(in ControlTokenDefaultContext context) =>
+        24;
+
+    [ControlTokenDefault(nameof(ColorPickerPresetPanelWidth))]
+    private static double DefaultForColorPickerPresetPanelWidth(in ControlTokenDefaultContext context) =>
+        220;
+
+    [ControlTokenDefault(nameof(CheckedMarkSize), nameof(ColorPickerPresetColorSize))]
+    private static double DefaultForCheckedMarkSize(in ControlTokenDefaultContext context, double colorPickerPresetColorSize) =>
+        colorPickerPresetColorSize * 0.6;
+
+    [ControlTokenDefault(nameof(ColorPickerPresetColorGroupPadding))]
+    private static Thickness DefaultForColorPickerPresetColorGroupPadding(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyPaddingXXS);
+
+    [ControlTokenDefault(nameof(ColorBlockInnerShadows))]
+    private static BoxShadows DefaultForColorBlockInnerShadows(in ControlTokenDefaultContext context) =>
+        new(new BoxShadow
         {
             IsInset = true,
             OffsetX = 0,
             OffsetY = 0,
             Blur = 0,
-            Spread = EffectiveGlobalToken.LineWidth,
-            Color = EffectiveGlobalToken.ColorFillSecondary
+            Spread = context.Global.LineWidth,
+            Color = context.Global.ColorFillSecondary
         });
-        TriggerPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS - EffectiveGlobalToken.LineWidth);
-        TriggerTextMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0,
-            EffectiveGlobalToken.UniformlyMarginXS - EffectiveGlobalToken.UniformlyPaddingXXS + EffectiveGlobalToken.LineWidth, 0);
 
-        ColorSpectrumHeight = EffectiveGlobalToken.ControlHeightLG * 4;
-        ColorPickerHandlerLightColor = EffectiveGlobalToken.ColorBgElevated;
-        ColorPickerHandlerDarkColor = Color.Parse("#22075e");
-        SliderContainerMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginSM, 0);
-        TransparentBgSize = EffectiveGlobalToken.SizeXS;
-        ColorBlockDisabledOpacity = 0.4;
-        ColorPickerPresetColorGroupPadding = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingXXS);
-    }
+    [ControlTokenDefault(nameof(TriggerPadding))]
+    private static Thickness DefaultForTriggerPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXXS - context.Global.LineWidth);
+
+    [ControlTokenDefault(nameof(TriggerTextMargin))]
+    private static Thickness DefaultForTriggerTextMargin(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXS, 0,
+            context.Global.UniformlyMarginXS - context.Global.UniformlyPaddingXXS + context.Global.LineWidth, 0);
+
+    [ControlTokenDefault(nameof(SliderContainerMargin))]
+    private static Thickness DefaultForSliderContainerMargin(in ControlTokenDefaultContext context) =>
+        new(0, 0, context.Global.UniformlyMarginSM, 0);
+
+    [ControlTokenDefault(nameof(TransparentBgSize))]
+    private static double DefaultForTransparentBgSize(in ControlTokenDefaultContext context) =>
+        context.Global.SizeXS;
+
+    [ControlTokenDefault(nameof(ColorBlockDisabledOpacity))]
+    private static double DefaultForColorBlockDisabledOpacity(in ControlTokenDefaultContext context) =>
+        0.4;
 
 }

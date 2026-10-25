@@ -25,7 +25,13 @@ public class ColorPickerView : AbstractColorPickerView
     public event EventHandler<ColorChangedEventArgs>? ValueChanged;
     #endregion
 
+    #region 内部属性定义
+
     internal Color? DraftValue { get; private set; }
+
+    #endregion
+
+    #region 内部协作 API
 
     internal void ResetDraft(Color? value)
     {
@@ -35,6 +41,8 @@ public class ColorPickerView : AbstractColorPickerView
         SetCurrentValue(IsEmptyDraftProperty, IsNeedConfirm && value == null);
         BeginEdit();
     }
+
+    #endregion
 
     protected override void NotifyColorClearRequest()
     {
@@ -50,6 +58,7 @@ public class ColorPickerView : AbstractColorPickerView
             base.OnPropertyChanged(change);
             return;
         }
+        base.OnPropertyChanged(change);
         if (change.Property == IsNeedConfirmProperty)
         {
             SetCurrentValue(IsEmptyDraftProperty, IsNeedConfirm && DraftValue == null);
@@ -69,7 +78,6 @@ public class ColorPickerView : AbstractColorPickerView
 
         if (change.Property == HsvValueProperty)
         {
-            ConfigureHsvColorBrushes();
             if (this.IsAttachedToVisualTree())
             {
                 NotifyColorChanged(new ColorChangedEventArgs(
@@ -89,11 +97,15 @@ public class ColorPickerView : AbstractColorPickerView
         ValueChanged?.Invoke(this, e);
     }
 
+    #region 内部协作 API
+
     internal override void NotifyInputColorEdited()
     {
         DraftValue = HsvValue.ToRgb();
         SetCurrentValue(IsEmptyDraftProperty, false);
     }
+
+    #endregion
 
     protected override void NotifyPaletteColorSelected(Color color)
     {

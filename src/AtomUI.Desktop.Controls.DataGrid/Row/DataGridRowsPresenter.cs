@@ -118,6 +118,10 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
         // Clip the RowsPresenter so rows cannot overlap other elements in certain styling scenarios
         UpdateClipGeometry(new Rect(0, 0, finalSize.Width, finalHeight));
 
+        // Runtime row layout can outlive the renderer's pending scene notification.
+        // Coalesce a refresh after this layout has reached the compositor.
+        PointerOverRefresh.Request(this);
+
         return new Size(finalSize.Width, finalHeight);
     }
 

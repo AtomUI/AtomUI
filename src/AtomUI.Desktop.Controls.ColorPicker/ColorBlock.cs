@@ -46,7 +46,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 
     #endregion
 
-    #region 公共属性定义
+    #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClearRequestEvent =
         RoutedEvent.Register<ColorBlock, RoutedEventArgs>(
@@ -102,8 +102,6 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     }
 
     private bool _isCustomSize;
-    private IDisposable? _widthValue;
-    private IDisposable? _heightValue;
 
     internal bool IsCustomSize
     {
@@ -112,6 +110,9 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     }
 
     #endregion
+
+    private IDisposable? _widthValue;
+    private IDisposable? _heightValue;
 
     static ColorBlock()
     {
@@ -144,6 +145,25 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
         }
     }
 
+    public override void Render(DrawingContext context)
+    {
+        if (IsEmptyColorMode)
+        {
+            using var optionState = context.PushRenderOptions(new RenderOptions
+            {
+                EdgeMode = EdgeMode.Antialias
+            });
+            var startPoint = new Point(2, Bounds.Height - 2);
+            var endPoint = new Point(Bounds.Width - 2, 2);
+            context.DrawLine(EmptyColorPen, startPoint, endPoint);
+        }
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        RaiseEvent(new RoutedEventArgs(ClearRequestEvent));
+    }
     private void ConfigureTransparentBgBrush()
     {
         if (IsEmptyColorMode)
@@ -174,23 +194,4 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
         }
     }
 
-    public override void Render(DrawingContext context)
-    {
-        if (IsEmptyColorMode)
-        {
-            using var optionState = context.PushRenderOptions(new RenderOptions
-            {
-                EdgeMode = EdgeMode.Antialias
-            });
-            var startPoint = new Point(2, Bounds.Height - 2);
-            var endPoint = new Point(Bounds.Width - 2, 2);
-            context.DrawLine(EmptyColorPen, startPoint, endPoint);
-        }
-    }
-
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        base.OnPointerReleased(e);
-        RaiseEvent(new RoutedEventArgs(ClearRequestEvent));
-    }
 }

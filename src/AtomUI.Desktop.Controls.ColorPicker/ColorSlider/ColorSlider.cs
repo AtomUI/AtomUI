@@ -136,7 +136,11 @@ internal class ColorSlider : AbstractColorSlider
 
     #endregion
 
+    #region 公共事件定义
+
     public event EventHandler<ColorChangedEventArgs>? ColorChanged;
+
+    #endregion
 
     /// <summary>
     /// Defines the maximum hue component value

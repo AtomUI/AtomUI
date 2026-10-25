@@ -288,10 +288,12 @@ public class TourSemanticPartHighlightTests
         Dispatcher.UIThread.RunJobs();
         card.BringIntoView();
         Dispatcher.UIThread.RunJobs();
+        // Input hit testing reads the committed scene. A single tick can leave a
+        // queued scroll layout newer than that scene; drain the real frame first.
+        using var frame = window.CaptureRenderedFrame();
+        frame.ShouldNotBeNull("the current scroll layout must have an actual Skia frame before hit testing");
         var center = card.TransformToVisual(window)!.Value
                          .Transform(new Point(card.Bounds.Width / 2, card.Bounds.Height / 2));
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        Dispatcher.UIThread.RunJobs();
         var hit = window.InputHitTest(center) as Visual;
         var hitCard = hit == card || hit?.GetVisualAncestors().Contains(card) == true;
         var failure = $"part '{path}' card must be visible and hit before hover";

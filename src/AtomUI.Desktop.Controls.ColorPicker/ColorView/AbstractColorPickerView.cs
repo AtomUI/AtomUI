@@ -16,7 +16,7 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     public static readonly StyledProperty<ColorSpectrumComponents> ColorSpectrumComponentsProperty =
         AvaloniaProperty.Register<AbstractColorPickerView, ColorSpectrumComponents>(
             nameof(ColorSpectrumComponents),
-            ColorSpectrumComponents.HueSaturation);
+            ColorSpectrumComponents.SaturationValue);
 
     public static readonly StyledProperty<ColorFormat> FormatProperty =
         AvaloniaProperty.Register<AbstractColorPickerView, ColorFormat>(nameof(Format), ColorFormat.Hex);

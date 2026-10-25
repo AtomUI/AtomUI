@@ -55,6 +55,7 @@ src/AtomUI.Desktop.Controls.DataGrid/
 - partial 与 helper 按稳定 owner 拆分，不按 public/private 或单个触发点拆分。
 - Theme 文件负责静态视觉结构、Template Part、selector 和资源绑定；不在 C# 中动态复制同一结构。
 - Token 只保存组件视觉变量，不保存 Query、loading、selection、expanded 或 popup runtime state。
+- `DataGridToken.cs` 保存字段与17项显式别名，`DataGridToken.Defaults.cs` 保存DependencyDefaultsV2／revision 1的61项静态默认函数。生成计划按当前Global与声明的Own依赖求值，再投影别名；默认计算不访问控件、Query或Source，具体依赖和独立覆盖合同见[Token设计](token.md#52-非别名字段的默认依赖)。
 - Gallery 只展示用法和验证行为，不成为运行时状态 owner。
 - GeneratedFiles 由对应 generator 维护，不手工编辑。
 
@@ -480,6 +481,8 @@ Invalidated/collection Reset 成功后都从新 baseline 采样。首个有效 d
 保持操作 header 的屏幕 Y；Invalidated 优先按首行 key 恢复，失败时 clamp 到最近合法 slot。
 主动行移动使用无行/组身份的位置锚点，直接保留 slot 和行内偏移；首行只显示一部分时也以该部分可见行作为位置基准。
 若新行比原行内偏移更短，恢复到该 slot 顶部，保证该行可见；不能越过它或只留下不足一个像素的片段。
+
+重叠range视口完成容器更新后，先按当前实测高度归一化已显示首行和行内偏移，再发布滚动条Value／Maximum。不能先发布按旧首行计算的偏移、等下一轮measure才推进首行，否则同步观察者会看到偏移超过首行高度的中间状态。归一化只发生在容器提交点，不在逐行measure遍历中提前改动容器集合。
 
 DataGrid 写入 vertical scrollbar 前仍把 extent travel clamp 到非负；`AbstractScrollBar` 再对所有有限值统一保证
 `Maximum >= Minimum`。小于一个物理像素的 travel range 收敛到 Minimum，因此 Auto scrollbar 不抖动，也不会通过非法负

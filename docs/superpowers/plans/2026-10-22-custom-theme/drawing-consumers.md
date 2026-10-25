@@ -14,7 +14,7 @@
 
 从 `ProgressBarToken` 13个既有字段逐项核对，迁移V2时保持身份、资源编号、默认类型和值；`CircleTextColor`、`LineBorderRadius` 及未消费的步骤／动效字段按既有T13明确实际接线或兼容分类，不能直接从编辑入口删去后称完成。四个公开owner分别验证字体、颜色、描边、圆角、间距和最小尺寸，保持本地值、专用生成Style及继承优先级。线形、步骤、圆形、仪表盘分别覆盖范围归一化、异常／完成／禁用、方向、分段／缺口和动态缓存。
 
-[P1-A](progress-token-results.md)完成13字段默认计划及两项接线；[P1-B](progress-circle-results.md)继续圆形动态尺寸、本地字号、实际信息内容互斥和位置更新，再处理普通／步骤间距等其余字段。分包完成不计完整家族验收。
+[P1-A](progress-token-results.md)完成13字段默认计划及两项接线；[P1-B](progress-circle-results.md)继续圆形动态尺寸、本地字号、实际信息内容互斥和位置更新，[P1-B3](progress-circle-fit-results.md)已完成信息适配、完整字体失效及异常退出刷新；再处理普通／步骤间距等其余字段。分包完成不计完整家族验收。
 
 ## P2 其余绘制目标
 

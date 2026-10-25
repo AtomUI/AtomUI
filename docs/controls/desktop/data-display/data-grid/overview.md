@@ -9,7 +9,7 @@
 | 项 | 值 |
 | --- | --- |
 | NuGet 包 | `AtomUI.Desktop.Controls.DataGrid` |
-| .NET 命名空间 | `AtomUI.Desktop.Controls.DataGrid` |
+| .NET 命名空间 | `AtomUI.Desktop.Controls` |
 | AXAML 命名空间 | `https://atomui.net` |
 | Gallery 页面 | `controlgallery/AtomUIGallery/ShowCases/DataDisplay/DataGrid` |
 | 控件状态 | Stable |

@@ -123,6 +123,16 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             height);
     }
 
+    internal void UpdateStatusIconVisibility()
+    {
+        var availableSize = CalculateCircleSize() - StrokeThickness - 1;
+        var icon = Status == ProgressStatus.Exception
+            ? ExceptionCompletedIconPresenter
+            : SuccessCompletedIconPresenter;
+        IsStatusIconVisible = icon is null ||
+                              !(icon.Width > availableSize || icon.Height > availableSize);
+    }
+
     #endregion
 
     // 默认的大小推荐，针对 SizeType
@@ -238,7 +248,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
         var extraInfoSize = circleSize - StrokeThickness - 1; // 写死一个像素的 padding 吧
-        var extraInfo     = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, 100), FontSize, FontFamily);
+        var extraInfo = TextUtils.CalculateTextSize(
+            string.Format(ProgressTextFormat, Percentage), FontSize, FontFamily, FontStyle, FontWeight);
 
         // 这三个是不可能同时满足的
         if (LayoutTransformLabel is not null)
@@ -253,33 +264,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             }
         }
 
-        if (ExceptionCompletedIconPresenter is not null)
-        {
-            var exceptionIconWidth  = ExceptionCompletedIconPresenter.Width;
-            var exceptionIconHeight = ExceptionCompletedIconPresenter.Height;
-            if (exceptionIconWidth > extraInfoSize || exceptionIconHeight > extraInfoSize)
-            {
-                IsStatusIconVisible = false;
-            }
-            else
-            {
-                IsStatusIconVisible = true;
-            }
-        }
-
-        if (SuccessCompletedIconPresenter is not null)
-        {
-            var successIconWidth  = SuccessCompletedIconPresenter.Width;
-            var successIconHeight = SuccessCompletedIconPresenter.Height;
-            if (successIconWidth > extraInfoSize || successIconHeight > extraInfoSize)
-            {
-                IsStatusIconVisible = false;
-            }
-            else
-            {
-                IsStatusIconVisible = true;
-            }
-        }
+        UpdateStatusIconVisibility();
     }
 
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -300,6 +285,18 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
                 UpdateExtraInfoMetrics(CalculateCircleSize());
                 NotifyHandleExtraInfoVisibility();
                 InvalidateMeasure();
+                ProgressIndicator?.InvalidateMeasure();
+            }
+            else if (change.Property == FontSizeProperty || change.Property == FontFamilyProperty ||
+                     change.Property == FontStyleProperty || change.Property == FontWeightProperty)
+            {
+                NotifyHandleExtraInfoVisibility();
+                InvalidateMeasure();
+                ProgressIndicator?.InvalidateMeasure();
+            }
+            else if (change.Property == StatusProperty)
+            {
+                NotifyUpdateProgress();
                 ProgressIndicator?.InvalidateMeasure();
             }
         }

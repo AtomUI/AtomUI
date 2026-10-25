@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -21,8 +22,8 @@ public class DataGridTokenAlignmentTests
             ColorSplit            = Color.FromRgb(0x00, 0x00, 0x00)
         };
         var token = new DataGridToken();
-        token.AssignEffectiveGlobalToken(sharedToken);
-        token.CalculateTokenValues(isDarkMode: false);
+        var context = new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light);
+        DataGridToken.EvaluateDefaults(token, in context, ReadOnlySpan<ulong>.Empty);
 
         // AntD size.ts：middle 单元格 inline=paddingXS(8)、block=paddingSM(12)。
         token.CellPaddingMD.ShouldBe(

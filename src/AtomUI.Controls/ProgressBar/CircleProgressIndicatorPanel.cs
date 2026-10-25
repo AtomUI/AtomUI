@@ -7,6 +7,12 @@ internal sealed class CircleProgressIndicatorPanel : Panel
 {
     protected override Size MeasureOverride(Size availableSize)
     {
+        if (TemplatedParent is AbstractCircleProgress owner)
+        {
+            // Runtime part dimensions can change through dedicated styles without
+            // changing the fixed-size owner. The theme consumes the resulting fit flag.
+            owner.UpdateStatusIconVisibility();
+        }
         var width = 0d;
         var height = 0d;
         foreach (var child in Children)

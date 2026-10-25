@@ -11,11 +11,6 @@ namespace AtomUI.Controls.Commons;
 
 public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 {
-    protected const double LARGE_CHUNK_WIDTH = 14;
-    protected const double MIDDLE_CHUNK_WIDTH = 6;
-    protected const double SMALL_CHUNK_WIDTH = 2;
-    protected const double DEFAULT_CHUNK_SPACE = 2;
-
     #region 公共属性定义
 
     public static readonly StyledProperty<LinePercentAlignment> PercentPositionProperty =
@@ -134,6 +129,11 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
     }
 
     #endregion
+
+    protected const double LARGE_CHUNK_WIDTH = 14;
+    protected const double MIDDLE_CHUNK_WIDTH = 6;
+    protected const double SMALL_CHUNK_WIDTH = 2;
+    protected const double DEFAULT_CHUNK_SPACE = 2;
 
     private StepsProgressPanel? _progressBody;
 

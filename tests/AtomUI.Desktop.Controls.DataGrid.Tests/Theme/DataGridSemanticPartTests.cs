@@ -214,6 +214,15 @@ public class DataGridSemanticPartTests
         var grid = LocalGrid(Rows(50), grouped: true, withTitleAndFooter: false);
         using var _ = Show(grid);
 
+        // Group projections are asynchronous even for the local source.
+        SpinWait.SpinUntil(() =>
+        {
+            Dispatcher.UIThread.RunJobs();
+            return grid.LoadState is DataGridLoadState.Ready or DataGridLoadState.Error;
+        }, TimeSpan.FromSeconds(5)).ShouldBeTrue("the group projection must complete");
+        grid.LoadState.ShouldBe(DataGridLoadState.Ready, grid.LoadError?.ToString());
+        grid.UpdateLayout();
+
         var groupHeaders = grid.GetVisualDescendants().OfType<DataGridRowGroupHeader>().ToArray();
         groupHeaders.ShouldNotBeEmpty();
         groupHeaders.ShouldAllBe(static header => header.Classes.Contains(BodyRowClass));

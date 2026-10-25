@@ -152,6 +152,7 @@ internal class ColorSlider : AbstractColorSlider
     internal const double MaxHue = 359;
 
     private Bitmap? _backgroundBitmap;
+    private long _backgroundUpdateVersion;
     private AvaloniaButton? _decreaseButton;
     private AvaloniaButton? _increaseButton;
     private IDisposable? _decreaseButtonPressDispose;
@@ -211,6 +212,7 @@ internal class ColorSlider : AbstractColorSlider
     /// </summary>
     private async Task UpdateBackgroundAsync()
     {
+        var requestVersion = ++_backgroundUpdateVersion;
         try
         {
             // In Avalonia, Bounds returns the actual device-independent pixel size of a control.
@@ -252,7 +254,9 @@ internal class ColorSlider : AbstractColorSlider
                     IsAlphaVisible,
                     IsPerceptive);
 
-                if (!this.IsAttachedToVisualTree())
+                // A previous color or layout request may finish after its successor.
+                // Only the latest request may replace the bitmap owned by this control.
+                if (requestVersion != _backgroundUpdateVersion || !this.IsAttachedToVisualTree())
                 {
                     return;
                 }
@@ -603,6 +607,14 @@ internal class ColorSlider : AbstractColorSlider
     protected virtual void NotifyColorChanged(ColorChangedEventArgs e)
     {
         ColorChanged?.Invoke(this, e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // A retained template can return without a new color or Bounds notification.
+        // Its pixel bitmap is computed at runtime and cannot be refreshed by ControlTheme.
+        _ = UpdateBackgroundAsync();
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

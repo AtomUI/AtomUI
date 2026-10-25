@@ -30,6 +30,9 @@
         <Setter Property="TransparentBgIntervalColor" Value="{atom:SharedTokenResource ColorFillSecondary}" />
         <Setter Property="TransparentBgSize" Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <!-- Keep the historical red unless configuration explicitly supplies the error role. -->
+        <Setter Property="EmptyColorStroke" Value="{atom:OwnerTokenResource Kind=ColorError, WhenExplicit=True}" />
+        <Setter Property="EmptyColorStrokeThickness" Value="{atom:OwnerTokenResource LineWidthBold}" />
         
         <Style Selector="^[IsEmptyColorMode=True]">
             <Setter Property="Cursor" Value="Hand" />

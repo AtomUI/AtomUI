@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ReactiveUI;
@@ -153,8 +154,33 @@ public class TimelineSemanticPartHighlightTests
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         Dispatcher.UIThread.RunJobs();
         var hit = window.InputHitTest(center) as Visual;
-        (hit == card || hit?.GetVisualAncestors().Contains(card) == true)
-            .ShouldBeTrue($"part '{path}' card must be visible and hit before hover");
+        var hitCard = hit == card || hit?.GetVisualAncestors().Contains(card) == true;
+        var failure = $"part '{path}' card must be visible and hit before hover";
+        if (!hitCard)
+        {
+            var after = card.TransformToVisual(window)!.Value.Transform(new Point(card.Bounds.Width / 2, card.Bounds.Height / 2));
+            var afterHit = window.InputHitTest(after) as Visual;
+            object Node(Visual visual) => new
+            {
+                type = visual.GetType().FullName, name = (visual as Control)?.Name,
+                bounds = visual.Bounds.ToString(), matrix = visual.TransformToVisual(window)?.ToString(),
+                visual.ClipToBounds, clip = visual.Clip?.ToString(), visual.IsVisible, visual.Opacity,
+                hitTest = (visual as Control)?.IsHitTestVisible,
+                viewport = visual is ScrollViewer scroll ? $"{scroll.Viewport}|{scroll.Extent}|{scroll.Offset}" : null
+            };
+            failure += Environment.NewLine + System.Text.Json.JsonSerializer.Serialize(new
+            {
+                path, before = center.ToString(), after = after.ToString(),
+                scale = window.RenderScaling, client = window.ClientSize.ToString(),
+                theme = window.ActualThemeVariant.ToString(),
+                card = Node(card), sticky = Node(stickyContent),
+                hit = hit is null ? null : Node(hit), afterHit = afterHit is null ? null : Node(afterHit),
+                ancestors = card.GetVisualAncestors().Select(Node).ToArray(),
+                logicalAncestors = card.GetLogicalAncestors().Select(static node => node.GetType().FullName).ToArray(),
+                hitAncestors = hit?.GetVisualAncestors().Select(Node).ToArray()
+            });
+        }
+        hitCard.ShouldBeTrue(failure);
         window.MouseMove(new Point(center.X, center.Y));
         Dispatcher.UIThread.RunJobs();
         Dispatcher.UIThread.RunJobs();

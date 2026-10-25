@@ -39,7 +39,6 @@
                                     VerticalAlignment="Stretch">
                                 <Panel Name="PART_SelectionEllipsePanel">
                                     <Ellipse x:Name="SelectionEllipse"
-                                             StrokeThickness="2"
                                              IsHitTestVisible="False"
                                              HorizontalAlignment="Stretch"
                                              VerticalAlignment="Stretch" />
@@ -68,6 +67,8 @@
 
         <!-- Selector Color -->
         <Style Selector="^ /template/ Ellipse#SelectionEllipse">
+            <Setter Property="StrokeThickness"
+                    Value="{atom:OwnerTokenResource LineWidthBold}" />
             <Setter Property="Stroke"
                     Value="{atom:ColorPickerTokenResource ColorPickerHandlerDarkColor}" />
         </Style>

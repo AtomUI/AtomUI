@@ -38,6 +38,12 @@ Token 按控件语义分类维护：
 
 `ColorPickerAlphaInputWidth`和`ColorPickerInputNumberHandleWidth`保留原名称、double类型、44／16默认值及资源编号。输入模板对7个NumericUpDown声明式消费按钮宽度，默认仍为16；Alpha宽度只在Own明确提供时应用该值，未明确配置继续历史实际宽度48，明确44或0均生效，删除配置恢复48。HSV／RGB三通道输入宽度仍为48，字体11及间距5保留。输入容器默认宽262；Alpha实际可见且明确宽于48时，以262加上超出48的部分自然扩展，避免固定宽度通道覆盖Alpha；隐藏Alpha或删除配置回到262。可选资源缺失时由局部纯转换器返回兼容默认48，避免Unset遮盖先前Setter而产生NaN；不把资源默认44误称为历史控件宽度，也不增设最小值或取整。
 
+### 共享绘制角色
+
+空值斜线与色谱选择环复用有效Global LineWidthBold，默认2 DIP，明确0表示不绘制对应笔画。空值斜线的颜色复用明确提供的ColorError角色；未明确提供及撤回配置时保留历史红色，其颜色不由默认ColorError替换。显式角色经过当前算法计算后消费，明暗模式不能假定等于原始输入色。
+
+这些角色不新增Own字段或资源编号。触发色块按所属公开Picker身份解析，Popup中的选择环按独立公开View身份解析；宿主、View及其他owner的专属Global各自隔离，general Global和作用域继承仍适用。选择环的明暗笔画颜色继续使用现有ColorPickerHandlerLightColor／ColorPickerHandlerDarkColor，禁用色块透明度继续由ColorBlockDisabledOpacity控制。
+
 ## 3. 控件专项模型中的 Token 使用
 
 ColorPicker 的控件专项模型通过 Theme 消费 Token：

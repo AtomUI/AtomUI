@@ -29,7 +29,13 @@
                             <Panel VerticalAlignment="Center">
                                 <WrapPanel Name="PART_ColorTextPanel"
                                            Classes.semantic-description="True"
-                                           IsVisible="{TemplateBinding IsTextVisible}" />
+                                           IsVisible="{TemplateBinding IsTextVisible}">
+                                    <WrapPanel.Styles>
+                                        <Style Selector="TextBlock.gradient-active-stop">
+                                            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+                                        </Style>
+                                    </WrapPanel.Styles>
+                                </WrapPanel>
                             </Panel>
                         </DockPanel>
                     </atom:PixelAlignedBorder>
@@ -56,18 +62,17 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="InactiveStopTextColor"
-                Value="{atom:SharedTokenResource ColorTextDisabled}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
             <Setter Property="TextElement.Foreground"
-                    Value="{atom:SharedTokenResource ColorText}" />
+                    Value="{TemplateBinding Foreground}" />
             <Setter Property="Margin" Value="{atom:ColorPickerTokenResource TriggerTextMargin}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ TextBlock#PART_ColorTextPanel">
-                <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
+                <Setter Property="TextElement.Foreground"
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
     </ControlTheme>

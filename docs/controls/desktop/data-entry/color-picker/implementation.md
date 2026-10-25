@@ -31,6 +31,7 @@ Popup 接入边界：`AbstractColorPicker` 负责业务状态和内容准备，c
 - 控件主文件保留 public/protected API、Avalonia 属性注册、事件和主要生命周期入口。
 - Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
 - Token 文件只提供组件视觉变量，不保存实例状态。
+- `ColorPickerToken` 通过源生成的版本化默认计划计算24个Own字段，四条Own依赖使用合并后的上游值，不能在控件或模板重复推导同一默认公式；明确下游覆盖与0值保留。具体依赖及输入尺寸的兼容回退见[token设计](token.md#默认依赖与明确覆盖)。
 - Gallery 文件只展示用法和示例，不作为运行时逻辑 owner。
 
 ## 3. 核心类职责
@@ -117,7 +118,7 @@ Public API / ItemsSource / Command / Event
 
 稳定 template part 接入点：
 
-- `PART_AlphaInput`：承载文本输入、过滤、显示或编辑入口。
+- `PART_AlphaInput`：承载Alpha百分比编辑；其宽度由输入ControlTheme按明确Own覆盖或历史48 DIP回退解析。按钮宽度由同一主题投射到所有数字输入，详见[token设计](token.md#默认依赖与明确覆盖)。
 - `PART_BValueInput`：承载文本输入、过滤、显示或编辑入口。
 - `PART_CheckedMark`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ClearColor`：稳定模板协作入口，重命名前必须同步主题和实现。
@@ -156,6 +157,10 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 
 稳定事件路径包括 `ClearRequest`、`GradientActiveStopChanged`。事件参数和触发时机属于兼容边界。
 
+纯色和渐变View的属性回调必须调用基类，确保公开Alpha可见性／可用性更新到实际输入与滑块；画刷刷新由基类统一处理。隐藏格式选择器保留当前格式，不能向Format枚举属性写入布尔值。
+
+格式选择事件通过`SetCurrentValue`更新输入区Format，保留与公开面板属性之间的双向模板绑定；不能以CLR setter覆盖该绑定，否则首次切换后后续公开格式和重置将失效。
+
 确认模式的输入事件收敛为候选编辑、确认、取消三类操作。候选编辑不通知 Form；确认先同步有效输入，再写回宿主，随后对非空值发出一次 `ValueSelected`，最后请求关闭。关闭回调不能重复提交或再次发出选择事件。默认模式仍按原有 `ValueSyncStrategy` 与关闭事件处理，完整矩阵见 [确认与取消设计](confirmation-design.md)。
 
 ## 7. 内部算法与关键流程
@@ -165,9 +170,12 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - API 默认值到 effective state 的归一。
 - Template part 重新应用时的状态回放。
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
+- 色谱内部`PART_LayoutRoot`使用Canvas提供测量边界；按实际绘制尺寸更新的子层不能以旧位图尺寸撑住下一轮自然测量。原有SizingPanel、矩形与透明输入Canvas保留，宽度缩小和加宽配置撤回均须检查同实例尺寸与指针命中。
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 - `ColorBlock` 的空颜色斜线使用最终 Bounds 定位端点，不计入外部 Margin，也不使用测量阶段的尺寸代替绘制区域。
+- 渐变触发文字的正常前景由 owner `Foreground` 投射到 `PART_ColorTextPanel`，默认读取有效 `ColorText`。当前活动节点沿用 `ColorTextDisabled` 的弱化语义；禁用时文本区统一读取有效禁用色。文字生成及选择变化只同步内部节点标记，颜色由主题声明，不能把当前画刷写成本地快照。
+- 渐变文字由 formatter 运行时生成，未加入 owner 的 `TemplatedParent` 链；节点状态样式声明在模板中 `WrapPanel.Styles` 的逻辑子树作用域。`description` 专用 Style 作用于面板，正常文字继承其前景；formatter 明确设置的本地前景继续遵循 Avalonia 原生样式优先级。
 - 颜色候选与提交值的隔离、输入有效性检查、渐变深复制、外部值更新及 pinned 操作转换统一遵循 [确认与取消设计](confirmation-design.md)，不套用日期专用编辑会话。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
@@ -209,3 +217,7 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - 确认与取消能力按 [专项验证矩阵](confirmation-design.md#10-验证要求) 验证默认兼容、候选隔离、清空确认、取消与所有关闭路径；临时验证代码的去留遵循项目测试生命周期规范。
 - Semantic Part 契约与 marker 变更运行 `tests/AtomUI.Desktop.Controls.Tests/ColorPicker/ColorPickerSemanticPartTests.cs`（descriptor 五部件、模板静态 marker 清单、默认主题不消费 semantic selector、`IsPopupPinnedOpen` 公共 API、overlay 弹层下生成 Style 命中触发区与 popup.root 目标）。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+### 历史渐变 formatter 委托兼容
+
+历史SetPresetColor入口接受两参数Func，注册的ColorTextFormatterProperty为三参数Action。入口使用强类型适配：先调用Func取得集合，再清除和替换输出，避免复用控件仍属于旧面板时直接添加；返回同一输出集合时不重复添加。回调失败时适配器不清空原输出；既有GenerateValueText准备阶段仍遵循原合同。适配不使用反射、DynamicInvoke或新的订阅，保持原公开签名和附加属性类型。

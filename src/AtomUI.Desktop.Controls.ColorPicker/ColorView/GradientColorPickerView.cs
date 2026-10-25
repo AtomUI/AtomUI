@@ -48,7 +48,13 @@ public class GradientColorPickerView : AbstractColorPickerView
 
     #endregion
 
+    #region 内部属性定义
+
     internal LinearGradientBrush? DraftValue { get; private set; }
+
+    #endregion
+
+    #region 内部协作 API
 
     internal void ResetDraft(LinearGradientBrush? value)
     {
@@ -118,6 +124,8 @@ public class GradientColorPickerView : AbstractColorPickerView
         return true;
     }
 
+    #endregion
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -134,6 +142,7 @@ public class GradientColorPickerView : AbstractColorPickerView
             base.OnPropertyChanged(change);
             return;
         }
+        base.OnPropertyChanged(change);
         if (change.Property == IsNeedConfirmProperty)
         {
             SetCurrentValue(IsEmptyDraftProperty, IsNeedConfirm && DraftValue == null);
@@ -150,10 +159,6 @@ public class GradientColorPickerView : AbstractColorPickerView
             NotifyGradientValueChanged(new GradientColorChangedEventArgs(
                 change.GetOldValue<LinearGradientBrush>(),
                 change.GetNewValue<LinearGradientBrush>()));
-        }
-        else if (change.Property == HsvValueProperty)
-        {
-            ConfigureHsvColorBrushes();
         }
 
         if (this.IsAttachedToVisualTree())
@@ -195,11 +200,15 @@ public class GradientColorPickerView : AbstractColorPickerView
         SetCurrentValue(IsEmptyDraftProperty, IsNeedConfirm);
     }
 
+    #region 内部协作 API
+
     internal override void NotifyInputColorEdited()
     {
         DraftValue = Value;
         SetCurrentValue(IsEmptyDraftProperty, false);
     }
+
+    #endregion
 
     protected override void NotifyPaletteColorSelected(Color color)
     {

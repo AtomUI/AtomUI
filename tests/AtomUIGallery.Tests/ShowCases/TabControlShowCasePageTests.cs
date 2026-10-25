@@ -57,19 +57,19 @@ public class TabControlShowCasePageTests
                                              .OfType<AtomUI.Desktop.Controls.ScrollViewer>()
                                              .Single();
                 partsPane.ClipToBounds.ShouldBeTrue();
-                if (preview.Name == "TabItemSemanticPreview")
+                partsScroller.Viewport.Height.ShouldBeLessThanOrEqualTo(400.5);
+                var overflows = partsScroller.Extent.Height > partsScroller.Viewport.Height + 0.5;
+                partsScroller.GetVisualDescendants()
+                             .OfType<AtomUI.Desktop.Controls.ScrollBar>()
+                             .Single(static bar => bar.Name == "PART_VerticalScrollBar")
+                             .IsVisible.ShouldBe(overflows);
+                if (overflows)
                 {
-                    // 部件卡片未超出面板默认上限的预览：pane 随内容自然展开
-                    //（360 = 预览高度 414 减去 54 面板内边距），无内部滚动，
-                    // 可达性由页面滚动承担。
-                    partsScroller.Extent.Height.ShouldBe(partsScroller.Viewport.Height, 0.5);
+                    partsScroller.Viewport.Height.ShouldBe(400, 1);
                 }
                 else
                 {
-                    // 卡片列表超出默认上限的预览：pane 采用 400 默认上限，
-                    // 卡片列表在 pane 内部滚动。
-                    partsScroller.Extent.Height.ShouldBeGreaterThan(partsScroller.Viewport.Height);
-                    partsScroller.Viewport.Height.ShouldBe(400, 1);
+                    partsScroller.Extent.Height.ShouldBe(partsScroller.Viewport.Height, 0.5);
                 }
             }
 

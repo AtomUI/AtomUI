@@ -41,7 +41,27 @@ public partial class GradientColorPicker : AbstractColorPicker
 
     public static void SetPresetColor(GradientColorPicker colorPicker, Func<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls> formatter)
     {
-        colorPicker.SetValue(ColorTextFormatterProperty, formatter);
+        Action<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls>? adaptedFormatter = null;
+        if (formatter is not null)
+        {
+            adaptedFormatter = (value, format, output) =>
+            {
+                // Preserve the legacy Func signature while the attached property uses
+                // an output-writing Action. Evaluate before retiring existing children.
+                var replacement = formatter(value, format);
+                if (ReferenceEquals(replacement, output))
+                {
+                    return;
+                }
+
+                output.Clear();
+                if (replacement is not null)
+                {
+                    output.AddRange(replacement);
+                }
+            };
+        }
+        colorPicker.SetValue(ColorTextFormatterProperty, adaptedFormatter);
     }
     #endregion
 
@@ -55,18 +75,6 @@ public partial class GradientColorPicker : AbstractColorPicker
     /// Dispatched once when Flyout is closed
     /// </summary>
     public event EventHandler<GradientColorSelectedEventArgs>? ValueSelected;
-    #endregion
-
-    #region 内部事件定义
-
-    internal static readonly StyledProperty<IBrush?> InactiveStopTextColorProperty =
-        AvaloniaProperty.Register<GradientColorPicker, IBrush?>(nameof(InactiveStopTextColor));
-
-    internal IBrush? InactiveStopTextColor
-    {
-        get => GetValue(InactiveStopTextColorProperty);
-        set => SetValue(InactiveStopTextColorProperty, value);
-    }
     #endregion
 
     #region 内部属性定义
@@ -86,6 +94,8 @@ public partial class GradientColorPicker : AbstractColorPicker
     }
 
     #endregion
+
+    private const string ActiveStopTextClass = "gradient-active-stop";
 
     private GradientColorPickerView? _presenter;
     private WrapPanel? _textPanel;
@@ -113,6 +123,12 @@ public partial class GradientColorPicker : AbstractColorPicker
 
         if (change.Property == ColorTextFormatterProperty)
         {
+            if (change.GetOldValue<Action<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls>?>() != null)
+            {
+                // Formatter output may have arbitrary local values or child types.
+                // Retire that output before generating text for the next formatter.
+                _textPanel?.Children.Clear();
+            }
             GenerateValueText();
         }
 
@@ -179,6 +195,8 @@ public partial class GradientColorPicker : AbstractColorPicker
         if (Value == null || Value.GradientStops.Count == 0)
         {
             var emptyTextBlock = new AvaloniaTextBlock();
+            // Formatter/empty text nodes are runtime children, outside the template's
+            // TemplatedParent chain, so their content binding cannot be a TemplateBinding.
             emptyTextBlock[!AvaloniaTextBlock.TextProperty] = this[!EmptyColorTextProperty];
             _textPanel.Children.Add(emptyTextBlock);
         }
@@ -212,6 +230,7 @@ public partial class GradientColorPicker : AbstractColorPicker
                 }
             }
         }
+        HandleGradientActiveStopChanged(ActivatedStopIndex);
     }
 
     protected override void GenerateColorBlockBackground()
@@ -310,18 +329,14 @@ public partial class GradientColorPicker : AbstractColorPicker
                 var textBlock = _textPanel.Children[i] as AvaloniaTextBlock;
                 if (textBlock != null)
                 {
-                    if (i == index)
-                    {
-                        textBlock.Foreground = InactiveStopTextColor;
-                    }
-                    else
-                    {
-                        textBlock.Foreground = Foreground;
-                    }
+                    textBlock.Classes.Set(ActiveStopTextClass,
+                        Value is { GradientStops.Count: > 0 } && i == index);
                 }
             }
         }
     }
+
+    #region 内部协作 API
 
     internal override void ResetConfirmationDraft()
     {
@@ -355,6 +370,8 @@ public partial class GradientColorPicker : AbstractColorPicker
         GradientValueChanged?.Invoke(this, e);
     }
 
+    #endregion
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -382,6 +399,7 @@ public partial class GradientColorPicker : AbstractColorPicker
             _colorIndicator.SetCurrentValue(ColorBlock.IsEmptyColorModeProperty, true);
             _textPanel?.Children.Clear();
             var emptyTextBlock = new AvaloniaTextBlock();
+            // This runtime-created empty label has no template parent for TemplateBinding.
             emptyTextBlock[!AvaloniaTextBlock.TextProperty] = this[!EmptyColorTextProperty];
             _textPanel?.Children.Add(emptyTextBlock);
         }

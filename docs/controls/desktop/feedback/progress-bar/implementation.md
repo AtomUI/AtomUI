@@ -52,6 +52,7 @@ owner 不直接对子节点调用 `Measure` 或 `Arrange`。
 `StepsProgressPanel` 消费步骤轨道和额外信息 rect，并作为 track 与 indicator 的唯一布局所有者；owner 不在自身
 `ArrangeOverride` 中再次排列 indicator。Steps 百分比始终位于轨道外部，标签直接继承 owner 的 `Foreground`；
 只有支持内嵌百分比的普通 line 使用 `PercentageLabelColor` 做背景可读性计算。
+开启布局取整时，普通 line 与 Steps 都以模板实际向上取整后的信息尺寸计算末端锚点；旧自绘模板保留原始尺寸计算，避免百分比标签被再次取整后越过控件边界。
 
 `AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并按当前格式化 Percentage、FontFamily、FontSize、FontStyle 和 FontWeight 判断圆形内部文字是否放得下。文字或字体变化会刷新测量；状态改变时重新读取当前百分比，避免退出 Exception 后保留旧标签。运行期计算结果通过内部只读属性暴露：ControlTheme 用编译绑定设置默认 FontSize，图标由模板 Style 的 TemplateBinding 设置宽高；调用方本地 FontSize 与专用 Indicator Style 保持各自优先级，尺寸计算不再写入这些本地值。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - StrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
 

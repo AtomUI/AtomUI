@@ -466,14 +466,18 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     protected override Rect GetExtraInfoRect(Rect controlRect)
     {
+        // Anchor against the size template children actually receive after layout rounding.
+        var extraInfoSize = HasTemplateProgressVisuals && UseLayoutRounding
+            ? LayoutHelper.RoundLayoutSizeUp(_extraInfoSize, LayoutHelper.GetLayoutScale(this))
+            : _extraInfoSize;
         double offsetX      = 0;
         double offsetY      = 0;
         double targetWidth  = 0;
         double targetHeight = 0;
         if (IsProgressInfoVisible)
         {
-            targetWidth  = _extraInfoSize.Width;
-            targetHeight = _extraInfoSize.Height;
+            targetWidth  = extraInfoSize.Width;
+            targetHeight = extraInfoSize.Height;
         }
 
         if (Orientation == Orientation.Horizontal)
@@ -519,6 +523,6 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
             }
         }
 
-        return new Rect(new Point(offsetX, offsetY), _extraInfoSize);
+        return new Rect(new Point(offsetX, offsetY), extraInfoSize);
     }
 }

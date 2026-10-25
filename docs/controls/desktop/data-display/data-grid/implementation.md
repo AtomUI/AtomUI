@@ -636,3 +636,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - DataGrid detail/recycle/offset/extent 测试保持或加强，不删除或放宽既有行为断言。
 - 运行 DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、AOT/trim verify、Gallery
   NativeAOT publish/startup smoke 和 `git diff --check`。
+
+### 滚动后的静止指针命中
+
+RowsPresenter在滚动布局更新后请求所属Window刷新最终scene的指针命中。同窗口请求合并，跨窗口独立；不轮询重绘。更新悬停不能改动滚动条、冻结列、选择或滚动链，隐藏／重新显示及关闭窗口后的回收均按既有显示生命周期处理。

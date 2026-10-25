@@ -105,6 +105,52 @@ def read_trx(directory, expected_classes):
     return {"total": total, "passed": passed, "classes": sorted(observed)}
 
 
+def read_trx_failures(directory):
+    """Preserve every non-passing result before temporary raw evidence is retired."""
+    failures, errors = [], []
+    total = passed = 0
+    try:
+        files = sorted(Path(directory).rglob("*.trx"))
+    except OSError as error:
+        return {"complete": False, "failures": [], "evidence_errors": [str(error)]}
+    if not files:
+        errors.append("Test process produced no TRX evidence")
+    for path in files:
+        try:
+            root = ET.parse(path).getroot()
+            for item in root.iter():
+                item.tag = item.tag.rsplit("}", 1)[-1]
+            definitions = {unit.get("id"): unit.find("TestMethod") for unit in root.findall(".//UnitTest")}
+            results = root.findall(".//UnitTestResult")
+            counters = root.find(".//Counters")
+            observed_passed = sum(result.get("outcome") == "Passed" for result in results)
+            if counters is None:
+                errors.append(path.name + ": TRX contains no result counters")
+            elif int(counters.get("total", "0")) != len(results) or int(counters.get("passed", "0")) != observed_passed:
+                errors.append(path.name + ": TRX counters do not agree with individual results")
+            total += len(results)
+            passed += observed_passed
+            for result in results:
+                if result.get("outcome") == "Passed":
+                    continue
+                method = definitions.get(result.get("testId"))
+                name = result.get("testName") or (method.get("name") if method is not None else None)
+                if not name:
+                    errors.append(path.name + ": non-passing result has no test name")
+                failures.append({
+                    "name": name or result.get("testId", ""),
+                    "class": method.get("className", "").split(",", 1)[0] if method is not None else "",
+                    "outcome": result.get("outcome", "Unknown"),
+                    "message": result.findtext("Output/ErrorInfo/Message", ""),
+                    "stack_trace": result.findtext("Output/ErrorInfo/StackTrace", ""),
+                    "trx_file": path.relative_to(directory).as_posix(),
+                })
+        except (OSError, ValueError, ET.ParseError) as error:
+            errors.append(path.name + ": " + str(error))
+    return {"complete": not errors, "total": total, "passed": passed,
+            "failures": failures, "evidence_errors": errors}
+
+
 def write_json(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -13,7 +13,8 @@
                 <Border Name="PART_Frame" ClipToBounds="True"
                         Padding="0.5"
                         CornerRadius="{TemplateBinding CornerRadius}">
-                    <Panel Name="PART_LayoutRoot"
+                    <!-- Render-sized descendants must not retain the previous viewport as desired size. -->
+                    <Canvas Name="PART_LayoutRoot"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Stretch">
                         <Panel Name="PART_SizingPanel"
@@ -45,7 +46,7 @@
                                 </Panel>
                             </Canvas>
                         </Panel>
-                    </Panel>
+                    </Canvas>
                 </Border>
             </ControlTemplate>
         </Setter>

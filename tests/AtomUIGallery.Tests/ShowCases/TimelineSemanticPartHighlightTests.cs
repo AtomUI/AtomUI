@@ -2,6 +2,7 @@ using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ReactiveUI;
@@ -138,10 +139,22 @@ public class TimelineSemanticPartHighlightTests
     {
         var card = cards.Single(candidate =>
             (string?)candidate.DataContext?.GetType().GetProperty("Path")!.GetValue(candidate.DataContext) == path);
+        // Nested panes consume the card request; first reveal the enclosing preview.
+        var preview = card.GetVisualAncestors().OfType<SemanticPartPreview>().First();
+        var stickyContent = window.GetVisualDescendants().OfType<Control>()
+            .Single(candidate => candidate.Name == "PART_StickyContentHost");
+        var stickyHeight = stickyContent.Bounds.Height;
+        preview.BringIntoView(new Rect(0, -stickyHeight, preview.Bounds.Width, preview.Bounds.Height + stickyHeight));
+        Dispatcher.UIThread.RunJobs();
         card.BringIntoView();
         Dispatcher.UIThread.RunJobs();
         var center = card.TransformToVisual(window)!.Value
                          .Transform(new Point(card.Bounds.Width / 2, card.Bounds.Height / 2));
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        Dispatcher.UIThread.RunJobs();
+        var hit = window.InputHitTest(center) as Visual;
+        (hit == card || hit?.GetVisualAncestors().Contains(card) == true)
+            .ShouldBeTrue($"part '{path}' card must be visible and hit before hover");
         window.MouseMove(new Point(center.X, center.Y));
         Dispatcher.UIThread.RunJobs();
         Dispatcher.UIThread.RunJobs();

@@ -381,13 +381,6 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         {
             ConfigureAlphaEffectiveVisible();
         }
-        else if (change.Property == IsFormatEnabledProperty)
-        {
-            if (!IsFormatEnabled)
-            {
-                SetCurrentValue(FormatProperty, Format == ColorFormat.Hex);
-            }
-        }
         else if (change.Property == HsvValueProperty)
         {
             ConfigureHsvColorBrushes();

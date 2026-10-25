@@ -108,6 +108,14 @@ Pointer 判断使用剪裁后的 ScrollContentPresenter 视口，不能使用完
 
 ## 5. 生命周期与模板接入
 
+有效模板替换保留同一个公开 PickerPresenter、提交值和编辑会话。InfoPickerInput 在 OnTemplateChanged 提前解除旧 Popup 的 Closed 及时间输入监听，避免旧模板绑定清空被解释为关闭或用户输入；OnApplyTemplate 用正常 Content API 交接复用 presenter，再退休旧模板自有 Popup.Child。新容器先移除尚未取得逻辑归属的共享内容列表项，旧容器清理后再加入，保留原 TemplateBinding 的后续更新，不能直接改写逻辑父节点或重建 presenter 规避释放问题。
+
+打开／pin relay 和输入焦点恢复在模板应用完成后执行。Avalonia12.1.4 的 Popup.Show 会同步布局，在 OnApplyTemplate 内直接打开可能重入尚未记录完成的 ApplyTemplate；新输入内容也可能尚未挂载。完成任务只持有弱目标及版本，连续替换保留待恢复的光标／选区，卸载、后续模板或外部焦点使过期恢复失效。pin relay 继续使用原 Local 优先级，其目标和时机不能由不同优先级的 ControlTheme Setter 等价替代。
+
+TimePickerPresenter 重新挂载活动编辑会话时不再次初始化草稿；RangeTimePicker 不以提交值临时覆盖活动文本，并把仍活动的起／终点接到新输入部件。接线不触发端点切换钩子，因该钩子会重置候选和 PickerPlacement；调用方明确设置的 placement 保持。
+
+Core Reflection 的 TemplatePartThemeCompatibility 是 Avalonia12.1.4 模板主题帧兼容边界：仅跟踪显式替换的 owner 部件，在 TemplatedParent 变化时取消监听并退休旧帧，ConditionalWeakTable 不强持有节点；固定调用 StyledElement.OnTemplatedParentControlThemeChanged，并以精确 DynamicDependency 保留该成员。不注册全局 StyledElement 拦截，不扫描类型；升级 Avalonia 时用旧部件释放及实际 NativeAOT 反例复核，确认上游修复后移除该兼容。
+
 生命周期规则：
 
 - 构造阶段只注册必要状态，不依赖 template part。

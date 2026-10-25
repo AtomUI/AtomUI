@@ -145,6 +145,8 @@ ColorPicker 的视觉模型由控件模板、ControlTheme、SharedToken 和 Colo
 
 ColorPicker 拥有独立 Control identity；`ColorPickerToken` 只表达 ColorPicker Own Token 语义，不承载 open/close、collection/filter、input/value、motion 或 visual option 运行时状态。Control 级 Global Token 覆盖与 Own Token 通过 `ColorPickerTokenResource` 统一读取。
 
+渐变触发文字使用当前有效前景与禁用色，选择节点不冻结颜色。正常文字跟随宿主 `Foreground` 或 `description` 专用 Style 的文本前景；当前活动节点保留弱化显示。禁用、主题及作用域变化不会要求重新选择节点。formatter 显式设置的本地颜色按原生样式优先级生效。
+
 主题维护规则：
 
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。
@@ -245,3 +247,7 @@ ColorPicker 的视觉选项通过 public API 归一为 theme variables、伪类�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+### 渐变文字的历史 formatter 方法
+
+`GradientColorPicker.SetPresetColor(picker, formatter)`保留历史方法名；其两参数`Func<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls>`返回要显示的文字控件集合。重复更新会替换原输出，支持复用已返回的控件；返回空集合清空文字。传入null保持原有本地null清除语义；`ClearValue(ColorTextFormatterProperty)`才会重新采用样式值。附加属性与getter继续使用原有三参数Action，直接通过属性设置的既有调用不变。

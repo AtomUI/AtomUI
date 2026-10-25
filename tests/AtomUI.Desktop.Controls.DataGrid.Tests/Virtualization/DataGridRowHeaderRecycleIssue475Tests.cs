@@ -118,22 +118,28 @@ public class DataGridRowHeaderRecycleIssue475Tests
         grid.RowHeaderContentTemplate = ItemHeaderTemplate();
         grid.RowDetailsTemplate = new FuncDataTemplate<Row>((_, _) => new Border { Height = 30 });
         grid.RowDetailsVisibilityMode = detailsVisibility;
-        var phase = "initial layout";
-        var unloadedDetails = new List<string>();
-        grid.UnloadingRowDetails += (_, args) => unloadedDetails.Add(
-            $"{phase}: row={args.Row.Index}, first={grid.DisplayData.FirstScrollingSlot}, " +
-            $"last={grid.DisplayData.LastScrollingSlot}, viewport={grid.CellsEstimatedHeight:0.##}, " +
-            $"ready={grid.LoadState}, stale={grid.IsDataStale}, " +
-            $"measure={grid.IsMeasureValid}, arrange={grid.IsArrangeValid}");
         var window = Show(grid);
         try
         {
+            // Show can legitimately recycle an estimated row after measuring details.
+            // Observe only the header changes this test exercises.
+            var phase = "replace header template";
+            var unloadedDetails = new List<string>();
+            var loadedDetails = 0;
+            grid.LoadingRowDetails += (_, _) => loadedDetails++;
+            grid.UnloadingRowDetails += (_, args) => unloadedDetails.Add(
+                $"{phase}: row={args.Row.Index}, first={grid.DisplayData.FirstScrollingSlot}, " +
+                $"last={grid.DisplayData.LastScrollingSlot}, viewport={grid.CellsEstimatedHeight:0.##}, " +
+                $"ready={grid.LoadState}, stale={grid.IsDataStale}, " +
+                $"measure={grid.IsMeasureValid}, arrange={grid.IsArrangeValid}");
             var rows = DisplayedRows(grid);
             var oldHeaders = rows.Select(HeaderText).ToArray();
             phase = "replace header template";
             grid.RowHeaderContentTemplate = new FuncDataTemplate<Row>((_, _) => new TextBlock { Text = "new" });
             Dispatcher.UIThread.RunJobs();
             unloadedDetails.ShouldBeEmpty();
+            loadedDetails.ShouldBe(0);
+            DisplayedRows(grid).ShouldBe(rows);
             AssertHeaders(grid, _ => "new");
             foreach (var header in oldHeaders)
             {
@@ -146,6 +152,8 @@ public class DataGridRowHeaderRecycleIssue475Tests
             Dispatcher.UIThread.RunJobs();
             AssertHeaders(grid, row => row.Label);
             unloadedDetails.ShouldBeEmpty();
+            loadedDetails.ShouldBe(0);
+            DisplayedRows(grid).ShouldBe(rows);
         }
         finally
         {

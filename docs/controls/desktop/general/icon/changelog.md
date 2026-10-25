@@ -2,6 +2,10 @@
 
 本文档记录 Icon 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-25（待完整验收）
+
+- IconPresenter 换图、挂载和卸载同步图标模板归属并退休旧模板主题帧，防止复用图标保留旧输入树；保留 Template 优先级的尺寸／画刷投射与本地覆盖。
+
 ## 2026-10-23
 
 - 修复模板图标遗留宿主绑定及显式 child 值被覆盖；两类 Presenter 的画刷/尺寸采用原生 Template 优先级，detach/替换释放并在 attach 恢复；IconPresenter 默认画刷消费自己的 Effective Global。

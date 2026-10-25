@@ -86,3 +86,9 @@ Mac原Collapsed／Visible及额外44／52／60行高共5组合，没有模板切
 - `src/AtomUI.Desktop.Controls/ProgressBar/Themes/AbstractCircleProgressTheme.axaml`
 - `tests/AtomUI.Desktop.Controls.DataGrid.Tests/Theme/DataGridTokenAlignmentTests.cs`
 - `tests/AtomUI.Desktop.Controls.DataGrid.Tests/Virtualization/DataGridRowHeaderRecycleIssue475Tests.cs`
+
+## 授权执行结果
+
+用户已明确批准本批提交、推送和验证Actions。核对manifest全部30文件及暂存blob哈希一致后，创建提交`ef09198b9f2535da4b480f838cbce6b5e6ed7141`；既有远端feature/custom-theme已推送并核实同SHA。首次SSL连接超时后重试成功，未更改全局网络设置。
+
+[第六轮Actions](https://github.com/AtomUI/AtomUI/actions/runs/40149666278)已启动，base=`19eef870b9db62b1eb1c3b0897619ee8d466af46`、full=false、all_platforms=true、browser=true；只做验证，无NuGet发布。本段不表示任务通过，仍等各OS原始结果。其他视觉批准包未混入该提交。

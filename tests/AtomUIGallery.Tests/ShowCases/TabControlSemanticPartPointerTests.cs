@@ -106,6 +106,22 @@ public class TabControlSemanticPartPointerTests
             Dispatcher.UIThread.RunJobs();
             Dispatcher.UIThread.RunJobs();
 
+            // Long descriptions preserve the overflow trigger with real font metrics.
+            var cardPreview = page.GetVisualDescendants().OfType<SemanticPartPreview>()
+                .Single(candidate => candidate.Name == "CardTabControlSemanticPreview");
+            var descriptions = cardPreview.PartDescriptions.ToArray();
+            cardPreview.PartDescriptions.Clear();
+            foreach (var description in descriptions)
+            {
+                cardPreview.PartDescriptions.Add(new SemanticPartDescription
+                {
+                    Path = description.Path,
+                    OwnerType = description.OwnerType,
+                    Description = description.Description + "\nFirst detail line.\nSecond detail line.\nThird detail line."
+                });
+            }
+            Dispatcher.UIThread.RunJobs();
+
             var pageScroller = page.GetVisualDescendants()
                                    .OfType<AtomUIScrollViewer>()
                                    .Single(static candidate => candidate.Name == "PART_ScrollViewer");
@@ -181,6 +197,13 @@ public class TabControlSemanticPartPointerTests
             var demo = page.GetVisualDescendants()
                            .OfType<AtomUICardTabControl>()
                            .Single(static candidate => candidate.Name == "CardTabControlSemanticOwner");
+            // Three short real-font labels can fit; use explicit long labels for this overflow test.
+            foreach (var item in demo.Items.OfType<AtomUITabItem>())
+            {
+                item.Header = item.Header + " long tab label for horizontal scrolling";
+            }
+            Dispatcher.UIThread.RunJobs();
+
             var tabScroller = demo.GetVisualDescendants()
                                   .OfType<AtomUIScrollViewer>()
                                   .Single(static candidate => candidate.Name == "PART_CardTabStripScrollViewer");
@@ -212,6 +235,22 @@ public class TabControlSemanticPartPointerTests
             var host = page.GetVisualDescendants().OfType<GalleryShowCaseHost>().Single();
             host.SelectedTab = GalleryShowCaseTab.SemanticParts;
             Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs();
+
+            // Long descriptions preserve the overflow trigger with real font metrics.
+            var cardPreview = page.GetVisualDescendants().OfType<SemanticPartPreview>()
+                .Single(candidate => candidate.Name == "CardTabControlSemanticPreview");
+            var descriptions = cardPreview.PartDescriptions.ToArray();
+            cardPreview.PartDescriptions.Clear();
+            foreach (var description in descriptions)
+            {
+                cardPreview.PartDescriptions.Add(new SemanticPartDescription
+                {
+                    Path = description.Path,
+                    OwnerType = description.OwnerType,
+                    Description = description.Description + "\nFirst detail line.\nSecond detail line.\nThird detail line."
+                });
+            }
             Dispatcher.UIThread.RunJobs();
 
             var pageScroller = page.GetVisualDescendants()

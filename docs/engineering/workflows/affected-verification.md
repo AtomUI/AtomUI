@@ -97,6 +97,8 @@ runner 用临时 solution 汇总选中项目，一次构建共享依赖；构建
 `history.json` 最多保留 100 条耗时记录，CLI 的总耗时包含仓库发现、审计和影响规划。`metrics` 命令显示历史。日志、临时 solution、runsettings、TRX 全部放在
 系统临时目录，正常退出、测试失败和可处理的中断后清理；强制杀进程后遵循系统临时目录清理策略。
 
+测试进程失败或TRX验收失败时，runner在原始结果删除前将非通过用例的名称、class、outcome、错误与调用栈写入latest.json的failed_test_results。每个失败项目保留计数和complete／evidence_errors；没有、损坏或计数不一致的TRX明确标为不完整，不用空清单表示全部失败已收集。原命令错误及非零退出仍保留，不生成成功receipt。该字段不受命令日志末尾16KB展示限制。
+
 | 状态 | 含义 | 退出码 |
 | --- | --- | --- |
 | `passed` | 本次计划内检查完成，不代表整个仓库已验证 | 0 |

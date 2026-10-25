@@ -101,6 +101,10 @@ host 定位完成后再恢复 margin 占用，避免非对称 Margin 导致预�
 
 ## 6. 生命周期与模板接入
 
+Desktop ArrowDecoratedBox 在视觉树脱离前，通过 Core Utils 的 CompositionTreeRetirement 清理每个实际 Visual 节点自己的原生合成 Children。Avalonia12.1.4 Border 会保留已脱离的 composition visual；若父链未断开，复用内容可能反向持有旧 wrapper／host 及定位 anchor。处理只覆盖正在退役的 Visual 子树，不递归删除应用提供的 ChildCompositionVisual 内部子图，重新挂载时正常重建框架合成关系；没有修改 framework 定位缓存私有字段。
+
+Picker 替换其自有模板 Popup 时会释放旧 Child，这与下述普通 Popup 关闭合同不同：前者是 owner 退休模板部件及其绑定，后者保留调用方继续持有的公开内容。
+
 host 排版在 `PopupRootTheme` 和 `OverlayPopupHostTheme` 的 ControlTheme Setter 中声明。
 `$parent[avap:Popup].PlacementTarget.(TextElement.FontSize)` 等四条 compiled binding
 沿真实 logical Popup ancestor 跨越 visual root，读取当前 anchor 的完整有效字体。

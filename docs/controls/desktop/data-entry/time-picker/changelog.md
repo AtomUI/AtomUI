@@ -2,6 +2,11 @@
 
 本文档记录 TimePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-25（待完整验收）
+
+- 有效模板替换保留复用 presenter、打开／固定状态及输入草稿、焦点和选区，退休旧 Popup、绑定与非复用部件；模板完成后再装配 pin／打开，避免原生同步布局重入。
+- 范围时间重建后接回实际起／终点输入锚点，保留明确 placement，不以提交值临时覆盖活动文本。
+
 ## 2026-10-24
 
 - TimePicker历史8字段迁至有效依赖默认；PeriodHostWidth与ButtonsMargin接通实际时间列／footer，DatePicker自己的footer保持原合同。

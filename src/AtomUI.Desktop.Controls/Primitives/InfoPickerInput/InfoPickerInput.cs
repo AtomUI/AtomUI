@@ -2,6 +2,7 @@ using AtomUI.Theme.Resources;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -12,6 +13,8 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -404,6 +407,9 @@ public abstract class InfoPickerInput : TemplatedControl,
     private IDisposable? _popupPinnedOpenBinding;
     private int _popupLifecycleCloseDepth;
     private Control? _ownedPickerPresenter;
+    private InputFocusState? _pendingInputFocus;
+    private int _templateGeneration;
+    private bool _templateCompletionPending;
 
     private EventHandler? _formValueChanged;
 
@@ -453,14 +459,58 @@ public abstract class InfoPickerInput : TemplatedControl,
     {
     }
 
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        ++_templateGeneration;
+        _templateCompletionPending = true;
+        TemplatePartThemeCompatibility.TrackTemplateReplacement(this);
+        _pendingInputFocus = e.NewValue is IControlTemplate
+            ? CaptureInputFocus() ?? (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is null ? _pendingInputFocus : null)
+            : null;
+        if (e.NewValue is IControlTemplate && PickerPopup is not null)
+        {
+            // Native teardown closes the old Popup before OnApplyTemplate. Its
+            // Closed notification does not close the replacement picker session.
+            PickerPopup.Closed -= HandlePickerPopupClosed;
+        }
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _templateCompletionPending = true;
+        var popup = e.NameScope.Find<Popup>("PART_Popup");
+        var presenter = PickerPresenter;
+        var contentOwner = popup?.Child as ContentControl;
+        var transferPresenter = PickerPopup is not null && !ReferenceEquals(PickerPopup, popup) &&
+                                presenter is not null && ReferenceEquals(contentOwner?.Content, presenter);
+        if (transferPresenter)
+        {
+            // The new TemplateBinding has already added this shared content while
+            // its old owner still owns the logical parent. Detach the new listing
+            // before retiring the old owner, then add it with normal Content APIs.
+            // SetCurrentValue preserves the template binding for future updates.
+            contentOwner!.SetCurrentValue(ContentControl.ContentProperty, null);
+        }
         _popupPinnedOpenBinding?.Dispose();
         _popupPinnedOpenBinding = null;
 
         if (PickerPopup != null)
         {
             PickerPopup.Closed -= HandlePickerPopupClosed;
+            if (!ReferenceEquals(PickerPopup, popup))
+            {
+                PickerPopup.CloseForLifecycle();
+                if (PickerPopup.Child is StyledElement child && ReferenceEquals(child.TemplatedParent, this))
+                {
+                    TemplatePartThemeCompatibility.SetTemplatedParent(child, null);
+                }
+                PickerPopup.Child = null;
+            }
+        }
+        if (transferPresenter)
+        {
+            contentOwner!.SetCurrentValue(ContentControl.ContentProperty, presenter);
         }
 
         if (DecoratedBox != null)
@@ -476,7 +526,7 @@ public abstract class InfoPickerInput : TemplatedControl,
 
         base.OnApplyTemplate(e);
 
-        PickerPopup = e.NameScope.Find<Popup>("PART_Popup");
+        PickerPopup = popup;
 
         DecoratedBox = e.NameScope.Get<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
         InfoInputBox = e.NameScope.Get<TextBox>("PART_InfoInputBox");
@@ -488,11 +538,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
         if (PickerPopup != null)
         {
-            _popupPinnedOpenBinding = BindUtils.RelayBind(
-                this,
-                IsPopupPinnedOpenProperty,
-                PickerPopup,
-                Popup.IsPopupPinnedOpenProperty);
             PickerPopup.Closed += HandlePickerPopupClosed;
 
         }
@@ -518,8 +563,9 @@ public abstract class InfoPickerInput : TemplatedControl,
         if (IsPickerOpen)
         {
             EnsurePickerPresenter();
-            ApplyPopupOpenState(true);
         }
+        var input = _pendingInputFocus is { } focus ? e.NameScope.Find<TextBox>(focus.Name) : null;
+        ScheduleTemplateCompletion(input);
     }
 
 
@@ -635,6 +681,10 @@ public abstract class InfoPickerInput : TemplatedControl,
         base.OnAttachedToVisualTree(e);
         _deactivationSubscription =
             TopLevelDeactivation.Subscribe(TopLevel.GetTopLevel(this), HandleWindowDeactivated);
+        if (PickerPopup is not null && _popupPinnedOpenBinding is null)
+        {
+            ScheduleTemplateCompletion(null);
+        }
         if (IsPopupPinnedOpen)
         {
             SetPickerOpenIfChanged(true);
@@ -643,6 +693,9 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        ++_templateGeneration;
+        _templateCompletionPending = false;
+        _pendingInputFocus = null;
         ClosePickerForLifecycle();
         base.OnDetachedFromVisualTree(e);
 
@@ -932,6 +985,10 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private void SetupContentRightAddOnBindings(TemplateAppliedEventArgs e)
     {
+        // These named controls live in AddOnDecoratedBox's Content subtree, outside
+        // this owner's template selector route. Keep the existing local-priority
+        // relays ready during OnApplyTemplate; theme setters change their precedence
+        // and ancestor bindings resolve later, when that content attaches.
         _contentRightAddOnBindings?.Dispose();
         _contentRightAddOnBindings = new CompositeDisposable();
 
@@ -1045,7 +1102,7 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private void ApplyPopupOpenState(bool isOpen)
     {
-        if (PickerPopup is null)
+        if (PickerPopup is null || (isOpen && _templateCompletionPending))
         {
             return;
         }
@@ -1055,6 +1112,84 @@ public abstract class InfoPickerInput : TemplatedControl,
             PickerPopup.IsOpen = isOpen;
         }
     }
+
+    private InputFocusState? CaptureInputFocus()
+    {
+        return TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is TextBox input &&
+               ReferenceEquals(input.TemplatedParent, this) &&
+               input.Name is "PART_InfoInputBox" or "PART_SecondaryInfoInputBox"
+            ? new InputFocusState(input.Name, input.CaretIndex, input.SelectionStart, input.SelectionEnd)
+            : null;
+    }
+
+    private void ScheduleTemplateCompletion(TextBox? input)
+    {
+        _templateCompletionPending = true;
+        var owner = new WeakReference<InfoPickerInput>(this);
+        var target = input is not null ? new WeakReference<TextBox>(input) : null;
+        var generation = ++_templateGeneration;
+        // Popup.Show runs layout synchronously. Opening/pinning from OnApplyTemplate
+        // can reenter ApplyTemplate before Avalonia records the applied template.
+        // Content inputs also attach after OnApplyTemplate; complete both together.
+        Dispatcher.Post(() =>
+        {
+            if (owner.TryGetTarget(out var picker) && picker._templateGeneration == generation)
+            {
+                picker.CompleteTemplateApplication(target);
+            }
+        }, DispatcherPriority.Loaded);
+    }
+
+    private void CompleteTemplateApplication(WeakReference<TextBox>? target)
+    {
+        var state = _pendingInputFocus;
+        _pendingInputFocus = null;
+        _templateCompletionPending = false;
+        if (TopLevel.GetTopLevel(this) is null)
+        {
+            return;
+        }
+
+        if (PickerPopup is not null)
+        {
+            // This local-priority relay needs the input pass-through and completed
+            // template. A theme setter changes priority and can pin/open too early.
+            _popupPinnedOpenBinding?.Dispose();
+            _popupPinnedOpenBinding = BindUtils.RelayBind(
+                this, IsPopupPinnedOpenProperty, PickerPopup, Popup.IsPopupPinnedOpenProperty);
+            ApplyPopupOpenState(IsPickerOpen);
+        }
+        if (state is not null && target is not null && target.TryGetTarget(out var input))
+        {
+            RestoreInputFocus(input, state);
+        }
+    }
+
+    private void RestoreInputFocus(TextBox input, InputFocusState state)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is null || !ReferenceEquals(TopLevel.GetTopLevel(input), topLevel))
+        {
+            return;
+        }
+        var current = topLevel.FocusManager?.GetFocusedElement() as Visual;
+        if (current is not null && !ReferenceEquals(current, topLevel) &&
+            !ReferenceEquals(current, this) && !this.IsVisualAncestorOf(current) &&
+            (PickerPresenter is not { } presenter ||
+             (!ReferenceEquals(current, presenter) && !presenter.IsVisualAncestorOf(current))))
+        {
+            return;
+        }
+
+        if (input.Focus())
+        {
+            input.SetCurrentValue(TextBox.CaretIndexProperty, state.Caret);
+            input.SetCurrentValue(TextBox.SelectionStartProperty, state.Start);
+            input.SetCurrentValue(TextBox.SelectionEndProperty, state.End);
+        }
+    }
+
+    private sealed record InputFocusState(string Name, int Caret, int Start, int End);
 
     private void HandlePickerPopupClosed(object? sender, EventArgs e)
     {

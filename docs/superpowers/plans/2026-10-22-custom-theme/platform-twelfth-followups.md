@@ -32,3 +32,13 @@ build_host.py是该日志唯一写入者；其subprocess.run把实际dotnet buil
 ## 待审五文件快照
 
 本文件、platform-eleventh-followups.md、tasks.md、正式Toolchain build-and-verification.md及build_host.py。拟在既有feature/custom-theme创建一个提交、推送已有远端分支，再用AtomUI凭证运行三OS／两Browser验证Actions，full=false。排除C7、临时测试及全部产物，不创建分支／worktree，不发布NuGet。具体blob／整体SHA保存于外部SDD，不在本文自引用；尚未获新Git授权，不执行提交或调度。
+
+## 授权执行记录
+
+用户明确批准本批提交、推送与验证Actions后，按五文件冻结快照f240c068d32c创建提交b8325380f671ab48135da829e8520517958a55b7，逐项核对提交blob与父提交，再推送既有远端feature/custom-theme并核对远端SHA。三OS／两Browser的[第十二轮Actions40172623312](https://github.com/AtomUI/AtomUI/actions/runs/40172623312)已于2026-10-25 07:24 UTC调度，full=false，不发布NuGet。C7两产品源未进入该提交，保留在原工作区继续验证。此记录为执行后的未提交补充，不改写获批提交；实际Windows修复结论待该轮最终结果。
+
+## 第十二轮实际出口
+
+三OS NativeAOT、两Browser、Mac／Linux选测通过；后二者各13项目6405项。Windows本地化集成5项通过，实际Official四消费者及原fixture删除均成功，本轮没有build-host.log占用失败；27对子进程stage全部start／completed配对，无超时／取消。该证据确认本次Windows原场景通过，不泛化为所有未来进程行为。
+
+Windows选测随后在Linker的exception-region反例删除Empty.dll时失败：共执行5993项，5992通过、1失败；后续Gallery412项未运行。它在同一方法内LoadFromAssemblyPath、Unload再删除文件，与ILC8子进程日志是不同资源，不能称第十二轮整体通过。实际失败、准确合同和最小测试宿主候选见[第十三轮](platform-thirteenth-followups.md)，不重试或取消本轮，不重用已执行的Git授权。

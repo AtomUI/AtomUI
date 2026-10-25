@@ -46,7 +46,7 @@ CT19追加[C6输入重挂结果](color-picker-input-lifecycle-results.md)：离�
 
 CT25追加[第十一批](platform-eleventh-followups.md)：消费工程私有NuGet路径／feed与共享source分离，full先构建全部源码、其余消费者真实编译并复用源产物；缺产物正对照明确失败，清理后完整Official四图约136秒通过。Windows仅增加占用PID只读取证和原消费／清理双异常保留，Tour仅追加失败几何；其原始CI根因尚未关闭。清理后Tour2项及C6既有23项／NET8证据通过，四份临时源已删除。13文件获批提交0c6d8445679e并推送，[第十一轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40168600469)运行中；C6已包含在该提交，完整CT19／CT25仍开放，后续C7不在本批授权范围。
 
-第十一轮最终七个job成功，仅Windows选测因三个.NET Host持有build-host.log清理失败；Mac／Linux各6290项通过、Windows5664加本地化4项通过，三OS各27个子进程阶段完整配对。[第十二批候选](platform-twelfth-followups.md)在日志所属ILC8构建子进程关闭持久服务器及节点复用；调用边界两项RED→GREEN、实际托管编译／help／身份复用和清理、8项工具检查及已提交产品基线的完整Official约141秒通过。尚待五文件Git审查及实际Windows确认，未调度新CI。
+第十一轮最终七个job成功，仅Windows选测因三个.NET Host持有build-host.log清理失败；Mac／Linux各6290项通过、Windows5664加本地化4项通过，三OS各27个子进程阶段完整配对。[第十二批](platform-twelfth-followups.md)在日志所属ILC8构建子进程关闭持久服务器及节点复用；调用边界两项RED→GREEN、实际托管编译／help／身份复用和清理、8项工具检查及已提交产品基线的完整Official约141秒通过。五文件获批提交b8325380f671并推送，[实际第十二轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40172623312)的三NativeAOT／两Browser、Mac／Linux选测各6405项通过；Windows本地化集成5项、实际Official及清理通过，原日志占用本轮未复现。Windows随后因Linker反例加载后的Empty.dll删除失败，5993项中5992通过，后续Gallery412项未运行；[第十三轮候选](platform-thirteenth-followups.md)继续定位与验证，CT25仍开放。C7不在本批提交范围。
 
 状态规则：`未开始`→`规划中`→`进行中`→`最终审查中`→`已完成`。有真实外部障碍才标`受阻`并写明条件；依赖尚未满足不伪报外部阻塞。每项开始、验证、清理和审查后在此表更新状态和证据链接，详细步骤在其子计划勾选，实际数值写入结果记录。中途问题或状态问答不会撤销继续执行授权；处理后回到当前任务，不以一条总结代替继续工作。提交须单独遵守用户的明确提交指令。用户已明确要求后续所有工作由主agent独立完成，不再使用subagent；后续最终审查由作者另起审查步骤执行，如实标明自审边界。
 

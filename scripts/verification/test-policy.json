@@ -540,6 +540,7 @@
       "id": "nuget-release",
       "changes": [
         ".github/workflows/release-nuget-packages.yml",
+        "scripts/verification/PackageBaseline.ps1",
         "scripts/verification/verify-package-layout*",
         "scripts/verification/package-layout-allowlist.json",
         "scripts/verification/verify-build-task-isolation.ps1"
@@ -678,6 +679,7 @@
         "build/**",
         "scripts/BuildNuGetPackages.ps1",
         "scripts/NuGetPackageProjects.ps1",
+        "scripts/verification/PackageBaseline.ps1",
         "scripts/verification/verify-package-layout*",
         "scripts/verification/package-layout-allowlist.json",
         "scripts/verification/verify-build-task-isolation.ps1",

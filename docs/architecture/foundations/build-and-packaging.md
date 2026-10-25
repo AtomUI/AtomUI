@@ -214,6 +214,7 @@ dotnet test tests/AtomUI.Generator.Tests/AtomUI.Generator.Tests.csproj --framewo
 - `AtomUI.Native`
 - `AtomUI.Core`
 - `AtomUI.Fonts.AlibabaSans`
+- `AtomUI.Fonts.AlibabaPuHuiTi`
 - `AtomUI.Icons.Shared`
 - `AtomUI.Icons.AntDesign`
 - `AtomUI.Controls.Shared`
@@ -231,6 +232,10 @@ GalleryBase 是产品中立的 Gallery 应用底座包，跟随主库版本发�
 正式 NuGet 项目、Package ID 和发布分组统一声明在 `scripts/NuGetPackageProjects.ps1`。GitHub Actions 发布 workflow、
 本地 NuGet 发布脚本和产物完整性校验必须共同消费该清单，不得分别维护项目列表。新增、拆分或移除正式包时，先更新该清单，
 并让缺包或多包校验在上传与推送前失败。
+
+首次发布且没有历史包的项目，可在清单中显式声明 `AllowUnpublishedBaseline`。只有 NuGet 公共包索引返回 HTTP 404 时，
+才不执行该包的历史 API 和布局比较；框架、包身份与构建资产校验仍照常执行。包索引存在后恢复普通基线比较，
+缺少指定历史版本、网络错误或服务错误均不得当作首次发布跳过。
 
 `scripts/BuildNuGetPackages.ps1` 是正式包的唯一构建编排入口。它先构建清单中的 Build Tasks、普通 Generator 和 Browser TypeMap linker 工具
 等非包前置项目，再完成全部包项目的 build，之后才允许执行任何 pack。发布构建必须关闭 MSBuild 节点复用、串行访问共享

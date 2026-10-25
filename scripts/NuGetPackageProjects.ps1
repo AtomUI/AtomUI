@@ -9,6 +9,7 @@ $AtomUIReleasePackages = @(
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Localization"; ProjectPath = "src/AtomUI.Localization/AtomUI.Localization.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Core"; ProjectPath = "src/AtomUI.Core/AtomUI.Core.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Fonts.AlibabaSans"; ProjectPath = "src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj" },
+    [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Fonts.AlibabaPuHuiTi"; ProjectPath = "src/AtomUI.Fonts.AlibabaPuHuiTi/AtomUI.Fonts.AlibabaPuHuiTi.csproj"; AllowUnpublishedBaseline = $true },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Controls.Shared"; ProjectPath = "src/AtomUI.Controls.Shared/AtomUI.Controls.Shared.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Controls"; ProjectPath = "src/AtomUI.Controls/AtomUI.Controls.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Desktop.Controls"; ProjectPath = "src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" },

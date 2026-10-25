@@ -11,6 +11,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 . "$PSScriptRoot/NuGetPackageProjects.ps1"
+. "$PSScriptRoot/verification/PackageBaseline.ps1"
 
 if ([string]::IsNullOrWhiteSpace($PackageOutputDir)) {
     $PackageOutputDir = Join-Path $repositoryRoot ".artifacts/Nuget/$BuildType"
@@ -47,9 +48,14 @@ if (-not [string]::IsNullOrWhiteSpace($NativeCompilerSourceRoot)) {
 # below, whose implicit restore carries the validation property; packing then reuses that restore
 # because it runs with --no-build. Do not add a separate `dotnet restore` here: a restore without
 # the Release configuration would overwrite the assets file with the Debug target frameworks.
-$validationArguments = @()
-if (-not [string]::IsNullOrWhiteSpace($PackageValidationBaselineVersion)) {
-    $validationArguments = @("-p:AtomUIPackageValidationBaselineVersion=$PackageValidationBaselineVersion")
+$validationArgumentsByProject = @{}
+foreach ($package in $AtomUIReleasePackages) {
+    $baselineVersion = Get-AtomUIPackageValidationBaselineVersion -Package $package `
+        -BaselineVersion $PackageValidationBaselineVersion
+    $validationArgumentsByProject[$package.ProjectPath] = @()
+    if ($baselineVersion) {
+        $validationArgumentsByProject[$package.ProjectPath] = @("-p:AtomUIPackageValidationBaselineVersion=$baselineVersion")
+    }
 }
 
 # Prerequisite tool projects are not published packages, so they must never be validated against a
@@ -59,7 +65,7 @@ foreach ($project in $AtomUIReleaseBuildPrerequisiteProjects) {
 }
 
 foreach ($project in $AtomUIReleasePackageProjects) {
-    Invoke-AtomUIDotNet -Arguments (@("build", $project) + $buildArguments + $validationArguments)
+    Invoke-AtomUIDotNet -Arguments (@("build", $project) + $buildArguments + $validationArgumentsByProject[$project])
 }
 
 foreach ($project in $AtomUIReleasePackageProjects) {
@@ -68,7 +74,7 @@ foreach ($project in $AtomUIReleasePackageProjects) {
         $project,
         "--no-build",
         "--output", $PackageOutputDir
-    ) + $buildArguments + $validationArguments)
+    ) + $buildArguments + $validationArgumentsByProject[$project])
 }
 
 [xml]$versionProps = Get-Content -LiteralPath (Join-Path $repositoryRoot "build/Versions.props")

@@ -264,14 +264,23 @@ else {
         [Console]::Error.WriteLine('-BaselineVersion is required with -PackageDirectory.')
         exit 2
     }
+    . (Join-Path $PSScriptRoot '../NuGetPackageProjects.ps1')
+    . (Join-Path $PSScriptRoot 'PackageBaseline.ps1')
+    $packageCount = 0
     foreach ($package in (Get-ChildItem -LiteralPath $PackageDirectory -Filter '*.nupkg' -File | Sort-Object Name)) {
+        $packageCount++
         $identity = Get-PackageIdentity -Path $package.FullName
+        $releasePackage = $AtomUIReleasePackages | Where-Object PackageId -eq $identity.Id
+        if ($null -ne $releasePackage -and
+            -not (Get-AtomUIPackageValidationBaselineVersion -Package $releasePackage -BaselineVersion $BaselineVersion)) {
+            continue
+        }
         $pairs += [PSCustomObject]@{
             Current  = $package.FullName
             Baseline = (Resolve-BaselinePackage -Id $identity.Id -Version $BaselineVersion)
         }
     }
-    if ($pairs.Count -eq 0) {
+    if ($packageCount -eq 0) {
         # An empty directory means the preceding pack step produced nothing; silently passing would
         # turn a broken release build into a green layout check.
         [Console]::Error.WriteLine("No *.nupkg found in '$PackageDirectory'; pack the release packages before running layout verification.")

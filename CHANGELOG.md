@@ -4,6 +4,20 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.9
+
+`2026-10-25`
+
+- Breaking Changes
+  - Registration: generated `ControlPackageGroup_*` identities change with the 6.2.9 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the [6.2.9 migration guide](docs/releases/6.2.9-api-changes.md).
+- Splash
+  - Restore the full card shadow and cache the static shadow separately from animated content, preserving card clipping and appearance customization.
+- Fonts and Packaging
+  - Include `AtomUI.Fonts.AlibabaPuHuiTi` in the standard NuGet release, with the existing PuHuiTi 3.0 Regular font.
+  - Allow the first publication of the explicitly marked font package to omit a nonexistent historical baseline only after NuGet confirms that no versions exist; retain ordinary baseline checks for published packages and network failures.
+- Documentation
+  - Add the Headless and xUnit testing integration guide. #512
+
 ## 6.2.8
 
 `2026-10-21`

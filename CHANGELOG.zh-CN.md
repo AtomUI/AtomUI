@@ -6,6 +6,20 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.9
+
+`2026-10-25`
+
+- 破坏性变更
+  - 注册：生成的 `ControlPackageGroup_*` 标识随 6.2.9 程序集版本变化。请同步升级 AtomUI 包与 Generator、重新构建预编译消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.9 迁移指南](docs/releases/6.2.9-api-changes.zh-CN.md)。
+- Splash
+  - 恢复完整卡片阴影，将静态阴影与动画内容分开缓存，同时保留卡片内容裁剪和外观定制入口。
+- 字体与打包
+  - 将 `AtomUI.Fonts.AlibabaPuHuiTi` 纳入正式 NuGet 发布，包含现有普惠体 3.0 Regular 字体。
+  - 显式标记的字体包首次发布时，仅在 NuGet 确认没有任何已发布版本后省略不存在的历史基线；已有包继续执行普通基线校验，网络错误仍中止发布。
+- 文档
+  - 增加 Headless 与 xUnit 测试接入指南。#512
+
 ## 6.2.8
 
 `2026-10-21`

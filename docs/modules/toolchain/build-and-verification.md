@@ -99,6 +99,9 @@ Generator 自身不维护一套独立 pack 准备逻辑。`pack --no-build` 只�
 配置，也不依赖维护者本机已缓存的 NETStandard.Library。源码许可证和第三方声明随编译器工具交付。
 上游编译器构建显式隔离 `Directory.Packages.props` 导入和中央版本管理，避免默认源码位于仓库 `.artifacts/` 下时
 向上继承产品包配置；其显式定版依赖仍由编译器配方维护。
+维护者配方的实际 `dotnet build` 子进程显式使用 `--disable-build-servers` 和 `-nr:false`，
+使该次构建的节点随构建结束，避免继承的 `build-host.log` 句柄越过日志所属调用的生命周期。
+这些参数只约束该子进程，不调用全局 build-server shutdown；配方源码哈希照常参与 bundle 身份与复用校验。
 后端机制和平台限制见 [.NET 8 条件后端](../../architecture/foundations/aot-net8-conditional-backends.md)。
 
 ## 5. 维护时检查哪些入口

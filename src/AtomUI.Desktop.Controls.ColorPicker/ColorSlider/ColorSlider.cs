@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -607,6 +608,49 @@ internal class ColorSlider : AbstractColorSlider
     protected virtual void NotifyColorChanged(ColorChangedEventArgs e)
     {
         ColorChanged?.Invoke(this, e);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Handled || !IsEffectivelyEnabled || e.KeyModifiers != KeyModifiers.None)
+        {
+            return;
+        }
+
+        double nextValue;
+        switch (e.Key)
+        {
+            case Key.Left:
+                nextValue = Value + (FlowDirection == FlowDirection.RightToLeft ? SmallChange : -SmallChange);
+                break;
+            case Key.Right:
+                nextValue = Value + (FlowDirection == FlowDirection.RightToLeft ? -SmallChange : SmallChange);
+                break;
+            case Key.Down:
+                nextValue = Value - SmallChange;
+                break;
+            case Key.Up:
+                nextValue = Value + SmallChange;
+                break;
+            case Key.PageDown:
+                nextValue = Value - LargeChange;
+                break;
+            case Key.PageUp:
+                nextValue = Value + LargeChange;
+                break;
+            case Key.Home:
+                nextValue = Minimum;
+                break;
+            case Key.End:
+                nextValue = Maximum;
+                break;
+            default:
+                return;
+        }
+
+        SetCurrentValue(ValueProperty, Math.Clamp(nextValue, Minimum, Maximum));
+        e.Handled = true;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

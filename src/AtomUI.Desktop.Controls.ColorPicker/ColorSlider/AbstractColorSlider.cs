@@ -7,7 +7,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 using Thumb = AtomUI.Controls.Primitives.Thumb;
 
 namespace AtomUI.Desktop.Controls;
@@ -127,15 +126,15 @@ internal abstract class AbstractColorSlider : RangeBase
     {
         base.OnPropertyChanged(change);
 
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == TransparentBgIntervalColorProperty ||
+            change.Property == TransparentBgSizeProperty)
         {
-            if (change.Property == TransparentBgIntervalColorProperty ||
-                change.Property == TransparentBgSizeProperty)
+            if (TransparentBgIntervalColor != null && TransparentBgIntervalColor is ISolidColorBrush solidColorBrush)
             {
-                if (TransparentBgIntervalColor != null && TransparentBgIntervalColor is ISolidColorBrush solidColorBrush)
-                {
-                    TransparentBgBrush = TransparentBgBrushUtils.Build(TransparentBgSize, solidColorBrush.Color);
-                }
+                // This cached DrawingBrush is computed from both inputs, so ControlTheme
+                // cannot project it as a scalar binding. Keep it current off-tree too:
+                // a retained template may return without another input notification.
+                TransparentBgBrush = TransparentBgBrushUtils.Build(TransparentBgSize, solidColorBrush.Color);
             }
         }
     }

@@ -51,18 +51,11 @@
         </Setter>
 
         <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="Focusable" Value="True" />
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="BoxShadow"
                     Value="{atom:ColorPickerTokenResource ColorPickerInsetShadow}" />
-        </Style>
-
-        <!-- Focus -->
-        <Style Selector="^ /template/ Ellipse#FocusEllipse">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector="^:focus-visible /template/ Ellipse#FocusEllipse">
-            <Setter Property="IsVisible" Value="True" />
         </Style>
 
         <!-- Selector Color -->

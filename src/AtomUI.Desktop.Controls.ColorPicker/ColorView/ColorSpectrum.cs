@@ -512,14 +512,17 @@ internal class ColorSpectrum : TemplatedControl
                 break;
         }
 
-        // The order of saturation and value in the spectrum is reversed - the max value is at the bottom while the min value is at the top -
-        // so we want left and up to be lower for hue, but higher for saturation and value.
-        // This will ensure that the icon always moves in the direction of the key press.
-        IncrementDirection direction =
-            (incrementComponent == HsvComponent.Hue && (key == Key.Left || key == Key.Up)) ||
-            (incrementComponent != HsvComponent.Hue && (key == Key.Right || key == Key.Down)) ?
-                IncrementDirection.Lower :
-                IncrementDirection.Higher;
+        // ValueSaturation keeps saturation increasing downwards, so Up lowers
+        // saturation and Down raises it. Preserve the other axis direction rules.
+        IncrementDirection direction = (Components, key) switch
+        {
+            (ColorSpectrumComponents.ValueSaturation, Key.Up) => IncrementDirection.Lower,
+            (ColorSpectrumComponents.ValueSaturation, Key.Down) => IncrementDirection.Higher,
+            _ when (incrementComponent == HsvComponent.Hue && (key == Key.Left || key == Key.Up)) ||
+                   (incrementComponent != HsvComponent.Hue && (key == Key.Right || key == Key.Down)) =>
+                IncrementDirection.Lower,
+            _ => IncrementDirection.Higher
+        };
 
         // Image is flipped in RightToLeft, so we need to invert direction in that case.
         // The combination saturation and value is also flipped, so we need to invert in that case too.

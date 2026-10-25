@@ -254,6 +254,7 @@ internal class ColorSpectrum : TemplatedControl
 
     #endregion
 
+    private long _bitmapGeneration;
     private bool _updatingColor;
     private bool _updatingHsvColor;
     private bool _isPointerPressed;
@@ -358,11 +359,9 @@ internal class ColorSpectrum : TemplatedControl
 
         if (_layoutRoot != null)
         {
-            _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(_ =>
+            _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(bounds =>
             {
-#pragma warning disable CS4014
-                CreateBitmapsAndColorMapAsync();
-#pragma warning restore CS4014
+                _ = CreateBitmapsAndColorMapAsync();
             });
         }
 
@@ -1023,9 +1022,12 @@ internal class ColorSpectrum : TemplatedControl
         double xPercent = 0;
         double yPercent = 0;
 
-        double hPercent = (hsvColor.H - _minHueFromLastBitmapCreation) / (_maxHueFromLastBitmapCreation - _minHueFromLastBitmapCreation);
-        double sPercent = (hsvColor.S * 100.0 - _minSaturationFromLastBitmapCreation) / (_maxSaturationFromLastBitmapCreation - _minSaturationFromLastBitmapCreation);
-        double vPercent = (hsvColor.V * 100.0 - _minValueFromLastBitmapCreation) / (_maxValueFromLastBitmapCreation - _minValueFromLastBitmapCreation);
+        double hPercent = _maxHueFromLastBitmapCreation > _minHueFromLastBitmapCreation
+            ? (hsvColor.H - _minHueFromLastBitmapCreation) / (_maxHueFromLastBitmapCreation - _minHueFromLastBitmapCreation) : 0;
+        double sPercent = _maxSaturationFromLastBitmapCreation > _minSaturationFromLastBitmapCreation
+            ? (hsvColor.S * 100.0 - _minSaturationFromLastBitmapCreation) / (_maxSaturationFromLastBitmapCreation - _minSaturationFromLastBitmapCreation) : 0;
+        double vPercent = _maxValueFromLastBitmapCreation > _minValueFromLastBitmapCreation
+            ? (hsvColor.V * 100.0 - _minValueFromLastBitmapCreation) / (_maxValueFromLastBitmapCreation - _minValueFromLastBitmapCreation) : 0;
 
         // In the case where saturation was an axis in the spectrum with hue, or value is an axis, full stop,
         // we inverted the direction of that axis in order to put more hue on the outside of the ring,
@@ -1148,6 +1150,9 @@ internal class ColorSpectrum : TemplatedControl
 
     private async Task CreateBitmapsAndColorMapAsync()
     {
+        // UI-owned request order also covers the synchronous spectrum path.
+        // A worker may finish later, but it must not replace a newer map or bitmap.
+        var generation = ++_bitmapGeneration;
         try
         {
             if (_layoutRoot == null ||
@@ -1271,11 +1276,14 @@ internal class ColorSpectrum : TemplatedControl
 
             await Dispatcher.InvokeAsync(() =>
             {
-                ColorSpectrumComponents components2 = Components;
+                if (generation != _bitmapGeneration)
+                {
+                    return;
+                }
                 _minBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
                 _maxBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
 
-                switch (components2)
+                switch (components)
                 {
                     case ColorSpectrumComponents.HueValue:
                     case ColorSpectrumComponents.ValueHue:
@@ -1315,15 +1323,15 @@ internal class ColorSpectrum : TemplatedControl
                         break;
                 }
 
-                _componentsFromLastBitmapCreation = Components;
+                _componentsFromLastBitmapCreation = components;
                 _imageWidthFromLastBitmapCreation = pixelWidth;
                 _imageHeightFromLastBitmapCreation = pixelHeight;
-                _minHueFromLastBitmapCreation = MinHue;
-                _maxHueFromLastBitmapCreation = MaxHue;
-                _minSaturationFromLastBitmapCreation = MinSaturation;
-                _maxSaturationFromLastBitmapCreation = MaxSaturation;
-                _minValueFromLastBitmapCreation = MinValue;
-                _maxValueFromLastBitmapCreation = MaxValue;
+                _minHueFromLastBitmapCreation = minHue;
+                _maxHueFromLastBitmapCreation = maxHue;
+                _minSaturationFromLastBitmapCreation = minSaturation;
+                _maxSaturationFromLastBitmapCreation = maxSaturation;
+                _minValueFromLastBitmapCreation = minValue;
+                _maxValueFromLastBitmapCreation = maxValue;
 
                 _hsvValues = newHsvValues;
 
@@ -1374,8 +1382,8 @@ internal class ColorSpectrum : TemplatedControl
         Hsv hsvMiddle4 = baseHsv;
         Hsv hsvMax = baseHsv;
 
-        double xPercent = x / (pixelWidth - 1);
-        double yPercent = y / (pixelHeight - 1);
+        double xPercent = pixelWidth <= 1 ? 0 : x / (pixelWidth - 1);
+        double yPercent = pixelHeight <= 1 ? 0 : y / (pixelHeight - 1);
 
         switch (components)
         {

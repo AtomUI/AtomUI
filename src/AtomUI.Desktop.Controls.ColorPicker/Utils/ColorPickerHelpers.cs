@@ -328,6 +328,26 @@ internal static class ColorPickerHelpers
     {
         Hsv newHsv = originalHsv;
 
+        // Match the spectrum's min >= max convention before arithmetic or named-color search.
+        if (maxBound <= minBound)
+        {
+            switch (component)
+            {
+                case HsvComponent.Hue:
+                    newHsv.H = minBound;
+                    break;
+                case HsvComponent.Saturation:
+                    newHsv.S = minBound / 100;
+                    break;
+                case HsvComponent.Value:
+                    newHsv.V = minBound / 100;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid HsvComponent.");
+            }
+            return newHsv;
+        }
+
         if (amount == IncrementAmount.Small || !ColorHelper.ToDisplayNameExists)
         {
             // In order to avoid working with small values that can incur rounding issues,

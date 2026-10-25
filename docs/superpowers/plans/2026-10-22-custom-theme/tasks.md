@@ -48,6 +48,10 @@ CT25追加[第十一批](platform-eleventh-followups.md)：消费工程私有NuG
 
 第十一轮最终七个job成功，仅Windows选测因三个.NET Host持有build-host.log清理失败；Mac／Linux各6290项通过、Windows5664加本地化4项通过，三OS各27个子进程阶段完整配对。[第十二批](platform-twelfth-followups.md)在日志所属ILC8构建子进程关闭持久服务器及节点复用；调用边界两项RED→GREEN、实际托管编译／help／身份复用和清理、8项工具检查及已提交产品基线的完整Official约141秒通过。五文件获批提交b8325380f671并推送，[实际第十二轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40172623312)的三NativeAOT／两Browser、Mac／Linux选测各6405项通过；Windows本地化集成5项、实际Official及清理通过，原日志占用本轮未复现。Windows随后因Linker反例加载后的Empty.dll删除失败，5993项中5992通过，后续Gallery412项未运行；[第十三轮候选](platform-thirteenth-followups.md)继续定位与验证，CT25仍开放。C7不在本批提交范围。
 
+第十三批4文件获用户批准，提交f24a9aba7710并推送；[三OS／两Browser第十三轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40175124825)运行中。坏IL反例改从同一输出读取内存镜像，保留真实JIT异常及receipt拒绝；Mac精确13项与最终Linker模块89项通过，Windows确认仍待CI。本批不含C7，不代表完整CT25验收。
+
+CT19追加[C7色谱结果](color-spectrum-lifecycle-results.md)：异步与fast统一请求顺序、归一范围／退化轴及共享helper完成，受控26项、有效亮暗514项和Mac managed／NativeAOT各184项通过。140帧与28组1DIP、独立直接Skia及公开输入对照完成；所示修复与41对限定合成差异获用户批准，全部临时驱动／工程／媒体已清理，最终Release23项、NET8及成员审计通过。C7切片待独立Git审查，C8的公开Components默认与实际模板不一致、既有键盘可达性继续；完整CT19未关闭。
+
 状态规则：`未开始`→`规划中`→`进行中`→`最终审查中`→`已完成`。有真实外部障碍才标`受阻`并写明条件；依赖尚未满足不伪报外部阻塞。每项开始、验证、清理和审查后在此表更新状态和证据链接，详细步骤在其子计划勾选，实际数值写入结果记录。中途问题或状态问答不会撤销继续执行授权；处理后回到当前任务，不以一条总结代替继续工作。提交须单独遵守用户的明确提交指令。用户已明确要求后续所有工作由主agent独立完成，不再使用subagent；后续最终审查由作者另起审查步骤执行，如实标明自审边界。
 
 CT-13追加[G3-B1结果](input-otp-geometry-results.md)：三处OTP几何与专用Cell/Separator Style命中接通；明暗六默认阶段/清除RGBA0，实际输入与NativeAOT Headless/Skia通过、JIT/AOT十八图0。临时测试/工程/媒体清理后OTP66与NET8零警告通过。B2/C与整个家族保持进行中。

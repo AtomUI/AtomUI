@@ -452,11 +452,17 @@ public class MaterializeTypeMapsTests
             var loader = new System.Runtime.Loader.AssemblyLoadContext("invalid-eh-" + Guid.NewGuid(), isCollectible: true);
             try
             {
-                var emitted = loader.LoadFromAssemblyPath(fixture.OutputPath);
+                // Unload is cooperative; a path-backed image can still lock the fixture on Windows.
+                // Execute the same emitted bytes without making that file a runtime-owned mapping.
+                using var image = new MemoryStream(File.ReadAllBytes(fixture.OutputPath));
+                var emitted = loader.LoadFromStream(image);
                 var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => emitted.GetType("Empty.Entry")!.GetMethod("Query")!.Invoke(null, null));
                 Assert.IsType<InvalidProgramException>(exception.InnerException);
             }
-            finally { loader.Unload(); }
+            finally
+            {
+                loader.Unload();
+            }
         }
         fixture.VerifyOutput();
         Assert.Contains(fixture.Linker.Messages, m => m.Contains("ATOMUIREG007"));

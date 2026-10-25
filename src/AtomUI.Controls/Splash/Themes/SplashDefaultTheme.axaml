@@ -21,32 +21,41 @@
         </Setter>
         <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
             <!-- 给卡片阴影留出的透明边距。 -->
-            <Setter Property="Margin" Value="24"/>
+            <Setter Property="Margin" Value="48"/>
         </Style>
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type atom:Splash}" TargetType="atom:Splash">
+        <Setter Property="ClipToBounds" Value="False"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Card" ClipToBounds="True">
-                    <Panel>
-                        <Image Name="BackgroundImage" Source="{TemplateBinding BackgroundImage}" Stretch="UniformToFill"
-                               IsVisible="{TemplateBinding BackgroundImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                        <StackPanel Name="Content">
-                            <Image Name="Logo" Source="{TemplateBinding Logo}" HorizontalAlignment="Center"
-                                   IsVisible="{TemplateBinding Logo, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                            <TextBlock Name="Title" Text="{TemplateBinding Title}" HorizontalAlignment="Center"
-                                       TextWrapping="Wrap"/>
-                            <TextBlock Name="Message" Text="{TemplateBinding Message}" HorizontalAlignment="Center"
-                                       TextWrapping="Wrap" TextAlignment="Center"/>
-                            <atom:SplashProgressBar Name="Progress"
-                                                    Value="{TemplateBinding Progress}"
-                                                    IsIndeterminate="{TemplateBinding IsIndeterminate}"/>
-                        </StackPanel>
-                        <Path Name="PART_CloseButton" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top"
-                              Stretch="Uniform" Cursor="Hand" Data="M0,0 L10,10 M10,0 L0,10"/>
-                    </Panel>
-                </Border>
+                <Panel>
+                    <!-- Setter 的编译绑定不能按名字跨入模板作用域；Shadow 按下方固定顺序读取 Card 的有效值。
+                         阴影缓存与内容分离，Card 保留现有的裁剪和外观定制入口。 -->
+                    <Canvas>
+                        <!-- Canvas 不以阴影的布局结果反向撑大卡片。 -->
+                        <Border Name="Shadow" IsHitTestVisible="False"/>
+                    </Canvas>
+                    <Border Name="Card" ClipToBounds="True">
+                        <Panel>
+                            <Image Name="BackgroundImage" Source="{TemplateBinding BackgroundImage}" Stretch="UniformToFill"
+                                   IsVisible="{TemplateBinding BackgroundImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                            <StackPanel Name="Content">
+                                <Image Name="Logo" Source="{TemplateBinding Logo}" HorizontalAlignment="Center"
+                                       IsVisible="{TemplateBinding Logo, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <TextBlock Name="Title" Text="{TemplateBinding Title}" HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Name="Message" Text="{TemplateBinding Message}" HorizontalAlignment="Center"
+                                           TextWrapping="Wrap" TextAlignment="Center"/>
+                                <atom:SplashProgressBar Name="Progress"
+                                                        Value="{TemplateBinding Progress}"
+                                                        IsIndeterminate="{TemplateBinding IsIndeterminate}"/>
+                            </StackPanel>
+                            <Path Name="PART_CloseButton" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                  Stretch="Uniform" Cursor="Hand" Data="M0,0 L10,10 M10,0 L0,10"/>
+                        </Panel>
+                    </Border>
+                </Panel>
             </ControlTemplate>
         </Setter>
         <Style Selector="^ /template/ Border#Card">
@@ -54,6 +63,18 @@
             <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}"/>
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}"/>
             <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}"/>
+        </Style>
+        <Style Selector="^ /template/ Border#Shadow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Canvas.Left" Value="{CompiledBinding $parent[Panel;1].Children[1].Bounds.X}"/>
+            <Setter Property="Canvas.Top" Value="{CompiledBinding $parent[Panel;1].Children[1].Bounds.Y}"/>
+            <Setter Property="Width" Value="{CompiledBinding $parent[Panel;1].Children[1].Bounds.Width}"/>
+            <Setter Property="Height" Value="{CompiledBinding $parent[Panel;1].Children[1].Bounds.Height}"/>
+            <Setter Property="CornerRadius" Value="{CompiledBinding $parent[Panel;1].Children[1].(Border.CornerRadius)}"/>
+            <Setter Property="BoxShadow" Value="{CompiledBinding $parent[Panel;1].Children[1].(Border.BoxShadow)}"/>
+            <Setter Property="CacheMode">
+                <BitmapCache/>
+            </Setter>
         </Style>
         <Style Selector="^ /template/ StackPanel#Content">
             <Setter Property="Margin" Value="{atom:SharedTokenResource PaddingLG}"/>
@@ -94,9 +115,11 @@
             <Setter Property="IsVisible" Value="True"/>
         </Style>
         <Style Selector="^:opaque /template/ Border#Card">
-            <!-- BoxShadows 是结构体，不能设为 null；用透明零阴影表示"无阴影"。 -->
             <Setter Property="CornerRadius" Value="0"/>
             <Setter Property="BoxShadow" Value="0 0 0 0 Transparent"/>
+        </Style>
+        <Style Selector="^:opaque /template/ Border#Shadow">
+            <Setter Property="IsVisible" Value="False"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

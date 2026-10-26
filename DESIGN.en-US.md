@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: AtomUI
-description: Ant Design 6 visual language implemented for Avalonia and .NET, with semantic tokens, scoped themes, and typed customization.
+description: Design language for AtomUI controls on Avalonia and .NET, with semantic tokens, scoped themes, and typed customization.
 ---
 
 # AtomUI Design Language
@@ -10,9 +10,8 @@ description: Ant Design 6 visual language implemented for Avalonia and .NET, wit
 
 ## Overview
 
-AtomUI implements the **Ant Design 6 visual language** for Avalonia/.NET, serving information-dense applications such as forms, data tables, navigation, and workspaces.
-This document adapts [Ant Design DESIGN.md](https://github.com/ant-design/ant-design/blob/master/DESIGN.md) using the
-[Google DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md), for designers, developers, and AI tools.
+AtomUI is an Avalonia/.NET control library based on [Ant Design 6's design language](https://github.com/ant-design/ant-design/blob/master/DESIGN.md), serving information-dense applications such as forms, data tables, navigation, and workspaces.
+This document describes AtomUI's visual rules, controls, and theme customization using the [Google DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md), for designers, developers, and AI tools.
 
 Four design values guide interface generation and review:
 
@@ -21,9 +20,9 @@ Four design values guide interface generation and review:
 - **Meaningful**: Use visual emphasis to communicate task priority; decoration should support information, actions, and state.
 - **Growing**: Apply consistent rules across simple forms, complex data interfaces, and expanding business modules.
 
-Visual principles come from Ant Design; APIs, default output, and platform adaptations follow AtomUI's implemented contracts. The YAML describes the
+The YAML describes the
 `DaybreakBlue + ThemeAlgorithm.Default` light baseline without application overrides, generally using controls' default middle size. Algorithms generate dark and compact modes.
-Relevant sections document upstream differences; implementation deviations must not become new design principles. The mobile controls package remains target architecture, outside this document's implemented capabilities.
+The mobile controls package remains target architecture, outside this document's implemented capabilities.
 
 YAML is a portable visual projection for design tools, **not an AtomUI theme configuration file**. Its `px` values correspond to Avalonia device-independent pixels
 (DIP), rather than physical pixels; the platform and Avalonia handle scaling. Product code should consume tokens and control APIs.
@@ -79,7 +78,7 @@ colors:
 
 Preserve alpha in translucent text and fills so they blend with tinted backgrounds. YAML uses CSS `#RRGGBBAA`; Avalonia eight-digit colors use
 `#AARRGGBB`. For example, `#000000E0` corresponds to AXAML `#E0000000`. AtomUI stores opacity as bytes: the actual text alpha values are
-224/255, 165/255, 114/255, and 63/255. They represent upstream's approximate 0.88, 0.65, 0.45, and 0.25 levels; do not reconstruct seeds from displayed gray values.
+224/255, 165/255, 114/255, and 63/255 for primary, secondary, description, and disabled text, respectively. Do not reconstruct seeds from displayed gray values.
 
 Preset palette base colors: blue `#1677FF`, purple `#722ED1`, cyan `#13C2C2`, green `#52C41A`, magenta `#EB2F96`,
 red `#F5222D`, orange `#FA8C16`, yellow `#FADB14`, volcano `#FA541C`, geekblue `#2F54EB`, gold `#FAAD14`, and lime `#A0D911`.
@@ -87,12 +86,12 @@ Use existing palettes and derived gradients for categories instead of adding arb
 
 Default brand colors do not guarantee WCAG AA for every text pairing; white text on `#1677FF` requires evaluation at the intended font size. For strict accessibility requirements,
 adjust complete state-color families through global or Control tokens, and check text, focus, and error feedback on actual backgrounds. Format validation does not establish accessibility conformance.
-Composite translucent foregrounds and backgrounds over the actual surface before calculating contrast; comparing RGB channels alone can produce false warnings. Description text and mask colors are general roles that are not individually referenced by every component field.
+Composite translucent foregrounds and backgrounds over the actual surface before calculating contrast; comparing RGB channels alone can produce false warnings. Description text and mask colors are general roles that are not individually referenced by every control field.
 
 ## Typography
 
-Follow Ant Design's compact typography: a 14 DIP body baseline, weight 400 for ordinary body text and controls, and weight 600 for title-level emphasis.
-Selection primarily uses existing colors, indicators, and component states; individual controls may use their defined selected weight, as Select options do.
+The body baseline is 14 DIP, with weight 400 for ordinary body text and controls and weight 600 for title-level emphasis.
+Selection primarily uses existing colors, indicators, and control states; individual controls may use their defined selected weight, as Select options do.
 
 ```yaml
 typography:
@@ -110,13 +109,13 @@ typography:
 Heading sizes come from `FontSizeHeading1..5`; body sizes come from `FontSizeLG`, `FontSize`, and `FontSizeSM`; strong weight comes from `FontWeightStrong`.
 These are role combinations, not additional AtomUI tokens. Do not create a second type scale merely to match names or force every control to use the same font size.
 
-Fonts are an explicit platform adaptation: runtime `FontFamily` starts with `fonts:AlibabaSans#Alibaba Sans` and ends with Avalonia `$Default`.
+Runtime `FontFamily` starts with `fonts:AlibabaSans#Alibaba Sans` and ends with Avalonia `$Default`.
 YAML projects this into portable family names and a `sans-serif` fallback. Alibaba Sans requires font-package registration; Chinese candidates in the default chain are system fonts,
 so the chain does not imply an embedded Chinese font. For deterministic glyphs, register a font package explicitly and configure `FontFamily`; see [font-family resolution](docs/architecture/systems/typography/font-family-resolution.md).
 
 `RelativeLineHeight*` is a multiplier, while Avalonia `TextBlock.LineHeight` is an absolute length. The table uses converted lengths; when consuming runtime tokens,
 multiply the corresponding font size by its ratio. `FontHeight*` supplies rounded body-text heights. Changing `FontSize` re-derives the type scale; Dark does not change font sizes.
-Current Compact preserves the base font size, a [known difference](docs/architecture/systems/typography/tokens-and-derivation.md) from upstream compact typography derivation.
+Current Compact preserves the base font size while reducing spacing and control heights; see [font tokens and derivation](docs/architecture/systems/typography/tokens-and-derivation.md) for the calculation rules.
 
 ## Layout
 
@@ -140,11 +139,11 @@ spacing:
 ```
 
 `unit` maps to `SizeUnit`; 4/8/12/16/20/24/32/48 map to `SizeXXS`, `SizeXS`, `SizeSM`, `Size`, `SizeMD`, `SizeLG`, `SizeXL`, and `SizeXXL`.
-The portable naming retains upstream `spacing.sm = 8`; it must not be read as AtomUI `SizeSM = 12`.
+Document `spacing.sm = 8` maps to `SizeXS`, while `SizeSM = 12` maps to `spacing.step-12`.
 Application layouts consume appropriate tokens such as `UniformlyPadding*` and `UniformlyMargin*`; internal control geometry uses the corresponding Own Tokens.
 
 32/24/40 are the standard height baselines from `ControlHeight` / `ControlHeightSM` / `ControlHeightLG`. Controls may use `MinHeight`,
-and content or layout constraints can affect their final size. Choose component size APIs instead of fixing every height to 32. Border compensation produces meaningful
+and content or layout constraints can affect their final size. Choose control size APIs instead of fixing every height to 32. Border compensation produces meaningful
 padding values such as 7, 11, and 15; preserve those derivations. A 4 DIP rhythm does not require every template coordinate to be divisible by 4.
 
 Page backgrounds, content containers, and floating surfaces use `ColorBgLayout`, `ColorBgContainer`, and `ColorBgElevated`, respectively. The latter two are both white in the light theme,
@@ -153,7 +152,7 @@ do not impose Web page widths or Gallery showcase layouts on desktop windows.
 
 ## Elevation & Depth
 
-Follow Ant Design's restrained hierarchy: ordinary content is grouped mainly through borders, spacing, and tonal contrast; popups, tooltips, and dialogs use shadows to express elevation.
+Ordinary content is grouped mainly through borders, spacing, and tonal contrast; popups, tooltips, and dialogs use shadows to express elevation.
 Masks express modality. The following are the default snapshot values in Avalonia shadow syntax: offsets, blur, optional spread, and color.
 
 | AtomUI token | Default value |
@@ -162,18 +161,18 @@ Masks express modality. The following are the default snapshot values in Avaloni
 | `BoxShadowsSecondary` | `0 6 16 #1A000000, 0 3 6 -4 #1F000000, 0 9 28 8 #12000000` |
 | `BoxShadowsTertiary` | `0 1 2 #08000000, 0 1 6 -1 #05000000, 0 2 4 #05000000` |
 
-AtomUI's Alias calculation produces these values; similar upstream names do not establish identical shadows. Controls such as Card may also define their own shadows and variants.
+AtomUI's Alias calculation produces these values. Controls such as Card may also define their own shadows and variants; use the corresponding control themes and tokens.
 Use the framework's placement, focus, masks, and dismissal behavior for overlays. Avoid adding arbitrary shadows or ZIndex values to conceal hosting, hit-testing, or clipping problems.
 
 Motion establishes continuity between states: `MotionDurationFast` is 100 ms, `MotionDurationMid` is 200 ms,
 `MotionDurationSlow` is 300 ms, and `MotionDurationVerySlow` is 800 ms. Reuse curves and transitions provided by controls and MotionScene;
-AtomUI currently has no global tokens named after upstream `motionEase*`, so CSS parameter names cannot be transferred directly.
+Choose existing motion implementations appropriate to the interaction, keeping timing and rhythm consistent for similar state changes.
 `EnableMotion=false` reduces theme motion durations to zero; `EnableWaveSpirit` controls click waves.
 Theme authors declare `Transitions` in ControlTheme Style Setters, following the [theme customization contract](docs/guides/theming/customization.md).
 
 ## Shapes
 
-Follow Ant Design's radius hierarchy: ordinary inputs and buttons retain clear silhouettes, containers use a slightly larger radius, and small tags stay compact.
+Ordinary inputs and buttons retain clear silhouettes, containers use a slightly larger radius, and small tags stay compact.
 
 ```yaml
 rounded:
@@ -186,11 +185,14 @@ rounded:
 
 `DEFAULT` / `lg` / `md` / `sm` map to `BorderRadius` / `BorderRadiusLG` / `BorderRadiusSM` / `BorderRadiusXS`;
 `none` means square corners. Circular avatars, status dots, and circular buttons use their control's shape API; an extremely large radius is not a universal runtime token.
-Keep shapes coherent within a group and express branding through the base radius and component capabilities. Individual controls may have independent radius tokens, as ToolTip does.
+Keep shapes coherent within a group and express branding through the base radius and control capabilities. Individual controls may have independent radius tokens, as ToolTip does.
 
 ## Components
 
-The archetypes below record default light visuals. Only properties confirmed by current tokens and theme assets are listed; controls handle omitted properties.
+This section uses representative controls and states to illustrate AtomUI's visual and interaction rules; see [control documentation](docs/controls/desktop/overview.md) for the full control catalog and detailed contracts.
+
+The control visual roles below record default light appearances. YAML `components` is a standard format field whose entries describe controls.
+Only properties confirmed by current tokens and theme assets are listed; controls handle omitted properties.
 `padding` uses CSS top/right/bottom/left order; convert it to Avalonia left/top/right/bottom order before copying it into AXAML.
 
 ```yaml
@@ -221,32 +223,31 @@ components:
   tag-blue: { backgroundColor: '{colors.primary-container}', textColor: '{colors.primary-active}', typography: '{typography.body-sm}', rounded: '{rounded.md}', padding: 0px 7px }
 ```
 
-| Design archetype → AtomUI | Visual and interaction rules |
+| Control | Visual and interaction rules |
 | --- | --- |
-| Button → `Button` | Use the primary color for the main action and reduce emphasis for supporting actions. Preserve default, hover, pressed, focus, disabled, and loading distinctions. Use `ButtonType` or `Color` / `Variant` APIs. |
-| Input → `LineEdit` | Keep inputs and buttons on a consistent scale. Borders, focus, and shadows identify the input location; labels, help text, and validation form a stable structure. Placeholder text does not communicate focus. |
-| Select → `Select` | Single-selection triggers follow the input system. Selected and hovered options have different meanings; multiple selection uses the control's own tags, wrapping, and sizing rules. |
-| Checkbox / Radio / Switch → `CheckBox` / `RadioButton` / `ToggleSwitch` | Distinguish multiple selection, exclusive selection, and immediate switching. Preserve checked, applicable indeterminate, keyboard-focus, and disabled feedback. |
-| Card → `Card` | Organize related information through header, body, and actions. Borders and variants express hierarchy; nested controls follow shared spacing. |
-| Modal → `Dialog` family | Use elevated surfaces and masks to establish modality, with clear confirmation and cancellation. Window and overlay forms follow their own hosting and layout contracts. |
-| Navigation Menu → `NavMenu` | Selection communicates the current location. Vertical/inline selection uses a pale primary background; horizontal navigation uses its indicator structure. Desktop command `Menu` / `ContextMenu` serves a separate purpose. |
-| Tabs → `TabControl` | Standard tabs use primary text and an indicator for the active state. `CardTabControl` has a separate card structure whose background must be preserved. |
-| Table → `DataGrid` | Keep headers distinct from data rows, with separate sorting, selection, and hover states. Enable the independent DataGrid package as needed and follow its data and column APIs. |
-| Tag / Badge → `Tag` / `DotBadge` and related controls | Tags express categories; badges express counts or status. Pair important states with understandable text instead of relying on colored dots alone. |
-| Alert → `Alert` | Status icons, pale backgrounds, and body text work together. Plain and description variants use their respective padding. |
-| Tooltip / Popover → `ToolTip` / `Flyout`, `FlyoutHost` | Tooltips use inverse surfaces; the existing Flyout system hosts interactive content. Let controls handle placement, arrows, focus, and dismissal. |
-| Dropdown item → `MenuItem` and related command items | Hover identifies the pointer target while retaining readable text. Use existing keyboard and submenu behavior appropriate to the scenario. |
+| `Button` | Use the primary color for the main action and reduce emphasis for supporting actions. Preserve default, hover, pressed, focus, disabled, and loading distinctions. Use `ButtonType` or `Color` / `Variant` APIs. |
+| `LineEdit` | Keep inputs and buttons on a consistent scale. Borders, focus, and shadows identify the input location; labels, help text, and validation form a stable structure. Placeholder text does not communicate focus. |
+| `Select` | Single-selection triggers follow the input system. Selected and hovered options have different meanings; multiple selection uses the control's own tags, wrapping, and sizing rules. |
+| `CheckBox` / `RadioButton` / `ToggleSwitch` | Distinguish multiple selection, exclusive selection, and immediate switching. Preserve checked, applicable indeterminate, keyboard-focus, and disabled feedback. |
+| `Card` | Organize related information through header, body, and actions. Borders and variants express hierarchy; nested controls follow shared spacing. |
+| `Dialog` family | Use elevated surfaces and masks to establish modality, with clear confirmation and cancellation. Window and overlay forms follow their own hosting and layout contracts. |
+| `NavMenu` | Selection communicates the current location. Vertical/inline selection uses a pale primary background; horizontal navigation uses its indicator structure. Desktop command `Menu` / `ContextMenu` serves a separate purpose. |
+| `TabControl` | Standard tabs use primary text and an indicator for the active state. `CardTabControl` has a separate card structure whose background must be preserved. |
+| `DataGrid` | Keep headers distinct from data rows, with separate sorting, selection, and hover states. Enable the independent DataGrid package as needed and follow its data and column APIs. |
+| `Tag` / `DotBadge` and related controls | Tags express categories; badges express counts or status. Pair important states with understandable text instead of relying on colored dots alone. |
+| `Alert` | Status icons, pale backgrounds, and body text work together. Plain and description variants use their respective padding. |
+| `ToolTip` / `Flyout`, `FlyoutHost` | Tooltips use inverse surfaces; the existing Flyout system hosts interactive content. Let controls handle placement, arrows, focus, and dismissal. |
+| `MenuItem` and related command items | Hover identifies the pointer target while retaining readable text. Use existing keyboard and submenu behavior appropriate to the scenario. |
 
-**Current implementation differences from upstream archetypes:**
+**Default control sizes and padding:**
 
-- The upstream Card archetype's 24 DIP body padding corresponds to AtomUI Card's large `BodyPaddingLG`; default middle `BodyPadding` is 12, and small is 8.
-- Upstream Tooltip padding is 6 vertically and 8 horizontally; current AtomUI `ToolTip.ContentPadding` is 8 vertically and 12 horizontally.
+- Card's large `BodyPaddingLG` is 24 DIP; default middle `BodyPadding` is 12, and small is 8.
+- `ToolTip.ContentPadding` is 8 vertically and 12 horizontally in DIP.
 - Button's default Own Token `ContentPadding` is AXAML `15,4,15,4`, or YAML `4px 15px`, including border and content-line-height compensation.
-- Dialog window content padding is currently `24,16,24,16`; overlay content uses `24,0,24,0`, with separate header/footer layouts. Do not apply a single upstream Modal padding value to every form.
+- Dialog window content padding is `24,16,24,16`; overlay content uses `24,0,24,0`, while headers and footers each use their own layout and tokens.
 - Default Tag uses `ColorBgLayout`; categorical color variants use the corresponding palette. DataGrid defaults to Large, with composited `HeaderBg` and 16 DIP cell padding in the header.
 
-These differences describe current output and do not redefine Ant Design's general principles. Prefer existing controls for new interfaces. When closer alignment with an upstream archetype is required, express it through
-public size APIs, tokens, or dedicated Semantic Part Styles, and still verify runtime behavior and layout.
+Prefer existing control sizes and variants for new interfaces. Customize appearance through public properties, tokens, or dedicated Semantic Part Styles, and verify layout and interaction with real content.
 
 ## Do's and Don'ts
 
@@ -255,7 +256,7 @@ public size APIs, tokens, or dedicated Semantic Part Styles, and still verify ru
 - **Don't** duplicate light-theme brushes in pages, manually invert colors, or replace error/success semantics with unrelated palettes.
 - **Do** preserve keyboard focus, disabled, loading, error, selection, and pointer feedback, including long text, scaling, and scrolling.
 - **Don't** remove scrollbars, clipping boundaries, overlay placement, or existing interaction merely for visual consistency; do not communicate important information through color alone.
-- **Do** use component sizes and derived spacing, maintain coherent adjacent radii and scales, and preserve meaningful border compensation.
+- **Do** use control sizes and derived spacing, maintain coherent adjacent radii and scales, and preserve meaningful border compensation.
 - **Do** customize stable parts with generated dedicated Semantic Part Styles and explicit `x:SetterTargetType`.
 - **Don't** find nodes by `PART_*`, incidental template structure, or Loaded callbacks and then set their visual properties. Use public theme entry points for complete structural changes.
 - **Do** declare style and template bindings in ControlTheme when it can express them equivalently; put `Transitions` in Style Setters.
@@ -264,7 +265,7 @@ public size APIs, tokens, or dedicated Semantic Part Styles, and still verify ru
 
 ## Customization
 
-AtomUI expresses Ant Design's seed derivation, component overrides, and nested themes through immutable `ThemeConfig`, Control configuration, and
+AtomUI provides seed derivation, control overrides, and nested themes through immutable `ThemeConfig`, Control configuration, and
 `ThemeConfigProvider`. Avalonia compiles AXAML ControlThemes; runtime code computes tokens and publishes snapshots.
 Packaged `.theme.xml` can generate typed declarations, while external dynamic XML uses a restricted Reader/Binder; both enter the same runtime calculation and commit path.
 
@@ -276,8 +277,7 @@ ThemeDefinition + ThemeConfig + generated schema
 ```
 
 `ThemeSnapshot` is the sole source of resolved token values. Theme switching prepares candidate state before committing and notifying, keeping root and local scopes consistent.
-Static templates, resource keys, and generated registrations remain stable during switching. Web CSS variables, style injection, and `zeroRuntime` are different output mechanisms,
-not AtomUI APIs. See [theme runtime](docs/architecture/systems/theming/runtime.md) and [compiled theme packages](docs/architecture/systems/theming/compiled-theme-packages/overview.md) for the complete architecture.
+Static templates, resource keys, and generated registrations remain stable during switching. See [theme runtime](docs/architecture/systems/theming/runtime.md) and [compiled theme packages](docs/architecture/systems/theming/compiled-theme-packages/overview.md) for the complete architecture.
 
 ### Choose a customization entry point
 
@@ -374,21 +374,20 @@ See the [Semantic Part system](docs/architecture/systems/theming/semantic-parts.
 ## Sources & Maintenance
 
 The sources below own format, design language, and implementation facts. This document distills them for design and application generation; it does not replace full API or architecture documentation.
-Upstream references were checked on **2026-10-26**. `version: alpha` identifies the DESIGN.md format version, not AtomUI product maturity or package version.
+This document was checked on **2026-10-26**. `version: alpha` identifies the DESIGN.md format version, not AtomUI product maturity or package version.
 
 | Subject | Authoritative source |
 | --- | --- |
-| Upstream design language and intent | [Ant Design DESIGN.md](https://github.com/ant-design/ant-design/blob/master/DESIGN.md), [official usage guide](https://ant.design/docs/react/design-md/) |
 | Format and tooling rules | [Google DESIGN.md](https://github.com/google-labs-code/design.md), [format specification](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md) |
 | Default theme and seeds | [DaybreakBlue](src/AtomUI.Core/Assets/Themes/DaybreakBlue.theme.xml), [DesignToken](src/AtomUI.Core/Theme/DesignTokens/Definitions/DesignToken.cs), [Seed definitions](src/AtomUI.Core/Theme/DesignTokens/Definitions/DesignToken.Seed.cs) |
 | Token derivation and value application order | [Algorithms](src/AtomUI.Core/Theme/Algorithms/DefaultThemeVariantCalculator.cs), [ThemeCompiler](src/AtomUI.Core/Theme/Compilation/ThemeCompiler.cs), [font derivation](docs/architecture/systems/typography/tokens-and-derivation.md) |
 | Theme scopes, resources, and publication | [Theme system entry point](docs/architecture/systems/theming/overview.md), [resource host](docs/architecture/systems/theming/application-resource-host.md), [lazy materialization](docs/architecture/systems/theming/lazy-materialization.md) |
-| Component archetypes and Own Tokens | [Control documentation](docs/controls/desktop/overview.md) and the corresponding Token / Themes in `src/AtomUI.Desktop.Controls`; DataGrid is owned by its independent package |
+| Control visuals and Own Tokens | [Control documentation](docs/controls/desktop/overview.md) and the corresponding Token / Themes in `src/AtomUI.Desktop.Controls`; DataGrid is owned by its independent package |
 
 Maintenance rules:
 
-1. When default seeds, algorithms, fonts, component tokens, or theme setters change, recheck the values, mappings, states, and difference notes here.
-2. Check Ant Design intent before introducing a design principle. Explain platform adaptations, label known deviations, and validate and review code fixes separately.
+1. When default seeds, algorithms, fonts, control tokens, or theme setters change, recheck the values, mappings, and state descriptions here.
+2. Design principles, tokens, and control theme rules must follow AtomUI's formal contracts. Assess layout, states, and compatibility when visual behavior changes.
 3. Check derived values against actual snapshots and consumption against theme assets. Gallery application overrides must not replace the library-default baseline.
 4. New examples use current public APIs, generated token entry points, and dedicated Semantic Part Styles, preserving NativeAOT compatibility.
 5. Run `@google/design.md` lint for structure and references, check repository-relative links and example compilation, and review contrast warnings against actual backgrounds and states.

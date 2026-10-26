@@ -49,8 +49,8 @@
 - `PageNavRequestArgs`：internal 导航请求数据，连接导航条目与 `Pagination`。
 - `PageSizeComboBoxItem`：internal 默认 ComboBox 条目，保存页大小与本地化显示内容。
 - `PaginationNav` / `PaginationNavItem`：internal 固定容器池与导航条目，承载页码窗口、选择状态和点击交互。
-- `PaginationToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
-- `QuickJumpArgs` / `QuickJumpEdit` / `QuickJumperBar`：internal 快速跳页请求、输入和组合栏。
+- `PaginationToken`：14项Global-only／常量默认，以V2静态函数求值；SimplePagination保留独立Global identity，显式复用Pagination Own。两项未消费字段按兼容保留处理，详见Token设计。
+- `QuickJumpArgs` / `QuickJumpEdit` / `QuickJumperBar`：internal 快速跳页请求、输入和组合栏。Small普通输入Width／简洁输入MinWidth读取Mini资源，其余尺寸读取常规宽度；不改变导航或校验。
 - `SimplePagination`：简洁分页控件，复用 `AbstractPagination` 状态模型，但不包含 page-size changer。
 - `PaginationLangResourceKind`：稳定的本地化 Catalog enum；三个 XLIFF 文件提供随模块发布的内置翻译，生成器负责编译资源表和 XAML 扩展。
 

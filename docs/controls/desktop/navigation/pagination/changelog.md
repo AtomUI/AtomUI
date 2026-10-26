@@ -2,6 +2,15 @@
 
 本文档记录 Pagination 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-26
+
+- Token
+  - 14项默认迁移为V2静态默认函数，保留Global公式、资源身份和明确下游覆盖。
+  - ItemLinkBg／InputOutlineOffset保留资源与配置往返，注明当前未消费及未提供的变体／偏移语义。
+- Theme
+  - Small普通／简洁跳转输入接通Mini宽度，常规宽度语义保持；默认Width／MinWidth由50改44DIP。
+  - Simple编辑输入的enabled／Outlined绘制帧接通ItemInputBg；保留disabled、其他变体及焦点路线。
+
 ## 2026-10-20
 
 - Fixed

@@ -36,7 +36,7 @@
 - `Breadcrumb`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `BreadcrumbItem`：集合项、节点或容器类型，承载单项状态和模板协作。
 - `BreadcrumbItemData`：数据、状态或行为协作类型，维护集合同步和事件路径。
-- `BreadcrumbToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
+- `BreadcrumbToken`：根 owner 的八项 Own scope，以 V2 静态默认函数从有效 Global 派生颜色和内距；没有 Own→Own 依赖，明确下游配置不被默认求值覆盖。
 - `BreadcrumbSeparatorManager`：内部协作类型，独占兄弟分隔符的创建、绑定、布局同步与销毁生命周期，`Breadcrumb` 只在条目状态更新与模板重套用时转发入口。
 
 核心协作规则：

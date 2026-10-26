@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class BreadcrumbToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class BreadcrumbToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -53,18 +53,36 @@ internal sealed class BreadcrumbToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ItemColor                   = EffectiveGlobalToken.ColorTextDescription;
-        LastItemColor               = EffectiveGlobalToken.ColorText;
-        LinkColor                   = EffectiveGlobalToken.ColorTextDescription;
-        LinkHoverColor              = EffectiveGlobalToken.ColorText;
-        LinkHoverBgColor            = EffectiveGlobalToken.ColorBgTextHover;
-        SeparatorColor              = EffectiveGlobalToken.ColorTextDescription;
-        SeparatorMargin             = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0);
-        BreadcrumbItemContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.UniformlyPaddingXXS,
-            EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.UniformlyPaddingXXS);
-    }
+    [ControlTokenDefault(nameof(ItemColor))]
+    private static Color DefaultForItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(LastItemColor))]
+    private static Color DefaultForLastItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(LinkColor))]
+    private static Color DefaultForLinkColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(LinkHoverColor))]
+    private static Color DefaultForLinkHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(LinkHoverBgColor))]
+    private static Color DefaultForLinkHoverBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgTextHover;
+
+    [ControlTokenDefault(nameof(SeparatorColor))]
+    private static Color DefaultForSeparatorColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(SeparatorMargin))]
+    private static Thickness DefaultForSeparatorMargin(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXXS, 0);
+
+    [ControlTokenDefault(nameof(BreadcrumbItemContentPadding))]
+    private static Thickness DefaultForBreadcrumbItemContentPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXXS);
     
 }

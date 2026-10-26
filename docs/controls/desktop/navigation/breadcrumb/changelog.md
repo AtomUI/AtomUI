@@ -2,6 +2,13 @@
 
 本文档记录 Breadcrumb 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-26
+
+- Token
+  - 八项默认迁移为 V2 静态默认函数，保留 Global 公式、identity、资源 key、类型及明确 Own／零值／撤回语义。
+- Docs
+  - 按实际条目、链接和兄弟分隔符消费者说明 Own；纠正将 Shared 图标尺寸列为 Own 的描述，区分 Uniformly 与 Thickness 字段。
+
 ## 2026-10-20
 
 - Fixed

@@ -31,3 +31,9 @@ N1的四字段已同步XML、正式Token/changelog及CSV的CompatibilityRetained
 N1补查纠正：NavMenu十个DangerItem/DarkDangerItem字段也仅有声明和默认赋值，实际条目/数据/状态及模板没有危险项入口；先前文档中的“已公开危险项合同”描述不成立，已改正。这十字段独立归Reserved，与原T37四项合计14项保留，不改变代码行为。XML摘要已在源回放结束后同步；工作台不可编辑规则仍属CT23。
 
 N2-A专项及清理出口已通过，见[列表结果](container-list-results.md)：30默认V2、实际禁用色/五继承主题、28 NativeAOT/JIT帧0、原生差异对照、最终262项/NET8；完整N2其他Global/字体/业务Host、N3及N4仍开放。
+
+N3-T 的 [TreeView Global-only 默认结果](container-tree-defaults-results.md)已完成本机切片：12项V2、明暗24资源/key数值/type/slot不变、Global与Control Global／明确Own0／撤回／同实例重挂兼容；Mac managed／AOT各304项资源检查通过。补充真正明暗Window后的总168帧：56AA／24恢复／28新旧均0、56组1DIP全检出；临时清理后57项及NET8零警告。两个目录选中色仅兼容保留，容器当前14+2=16项Reserved，不新增目录树交互。完整N2/N3/N4、原生最终像素及CT14仍开放；本片未获Git提交授权。
+
+N3-TR 的[Transfer默认求值结果](container-transfer-defaults-results.md)完成本机机制切片出口：三个scope共11项V2、明暗22资源/类型/key枚举数值/slot不变，原Global/Control Global消费本已正常。Mac managed/AOT各684项、清理后原44项及NET8零警告通过；用户已接受[34对精确限定自然差异](container-transfer-defaults-noise-review.md)，原始失败保留，203张PNG及manifest共204文件已清理且媒体审计clean，CSV仅回填11条Token与3条Control。第十七批待审14文件原始blob已固定为可校验补丁，此段及目录更新属后续未提交差异，不扩大其授权；完整Transfer家族、原生最终像素、其他Host、N2/N3/N4和CT14仍开放。
+
+Transfer后续核对并修正文档中的无效专用Style、SetterTargetType及Semantic owner混写：旧2项FAIL，修正后4项通过，原文编译AXAML的8Style/9Setter命中两分区/三条目，临时源清理后原44项通过。另确认TreeTransfer owner分页wrapper为internal，原34对及684原生脚本该阶段仅为内部模板诊断；[纯公开API补充](container-transfer-public-results.md)60自然帧、20组1DIP全检出、30对资源/几何一致，80直接绘制的40AA/16恢复/40新旧全0；新14对自然历史差异已于2026-10-26独立获批，原始计数保留，140张PNG及manifest共141文件已清理、Git媒体审计clean；TreeTransfer.ListWidthLG随后按共享公开属性标识核定Active条件消费，无新增树分页API。产品三份SHA保持，完整CT14及其他平台/原生最终像素未关闭。

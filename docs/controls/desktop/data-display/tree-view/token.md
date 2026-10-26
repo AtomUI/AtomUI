@@ -35,7 +35,7 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 - `DirectoryNodeSelectedColor`
 - `DirectoryNodeSelectedBg`
 
-`NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 当前由 Token 类型定义为目录树选中语义，默认 TreeView 主题不直接消费这两个 Token；维护时仍应保持其名称和语义稳定。
+`NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 是兼容保留项：当前没有目录树专用交互入口，默认 TreeView 主题不消费这两个 Token。保留其名称、类型、资源标识、默认值与配置往返；不能将其作为普通节点选中色的调节入口。
 
 节点 disabled 文本色、图标弱化和 switcher 图标色优先使用 SharedToken，不在 TreeViewToken 中重复定义。
 
@@ -83,6 +83,23 @@ TreeView Token 主要参与以下专项模型：
 
 Token 不参与 default selected / checked / expanded path 回放，不参与 `CheckedItems` 同步，不参与异步加载逻辑。
 
+默认求值使用 `DependencyDefaultsV2`。12 个字段的默认函数均只读取当前作用域的有效 `Global`，没有 Own 字段之间的依赖；Control 专属 Global 配置也进入这些函数。具体派生关系如下，间距单位均为 DIP：
+
+| Token | 有效 Global 输入与计算 |
+| --- | --- |
+| `HeaderHeight` | `ControlHeightSM` |
+| `NodeHoverBg` / `NodeSelectedBg` | `ControlItemBgHover` / `ControlItemBgActive` |
+| `DirectoryNodeSelectedColor` / `DirectoryNodeSelectedBg` | `ColorTextLightSolid` / `ColorPrimary`，兼容保留 |
+| `TreeItemMargin` | `(0, 0, 0, UniformlyPaddingXXS / 2)` |
+| `TreeItemHeaderPadding` | `(UniformlyPaddingXS, 0, UniformlyPaddingXS, 0)` |
+| `TreeItemHeaderMargin` | `(UniformlyMarginXXS, 0, 0, 0)` |
+| `TreeNodeSwitcherMargin` | `(0, 0, UniformlyPaddingXS / 2, 0)` |
+| `TreeNodeIconMargin` | `(UniformlyPaddingXS / 2, 0, 0, 0)` |
+| `FilterHighlightColor` | `ColorError` |
+| `DragIndicatorLineWidth` | `LineWidthFocus` |
+
+明确设置的 Own 值优先于默认函数，包含 `0`、透明色和零间距；移除 Own 配置后重新使用当前有效 Global 的默认结果。该规则不为字段增加统一数值范围，实际布局和状态仍按各消费者契约处理。
+
 ## 4. 控件家族影响
 
 TreeViewToken 影响 TreeView 与 TreeViewItem 体系：
@@ -103,6 +120,7 @@ TreeViewToken 不影响 NavMenu、Masonry、GroupBox 或其他 Data Display 控�
 - 不把过滤结果、拖拽目标、当前选择、当前勾选或展开状态写入 Token。
 - 不把 `NodeHoverMode`、`ToggleType`、`FilterStrategy` 等实例配置拆成 Token。
 - 默认值应继续从 SharedToken 派生，保持 light / dark 主题一致性。
+- 默认函数声明的 `Revision = 1` 参与生成器求值版本摘要，不等于运行时 descriptor 的 `EvaluatorRevision` 数值；资源枚举数值与 dense slot 必须分别保持并验证。
 - Token 变更必须同步 Theme 引用和 token.md 语义说明。
 
 ## 6. 验证策略
@@ -110,6 +128,7 @@ TreeViewToken 不影响 NavMenu、Masonry、GroupBox 或其他 Data Display 控�
 TreeViewToken 变更验证：
 
 - `TreeViewTokenKind` 与 token.md 语义说明保持一致。
+- 对比默认函数迁移前后的 Light / Dark 实际资源值、类型、资源枚举数值和 dense slot，并验证 Global、Control 专属 Global、明确 Own、撤回及同实例重挂。
 - `HeaderHeight` 影响 header 最小高度和 switcher 尺寸。
 - `NodeHoverBg` / `NodeSelectedBg` 在三种 hover mode 下均命中正确背景层。
 - `TreeItemMargin`、`TreeItemHeaderPadding`、`TreeItemHeaderMargin`、`TreeNodeSwitcherMargin`、`TreeNodeIconMargin` 不造成 header 内容重叠。

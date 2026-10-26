@@ -3,8 +3,8 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TreeTransferToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TreeTransferToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public double ListWidth { get; set; }
 
@@ -16,18 +16,23 @@ internal sealed class TreeTransferToken : AbstractControlDesignToken
 
     public Thickness HeaderPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(ListWidth))]
+    private static double DefaultForListWidth(in ControlTokenDefaultContext context) => 180;
 
-        ListWidth    = 180;
-        ListWidthLG  = 250;
-        ListHeight   = 200;
-        HeaderHeight = EffectiveGlobalToken.ControlHeightLG;
-        HeaderPadding = new Thickness(
-            EffectiveGlobalToken.UniformlyPaddingSM,
-            Math.Ceiling((EffectiveGlobalToken.ControlHeightLG -
-                          EffectiveGlobalToken.LineWidth -
-                          EffectiveGlobalToken.FontHeight) / 2));
-    }
+    [ControlTokenDefault(nameof(ListWidthLG))]
+    private static double DefaultForListWidthLG(in ControlTokenDefaultContext context) => 250;
+
+    [ControlTokenDefault(nameof(ListHeight))]
+    private static double DefaultForListHeight(in ControlTokenDefaultContext context) => 200;
+
+    [ControlTokenDefault(nameof(HeaderHeight))]
+    private static double DefaultForHeaderHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG;
+
+    [ControlTokenDefault(nameof(HeaderPadding))]
+    private static Thickness DefaultForHeaderPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingSM,
+            Math.Ceiling((context.Global.ControlHeightLG -
+                          context.Global.LineWidth -
+                          context.Global.FontHeight) / 2));
 }

@@ -2,6 +2,15 @@
 
 本文档记录 Transfer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-26
+
+- Token
+  - 将 `ListTransferToken`、`TreeTransferToken`、`TransferListViewToken` 共 11 个默认值迁移至 V2 静态默认函数，保留独立 identity、资源标识、常量／Global 公式及明确 Own 覆盖。
+- Docs
+  - 纠正不存在的 `TransferToken` scope 描述，按两个具体 owner 与分页视图说明尺寸、header／footer 内距和分页间距消费者。
+  - 统一 Transfer owner 的 Semantic Part、方向限定和条目边界，修正无效 Style 类型及 SetterTargetType；示例改用现有专用 Style 声明式定制。
+  - 区分根 owner 的公开 API 与 internal 分页／装饰器状态，补充共享 Avalonia 属性标识可达的大宽度条件消费者边界，不把它描述成 TreeTransfer 的公开分页能力。
+
 ## 2026-09-01
 
 - Semantic Part（方向限定对齐）

@@ -15,6 +15,13 @@
   - 子项采用 `ContentViewport#PART_ChildrenViewport`，TreeSelect/Transfer 复用相同布局能力。
   - 反向意图连续替代播放，移除 switcher 的播放期禁点和丢弃请求 guard；旧模板的完成无权修改当前状态。
 
+## 2026-10-25
+
+- Token
+  - 将 12 个默认值接入 `DependencyDefaultsV2`，以有效 Global 的静态默认函数求值，保留原默认结果、类型、资源标识和明确 Own 覆盖规则。
+  - 明确 `DirectoryNodeSelectedColor` / `DirectoryNodeSelectedBg` 为兼容保留项：保留资源和配置往返，当前没有目录树专用交互或默认主题消费。
+
+
 ## 2026-10-19
 
 - Behavior

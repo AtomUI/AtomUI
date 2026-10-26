@@ -3,15 +3,12 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TransferListViewToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TransferListViewToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public Thickness PaginationMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        PaginationMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS);
-    }
+    [ControlTokenDefault(nameof(PaginationMargin))]
+    private static Thickness DefaultForPaginationMargin(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyMarginXXS);
 }

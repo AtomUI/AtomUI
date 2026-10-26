@@ -111,7 +111,7 @@ Pagination 的视觉模型由控件模板、ControlTheme、SharedToken 和必要
 | `QuickJumperBarTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 | `SimplePaginationTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-Pagination 使用 `PaginationToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 selection/checked/active、collection/filter、input/value、motion、visual option 运行时状态。
+Pagination 使用14项Own的 `PaginationToken`；SimplePagination保留独立Global identity，模板显式复用Pagination Own。默认以V2函数从有效Global／常量求值，不保存页码、输入或motion状态。Small跳转输入采用Mini宽度，Simple的启用Outlined输入消费ItemInputBg；ItemLinkBg／InputOutlineOffset兼容保留，具体范围见[Token设计](token.md)。
 
 主题维护规则：
 
@@ -132,7 +132,7 @@ Pagination 与同分类控件共享尺寸、状态、Token、Gallery 展示和�
 - `PaginationSizeChangerContext`：公开的非 Visual 模板数据契约，把页大小输入与 `Pagination` 的受控状态连接起来。
 - `PaginationNav` / `PaginationNavItem`：internal 导航容器与条目，承载固定容器池和导航交互。
 - `PageSizeComboBoxItem`：internal 默认 ComboBox 条目，只服务内置 page-size changer。
-- `PaginationToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
+- `PaginationToken`：14项Global-only／常量默认，以V2函数求值并保留两个未消费字段的兼容资源。
 - `QuickJumpEdit` / `QuickJumperBar`：internal 快速跳页输入与组合栏。
 - `SimplePagination`：简洁分页控件，不提供 page-size changer 定制入口。
 - `PaginationLangResourceKind`：稳定的本地化 Catalog enum；内置翻译由同目录三种语言 XLIFF 提供并在编译期生成。

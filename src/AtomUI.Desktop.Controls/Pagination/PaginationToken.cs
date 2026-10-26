@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class PaginationToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class PaginationToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -35,6 +35,7 @@ internal sealed class PaginationToken : AbstractControlDesignToken
     /// <summary>
     /// 页码链接背景色
     /// Background color of Pagination item link
+    /// 兼容保留：默认主题未消费，当前未提供 bordered 导航变体；保留资源与配置往返。
     /// </summary>
     public Color ItemLinkBg { get; set; }
     
@@ -53,12 +54,14 @@ internal sealed class PaginationToken : AbstractControlDesignToken
     /// <summary>
     /// 输入框背景色
     /// Background color of input
+    /// 用于简洁分页编辑输入的启用 Outlined 绘制帧。
     /// </summary>
     public Color ItemInputBg { get; set; }
     
     /// <summary>
     /// 输入框轮廓偏移量
     /// Outline offset of input
+    /// 兼容保留：未定义桌面 Thickness 偏移语义，焦点阴影继续使用有效 Global。
     /// </summary>
     public Thickness InputOutlineOffset { get; set; }
     
@@ -97,25 +100,59 @@ internal sealed class PaginationToken : AbstractControlDesignToken
     {
     }
     
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ItemBg                    = EffectiveGlobalToken.ColorBgContainer;
-        ItemSize                  = EffectiveGlobalToken.ControlHeight;
-        ItemSizeSM                = EffectiveGlobalToken.ControlHeightSM;
-        ItemActiveBg              = EffectiveGlobalToken.ColorBgContainer;
-        ItemLinkBg                = EffectiveGlobalToken.ColorBgContainer;
-        ItemActiveColorDisabled   = EffectiveGlobalToken.ColorTextDisabled;
-        ItemActiveBgDisabled      = EffectiveGlobalToken.ControlItemBgActiveDisabled;
-        ItemInputBg               = EffectiveGlobalToken.ColorBgContainer;
+    [ControlTokenDefault(nameof(ItemBg))]
+    private static Color DefaultForItemBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
 
-        InputOutlineOffset                  = new Thickness(0);
-        PaginationLayoutSpacing             = EffectiveGlobalToken.UniformlyMarginXS;
-        PaginationLayoutMiniSpacing         = EffectiveGlobalToken.UniformlyMarginXXS / 2;
-        
-        PaginationQuickJumperInputWidth     = EffectiveGlobalToken.ControlHeightLG * 1.25;
-        PaginationMiniQuickJumperInputWidth = EffectiveGlobalToken.ControlHeightLG * 1.1;
-        PaginationItemPaddingInline         = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS * 1.5);
-    }
+    [ControlTokenDefault(nameof(ItemSize))]
+    private static double DefaultForItemSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
+
+    [ControlTokenDefault(nameof(ItemSizeSM))]
+    private static double DefaultForItemSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
+
+    [ControlTokenDefault(nameof(ItemActiveBg))]
+    private static Color DefaultForItemActiveBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(ItemLinkBg))]
+    private static Color DefaultForItemLinkBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(ItemActiveColorDisabled))]
+    private static Color DefaultForItemActiveColorDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(ItemActiveBgDisabled))]
+    private static Color DefaultForItemActiveBgDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActiveDisabled;
+
+    [ControlTokenDefault(nameof(ItemInputBg))]
+    private static Color DefaultForItemInputBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(InputOutlineOffset))]
+    private static Thickness DefaultForInputOutlineOffset(in ControlTokenDefaultContext context) => new(0);
+
+    [ControlTokenDefault(nameof(PaginationLayoutSpacing))]
+    private static double DefaultForPaginationLayoutSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXS;
+
+    [ControlTokenDefault(nameof(PaginationLayoutMiniSpacing))]
+    private static double DefaultForPaginationLayoutMiniSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXXS / 2;
+
+    [ControlTokenDefault(nameof(PaginationQuickJumperInputWidth))]
+    private static double DefaultForPaginationQuickJumperInputWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 1.25;
+
+    [ControlTokenDefault(nameof(PaginationMiniQuickJumperInputWidth))]
+    private static double DefaultForPaginationMiniQuickJumperInputWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 1.1;
+
+    [ControlTokenDefault(nameof(PaginationItemPaddingInline))]
+    private static Thickness DefaultForPaginationItemPaddingInline(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXXS * 1.5);
     
 }

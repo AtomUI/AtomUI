@@ -41,3 +41,7 @@ Transfer后续核对并修正文档中的无效专用Style、SetterTargetType及
 TreeView、Transfer及NavMenu测试采样后经27文件整合授权提交并推送ff0d3d572；[第十七轮](platform-seventeenth-results.md)三OS各6405项、三NativeAOT及两Browser均成功，原冻结14文件已被该提交包含，不能重复提交。
 
 N3-B 的[Breadcrumb八项默认结果](container-breadcrumb-defaults-results.md)完成本机机制切片：明暗16默认与288条资源/key/slot记录新旧相同，原消费已正常；正式84帧的28AA／12恢复／42新旧均0，28组1DIP全检出。Mac managed136／NativeAOT137、80资源记录一致；临时清理后原18项、NET8零警告及单Token成员审计通过，169媒体文件及419文件原生工程已清理。八条Token／一条Control回填，不关闭其余Global／字体、图标／键盘／完整状态、其他Host、原生最终像素或整个CT14；尚未提交。
+
+Breadcrumb后经第十八批13文件批准提交并推送93ef4ba8d；[第十八轮实际结果](platform-eighteenth-results.md)8个job均成功，三OS各6405项、三NativeAOT各26／两Browser各23检查，未取消／重试／发布。
+
+N3-P [Pagination本机实现](pagination-input-wiring-results.md)完成14项V2默认、经批准的Mini宽度与Simple输入背景接线；原版明暗六处不更新反例修复，四尺寸／只读／禁用／透明／0／撤回／焦点／光标／真实Enter保护检查通过。明暗28默认及168资源记录保持，Macro36组新旧0；Mac managed206／AOT207与140记录一致，临时清理后原57项及NET8零警告通过。14Token／2Control回填，其中两项兼容保留，容器Reserved当前16+2=18。用户2026-10-26已批准所示视觉修复及N01–N10十对精确限定自然差异；158张PNG及manifest共159文件已清理，媒体审计clean，原始失败计数保留。本机默认机制及两项输入接线切片出口完成；完整家族、其他Host及原生最终像素仍开放，本批Git另审。

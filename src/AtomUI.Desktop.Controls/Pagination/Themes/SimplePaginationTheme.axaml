@@ -31,7 +31,15 @@
                                             SizeType="{TemplateBinding SizeType}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                            Minimum="1" />
+                                            Minimum="1">
+                            <!-- 外层 ControlTheme 不允许跨两层 /template/；实例内的一跳 Style
+                                 保留 LineEdit 的隐式主题与原禁用、焦点样式。 -->
+                            <atom:QuickJumpEdit.Styles>
+                                <Style Selector="atom|LineEdit#PART_QuickJumper /template/ atom|AddOnDecoratedBox:outline:not(:disabled)">
+                                    <Setter Property="Background" Value="{atom:PaginationTokenResource ItemInputBg}" />
+                                </Style>
+                            </atom:QuickJumpEdit.Styles>
+                        </atom:QuickJumpEdit>
                         <atom:TextBlock Name="PART_InfoIndicator"
                                         Classes.semantic-info="True"
                                         VerticalAlignment="Center"
@@ -77,6 +85,10 @@
             <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
                 <Setter Property="Spacing"
                         Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}" />
+            </Style>
+            <Style Selector="^ /template/ atom|LineEdit#PART_QuickJumper">
+                <Setter Property="MinWidth"
+                        Value="{atom:PaginationTokenResource PaginationMiniQuickJumperInputWidth}" />
             </Style>
         </Style>
 

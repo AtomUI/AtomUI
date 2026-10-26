@@ -58,3 +58,11 @@ C10共640帧，128组1DIP全检出，八组新旧默认0；独立直接Skia128�
 - `src/AtomUI.Desktop.Controls.ColorPicker/ColorSlider/ColorSlider.cs`
 - `src/AtomUI.Desktop.Controls.ColorPicker/ColorView/ColorSpectrum.cs`
 - `src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorView/ColorSpectrumTheme.axaml`
+
+## 第十六批授权执行（2026-10-25）
+
+用户明确批准本次两个提交、推送和验证Actions。冻结25文件快照c2f3a8337d64原样执行为cdc7ba70f85f7e62775b6f52273dd8271c96bb3a（纯布局）及204c44149fdb0af5c7678b3f580a9e9948c56310（功能与文档）；第二提交25个blob逐项与获批快照一致，原生及模块证据对应本批产品来源。随后确认既有远端分支仍为393d718b3，使用AtomUI仓库凭证推送并核对远端204c44149。
+
+[第十六轮Actions40207571681](https://github.com/AtomUI/AtomUI/actions/runs/40207571681)已接受并实际运行，三OS／两Browser、full=false，没有NuGet发布。调度前核对第十五轮已完成、同分支无其他未结束的手动验证；没有取消或重复调度。TreeView研发和全部临时产物未进入提交，原25文件提交授权已执行完毕；本段为后续未提交状态记录，不改写获批提交。实际本轮结果和完整CT19／CT25出口继续。
+
+第十六轮最终：获批204c44149的[Actions40207571681](https://github.com/AtomUI/AtomUI/actions/runs/40207571681)已结束，7/8 job成功，整轮failure。三NativeAOT／两Browser、Windows与Linux选测各6405/6405通过；Mac已执行5199项，其中5198通过，唯一记录失败为NavMenu展开动效中间宽度采样，其后1206项未执行。Windows／Linux本地化各27组阶段完整配对（含一项预期损坏feed反例exit1），Mac未进入该阶段。本轮未取消／重试／发布；[第十七批候选](platform-seventeenth-followups.md)以受控反例修正采样，实际CI结论待新批准后验证。完整家族与CT25继续开放。

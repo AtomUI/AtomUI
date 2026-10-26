@@ -158,14 +158,8 @@ public class NavMenuInlineCollapsedTests
 
             menu.Bounds.Width.ShouldBe(300, 0.5);
 
-            menu.IsInlineCollapsed = true;
-            Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(20);
-            Dispatcher.UIThread.RunJobs();
-
-            menu.Bounds.Width.ShouldBeGreaterThan(menu.InlineCollapsedWidth,
-                "motion enabled inline collapsed should expose an intermediate layout width instead of jumping from expanded width to the collapsed target in one frame.");
-            WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300);
+            WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300,
+                () => menu.IsInlineCollapsed = true);
 
             WaitForWidth(menu, menu.InlineCollapsedWidth);
             WaitForInlineCollapsedLayoutWidthCleared(menu);
@@ -175,13 +169,8 @@ public class NavMenuInlineCollapsedTests
             double.IsNaN(menu.InlineCollapsedLayoutWidth).ShouldBeTrue(
                 "the internal animated layout width must be cleared after collapse motion completes so the collapsed steady state is controlled by InlineCollapsedWidth.");
 
-            menu.IsInlineCollapsed = false;
-            Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(20);
-            Dispatcher.UIThread.RunJobs();
-
-            menu.Bounds.Width.ShouldBeLessThan(300);
-            WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300);
+            WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300,
+                () => menu.IsInlineCollapsed = false);
 
             WaitForWidth(menu, 300);
             WaitForInlineCollapsedLayoutWidthCleared(menu);
@@ -1369,24 +1358,46 @@ public class NavMenuInlineCollapsedTests
         Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
     }
 
-    private static void WaitForWidthBetween(Control control, double lowerBound, double upperBound)
+    private static void WaitForWidthBetween(Control control, double lowerBound, double upperBound,
+                                           Action transition)
     {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(1);
-        while (DateTime.UtcNow < deadline)
+        double? observedWidth = null;
+        void ObserveWidth(object? sender, AvaloniaPropertyChangedEventArgs change)
         {
-            Dispatcher.UIThread.Post(static () => { }, DispatcherPriority.Background);
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
-            if (control.Bounds.Width > lowerBound + 0.5 &&
+            if (change.Property == Visual.BoundsProperty &&
+                control.Bounds.Width > lowerBound + 0.5 &&
                 control.Bounds.Width < upperBound - 0.5)
             {
-                return;
+                observedWidth = control.Bounds.Width;
             }
-
-            Thread.Sleep(10);
         }
 
-        control.Bounds.Width.ShouldBeGreaterThan(lowerBound);
-        control.Bounds.Width.ShouldBeLessThan(upperBound);
+        // A dispatcher drain can advance to the endpoint before the next read.
+        // Observe actual layout frames from the trigger, retaining an intermediate frame.
+        control.PropertyChanged += ObserveWidth;
+        try
+        {
+            transition();
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(1);
+            while (!observedWidth.HasValue && DateTime.UtcNow < deadline)
+            {
+                Dispatcher.UIThread.Post(static () => { }, DispatcherPriority.Background);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
+                if (!observedWidth.HasValue)
+                {
+                    Thread.Sleep(10);
+                }
+            }
+
+            observedWidth.ShouldNotBeNull(
+                $"motion must produce an actual layout width between {lowerBound} and {upperBound}; final width was {control.Bounds.Width}.");
+            observedWidth.Value.ShouldBeGreaterThan(lowerBound + 0.5);
+            observedWidth.Value.ShouldBeLessThan(upperBound - 0.5);
+        }
+        finally
+        {
+            control.PropertyChanged -= ObserveWidth;
+        }
     }
 
     private static void WaitForInlineCollapsedLayoutWidthCleared(AtomUI.Desktop.Controls.NavMenu menu)

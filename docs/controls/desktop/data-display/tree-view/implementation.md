@@ -365,6 +365,8 @@ drop indicator 根据目标 header 上半区、中间区域和下半区决定插
 
 TreeView 不通过反射访问模板内部结构。模板接入依赖稳定 part 名称和 Avalonia 属性绑定。
 
+`TreeViewToken` 通过 `IControlTokenDefaults` 的生成实现接入 `DependencyDefaultsV2`。12 个静态默认函数只读取 `ControlTokenDefaultContext.Global`，资源投影继续使用原字段类型和标识；没有运行时反射发现或 Own→Own 求值边。明确 Own 覆盖及撤回由通用求值器处理，TreeView 不持有额外缓存、作用域订阅或节点引用。字段语义与兼容保留项见 [Token 设计](token.md)。
+
 `BindableTreeItemNode` 属于 owner-managed 非 Visual `AvaloniaObject`。它承载 `DynamicResource`、token-resource binding 或 XAML binding target 时，必须按 [Scoped Resource Host Source Generator 范式](../../../../modules/generator/scoped-resource-host-generator.md) 生成 scoped `IResourceHost` / `IThemeVariantHost` 生命周期样板代码。资源查找顺序必须是 owner TreeView / TreeViewItem 优先，再 fallback 到 `Application.Current`。
 
 TreeView / TreeViewItem 对绑定型节点的 attach/release 是资源生命周期边界。不得把 generated `TreeViewItem`、header、container 或 Gallery ShowCase 永久挂回节点，也不得用清空 DataContext 或静态资源替代动态资源能力。

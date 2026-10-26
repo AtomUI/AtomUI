@@ -3,6 +3,12 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-25
+
+- Token
+  - 将 12 个默认值接入 `DependencyDefaultsV2`，以有效 Global 的静态默认函数求值，保留原默认结果、类型、资源标识和明确 Own 覆盖规则。
+  - 明确 `DirectoryNodeSelectedColor` / `DirectoryNodeSelectedBg` 为兼容保留项：保留资源和配置往返，当前没有目录树专用交互或默认主题消费。
+
 ## 2026-10-19
 
 - Behavior

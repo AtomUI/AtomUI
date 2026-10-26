@@ -37,30 +37,25 @@ Transfer 的设计语言围绕控件职责、可观察状态和主题契约组�
 
 Transfer 的公共契约由 public/protected 类型成员、Avalonia 属性、事件、命令、template part、伪类、ControlTheme key 和资源 key 共同组成。维护时应先确认这些契约是否已经被源码、Gallery 示例或文档暴露。
 
-核心 public surface 按语义分组维护：
+两个具体 owner 继承 `AbstractTransfer` 的公共数据与状态合同，按以下语义使用：
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `Content`、`ContentTemplate`、`FilterPlaceholderText`、`FilterValueSelector`、`FooterTemplate`、`ItemTemplate`、`SelectionsIcon`、`SelectionsIconTemplate`、`SourceTitle`、`SourceTitleTemplate` 等 22 项 | 定义控件展示内容、输入数据、模板或业务对象入口。 |
-| 选择与集合 | `TargetKeys`、`SelectedKeys`、`Filter`、`IsAllSelected`、`IsFilterEnabled`、`PageSize` | 维护目标集合、当前面板选择、过滤、分页和集合状态。 |
-| 交互与状态 | `IsMasked`、`IsMotionEnabled`、`IsOneWay`、`IsPaginationEnabled`、`IsShowSearch`、`IsShowSelectAll`、`IsShowSelectAllCheckbox`、`IsShowSelectDropdownMenu`、`IsStretchView`、`Status` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
-| 视觉与布局 | `ListHeight`、`ListWidth`、`SizeType` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
-| 其他稳定入口 | `Footer`、`TargetView`、`TargetViewFooter`、`ViewType` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
+| 数据与模板 | `ItemsSource`、`ItemTemplate`、`SourceTitle` / `TargetTitle` 及模板、双侧 ViewFooter 及模板 | 输入条目、标题和分区内容。 |
+| 选择与过滤 | `TargetKeys`、`SelectedKeys`、`IsFilterEnabled`、`Filter`、`FilterValueSelector`、`FilterPlaceholderText` | 目标成员、当前选择与过滤。 |
+| 状态与布局 | `IsOneWay`、`IsStretchView`、`Status`、`SizeType`、`ListWidth`、`ListHeight`、`IsMotionEnabled` | 单向模式、布局、状态和动效。 |
+| 操作区与选择提示 | `IsShowSearch`、`IsShowSelectAll`、`SelectionsIcon`、两个 TransferIcon 与 ButtonText | 调整现有操作和提示内容。 |
+| 具体视图 | `ListTransfer.SourceView` / `TargetView`、`ListTransfer.PageSize`、`TreeTransfer.SourceView` | 使用 ITransferView / ITransferTreeView 替换视图；ListTransfer 通过 PageSize 控制分页。 |
+
+`TreeTransfer` 没有公开 PageSize 或 owner 级 IsPaginationEnabled wrapper。源树与目标列表的内部状态不能混写成其公开分页能力；单独使用的 `TransferListView` 则公开自己的 IsPaginationEnabled 属性。其导出的 Avalonia 属性标识与 owner 内部状态共享，底层 SetValue 可以命中树 owner 的既有宽度分支，但不因此获得树源分页支持。
 
 `TargetKeys` 表示已经移动到目标面板的条目 key，是 Transfer 的提交值；`SelectedKeys` 表示当前源面板和目标面板内被选中的条目 key。两者默认 `BindingMode.TwoWay`，并支持 `INotifyCollectionChanged` 集合的原地 `Add`、`Remove`、`Replace`、`Move` 和 `Reset`。当绑定集合可写时，Transfer 交互优先原地更新已有集合，避免替换绑定源造成外部状态不同步。
 
-稳定事件包括 `SelectActionRequest`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
+公开事件 `SelectionChanged` 使用 `TransferSelectionChangedEventArgs` 报告当前面板选择。内部下拉动作的 `SelectActionRequest` 不作为根 owner 的公开事件；既有事件触发顺序保持。
 
-主要公开类型与枚举：
+公开类型包括两个 owner、`AbstractTransfer`、`TransferListView` / `TransferTreeView`、对应条目容器、`TransferRemoveItemButton`、ITransferView / ITransferTreeView 及公开事件参数；枚举为 TransferDirection、TransferSelectAction、TransferViewType。
 
-- 类型：`AbstractTransfer`、`ListTransfer`、`TransferItemDecorator`、`TransferItemsRemovedEventArgs`、`TransferListItem`、`TransferListView`、`TransferRemoveItemButton`、`TransferSelectActionEventArgs`、`TransferSelectDropdown`、`TransferSelectionChangedEventArgs`、`TransferTreeView`、`TransferTreeViewItem`、`TransferTreeViewItemHeader`、`TransferViewCreatedEventArgs` 等 18 项。
-- 枚举：`TransferDirection`、`TransferSelectAction`、`TransferViewType`。
-
-稳定 template part：
-
-| Template Part | 类型 | 职责 |
-| --- | --- | --- |
-| `PART_IconPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
+TransferItemDecorator、TransferSelectDropdown、TransferTreeViewItemHeader 与 TransferSelectActionEventArgs 是 internal 协作类型，不作为应用直接依赖的 API。公开样式定制入口见 Semantic Part；内部模板接线职责见实现文档，不把 IconButton 的 PART_IconPresenter 提升为 Transfer owner 的 Part。
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
@@ -101,7 +96,7 @@ Transfer 的视觉模型由控件模板、ControlTheme、SharedToken 和必要�
 | `TransferTreeViewTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 | `TreeTransferTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-Transfer 使用 `TransferToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 selection/checked/active、collection/filter、input/value、motion、visual option 运行时状态。
+Transfer 家族分别使用 `ListTransferToken`、`TreeTransferToken` 和 `TransferListViewToken` 三个控件 Token scope。Token 只表达组件视觉语义，不承载 selection/checked/active、collection/filter、input/value、motion、visual option 运行时状态。
 
 主题维护规则：
 
@@ -124,7 +119,7 @@ Transfer 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 - `TransferListView`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TransferRemoveItemButton`：动作触发类型，负责点击、导航或局部操作状态。
 - `TransferSelectDropdown`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `TransferToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
+- `ListTransferToken`／`TreeTransferToken`：两个具体 owner 的分区尺寸与 header 内距；`TransferListViewToken`：分页 presenter 间距。
 - `TransferTreeView`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TransferTreeViewItem`：集合项、节点或容器类型，承载单项状态和模板协作。
 - `TransferTreeViewItemHeader`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
@@ -169,14 +164,10 @@ Transfer 的视觉选项通过 public API 归一为 theme variables、伪类或�
 
 ### 8.5 Semantic Part
 
-`ListTransfer` 与 `TreeTransfer` 公开 `root`、`source.section`、`target.section`、`actions`、`header`、`title`、
-`body`、`list`、`footer` 九个职责区域及十个方向限定变体（`source.header` / `target.header` / `source.title` /
-`target.title` / `source.body` / `target.body` / `source.list` / `target.list` / `source.footer` /
-`target.footer`），与上游 Transfer 语义键逐字对齐（`.` 为层级分隔符）；两个 owner 发布相同 Part 集合，
-`source.section` / `target.section` /
-`actions` 为 `Single`，`header` / `title` / `body` / `list` / `footer` 位于共享分区模板内为 `Multiple`（源、目标
-各一）。条目容器 `TransferListItem` 自身发布 `itemIcon` / `itemContent`，上游 `item` 键由 `TransferListView`
-继承 `ListView` 的 `item` 契约覆盖。完整 selector route、`ContractType`、状态矩阵和定制边界见
+两个 owner 共同发布 root、source.section、target.section、actions、五个内层分区 Part 与十个方向限定内层 Part。
+分区 source.section / target.section / actions 为 Single，五个内层部件为 Multiple（源、目标各一）。两个 owner 也直接
+发布 item / source.item / target.item；ListTransfer 另外发布 itemIcon / itemContent 及其方向限定变体。条目容器不作为
+这组 Transfer Part 的独立 owner。完整 route、ContractType、Style Type 和状态边界见
 [Transfer Semantic Part 契约](semantic-part.md)。
 
 操作按钮属于 Button 家族、过滤输入属于 LineEdit 家族，均不由 Transfer Part 承担；上游的方向作用域内层区域

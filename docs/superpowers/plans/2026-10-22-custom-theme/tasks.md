@@ -164,3 +164,15 @@ CT19追加[C9与棋盘格结果](color-spectrum-keyboard-results.md)：已批准
 CT19 [C10单分量键盘结果](color-slider-keyboard-results.md)验证中：具体ColorSlider单一入口复用既有步长／边界及颜色链，不改共享多stop；空值与双stop正常数据分别原8键盘RED／候选26 GREEN，独立原Alpha舍入2项保留。真实Mac managed／NativeAOT各八窗口5688项、1248次目标按键均送达。自然384帧的128组1DIP全部检出、八新旧默认0、216对公共树记录一致；有限72对1–20像素／单通道≤2的合成差异正在独立直接Skia核对，尚未申请扩大任何既有批准。临时C#及媒体待完成判断后清理；C9首轮AOT缺失原因与完整CT19／CT25仍开放，没有新Git授权。
 
 2026-10-25 C10最新：用户已接受[72对精确限定自然差异](color-slider-keyboard-noise-review.md)；[本机切片结果](color-slider-keyboard-results.md)完成。空值／正常双stop数据各26项、Mac managed／NativeAOT各5688项／各1248次目标按键通过；640帧的128组1DIP全检出，直接128AA／32恢复／40兼容0，416对公开树记录一致。两份临时C#、外部驱动及645张PNG／manifest共646文件已清理；最终原ColorPicker27项、NET8 Release零警告、四控件完整成员及媒体审计／文档／作者另步自审通过。当前等待新的具体Git审查，不能沿用第十五批授权；完整CT19／CT25及C9首轮AOT原因仍开放。
+
+第十六批25文件获用户批准，按冻结c2f3a8337d64创建cdc7ba70f（纯成员布局）及204c44149（C9／C10功能和文档），全部最终blob相同，已推送并运行[三OS／两Browser验证40207571681](https://github.com/AtomUI/AtomUI/actions/runs/40207571681)。调度前同分支无未结束手动验证，没有取消／重试／发布NuGet；TreeView后续研发排除。本轮实际结果及完整家族／CT25仍开放；授权已执行，本段不包含新Git许可。
+
+CT14追加[N3-T TreeView结果](container-tree-defaults-results.md)：12个Global-only默认接入V2，原Global／Control Global消费本已正常，保留默认值、类型、key枚举数值与slot。两目录选中色归兼容保留，未新增交互。168帧的56AA／24恢复／28新旧均0、56组1DIP全检出，Mac managed／AOT各304项资源检查；临时源／外部宿主／169媒体文件清理后原57项、NET8零警告通过。首轮Light外层Host证据单独保留，实际明暗补充已完成；原生最终像素与完整CT14仍开放，尚无本批Git授权。
+
+第十六轮最终：获批204c44149的[Actions40207571681](https://github.com/AtomUI/AtomUI/actions/runs/40207571681)已结束，7/8 job成功，整轮failure。三NativeAOT／两Browser、Windows与Linux选测各6405/6405通过；Mac已执行5199项，其中5198通过，唯一记录失败为NavMenu展开动效中间宽度采样，其后1206项未执行。Windows／Linux本地化各27组阶段完整配对（含一项预期损坏feed反例exit1），Mac未进入该阶段。本轮未取消／重试／发布；[第十七批候选](platform-seventeenth-followups.md)以受控反例修正采样，实际CI结论待新批准后验证。完整家族与CT25继续开放。
+
+N3-TR 的[Transfer默认求值结果](container-transfer-defaults-results.md)完成本机机制切片出口：三个scope共11项V2、明暗22资源/类型/key枚举数值/slot不变，原Global/Control Global消费本已正常。Mac managed/AOT各684项、清理后原44项及NET8零警告通过；用户已接受[34对精确限定自然差异](container-transfer-defaults-noise-review.md)，原始失败保留，203张PNG及manifest共204文件已清理且媒体审计clean，CSV仅回填11条Token与3条Control。第十七批待审14文件原始blob已固定为可校验补丁，此段及目录更新属后续未提交差异，不扩大其授权；完整Transfer家族、原生最终像素、其他Host、N2/N3/N4和CT14仍开放。
+
+Transfer后续核对并修正文档中的无效专用Style、SetterTargetType及Semantic owner混写：旧2项FAIL，修正后4项通过，原文编译AXAML的8Style/9Setter命中两分区/三条目，临时源清理后原44项通过。另确认TreeTransfer owner分页wrapper为internal，原34对及684原生脚本该阶段仅为内部模板诊断；[纯公开API补充](container-transfer-public-results.md)60自然帧、20组1DIP全检出、30对资源/几何一致，80直接绘制的40AA/16恢复/40新旧全0；新14对自然历史差异于2026-10-26单独获批，141媒体文件已清理，原始计数保留；TreeTransfer.ListWidthLG经共享公开属性标识的旧/新版明暗16阶段核对，归Active条件消费者，无新增树分页API。产品三份SHA保持，完整CT14及其他平台/原生最终像素未关闭。
+
+2026-10-26 Transfer公开API补充：用户单独接受PUB01–PUB14及Q01–Q05的精确限定自然差异；140张PNG与manifest共141文件已清理、Git媒体审计clean，原始比较失败及计数保留。三Token源码SHA及清理后44项证据不变；TreeTransfer.ListWidthLG随后核定为既有Active条件消费者；其他Host／原生最终像素及完整CT14仍开放，不含Git批准。

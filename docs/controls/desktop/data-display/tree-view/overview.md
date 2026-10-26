@@ -259,7 +259,7 @@ NodeSwitcherButtonTheme
 - `IsShowLine=true` 时，TreeViewItem 自绘树形连线。
 - drag indicator 由 TreeView 自绘，不进入节点模板内部。
 
-TreeViewToken 提供节点高度、hover / selected 背景、目录树选中颜色、节点间距、header padding、switcher / icon 间距、拖拽指示线宽和过滤高亮色。Token 详情见 [TreeView Token 设计](token.md)。
+TreeViewToken 提供节点高度、hover / selected 背景、节点间距、header padding、switcher / icon 间距、拖拽指示线宽和过滤高亮色。目录树选中颜色两个字段仅兼容保留，当前没有目录树专用交互或默认主题消费。Token 详情见 [TreeView Token 设计](token.md)。
 
 ## 6. 控件家族或集成关系
 

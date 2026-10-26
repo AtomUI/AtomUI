@@ -12,9 +12,9 @@ Popup 接入边界：`AbstractTransfer` 负责业务状态和内容准备，内�
 
 主要源码文件：
 
-- `src/AtomUI.Desktop.Controls/Transfer`：21 个文件，代表文件 `AbstractTransfer.cs`、`ITransferTreeView.cs`、`ITransferView.cs`、`ListTransfer.cs`、`TransferDirection.cs` 等。
+- `src/AtomUI.Desktop.Controls/Transfer`：家族 owner、视图、条目、Token 和事件契约，代表文件 `AbstractTransfer.cs`、`ITransferTreeView.cs`、`ITransferView.cs`、`ListTransfer.cs`、`TreeTransfer.cs` 等。
 - `src/AtomUI.Desktop.Controls/Transfer/Localization`：`TransferLangResourceKind.cs` 定义稳定 Catalog，`en-US.xlf`、`zh-CN.xlf`、`zh-TW.xlf` 提供内置翻译。
-- `src/AtomUI.Desktop.Controls/Transfer/Themes`：12 个文件，代表文件 `AbstractTransferTheme.axaml`、`AbstractTransferTheme.cs`、`ListTransferTheme.axaml`、`TransferItemDecoratorTheme.axaml`、`TransferListItemTheme.axaml` 等。
+- `src/AtomUI.Desktop.Controls/Transfer/Themes`：静态主题与模板，代表文件 `AbstractTransferTheme.axaml`、`AbstractTransferTheme.cs`、`ListTransferTheme.axaml`、`TransferItemDecoratorTheme.axaml`、`TransferListItemTheme.axaml` 等。
 
 职责边界：
 
@@ -25,19 +25,19 @@ Popup 接入边界：`AbstractTransfer` 负责业务状态和内容准备，内�
 
 ## 3. 核心类职责
 
-- `AbstractTransfer`：跨平台或共享基类，承载公共 API、`TargetKeys` / `SelectedKeys` 状态归一和模板生命周期。
+- `AbstractTransfer`：家族共享抽象基类，承载公共 API、`TargetKeys` / `SelectedKeys` 状态归一和模板生命周期。
 - `AbstractTransferTheme`：ControlTheme 类型入口，连接主题资源和控件类型。
-- `ListTransfer`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `TransferItemDecorator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `ListTransfer`：公开列表穿梭 owner，创建源／目标列表视图，以 PageSize 同步分页状态。
+- `TransferItemDecorator`：internal 分区装饰器，组合 header、filter、视图宿主与 footer，并承接 owner 模板投影。
 - `TransferListItem`：集合项、节点或容器类型，承载单项状态和模板协作。
 - `TransferListView`：列表面板协作类型，负责将面板级 `SelectedKeys` 投影到 `SelectedItems`，并把列表选择变化回写为 key 集合。
 - `TransferRemoveItemButton`：动作触发类型，负责点击、导航或局部操作状态。
 - `TransferSelectDropdown`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `TransferToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
+- `ListTransferToken`／`TreeTransferToken`：两个具体 owner 各自的分区尺寸与 header 内距默认；`TransferListViewToken`：分页 presenter 间距默认。
 - `TransferTreeView`：树面板协作类型，负责将面板级 `SelectedKeys` 投影到 `CheckedItems`，并在目标 key mask 后过滤不可选节点。
 - `TransferTreeViewItem`：集合项、节点或容器类型，承载单项状态和模板协作。
 - `TransferTreeViewItemHeader`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `TreeTransfer`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `TreeTransfer`：公开树穿梭 owner，协调树源视图 mask，并将目标 key 投影为平面列表。
 - `TransferLangResourceKind`：稳定的本地化 Catalog enum；生成器从三个 XLIFF 文件编译资源表和 XAML 扩展。
 
 核心协作规则：
@@ -59,11 +59,11 @@ Public API / ItemsSource / Command / Event
   -> renderer / popup / adorner / Gallery observable behavior
 ```
 
-源码中的状态入口按以下语义维护：
+源码中的状态入口包含公开 owner API 与 internal 协作状态，二者分开维护，公开使用摘要见 overview.md：
 
 - 内容与数据：`Content`、`ContentTemplate`、`FilterPlaceholderText`、`FilterValueSelector`、`FooterTemplate`、`ItemTemplate`、`SelectionsIcon`、`SelectionsIconTemplate`、`SourceTitle`、`SourceTitleTemplate` 等 22 项。
 - 选择与集合：`TargetKeys`、`SelectedKeys`、`Filter`、`IsAllSelected`、`IsFilterEnabled`、`PageSize`。
-- 交互与状态：`IsMasked`、`IsMotionEnabled`、`IsOneWay`、`IsPaginationEnabled`、`IsShowSearch`、`IsShowSelectAll`、`IsShowSelectAllCheckbox`、`IsShowSelectDropdownMenu`、`IsStretchView`、`Status`。
+- 交互与状态：公开 owner 的 `IsMotionEnabled`、`IsOneWay`、`IsShowSearch`、`IsShowSelectAll`、`IsStretchView`、`Status`，以及装饰器／视图内部的 mask、全选提示和下拉状态。owner 的 `IsPaginationEnabled` 为 internal，ListTransfer 从公开 `PageSize` 推导；不能据此声称 TreeTransfer 公开分页入口。
 - 视觉与布局：`ListHeight`、`ListWidth`、`SizeType`。
 - 其他稳定入口：`Footer`、`TargetView`、`TargetViewFooter`、`ViewType`。
 
@@ -87,9 +87,7 @@ Public API / ItemsSource / Command / Event
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
-稳定 template part 接入点：
-
-- `PART_IconPresenter`：展示用户内容、文本、图标或模板化数据。
+内部模板接线：AbstractTransfer 获取 RootLayout、SourceDecoratorView 和 TargetDecoratorView，TransferItemDecorator 获取视图 ContentPresenter。它们属于组合实现；应用局部样式定制使用下述 Semantic Part，不能把嵌套 IconButton 的 PART_IconPresenter 写成根 Transfer 的公开 Part。
 
 ### 5.1 Semantic Part 接入
 
@@ -105,11 +103,10 @@ Props，不存在外部尺寸档映射。
 AtomUI 对应审计与映射（契约见 [Transfer Semantic Part 契约](semantic-part.md)）：
 
 - owner 边界：`AbstractTransfer` 是抽象基类且自身 ControlTheme 不含 ControlTemplate，不声明 Part；两个具体
-  public owner `ListTransfer` / `TreeTransfer` 各自持有模板，在 `ListTransfer.SemanticParts.cs` /
-  `TreeTransfer.SemanticParts.cs` 声明完全相同的 Part 集合（同 ProgressBar / Badge 家族的多 owner 先例）。条目
-  容器 `TransferListItem` 是独立 public owner，在 `TransferListItem.SemanticParts.cs` 声明 `itemIcon` /
-  `itemContent`，与上游条目语义键对齐；上游 `item` 键由 `TransferListView` 继承 `ListView` 的 `item` 契约覆盖，
-  不重复声明。
+  public owner `ListTransfer` / `TreeTransfer` 分别在自身 SemanticParts 文件声明分区与方向限定 Part。
+  条目 Part 也由这两个 owner 发布：`ListTransfer` 包含条目、指示、内容及其方向限定；`TreeTransfer` 只包含
+  条目容器与方向限定。`TransferListItem`、`TransferListView`、`TransferTreeView` 不作为这组 Transfer Part 的
+  独立 owner；它们仍保留各自基类家族的资源及模板职责。
 - `root` → owner 本身，隐式 Part，不生成 Style、不加 `.semantic-root`。
 - `source.section` / `target.section` → owner 模板内的 internal `TransferItemDecorator` 实例
   （`SourceDecoratorView` / `TargetDecoratorView`），命名与上游 `source.section` / `target.section` 键逐字对齐
@@ -131,15 +128,16 @@ AtomUI 对应审计与映射（契约见 [Transfer Semantic Part 契约](semanti
   解析路由（限定与未限定部件共享终端 class 属于合法形态）。运行时高亮解析（`SemanticPartTargetResolver`）
   按锚链匹配：候选节点到 owner 的祖先链必须携带路由中的全部中间锚点类。
 - `itemIcon` / `itemContent` → `TransferListItem` 模板内 `CheckBox#SelectedIndicator` 与
-  `ContentPresenter#ContentPresenter`，静态模板节点、默认 route，`Multiple` 随条目数变化；容器由
-  `TransferListView` 创建路径建立继承 `.semantic-item` marker。
-- 条目级 Part 与方向限定（路 A，owner 收敛）：`item` / `itemIcon` / `itemContent` 与全部 `source.*` /
+  `ContentPresenter#ContentPresenter`，由 `ListTransfer` 发布，route 为
+  `>> .semantic-item /template/ .semantic-item-icon` 或 `.semantic-item-content`，`Multiple` 随实例化条目数变化。
+  容器由 `TransferListView` 创建路径建立继承 `.semantic-item` marker。
+- 条目级 Part 与方向限定：`item` / `itemIcon` / `itemContent` 与全部 `source.*` /
   `target.*` 条目变体统一由 `ListTransfer` / `TreeTransfer` 声明（`TransferListItem` / `TransferListView` /
   `TransferTreeView` 不再注册为 Semantic owner），route 使用 `>>` 后代步进（如
   `>> .semantic-source-item /template/ .semantic-item-icon`，生成器翻译为 `.Descendant()`），生成的条目样式
   直接挂在 Transfer 作用域下即可命中。方向条目类由视图在 prepare 路径按自身 `ViewType` 幂等补挂
   （`ListTransferSemanticParts.SourceItemClass` / `TargetItemClass`、`TreeTransferSemanticParts` 同名常量）：
-  容器与视图绑定后不迁移、`ViewType` 不可变，marker 保持"一次建立、不再切换"纪律。树侧条目模板无
+  默认组合先完成 `ViewType` 接线再准备容器，普通选择、过滤和分页不切换方向 marker。树侧条目模板无
   `.semantic-item-icon` / `.semantic-item-content` 节点，`TreeTransfer` 不声明 itemIcon / itemContent。
 - 嵌套视图 owner 集成：`TransferListView` / `TransferTreeView` 的 `CreateContainerForItemOverride` 重写了基类
   容器创建路径，必须用生成常量（`ListViewSemanticParts.ItemClass` / `TreeViewSemanticParts.ItemClass`）在创建
@@ -202,6 +200,8 @@ Transfer 的交互事件应从输入源收敛到控件级语义事件：
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
 ## 8. 资源、性能与 AOT 边界
+
+三个 Token 的 11 项默认通过生成的 `IControlTokenDefaults` 实现进入 `DependencyDefaultsV2`。默认函数只读取当前有效 Global 或常量，没有 Own→Own 边；`HeaderPadding` 仍从 Global 的高度／线宽／字体高度推导。明确 Own 与撤回交给通用求值器，控件不增加作用域订阅、反射发现或缓存。实际字段与消费者见 [Token 文档](token.md)。
 
 资源和 AOT 约束：
 

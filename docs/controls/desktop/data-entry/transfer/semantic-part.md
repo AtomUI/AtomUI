@@ -21,7 +21,7 @@ Transfer 家族有两个具体 public owner：`ListTransfer` 与 `TreeTransfer`�
 Semantic owner：`TransferListView` 继承 `ListView` 的 `root` / `item` / `groupHeader` 家族契约，
 `TransferTreeView` 继承 `TreeView` 契约，条目容器的指示 / 内容区域由本节 Part 覆盖；`TransferTreeViewItem` 的条目区域由
 `TreeViewItem` 家族契约覆盖，`TransferRemoveItemButton` 的内部区域由 `IconButton` 家族契约与组合模型约束。Transfer
-owner 不穿透这些嵌套 owner 的模板（§5）。
+owner 仅通过已声明的条目 route 跨入容器模板，不任意展开其他嵌套控件的内部区域（§5）。
 
 `source.section` / `target.section` / `actions` 是 owner 模板中的静态节点，`Single`；方向限定部件
 `source.*` / `target.*` 与对应未限定部件共享终端 marker，由路由中的方向锚点（`.semantic-source` /
@@ -45,7 +45,7 @@ owner 不穿透这些嵌套 owner 的模板（§5）。
 | RuntimeCreated | `false` |
 | AtomUI 节点 | Transfer owner |
 | 职责 | 承载数据、选择状态、过滤、布局模式和 owner-scoped Semantic Style 入口。 |
-| 相关 API | `ItemsSource`、`TargetKeys`、`SelectedKeys`、`IsOneWay`、`IsStretchView`、`ListWidth`、`ListHeight`、`IsFilterEnabled`、`PageSize`、`Status`、`SizeType` |
+| 相关 API | `ItemsSource`、`TargetKeys`、`SelectedKeys`、`IsOneWay`、`IsStretchView`、`ListWidth`、`ListHeight`、`IsFilterEnabled`、`Status`、`SizeType`；`PageSize` 仅 ListTransfer |
 | 相关 Token | `ListTransferToken` / `TreeTransferToken`、SharedToken |
 | 稳定性 | stable since 6.2.0 |
 
@@ -221,8 +221,8 @@ owner 不穿透这些嵌套 owner 的模板（§5）。
 | 稳定性 | stable since 6.2.0 |
 
 `list` 是 Transfer owner 拥有的视图宿主，不是嵌套视图控件本身：宿主的 `Height` 由 `ListHeight` 模板投影，
-`CornerRadius` 由 footer 存在性驱动（有 footer 时底部圆角归零）。条目、分组、分页等视图内部区域的定制属于嵌套
-owner 契约（§5）。`Height` 类 Setter 与 owner `ListHeight` API 按原生优先级竞争，需按 implementation.md 尺寸基线
+`CornerRadius` 由 footer 存在性驱动（有 footer 时底部圆角归零）。本 owner 发布的条目 Part 见 §1.10；其余分组、
+分页与滚动等视图内部区域按嵌套控件契约处理（§5）。`Height` 类 Setter 与 owner `ListHeight` API 按原生优先级竞争，需按 implementation.md 尺寸基线
 理解最终 Measure/Arrange 结果。
 
 ### 1.9 `footer`
@@ -262,7 +262,7 @@ Semantic Part。
 
 `itemIcon` / `itemContent` 仅 `ListTransfer` 发布（树侧条目模板无对应节点，指示 / 图标 / 标题区域由
 `TreeViewItem` 家族的 `itemIndicator` / `itemIcon` / `itemTitle` 契约覆盖）。`>>` 是路由的后代步进
-（从 owner 视觉子树任意深度命中），运行时以锚链匹配。容器由视图在创建 / prepare 路径建立 `.semantic-item`
+，应用按完整 owner-relative route 匹配，运行时高亮以锚链核对。容器由视图在创建 / prepare 路径建立 `.semantic-item`
 与方向条目 marker（§1.11），prepare、restore、recycle 不切换任何 marker。`itemIcon` 是条目选择指示
 CheckBox，`IsCheckable=false`（单向模式目标面板）时隐藏但保留节点身份，右缘的移除按钮与选择行为不属于
 Part；`itemContent` 承载 `ItemTemplate` 内容，其创建的用户子树不属于 Semantic Part。
@@ -286,8 +286,8 @@ Part；`itemContent` 承载 `ItemTemplate` 内容，其创建的用户子树不�
 `source.item` / `target.item`（`>> .semantic-source-item` / `>> .semantic-target-item`）、
 `source.itemIcon` / `target.itemIcon`（`>> .semantic-source-item /template/ .semantic-item-icon` 等，仅
 `ListTransfer`）、`source.itemContent` / `target.itemContent`（同形，仅 `ListTransfer`）。方向条目类由视图在
-prepare 路径按自身 `ViewType` 一次性补挂（路 A：容器与视图绑定后不迁移、`ViewType` 不可变，marker 保持静态
-稳定），从而与未限定条目部件共享终端 marker。Style Type 依 Path 生成：
+prepare 路径按组合接线确定的 `ViewType` 幂等补挂，普通选择、过滤和分页不切换方向 marker，从而与未限定
+条目部件共享终端 marker。Style Type 依 Path 生成：
 `ListTransferSourceHeaderStyle` / `TreeTransferTargetListStyle` / `ListTransferSourceItemIconStyle` 等，
 全部直接挂在 Transfer 作用域下使用（如 `<atom:ListTransferSourceItemIconStyle>` 置于
 `<Style Selector="atom|ListTransfer.my-demo">` 内即可只命中源面板条目图标）。
@@ -308,8 +308,9 @@ marker，因此每个未限定内层 Part 只有一条 `SelectorRoute`，经 `.s
 | ListTransfer | 默认 | `TransferListView`（源、目标） | `.semantic-source` / `.semantic-target` → `.semantic-scope-section` → 装饰器模板内 Part |
 | TreeTransfer | 默认 | `TransferTreeView`（源）+ `TransferListView`（目标） | 同链 |
 
-`IsStretchView`、`IsOneWay`、`IsFilterEnabled`、`IsPaginationEnabled` 与分页开关只改变布局或可见性，不改变模板
-结构、Part 集合或 marker。`.semantic-scope-section` 是路由边界，不进入公开 Part 表。
+`IsStretchView`、`IsOneWay`、`IsFilterEnabled` 与 ListTransfer.PageSize 引出的分页状态只改变布局或可见性，不改变模板
+结构、Part 集合或 marker。owner 的 IsPaginationEnabled 是 internal 协作状态，TreeTransfer 没有公开 PageSize。
+`.semantic-scope-section` 是路由边界，不进入公开 Part 表。
 
 ## 3. Selector 用法
 
@@ -324,7 +325,7 @@ marker，因此每个未限定内层 Part 只有一条 `SelectorRoute`，经 `.s
     <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
         <Setter Property="Background" Value="#FFF7E6" />
     </atom:ListTransferTargetSectionStyle>
-    <atom:ListTransferHeaderStyle x:SetterTargetType="Border">
+    <atom:ListTransferHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
         <Setter Property="Background" Value="#FCFFE6" />
     </atom:ListTransferHeaderStyle>
     <atom:ListTransferTitleStyle x:SetterTargetType="ContentPresenter">
@@ -339,16 +340,16 @@ marker，因此每个未限定内层 Part 只有一条 `SelectorRoute`，经 `.s
 </Style>
 ```
 
-条目级定制使用条目容器自己的 owner scope：
+条目级定制也放在 Transfer owner 作用域内，使用其生成的专用 Style：
 
 ```xml
-<Style Selector="atom|ListTransfer.semantic-style-demo atom|TransferListItem">
-    <atom:TransferListItemItemIconStyle x:SetterTargetType="Control">
+<Style Selector="atom|ListTransfer.semantic-style-demo">
+    <atom:ListTransferItemIconStyle x:SetterTargetType="atom:CheckBox">
         <Setter Property="Opacity" Value="0.9" />
-    </atom:TransferListItemItemIconStyle>
-    <atom:TransferListItemItemContentStyle x:SetterTargetType="ContentPresenter">
+    </atom:ListTransferItemIconStyle>
+    <atom:ListTransferItemContentStyle x:SetterTargetType="ContentPresenter">
         <Setter Property="Foreground" Value="#389E0D" />
-    </atom:TransferListItemItemContentStyle>
+    </atom:ListTransferItemContentStyle>
 </Style>
 ```
 
@@ -360,12 +361,13 @@ marker，因此每个未限定内层 Part 只有一条 `SelectorRoute`，经 `.s
   owner-relative 路由。
 - 穿过 `SourceTitleTemplate`、footer 模板或 `ItemTemplate` 创建的用户内容继续匹配内部 Visual。
 - 把 `TransferItemDecorator`、`TransferSelectDropdown` 或 `TransferListView` / `TransferTreeView` 当作 Transfer
-  Part 的 descriptor owner；分区内部区域与视图条目的契约分属各自 owner。
+  Part 的 descriptor owner；这些分区及条目 Part 均由 ListTransfer / TreeTransfer 声明。
 
 ## 4. 状态与数量语义
 
-`source`、`target`、`actions` 为 `Single`；`header`、`title`、`body`、`list`、`footer` 为 `Multiple` 且实例数恒为
-2。所有 Part 均为静态模板节点，状态变化只切换内容、可见性或有效视觉值，不增删 marker，也不改变对象身份。
+`source.section`、`target.section`、`actions` 为 `Single`；`header`、`title`、`body`、`list`、`footer` 为 `Multiple` 且
+分区实例数恒为2。这些分区部件来自静态模板，状态变化切换内容、可见性或有效视觉值，不增删 marker；条目部件则
+随视图容器创建、回收，数量由实际条目决定。
 
 | 场景 | root | source | target | actions | header | title | body | list | footer | 说明 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -378,18 +380,17 @@ marker，因此每个未限定内层 Part 只有一条 `SelectorRoute`，经 `.s
 | 空数据源 | 1 | 1 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 宿主仍存在；嵌套视图条目 marker 为 0。 |
 | `Status=Error/Warning` | 1 | 1 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 分区边框状态色由装饰器投影。 |
 
-条目级 Part（`TransferListItem` 的 `itemIcon` / `itemContent`）数量随实例化条目数变化：N 个条目各 1 个；空数据源
+条目级 Part（`ListTransfer` 发布、目标为 `TransferListItem` 内节点的 `itemIcon` / `itemContent`）数量随实例化条目数变化：N 个条目各 1 个；空数据源
 为 0；容器回收后随复用重建，marker 保持不变。
 
 ## 5. 定制边界
 
 以下区域明确不属于 Transfer Semantic Part：
 
-- **嵌套视图 owner 的内部区域**：`TransferListView`（继承 `ListView` 的 `root` / `item` / `groupHeader`）、
-  `TransferTreeView`（继承 `TreeView` 的 `root` / `item`）的分组、分页与滚动区域；`TransferTreeViewItem` 的条目
-  区域（由 `TreeViewItem` 家族契约覆盖）。条目级的 `itemIcon` / `itemContent` 由 `TransferListItem` 自身发布
-  （§1.10），上游 `item` 键由 `ListView.item` 契约覆盖，Transfer 实现必须保证嵌套视图容器创建路径正确建立继承
-  marker（见 implementation.md），但条目级定制使用嵌套 owner 的 Semantic Style，不由 Transfer Part 承担。
+- **嵌套视图的其他区域**：分组、分页与滚动内部结构按 ListView / TreeView 家族契约处理。Transfer owner
+  直接发布的 `item`、`source.item`、`target.item` 及 ListTransfer 指示／内容 Part 已列于 §1.10–1.11，不再把
+  它们描述为由 TransferListItem 自身发布。TreeTransfer 源容器的指示、图标、标题细分区域按 TreeViewItem 家族
+  契约处理；TreeTransfer 目标是平面 TransferListItem，定制目标行使用 `TreeTransferTargetItemStyle`。
 - **操作按钮**：操作区内的"移至目标 / 移回源"两个 public `Button` 实例，属于 Button 家族契约。
 - **过滤输入**：`body` 内的过滤 `LineEdit` 是 public 嵌套控件，属于 LineEdit 家族契约；`body` Setter 不展开其
   内部结构。
@@ -397,8 +398,6 @@ marker，因此每个未限定内层 Part 只有一条 `SelectorRoute`，经 `.s
   presenter；上游 Ant Design Transfer 也未把这些节点公开为分区级 Semantic DOM。
 - **条目操作**：`TransferListItem` 右缘的移除按钮（`TransferRemoveItemButton`，`IconButton` 家族契约；上游语义键
   中也无对应分区）。
-- **方向内层区域**：装饰器模板由源、目标实例共享，静态 marker 无法按方向区分，`source.header` / `target.list` 一类
-  方向作用域的内层定制不发布；方向差异化由 `source` / `target` 分区级 Part 承担。
 - `PART_*` 名称、internal 类型、`.semantic-scope-*` 路由标记与模板层级。
 
 默认主题不消费 `.semantic-*` selector；静态 marker 只提供应用样式命中点，不改变默认属性优先级或增加状态订阅。
@@ -412,15 +411,16 @@ marker，均属于公共主题契约变更。
 
 验证至少覆盖：
 
-- `ListTransfer` 与 `TreeTransfer` descriptor 均只包含 `root`、`source`、`target`、`actions`、`header`、`title`、
-  `body`、`list`、`footer`，`TransferListItem` descriptor 只包含 `root`、`itemIcon`、`itemContent`，字段值与本文
-  一致；`AbstractTransfer` 不注册 descriptor。
+- 两个 owner 共同包含 `root`、`source.section`、`target.section`、`actions`、五个内层分区 Part、十个方向限定
+  内层 Part，以及 `item` / `source.item` / `target.item`；ListTransfer 另外包含 itemIcon / itemContent 及四个
+  方向限定变体。Style Type、ContractType 和 route 与 §1 的实际声明一致，不为 AbstractTransfer 或条目容器
+  虚构这组 Part 的独立 descriptor。
 - 两个 owner 模板各自包含 `semantic-source`、`semantic-target`、`semantic-actions` 与 `semantic-scope-section`
   marker；装饰器模板包含 `semantic-header`、`semantic-title`、`semantic-body`、`semantic-list`、
   `semantic-footer` marker；`TransferListItem` 模板包含 `semantic-item-icon`、`semantic-item-content` marker；
   root 不声明 `.semantic-root`。
-- 生成的 `ListTransfer*Style` / `TreeTransfer*Style` / `TransferListItem*Style` 可以编译并跨装饰器模板边界命中
-  最低 public `ContractType`；两个 owner 的 Part 集合与命中行为一致。
+- 文档及 Gallery 示例只使用生成的 ListTransfer*Style / TreeTransfer*Style 声明式定制，核对关键 Setter 值及实际
+  分区／条目命中，不使用找节点回写属性的代码回退；两个 owner 的共同分区与各自条目契约分别验证。
 - `IsOneWay`、`IsStretchView`、`IsFilterEnabled`、footer 存在性、空数据与 `Status` 变化时保持对象身份和数量语义。
 - 嵌套 `TransferListView` / `TransferTreeView` 容器在创建与回收路径稳定携带继承 `semantic-item` marker，回收后
   不泄漏旧 class；`TransferListItem` 的条目 Part 随容器实例化与回收保持 marker。

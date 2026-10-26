@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TreeViewToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TreeViewToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     public TreeViewToken()
@@ -30,11 +30,13 @@ internal sealed class TreeViewToken : AbstractControlDesignToken
 
     /// <summary>
     /// 目录树节点选中文字颜色
+    /// 兼容保留：当前默认主题未消费，未实现目录树专用交互；保持资源与配置往返。
     /// </summary>
     public Color DirectoryNodeSelectedColor { get; set; }
 
     /// <summary>
     /// 目录树节点选中背景色
+    /// 兼容保留：当前默认主题未消费，未实现目录树专用交互；保持资源与配置往返。
     /// </summary>
     public Color DirectoryNodeSelectedBg { get; set; }
 
@@ -73,23 +75,51 @@ internal sealed class TreeViewToken : AbstractControlDesignToken
     /// </summary>
     public Color FilterHighlightColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        HeaderHeight   = EffectiveGlobalToken.ControlHeightSM;
-        NodeHoverBg    = EffectiveGlobalToken.ControlItemBgHover;
-        NodeSelectedBg = EffectiveGlobalToken.ControlItemBgActive;
+    [ControlTokenDefault(nameof(HeaderHeight))]
+    private static double DefaultForHeaderHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
 
-        DirectoryNodeSelectedColor = EffectiveGlobalToken.ColorTextLightSolid;
-        DirectoryNodeSelectedBg = EffectiveGlobalToken.ColorPrimary;
+    [ControlTokenDefault(nameof(NodeHoverBg))]
+    private static Color DefaultForNodeHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgHover;
 
-        TreeItemMargin         = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-        TreeItemHeaderPadding  = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        TreeItemHeaderMargin   = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0, 0, 0);
-        TreeNodeSwitcherMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingXS / 2, 0);
-        TreeNodeIconMargin     = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS / 2, 0, 0, 0);
-        FilterHighlightColor   = EffectiveGlobalToken.ColorError;
-        DragIndicatorLineWidth = EffectiveGlobalToken.LineWidthFocus;
-    }
-    
+    [ControlTokenDefault(nameof(NodeSelectedBg))]
+    private static Color DefaultForNodeSelectedBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(DirectoryNodeSelectedColor))]
+    private static Color DefaultForDirectoryNodeSelectedColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(DirectoryNodeSelectedBg))]
+    private static Color DefaultForDirectoryNodeSelectedBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(TreeItemMargin))]
+    private static Thickness DefaultForTreeItemMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, 0, context.Global.UniformlyPaddingXXS / 2);
+
+    [ControlTokenDefault(nameof(TreeItemHeaderPadding))]
+    private static Thickness DefaultForTreeItemHeaderPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(TreeItemHeaderMargin))]
+    private static Thickness DefaultForTreeItemHeaderMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(TreeNodeSwitcherMargin))]
+    private static Thickness DefaultForTreeNodeSwitcherMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyPaddingXS / 2, 0);
+
+    [ControlTokenDefault(nameof(TreeNodeIconMargin))]
+    private static Thickness DefaultForTreeNodeIconMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXS / 2, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(FilterHighlightColor))]
+    private static Color DefaultForFilterHighlightColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(DragIndicatorLineWidth))]
+    private static double DefaultForDragIndicatorLineWidth(in ControlTokenDefaultContext context) =>
+        context.Global.LineWidthFocus;
 }

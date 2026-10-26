@@ -30,7 +30,7 @@ Expander 的实现重点是在 Avalonia `Expander` 基础上稳定扩展 AtomUI 
 
 `ExpanderPseudoClass` 是主题状态常量集合。它定义方向伪类和自定义 padding 伪类，供主题 selector 使用。
 
-`ExpanderToken` 提供组件级默认间距、背景和圆角。它不保存实例展开状态、Header 内容、Content 内容或 motion 运行状态。
+`ExpanderToken` 提供13项组件级默认间距、背景和圆角，以DependencyDefaultsV2／Revision1静态函数从有效Global或常量求值，没有Own依赖。它不保存实例展开状态、Header内容、Content内容或motion运行状态；明确Own与实例padding优先级保持。
 
 `ExpanderTheme.axaml` 是模板和视觉状态的唯一来源。稳定 template part 不应在 C# 中动态创建，也不应通过 C# 绑定替代可由 AXAML 表达的关系。
 
@@ -151,7 +151,7 @@ Expander owner，因此路由保持单一 `/template/` 边界，不穿越 `Layou
 
 构造阶段：
 
-- 注册 `ExpanderToken.ScopeProvider`。
+- 构造函数为空；Token由生成注册表提供，不在构造时注册ScopeProvider。默认图标与内容展开协作在模板接入时建立。
 
 模板接入：
 
@@ -278,7 +278,7 @@ Header dock、Header 旋转和展开图标继续由方向 selector 表达；内�
 
 资源边界：
 
-- `ExpanderToken` 通过 token generator 注册，主题通过 `ExpanderTokenResource` 消费。
+- `ExpanderToken` 通过生成注册表和静态V2默认入口接入，主题通过 `ExpanderTokenResource` 消费；两个垂直图标margin字段只保留配置往返，未新增模板消费者。
 - SharedToken 提供图标大小、动效开关、动效时长、边框厚度和基础颜色。
 - 默认图标使用显式 `new RightOutlined()`，不做运行时图标扫描。
 

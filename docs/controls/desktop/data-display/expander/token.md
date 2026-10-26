@@ -6,6 +6,8 @@
 
 ExpanderToken 是 Expander 的控件级 Token scope，描述 Header/Content 的默认 padding、背景、整体圆角和展开图标默认外边距。
 
+identity为`AtomUI:Expander`，现有13字段以DependencyDefaultsV2／Revision1静态函数求值。默认只依赖有效Global或常量；Control专属Global进入该owner输入，明确Own优先，删除后恢复当前Global派生值。名称、类型、字段顺序、资源key／枚举数值／dense slot保持，不新增Own依赖或实例状态。
+
 ExpanderToken 不承载以下状态：
 
 - `Header`、`Content`、`AddOnContent` 等实例内容。
@@ -24,6 +26,8 @@ ExpanderToken 不承载以下状态：
 
 这些 Token 控制默认 Header 内边距。`SizeType=Middle` 和 `SizeType=Custom` 使用 `HeaderPadding`，`SizeType=Small` 使用 `HeaderPaddingSM`，`SizeType=Large` 使用 `HeaderPaddingLG`。当实例显式设置 `HeaderPadding` 时，主题进入 `:custom-header-padding` 分支并跳过这些默认值。
 
+三项默认分别为`Thickness(UniformlyPadding,UniformlyPaddingSM)`、`Thickness(UniformlyPaddingSM,UniformlyPaddingXS)`、`Thickness(UniformlyPaddingLG,UniformlyPadding)`，单位DIP。
+
 ### 2.2 Content padding Token
 
 - `ContentPadding`
@@ -32,18 +36,20 @@ ExpanderToken 不承载以下状态：
 
 这些 Token 控制默认 Content 内边距。`SizeType=Middle` 和 `SizeType=Custom` 使用 `ContentPadding`，`SizeType=Small` 使用 `ContentPaddingSM`，`SizeType=Large` 使用 `ContentPaddingLG`。当实例显式设置 `ContentPadding` 时，主题进入 `:custom-content-padding` 分支并跳过这些默认值。
 
+默认分别为`Thickness(16,UniformlyPadding)`、Global.PaddingSM和Global.PaddingLG；水平常量16保持原义，后两项保留完整Thickness。明确0不当作缺省，实例可空padding在非空时优先。
+
 ### 2.3 背景 Token
 
 - `HeaderBg`
 - `ContentBg`
 
-`HeaderBg` 用于 Header 默认背景。`ContentBg` 用于内容背景语义，并在 Ghost 模式下作为 Header 背景来源。
+`HeaderBg` 默认为Global.ColorFillAlter，用于Header及Borderless内容背景分支。`ContentBg` 默认为Global.ColorBgContainer，当前实际消费者为Ghost的Header背景；不把字段名当作默认body背景接线。
 
 ### 2.4 边框与圆角 Token
 
 - `ExpanderBorderRadius`
 
-`ExpanderBorderRadius` 控制 `PART_Frame` 圆角。边框颜色和边框厚度使用 SharedToken，不在 ExpanderToken 中重复定义。
+`ExpanderBorderRadius` 默认为Global.BorderRadiusLG，控制 `PART_Frame` 圆角。边框颜色和边框厚度使用 SharedToken，不在 ExpanderToken 中重复定义。
 
 ### 2.5 展开图标外边距 Token
 
@@ -52,7 +58,9 @@ ExpanderToken 不承载以下状态：
 - `LeftExpandButtonVMargin`
 - `RightExpandButtonVMargin`
 
-水平外边距 Token 控制默认 Header 布局下展开图标与 Header 文本之间的距离。垂直外边距 Token 属于 Expander 图标布局契约中的保留语义，维护时不得删除或复用为无关 spacing。
+水平外边距Token控制默认Header布局下图标与文本距离，Start默认右边距UniformlyMarginSM、End默认左边距UniformlyMarginSM。四方向仍旋转原Header，并消费这两项HMargin。
+
+两个VMargin仅兼容保留：默认分别为`Thickness(0,0,0,UniformlyMarginSM)`和`Thickness(0,UniformlyMarginSM,0,0)`，保留资源及配置往返，当前模板未消费，不标有效编辑项。不得删除、改名、复用为其他spacing或借迁移新增垂直图标布局。
 
 实例显式设置 `HeaderPadding` 时，展开图标外边距由 `EffectiveExpandButtonMargin` 从 `HeaderPadding.Left` 或 `HeaderPadding.Right` 推导，而不是直接使用这些默认 Token。
 
@@ -61,7 +69,7 @@ ExpanderToken 不承载以下状态：
 Token 使用路径：
 
 ```text
-SharedToken
+有效Global／常量（明确Own优先）
    ↓
 ExpanderToken
    ↓

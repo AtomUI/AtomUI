@@ -180,6 +180,8 @@ ContentPadding != null
 
 Expander 的默认视觉由 `ExpanderTheme.axaml` 和 `ExpanderToken` 共同定义。
 
+13项Own默认以V2静态函数读取有效Global或常量，没有Own之间的依赖；明确Own及实例padding继续优先。两个垂直图标margin字段仅保留资源与配置兼容，旋转Header仍使用现有水平margin，详见[Token设计](token.md)。
+
 主题职责：
 
 - 提供 Header、Content、MotionActor 和 Frame 的稳定模板结构。

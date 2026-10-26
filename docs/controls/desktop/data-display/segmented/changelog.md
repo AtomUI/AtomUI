@@ -3,6 +3,14 @@
 本文档记录 Segmented 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-26
+
+- Token
+  - 14项默认接入V2，三项自动最小高度依赖有效TrackPadding，明确下游值及0继续优先。
+  - 自动高度增加0下限，保留大padding配置及自然内容测量；标准默认、字段和资源身份保持。
+- Docs
+  - 同步Segmented／SegmentedItem的生成注册与Own职责，移除旧ScopeProvider构造描述。
+
 ## 2026-10-20
 
 - Fixed

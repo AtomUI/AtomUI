@@ -38,11 +38,11 @@ Gallery 和测试：
 
 `AbstractSegmented` 是状态协调器。它持有方向、形状、选择属性、内部选中滑块属性和 Form value 适配逻辑，负责方向键选择，并在选择变化和最终排列后同步选中滑块矩形。
 
-`Segmented` 是桌面公开控件。它不重复共享选择逻辑，只注册 `SegmentedToken.ScopeProvider` 并为数据 item 创建 `SegmentedItem` 容器。
+`Segmented` 是桌面公开控件。它不重复共享选择逻辑，通过生成注册表接入Own定义，并为数据item创建`SegmentedItem`容器。
 
 `AbstractSegmentedItem` 是 item 基类。它接入 `ISelectable`，接收 owner 的 SizeType、Shape 和 motion 状态，维护 `Icon` 到 `:has-icon` 的伪类同步，并在鼠标左键释放时请求 owner 更新选择。
 
-`SegmentedItem` 是桌面公开 item。它不添加额外行为，只注册 Segment 专属 Token scope。
+`SegmentedItem` 是桌面公开item，具有独立Global identity、没有Own，模板显式复用Segmented Own；不在构造时注册ScopeProvider。
 
 `SegmentedStackPanel` 是布局和导航容器。它继承 `StackPanel` 以复用 `Orientation` 和 `INavigableContainer` 语义，但由自身算法控制可见 `AbstractSegmentedItem` 的横向/纵向测量、排列和 expanding。
 
@@ -119,8 +119,7 @@ IFormItemAware.ClearFormValue()   → SelectedItem = null
 构造阶段：
 
 - `AbstractSegmented` 设置 `SelectionMode=Single`。
-- `Segmented` 注册 `SegmentedToken.ScopeProvider`。
-- `SegmentedItem` 注册 `SegmentedToken.ScopeProvider`。
+- `Segmented`／`SegmentedItem`的桌面构造函数为空，注册由生成表承担。
 
 初始化和加载：
 
@@ -279,7 +278,7 @@ Segmented 不依赖运行时反射或动态成员访问。主题协作通过固�
 
 资源与生命周期边界：
 
-- `SegmentedToken` 通过 token generator 注册，Theme 通过 `SegmentedTokenResource` 使用。
+- `SegmentedToken` 的14字段通过生成表及V2静态默认入口注册，Theme通过 `SegmentedTokenResource` 使用。三条自动高度依赖读取有效TrackPadding，取`Max(对应Global高度-Top-Bottom,0)`；明确下游优先，不修改模板或输入代码。
 - `SegmentedStackPanel.Orientation` 和 `IsExpanding` 在 AXAML 中绑定到最近的 `Segmented` ancestor。
 - 容器的 `SizeType`、`Shape` 和 `IsMotionEnabled` 是生成容器与 owner 的固定关系，生命周期由容器准备和 Avalonia 绑定系统管理。
 - `SelectionChanged` 订阅必须在 attach/detach 中成对管理。

@@ -49,3 +49,7 @@ N3-P [Pagination本机实现](pagination-input-wiring-results.md)完成14项V2�
 Pagination后经第十九批16文件批准提交并推送0b5e70c71；[第十九轮实际结果](platform-nineteenth-results.md)8个job全部成功，三OS各6405项、三NativeAOT各26／两Browser各23检查，源码相同，未取消／重试／发布。该轮不含尚未提交的Expander迁移。
 
 N3-E [Expander默认结果](container-expander-defaults-results.md)完成本机机制切片：13项Global-only V2、明暗26默认及182条资源/类型/key/slot保持；96自然帧的32AA／12恢复／48新旧均0，32组1DIP检出。Mac managed245／NativeAOT246、182记录一致；两份临时C#、97媒体文件和419文件原生工程已清理，原40项／NET8零警告及单Token成员审计通过。13Token／1Control回填，两垂直margin兼容保留，当前Reserved18+2=20；不改旋转Header消费者或交互，完整CT14／其他Host／原生最终像素仍开放，本批Git另审。
+
+Expander后经第二十批13文件批准提交并推送6bd607676；[第二十轮实际结果](platform-twentieth-results.md)8个job全部成功，三OS各6405项、三NativeAOT各26／两Browser各23，源身份相同；未取消／重试／发布，该轮不含后续Segmented。
+
+N3-S [Segmented本机结果](segmented-defaults-results.md)：14默认V2、三条有效TrackPadding依赖及自动高度0下限按独立批准设计实施；28标准默认不变，280条metadata一致、仅18条值预期变化。旧/新各288次鼠标及192次方向键通过；Mac managed1037／AOT1038、336资源记录一致。120正式帧40组1DIP全检出、12恢复0；四对精确14点历史差异及所示布局独立获批，原始FAIL保留；216诊断帧及223节点输入未证明每次历史内部原因。四临时C#、339媒体和419文件原生工程清理，原30项／NET8零警告及单Token成员审计通过。14Token／2Control回填，Reserved仍20；仅本机默认依赖切片出口，不关闭N2／N4、其他Host、原生最终像素或完整CT14，Git另审。

@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class SegmentedToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class SegmentedToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     public SegmentedToken()
@@ -73,33 +73,55 @@ internal sealed class SegmentedToken : AbstractControlDesignToken
     public Thickness SegmentedItemPaddingSM { get; set; }
     public Thickness SegmentedItemContentMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        TrackPadding      = new Thickness(EffectiveGlobalToken.LineWidthBold);
-        TrackBg           = EffectiveGlobalToken.ColorBgLayout;
-        ItemColor         = EffectiveGlobalToken.ColorTextLabel;
-        ItemHoverColor    = EffectiveGlobalToken.ColorText;
-        ItemHoverBg       = EffectiveGlobalToken.ColorFillSecondary;
-        ItemSelectedBg    = EffectiveGlobalToken.ColorBgElevated;
-        ItemActiveBg      = EffectiveGlobalToken.ColorFill;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
-        var lineWidth = EffectiveGlobalToken.LineWidth;
-        SegmentedItemPadding = new Thickness(
-            Math.Max(EffectiveGlobalToken.ControlPaddingHorizontal - lineWidth, 0),
-            0,
-            Math.Max(EffectiveGlobalToken.ControlPaddingHorizontal - lineWidth, 0),
-            0);
-        SegmentedItemPaddingSM = new Thickness(
-            Math.Max(EffectiveGlobalToken.ControlPaddingHorizontalSM - lineWidth, 0),
-            0,
-            Math.Max(EffectiveGlobalToken.ControlPaddingHorizontalSM - lineWidth, 0),
-            0);
-        SegmentedItemContentMargin = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0, 0, 0);
+    [ControlTokenDefault(nameof(ItemColor))]
+    private static Color DefaultForItemColor(in ControlTokenDefaultContext context) => context.Global.ColorTextLabel;
 
-        ItemMinHeightLG = EffectiveGlobalToken.ControlHeightLG - TrackPadding.Top - TrackPadding.Bottom;
-        ItemMinHeight   = EffectiveGlobalToken.ControlHeight - TrackPadding.Top - TrackPadding.Bottom;
-        ItemMinHeightSM = EffectiveGlobalToken.ControlHeightSM - TrackPadding.Top - TrackPadding.Bottom;
-    }
+    [ControlTokenDefault(nameof(ItemHoverColor))]
+    private static Color DefaultForItemHoverColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ItemHoverBg))]
+    private static Color DefaultForItemHoverBg(in ControlTokenDefaultContext context) => context.Global.ColorFillSecondary;
+
+    [ControlTokenDefault(nameof(ItemActiveBg))]
+    private static Color DefaultForItemActiveBg(in ControlTokenDefaultContext context) => context.Global.ColorFill;
+
+    [ControlTokenDefault(nameof(ItemSelectedBg))]
+    private static Color DefaultForItemSelectedBg(in ControlTokenDefaultContext context) => context.Global.ColorBgElevated;
+
+    [ControlTokenDefault(nameof(ItemSelectedColor))]
+    private static Color DefaultForItemSelectedColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(TrackPadding))]
+    private static Thickness DefaultForTrackPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.LineWidthBold);
+
+    [ControlTokenDefault(nameof(ItemMinHeightLG), nameof(TrackPadding))]
+    private static double DefaultForItemMinHeightLG(in ControlTokenDefaultContext context, Thickness trackPadding) =>
+        Math.Max(context.Global.ControlHeightLG - trackPadding.Top - trackPadding.Bottom, 0);
+
+    [ControlTokenDefault(nameof(ItemMinHeight), nameof(TrackPadding))]
+    private static double DefaultForItemMinHeight(in ControlTokenDefaultContext context, Thickness trackPadding) =>
+        Math.Max(context.Global.ControlHeight - trackPadding.Top - trackPadding.Bottom, 0);
+
+    [ControlTokenDefault(nameof(ItemMinHeightSM), nameof(TrackPadding))]
+    private static double DefaultForItemMinHeightSM(in ControlTokenDefaultContext context, Thickness trackPadding) =>
+        Math.Max(context.Global.ControlHeightSM - trackPadding.Top - trackPadding.Bottom, 0);
+
+    [ControlTokenDefault(nameof(TrackBg))]
+    private static Color DefaultForTrackBg(in ControlTokenDefaultContext context) => context.Global.ColorBgLayout;
+
+    [ControlTokenDefault(nameof(SegmentedItemPadding))]
+    private static Thickness DefaultForSegmentedItemPadding(in ControlTokenDefaultContext context) =>
+        new(Math.Max(context.Global.ControlPaddingHorizontal - context.Global.LineWidth, 0), 0,
+            Math.Max(context.Global.ControlPaddingHorizontal - context.Global.LineWidth, 0), 0);
+
+    [ControlTokenDefault(nameof(SegmentedItemPaddingSM))]
+    private static Thickness DefaultForSegmentedItemPaddingSM(in ControlTokenDefaultContext context) =>
+        new(Math.Max(context.Global.ControlPaddingHorizontalSM - context.Global.LineWidth, 0), 0,
+            Math.Max(context.Global.ControlPaddingHorizontalSM - context.Global.LineWidth, 0), 0);
+
+    [ControlTokenDefault(nameof(SegmentedItemContentMargin))]
+    private static Thickness DefaultForSegmentedItemContentMargin(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXXS, 0, 0, 0);
     
 }

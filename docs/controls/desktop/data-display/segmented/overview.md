@@ -136,6 +136,8 @@ Form 语义：
 
 Segmented 的视觉由根主题、item 主题、专属 Token 和 SharedToken 共同决定。
 
+`SegmentedToken` 的14项默认以V2静态函数求值；三项item自动最小高度依赖有效`TrackPadding`，从有效Global对应高度扣除上下padding后取0下限。标准默认保持，明确Own下游（含0）、实例和已有样式优先级保持；最终高度继续服从内容自然测量，详见[Token设计](token.md)。
+
 | 主题文件 | 职责 |
 | --- | --- |
 | `SegmentedTheme.axaml` | 根模板、轨道 padding/background、选中滑块资源、SizeType/Shape 圆角分支、方向/展开对齐和滑块动画。 |
@@ -164,9 +166,9 @@ Segmented 的共享实现位于 `AtomUI.Controls`，桌面实现位于 `AtomUI.D
 集成关系：
 
 - `AbstractSegmented`：共享单选、motion、form、布局和滑块渲染逻辑。
-- `Segmented`：桌面公开控件，注册 `SegmentedToken.ScopeProvider`，创建 `SegmentedItem` 容器。
+- `Segmented`：桌面公开控件，生成注册表中的Own owner，创建 `SegmentedItem` 容器。
 - `AbstractSegmentedItem`：共享 item 选择、图标伪类和 pointer release 选择逻辑。
-- `SegmentedItem`：桌面公开 item，注册 `SegmentedToken.ScopeProvider`。
+- `SegmentedItem`：桌面公开item，具有独立Global identity、没有Own；现有模板显式复用Segmented Own，不按CLR继承推定资源身份。
 - `SegmentedStackPanel`：内部方向感知 items panel，负责横向/纵向排列、expanding 和可导航容器语义。
 - Form：通过 `IFormItemAware` 把 `SelectedItem` 暴露为表单值。
 - Gallery：通过 Segmented ShowCase 展示基础、块级、禁用、动态数据、尺寸、垂直布局、胶囊形状、纯图标和图标文本示例。

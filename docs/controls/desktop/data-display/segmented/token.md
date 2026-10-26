@@ -6,6 +6,8 @@
 
 SegmentedToken 是 Segmented 的控件级 Token scope，描述分段轨道、选项文本状态、选项背景状态、选中滑块背景和 item 尺寸的主题语义。
 
+identity为`AtomUI:Segmented`，14字段通过DependencyDefaultsV2／Revision1静态函数求值。SegmentedItem具有独立Global identity、没有Own；现有主题显式复用Segmented Own。保留名称、类型、顺序、资源key／枚举数值／dense slot，默认不保存控件状态。
+
 SegmentedToken 不承载以下状态：
 
 - `Items`、`ItemsSource`、`ItemTemplate`、`Content` 等数据状态。
@@ -23,6 +25,8 @@ SegmentedToken 不承载以下状态：
 - `TrackBg`
 
 `TrackPadding` 控制根轨道内边距，也是 item 最小高度计算的扣减来源。`TrackBg` 控制根轨道背景色。
+
+默认分别为`Thickness(有效Global.LineWidthBold)`与有效Global.ColorBgLayout。明确TrackPadding优先；三条高度默认读取该有效Own，清除配置后恢复当前Global派生值。
 
 ### 2.2 item 文本状态 Token
 
@@ -47,7 +51,9 @@ render 层的选中滑块背景：选中背景在任何时刻都由滑块独占�
 - `ItemMinHeight`
 - `ItemMinHeightSM`
 
-这些 Token 控制 Large、Middle/Custom、Small 三个主题分支下 item 的最小高度。它们由 SharedToken 的 `ControlHeightLG`、`ControlHeight`、`ControlHeightSM` 扣除轨道上下 padding 计算得到。
+这些Token控制Large、Middle/Custom、Small主题分支下item的最小高度。自动默认分别为`Max(有效Global.ControlHeightLG/ControlHeight/ControlHeightSM - 有效Own.TrackPadding.Top - Bottom, 0)`，不再使用覆盖前的轨道padding。0下限只用于自动默认，避免大padding或小Global高度生成负的Avalonia.MinHeight；明确ItemMinHeight*（含0）保持，不在默认函数中重写。
+
+MinHeight是下限，实际Height仍由内容、布局和其他约束决定；文本自然高度大于默认最小值时可以更高，不强制固定Height，也不新增非法明确值或NaN／Infinity的处理策略。
 
 ### 2.5 内部间距 Token
 
@@ -63,12 +69,14 @@ render 层的选中滑块背景：选中背景在任何时刻都由滑块独占�
 
 内部间距 Token 不作为公开 Design Token 表展示，但它们已经被 AXAML 主题引用，维护时仍按主题契约处理。
 
+前两项分别保持`Thickness(Max(有效Global.ControlPaddingHorizontal/ControlPaddingHorizontalSM - LineWidth,0),0,同一水平值,0)`；图文间距保持`Thickness(UniformlyPaddingXXS,0,0,0)`。其余颜色依次保持ColorTextLabel、ColorText、ColorFillSecondary、ColorFill、ColorBgElevated、ColorText的现行Global来源；它们不依赖Own。
+
 ## 3. 控件专项模型中的 Token 使用
 
 SegmentedToken 使用路径：
 
 ```text
-SharedToken
+有效Global／明确Own
    ↓
 SegmentedToken
    ↓

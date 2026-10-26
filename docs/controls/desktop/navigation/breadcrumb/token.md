@@ -4,33 +4,32 @@
 
 ## 1. 定位
 
-Breadcrumb Token 只表达组件级视觉变量，例如尺寸、间距、颜色、圆角、阴影、图标尺寸和弹层边界。Token 不承载运行时选择、展开、加载、错误、上传任务、过滤条件或业务状态。
+Breadcrumb Own 表达条目／链接／分隔符的颜色及内距，不保存导航目标、当前条目、hover、分隔符实例或 motion 状态。
 
 当前 Token scope：
 
-- `BreadcrumbToken`，scope id 为 `Breadcrumb`，源码位于 `src/AtomUI.Desktop.Controls/Breadcrumb/BreadcrumbToken.cs`。
+- `BreadcrumbToken`，identity 为 `AtomUI:Breadcrumb`，有八项 Own，源码位于 `src/AtomUI.Desktop.Controls/Breadcrumb/BreadcrumbToken.cs`。
+
+`BreadcrumbItem` 和运行时 separator 消费根 owner 的资源，不新增独立 Own identity。图标宽高使用 Shared 的 `IconSizeSM`，不存在 Breadcrumb Own `IconSize`。
 
 ## 2. Token 分类
 
-Token 按控件语义分类维护：
+- `ItemColor`：根前景、普通条目前景及普通图标颜色，默认读取有效 Global `ColorTextDescription`。
+- `LastItemColor`：没有导航能力的末项前景，默认读取 `ColorText`。有导航能力的末项仍走链接分支。
+- `LinkColor`：可导航条目内容呈现器前景，默认读取 `ColorTextDescription`；item 级前景定制不覆盖该模板节点的链接色。
+- `LinkHoverColor`：同一 hover 分支的内容及图标颜色，默认读取 `ColorText`。
+- `LinkHoverBgColor`：可导航条目 hover 背景，默认读取 `ColorBgTextHover`。
+- `SeparatorColor`：兄弟分隔符 presenter 前景，默认读取 `ColorTextDescription`。
+- `BreadcrumbItemContentPadding`：条目内容内距，四边均为 `Global.UniformlyPaddingXXS`。
+- `SeparatorMargin`：分隔符外距，默认为 `(Global.UniformlyMarginXXS, 0)`。
 
-| 分类 | 语义 | 代表 Token |
-| --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `IconSize` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `BreadcrumbItemContentPadding`、`SeparatorMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ItemColor`、`LastItemColor`、`LinkColor`、`LinkHoverColor`、`LinkHoverBgColor`、`SeparatorColor` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
-
-未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+内距单位是 DIP，明确零值保留为有效配置；不增加统一钳制。Uniformly 数值字段与独立的 `PaddingXXS`／`MarginXXS` Thickness 字段分开，不能仅凭相近名称推断别名关系。root frame、圆角和图标尺寸继续遵守 Shared／Semantic Part／实例属性的既有边界。
 
 ## 3. 控件专项模型中的 Token 使用
 
-Breadcrumb 的控件专项模型通过 Theme 消费 Token：
+八项默认以 `DependencyDefaultsV2`／Revision1 的静态默认函数求值，只读取有效 Global，没有 Own→Own 依赖。Control 专属 Global 进入该 owner 的有效输入，明确 Own 优先，移除后恢复当前有效 Global 派生值。
 
-- C# 控件负责状态归一和伪类同步。
-- AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
-- Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+六项由原 `BreadcrumbTheme`／`BreadcrumbItemTheme` 的 Setter 和选择器消费。`SeparatorColor`／`SeparatorMargin` 由 `BreadcrumbSeparatorManager` 绑定到运行时创建的兄弟 `ContentPresenter`；owner 管理其逻辑挂载、模板重套与卸载释放。此迁移不改变原绑定、节点拓扑、优先级或状态时序。
 
 ## 4. 控件家族影响
 
@@ -45,6 +44,7 @@ Breadcrumb 的控件专项模型通过 Theme 消费 Token：
 ## 5. 兼容性要求
 
 - 不删除或重命名已生成的 TokenKind、TokenResource key 和 AXAML 引用。
+- 保留八项原默认公式、枚举数值与 dense slot、明确 Own／透明色／零值／撤回和同实例重挂；枚举数值和 slot 分别核对。
 - 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。
 - 不在 Token 中展开颜色、variant 和状态的组合矩阵；组合关系应由 Theme selector 表达。
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
@@ -55,6 +55,8 @@ Breadcrumb 的控件专项模型通过 Theme 消费 Token：
 | 改动类型 | 验证要求 |
 | --- | --- |
 | Token 文档 | `git diff --check`，检查相对链接存在。 |
-| Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
+| Token 默认值 | 核对真实 Compiler 明暗资源、类型、key 与 slot，覆盖 Global、Control Global、八项 Own、零值、撤回及重挂。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
-| 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+| 主题映射 | 走查普通／末项／链接／hover、分隔符 N−1；在真实主题事务后的产品 Window 做同历史 A/A、1 DIP 和新旧比较。 |
+
+专用 Part 定制使用生成的 `BreadcrumbItemStyle`／`BreadcrumbSeparatorStyle`，不通过 Loaded 后回写节点绕开契约。Headless、实际原生窗口、NativeAOT 和各平台结果分别记录，不互相替代。

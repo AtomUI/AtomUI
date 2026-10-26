@@ -87,7 +87,7 @@ Breadcrumb 的视觉模型由控件模板、ControlTheme、SharedToken 和必要
 | `BreadcrumbItemTheme.axaml` | 定义集合项、容器项或局部单元的状态视觉。 |
 | `BreadcrumbTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-Breadcrumb 使用 `BreadcrumbToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 motion 运行时状态。
+Breadcrumb 使用 `BreadcrumbToken` 作为根 owner 的八项 Own scope，以 V2 默认函数读取有效 Global；六项由模板消费，两个分隔符字段绑定到运行时兄弟节点。Token 只表达颜色与内距，不承载 motion 运行时状态；图标尺寸仍属于 Shared，具体公式与优先级见 [Token 设计](token.md)。
 
 root frame 由 `Breadcrumb` 自身在 `Render` 中绘制（复用 `BorderRenderHelper`），边框、背景、圆角与内边距由继承自
 `TemplatedControl` 的 root frame 样式属性表达，定制边界见 [Breadcrumb Semantic Part 契约](semantic-part.md)第 3 节。

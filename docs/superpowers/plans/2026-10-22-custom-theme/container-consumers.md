@@ -45,3 +45,7 @@ N3-B 的[Breadcrumb八项默认结果](container-breadcrumb-defaults-results.md)
 Breadcrumb后经第十八批13文件批准提交并推送93ef4ba8d；[第十八轮实际结果](platform-eighteenth-results.md)8个job均成功，三OS各6405项、三NativeAOT各26／两Browser各23检查，未取消／重试／发布。
 
 N3-P [Pagination本机实现](pagination-input-wiring-results.md)完成14项V2默认、经批准的Mini宽度与Simple输入背景接线；原版明暗六处不更新反例修复，四尺寸／只读／禁用／透明／0／撤回／焦点／光标／真实Enter保护检查通过。明暗28默认及168资源记录保持，Macro36组新旧0；Mac managed206／AOT207与140记录一致，临时清理后原57项及NET8零警告通过。14Token／2Control回填，其中两项兼容保留，容器Reserved当前16+2=18。用户2026-10-26已批准所示视觉修复及N01–N10十对精确限定自然差异；158张PNG及manifest共159文件已清理，媒体审计clean，原始失败计数保留。本机默认机制及两项输入接线切片出口完成；完整家族、其他Host及原生最终像素仍开放，本批Git另审。
+
+Pagination后经第十九批16文件批准提交并推送0b5e70c71；[第十九轮实际结果](platform-nineteenth-results.md)8个job全部成功，三OS各6405项、三NativeAOT各26／两Browser各23检查，源码相同，未取消／重试／发布。该轮不含尚未提交的Expander迁移。
+
+N3-E [Expander默认结果](container-expander-defaults-results.md)完成本机机制切片：13项Global-only V2、明暗26默认及182条资源/类型/key/slot保持；96自然帧的32AA／12恢复／48新旧均0，32组1DIP检出。Mac managed245／NativeAOT246、182记录一致；两份临时C#、97媒体文件和419文件原生工程已清理，原40项／NET8零警告及单Token成员审计通过。13Token／1Control回填，两垂直margin兼容保留，当前Reserved18+2=20；不改旋转Header消费者或交互，完整CT14／其他Host／原生最终像素仍开放，本批Git另审。

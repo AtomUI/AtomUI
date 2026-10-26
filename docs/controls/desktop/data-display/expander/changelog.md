@@ -12,6 +12,15 @@
 - Docs
   - 同步请求、布局租约、模板绑定和生命周期所有权。
 
+## 2026-10-26
+
+- Token
+  - 13项Global-only默认接入V2静态函数，保留原公式、资源身份、明确Own及实例padding优先级。
+  - 两个垂直图标margin注明当前模板未消费，保留配置兼容；旋转Header继续使用水平margin。
+- Docs
+  - 明确ContentPadding水平常量16及ContentBg的Ghost头部消费者，更新生成注册职责。
+
+
 ## 2026-09-27
 
 - Theme

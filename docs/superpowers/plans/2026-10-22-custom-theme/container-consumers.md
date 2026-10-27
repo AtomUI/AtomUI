@@ -18,6 +18,8 @@ CT10的共享表面/字体/内部路由和CT11的83集合仅提供机制。各�
 
 ## N4 家族出口
 
+N3-TAB的[本机结果](container-tabs-defaults-results.md)：34项V2及CardPadding依赖、已批准添加按钮尺寸恢复；原Tab283项／NET8通过，Mac managed1062／AOT1063及408资源一致，8临时源／303媒体／423文件原生工程清理。所示布局与N01–N16精确自然差异已批准，原FAIL保留；直接Styles.Remove、HorizontalMargin未裁决、原生最终像素及完整家族保持开放。NavMenu首次展开的[原始反例与否决候选](nav-menu-initial-collapse-motion-results.md)没有形成产品修复，不能以13项候选通过关闭。
+
 实际Window/适用Popup同实例明暗、尺寸/密度、选中/展开/禁用/输入及配置往返；新旧默认0未解释差异，连续动画与真实输入单独观测，回填CT11具体路径。验证滚动条/viewport/extent/回收/换父/重模板/关闭及GC。各包临时测试与媒体清理后，只跑显式模块filter、NET8及当前Mac NativeAOT；其他平台归CT25，最终正式文档/CSV/总表/自审同步。
 
 N1的四字段已同步XML、正式Token/changelog及CSV的CompatibilityRetained分类，没有运行语句变化或新增测试；CT23可编辑目录仍须实现保留项规则。Menu快捷键节点与资源引用已核实。N2–N4尚未验收，不能把兼容分类记作整个CT14完成。

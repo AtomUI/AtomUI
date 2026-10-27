@@ -230,6 +230,10 @@ TabStrip 的交互事件应从输入源收敛到控件级语义事件：
 - 主轴布局：卡片容器测量时先为添加按钮保留空间，再测量页签视口；主轴期望尺寸为两者之和，极窄排列不产生负尺寸。Line 与 Card 均沿 placement 主轴居中。真实水平滚轮输入按 `FlowDirection` 转换方向，垂直滚轮的横向回退保持逻辑顺序；边界继续遵守 scroll chaining 设置。
 - Placement 切换流程：owner 更新 pseudo-class、header padding、现有 container 的 `TabStripPlacement` 和内部布局状态即可；不得调用 container refresh 作为布局刷新手段。
 
+`CardTabStripTheme`声明添加按钮的尺寸和placement对齐。宽度跟随`CardSize`，Top/Bottom高度跟随同模板`ItemsPresenter.Bounds.Height`，Left/Right保持`CardSize`正方形。水平编译绑定放在模板内Style Setter中，由Setter保留编译路径的NameScope；专用Style覆盖退出后恢复当前关系，整个绑定随模板释放，不新增代码订阅。owner不再通过Arrange或CardSize回调回写按钮尺寸。
+
+`TabStrip`和`CardTabStrip`具有独立Global owner且没有自己的Own定义；主题显式复用`TabControl` Own。34个V2默认及`CardPadding`到有效`CardSize`的依赖见[家族Token合同](../tab-control/token.md)。生成item的既有LocalValue圆角/边框绑定保留原优先级，并在容器释放时解除。
+
 ### 8.1 Semantic Part 运行时 marker 同步
 
 - `semantic-item` marker 由 owner 在两个入口同步：`CreateContainerForItemOverride` 把 marker 应用到新建

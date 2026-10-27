@@ -222,6 +222,8 @@ ink bar 的行为一致。
 `Classes.semantic-add="True"`。按钮节点始终存在于模板中，`IsShowAddTabButton` 只控制可见性，marker 不随该属性
 增删。该 Part 只属于 `CardTabControl`；Line 风格的 `TabControl` 没有加号按钮，其 descriptor 不含 `add`。
 
+尺寸定制使用`CardTabControlAddStyle`的`Width`/`Height` Setter。主题默认宽度为`CardSize`，水平高度随header布局更新，垂直高度为`CardSize`；状态Style失活后恢复当前方向的默认关系，owner不会用LocalValue尺寸回写压制专用Style。
+
 ### 2.3 `TabItem`
 
 `TabItem` 是 `TabControl` / `CardTabControl` 的 item container，同时是独立 public owner。它的三个子 Part 是内置

@@ -2,6 +2,14 @@
 
 本文档记录 TabStrip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- Theme
+  - 显式消费家族34项V2 Own默认及`CardPadding`到有效`CardSize`的依赖，保留独立Global owner。
+  - 卡片添加按钮由主题声明响应header高度与方向，并支持专用Add Style尺寸覆盖及状态退出恢复。
+- Docs
+  - 同步家族资源和模板绑定生命周期，不将本机切片作为完整家族验收。
+
 ## 2026-10-20
 
 - Fixed

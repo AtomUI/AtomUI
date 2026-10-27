@@ -257,6 +257,10 @@ TabControl 的交互事件应从输入源收敛到控件级语义事件：
 - 主轴布局：卡片容器测量时先为添加按钮保留空间，再测量页签视口；主轴期望尺寸为两者之和，极窄排列不产生负尺寸。Line 与 Card 均沿 placement 主轴居中。真实水平滚轮输入按 `FlowDirection` 转换方向，垂直滚轮的横向回退保持逻辑顺序；边界继续遵守 scroll chaining 设置。
 - Placement 切换流程：owner 更新 pseudo-class、header padding、现有 container 的 `TabStripPlacement` 和内部布局状态即可；不得调用 `RefreshContainers()` 作为布局刷新手段。
 
+卡片添加按钮的尺寸关系归`CardTabControlTheme`所有：宽度为`CardSize`；Top/Bottom的高度使用同模板`ItemsPresenter.Bounds.Height`的编译绑定，Left/Right的高度和对齐由placement Style设置。`Bounds`提供实际header布局的通知，不能用不通知的`DesiredSize`路径代替。
+
+水平高度绑定位于模板内的Style Setter。Setter持有编译路径及其NameScope，使高优先级专用Style暂停并恢复绑定时仍能解析同模板presenter；关系随模板实例释放，不新增C#订阅或全局缓存。owner只保留添加事件和圆角状态，不在Arrange或CardSize回调中写按钮尺寸。动态创建的item容器仍保留现有LocalValue owner绑定，并在容器释放时dispose；它们属于Content子树，不能以模板Setter改变其优先级。
+
 ### 8.1 Semantic Part 运行时 marker 同步
 
 - `semantic-item` marker 由 owner 在两个入口同步：`CreateContainerForItemOverride` 把 marker 应用到新建

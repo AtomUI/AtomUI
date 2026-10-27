@@ -184,6 +184,7 @@ DataGrid 拥有独立 Control identity；`DataGridToken` 只表达 DataGrid Own 
 
 主题维护规则：
 
+- 默认背景为透明画刷，数据未填满的控件区域仍参与命中并可触发控件的上下文菜单；应用显式设置的背景继续优先。
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。
 - 不把可由 AXAML 表达的模板状态迁移为 C# 动态创建视觉。
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。

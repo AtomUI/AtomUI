@@ -195,6 +195,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|DataGrid)">
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="HeadersVisibility" Value="Column" />
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />

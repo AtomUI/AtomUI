@@ -528,6 +528,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 ### 8.9 Frame、列宽与水平 virtualization
 
 - FrameCornerRadius 与 FrameContentClip 共同约束根内容裁剪；FrameBorderThickness 只由 frame border option 决定。
+- 默认 ControlTheme 将 Background 设为 Transparent，根 Frame 通过既有 TemplateBinding 接收背景，使固定尺寸中的空白区域参与命中；背景仍由应用属性或样式覆盖，不依赖指针事件转发。
 - 最后一行 divider 与 Frame 底边保持唯一绘制责任；Footer、底部分页或横向滚动条存在时恢复行 divider。
 - 有限列 viewport 只进入 DataGrid-owned solver；Auto completion 与 star distribution 是独立阶段。
 - `Auto` / `SizeToCells` 只消费已实现 cells 的正常 measure 结果；列宽发现不得 fetch 未显示 range 或扩大纵向 realized window。

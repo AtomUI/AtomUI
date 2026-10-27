@@ -493,6 +493,11 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        if (args.Contains("--native-motion", StringComparer.Ordinal))
+        {
+            return NativeMotionProbe.Run(args);
+        }
+
         var options = PerfOptions.Parse(args);
         if (options.FeedbackStack)
         {

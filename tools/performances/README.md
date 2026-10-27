@@ -43,6 +43,38 @@
 
 ## 当前命令
 
+### 原生 Gallery 动效采样
+
+`AtomUI.GalleryPerformance --native-motion` 是单独的原生宿主模式，运行真实 `GalleryApplication`、Workspace和页面。
+原有导航/构建模式仍为Headless，两种口径分开使用。场景为 `sidebar`、`submenu`、`progress`、`statistic`、
+`beam`、`popup`、`beam-offscreen`、`all`；所有动作通过公开控件API驱动，不测原生鼠标输入延迟。
+Popup场景使用真实NavMenu Popup；若其未配置OpenMotion/CloseMotion，结果明确标记为静态开合成本，不声称取得动画FPS。
+离屏循环允许零更新，且必须通过真实viewport几何断言，不用隐藏控件模拟离屏。
+
+```bash
+dotnet build tools/performances/AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj -c Release --framework net10.0
+python3 tools/performances/run_native_motion.py \
+  --binary .artifacts/bin/Release/net10.0/AtomUI.GalleryPerformance \
+  --output-dir /tmp/atomui-motion-baseline --label baseline --scenario sidebar \
+  --processes 3 --warmup 5 --iterations 30 --sample-ms 450 --refresh-rate 60
+# 修改后使用相同参数和新的输出目录，可追加：
+# --compare /tmp/atomui-motion-baseline/summary.json
+```
+
+`--refresh-rate` 是调用方核实后的屏幕频率声明，不是工具自动检测值；不传时不计算刷新预算。
+每个进程保留身份、程序集SHA、产品差异摘要、窗口/DPI/主题、场景树形态及原始时间序列，聚合输出中位/P95/P99、
+超过1.5/2个刷新预算的次数、每动作CPU/分配/GC和实际布局pass耗时。首次创建和稳态窗口分开，单次结果只作smoke。
+使用同版本独立进程做A/A噪声对照，测量期间避免并行构建/测试或切换系统负载；长期结论需足够样本。
+有限动画必须包含跨时刻的真实中间值与多个绘制完成批次，不能用一次终值跳变冒充动画。
+聚合与比较同时核对宿主、实际目标类型、观测属性和动画合同；非等价场景明确拒绝比较。
+
+采样器只订阅已存在的batch，不调用RequestAnimationFrame/RequestCommit来制造帧。
+Processed/Rendered分别是合成批次处理/绘制完成，均不是显示器present；不把SceneInvalidated通知数称为FPS。
+CPU和分配包含诊断回调开销，前后必须使用同一版本工具，不能拿不同观测配置相减。
+布局/合成诊断读取当前Avalonia内部钩子，只在这个JIT工具中存在；版本升级后必须核验，钩子变化明确失败，不静默输出0。
+工具不进入产品运行依赖，不提供AOT/trim验证。缺失原生平台只能标为未验，Headless不能替代。
+输出和取证媒体放系统临时目录，完成分析后清理；相同输出目录中的旧进程文件不会被覆盖。
+
 控件级 AddOnDecoratedBox/LineEdit 基准：
 
 ```bash

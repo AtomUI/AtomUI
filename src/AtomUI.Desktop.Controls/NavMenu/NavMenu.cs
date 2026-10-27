@@ -5,6 +5,7 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -17,6 +18,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Logging;
+using Avalonia.Styling;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
@@ -342,8 +345,6 @@ public partial class NavMenu : ItemsControl,
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel { Orientation = Orientation.Vertical });
 
-    private static readonly TimeSpan InlineCollapsedWidthMotionFrameInterval = TimeSpan.FromMilliseconds(16);
-
     private bool _defaultOpenPathsApplied;
     private int _motionContextLevel;
     private bool _originIsMotionEnabled;
@@ -479,6 +480,8 @@ public partial class NavMenu : ItemsControl,
     
     private void HandleModeChanged()
     {
+        CancelInlineCollapsedWidthMotion();
+        ClearInlineCollapsedLayoutWidth();
         _pinnedOpenCoordinator.Release();
         CloseOpenSubmenusPreservingSelection(this);
         UpdateEffectiveMode();
@@ -682,7 +685,12 @@ public partial class NavMenu : ItemsControl,
 
     private bool TryGetInlineCollapsedLayoutWidth(out double layoutWidth)
     {
-        layoutWidth = InlineCollapsedLayoutWidth;
+        // Disposing a Forward animation before its first tick can fill its default 0.
+        // While cancelling, keep coercion at the last presented width until the caller
+        // installs the next start or clears the override. The CTS is the execution owner.
+        layoutWidth = _inlineCollapsedWidthMotionCancellationTokenSource is { IsCancellationRequested: true }
+            ? Bounds.Width
+            : InlineCollapsedLayoutWidth;
         if (!double.IsFinite(layoutWidth))
         {
             return false;
@@ -773,9 +781,8 @@ public partial class NavMenu : ItemsControl,
                                                    out double startWidth,
                                                    out double targetWidth)
     {
-        CancelInlineCollapsedWidthMotion();
-
         startWidth  = NormalizeInlineCollapsedWidth(Bounds.Width);
+        CancelInlineCollapsedWidthMotion();
         targetWidth = collapse
             ? NormalizeInlineCollapsedWidth(InlineCollapsedWidth)
             : ResolveExpandedWidthForInlineCollapsedMotion(startWidth);
@@ -850,73 +857,70 @@ public partial class NavMenu : ItemsControl,
                                                           TimeSpan duration,
                                                           CancellationTokenSource cancellationTokenSource)
     {
-        var easing = new CubicEaseOut();
-        var startTimestamp = Stopwatch.GetTimestamp();
+        var cancellationToken = cancellationTokenSource.Token;
         try
         {
-            while (true)
+            // The endpoints depend on current rendered bounds and metadata coercion, so a
+            // ControlTheme transition cannot express this request-owned layout override.
+            var animation = new Animation
             {
-                await Task.Delay(InlineCollapsedWidthMotionFrameInterval, cancellationTokenSource.Token);
-
-                var progress = ResolveInlineCollapsedWidthMotionProgress(startTimestamp, duration);
-                if (progress >= 1d)
+                Duration = duration,
+                Easing = new CubicEaseOut(),
+                FillMode = FillMode.Forward,
+                Children =
                 {
-                    break;
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0),
+                        Setters = { new Setter(InlineCollapsedLayoutWidthProperty, startWidth) }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1),
+                        Setters = { new Setter(InlineCollapsedLayoutWidthProperty, targetWidth) }
+                    }
                 }
-
-                ApplyInlineCollapsedWidthMotionFrame(
-                    InterpolateInlineCollapsedWidth(startWidth, targetWidth, easing.Ease(progress)),
-                    cancellationTokenSource);
-            }
+            };
+            await animation.RunAsync(this, cancellationToken);
         }
-        catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // A newer inline collapsed transition owns the layout width now.
-            return;
         }
-
-        Dispatcher.UIThread.Post(() => CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource));
-    }
-
-    private static double ResolveInlineCollapsedWidthMotionProgress(long startTimestamp, TimeSpan duration)
-    {
-        if (duration <= TimeSpan.Zero)
+        catch (Exception exception)
         {
-            return 1d;
+            Logger.TryGet(LogEventLevel.Error, LogArea.Control)?.Log(
+                this, "Inline collapsed width motion failed: {Exception}", exception);
         }
-
-        var elapsedSeconds = (Stopwatch.GetTimestamp() - startTimestamp) / (double)Stopwatch.Frequency;
-        return Math.Clamp(elapsedSeconds / duration.TotalSeconds, 0d, 1d);
-    }
-
-    private static double InterpolateInlineCollapsedWidth(double startWidth, double targetWidth, double progress)
-    {
-        return startWidth + (targetWidth - startWidth) * progress;
-    }
-
-    private void ApplyInlineCollapsedWidthMotionFrame(double width,
-                                                      CancellationTokenSource cancellationTokenSource)
-    {
-        Dispatcher.UIThread.Post(() =>
+        finally
         {
-            if (ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
+            // RunAsync can complete before Avalonia disposes its animation binding/final fill.
+            // Queue only teardown, after that stack unwinds; no frame values are posted.
+            if (!cancellationToken.IsCancellationRequested)
             {
-                InlineCollapsedLayoutWidth = width;
+                Dispatcher.UIThread.Post(() => CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource));
             }
-        });
+        }
     }
 
     private void CompleteInlineCollapsedWidthMotion(double targetWidth,
                                                     CancellationTokenSource cancellationTokenSource)
     {
-        if (!ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
+        if (!ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource) ||
+            cancellationTokenSource.IsCancellationRequested)
         {
             return;
         }
 
         _inlineCollapsedWidthMotionCancellationTokenSource = null;
-        cancellationTokenSource.Cancel();
-        cancellationTokenSource.Dispose();
+        try
+        {
+            cancellationTokenSource.Cancel();
+        }
+        finally
+        {
+            cancellationTokenSource.Dispose();
+        }
         InlineCollapsedLayoutWidth = targetWidth;
         ClearInlineCollapsedLayoutWidth();
     }
@@ -942,9 +946,18 @@ public partial class NavMenu : ItemsControl,
             return;
         }
 
-        _inlineCollapsedWidthMotionCancellationTokenSource = null;
-        cancellationTokenSource.Cancel();
-        cancellationTokenSource.Dispose();
+        try
+        {
+            cancellationTokenSource.Cancel();
+        }
+        finally
+        {
+            if (ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
+            {
+                _inlineCollapsedWidthMotionCancellationTokenSource = null;
+            }
+            cancellationTokenSource.Dispose();
+        }
     }
 
     private void ClearInlineCollapsedLayoutWidth()

@@ -5,12 +5,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TabControlToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TabControlToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-
     public TabControlToken()
-
     {
     }
 
@@ -184,88 +182,126 @@ internal sealed class TabControlToken : AbstractControlDesignToken
     /// </summary>
     public double TabAndContentGutter { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var lineHeight = EffectiveGlobalToken.RelativeLineHeight;
-        var lineWidth  = EffectiveGlobalToken.LineWidth;
+    [ControlTokenDefault(nameof(CardBg))]
+    private static Color DefaultForCardBg(in ControlTokenDefaultContext context) => context.Global.ColorFillAlter;
 
-        CardBg = EffectiveGlobalToken.ColorFillAlter;
+    [ControlTokenDefault(nameof(CardSize))]
+    private static double DefaultForCardSize(in ControlTokenDefaultContext context) => context.Global.ControlHeightLG;
 
-        CardSize = EffectiveGlobalToken.ControlHeightLG;
+    [ControlTokenDefault(nameof(CardPadding), nameof(CardSize))]
+    private static Thickness DefaultForCardPadding(in ControlTokenDefaultContext context, double cardSize) =>
+        new(context.Global.UniformlyPadding,
+            (cardSize - Math.Round(context.Global.FontSize * context.Global.RelativeLineHeight)) / 2 - context.Global.LineWidth);
 
-        CardPadding = new Thickness(EffectiveGlobalToken.UniformlyPadding,
-            (CardSize - Math.Round(EffectiveGlobalToken.FontSize * lineHeight)) / 2 - lineWidth);
-        CardPaddingSM = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXXS * 1.5);
-        CardPaddingLG = new Thickness(top: EffectiveGlobalToken.UniformlyPaddingXS,
-            bottom: EffectiveGlobalToken.UniformlyPaddingXXS * 1.5,
-            left: EffectiveGlobalToken.UniformlyPadding,
-            right: EffectiveGlobalToken.UniformlyPadding);
+    [ControlTokenDefault(nameof(CardPaddingSM))]
+    private static Thickness DefaultForCardPaddingSM(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPadding, context.Global.UniformlyPaddingXXS * 1.5);
 
-        TitleFontSize   = EffectiveGlobalToken.FontSize;
-        TitleFontSizeLG = EffectiveGlobalToken.FontSizeLG;
-        TitleFontSizeSM = EffectiveGlobalToken.FontSize;
+    [ControlTokenDefault(nameof(CardPaddingLG))]
+    private static Thickness DefaultForCardPaddingLG(in ControlTokenDefaultContext context) =>
+        new(top: context.Global.UniformlyPaddingXS, bottom: context.Global.UniformlyPaddingXXS * 1.5,
+            left: context.Global.UniformlyPadding, right: context.Global.UniformlyPadding);
 
-        InkBarColor = EffectiveGlobalToken.ColorPrimary;
+    [ControlTokenDefault(nameof(TitleFontSize))]
+    private static double DefaultForTitleFontSize(in ControlTokenDefaultContext context) => context.Global.FontSize;
 
-        InkBarThickness = EffectiveGlobalToken.LineWidthBold;
+    [ControlTokenDefault(nameof(TitleFontSizeLG))]
+    private static double DefaultForTitleFontSizeLG(in ControlTokenDefaultContext context) => context.Global.FontSizeLG;
 
-        HorizontalMargin     = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);
-        HorizontalItemGutter = 32;
-        HorizontalItemMargin = new Thickness();
+    [ControlTokenDefault(nameof(TitleFontSizeSM))]
+    private static double DefaultForTitleFontSizeSM(in ControlTokenDefaultContext context) => context.Global.FontSize;
 
-        HorizontalItemPadding   = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingSM);
-        HorizontalItemPaddingSM = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingXS);
-        HorizontalItemPaddingLG = new Thickness(0, EffectiveGlobalToken.UniformlyPadding);
+    [ControlTokenDefault(nameof(InkBarColor))]
+    private static Color DefaultForInkBarColor(in ControlTokenDefaultContext context) => context.Global.ColorPrimary;
 
-        VerticalItemGutter  = EffectiveGlobalToken.SpacingXXS;
-        VerticalItemPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, EffectiveGlobalToken.UniformlyPaddingXS);
+    [ControlTokenDefault(nameof(InkBarThickness))]
+    private static double DefaultForInkBarThickness(in ControlTokenDefaultContext context) => context.Global.LineWidthBold;
 
-        ItemColor         = EffectiveGlobalToken.ColorText;
-        ItemSelectedColor = EffectiveGlobalToken.ColorPrimary;
-        ItemHoverColor    = EffectiveGlobalToken.ColorPrimaryHover;
+    [ControlTokenDefault(nameof(HorizontalMargin))]
+    private static Thickness DefaultForHorizontalMargin(in ControlTokenDefaultContext context) =>
+        new(0, 0, context.Global.UniformlyMargin, 0);
 
-        CardGutter                   = EffectiveGlobalToken.UniformlyMarginXXS / 2;
-        AddTabButtonMarginHorizontal = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0, 0, 0);
-        AddTabButtonMarginVertical   = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
-        ItemIconMargin               = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginSM, 0);
+    [ControlTokenDefault(nameof(HorizontalItemGutter))]
+    private static double DefaultForHorizontalItemGutter(in ControlTokenDefaultContext context) => 32;
 
-        MenuIndicatorPaddingHorizontal = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0, 0, 0);
-        MenuIndicatorPaddingVertical   = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingXS, 0, 0);
-        CloseIconMargin                = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0, 0, 0);
+    [ControlTokenDefault(nameof(HorizontalItemMargin))]
+    private static Thickness DefaultForHorizontalItemMargin(in ControlTokenDefaultContext context) => new();
 
-        var tabsOverflowShadowColor = ColorUtils.FromRgbF(0.08, 0, 0, 0);
-        BoxShadowTabsOverflowLeft   = new BoxShadows(new BoxShadow
-        {
-            OffsetX = 10,
-            Blur    = 8,
-            Spread  = -8,
-            Color   = tabsOverflowShadowColor
-        });
-        BoxShadowTabsOverflowRight  = new BoxShadows(new BoxShadow
-        {
-            OffsetX = -10,
-            Blur    = 8,
-            Spread  = -8,
-            Color   = tabsOverflowShadowColor
-        });
-        BoxShadowTabsOverflowTop    = new BoxShadows(new BoxShadow
-        {
-            OffsetY = 10,
-            Blur    = 8,
-            Spread  = -8,
-            Color   = tabsOverflowShadowColor
-        });
-        BoxShadowTabsOverflowBottom = new BoxShadows(new BoxShadow
-        {
-            OffsetY = -10,
-            Blur    = 8,
-            Spread  = -8,
-            Color   = tabsOverflowShadowColor
-        });
+    [ControlTokenDefault(nameof(HorizontalItemPadding))]
+    private static Thickness DefaultForHorizontalItemPadding(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyPaddingSM);
 
-        MenuEdgeThickness   = EffectiveGlobalToken.ControlHeight;
-        TabAndContentGutter = EffectiveGlobalToken.UniformlyMarginSM;
-    }
+    [ControlTokenDefault(nameof(HorizontalItemPaddingLG))]
+    private static Thickness DefaultForHorizontalItemPaddingLG(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyPadding);
+
+    [ControlTokenDefault(nameof(HorizontalItemPaddingSM))]
+    private static Thickness DefaultForHorizontalItemPaddingSM(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyPaddingXS);
+
+    [ControlTokenDefault(nameof(VerticalItemGutter))]
+    private static double DefaultForVerticalItemGutter(in ControlTokenDefaultContext context) => context.Global.SpacingXXS;
+
+    [ControlTokenDefault(nameof(VerticalItemPadding))]
+    private static Thickness DefaultForVerticalItemPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXS, context.Global.UniformlyPaddingXS);
+
+    [ControlTokenDefault(nameof(ItemColor))]
+    private static Color DefaultForItemColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ItemHoverColor))]
+    private static Color DefaultForItemHoverColor(in ControlTokenDefaultContext context) => context.Global.ColorPrimaryHover;
+
+    [ControlTokenDefault(nameof(ItemSelectedColor))]
+    private static Color DefaultForItemSelectedColor(in ControlTokenDefaultContext context) => context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(CardGutter))]
+    private static double DefaultForCardGutter(in ControlTokenDefaultContext context) => context.Global.UniformlyMarginXXS / 2;
+
+    [ControlTokenDefault(nameof(ItemIconMargin))]
+    private static Thickness DefaultForItemIconMargin(in ControlTokenDefaultContext context) =>
+        new(0, 0, context.Global.UniformlyMarginSM, 0);
+
+    [ControlTokenDefault(nameof(MenuIndicatorPaddingHorizontal))]
+    private static Thickness DefaultForMenuIndicatorPaddingHorizontal(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(MenuIndicatorPaddingVertical))]
+    private static Thickness DefaultForMenuIndicatorPaddingVertical(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyPaddingXS, 0, 0);
+
+    [ControlTokenDefault(nameof(MenuEdgeThickness))]
+    private static double DefaultForMenuEdgeThickness(in ControlTokenDefaultContext context) => context.Global.ControlHeight;
+
+    [ControlTokenDefault(nameof(BoxShadowTabsOverflowLeft))]
+    private static BoxShadows DefaultForBoxShadowTabsOverflowLeft(in ControlTokenDefaultContext context) =>
+        new(new BoxShadow { OffsetX = 10, Blur = 8, Spread = -8, Color = ColorUtils.FromRgbF(0.08, 0, 0, 0) });
+
+    [ControlTokenDefault(nameof(BoxShadowTabsOverflowRight))]
+    private static BoxShadows DefaultForBoxShadowTabsOverflowRight(in ControlTokenDefaultContext context) =>
+        new(new BoxShadow { OffsetX = -10, Blur = 8, Spread = -8, Color = ColorUtils.FromRgbF(0.08, 0, 0, 0) });
+
+    [ControlTokenDefault(nameof(BoxShadowTabsOverflowTop))]
+    private static BoxShadows DefaultForBoxShadowTabsOverflowTop(in ControlTokenDefaultContext context) =>
+        new(new BoxShadow { OffsetY = 10, Blur = 8, Spread = -8, Color = ColorUtils.FromRgbF(0.08, 0, 0, 0) });
+
+    [ControlTokenDefault(nameof(BoxShadowTabsOverflowBottom))]
+    private static BoxShadows DefaultForBoxShadowTabsOverflowBottom(in ControlTokenDefaultContext context) =>
+        new(new BoxShadow { OffsetY = -10, Blur = 8, Spread = -8, Color = ColorUtils.FromRgbF(0.08, 0, 0, 0) });
+
+    [ControlTokenDefault(nameof(AddTabButtonMarginHorizontal))]
+    private static Thickness DefaultForAddTabButtonMarginHorizontal(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(AddTabButtonMarginVertical))]
+    private static Thickness DefaultForAddTabButtonMarginVertical(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyMarginXXS, 0, 0);
+
+    [ControlTokenDefault(nameof(CloseIconMargin))]
+    private static Thickness DefaultForCloseIconMargin(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(TabAndContentGutter))]
+    private static double DefaultForTabAndContentGutter(in ControlTokenDefaultContext context) => context.Global.UniformlyMarginSM;
     
 }

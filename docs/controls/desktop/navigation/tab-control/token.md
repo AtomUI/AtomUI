@@ -10,6 +10,9 @@ TabControl Token 只表达组件级视觉变量，例如尺寸、间距、颜色
 
 - `TabControlToken`，scope id 为 `TabControl`，源码位于 `src/AtomUI.Desktop.Controls/TabControl/TabControlToken.cs`。
 
+该定义使用 `DependencyDefaultsV2`、Revision 1，以34个静态默认函数提供默认值。字段名称、类型、资源key、枚举数值和slot保持稳定。
+`CardTabControl`、`TabStrip`、`CardTabStrip`具有各自的Global owner；其模板显式消费`TabControl` Own资源，不据CLR继承复制Own定义。
+
 ## 2. Token 分类
 
 Token 按控件语义分类维护：
@@ -31,6 +34,9 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+- `CardPadding`默认依赖有效Own `CardSize`：水平为`EffectiveGlobalToken.UniformlyPadding`，垂直为`(CardSize - Round(Global.FontSize * Global.RelativeLineHeight)) / 2 - Global.LineWidth`。默认40对应16,8；Own 56对应16,16，Own 0对应16,-12。有限负padding按原合同保留；显式`CardPadding`覆盖该默认，清除覆盖后重新求值。
+- 此依赖适用于Middle水平Card分支；Large/Small及垂直Card继续消费各自padding。`TitleFontSize`影响实际标题排版，但该padding公式仍读取Global字体，不建立新的Own字体依赖。
+- `CardSize`提供添加按钮宽度及垂直placement的正方形高度；水平placement的按钮高度随header自然布局更新，不把标题固定成`CardSize`高度。
 - `VerticalItemGutter` 表达默认 Line Tab 在 `Left` / `Right` placement 下的紧凑相邻间距；Card Tab 不消费该 Token，而继续使用 `CardGutter` 维持独立卡片节奏。
 - `VerticalItemPadding` 保留给 Card Tab 的垂直 placement padding 语义；默认 Line Tab 的 `Left` / `Right` padding 由默认 Line theme 内部保持紧凑，不新增公开 Token。
 - overflow Popup shell、默认菜单与 Gallery 搜索模板继续复用 Popup、Menu、SharedToken 和输入控件主题；`OverflowPopupTemplate` 只改变内容模板，不创建实例级 Token 状态。

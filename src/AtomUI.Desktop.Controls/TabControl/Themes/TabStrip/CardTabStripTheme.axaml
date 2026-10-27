@@ -42,7 +42,16 @@
                                                      Icon="{antdicons:AntDesignIconProvider PlusOutlined}"
                                                      BorderThickness="{TemplateBinding CardBorderThickness}"
                                                      CornerRadius="{TemplateBinding EffectiveCardBorderRadius}"
-                                                     IsVisible="{TemplateBinding IsShowAddTabButton}" />
+                                                     Width="{TemplateBinding CardSize}"
+                                                          IsVisible="{TemplateBinding IsShowAddTabButton}">
+                                                <atom:IconButton.Styles>
+                                                    <!-- The Setter retains the compiled path's template NameScope
+                                                         while higher-priority Semantic Styles suspend the binding. -->
+                                                    <Style Selector="atom|IconButton">
+                                                        <Setter Property="Height" Value="{CompiledBinding #PART_ItemsPresenter.Bounds.Height, Mode=OneWay}" />
+                                                    </Style>
+                                                </atom:IconButton.Styles>
+                                            </atom:IconButton>
                                 </atom:TabsContainerPanel.AddTabButton>
                             </atom:TabsContainerPanel>
                                 </DockPanel>
@@ -71,6 +80,21 @@
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton:pointerover">
             <Setter Property="IconBrush"
                     Value="{atom:TabControlTokenResource ItemHoverColor}" />
+        </Style>
+
+        <Style Selector="^[TabStripPlacement=Left], ^[TabStripPlacement=Right]">
+            <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
+                <Setter Property="Width" Value="{TemplateBinding CardSize}" />
+                <Setter Property="Height" Value="{TemplateBinding CardSize}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[TabStripPlacement=Left] /template/ atom|IconButton#PART_AddTabButton">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <Style Selector="^[TabStripPlacement=Right] /template/ atom|IconButton#PART_AddTabButton">
+            <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top]">

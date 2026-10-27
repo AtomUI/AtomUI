@@ -2,6 +2,15 @@
 
 本文档记录 TabControl 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- Theme
+  - 34项Own默认接入V2；`CardPadding`依赖有效`CardSize`，保留原公式、显式覆盖、资源身份及有限负padding。
+  - 卡片添加按钮的尺寸与方向对齐改为主题声明；水平高度响应实际header，专用Add Style覆盖退出后恢复绑定。
+  - 水平编译绑定由模板内Style Setter持有NameScope，不新增C#订阅。
+- Docs
+  - 同步Global/Own owner、三尺寸分支及模板生命周期合同。完整视觉与平台验收按交付记录单独核定。
+
 ## 2026-10-20
 
 - Fixed

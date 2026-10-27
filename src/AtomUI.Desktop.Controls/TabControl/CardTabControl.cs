@@ -1,31 +1,33 @@
 ﻿using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
 public partial class CardTabControl : BaseTabControl
 {
-    #region 公共属性实现
+    #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsShowAddTabButtonProperty =
         AvaloniaProperty.Register<CardTabControl, bool>(nameof(IsShowAddTabButton));
-
-    public static readonly RoutedEvent<RoutedEventArgs> AddTabRequestEvent =
-        RoutedEvent.Register<CardTabControl, RoutedEventArgs>(
-            nameof(AddTabRequest),
-            RoutingStrategies.Bubble);
 
     public bool IsShowAddTabButton
     {
         get => GetValue(IsShowAddTabButtonProperty);
         set => SetValue(IsShowAddTabButtonProperty, value);
     }
+
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<RoutedEventArgs> AddTabRequestEvent =
+        RoutedEvent.Register<CardTabControl, RoutedEventArgs>(
+            nameof(AddTabRequest),
+            RoutingStrategies.Bubble);
 
     public event EventHandler<RoutedEventArgs>? AddTabRequest
     {
@@ -35,7 +37,7 @@ public partial class CardTabControl : BaseTabControl
 
     #endregion
 
-    #region 内部属性实现
+    #region 内部属性定义
 
     internal static readonly StyledProperty<CornerRadius> CardBorderRadiusProperty =
         AvaloniaProperty.Register<CardTabControl, CornerRadius>(nameof(CardBorderRadius));
@@ -76,7 +78,6 @@ public partial class CardTabControl : BaseTabControl
     #endregion
 
     private IconButton? _addTabButton;
-    private ItemsPresenter? _itemsPresenter;
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
@@ -88,14 +89,6 @@ public partial class CardTabControl : BaseTabControl
         return tabItem;
     }
 
-    internal override void ReleaseTabItemOwnerBindings(TabItem tabItem)
-    {
-        base.ReleaseTabItemOwnerBindings(tabItem);
-        // Card-only indexer bindings created in PrepareContainerForItemOverride.
-        BindingOperations.GetBindingExpressionBase(tabItem, CornerRadiusProperty)?.Dispose();
-        BindingOperations.GetBindingExpressionBase(tabItem, BorderThicknessProperty)?.Dispose();
-    }
-
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -103,6 +96,8 @@ public partial class CardTabControl : BaseTabControl
         {
             tabItem.Shape = TabSharp.Card;
             tabItem.Classes.Add(CardTabControlSemanticParts.ItemClass);
+            // These are code-created Content containers, not ControlTemplate children.
+            // A ControlTheme Setter cannot preserve the existing LocalValue owner-binding priority.
             tabItem[!CornerRadiusProperty] = this[!EffectiveCardBorderRadiusProperty];
             tabItem[!BorderThicknessProperty] = this[!CardBorderThicknessProperty];
         }
@@ -116,8 +111,7 @@ public partial class CardTabControl : BaseTabControl
         }
 
         base.OnApplyTemplate(e);
-        _addTabButton   = e.NameScope.Find<IconButton>("PART_AddTabButton");
-        _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+        _addTabButton = e.NameScope.Find<IconButton>("PART_AddTabButton");
         if (_addTabButton is not null)
         {
             _addTabButton.Click += HandleAddButtonClicked;
@@ -135,16 +129,28 @@ public partial class CardTabControl : BaseTabControl
         }
     }
 
-    private void HandleAddButtonClicked(object? sender, RoutedEventArgs args)
-    {
-        RaiseEvent(new RoutedEventArgs(AddTabRequestEvent));
-    }
-
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
         HandleTabStripPlacementChanged();
         return size;
+    }
+
+    #region 内部协作 API
+
+    internal override void ReleaseTabItemOwnerBindings(TabItem tabItem)
+    {
+        base.ReleaseTabItemOwnerBindings(tabItem);
+        // Card-only indexer bindings created in PrepareContainerForItemOverride.
+        BindingOperations.GetBindingExpressionBase(tabItem, CornerRadiusProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(tabItem, BorderThicknessProperty)?.Dispose();
+    }
+
+    #endregion
+
+    private void HandleAddButtonClicked(object? sender, RoutedEventArgs args)
+    {
+        RaiseEvent(new RoutedEventArgs(AddTabRequestEvent));
     }
 
     private void HandleTabStripPlacementChanged()
@@ -153,43 +159,21 @@ public partial class CardTabControl : BaseTabControl
         {
             EffectiveCardBorderRadius = new CornerRadius(CardBorderRadius.TopLeft,
                 CardBorderRadius.TopRight, bottomLeft: 0, bottomRight: 0);
-            if (_addTabButton is not null && _itemsPresenter is not null)
-            {
-                _addTabButton.Width  = CardSize;
-                _addTabButton.Height = _itemsPresenter.DesiredSize.Height;
-            }
         }
         else if (TabStripPlacement == Dock.Bottom)
         {
             EffectiveCardBorderRadius = new CornerRadius(0, 0, bottomLeft: CardBorderRadius.BottomLeft,
                 bottomRight: CardBorderRadius.BottomRight);
-            if (_addTabButton is not null && _itemsPresenter is not null)
-            {
-                _addTabButton.Width  = CardSize;
-                _addTabButton.Height = _itemsPresenter.DesiredSize.Height;
-            }
         }
         else if (TabStripPlacement == Dock.Left)
         {
             EffectiveCardBorderRadius = new CornerRadius(CardBorderRadius.TopLeft, 0,
                 bottomLeft: CardBorderRadius.BottomLeft, bottomRight: 0);
-            if (_addTabButton is not null && _itemsPresenter is not null)
-            {
-                _addTabButton.Width               = CardSize;
-                _addTabButton.Height              = CardSize;
-                _addTabButton.HorizontalAlignment = HorizontalAlignment.Right;
-            }
         }
         else
         {
             EffectiveCardBorderRadius = new CornerRadius(0, CardBorderRadius.TopRight, bottomLeft: 0,
                 bottomRight: CardBorderRadius.BottomRight);
-            if (_addTabButton is not null && _itemsPresenter is not null)
-            {
-                _addTabButton.Width               = CardSize;
-                _addTabButton.Height              = CardSize;
-                _addTabButton.HorizontalAlignment = HorizontalAlignment.Left;
-            }
         }
     }
 }

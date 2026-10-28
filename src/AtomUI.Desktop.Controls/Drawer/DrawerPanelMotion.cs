@@ -2,7 +2,7 @@ using AtomUI.Animations;
 
 namespace AtomUI.Desktop.Controls;
 
-internal sealed class DrawerPanelMotion(DrawerPlacement placement, bool opening) : Motion
+internal sealed class DrawerPanelMotion(DrawerPlacement placement, bool opening) : AbstractMotion
 {
     protected override Avalonia.Animation.Easings.Easing DefaultEasing => MotionCurves.Ease;
 

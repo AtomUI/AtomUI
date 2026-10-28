@@ -49,12 +49,12 @@ public sealed class MotionBuilder
         return channel;
     }
 
-    public void Sequence(IEnumerable<Motion> children)
+    public void Sequence(IEnumerable<AbstractMotion> children)
     {
         Compose(children, false);
     }
 
-    public void Parallel(IEnumerable<Motion> children)
+    public void Parallel(IEnumerable<AbstractMotion> children)
     {
         Compose(children, true);
     }
@@ -189,7 +189,7 @@ public sealed class MotionBuilder
         return _channels[(int)kind] ??= new MotionChannel(this, kind);
     }
 
-    private void Compose(IEnumerable<Motion> children, bool parallel)
+    private void Compose(IEnumerable<AbstractMotion> children, bool parallel)
     {
         VerifyOpen();
         ArgumentNullException.ThrowIfNull(children);

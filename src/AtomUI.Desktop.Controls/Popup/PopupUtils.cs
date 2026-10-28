@@ -149,7 +149,7 @@ internal static class PopupUtils
         };
     }
 
-    internal static (Motion? open, Motion? close) CreateMotionForPlacement(PlacementMode placement)
+    internal static (AbstractMotion? open, AbstractMotion? close) CreateMotionForPlacement(PlacementMode placement)
     {
         if (!IsCanonicalAnchorPlacementMode(placement))
         {

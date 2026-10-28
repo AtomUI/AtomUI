@@ -69,7 +69,7 @@ TreeView 核心 API：
 | `Filter` / `FilterValue` / `FilterValueSelector` / `FilterStrategy` | 过滤、高亮、展开路径和隐藏未命中节点入口。 |
 | `FilterResultCount` | 当前过滤命中数量。 |
 | `EmptyIndicator` / `EmptyIndicatorTemplate` / `IsShowEmptyIndicator` / `EmptyIndicatorPadding` | 空状态展示入口。 |
-| `IsMotionEnabled` / `OpenMotion` / `CloseMotion` | 展开收起动效入口。 |
+| `IsMotionEnabled` / `OpenMotion` / `CloseMotion` | 展开收起动效入口，OpenMotion/CloseMotion 接收 AbstractMotion 定义。 |
 
 TreeViewItem 节点 API：
 

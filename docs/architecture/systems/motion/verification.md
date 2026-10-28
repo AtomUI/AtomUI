@@ -7,7 +7,7 @@
 
 | 能力 | 当前源码与目标差异 |
 | --- | --- |
-| 定义与执行 | Core/Animations/Motion 已实现 Motion/Build、内置家族、组合、类型化属性和原生执行；第三方子类与 atom: AXAML 消费有定向证据；合成后端尚未启用 |
+| 定义与执行 | Core/Animations/Motion 已实现 AbstractMotion/Build、Motion 附加属性接入、内置家族、组合、类型化属性和原生执行；第三方子类与 atom: AXAML 消费有定向证据；合成后端尚未启用 |
 | 目标 | 真实 Control 或模板静态隔离表面；旧 Actor、接口族和 MotionScene 已删除 |
 | 内容展开 | 公开 IMotionLayout 与 Controls.ContentViewport 已接入 Expander、Collapse、NavMenu Inline 和 TreeView 系列，几何 / 输入有定向证据 |
 | 状态初始化 | Animations 下已有 TransitionInitializationSession/TransitionSuppressionScope，继续服从独立初始化合同 |
@@ -15,13 +15,45 @@
 | 注册 | 基础 Motion 不依赖 Desktop animator 注册；旧 TransformOperations 注册已删除，Masonry 继续拥有自己的 ITransform 适配 |
 | 性能 | 已运行 NavMenu 侧栏与子菜单原生探针；没有实际 display present 数据及最低设备证据，跨平台帧率目标尚未验收 |
 
-源码入口：[Motion 核心](../../../../src/AtomUI.Core/Animations/Motion/Motion.cs)、
+源码入口：[定义基类](../../../../src/AtomUI.Core/Animations/Motion/AbstractMotion.cs)、
+[Motion 接入](../../../../src/AtomUI.Core/Animations/Motion/Motion.cs)、
 [单次播放](../../../../src/AtomUI.Core/Animations/Motion/Playback/MotionPlayback.cs)、
 [内容视口](../../../../src/AtomUI.Controls/Primitives/ContentViewport.cs)、
 [Popup 准备](../../../../src/AtomUI.Desktop.Controls/Popup/PopupSurface.cs)、
 [Desktop 注册](../../../../src/AtomUI.Desktop.Controls/ThemeManagerBuilderExtensions.cs)、
 [原生观测](../../../../tools/performances/AtomUI.GalleryPerformance/NativeMotionProbe.cs)。
 这些路径描述现存实现，消费者迁移后同步更新，不能把旧类删除与整个目标验收完成等同。
+
+## 定义与接入拆分验证
+
+2026-10-28，独立基线 `2de819b6a`。定义基类为 `AbstractMotion`，`Motion` 保留为 sealed 附加属性与目标级操作入口。
+六个属性仍以 Motion 为 owner，Enter/Leave 的值类型为 AbstractMotion；产品 AXAML、属性默认值、静态回调及可见性登记不变。
+Core 定义/组合/运行时、控件的 OpenMotion/CloseMotion、内部动效与现有自定义测试子类同步采用 AbstractMotion。
+
+临时消费者直接使用生产 `https://atomui.net` 的 Motion.Enter/Leave/IsVisible，实例为另一个命名空间中的自定义 AbstractMotion 子类。
+重构前消费者因缺失 AbstractMotion 出现两处 CS0246，这是新 API 不可用的编译证据，不作为运行时 Bug 复现。
+重构后两种首次显隐、绑定驱动开关、最新透明度来源恢复、静态请求身份/Reset 与同实例重新挂载均通过。
+临时用例与 AXAML 已删除，重新构建后 Core 定向6项通过；没有净增永久测试。
+
+清理后相关桌面控件定向918项通过，Gallery 导航及相关 Showcase 定向24项通过。
+最终对相同源码构建产物使用 `--no-build` 记录 Core6、Desktop918、Gallery24 的 TRX，汇总与逐项 Passed 结果一致，无跳过项；重复运行不累计成更多用例。
+首次桌面运行中的两项 NavMenu 间距测试因跨入子项模板匹配了多个同名 Frame 而失败；查找限定当前 TemplatedParent 后，
+保留原有 Single 与4/0间距断言，两个场景先定向通过，再完成上述918项确认。未为此改变产品布局或模板。
+
+结构审查覆盖9个控件文件：检查器在 TreeViewItem 的公共 IsChecked 与显式接口 IsChecked 上发生同名键异常；
+其余8个文件报告41项存量成员布局问题。对全部12个发生类型引用变更的 Desktop 源文件逐字比较，
+把新增的 AbstractMotion 类型名还原为 Motion 后均与基线完全相同，说明没有新增成员布局变更。
+TreeViewItem 的重复名称与显式接口映射人工核对，字段仅变更定义类型；未把检查器结果宣称为全绿，也未扩大到无关成员重排。
+
+生产 net8 Desktop.Controls 及依赖重新构建通过，0警告0错误；实际命令包含 `-p:AtomUITargetFrameworks=net8.0` 并恢复所需资产，
+此前仅使用 `--no-restore` 的尝试因本地资产缺少 net8 target 失败，不属于源码编译错误。
+当前输入的 Gallery Release/osx-arm64 NativeAOT 发布 exit0，输出校验通过，无 AtomUI IL/AOT 诊断；
+ReactiveUI 的 IL2104/IL3053 及本机 Homebrew dylib 的 macOS 部署版本告警仍存在，不作为旧版 macOS 运行证明。
+
+一位全新上下文审查者只读审查本轮差异及新基类，未发现 Critical、Important 或 Minor；
+核对实例实现、三个静态 getter 限定、附加属性初始化顺序/CWT/回调、所有类型接入与未变化的产品 AXAML。
+本轮不重新认证前一轮整个动效库或帧率、合成后端及跨平台性能；未运行全量回归，代码保持未提交待用户审查。
+临时测试、AXAML、TRX、日志及专用发布验证目录在完成记录后清理，常规开发构建产物保留。
 
 ## 能力验证
 

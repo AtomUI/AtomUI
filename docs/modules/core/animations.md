@@ -11,19 +11,20 @@
 | 能力 | 所有权 | AtomUI 增补 |
 | --- | --- | --- |
 | 时钟、关键帧、循环、属性过渡、样条求值 | Avalonia Animation、Style.Animations、Transitions、SplineEasing | 使用公开入口，不实现第二套帧时钟或贝塞尔求解器 |
-| 有限显式动效 | AtomUI Motion | 定义与组合、每目标请求身份、连续替代、绑定恢复、终态和布局能力 |
+| 有限显式动效 | AbstractMotion 定义与 Motion 接入 | 定义与组合、每目标请求身份、连续替代、绑定恢复、终态和布局能力 |
 | 初始状态提交 | Transition 初始化协议 | 暂时抑制自动过渡，等待 owner 提交完整基线，再恢复最新过渡来源 |
 | 持续过程反馈 | 对应控件与原生循环动画 | 控件决定运行条件；原生动画推进循环；停止时释放本次样式/运行作用域 |
 | 缺失的插值及兼容契约 | 最小适配器 | 仅保留框架缺少或语义不等价的能力，明确其使用者与差异 |
 
-Motion 是有限动效的定义模型。初始化会话不生成轨迹、不运行时钟、不继承 Motion，命名不得暗示其属于另一套播放系统。
+AbstractMotion 是有限动效的定义基类，Motion 拥有附加属性和目标级操作，二者不互相继承。
+初始化会话不生成轨迹、不运行时钟、不继承 AbstractMotion，命名不得暗示其属于另一套播放系统。
 重复反馈没有自然成功终点，其生命周期不伪装为不断完成并重建的有限 Motion 请求。
 
 ## 目录与命名
 
 ```text
 Animations/
-├── Motion/                         # Motion、构建、内置家族与有限播放
+├── Motion/                         # AbstractMotion 定义、Motion 接入、构建、内置家族与有限播放
 ├── Transitions/
 │   ├── TransitionInterpolation.cs   # 保留的颜色/阴影等语义适配
 │   └── Initialization/             # TransitionInitialization、会话、可撤销抑制

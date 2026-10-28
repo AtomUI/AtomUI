@@ -19,7 +19,7 @@ internal static class BadgeMotionTransforms
     }
 }
 
-internal sealed class BadgeInMotion(TimeSpan duration) : Motion(duration)
+internal sealed class BadgeInMotion(TimeSpan duration) : AbstractMotion(duration)
 {
     private static readonly Easing Curve = new ExponentialEaseOut();
     protected override Easing DefaultEasing => Curve;
@@ -32,7 +32,7 @@ internal sealed class BadgeInMotion(TimeSpan duration) : Motion(duration)
     }
 }
 
-internal sealed class BadgeOutMotion(TimeSpan duration) : Motion(duration)
+internal sealed class BadgeOutMotion(TimeSpan duration) : AbstractMotion(duration)
 {
     private static readonly Easing Curve = new ExponentialEaseIn();
     protected override Easing DefaultEasing => Curve;

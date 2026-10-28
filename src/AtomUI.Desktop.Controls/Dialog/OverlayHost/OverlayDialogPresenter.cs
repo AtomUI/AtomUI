@@ -900,7 +900,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         return double.IsFinite(value) ? Math.Clamp(value, min, max) : double.NaN;
     }
 
-    private Motion CreateSurfaceMotion(bool isOpening)
+    private AbstractMotion CreateSurfaceMotion(bool isOpening)
     {
         var origin = _motionOrigin ?? ResolveMotionOrigin();
         return isOpening

@@ -2,16 +2,16 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Animations;
 
-public class SequenceMotion : Motion
+public class SequenceMotion : AbstractMotion
 {
     [Content]
-    public IList<Motion> Children { get; } = new List<Motion>();
+    public IList<AbstractMotion> Children { get; } = new List<AbstractMotion>();
 
     public SequenceMotion()
     {
     }
 
-    public SequenceMotion(params Motion[] children)
+    public SequenceMotion(params AbstractMotion[] children)
     {
         ArgumentNullException.ThrowIfNull(children);
         foreach (var child in children)

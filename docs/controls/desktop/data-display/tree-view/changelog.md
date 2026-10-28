@@ -3,6 +3,11 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-28
+
+- Motion
+  - `OpenMotion` / `CloseMotion` 的值类型改为 `AbstractMotion`，`Motion` 专门拥有附加属性和目标级操作；TreeView 子项的 AXAML 接入与布局协议保持不变。
+
 ## 2026-10-27
 
 - Motion

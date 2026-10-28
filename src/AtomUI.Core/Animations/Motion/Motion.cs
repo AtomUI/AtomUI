@@ -1,37 +1,54 @@
-using AtomUI.Data;
-using AtomUI.Theme.Resources;
+using System.Runtime.CompilerServices;
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Threading;
 
 namespace AtomUI.Animations;
 
-public abstract partial class Motion
+/// <summary>Provides attached motion configuration and target-level operations.</summary>
+public sealed class Motion
 {
-    public TimeSpan? Duration { get; set; }
-    public TimeSpan Delay { get; set; }
-    public Easing? Easing { get; set; }
-    public RelativePoint? Origin { get; set; }
-    public FillMode FillMode { get; set; } = FillMode.Both;
+    public static readonly AttachedProperty<AbstractMotion?> EnterProperty =
+        AvaloniaProperty.RegisterAttached<Motion, Control, AbstractMotion?>("Enter");
 
-    protected Motion()
+    public static readonly AttachedProperty<AbstractMotion?> LeaveProperty =
+        AvaloniaProperty.RegisterAttached<Motion, Control, AbstractMotion?>("Leave");
+
+    public static readonly AttachedProperty<bool> IsVisibleProperty =
+        AvaloniaProperty.RegisterAttached<Motion, Control, bool>("IsVisible", true);
+
+    public static readonly AttachedProperty<TimeSpan?> DurationOverrideProperty =
+        AvaloniaProperty.RegisterAttached<Motion, Control, TimeSpan?>("DurationOverride");
+
+    public static readonly AttachedProperty<bool> IsEnabledProperty =
+        AvaloniaProperty.RegisterAttached<Motion, Control, bool>("IsEnabled", true);
+
+    public static readonly AttachedProperty<Direction> LayoutDirectionProperty =
+        AvaloniaProperty.RegisterAttached<Motion, Control, Direction>("LayoutDirection", Direction.Bottom);
+
+    public static AbstractMotion? GetEnter(Control target) => target.GetValue(EnterProperty);
+    public static void SetEnter(Control target, AbstractMotion? value) => target.SetValue(EnterProperty, value);
+    public static AbstractMotion? GetLeave(Control target) => target.GetValue(LeaveProperty);
+    public static void SetLeave(Control target, AbstractMotion? value) => target.SetValue(LeaveProperty, value);
+    public static bool GetIsVisible(Control target) => target.GetValue(IsVisibleProperty);
+    public static void SetIsVisible(Control target, bool value)
     {
+        target.SetValue(IsVisibleProperty, value);
+        // Setting the initial true source can equal the attached default and
+        // produce no change notification, but still opts into visibility ownership.
+        VisibilityOwners.GetValue(target, static control => new MotionVisibility(control)).Initialize();
     }
+    public static TimeSpan? GetDurationOverride(Control target) => target.GetValue(DurationOverrideProperty);
+    public static void SetDurationOverride(Control target, TimeSpan? value) => target.SetValue(DurationOverrideProperty, value);
+    public static bool GetIsEnabled(Control target) => target.GetValue(IsEnabledProperty);
+    public static void SetIsEnabled(Control target, bool value) => target.SetValue(IsEnabledProperty, value);
+    public static Direction GetLayoutDirection(Control target) => target.GetValue(LayoutDirectionProperty);
+    public static void SetLayoutDirection(Control target, Direction value) => target.SetValue(LayoutDirectionProperty, value);
 
-    protected Motion(TimeSpan? duration, Easing? easing = null, FillMode fillMode = FillMode.Both)
-    {
-        Duration = duration;
-        Easing = easing;
-        FillMode = fillMode;
-    }
-
-    public Task<MotionResult> PlayAsync(Control target, CancellationToken cancellationToken = default)
+    public static Task<MotionResult> GetVisibilityTask(Control target)
     {
         ArgumentNullException.ThrowIfNull(target);
-        Dispatcher.UIThread.VerifyAccess();
-        return MotionPlayback.PlayAsync(this, target, null, cancellationToken);
+        return VisibilityOwners.TryGetValue(target, out var owner) ? owner.Completion : StableVisibility;
     }
 
     public static void Reset(Control target)
@@ -48,78 +65,47 @@ public abstract partial class Motion
         return MotionPlayback.IsCurrent(target, result);
     }
 
-    protected virtual Easing DefaultEasing => MotionCurves.Linear;
-
-    protected abstract void Build(MotionBuilder builder, in MotionContext context);
-
-    internal Task<MotionResult> PlayAsync(Control target, TimeSpan duration, CancellationToken cancellationToken)
+    internal static void SnapVisibility(Control target)
     {
-        Dispatcher.UIThread.VerifyAccess();
-        return MotionPlayback.PlayAsync(this, target, duration, cancellationToken);
+        VisibilityOwners.GetValue(target, static control => new MotionVisibility(control)).SnapCurrent();
     }
 
-    internal MotionPlan Prepare(Control target, MotionValues initialValues, TimeSpan? durationOverride)
+    private static readonly ConditionalWeakTable<Control, MotionVisibility> VisibilityOwners = new();
+    private static readonly Task<MotionResult> StableVisibility = Task.FromResult(new MotionResult(MotionOutcome.Completed, 0, false));
+
+    private Motion()
     {
-        var defaultDuration = TokenResourceUtils.FindTokenResource(target, SharedTokenKind.MotionDurationMid) is TimeSpan tokenDuration
-            ? tokenDuration : TimeSpan.FromMilliseconds(200);
-        var requestedDuration = durationOverride ?? GetDurationOverride(target);
-        var duration = requestedDuration ?? Duration ?? defaultDuration;
-        var disabled = !GetIsEnabled(target) || TokenResourceUtils.FindTokenResource(target, SharedTokenKind.EnableMotion) is false;
-        if (disabled)
-        {
-            duration = TimeSpan.Zero;
-        }
-        var scaling = TopLevel.GetTopLevel(target)?.RenderScaling ?? 1;
-        var opacity = target.GetBaseValue(Visual.OpacityProperty);
-        var baseOpacity = opacity.HasValue ? opacity.Value : Visual.OpacityProperty.GetDefaultValue(target);
-        var context = new MotionContext(target.Bounds.Size, scaling, duration, Delay, Easing ?? DefaultEasing,
-            initialValues, baseOpacity, defaultDuration, requestedDuration.HasValue || Duration.HasValue || disabled,
-            new MotionPreparation(target), layoutDirection: GetLayoutDirection(target));
-        return PrepareDefinition(context);
     }
 
-    internal MotionPlan PrepareChild(in MotionContext parent, MotionValues initialValues,
-        IReadOnlyDictionary<AvaloniaProperty, object?>? initialProperties = null)
+    static Motion()
     {
-        var context = new MotionContext(parent.TargetSize, parent.RenderScaling, Duration ?? parent.DefaultDuration,
-            Delay, Easing ?? DefaultEasing, initialValues, parent.BaseOpacity, parent.DefaultDuration,
-            Duration.HasValue, parent.Preparation, initialProperties, parent.LayoutDirection);
-        return PrepareDefinition(context);
+        IsVisibleProperty.Changed.AddClassHandler<Control>(static (target, _) =>
+            VisibilityOwners.GetValue(target, static control => new MotionVisibility(control)).Request());
+        EnterProperty.Changed.AddClassHandler<Control>(static (target, _) => ConfigureVisibility(target));
+        LeaveProperty.Changed.AddClassHandler<Control>(static (target, _) => ConfigureVisibility(target));
+        IsEnabledProperty.Changed.AddClassHandler<Control>(static (target, change) =>
+        {
+            if (!change.GetNewValue<bool>() && VisibilityOwners.TryGetValue(target, out var owner))
+            {
+                owner.SnapCurrent();
+            }
+        });
+        LayoutDirectionProperty.Changed.AddClassHandler<Control>(static (target, _) =>
+        {
+            if (VisibilityOwners.TryGetValue(target, out var owner))
+            {
+                owner.SnapCurrent();
+            }
+        });
     }
 
-    private MotionPlan PrepareDefinition(in MotionContext context)
+    private static void ConfigureVisibility(Control target)
     {
-        var fillMode = FillMode;
-        var origin = Origin;
-        if (context.Duration < TimeSpan.Zero)
+        // Enter/Leave may also be read by a control's own lifecycle. Only a declared
+        // IsVisible source opts into this attached visibility owner.
+        if (target.IsSet(IsVisibleProperty))
         {
-            throw new ArgumentOutOfRangeException(nameof(Duration));
-        }
-        if (context.Delay < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(Delay));
-        }
-        if (!Enum.IsDefined(fillMode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(FillMode));
-        }
-        if (origin is { } point && (!double.IsFinite(point.Point.X) || !double.IsFinite(point.Point.Y)))
-        {
-            throw new ArgumentOutOfRangeException(nameof(Origin));
-        }
-        context.Preparation.Enter(this);
-        var builder = new MotionBuilder(context);
-        try
-        {
-            Build(builder, context);
-            var plan = builder.Freeze(fillMode, origin);
-            _ = plan.Duration + plan.Delay;
-            return plan;
-        }
-        finally
-        {
-            builder.Close();
-            context.Preparation.Leave(this);
+            VisibilityOwners.GetValue(target, static control => new MotionVisibility(control)).Initialize();
         }
     }
 }

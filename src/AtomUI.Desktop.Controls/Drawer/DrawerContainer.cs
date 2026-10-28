@@ -353,7 +353,7 @@ internal class DrawerContainer : ContentControl
                         .PlayAsync(surface, MotionDuration, CancellationToken.None);
                     if (mask is not null && IsShowMask && IsCurrentPresentation(version, surface, drawer, opening))
                     {
-                        Motion maskMotion = opening ? new FadeInMotion() : new FadeOutMotion();
+                        AbstractMotion maskMotion = opening ? new FadeInMotion() : new FadeOutMotion();
                         maskMotion.Easing = MotionCurves.Ease;
                         maskPlayback = maskMotion.PlayAsync(mask, MotionDuration, CancellationToken.None);
                     }

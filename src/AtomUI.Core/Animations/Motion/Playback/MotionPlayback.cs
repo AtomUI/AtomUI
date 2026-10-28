@@ -40,7 +40,7 @@ internal sealed class MotionPlayback
         _presentation = new MotionPresentation(state.Target, plan, first);
     }
 
-    internal static Task<MotionResult> PlayAsync(Motion motion, Control target, TimeSpan? duration,
+    internal static Task<MotionResult> PlayAsync(AbstractMotion motion, Control target, TimeSpan? duration,
         CancellationToken token)
     {
         if (token.IsCancellationRequested)

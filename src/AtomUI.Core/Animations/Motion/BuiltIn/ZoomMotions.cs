@@ -4,7 +4,7 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Animations;
 
-public class ZoomInMotion : Motion
+public class ZoomInMotion : AbstractMotion
 {
     public ZoomInMotion()
     {
@@ -25,7 +25,7 @@ public class ZoomInMotion : Motion
     }
 }
 
-public class ZoomOutMotion : Motion
+public class ZoomOutMotion : AbstractMotion
 {
     public ZoomOutMotion()
     {
@@ -46,7 +46,7 @@ public class ZoomOutMotion : Motion
     }
 }
 
-public class ZoomBigInMotion : Motion
+public class ZoomBigInMotion : AbstractMotion
 {
     public ZoomBigInMotion()
     {
@@ -67,7 +67,7 @@ public class ZoomBigInMotion : Motion
     }
 }
 
-public class ZoomBigOutMotion : Motion
+public class ZoomBigOutMotion : AbstractMotion
 {
     public ZoomBigOutMotion()
     {
@@ -88,7 +88,7 @@ public class ZoomBigOutMotion : Motion
     }
 }
 
-public class ZoomUpInMotion : Motion
+public class ZoomUpInMotion : AbstractMotion
 {
     public ZoomUpInMotion()
     {
@@ -109,7 +109,7 @@ public class ZoomUpInMotion : Motion
     }
 }
 
-public class ZoomUpOutMotion : Motion
+public class ZoomUpOutMotion : AbstractMotion
 {
     public ZoomUpOutMotion()
     {
@@ -130,7 +130,7 @@ public class ZoomUpOutMotion : Motion
     }
 }
 
-public class ZoomDownInMotion : Motion
+public class ZoomDownInMotion : AbstractMotion
 {
     public ZoomDownInMotion()
     {
@@ -151,7 +151,7 @@ public class ZoomDownInMotion : Motion
     }
 }
 
-public class ZoomDownOutMotion : Motion
+public class ZoomDownOutMotion : AbstractMotion
 {
     public ZoomDownOutMotion()
     {
@@ -172,7 +172,7 @@ public class ZoomDownOutMotion : Motion
     }
 }
 
-public class ZoomLeftInMotion : Motion
+public class ZoomLeftInMotion : AbstractMotion
 {
     public ZoomLeftInMotion()
     {
@@ -193,7 +193,7 @@ public class ZoomLeftInMotion : Motion
     }
 }
 
-public class ZoomLeftOutMotion : Motion
+public class ZoomLeftOutMotion : AbstractMotion
 {
     public ZoomLeftOutMotion()
     {
@@ -214,7 +214,7 @@ public class ZoomLeftOutMotion : Motion
     }
 }
 
-public class ZoomRightInMotion : Motion
+public class ZoomRightInMotion : AbstractMotion
 {
     public ZoomRightInMotion()
     {
@@ -235,7 +235,7 @@ public class ZoomRightInMotion : Motion
     }
 }
 
-public class ZoomRightOutMotion : Motion
+public class ZoomRightOutMotion : AbstractMotion
 {
     public ZoomRightOutMotion()
     {

@@ -50,11 +50,11 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Popup>();
 
-    public static readonly StyledProperty<Motion?> OpenMotionProperty =
-        AvaloniaProperty.Register<Popup, Motion?>(nameof(OpenMotion));
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        AvaloniaProperty.Register<Popup, AbstractMotion?>(nameof(OpenMotion));
 
-    public static readonly StyledProperty<Motion?> CloseMotionProperty =
-        AvaloniaProperty.Register<Popup, Motion?>(nameof(CloseMotion));
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        AvaloniaProperty.Register<Popup, AbstractMotion?>(nameof(CloseMotion));
 
     public static readonly StyledProperty<PlacementMode?> RequestedPlacementProperty =
         AvaloniaProperty.Register<Popup, PlacementMode?>(nameof(RequestedPlacement));
@@ -120,13 +120,13 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
-    public Motion? OpenMotion
+    public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
-    public Motion? CloseMotion
+    public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);
@@ -267,7 +267,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         Dispatcher.Post(() => _ = PlayOpenMotionAsync(version, target, motion), DispatcherPriority.Loaded);
     }
 
-    private async Task PlayOpenMotionAsync(long version, Control target, Motion motion)
+    private async Task PlayOpenMotionAsync(long version, Control target, AbstractMotion motion)
     {
         if (!IsCurrentMotion(version, target) || !IsOpen || _closeMotionState != PopupCloseState.Idle)
         {
@@ -414,7 +414,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         Dispatcher.Post(() => _ = PlayCloseMotionAndCloseAsync(version, motionActor, closeMotion), DispatcherPriority.Loaded);
     }
 
-    private async Task PlayCloseMotionAndCloseAsync(long version, Control target, Motion motion)
+    private async Task PlayCloseMotionAndCloseAsync(long version, Control target, AbstractMotion motion)
     {
         if (!IsCurrentMotion(version, target) || _closeMotionState != PopupCloseState.Pending)
         {

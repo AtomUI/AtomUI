@@ -828,7 +828,8 @@ public class NavMenuLayoutTests
     {
         return root.GetVisualDescendants()
                    .OfType<Border>()
-                   .Single(border => border.Name == "PART_ChildItemsFrame");
+                   .Single(border => border.Name == "PART_ChildItemsFrame" &&
+                                     ReferenceEquals(border.TemplatedParent, root));
     }
 
     private static VisualLayerManager CreatePopupOverlayHost(Control content)

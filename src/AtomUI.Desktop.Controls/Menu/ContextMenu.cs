@@ -42,10 +42,10 @@ public class ContextMenu : AvaloniaContextMenu,
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<ContextMenu>();
     
-    public static readonly StyledProperty<Motion?> OpenMotionProperty =
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<ContextMenu>();
         
-    public static readonly StyledProperty<Motion?> CloseMotionProperty =
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<ContextMenu>();
     
     public BoxShadows PopupRootShadow
@@ -96,13 +96,13 @@ public class ContextMenu : AvaloniaContextMenu,
         set => SetValue(MotionDurationProperty, value);
     }
     
-    public Motion? OpenMotion
+    public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
-    public Motion? CloseMotion
+    public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

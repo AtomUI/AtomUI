@@ -404,8 +404,8 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     
     #endregion
     
-    private static readonly Motion DefaultOpenMotion = new ExpandMotion(Direction.Top, easing: new CubicEaseOut());
-    private static readonly Motion DefaultCloseMotion = new CollapseMotion(Direction.Top, easing: new CubicEaseIn());
+    private static readonly AbstractMotion DefaultOpenMotion = new ExpandMotion(Direction.Top, easing: new CubicEaseOut());
+    private static readonly AbstractMotion DefaultCloseMotion = new CollapseMotion(Direction.Top, easing: new CubicEaseIn());
     private ContentViewport? _childrenViewport;
     private long _childrenRequestVersion;
     private readonly BorderRenderHelper _borderRenderHelper;

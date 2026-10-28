@@ -104,11 +104,11 @@ public partial class TreeView : AvaloniaTreeView,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TreeView>();
     
-    public static readonly StyledProperty<Motion?> OpenMotionProperty =
-        AvaloniaProperty.Register<TreeView, Motion?>(nameof(OpenMotion));
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        AvaloniaProperty.Register<TreeView, AbstractMotion?>(nameof(OpenMotion));
         
-    public static readonly StyledProperty<Motion?> CloseMotionProperty =
-        AvaloniaProperty.Register<TreeView, Motion?>(nameof(CloseMotion));
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        AvaloniaProperty.Register<TreeView, AbstractMotion?>(nameof(CloseMotion));
     
     public static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
         AvaloniaProperty.Register<TreeView, ItemToggleType>(nameof(ToggleType), ItemToggleType.None);
@@ -289,13 +289,13 @@ public partial class TreeView : AvaloniaTreeView,
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public Motion? OpenMotion
+    public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
     
-    public Motion? CloseMotion
+    public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

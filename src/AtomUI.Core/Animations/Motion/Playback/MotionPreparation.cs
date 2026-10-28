@@ -5,7 +5,7 @@ namespace AtomUI.Animations;
 
 internal sealed class MotionPreparation
 {
-    private readonly HashSet<Motion> _active = new(ReferenceEqualityComparer.Instance);
+    private readonly HashSet<AbstractMotion> _active = new(ReferenceEqualityComparer.Instance);
     private Control? _target;
     private Dictionary<AvaloniaProperty, object?>? _values;
 
@@ -34,7 +34,7 @@ internal sealed class MotionPreparation
         return value;
     }
 
-    internal void Enter(Motion motion)
+    internal void Enter(AbstractMotion motion)
     {
         if (_active.Count >= 64 || !_active.Add(motion))
         {
@@ -42,7 +42,7 @@ internal sealed class MotionPreparation
         }
     }
 
-    internal void Leave(Motion motion)
+    internal void Leave(AbstractMotion motion)
     {
         _active.Remove(motion);
         if (_active.Count == 0)

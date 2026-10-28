@@ -654,14 +654,14 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         // runtime value cannot be expressed as a binding inside the definition.
         var vertical = MenuPlacement is FloatButtonGroupMenuPlacement.Top or FloatButtonGroupMenuPlacement.Bottom;
         var offset = vertical ? DesiredSize.Height : DesiredSize.Width;
-        Motion enter = MenuPlacement switch
+        AbstractMotion enter = MenuPlacement switch
         {
             FloatButtonGroupMenuPlacement.Top => new MoveDownInMotion(offset, easing: DefaultShowMotionEasing),
             FloatButtonGroupMenuPlacement.Bottom => new MoveUpInMotion(offset, easing: DefaultShowMotionEasing),
             FloatButtonGroupMenuPlacement.Left => new MoveRightInMotion(offset, easing: DefaultShowMotionEasing),
             _ => new MoveLeftInMotion(offset, easing: DefaultShowMotionEasing)
         };
-        Motion leave = MenuPlacement switch
+        AbstractMotion leave = MenuPlacement switch
         {
             FloatButtonGroupMenuPlacement.Top => new MoveDownOutMotion(offset, easing: DefaultHideMotionEasing),
             FloatButtonGroupMenuPlacement.Bottom => new MoveUpOutMotion(offset, easing: DefaultHideMotionEasing),

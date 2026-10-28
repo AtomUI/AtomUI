@@ -3,7 +3,7 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Animations;
 
-public class FadeInMotion : Motion
+public class FadeInMotion : AbstractMotion
 {
     public FadeInMotion()
     {
@@ -20,7 +20,7 @@ public class FadeInMotion : Motion
     }
 }
 
-public class FadeOutMotion : Motion
+public class FadeOutMotion : AbstractMotion
 {
     public FadeOutMotion()
     {

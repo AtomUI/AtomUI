@@ -199,7 +199,7 @@ internal sealed class BadgeMotionSession(Control owner)
             Task<MotionResult> playback;
             try
             {
-                Motion motion = visible ? new BadgeInMotion(_duration) : new BadgeOutMotion(_duration);
+                AbstractMotion motion = visible ? new BadgeInMotion(_duration) : new BadgeOutMotion(_duration);
                 playback = motion.PlayAsync(target);
             }
             finally

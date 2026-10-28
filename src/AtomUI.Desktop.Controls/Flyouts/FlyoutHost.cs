@@ -56,10 +56,10 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<FlyoutHost>();
     
-    public static readonly StyledProperty<Motion?> OpenMotionProperty =
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<FlyoutHost>();
         
-    public static readonly StyledProperty<Motion?> CloseMotionProperty =
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<FlyoutHost>();
     
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
@@ -169,13 +169,13 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         set => SetValue(MotionDurationProperty, value);
     }
     
-    public Motion? OpenMotion
+    public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
-    public Motion? CloseMotion
+    public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

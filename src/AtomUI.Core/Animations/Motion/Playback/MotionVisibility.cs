@@ -148,7 +148,7 @@ internal sealed class MotionVisibility
         return (version, completion);
     }
 
-    private async Task PlayAsync(long version, bool visible, Motion effect, TaskCompletionSource<MotionResult> completion)
+    private async Task PlayAsync(long version, bool visible, AbstractMotion effect, TaskCompletionSource<MotionResult> completion)
     {
         if (!IsCurrent(version, visible))
         {

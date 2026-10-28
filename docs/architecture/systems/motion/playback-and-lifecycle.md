@@ -54,7 +54,7 @@ watchdog 仅处理异常停滞，依据实际启动时刻、Delay 与时长设�
 内置有限入/离场默认 Both，避免结束到 owner 隐藏之间出现基线闪回。外部取消一律恢复基线，不提交 Forward 终点；
 替代采用下一节的连续交接，不执行外部取消的基线恢复路径。
 
-Forward/Both 的终点转交目标侧终态记录，只保留呈现值和可撤销覆盖，不保留 Motion、CTS、任务、帧订阅或 watchdog。
+Forward/Both 的终点转交目标侧终态记录，只保留呈现值和可撤销覆盖，不保留 AbstractMotion 定义、CTS、任务、帧订阅或 watchdog。
 下一次准备成功的请求、Motion.Reset(target)、目标 detach、模板/owner 失效都必须释放终态覆盖。
 Reset 只允许无活动播放时调用；活动播放中明确报错，调用者先取消并等待结束。
 恢复模式的离场不提供异步隐藏窗口；需要结束后再关闭宿主的 owner 使用 Both/Forward。

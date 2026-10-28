@@ -4,7 +4,7 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Animations;
 
-public class SlideUpInMotion : Motion
+public class SlideUpInMotion : AbstractMotion
 {
     public SlideUpInMotion()
     {
@@ -25,7 +25,7 @@ public class SlideUpInMotion : Motion
     }
 }
 
-public class SlideUpOutMotion : Motion
+public class SlideUpOutMotion : AbstractMotion
 {
     public SlideUpOutMotion()
     {
@@ -46,7 +46,7 @@ public class SlideUpOutMotion : Motion
     }
 }
 
-public class SlideDownInMotion : Motion
+public class SlideDownInMotion : AbstractMotion
 {
     public SlideDownInMotion()
     {
@@ -67,7 +67,7 @@ public class SlideDownInMotion : Motion
     }
 }
 
-public class SlideDownOutMotion : Motion
+public class SlideDownOutMotion : AbstractMotion
 {
     public SlideDownOutMotion()
     {
@@ -88,7 +88,7 @@ public class SlideDownOutMotion : Motion
     }
 }
 
-public class SlideLeftInMotion : Motion
+public class SlideLeftInMotion : AbstractMotion
 {
     public SlideLeftInMotion()
     {
@@ -109,7 +109,7 @@ public class SlideLeftInMotion : Motion
     }
 }
 
-public class SlideLeftOutMotion : Motion
+public class SlideLeftOutMotion : AbstractMotion
 {
     public SlideLeftOutMotion()
     {
@@ -130,7 +130,7 @@ public class SlideLeftOutMotion : Motion
     }
 }
 
-public class SlideRightInMotion : Motion
+public class SlideRightInMotion : AbstractMotion
 {
     public SlideRightInMotion()
     {
@@ -151,7 +151,7 @@ public class SlideRightInMotion : Motion
     }
 }
 
-public class SlideRightOutMotion : Motion
+public class SlideRightOutMotion : AbstractMotion
 {
     public SlideRightOutMotion()
     {

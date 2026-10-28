@@ -2,6 +2,11 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-10-28
+
+- Motion
+  - Popup 及 Flyout/ContextMenu 接入的 `OpenMotion` / `CloseMotion` 值类型统一为 `AbstractMotion`；目标级操作继续使用 `Motion`，原有 AXAML 附加属性写法保持不变。
+
 ## 2026-10-27
 
 - Motion

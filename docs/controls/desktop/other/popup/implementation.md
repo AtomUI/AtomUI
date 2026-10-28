@@ -128,7 +128,7 @@ false→true 或显式重开在 Completing 阶段也使旧关闭失效。`Closed
 无 rooted logical owner 的 Direct Popup 还通过 visual attach 注册表面，在首个绘制前完成准备。
 Direct Popup 需要在其可达资源作用域提供宿主主题；没有 AtomUI 表面的自定义宿主按无动效路径关闭，
 不能用未挂载的模拟目标代表实际宿主支持动画。
-一次 Loaded 调度跨越布局准备边界，调用 `Motion.PlayAsync` 后释放初始覆盖。无可播放轨迹时恢复底层属性来源。
+OpenMotion/CloseMotion 接收 AbstractMotion 定义。一次 Loaded 调度跨越布局准备边界，调用定义实例的 `PlayAsync` 后释放初始覆盖。无可播放轨迹时恢复底层属性来源。
 异步任务捕获请求版本和目标身份，旧宿主不能修改新打开周期；有效时长通过请求传入，不修改共享 Motion 定义。
 
 关闭动效只能延迟仍然有效的普通关闭。Popup 打开时记录该会话的 owning `TopLevel` 以及当时是否已有 logical owner；
@@ -206,9 +206,9 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
 - Pinned 普通关闭包括外点、Escape、失焦、window deactivation、`Close`/`Hide` 和业务 open state false；lifecycle close 必须跳过 motion 并释放 host、binding、subscription、tracker、wheel guard 和 timer。
 - Unpin 不关闭已打开 Popup；pending unpin 必须清除隐藏 open request，target 恢复后不得复活旧请求。
 - 业务 open state coercion 不得通过 suppression flag 发布瞬态 false；lifecycle close scope 是唯一允许 pinned 业务状态变为 false 的路径。
-- Popup 必须以共享 `MotionExecutionState` 表达关闭动效阶段；`Pending`、`Playing` 和 `Completing` 单向收敛，重复
+- Popup 以自身 `PopupCloseState` 表达关闭动效阶段；`Pending`、`Playing` 和 `Completing` 单向收敛，重复
   close 不得创建并行关闭动效，`Closed` 必须回到 `Idle`。
-- Popup 开启动画必须覆盖 `Opened` 与 motion actor ready 的两种先后顺序；物理 `IsOpen=true` 但 actor 仍透明不是有效打开终态。
+- Popup 开启动画必须覆盖 `Opened` 与实际表面就绪的两种先后顺序；物理 `IsOpen=true` 但表面仍透明不是有效打开终态。
 
 ## 11. 测试与验证
 

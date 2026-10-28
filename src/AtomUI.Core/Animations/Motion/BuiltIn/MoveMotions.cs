@@ -4,7 +4,7 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Animations;
 
-public class MoveUpInMotion : Motion
+public class MoveUpInMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -33,7 +33,7 @@ public class MoveUpInMotion : Motion
     }
 }
 
-public class MoveUpOutMotion : Motion
+public class MoveUpOutMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -62,7 +62,7 @@ public class MoveUpOutMotion : Motion
     }
 }
 
-public class MoveDownInMotion : Motion
+public class MoveDownInMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -91,7 +91,7 @@ public class MoveDownInMotion : Motion
     }
 }
 
-public class MoveDownOutMotion : Motion
+public class MoveDownOutMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -120,7 +120,7 @@ public class MoveDownOutMotion : Motion
     }
 }
 
-public class MoveLeftInMotion : Motion
+public class MoveLeftInMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -149,7 +149,7 @@ public class MoveLeftInMotion : Motion
     }
 }
 
-public class MoveLeftOutMotion : Motion
+public class MoveLeftOutMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -178,7 +178,7 @@ public class MoveLeftOutMotion : Motion
     }
 }
 
-public class MoveRightInMotion : Motion
+public class MoveRightInMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 
@@ -207,7 +207,7 @@ public class MoveRightInMotion : Motion
     }
 }
 
-public class MoveRightOutMotion : Motion
+public class MoveRightOutMotion : AbstractMotion
 {
     public double? Offset { get; set; }
 

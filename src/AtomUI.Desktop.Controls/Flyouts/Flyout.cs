@@ -54,10 +54,10 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     public static readonly StyledProperty<object> ContentProperty =
         AvaloniaProperty.Register<Flyout, object>(nameof(Content));
     
-    public static readonly StyledProperty<Motion?> OpenMotionProperty =
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         PopupControl.OpenMotionProperty.AddOwner<Flyout>();
         
-    public static readonly StyledProperty<Motion?> CloseMotionProperty =
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         PopupControl.CloseMotionProperty.AddOwner<Flyout>();
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
@@ -115,13 +115,13 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         set => SetValue(ContentProperty, value);
     }
     
-    public Motion? OpenMotion
+    public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
-    public Motion? CloseMotion
+    public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

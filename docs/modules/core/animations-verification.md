@@ -1,6 +1,7 @@
 # 动画基础设施全局审查与验证
 
-日期：2026-10-28；工作树 `feature/motion`，基线 `6c647fef1`，改动未提交。
+全局审查日期：2026-10-28；工作树 `feature/motion`，该阶段基线 `6c647fef1`，对应重构提交 `2de819b6a`。
+定义与接入入口拆分以 `2de819b6a` 为独立基线，当前证据见 [Motion 验证状态](../../architecture/systems/motion/verification.md)。
 整体职责见 [动画基础设施架构](animations.md)，本页记录实际审查、测量和完成边界。
 旧阶段的测试数量不作为本页输入版本的通过证明。
 
@@ -8,7 +9,7 @@
 
 | 范围 | 结果与处理 |
 | --- | --- |
-| 有限动效 | 保留已批准的 Motion 基类、子类扩展、组合与统一请求所有权；不恢复 Actor 或第二套时钟 |
+| 有限动效 | 保留已批准的定义基类、子类扩展、组合与统一请求所有权；不恢复 Actor 或第二套时钟 |
 | 曲线求解 | 保留6组控制点，删除固定28轮二分求解，使用 Avalonia SplineEasing |
 | 初始化命名 | StateMotion 类族归位为 Transitions/Initialization 下的 TransitionInitialization / Session / Owner；atom:TransitionInitialization.Mode 用于内部模板 |
 | 初始化重入 | 构造/释放期间以当前登记身份和 Mode 判断所有权；Reset 后重新检查 owner、target 与 parent，防止已释放对象重新入链 |

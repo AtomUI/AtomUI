@@ -86,7 +86,7 @@ public class MotionExecutionTests
         });
     }
 
-    private sealed class ScaleMotion(TimeSpan duration) : Motion(duration)
+    private sealed class ScaleMotion(TimeSpan duration) : AbstractMotion(duration)
     {
         protected override void Build(MotionBuilder builder, in MotionContext context)
         {

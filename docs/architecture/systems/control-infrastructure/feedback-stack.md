@@ -219,7 +219,7 @@ manager 由应用视觉树负责层级，`Show` 不得越权重排其外部容�
 共享 presenter theme 提供布局 panel 和状态 selector。Message 的两层背板在 manager AXAML 中静态声明；
 Notification 折叠层由真实 item container 表达。状态从 manager 属性单向投影到 presenter，不能由模板节点反写 manager。
 
-卡片进入/退出使用共享 `FeedbackCardMotion : Motion`，直接以实际阴影 Frame 为目标，并按 `Position` 选择位移轴与方向：TopCenter 从 `Y=-64 DIP`、
+卡片进入/退出使用共享 `FeedbackCardMotion : AbstractMotion`，直接以实际阴影 Frame 为目标，并按 `Position` 选择位移轴与方向：TopCenter 从 `Y=-64 DIP`、
 BottomCenter 从 `Y=+64 DIP`、Left 从 `X=-64 DIP`、Right 从 `X=+64 DIP` 进入，退出沿同一方向离场。起点/终点只改变
 opacity 与 translate，scale 始终为 `1`。默认时长使用 SharedToken `MotionDurationMid`（默认 `200ms`），opacity 与
 translate 在整个时长内连续变化，统一使用 `cubic-bezier(0.645, 0.045, 0.355, 1)`；不得增加使绝大部分透明度集中在

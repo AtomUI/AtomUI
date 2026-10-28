@@ -3,7 +3,7 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Animations;
 
-public class ExpandMotion : Motion
+public class ExpandMotion : AbstractMotion
 {
     public Direction? Direction { get; set; }
 
@@ -26,7 +26,7 @@ public class ExpandMotion : Motion
     }
 }
 
-public class CollapseMotion : Motion
+public class CollapseMotion : AbstractMotion
 {
     public Direction? Direction { get; set; }
 

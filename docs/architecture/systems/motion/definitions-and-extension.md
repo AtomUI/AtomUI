@@ -4,7 +4,7 @@
 
 ## 基类与配置
 
-`Motion` 是抽象基类。公共 `PlayAsync(Control target, CancellationToken cancellationToken = default)`
+`AbstractMotion` 是动效定义的抽象基类。公共 `PlayAsync(Control target, CancellationToken cancellationToken = default)`
 是非 virtual 入口，返回 `Task<MotionResult>`。子类实现受保护的
 `Build(MotionBuilder builder, in MotionContext context)`。
 
@@ -19,7 +19,7 @@ var motion = new ZoomInMotion
 var result = await motion.PlayAsync(surface, cancellationToken);
 ```
 
-Motion 是可由 CLR/AXAML 配置的定义对象；准备阶段生成本次不可变运行快照。配置及准备在目标 UI 线程发生，
+AbstractMotion 子类是可由 CLR/AXAML 配置的定义对象；准备阶段生成本次不可变运行快照。配置及准备在目标 UI 线程发生，
 播放中的修改只影响后续请求。共享实例不得保存目标、运行任务、取消源、句柄或订阅。
 同一配置对象跨 Dispatcher 使用不属于默认支持范围。
 
@@ -36,7 +36,7 @@ Token 的动态绑定属于 ControlTheme/控件资源宿主，准备时读取有
 | SlideUpInMotion / SlideUpOutMotion 等四方向变体 | 对应轴缩放与透明度 |
 | 各方向 MoveIn/Out 子类 | 平移与透明度 |
 | ExpandMotion / CollapseMotion | 自然内容占位和视口变化，需要布局能力 |
-| SequenceMotion / ParallelMotion | 顺序或并行时间轴，仍是 Motion |
+| SequenceMotion / ParallelMotion | 顺序或并行时间轴，仍是 AbstractMotion 定义 |
 
 子类可以共用内部轨迹构建逻辑，但不各自实现播放与释放。内置实现使用和第三方相同的公开构建合同。
 具体端点、方向原点、曲线控制点与组件默认值由[内置规格](built-in-motion.md)统一拥有。
@@ -47,7 +47,7 @@ Token 的动态绑定属于 ControlTheme/控件资源宿主，准备时读取有
 `MotionBuilder` 声明强类型通道、关键帧、分段曲线与端点；构建完成后失效，不得保存到字段或继续写入。
 
 ```csharp
-public sealed class RiseInMotion : Motion
+public sealed class RiseInMotion : AbstractMotion
 {
     public double DistanceRatio { get; set; } = 0.08;
 
@@ -94,7 +94,7 @@ Sequence 后续子段的局部 Delay 保持上一段末值，不提前覆盖前�
 
 ## 第三方与 AOT
 
-开发者以普通 .NET/NuGet 库提供 Motion 子类，通过直接构造或编译 AXAML 消费。普通子类无需全局注册或程序集发现。
+开发者以普通 .NET/NuGet 库提供 AbstractMotion 子类，通过直接构造或编译 AXAML 消费。普通子类无需全局注册或程序集发现。
 自定义 Easing/插值器必须是可重入纯计算，算法对象在运行期间保持不可变。库冻结本次配置引用，不克隆任意第三方对象的内部状态。
 能力不足的属性使用明确的原生路径，不能承诺所有扩展都在合成端运行。
 
@@ -109,7 +109,11 @@ Sequence 后续子段的局部 Delay 保持上一段末值，不提前覆盖前�
 ## AXAML 接入
 
 内置类型统一使用 `atom:` 前缀，映射到 `https://atomui.net`。
-`Motion.Enter`、`Motion.Leave` 的值均为 Motion；`Motion.IsVisible` 表达该接入口拥有的目标可见状态。
+`Motion` 是拥有附加属性的 sealed 接入类型，私有构造函数，不承载动效实例配置或构建逻辑。
+`Motion.Enter`、`Motion.Leave` 的值均为 `AbstractMotion`；`Motion.IsVisible` 表达该接入口拥有的目标可见状态。
+六个附加属性继续以 Motion 为注册 owner；公开命名空间、XMLNS 映射、名称和默认值保持一致。
+实例播放调用 `definition.PlayAsync`；目标级恢复、请求身份和显隐完成分别使用 `Motion.Reset`、`Motion.IsCurrent`、`Motion.GetVisibilityTask`。
+SequenceMotion/ParallelMotion 的 Children、构造参数及 MotionBuilder 的组合入口接受 AbstractMotion 定义。
 
 ```xml
 <Border xmlns:atom="https://atomui.net"

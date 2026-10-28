@@ -60,7 +60,8 @@ Control 家族的共享视觉语义。跨 Desktop/Mobile 的抽象 Control Token
 ### Motion 定义与播放
 
 [Motion 系统架构](../../architecture/systems/motion/overview.md)定义共享合同。公开命名空间为 `AtomUI.Animations`，
-AXAML 使用 `atom:`。具体动效继承 Motion 并实现 Build，PlayAsync 对真实 Control 执行，每次准备独立快照。
+AXAML 使用 `atom:`。具体动效继承 AbstractMotion 并实现 Build，PlayAsync 对真实 Control 执行，每次准备独立快照。
+Motion 是附加属性与目标级操作入口；定义基类更名不改变 `atom:Motion.Enter`、`atom:Motion.IsVisible` 等 AXAML 写法。
 Sequence / Parallel 共用一个目标请求身份；相同目标的新成功请求连续替代当前执行，过期请求不能提交新状态。
 取消、替代、detach 和未就绪通过 MotionResult 区分，异常通过任务传播。
 

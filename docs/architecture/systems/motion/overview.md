@@ -2,7 +2,7 @@
 
 > 状态：重构目标架构。本文定义 Motion 重构采用的契约；当前源码与验收差异由[验证状态](verification.md)维护。
 
-Motion 是跨 Core、公共控件和具体控件包的显式动效能力。公共模型采用 `Motion` 抽象基类与具体动效子类，
+Motion 是跨 Core、公共控件和具体控件包的显式动效能力。公共模型采用 `AbstractMotion` 抽象基类与具体动效子类，
 目标是已有 Control，不要求 Actor 基类、Actor 接口或通用动画包装控件。
 
 ## 系统定位
@@ -32,7 +32,7 @@ Motion 是跨 Core、公共控件和具体控件包的显式动效能力。公�
 | AtomUI.Core | Motion 定义、构建、曲线、运行结果、执行所有权、内部原生适配及布局能力合同 | 具体控件状态、Desktop 宿主或公共布局控件 |
 | AtomUI.Controls | 可复用内容视口/布局原语与必要模板接入 | 第二套时钟或通用业务状态机 |
 | 具体控件包 | 模板、组件参数、显示意图、物理宿主和业务事件 | 各自复制的计时、取消和属性恢复协议 |
-| 第三方动效库 | Motion 子类、参数、纯曲线/插值及符合合同的布局扩展 | 绕过执行协议的全局目标注册或宽泛类型抢占 |
+| 第三方动效库 | AbstractMotion 子类、参数、纯曲线/插值及符合合同的布局扩展 | 绕过执行协议的全局目标注册或宽泛类型抢占 |
 | Gallery 与性能工具 | 原生场景、布局/输入、资源和真实帧时证据 | 改变产品默认行为以制造性能收益 |
 
 项目依赖沿用 [Core 与 Control 包边界](../../foundations/dependency-graph.md)。基础视觉动效不依赖 Desktop 初始化，
@@ -41,12 +41,14 @@ Core 不反向引用 Controls；先使用现有项目，不为本系统新增运
 ## 公开模型
 
 公共命名空间为 `AtomUI.Animations`，AXAML 使用 `xmlns:atom="https://atomui.net"`。
-`Motion` 为抽象基类，Fade、Zoom、Slide、Move、Expand/Collapse 和组合为具体子类。
+`AbstractMotion` 为动效定义基类，Fade、Zoom、Slide、Move、Expand/Collapse 和组合为具体子类。
+`Motion` 是 sealed 接入类型，私有构造函数，拥有附加属性、可见性登记及目标级 Reset/IsCurrent 操作。
+两者不互相继承；`Motion.Enter`、`Motion.Leave` 的属性值类型为 `AbstractMotion`，属性 owner 与 AXAML 名称保持 `Motion`。
 应用通过实例的 `PlayAsync` 播放，也可通过 `atom:Motion.IsVisible`、`Enter`、`Leave` 声明节点展示过程。
 具体成员语义由[定义与扩展](definitions-and-extension.md)拥有。
 
 ```text
-Motion 子类及配置 → 本次几何/参数快照 → 统一播放协议
+AbstractMotion 子类及配置 → 本次几何/参数快照 → 统一播放协议
                                       ├─ 满足能力的合成执行
                                       ├─ 原生动画时钟
                                       └─ 专用布局能力

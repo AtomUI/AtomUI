@@ -175,3 +175,14 @@ macOS 原生窗口为 1300×900 DIP、RenderScaling=2，输入通过框架 RawPo
 既有打开路径用例合并实际可见性、动效完成和父项分配断言，不新增永久用例。
 临时场景移除后的 Gallery CaseNavigationLayoutTests 另3项通过，合计249项最终定向测试；未运行全量回归。
 临时原生输入驱动、Skia 场景和13个取证文件已删除，媒体审计 clean；原生性能工具按正常入口重建通过。
+
+## 展开准备正确性验证（2026-10-28）
+
+本轮仅保留 `MotionVisibility` 的首帧占位准备与异常清理。窗口共享帧调度、背景缓存和 NavMenu 宽度迁移已撤回，
+播放执行器与 NavMenu 恢复 `e0894f90b` 实现；未保留性能提升或帧率达标声明。
+
+原失败用例在可见切换后的首个 Loaded 回调前强制布局，曾得到120 DIP自然高度，修复后Bounds与DesiredSize均为0。
+准备失败用例确认临时透明度释放，恢复最新显示意图与自然布局。两个临时用例在原播放执行器下通过后删除。
+清理后Core Animations定向5项、Desktop ContentExpansion/NavMenuInline/OverlayDialogPresenterMotion/CloseMotionExecution
+定向92项均通过，永久测试净增0；未运行全量回归。保留源文件的结构检查1个文件、0项问题，git diff --check通过。
+这份证据仅证明上述正确性行为，不证明原生屏幕闪烁已全部消除或60/120 FPS达标。

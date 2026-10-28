@@ -4,6 +4,7 @@ using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using System.Reactive.Disposables;
 
 namespace AtomUI.Animations;
 
@@ -99,7 +100,19 @@ internal sealed class MotionVisibility
             }
             if (visible && !_target.IsVisible)
             {
-                var preparation = _target.SetValue(Visual.OpacityProperty, 0, BindingPriority.Animation);
+                var preparation = new CompositeDisposable();
+                _preparation = preparation;
+                preparation.Add(_target.SetValue(Visual.OpacityProperty, 0, BindingPriority.Animation) ?? Disposable.Empty);
+                if (_target is IMotionLayout layout)
+                {
+                    // Definitions are prepared without writes. Establish occupancy before visibility
+                    // can trigger layout; the playback lease replaces this lease before it is released.
+                    var plan = effect.Prepare(_target, MotionValues.Baseline(0), null);
+                    if (plan.Layouts.FirstOrDefault() is { Expanded: true, Start.Ticks: 0 } segment && plan.Layouts.Length > 0)
+                    {
+                        preparation.Add(layout.BeginLayoutMotion(segment.Direction, true));
+                    }
+                }
                 if (!IsCurrent(version, visible))
                 {
                     preparation?.Dispose();
@@ -236,6 +249,9 @@ internal sealed class MotionVisibility
         {
             try
             {
+                var preparation = _preparation;
+                _preparation = null;
+                preparation?.Dispose();
                 Snap(version, visible);
             }
             catch (Exception cleanup)

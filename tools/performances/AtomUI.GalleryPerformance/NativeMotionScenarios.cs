@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
-using AtomUI.MotionScene;
+using AtomUI.Controls.Primitives;
 using AtomUIGallery.Workspace.Views;
 using Avalonia;
 using Avalonia.Controls;
@@ -80,7 +80,7 @@ internal sealed class NativeMotionScenarios : IDisposable
                 Change = _ => { }, Validate = _ => Require(target.IsEffectivelyVisible, "Beam was hidden instead of scrolled"),
                 ReadFinalValue = () => target.Bounds.Width,
                 RequiresMotion = name != "beam-offscreen",
-                AnimationContract = name == "beam-offscreen" ? "Offscreen loop window; zero updates are a valid observation" : "Visible Beam progress updates are required",
+                AnimationContract = name == "beam-offscreen" ? "Offscreen loop window; no progress updates are allowed" : "Visible Beam progress updates are required",
                 Cleanup = () => { if (scroll is not null) { scroll.Offset = offset; } }
             };
         }
@@ -108,7 +108,7 @@ internal sealed class NativeMotionScenarios : IDisposable
             var popup = item.GetType().GetProperty("Popup", System.Reflection.BindingFlags.Instance |
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)?.GetValue(item) as NativePopup
                 ?? throw new NotSupportedException("NavMenu popup diagnostic reference changed.");
-            BaseMotionActor? actor = null;
+            Control? actor = null;
             return new NativeMotionScenarios
             {
                 Root = window, Target = menu, PropertyName = "Opacity", Directions = ["open", "close"],
@@ -117,10 +117,10 @@ internal sealed class NativeMotionScenarios : IDisposable
                 {
                     if (popup.IsOpen)
                     {
-                        actor = popup.Child?.GetVisualAncestors().OfType<BaseMotionActor>().FirstOrDefault()
-                            ?? throw new InvalidOperationException("Opened popup has no motion actor.");
+                        actor = popup.Child?.GetVisualAncestors().OfType<Control>().FirstOrDefault(control => control.Name == "PART_PopupSurface")
+                            ?? throw new InvalidOperationException("Opened popup has no motion surface.");
                     }
-                    observation.ObserveTarget(actor ?? throw new InvalidOperationException("Popup actor was not captured."));
+                    observation.ObserveTarget(actor ?? throw new InvalidOperationException("Popup surface was not captured."));
                 },
                 Validate = direction => Require(popup.IsOpen == (direction == "open"), "Popup did not settle"),
                 ReadFinalValue = () => actor?.Opacity ?? 0,
@@ -132,7 +132,7 @@ internal sealed class NativeMotionScenarios : IDisposable
 
         item.IsSubMenuOpen = false;
         await Task.Delay(500);
-        var contentActor = ((Control)item).GetVisualDescendants().OfType<BaseMotionActor>().First(actor => actor.Name == "PART_ChildItemsLayoutTransform");
+        var contentActor = ((Control)item).GetVisualDescendants().OfType<ContentViewport>().First(actor => actor.Name == "PART_ChildItemsViewport");
         return new NativeMotionScenarios
         {
             Root = window, Target = contentActor, PropertyName = "Opacity", Directions = ["open", "close"],

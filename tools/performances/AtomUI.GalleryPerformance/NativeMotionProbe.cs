@@ -84,6 +84,10 @@ internal static class NativeMotionProbe
                         {
                             throw new InvalidOperationException($"{name}/{direction}: no observed intermediate animation values.");
                         }
+                        if (name == "beam-offscreen" && sample.Values.Count > 1)
+                        {
+                            throw new InvalidOperationException("Offscreen Beam continued producing animation values.");
+                        }
                         if (sample.MissedBatches != 0)
                         {
                             throw new InvalidOperationException($"{name}/{direction}: missed {sample.MissedBatches} compositor batches.");
@@ -102,7 +106,7 @@ internal static class NativeMotionProbe
 
             var report = new
             {
-                Schema = 1,
+                Schema = 2,
                 options.Label,
                 options.Scenario,
                 options.Warmup,
@@ -116,8 +120,10 @@ internal static class NativeMotionProbe
                 GalleryAssembly = typeof(GalleryApplication).Assembly.Location,
                 AvaloniaVersion = typeof(Application).Assembly.GetName().Version?.ToString(),
                 ControlsAssemblySha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(AtomUI.Desktop.Controls.NavMenu).Assembly.Location))),
+                CoreAssemblySha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(AtomUI.Animations.Motion).Assembly.Location))),
+                SharedControlsAssemblySha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(AtomUI.Controls.Primitives.ContentViewport).Assembly.Location))),
                 SourceRevision = Git("rev-parse", "HEAD"),
-                ProductDiffSha256 = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(Git("diff", "HEAD", "--", "src")))),
+                ProductDiffSha256 = HashProductChanges(),
                 Host = window.PlatformImpl?.GetType().FullName,
                 ClientSize = new { window.ClientSize.Width, window.ClientSize.Height },
                 window.RenderScaling,
@@ -151,6 +157,24 @@ internal static class NativeMotionProbe
             }
             await Task.Delay(50);
         }
+    }
+
+    private static string HashProductChanges()
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(System.Text.Encoding.UTF8.GetBytes(Git("diff", "HEAD", "--", "src")));
+        var root = Git("rev-parse", "--show-toplevel");
+        var untracked = Git("ls-files", "--others", "--exclude-standard", "-z", "--", "src")
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        Array.Sort(untracked, StringComparer.Ordinal);
+        foreach (var path in untracked)
+        {
+            hash.AppendData(System.Text.Encoding.UTF8.GetBytes(path));
+            hash.AppendData([0]);
+            hash.AppendData(File.ReadAllBytes(Path.Combine(root, path)));
+            hash.AppendData([0]);
+        }
+        return Convert.ToHexString(hash.GetHashAndReset());
     }
 
     private static string Git(params string[] args)

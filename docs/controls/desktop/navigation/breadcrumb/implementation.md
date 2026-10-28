@@ -166,4 +166,4 @@ Breadcrumb 的交互事件应从输入源收敛到控件级语义事件：
 ## 状态动效初始化
 
 `BreadcrumbItem` 使用构造阶段建立的共享初始化会话，完整初始外观及加载完成后恢复过渡；模板变更和分离时复位。
-共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。

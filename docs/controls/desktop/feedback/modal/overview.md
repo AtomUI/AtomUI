@@ -24,7 +24,7 @@ Modal 不承担通知队列、轻量 Tooltip、Popup 菜单或业务级导航服
 - modal 通过 mask 或原生 owner 关系阻断底层输入；modeless 保持底层可交互。
 - Presenter 的真实展示边界属于 Session 生命周期的一部分。Overlay 在入场 motion 完成后触发 `Opened`，Window 在原生 `DialogWindow.Opened` 后触发；关闭任务分别等待 Overlay 退出 motion 或原生 `DialogWindow.Closed`，并在宿主移除和资源释放完成后结束。
 - Overlay modal mask 打开时直接显示，关闭期间保持固定透明度，随 presenter 移除；不执行淡入淡出。
-- Overlay 关闭时，外层 Surface motion 与 `DialogSurface` 内容层的前景 opacity 动画并行；内容和按钮保持附着，直到所有关闭任务完成后才 teardown。Window 继续使用原生 Window 生命周期。
+- Overlay 关闭时，完整表面与遮罩并行退出；内容和按钮保持附着，直到播放完成后才 teardown。Window 继续使用原生 Window 生命周期。
 - `MessageBoxStyle` 只表达消息语义和默认图标/按钮策略，不改变 Dialog 生命周期。
 
 ## 3. API 与契约模型
@@ -85,8 +85,8 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 | `PART_ButtonBox` | `DialogSurface` | 当前标准/自定义按钮序列。 |
 | `PART_Resizer` | `DialogSurface` | Overlay resize handles。 |
 | `PART_LeftGroup` / `PART_CenterGroup` / `PART_RightGroup` | `DialogButtonBox` | 按按钮角色布局。 |
-| `PART_MaskMotionActor` | `OverlayDialogPresenter` | modal mask 容器；保留现有部件名，不执行 motion。 |
-| `PART_SurfaceMotionActor` | `OverlayDialogPresenter` | DialogSurface 入场/退出 motion。 |
+| `PART_MaskHost` / `PART_DialogMask` | `OverlayDialogPresenter` | 条件物化宿主与实际遮罩透明度目标。 |
+| `PART_SurfaceMotionRoot` | `OverlayDialogPresenter` | 私有普通 Zoom / Fade 表面，隔离 wrapper 和位置变换。 |
 | `PART_SurfaceContentLayer` | `DialogSurface` 内部模板节点 | 包围 Header、ContentFrame 和 FooterFrame；Overlay 关闭时承载前景 opacity 动画，不是 public Semantic Part。 |
 
 当前没有 Modal 专属 pseudo class。
@@ -103,7 +103,8 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 - Enter/Escape 根据当前有效按钮序列查找 default/escape 按钮，运行时修改标准按钮或自定义按钮会立即生效。
 - `IsConfirmLoading=true` 只阻止用户发起的普通关闭，不阻止 owner close、detach、取消和失败 teardown。
 - 打开后焦点进入 DialogSurface；嵌套 Dialog 关闭时恢复下层 Surface，最后一层关闭时恢复原触发控件。
-- Overlay 等待 Surface 的 opening/closing motion；关闭时同一 presenter 还等待内容层 opacity 动画，并在聚合任务完成后才断开 composition children、释放 Surface 和移除 layer。`IsMotionEnabled=false` 只跳过这些 motion，不跳过宿主附加、移除和释放。Window 不创建 Surface `MotionActor`，其打开与关闭分别等待原生 `DialogWindow.Opened` 和 `DialogWindow.Closed`。
+- Overlay 等待表面与遮罩的真实 Motion 任务，再断开 composition children、释放 Surface 并移除 layer。
+  禁用动效跳过轨迹，保留完整宿主生命周期；Window 使用原生 Opened / Closed。
 - `IsResizable=true` 允许在有效尺寸区间内交互缩放，不表示无约束 resize。结构性最小尺寸在宿主容量允许时始终保留标题、Footer 和非零正文 viewport；`HostMin*` 只能提高该下限，`HostMax*=PositiveInfinity` 仍受 owner 或 screen capacity 限制。Overlay handle 捕获 pointer，release 或 capture lost 都会完整结束当前 resize，不复用上一次拖拽 origin。
 
 ## 5. 视觉与主题模型
@@ -119,7 +120,8 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 | `OverlayDialogResizerTheme.axaml` | Overlay resize handles。 |
 | `MessageBoxTheme.axaml` / `MessageBoxContentTheme.axaml` | MessageBox 默认尺寸和语义内容。 |
 
-`DialogToken` 提供背景、文字、间距、尺寸和 Footer 视觉。motion duration 使用 Dialog scope 的 SharedToken `MotionDurationMid`，不在代码中硬编码。
+`DialogToken` 提供背景、文字、间距、尺寸和 Footer 视觉。入场 / 离场分别消费 Dialog scope 的 SharedToken Slow / Mid，
+曲线与中心回退遵守 [Motion 组件规格](../../../../architecture/systems/motion/built-in-motion.md)。
 
 ## 6. 控件家族或集成关系
 
@@ -208,7 +210,7 @@ owner resize、frame shadow、drawn frame thickness、Window state 和 `ClientSi
 | --- | --- | --- | --- |
 | `root` | `Dialog` / `MessageBox` | public 打开意图、内容、结果和事件入口。 | Single |
 | `mask` | `OverlayDialogMaskTheme` 的 `Border#Frame` | modal 遮罩（`ColorBgMask`）。 | Optional |
-| `wrapper` | `OverlayDialogPresenterTheme` 的 `PART_SurfaceMotionActor` | Surface 动画/过渡包裹层。 | Optional |
+| `wrapper` | `OverlayDialogPresenterTheme` 的 `ContentPresenter.semantic-wrapper` | Surface 包裹层，位于私有动效表面内。 | Optional |
 | `container` | `DialogSurfaceTheme` 的 `Border#Frame` | 对话主体框体（背景、圆角、裁剪）。 | Single |
 | `header` | `OverlayDialogHeaderTheme` 的 `Border#HeaderFrame` | 标题区框体（背景、内边距）。 | Single |
 | `title` | `OverlayDialogHeaderTheme` 的 `TextBlock#Title` | 标题文字排版。 | Single |

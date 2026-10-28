@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Icons.AntDesign;
@@ -189,22 +189,22 @@ public partial class TabStripItem : AvaloniaTabStripItem
         _closeButton = null;
     }
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     public TabStripItem()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -244,7 +244,7 @@ public partial class TabStripItem : AvaloniaTabStripItem
         {
             _closeButton.Click += HandleCloseRequest;
         }
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     private void HandleCloseRequest(object? sender, RoutedEventArgs args)
@@ -310,7 +310,7 @@ public partial class TabStripItem : AvaloniaTabStripItem
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

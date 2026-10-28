@@ -77,7 +77,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 
     #endregion
         
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static RangeInfoPickerInput()
     {
@@ -97,24 +97,24 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 
     protected RangeInfoPickerInput()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -128,7 +128,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         {
             PickerPopup.OverlayInputPassThroughElement = DecoratedBox;
         }
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     private bool IsPointerInTextBox(TextBox? textBox, Point position, double? contentStartOffsetX)

@@ -7,7 +7,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
@@ -107,7 +106,7 @@ internal class SwitchKnob : TemplatedControl
     #endregion
     
     private bool _isLoading;
-    private CancellationTokenSource? _cancellationTokenSource;
+    private IDisposable? _loadingAnimation;
     private IBrush? _loadIndicatorPenBrush;
     private Pen? _loadIndicatorPen;
     
@@ -145,11 +144,11 @@ internal class SwitchKnob : TemplatedControl
             return;
         }
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = null;
-        _isLoading               = false;
-        IsEnabled                = true;
+        var animation = _loadingAnimation;
+        _loadingAnimation = null;
+        _isLoading = false;
+        IsEnabled = true;
+        animation?.Dispose();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -166,9 +165,9 @@ internal class SwitchKnob : TemplatedControl
         base.OnDetachedFromVisualTree(e);
         if (_isLoading)
         {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
+            var animation = _loadingAnimation;
+            _loadingAnimation = null;
+            animation?.Dispose();
         }
     }
 
@@ -178,6 +177,10 @@ internal class SwitchKnob : TemplatedControl
         if (change.Property == KnobSizeProperty)
         {
             KnobRenderWidth = KnobSize.Width;
+        }
+        else if (change.Property == LoadingAnimationDurationProperty && _isLoading && this.IsAttachedToVisualTree())
+        {
+            StartLoadingAnimation();
         }
         else if (change.Property == KnobBoxShadowProperty)
         {
@@ -243,8 +246,13 @@ internal class SwitchKnob : TemplatedControl
 
     private void StartLoadingAnimation()
     {
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        var previous = _loadingAnimation;
+        _loadingAnimation = null;
+        previous?.Dispose();
+        if (!_isLoading || !this.IsAttachedToVisualTree())
+        {
+            return;
+        }
         var loadingAnimationDuration = LoadingAnimationDuration;
         var loadingAnimation = new Animation();
         loadingAnimation.Duration                     = loadingAnimationDuration;
@@ -272,9 +280,17 @@ internal class SwitchKnob : TemplatedControl
             },
             KeyTime = loadingAnimationDuration
         });
-        _cancellationTokenSource = new CancellationTokenSource();
-        var token = _cancellationTokenSource.Token;
-        Dispatcher.UIThread.InvokeAsync(async () => await loadingAnimation.RunInfiniteAsync(this, token));
+        // Duration is a runtime snapshot and loading has explicit start/stop
+        // ownership; putting this in ControlTheme would require duplicate state.
+        var subscription = loadingAnimation.PlayLoop(this, RotationProperty);
+        if (_isLoading && this.IsAttachedToVisualTree() && _loadingAnimation is null)
+        {
+            _loadingAnimation = subscription;
+        }
+        else
+        {
+            subscription.Dispose();
+        }
     }
 
     private Pen GetLoadIndicatorPen()

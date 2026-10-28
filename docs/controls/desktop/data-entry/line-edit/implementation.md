@@ -282,4 +282,4 @@ AOT 边界：
 
 ## 状态动效初始化
 
-共享 `InputControlFrame` 在构造时建立初始化会话，覆盖禁用、校验及初始外观同步，加载后恢复最新过渡集合；分离及模板变更时复位。`TextBox` 不再查找当前模板中不存在的 `InnerBoxDecorator` 并投递过渡开关。规则见 [共享状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享 `InputControlFrame` 在构造时建立初始化会话，覆盖禁用、校验及初始外观同步，加载后恢复最新过渡集合；分离及模板变更时复位。`TextBox` 不再查找当前模板中不存在的 `InnerBoxDecorator` 并投递过渡开关。规则见 [共享状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。

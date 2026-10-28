@@ -139,11 +139,11 @@ BaseTabControl
 ## 6. 生命周期与模板接入
 
 Line `TabControl` 的选中指示条由 `TabControl.SetupSelectedIndicator` 根据当前 `TabItem.Bounds`、items presenter
-偏移及 placement 更新。构造时创建 `StateMotionSession`，attach、detach 与模板变更复位；选中容器与 presenter 已排列且
+偏移及 placement 更新。构造时创建 `TransitionInitializationSession`，attach、detach 与模板变更复位；选中容器与 presenter 已排列且
 尺寸有效时直接提交完整 transform，再在已加载的当前生命周期中释放过渡覆盖。选中变化、Bounds 订阅和排列
 仍可更新指示条；相同矩阵的 base target 不重复写入，避免动画中布局重新启动过渡。detach 释放选中项 Bounds
-订阅。item 容器也持有自身会话，避免初始选中前景及背景过渡。拖动校准使用独立的可释放作用域，异常路径也恢复最新过渡集合。共享规则由 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)
-定义，动态验证范围见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+订阅。item 容器也持有自身会话，避免初始选中前景及背景过渡。拖动校准使用独立的可释放作用域，异常路径也恢复最新过渡集合。共享规则由 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)
+定义，动态验证范围见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 生命周期规则：
 

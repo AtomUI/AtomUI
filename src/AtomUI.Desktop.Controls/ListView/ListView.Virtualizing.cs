@@ -12,9 +12,9 @@ public partial class ListView : IListVirtualizingContextAware
 
     protected sealed override void ClearContainerForItemOverride(Control element)
     {
-        if (element is IStateMotionOwner owner)
+        if (element is ITransitionInitializationOwner owner)
         {
-            owner.StateMotionSession.Reset();
+            owner.TransitionInitialization.Reset();
         }
 
         var originMotionEnabled = false; 

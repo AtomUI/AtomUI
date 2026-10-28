@@ -13,8 +13,7 @@ AtomUI/
 │   ├── AtomUI.Core               # Cross-cutting runtime infrastructure
 │   │   ├── Theme                 # Theme manager, token system, palette, styling
 │   │   ├── Language              # Localization providers and language resources
-│   │   ├── Animations            # Transitions and animation helpers
-│   │   ├── MotionScene           # Motion orchestration primitives
+│   │   ├── Animations            # Transitions, state initialization, Motion definitions and playback
 │   │   ├── Controls/Icon         # Icon base types and rendering contracts
 │   │   ├── Data                  # Resource and binding support infrastructure
 │   │   ├── Media                 # Text/media helpers

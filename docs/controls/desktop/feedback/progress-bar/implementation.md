@@ -128,7 +128,8 @@ Shape/Icon selector；`CircleProgressTheme` 与 `DashboardProgressTheme` 各自�
 `StrokeThickness` 计算居中的 Path viewport；Geometry 使用从 `(0, 0)` 开始的局部坐标。不得改回由 `Canvas` 按 Geometry DesiredSize
 从左上角排列，也不得由 owner 重复排列 Path，否则 rail/track 的内缩量或中心会与 body 分离。
 
-`OnInitialized` 会先禁用 transition，`OnLoaded` 再通过 dispatcher 启用 transition，避免初次加载时出现不必要的进度动画。
+构造阶段的 `TransitionInitializationSession` 通过公开属性覆盖抑制自动过渡，`OnLoaded` 在当前基线提交后完成初始化；
+detach 复位会话，重挂载仍直接呈现当前进度并恢复最新 Transitions 来源。此路径不调用框架私有开关或投递开启任务。
 
 普通线形、圆形和仪表盘只重新获取静态模板 target，不建立事件订阅或 C# relay binding。Steps 在模板应用、`Steps`、`Value`、
 尺寸和方向变化时同步 runtime Rectangle；重套模板或 detach 时从旧 body 清理步骤节点及其 logical/visual parent。

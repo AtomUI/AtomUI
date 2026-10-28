@@ -219,16 +219,16 @@ manager 由应用视觉树负责层级，`Show` 不得越权重排其外部容�
 共享 presenter theme 提供布局 panel 和状态 selector。Message 的两层背板在 manager AXAML 中静态声明；
 Notification 折叠层由真实 item container 表达。状态从 manager 属性单向投影到 presenter，不能由模板节点反写 manager。
 
-卡片进入/退出使用同一个 internal Feedback motion 工厂和普通 render-only motion actor，并按 `Position` 选择位移轴与方向：TopCenter 从 `Y=-64 DIP`、
+卡片进入/退出使用共享 `FeedbackCardMotion : Motion`，直接以实际阴影 Frame 为目标，并按 `Position` 选择位移轴与方向：TopCenter 从 `Y=-64 DIP`、
 BottomCenter 从 `Y=+64 DIP`、Left 从 `X=-64 DIP`、Right 从 `X=+64 DIP` 进入，退出沿同一方向离场。起点/终点只改变
 opacity 与 translate，scale 始终为 `1`。默认时长使用 SharedToken `MotionDurationMid`（默认 `200ms`），opacity 与
 translate 在整个时长内连续变化，统一使用 `cubic-bezier(0.645, 0.045, 0.355, 1)`；不得增加使绝大部分透明度集中在
 最后若干帧的中间关键帧。
 
-进入动效遵守 `prepare -> frame -> active` 三阶段时序：模板 actor 首先在无 transition 状态下写入透明度 `0` 与方向偏移，
-由所属 `TopLevel` 请求一次动画帧，确认准备态进入渲染管线后才安装 transition 并写入可见终态。Dispatcher priority 不构成
-渲染帧边界，不能替代该帧屏障。模板在附着 TopLevel 前应用时只保留准备态，卡片附着后重新提交当前 actor 并请求帧；
-初始化过程中的临时 detach 不得把尚未完成的进入动效错误标记为完成。
+进入时先以作用域透明度覆盖保持准备态，完成一次布局准备后，Motion 同步建立透明偏移起点并从原生时钟的零进度推进。
+它不采用“先设置终点、等待 transition 启动”的路径，因此不需要另建 RAF 屏障或过渡订阅。
+首 tick 前及首 tick 的透明度和矩阵必须保持起点；未挂载时保留准备态，附着后重新提交目标。
+初始化过程中的临时 detach 不把尚未完成的进入动效标记为完成。
 
 新增或移除卡片时，外层队列位置与内层卡片进入/退出并行过渡。展开/折叠和普通队列重排同样使用
 `MotionDurationMid` 与上述 easing；中途再次变化时从当前呈现值连续转向新目标，不排队播放过时状态。
@@ -239,15 +239,11 @@ PointerEntered / PointerExited 不能被缓存布尔值直接丢弃，而应把 
 不订阅全局输入，不创建 timer，detach / retemplate 后不得保留 TopLevel 引用。
 
 堆叠状态过渡只创建当前变换所需的 compositor 友好动画。`IsMotionEnabled=false`、首次稳定投影、有效时长不大于零、
-template detach 和 dispose 时直接收敛到终态并取消未完成动画。每个 card 只允许一个进入任务和一个受
-`MotionExecutionState` 约束的退出任务；retemplate/detach 必须取消旧 actor 的执行，旧模板的 completion 无权修改新
-presenter 或提交关闭状态。Position/Duration 在当前 motion 播放中变化时不重启同一 actor，新的配置从下一次 motion 生效，
-避免回拉和 continuation 竞争。完成、取消和异常路径都必须释放 transition completion 订阅及 cancellation source。
-
-进入与退出保存当前实际 motion task 及其 actor，作为同一 actor 写入的交接边界。取消 token 只表示取消请求；复用
-actor 时，新 motion 必须等待旧 motion 的异步清理完成后才写入，避免旧 finally 清除新退出目标。新模板的不同 actor
-无需等待旧 actor 清理。等待可以由新执行自己的 token 取消；记录的任务只有在引用仍匹配时清空，保证重套模板、detach
-和 dispose 不会让旧执行覆盖新执行。
+template detach 和 dispose 时收敛并取消未完成动画。每个 card 的协调器只持有业务进入/关闭阶段、请求版本和当前 Frame；
+Core 对同一目标执行整体替代，关闭从实际矩阵与透明度接续，不先清零或等待旧异步 finally。
+retemplate/detach 使旧请求失效，只有当前版本、目标和业务状态一致的完成才能提交关闭。
+Position/Duration 在播放中变化不重启当前动画，新配置从下一次请求生效。
+禁用动效和显式 closed 状态立即释放准备覆盖与运行资源；关闭提交至多一次。
 
 ## 8. 生命周期与资源释放矩阵
 
@@ -260,7 +256,7 @@ actor 时，新 motion 必须等待旧 motion 的异步清理完成后才写入�
 | Notification 可见进度 | 进度刷新登记 | 隐藏、关闭、禁用进度、重套模板、detach、dispose |
 | 堆叠状态动效 | transform / card opacity / clip animation、弱引用投影快照 | 完成、卡片移除、状态替换、禁用 motion、detach、dispose |
 | Notification 折叠内容快照 | 最多三张卡片各一个 `RenderTargetBitmap`、正文临时绘制/命中状态 | transform 到达本次折叠目标、中途展开、关闭、重套模板、禁用 motion、detach、dispose 或捕获失败 |
-| 卡片进入动效 | 当前 actor、animation task、一次性 animation-frame callback、cancellation source / registration | 完成、开始关闭、retemplate、detach、dispose；frame callback 不捕获 card 或 coordinator |
+| 卡片进入/退出 | 当前 Frame、请求版本、作用域准备覆盖；Core 拥有播放进度与属性句柄 | 完成、连续替代、retemplate、detach、dispose；旧任务不得提交新状态 |
 
 `Dispose()` 可重复调用。detach 后 manager 可以重新 attach；旧 host、旧 presenter、旧 timer tick 和旧 card 不得被静态
 事件、Dispatcher queue、动画 continuation 或 collection 间接保留。共享设施不创建全局 cache 或永久订阅。
@@ -276,10 +272,10 @@ rehost、TopLevel 模板重套用或 `Dispose()` 时通过既有移除路径释�
   对直接 manager 子项执行一次索引查找和一次 `Move`。成本只随 manager 数量增长，不能扫描 card、创建临时集合、更新
   每张 card 的 `ZIndex`，也不能引入计数器、timer、异步任务或长期引用。
 - `MeasureOverride` / `ArrangeOverride` 使用索引循环和复用状态；禁止 LINQ、闭包、临时列表与每帧 transform 创建。
-- Notification 的 translate/fade actor 不得使用会在每个动画帧使 Measure 失效的 layout-aware 模式；进出场只更新内部
+- Notification 的 translate/fade 目标不得使用会在每个动画帧使 Measure 失效的布局动效；进出场只更新内部
   render transform 和 opacity。
-- 默认关闭 Stack 的普通 Notification 路径不创建折叠裁剪状态；进入准备只请求一次动画帧，不注册持续逐帧 managed 回调。
-- 四个方向偏移 transform 为不可变共享值；每次 show 不得重新分配相同的 `64 DIP` 方向 transform。
+- 默认关闭 Stack 的普通 Notification 路径不创建折叠裁剪状态；准备只跨越一次布局边界，不创建第二套帧调度或逐帧 Dispatcher 投递。
+- 方向偏移是数值快照，矩阵载体每次播放创建并原位更新，不逐帧创建 ITransform。
 - 卡片目标位置未变化时复用缓存 transform；每张卡片保留两个非 identity 目标槽位，以覆盖展开/折叠往返而不重复创建。
   只有稳定目标落在缓存外时才创建新 transform，由 Avalonia transition/compositor 插值，不注册逐帧 Dispatcher 回调。
 - 折叠内容快照数量严格限制为折叠稳态可见层数，最多三个；最新卡片没有位移、缩放或裁剪变化时不捕获。快照完成条件由

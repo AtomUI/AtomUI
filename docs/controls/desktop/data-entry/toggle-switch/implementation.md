@@ -70,14 +70,14 @@ Form.ClearValue()    → IsChecked = null
 
 ## 5. 生命周期与模板接入
 
-`AbstractToggleSwitch` 构造时创建 `StateMotionSession`，在挂载、分离及模板变更时复位。初次排列直接提交把手矩形与
+`AbstractToggleSwitch` 构造时创建 `TransitionInitializationSession`，在挂载、分离及模板变更时复位。初次排列直接提交把手矩形与
 内容偏移；owner 已加载且最终尺寸、把手排列有效后释放根控件的过渡覆盖。`SwitchKnob` 在模板构建时通过固定的
-`StateMotion.Initialization="Owner"` 接入，与 owner 基线和自身 Loaded 汇合后恢复宽度过渡。主题只保留
+`TransitionInitialization.Mode="Owner"` 接入，与 owner 基线和自身 Loaded 汇合后恢复宽度过渡。主题只保留
 `IsMotionEnabled` 条件，不订阅动态 Ready 属性；自定义过渡的绑定及最新集合也由属性系统保留并恢复。
 初始化 checked 不排队波纹，已就绪的状态切换才生成反馈，执行时再次核对当前部件与生命周期，分离及模板替换时
 取消 owner 持有的待执行操作。共享规则见
-[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，验证范围见
-[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，验证范围见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 `OnApplyTemplate` 获取以下稳定 part：
 

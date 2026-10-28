@@ -189,7 +189,7 @@ public class WindowFeedbackLayerActivationTests
         var messagePresenter = message.GetVisualDescendants().OfType<FeedbackStackPresenter>().Single();
         var notificationPresenter = notification.GetVisualDescendants().OfType<FeedbackStackPresenter>().Single();
         var notificationCard = notification.Cards[0];
-        var notificationActor = notificationCard.GetVisualDescendants().OfType<MotionActor>().Single();
+        var notificationActor = notificationCard.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "Frame");
         var references = new[]
         {
             new NamedReference("Message manager", new WeakReference(message)),

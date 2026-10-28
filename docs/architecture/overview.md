@@ -10,6 +10,7 @@ AtomUI 是基于 Avalonia/.NET 的桌面与跨平台控件系统。整体架构�
 - [启动系统](systems/startup/overview.md)：`UseAtomUI` 入口、启动生命周期、Splash 与主窗体交接。
 - [字体子系统](systems/typography/overview.md)：字体包注册、字体族回退、字号与行高 Token 派生。
 - [Control 基础设施](systems/control-infrastructure/overview.md)：异步加载、过滤与响应式共享契约。
+- [Motion 动效系统](systems/motion/overview.md)：重构目标架构；Motion 继承扩展、无 Actor 执行、布局和真实帧时验收。
 - [统一图片加载系统](systems/image-loading/overview.md)：当前应用级图片管线、公共 Source、缓存安全和控件 API。
 - [渲染系统](systems/rendering/overview.md)：边框渲染与跨 VisualRoot 的视觉层规则。
 - [Mobile 系统](systems/mobile/overview.md)：预实现的移动 Runtime、平台能力、Navigation/Overlay、Gesture 和双平台验证契约。
@@ -22,7 +23,7 @@ AtomUI 是基于 Avalonia/.NET 的桌面与跨平台控件系统。整体架构�
 flowchart TD
     Native["AtomUI.Native\n原生平台窗口能力"]
     Localization["AtomUI.Localization\nCatalog、语言状态、Snapshot、Localizer"]
-    Core["AtomUI.Core\n主题、Token、动画、MotionScene"]
+    Core["AtomUI.Core\n主题、Token、动画、Motion"]
     Shared["AtomUI.Controls.Shared\n控件共享契约与数据协调器"]
     Fonts["AtomUI.Fonts.*\n字体包"]
     Icons["AtomUI.Icons.*\n图标基础设施与图标资源"]

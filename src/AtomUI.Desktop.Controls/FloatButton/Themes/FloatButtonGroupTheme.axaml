@@ -26,14 +26,15 @@
                                               Icon="{TemplateBinding Icon}"
                                               Shape="{TemplateBinding Shape}"
                                               ButtonType="{TemplateBinding ButtonType}" />
-                            <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}"
-                                              ClipToBounds="False">
+                            <Border Name="PART_MenuSurface" ClipToBounds="False"
+                                    atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                                    atom:Motion.DurationOverride="{TemplateBinding MenuMotionDuration}">
                                 <atom:FloatButtonItemsControl Name="ItemsControl"
                                                               Classes.semantic-list="True"
                                                               BoxShadow="{TemplateBinding BoxShadow}"
                                                               Shape="{TemplateBinding Shape}"
                                                               MenuPlacement="{TemplateBinding MenuPlacement}" />
-                            </atom:MotionActor>
+                            </Border>
                         </Canvas>
                     </Border>
                 </ControlTemplate>

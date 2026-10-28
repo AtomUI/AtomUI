@@ -6,11 +6,10 @@
     <ControlTheme x:Key="{x:Type atom:CountBadgeAdorner}" TargetType="atom:CountBadgeAdorner">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:MotionActor Name="PART_MotionActor"
-                                  Classes.semantic-indicator="True"
-                                  ClipToBounds="False">
+                <Border Name="PART_IndicatorSurface" ClipToBounds="False">
                     <Panel
-                        Name="RootLayout">
+                        Name="RootLayout"
+                        Classes.semantic-indicator="True">
                         <Border Name="BadgeIndicator"
                                 BoxShadow="{TemplateBinding BoxShadow}"
                                 Background="{TemplateBinding BadgeColor}" />
@@ -21,7 +20,7 @@
                             Text="{TemplateBinding CountText}" 
                             Foreground="{TemplateBinding Foreground}"/>
                     </Panel>
-                </atom:MotionActor>
+                </Border>
             </ControlTemplate>
         </Setter>
 

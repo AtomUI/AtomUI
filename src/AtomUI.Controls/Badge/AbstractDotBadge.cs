@@ -136,6 +136,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
             DetachLayerAdorner();
             dotBadgeAdorner.IsAdornerMode = false;
             AttachStandaloneAdorner(dotBadgeAdorner);
+            dotBadgeAdorner.ShowWithoutMotion();
             IsVisible = true;
         }
     }

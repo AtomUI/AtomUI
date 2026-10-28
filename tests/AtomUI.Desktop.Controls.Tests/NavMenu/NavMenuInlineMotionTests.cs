@@ -1,5 +1,6 @@
 using System.Reflection;
-using AtomUI.MotionScene;
+using AtomUI.Controls.Primitives;
+using AtomUI.Desktop.Controls.Tests.Motion;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -340,13 +341,13 @@ public class NavMenuInlineMotionTests
 
     private sealed class MenuScene : IDisposable
     {
-        private readonly ManualClock _clock = new();
+        private readonly ManualMotionClock _clock = new();
         private readonly Avalonia.Controls.Window _window;
         private readonly AtomUI.Desktop.Controls.NavMenu _menu;
         private object? _detachedContent;
 
         public NavMenuItem[] Items { get; }
-        public BaseMotionActor[] Actors { get; }
+        public ContentViewport[] Actors { get; }
         public TextBlock Footer { get; } = new() { Text = "Accordion mode" };
 
         public MenuScene(double renderScaling = 1)
@@ -383,13 +384,9 @@ public class NavMenuInlineMotionTests
             Pump();
             Items = _menu.Items.Cast<NavMenuNode>()
                          .Select(node => (NavMenuItem)_menu.ContainerFromItem(node)!).ToArray();
-            Actors = Items.Select(item => item.GetVisualDescendants().OfType<BaseMotionActor>()
-                                               .First(actor => actor.Name == "PART_ChildItemsLayoutTransform")).ToArray();
-            var clockProperty = typeof(Animatable).GetProperty("Clock", BindingFlags.Instance | BindingFlags.NonPublic)!;
-            foreach (var actor in Actors)
-            {
-                clockProperty.SetValue(actor, _clock.Instance);
-            }
+            Actors = Items.Select(item => item.GetVisualDescendants().OfType<ContentViewport>()
+                                               .First(actor => actor.Name == "PART_ChildItemsViewport")).ToArray();
+
         }
 
         public void OpenWithoutMotion(int index)
@@ -455,15 +452,8 @@ public class NavMenuInlineMotionTests
         {
             _window.Close();
             Pump();
+            _clock.Dispose();
         }
     }
 
-    private sealed class ManualClock
-    {
-        // Avalonia's animation clock is internal; keep deterministic clock access in tests only.
-        private static readonly Type ClockType = typeof(Animation).Assembly.GetType("Avalonia.Animation.ClockBase", true)!;
-        private static readonly MethodInfo Pulse = ClockType.GetMethod("Pulse", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        public object Instance { get; } = Activator.CreateInstance(ClockType, nonPublic: true)!;
-        public void Step(int milliseconds) => Pulse.Invoke(Instance, [TimeSpan.FromMilliseconds(milliseconds)]);
-    }
 }

@@ -26,7 +26,7 @@
                                           IsVisible="{TemplateBinding OffContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
                     </atom:ToggleSwitchContentPanel>
                     <atom:SwitchKnob Name="PART_SwitchKnob"
-                                     atom:StateMotion.Initialization="Owner"
+                                     atom:TransitionInitialization.Mode="Owner"
                                      Classes.semantic-indicator="True"
                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                      IsCheckedState="{TemplateBinding IsChecked}" />

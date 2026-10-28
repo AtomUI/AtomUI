@@ -6,21 +6,24 @@
     <ControlTheme x:Key="{x:Type atom:OverlayDialogPresenter}" TargetType="atom:OverlayDialogPresenter">
         <Setter Property="Focusable" Value="True" />
         <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="OpeningMotionDuration" Value="{atom:SharedTokenResource MotionDurationSlow}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:OverlayDialogPresenter">
-                <Panel Classes.semantic-scope-presenter="True">
-                    <atom:MotionActor Name="PART_MaskMotionActor"
-                                      IsVisible="{TemplateBinding IsModal}"
-                                      ClipToBounds="False">
+                <Panel>
+                    <ContentControl Name="PART_MaskHost"
+                                    IsVisible="{TemplateBinding IsModal}"
+                                    ClipToBounds="False">
                         <atom:OverlayDialogMask Name="PART_DialogMask"
-                                                Classes.semantic-scope-mask="True" />
-                    </atom:MotionActor>
-                    <atom:MotionActor Name="PART_SurfaceMotionActor"
-                                      Classes.semantic-wrapper="True"
-                                      ClipToBounds="False">
-                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                Classes.semantic-scope-mask="True"
+                                                ClipToBounds="False" />
+                    </ContentControl>
+                    <Border Name="PART_SurfaceMotionRoot"
+                            Classes.semantic-scope-presenter="True"
+                            ClipToBounds="False">
+                        <ContentPresenter Classes.semantic-wrapper="True"
+                                          Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}" />
-                    </atom:MotionActor>
+                    </Border>
                 </Panel>
             </ControlTemplate>
         </Setter>

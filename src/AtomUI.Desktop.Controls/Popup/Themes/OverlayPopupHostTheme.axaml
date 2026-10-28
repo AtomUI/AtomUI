@@ -7,14 +7,14 @@
     <ControlTheme x:Key="{x:Type OverlayPopupHost}" TargetType="OverlayPopupHost">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:PopupMotionActor ClipToBounds="False">
+                <atom:PopupSurface Name="PART_PopupSurface" ClipToBounds="False">
                     <VisualLayerManager ClipToBounds="False">
                         <atom:ShadowsAwareContainer IsOverlayMode="True">
                             <ContentPresenter Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"/>
                         </atom:ShadowsAwareContainer>
                     </VisualLayerManager>
-                </atom:PopupMotionActor>
+                </atom:PopupSurface>
             </ControlTemplate>
         </Setter>
 

@@ -143,14 +143,23 @@
                             IsPointerHold="{TemplateBinding IsPointerHold}"
                             IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}" />
 
-                        <atom:LayoutAwareMotionActor
-                            Name="PART_ChildItemsLayoutTransform">
+                        <atom:ContentViewport
+                            Name="PART_ChildItemsViewport"
+                            atom:Motion.IsVisible="{TemplateBinding IsSubMenuOpen}"
+                            atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                            atom:Motion.DurationOverride="{TemplateBinding OpenCloseMotionDuration}">
+                            <atom:Motion.Enter>
+                                <atom:ExpandMotion />
+                            </atom:Motion.Enter>
+                            <atom:Motion.Leave>
+                                <atom:CollapseMotion />
+                            </atom:Motion.Leave>
                             <Border Name="PART_ChildItemsFrame">
                                 <ItemsPresenter Name="ChildItemsPresenter"
                                                 Focusable="False"
                                                 ItemsPanel="{TemplateBinding ItemsPanel}" />
                             </Border>
-                        </atom:LayoutAwareMotionActor>
+                        </atom:ContentViewport>
                     </StackPanel>
                 </ControlTemplate>
             </Setter>

@@ -153,7 +153,7 @@ public class ExpanderSemanticPartTests
     }
 
     /// <summary>
-    /// <c>body</c> 的承载节点是 <c>LayoutAwareMotionActor#PART_ContentMotionActor</c> 的内容。
+    /// <c>body</c> 的承载节点是 <c>ContentViewport#PART_ContentViewport</c> 的内容。
     /// 折叠稳定态下 actor <c>IsVisible=False</c>，其内部 <c>ContentPresenter</c> 不挂接视觉子级，
     /// 节点只保留逻辑子级、从视觉树缺席；首次展开后节点物化，并携带 owner 的 <c>TemplatedParent</c>。
     /// Avalonia 的 <c>ContentPresenter</c> 只在自身可见时挂接子级、转不可见时不解除挂接，因此
@@ -182,7 +182,7 @@ public class ExpanderSemanticPartTests
             expander.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
             GetOwnerMarkers(expander, BodyClass).Length.ShouldBe(1);
-            GetContentMotionActor(expander).IsVisible.ShouldBeFalse();
+            GetContentViewport(expander).IsVisible.ShouldBeFalse();
 
             // header / icon / title 是常驻节点，不受展开状态影响。
             AssertMarkerCounts(expander, 1, 1, 1, 1);
@@ -333,7 +333,7 @@ public class ExpanderSemanticPartTests
             // 首次展开后 body 节点保持存在，收起不再移除；actor 本身转为不可见。
             expander.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
-            GetContentMotionActor(expander).IsVisible.ShouldBeFalse();
+            GetContentViewport(expander).IsVisible.ShouldBeFalse();
             AssertMarkerCounts(expander, 1, 1, 1, 1);
         });
     }
@@ -444,11 +444,11 @@ public class ExpanderSemanticPartTests
         return GetOwnerMarkers(owner, marker).Single();
     }
 
-    private static Control GetContentMotionActor(AtomUIExpander expander)
+    private static Control GetContentViewport(AtomUIExpander expander)
     {
         return expander.GetVisualDescendants()
                        .OfType<Control>()
-                       .Single(static control => control.Name == "PART_ContentMotionActor");
+                       .Single(static control => control.Name == "PART_ContentViewport");
     }
 
     private static void ShowInWindow(Control content, Action assertion)

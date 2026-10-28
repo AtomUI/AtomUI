@@ -1,6 +1,5 @@
-﻿using AtomUI.Controls;
+using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -165,7 +164,7 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     private bool _isClosing;
     private bool _isStackVisible = true;
     private readonly FeedbackCardMotionCoordinator _motionCoordinator;
-    private BaseMotionActor? _motionActor;
+    private Control? _motionTarget;
     
     public MessageCard()
     {
@@ -287,8 +286,8 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _motionActor = e.NameScope.Find<BaseMotionActor>(BaseMotionActor.MotionActorPart);
-        ApplyMotionActor();
+        _motionTarget = e.NameScope.Find<Control>("PART_Frame");
+        ApplyMotionTarget();
         UpdatePseudoClasses();
         SetupDefaultMessageIcon();
     }
@@ -296,13 +295,13 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        ApplyMotionActor();
+        ApplyMotionTarget();
     }
 
-    private void ApplyMotionActor()
+    private void ApplyMotionTarget()
     {
-        _motionCoordinator.ApplyActor(
-            _motionActor,
+        _motionCoordinator.ApplyTarget(
+            _motionTarget,
             IsClosing,
             IsClosed,
             IsMotionEnabled,
@@ -312,7 +311,7 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _motionCoordinator.DetachActor(IsClosing, IsClosed);
+        _motionCoordinator.DetachTarget(IsClosing, IsClosed);
         base.OnDetachedFromVisualTree(e);
     }
 

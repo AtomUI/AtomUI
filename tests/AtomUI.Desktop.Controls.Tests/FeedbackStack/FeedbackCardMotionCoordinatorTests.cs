@@ -1,11 +1,7 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using AtomUI.Animations;
-using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
-using Avalonia.Animation;
+using AtomUI.Desktop.Controls.Tests.Motion;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Avalonia.Threading;
 using Shouldly;
 using Xunit;
@@ -15,110 +11,32 @@ namespace AtomUI.Desktop.Controls.Tests.FeedbackStack;
 
 public class FeedbackCardMotionCoordinatorTests
 {
-    static FeedbackCardMotionCoordinatorTests()
+    static FeedbackCardMotionCoordinatorTests() => AvaloniaTestApp.EnsureInitialized();
+
+    [Fact]
+    public void Dispose_Releases_The_Current_Target_Overrides_Immediately()
     {
-        AvaloniaTestApp.EnsureInitialized();
+        using var scene = new Scene();
+        scene.Enter();
+        scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+        scene.Coordinator.Dispose();
+        scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        scene.Target.RenderTransform.ShouldBeNull();
+        scene.Target.Opacity.ShouldBe(1);
     }
 
     [Fact]
-    public void Dispose_Releases_The_Current_Actor_Transition_State_Immediately()
+    public void Attached_Entry_Keeps_The_Prepare_State_Until_The_First_Clock_Tick()
     {
-        var actor = new MotionActor
-        {
-            Content = new Border
-            {
-                Width = 320,
-                Height = 96
-            }
-        };
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
-        var coordinator = new FeedbackCardMotionCoordinator(() => { });
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-            coordinator.ApplyActor(
-                actor,
-                isClosing: false,
-                isClosed: false,
-                isMotionEnabled: true,
-                NotificationPosition.TopCenter,
-                TimeSpan.FromMinutes(1));
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-
-            actor.Transitions.ShouldNotBeNull();
-
-            coordinator.Dispose();
-
-            actor.Transitions.ShouldBeNull();
-            actor.MotionTransform.ShouldBeNull();
-        }
-        finally
-        {
-            coordinator.Dispose();
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
-    }
-
-    [Fact]
-    public void Attached_Entry_Keeps_The_Ant_Prepare_State_Until_The_Next_Animation_Frame()
-    {
-        var actor = new MotionActor
-        {
-            Content = new Border
-            {
-                Width = 320,
-                Height = 96
-            }
-        };
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
-        using var coordinator = new FeedbackCardMotionCoordinator(() => { });
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-
-            coordinator.ApplyActor(
-                actor,
-                isClosing: false,
-                isClosed: false,
-                isMotionEnabled: true,
-                NotificationPosition.TopRight,
-                TimeSpan.FromSeconds(1));
-            Dispatcher.UIThread.RunJobs();
-
-            actor.Opacity.ShouldBe(0, 0.001);
-            actor.MotionTransform.ShouldNotBeNull();
-            actor.MotionTransform!.Value.M31.ShouldBe(FeedbackCardMotion.Offset, 0.001);
-            actor.Transitions.ShouldBeNull();
-
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-
-            actor.Transitions.ShouldNotBeNull();
-        }
-        finally
-        {
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
+        using var scene = new Scene();
+        scene.Enter(NotificationPosition.TopRight);
+        scene.Target.Opacity.ShouldBe(0);
+        scene.Target.RenderTransform!.Value.M31.ShouldBe(64, .001);
+        scene.Step(0);
+        scene.Target.Opacity.ShouldBe(0);
+        scene.Step(1000);
+        scene.Target.Opacity.ShouldBeGreaterThan(0);
+        scene.Target.Opacity.ShouldBeLessThan(1);
     }
 
     [Theory]
@@ -128,346 +46,135 @@ public class FeedbackCardMotionCoordinatorTests
     [InlineData(NotificationPosition.BottomLeft, -64, 0)]
     [InlineData(NotificationPosition.TopRight, 64, 0)]
     [InlineData(NotificationPosition.BottomRight, 64, 0)]
-    public void Closing_During_Entry_Preserves_The_Exit_Target_Until_Completion(
-        NotificationPosition position, double expectedX, double expectedY)
+    public void Closing_During_Entry_Is_Continuous_And_Completes_Exactly_Once(
+        NotificationPosition position, double x, double y)
     {
-        var clockType = typeof(Animation).Assembly.GetType("Avalonia.Animation.ClockBase", true)!;
-        var pulse = clockType.GetMethod("Pulse", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var clock = Activator.CreateInstance(clockType, nonPublic: true)!;
-        var actor = new MotionActor { Content = new Border { Width = 320, Height = 96 } };
-        var window = new AvaloniaWindow { Width = 600, Height = 400, Content = actor };
-        typeof(Animatable).GetProperty("Clock", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .SetValue(window, clock);
-        var starts = 0;
-        var closeCount = 0;
-        actor.PreStart += (_, _) => starts++;
-        var coordinator = new FeedbackCardMotionCoordinator(() => closeCount++);
-        var duration = TimeSpan.FromSeconds(10);
-        INotifyTransitionCompleted[] entryTransitions = [];
-
-        try
-        {
-            window.Show();
-            Pump();
-            coordinator.ApplyActor(actor, false, false, true, position, duration);
-            Pump();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Pump();
-            starts.ShouldBe(1);
-            actor.Transitions.ShouldNotBeNull();
-            entryTransitions = actor.Transitions!.OfType<INotifyTransitionCompleted>().ToArray();
-            entryTransitions.Length.ShouldBe(2);
-            Step(0);
-            Step(2500);
-            actor.Opacity.ShouldBeGreaterThan(0d);
-            actor.Opacity.ShouldBeLessThan(1d);
-
-            coordinator.StartClose(false, true, position, duration);
-
-            // Drain normal dispatcher work until the old entry's finally has run.
-            PumpUntil(() => starts == 2 && entryTransitions.All(IsReleased));
-            AssertExitTarget();
-            foreach (var milliseconds in new[] { 2500, 5000, 7500, 10000, 12400 })
-            {
-                Step(milliseconds);
-                closeCount.ShouldBe(0);
-                AssertExitTarget();
-            }
-            Step(12600);
-            PumpUntil(() => closeCount == 1);
-            starts.ShouldBe(2);
-            actor.Opacity.ShouldBe(0);
-            actor.MotionTransform.ShouldBeNull();
-            actor.Transitions.ShouldBeNull();
-            Step(15000);
-            closeCount.ShouldBe(1);
-        }
-        finally
-        {
-            coordinator.Dispose();
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
-
-        void Pump()
-        {
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-        }
-
-        void Step(int milliseconds)
-        {
-            pulse.Invoke(clock, [TimeSpan.FromMilliseconds(milliseconds)]);
-            Pump();
-        }
-
-        void PumpUntil(Func<bool> condition)
-        {
-            SpinWait.SpinUntil(() =>
-            {
-                Pump();
-                return condition();
-            }, TimeSpan.FromSeconds(2)).ShouldBeTrue();
-        }
-
-        void AssertExitTarget()
-        {
-            var target = actor.GetBaseValue(BaseMotionActor.MotionTransformProperty);
-            target.HasValue.ShouldBeTrue();
-            target.Value.ShouldNotBeNull();
-            target.Value!.Value.M11.ShouldBe(1, 0.001);
-            target.Value.Value.M22.ShouldBe(1, 0.001);
-            target.Value.Value.M31.ShouldBe(expectedX, 0.001);
-            target.Value.Value.M32.ShouldBe(expectedY, 0.001);
-        }
-
-        static bool IsReleased(INotifyTransitionCompleted transition)
-        {
-            try
-            {
-                _ = transition.CompletedObservable;
-                return false;
-            }
-            catch (ObjectDisposedException)
-            {
-                return true;
-            }
-        }
+        using var scene = new Scene();
+        scene.Enter(position);
+        scene.Step(0);
+        scene.Step(2500);
+        var opacity = scene.Target.Opacity;
+        var matrix = scene.Target.RenderTransform!.Value;
+        scene.Coordinator.StartClose(false, true, position, scene.Duration);
+        scene.Pump();
+        scene.Target.Opacity.ShouldBe(opacity, .001);
+        scene.Target.RenderTransform!.Value.ShouldBe(matrix);
+        scene.Step(2500);
+        scene.Step(12400);
+        scene.Closed.ShouldBe(0);
+        scene.Clock.Step(12600);
+        scene.Window.UpdateLayout();
+        scene.Target.Opacity.ShouldBe(0);
+        var endpoint = scene.Target.RenderTransform!.Value;
+        endpoint.M31.ShouldBe(x, .001);
+        endpoint.M32.ShouldBe(y, .001);
+        scene.Pump();
+        scene.Closed.ShouldBe(1);
+        scene.Target.IsVisible.ShouldBeFalse();
+        scene.Target.RenderTransform.ShouldBeNull();
+        scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        scene.Step(15000);
+        scene.Closed.ShouldBe(1);
     }
 
     [Fact]
-    public void DetachActor_Preserves_The_Hidden_Terminal_State_For_A_Closed_Card()
+    public void DetachTarget_Preserves_The_Hidden_State_For_A_Closed_Card()
     {
-        var actor = new MotionActor();
+        var target = new Border();
         using var coordinator = new FeedbackCardMotionCoordinator(() => { });
-
-        coordinator.ApplyActor(
-            actor,
-            isClosing: false,
-            isClosed: false,
-            isMotionEnabled: false,
-            NotificationPosition.TopCenter,
-            TimeSpan.Zero);
-
-        coordinator.DetachActor(isClosing: false, isClosed: true);
-
-        actor.Opacity.ShouldBe(0);
-        actor.Transitions.ShouldBeNull();
-        actor.MotionTransform.ShouldBeNull();
+        coordinator.ApplyTarget(target, false, false, false, NotificationPosition.TopCenter, TimeSpan.Zero);
+        coordinator.DetachTarget(false, true);
+        target.IsVisible.ShouldBeFalse();
+        target.Opacity.ShouldBe(1);
+        target.RenderTransform.ShouldBeNull();
     }
 
     [Fact]
     public void Detach_Before_Entry_Completes_Does_Not_Suppress_The_Next_Attached_Entry()
     {
-        var actor = new MotionActor
-        {
-            Content = new Border
-            {
-                Width = 320,
-                Height = 96
-            }
-        };
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
-        using var coordinator = new FeedbackCardMotionCoordinator(() => { });
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-            coordinator.ApplyActor(
-                actor,
-                isClosing: false,
-                isClosed: false,
-                isMotionEnabled: true,
-                NotificationPosition.TopRight,
-                TimeSpan.FromMinutes(1));
-
-            coordinator.DetachActor(isClosing: false, isClosed: false);
-            coordinator.ApplyActor(
-                actor,
-                isClosing: false,
-                isClosed: false,
-                isMotionEnabled: true,
-                NotificationPosition.TopRight,
-                TimeSpan.FromMinutes(1));
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-
-            actor.Transitions.ShouldNotBeNull();
-        }
-        finally
-        {
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
+        using var scene = new Scene();
+        scene.Enter();
+        scene.Coordinator.DetachTarget(false, false);
+        scene.Enter(NotificationPosition.TopRight);
+        scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+        scene.Target.Opacity.ShouldBe(0);
+        scene.Target.RenderTransform!.Value.M31.ShouldBe(64, .001);
     }
 
     [Fact]
-    public void Dispose_During_Entry_Releases_The_Coordinator_And_Actor_Graph()
+    public void Dispose_During_Entry_Releases_The_Coordinator_And_Target_Graph()
     {
-        var references = CreateDisposedMotionGraph();
-
-        Dispatcher.UIThread.RunJobs();
+        var references = CreateDisposedMotionGraph(false);
         ForceFullCollection();
-
         references.Coordinator.IsAlive.ShouldBeFalse();
-        references.Actor.IsAlive.ShouldBeFalse();
+        references.Target.IsAlive.ShouldBeFalse();
     }
 
     [Fact]
-    public void Dispose_While_Waiting_For_The_Animation_Frame_Releases_The_Owner_Graph()
+    public void Dispose_Before_The_First_Clock_Tick_Releases_The_Owner_Graph()
     {
-        var references = CreateDisposedAttachedMotionGraph();
-
-        Dispatcher.UIThread.RunJobs();
+        var references = CreateDisposedMotionGraph(true);
         ForceFullCollection();
-
         references.Coordinator.IsAlive.ShouldBeFalse();
-        references.Actor.IsAlive.ShouldBeFalse();
+        references.Target.IsAlive.ShouldBeFalse();
     }
 
     [Fact]
-    public void Configuration_Change_During_Entry_Does_Not_Restart_The_Current_Actor()
+    public void Configuration_Change_During_Entry_Does_Not_Restart_The_Current_Target()
     {
-        var actor = new MotionActor
-        {
-            Content = new Border
-            {
-                Width = 320,
-                Height = 96
-            }
-        };
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
-        using var coordinator = new FeedbackCardMotionCoordinator(() => { });
-        var starts = 0;
-        actor.PreStart += (_, _) => starts++;
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-            coordinator.ApplyActor(
-                actor,
-                isClosing: false,
-                isClosed: false,
-                isMotionEnabled: true,
-                NotificationPosition.TopCenter,
-                TimeSpan.FromMinutes(1));
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-
-            coordinator.UpdateConfiguration(
-                isClosing: false,
-                isClosed: false,
-                isMotionEnabled: true,
-                NotificationPosition.BottomCenter,
-                TimeSpan.FromSeconds(2));
-            Dispatcher.UIThread.RunJobs();
-
-            starts.ShouldBe(1);
-        }
-        finally
-        {
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
+        using var scene = new Scene();
+        scene.Enter();
+        scene.Step(0);
+        scene.Step(1000);
+        var transform = scene.Target.RenderTransform;
+        var opacity = scene.Target.Opacity;
+        scene.Coordinator.UpdateConfiguration(false, false, true, NotificationPosition.BottomCenter, TimeSpan.FromSeconds(2));
+        scene.Pump();
+        scene.Target.RenderTransform.ShouldBeSameAs(transform);
+        scene.Target.Opacity.ShouldBe(opacity);
     }
 
     [Fact]
-    public void Configuration_Change_During_Exit_Does_Not_Restart_The_Current_Actor()
+    public void Configuration_Change_During_Exit_Does_Not_Restart_The_Current_Target()
     {
-        var actor = new MotionActor();
-        using var coordinator = new FeedbackCardMotionCoordinator(() => { });
-        var starts = 0;
-        actor.PreStart += (_, _) => starts++;
-        coordinator.ApplyActor(
-            actor,
-            isClosing: true,
-            isClosed: false,
-            isMotionEnabled: true,
-            NotificationPosition.TopCenter,
-            TimeSpan.FromMinutes(1));
-        Dispatcher.UIThread.RunJobs();
-
-        coordinator.UpdateConfiguration(
-            isClosing: true,
-            isClosed: false,
-            isMotionEnabled: true,
-            NotificationPosition.BottomCenter,
-            TimeSpan.FromSeconds(2));
-        Dispatcher.UIThread.RunJobs();
-
-        starts.ShouldBe(1);
+        using var scene = new Scene();
+        scene.Coordinator.ApplyTarget(scene.Target, false, false, false, NotificationPosition.TopCenter, scene.Duration);
+        scene.Coordinator.StartClose(false, true, NotificationPosition.TopCenter, scene.Duration);
+        scene.Pump();
+        scene.Step(0);
+        scene.Step(1000);
+        var transform = scene.Target.RenderTransform;
+        var opacity = scene.Target.Opacity;
+        scene.Coordinator.UpdateConfiguration(true, false, true, NotificationPosition.BottomCenter, TimeSpan.FromSeconds(2));
+        scene.Pump();
+        scene.Target.RenderTransform.ShouldBeSameAs(transform);
+        scene.Target.Opacity.ShouldBe(opacity);
+        scene.Step(11000);
+        scene.Closed.ShouldBe(1);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (WeakReference Coordinator, WeakReference Actor) CreateDisposedMotionGraph()
+    private static (WeakReference Coordinator, WeakReference Target) CreateDisposedMotionGraph(bool attached)
     {
-        var actor = new MotionActor();
+        using var clock = new ManualMotionClock();
+        var target = new Border { Width = 320, Height = 96 };
         var coordinator = new FeedbackCardMotionCoordinator(() => { });
-        coordinator.ApplyActor(
-            actor,
-            isClosing: false,
-            isClosed: false,
-            isMotionEnabled: true,
-            NotificationPosition.TopCenter,
-            TimeSpan.FromMinutes(1));
-        Dispatcher.UIThread.RunJobs();
-
-        var references = (new WeakReference(coordinator), new WeakReference(actor));
-        coordinator.Dispose();
-        return references;
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (WeakReference Coordinator, WeakReference Actor) CreateDisposedAttachedMotionGraph()
-    {
-        var actor = new MotionActor
+        AvaloniaWindow? window = null;
+        if (attached)
         {
-            Content = new Border
-            {
-                Width = 320,
-                Height = 96
-            }
-        };
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
-        window.Show();
+            window = new AvaloniaWindow { Width = 600, Height = 400, Content = target };
+            window.Show();
+            window.UpdateLayout();
+        }
+        coordinator.ApplyTarget(target, false, false, true, NotificationPosition.TopRight, TimeSpan.FromMinutes(1));
         Dispatcher.UIThread.RunJobs();
-        window.UpdateLayout();
-
-        var coordinator = new FeedbackCardMotionCoordinator(() => { });
-        coordinator.ApplyActor(
-            actor,
-            isClosing: false,
-            isClosed: false,
-            isMotionEnabled: true,
-            NotificationPosition.TopRight,
-            TimeSpan.FromMinutes(1));
-        Dispatcher.UIThread.RunJobs();
-
-        var references = (new WeakReference(coordinator), new WeakReference(actor));
+        var references = (new WeakReference(coordinator), new WeakReference(target));
         coordinator.Dispose();
-        window.Content = null;
-        window.Close();
+        if (window is not null)
+        {
+            window.Content = null;
+            window.Close();
+        }
         Dispatcher.UIThread.RunJobs();
         return references;
     }
@@ -481,6 +188,50 @@ public class FeedbackCardMotionCoordinatorTests
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
+        }
+    }
+
+    private sealed class Scene : IDisposable
+    {
+        internal readonly ManualMotionClock Clock = new();
+        internal readonly Border Target = new() { Width = 320, Height = 96 };
+        internal readonly AvaloniaWindow Window;
+        internal readonly FeedbackCardMotionCoordinator Coordinator;
+        internal readonly TimeSpan Duration = TimeSpan.FromSeconds(10);
+        internal int Closed;
+
+        internal Scene()
+        {
+            Window = new AvaloniaWindow { Width = 600, Height = 400, Content = Target };
+            Coordinator = new FeedbackCardMotionCoordinator(() => Closed++);
+            Window.Show();
+            Pump();
+        }
+
+        internal void Enter(NotificationPosition position = NotificationPosition.TopCenter)
+        {
+            Coordinator.ApplyTarget(Target, false, false, true, position, Duration);
+            Pump();
+        }
+
+        internal void Pump()
+        {
+            Dispatcher.UIThread.RunJobs();
+            Window.UpdateLayout();
+        }
+
+        internal void Step(int milliseconds)
+        {
+            Clock.Step(milliseconds);
+            Pump();
+        }
+
+        public void Dispose()
+        {
+            Coordinator.Dispose();
+            Window.Close();
+            Pump();
+            Clock.Dispose();
         }
     }
 }

@@ -32,7 +32,7 @@
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackCardMotionCoordinator.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/IFeedbackStackItem.cs`
 - `src/AtomUI.Desktop.Controls/Notifications/WindowNotificationManager.SemanticParts.cs`
-- `src/AtomUI.Core/MotionScene/MotionExecutionState.cs`
+- `src/AtomUI.Core/Animations/Motion`
 
 职责边界：
 
@@ -93,10 +93,9 @@ manager 主题把方位对应的 Token 写入内部 `ThemePadding`，再用编�
 
 `NotificationType.Default` 是普通通知入口，不生成类型图标；带类型通知由 `NotificationType` 映射到 success/info/warning/error 伪类和默认状态图标。自定义 `Icon` 始终优先于类型图标。
 
-`IsClosing` 和 `IsClosed` 是 NotificationCard 的 public 业务状态。卡片拥有一个共享 `FeedbackCardMotionCoordinator`；协调器
-分别以 `MotionExecutionState` 约束进入和退出阶段，按 `Idle -> Pending -> Playing -> Completing -> Idle` 推进。关闭/禁用状态
-与模板重套用都进入同一控制器；旧 actor 的执行会被取消且 completion 失效，当前 actor 立即接管目标状态。播放中的 Position /
-Duration 变化不重启同一 actor，新值从下一次 motion 生效；Completing 只负责提交一次 `IsClosed=true`。
+`IsClosing` 和 `IsClosed` 是 NotificationCard 的 public 业务状态。`FeedbackCardMotionCoordinator` 持有业务阶段、版本和当前
+Frame；Core Motion 拥有真实播放、连续替代与属性覆盖。模板替换使旧完成失效，禁用和 closed 状态立即收敛。
+播放中修改 Position/Duration 不重启当前目标，新值在下一次请求生效；关闭只提交一次 `IsClosed=true`。
 
 维护要求：
 
@@ -146,7 +145,7 @@ Duration 变化不重启同一 actor，新值从下一次 motion 生效；Comple
 - presenter 的 `Margin` 绑定 manager `Padding`，owner 的 Position selector 选择 `NotificationTopMargin` / `NotificationBottomMargin` 默认 token。
   显式 Padding 覆盖默认值；六种方位的队列保持紧贴内容的 hover 范围。
 - `Grid#PART_Layout` 位于折叠快照 host 内，close 与内容在第一行重叠，runtime progress 置于第二行并跨两列，
-  避免 Auto 列以无限宽度测量进度条。`MotionActor` 只执行 render transform，不把进出场平移带入布局计算。
+  避免 Auto 列以无限宽度测量进度条。Frame 只执行 render transform，不把进出场平移带入布局计算。
 - standalone 与 manager 构造路径都初始化同一 motion coordinator，首次模板应用及属性变化不要求 manager 存在。
 
 marker 只增加模板节点已有 `Classes` 集合中的稳定字符串，不引入 VisualTree 搜索、运行时 AXAML 解析或反射扫描。
@@ -172,15 +171,13 @@ Notification 的交互事件应从输入源收敛到控件级语义事件：
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 - NotificationCard 的关闭请求、模板状态回放和最终 `IsClosed` 提交必须经过同一个关闭动效执行状态流。
-- NotificationCard 的内容 actor 使用普通 render-only `MotionActor` 和共享 Feedback motion；Position 只决定
-  `64 DIP` 位移轴和符号，opacity 与 translate 使用完整时长插值且 scale 恒为 `1`。actor 进入/退出与外层队列位置 /
+- NotificationCard 的阴影 Frame 使用共享 Feedback motion；Position 只决定
+  `64 DIP` 位移轴和符号，opacity 与 translate 使用完整时长插值且 scale 恒为 `1`。Frame 进入/退出与外层队列位置 /
   Stack scale transform 不得写入同一属性，也不得在动画帧中使卡片 Measure 失效。
-- `FeedbackCardMotionCoordinator` 在 actor 应用时先关闭 transition 并写入透明偏移准备态，再通过所属 `TopLevel` 的一次性
-  `RequestAnimationFrame` 跨过真实渲染边界，之后才运行 active transition。等待使用当前进入 cancellation source；关闭、
-  retemplate、detach 或 dispose 会取消等待并释放 registration，帧回调只捕获局部 completion，不持有 card 或 coordinator。
-- 入场和退出通过同一 motion 执行入口交接 actor；复用同一个 actor 时，取消请求之后必须等待旧 motion 的异步清理完成，
-  才能写入新目标。新模板的不同 actor 可以立即启动。等待期间仍响应当前执行的取消，重套模板、detach 或 dispose
-  不得留下继续启动旧执行的回调。
+- 协调器先以作用域透明度覆盖保持准备态；布局就绪后，Motion 同步建立起点，再从原生时钟零进度推进。
+  不另建 RAF 屏障、过渡订阅或周期调度；首 tick 前后都保持准备帧。
+- 离场从当前呈现值连续替代入场，不等待旧异步 finally。每次 completion 核对版本、实际 Frame 和关闭意图，
+  换模板、detach、dispose 和禁用动效不会留下过期关闭回调。
 - FeedbackStackPanel 把展开位置表达为相对稳定宿主边锚点的 transform，使新增、移除和 Stack 切换只更新目标
   transform；不得先改写屏幕位置再通过 Dispatcher 执行补偿动画。motion-disabled 时直接排列可见终态，并保持隐藏项
   的有效展开 Bounds，以避免无意义的 transform 属性写入和 layout-invalid 重试。
@@ -252,7 +249,7 @@ Notification 的交互事件应从输入源收敛到控件级语义事件：
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
-- `IsClosing` / `IsClosed` public 状态不得与 internal `MotionExecutionState` 合并；重复调度不得创建并行退出动效。
+- `IsClosing` / `IsClosed` public 状态不得与 internal Motion 合并；重复调度不得创建并行退出动效。
 - `MaxItems <= 0` 必须保持无限语义；Stack 不能通过提前关闭旧项模拟折叠。
 - template detach、rehost、DestroyAll、用户回调异常与 dispose 均必须释放 scheduler entry、presenter、host 订阅、card owner 与 delegate。
 

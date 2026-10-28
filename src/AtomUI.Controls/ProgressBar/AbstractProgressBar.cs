@@ -264,6 +264,7 @@ public abstract class AbstractProgressBar : RangeBase,
     private protected Panel? ProgressIndicator;
     protected IconPresenter? SuccessCompletedIconPresenter;
     protected IconPresenter? ExceptionCompletedIconPresenter;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractProgressBar()
     {
@@ -284,6 +285,7 @@ public abstract class AbstractProgressBar : RangeBase,
 
     public AbstractProgressBar()
     {
+        _transitionInitialization = new TransitionInitializationSession(this);
         _effectiveSizeType = SizeType;
     }
 
@@ -459,15 +461,15 @@ public abstract class AbstractProgressBar : RangeBase,
     {
     }
 
-    protected override void OnInitialized()
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
     }
 }

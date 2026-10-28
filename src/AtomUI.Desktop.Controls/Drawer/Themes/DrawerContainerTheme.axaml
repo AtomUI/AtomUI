@@ -13,10 +13,10 @@
                         <Border Name="PART_Mask"
                                 Classes.semantic-mask="True"
                                 IsVisible="{TemplateBinding IsShowMask}"
-                                Background="{TemplateBinding Background}" />
-                        <atom:MotionActor
-                            Name="PART_InfoContainerMotionActor"
-                            Opacity="0.0">
+                                Background="{TemplateBinding Background}"
+                                atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}" />
+                        <Border Name="PART_Surface"
+                                atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}">
                             <atom:DrawerInfoContainer
                                 Name="PART_InfoContainer"
                                 Placement="{TemplateBinding Placement}"
@@ -31,7 +31,7 @@
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 IsShowCloseButton="{TemplateBinding IsShowCloseButton}"
                                 DialogSize="{TemplateBinding DialogSize}"/>
-                        </atom:MotionActor>
+                        </Border>
                     </Panel>
                 </Border>
             </ControlTemplate>
@@ -42,12 +42,21 @@
         <Setter Property="Background"
                 Value="{atom:SharedTokenResource ColorBgMask}" />
 
-        <Style Selector="^[IsMotionEnabled=True]">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
-            </Setter>
+        <Style Selector="^[Placement=Left] /template/ Border#PART_Surface">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Width" Value="{TemplateBinding DialogSize}" />
+        </Style>
+        <Style Selector="^[Placement=Right] /template/ Border#PART_Surface">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Width" Value="{TemplateBinding DialogSize}" />
+        </Style>
+        <Style Selector="^[Placement=Top] /template/ Border#PART_Surface">
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Height" Value="{TemplateBinding DialogSize}" />
+        </Style>
+        <Style Selector="^[Placement=Bottom] /template/ Border#PART_Surface">
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="Height" Value="{TemplateBinding DialogSize}" />
         </Style>
 
     </ControlTheme>

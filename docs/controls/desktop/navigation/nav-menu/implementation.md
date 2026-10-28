@@ -184,9 +184,9 @@ Inline handler：
 - 父节点合法释放时切换 `IsSubMenuOpen`；按下阶段不切换。
 - 叶子节点合法释放进入 selection coordinator。
 - `IsAccordionMode=true` 时，根 `NavMenu` 在顶层节点请求打开时同步关闭其他顶层节点；互斥协调不等待 `SubmenuOpened` 动画完成事件，因此旧分支收起与新分支展开并行进行。
-- Inline 收放由 `NavMenuItem` 为既有 child actor 持有的 Core 内部 `ContentExpansionAnimator` 统一执行，通过原生 `Animation` 驱动内部进度和透明度。展开目标取当前宽度下的自然测量高度，收起目标为零；内容保持正常文字尺寸，由 actor 裁剪溢出区域。`VerticalChildItemsMargin` 固定应用于内部 `PART_ChildItemsFrame`，随完整内容高度一起裁剪，不作为 actor 外部的独立动画值，避免首尾间距恢复引发文字回弹。
-- 收放共用 `MotionDurationMid` 和 `Spline(0.645,0.045,0.355,1)` 缓动。新的请求从当前呈现的高度和透明度接续，取消旧动画，不忽略动画期间的点击；只有当前执行可以提交稳定状态，菜单层同时校验排队请求身份、当前 animator 和目标状态后发布完成事件。
-- 启动动画前显式保持当前高度和透明度，覆盖第一个时钟 tick 之前的绘制窗口；使用 `FillMode.Forward` 保持最终帧，覆盖时钟完成到异步清理之间的绘制窗口。动画完成后解除内部进度与布局接入，恢复自然布局；关闭 motion、template 重应用和 visual detach 时取消动画并恢复请求状态。每次动画的取消令牌在完成或取消后释放，已失效操作不得继续写入旧 actor。
+- Inline 主题将 `IsSubMenuOpen`、动效启用状态及有效时长绑定到 `ContentViewport#PART_ChildItemsViewport` 的 `atom:Motion` 入口，声明 `ExpandMotion` / `CollapseMotion`。自然高度包含内部 `PART_ChildItemsFrame` 的内容和固定间距，真实视口裁剪完整内容，文字保持正常尺寸。
+- 收放共用 `MotionDurationMid` 和 `Spline(0.645,0.045,0.355,1)`。新请求从当前高度和透明度连续替代旧执行，点击不因播放而失效；菜单层仍核对排队版本、视口身份和目标状态后发布完成事件。
+- Motion 同步保持首帧，`FillMode.Both` 保持最终帧到 completion 处理；收起完成后隐藏视口并释放覆盖。关闭动效、模板替换和 detach 取消旧请求，重新挂载按最新业务状态初始化。
 - 当 `IsInlineCollapsed=true` 时不使用 Inline handler；有效交互切换到 Default handler，使带子菜单的顶层项通过 popup 打开。
 
 Default handler：
@@ -409,19 +409,22 @@ open path cache 应记录路径语义而不是持有容器引用。容器可能�
 
 ### 7.10 内容展开的共享接入边界
 
-`NavMenuItem.SetInlineChildItemsOpenAsync` 将目标状态、方向和有效时长提交给 Core 内部
-`ContentExpansionAnimator`。动画执行器持有私有展开进度附加属性、布局失效通知、单次执行的取消源与原生 `Animation`；
-进度值和透明度在同一 actor 上同步播放。`BaseMotionActor` 只通过内部 `IMotionActorLayout` 委托自然测量和完整内容排列。
+`NavMenuItemTheme` 声明内容动效，Core Motion 持有每次执行的非视觉进度源、属性覆盖和请求身份；
+`ContentViewport` 通过 `IMotionLayout` 的可释放租约完成自然测量、占位与实际视口排列。
+
+侧栏切换有效 mode 并恢复打开路径后，展开标志、自然 DesiredSize 和实际 Bounds 必须一致。
+共享视口在布局租约变化时同时失效自身测量与祖先排列，避免宽度重排已发布完整期望尺寸，
+祖先却仍复用折叠时的子项分配矩形。不能用补发点击、临时禁用动效或延时刷新修复这种几何失配。
 算法所有者见 [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)。
 
-- 根 `NavMenu` 同步协调顶层互斥；item 持有 `IsSubMenuOpen`、排队请求身份和当前模板的 animator。
-- Dispatcher 回调在接触 actor 前核对请求版本、animator、mode 与目标状态，完成后再次确认有效性；同值旧请求不能因当前布尔值相同而重新获得执行权。
+- 根 `NavMenu` 同步协调顶层互斥；item 持有 `IsSubMenuOpen`、排队请求身份和当前模板的视口。
+- Dispatcher 回调等待 `Motion.GetVisibilityTask`，在等待前后核对版本、视口、mode 与目标状态；同值旧请求不能因布尔值相同而重新获得执行权。
 - 测量输入包含 `PART_ChildItemsFrame` 的完整内容及间距。裁剪主轴为高度，内容靠近 header 的顶边为锚点。
 - 取消前捕获呈现值、首个 tick 前保持起点、最终 tick 后保持终点以及执行资源释放由动画执行器统一处理。
 - 完成结果返回 item 后，由菜单层发送对应完成事件及处理命令可用性；取消与过期请求不发布完成事件。
 - mode 切换、进入 Inline Collapsed、模板替换及 detach 使旧请求与执行失效；共用层不操作路径缓存、selection 或 Popup。
 - 内容或嵌套子菜单尺寸变化沿布局失效更新自然尺寸，正在执行的展开目标从当前帧接续且保留原截止时间。
-- 稳定状态解除内部进度与布局接管，保留用户或模板的尺寸、transform 和 transition；根菜单折叠宽度动画使用独立职责。
+- 隐藏、detach 或稳定收敛释放机制自身覆盖与布局租约，保留应用尺寸和资源来源；正常展开的末帧按 FillMode 保持，下一次成功请求或重置释放。根菜单折叠宽度动画使用独立职责。
 
 ## 8. 资源、性能与 AOT 边界
 

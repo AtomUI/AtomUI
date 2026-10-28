@@ -103,7 +103,7 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
             "_isFlyoutOpen"));
     #endregion
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractIconButton()
     {
@@ -115,24 +115,24 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
     {
         // Parent templates assign IconBrush through styles after this control is attached,
         // so the initial appearance must commit without running the theme transition.
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -141,7 +141,7 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         var size = base.MeasureOverride(availableSize);
         // Template changes invalidate measure even when several changes coalesce back
         // to the applied template and Avalonia skips OnApplyTemplate.
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
         return size;
     }
     

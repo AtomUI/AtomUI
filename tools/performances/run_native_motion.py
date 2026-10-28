@@ -22,7 +22,7 @@ def summarize(reports):
     first = reports[0]
     for report in reports:
         for key in ("Schema", "Scenario", "Warmup", "Iterations", "DeclaredRefreshRateHz",
-                    "ControlsAssemblySha256", "ProductDiffSha256", "Configuration", "AvaloniaVersion",
+                    "ControlsAssemblySha256", "CoreAssemblySha256", "SharedControlsAssemblySha256", "ProductDiffSha256", "Configuration", "AvaloniaVersion",
                     "RenderScaling", "ClientSize", "ThemeVariant", "Platform", "Host", "Architecture"):
             if report[key] != first[key]:
                 raise ValueError(f"Mismatched sample identity/configuration: {key}")
@@ -30,7 +30,7 @@ def summarize(reports):
             raise ValueError("Native process produced no measured actions")
     samples = [sample for report in reports for sample in report["Samples"]]
     result = {key: first[key] for key in ("Schema", "Label", "Scenario", "Warmup", "Iterations",
-              "DeclaredRefreshRateHz", "ControlsAssemblySha256", "ProductDiffSha256", "Platform",
+              "DeclaredRefreshRateHz", "ControlsAssemblySha256", "CoreAssemblySha256", "SharedControlsAssemblySha256", "ProductDiffSha256", "Platform",
               "Configuration", "AvaloniaVersion", "Presentation", "Instrumentation", "RenderScaling", "ClientSize", "ThemeVariant", "Host", "Architecture")}
     result["processes"] = len(reports)
     result["cases"] = {}

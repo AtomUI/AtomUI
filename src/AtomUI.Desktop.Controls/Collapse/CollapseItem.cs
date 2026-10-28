@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -276,7 +275,6 @@ public class CollapseItem : HeaderedContentControl, ISelectable
 
     private Control? _headerDecorator;
     private IconButton? _expandButton;
-    private ContentExpansionAnimator? _contentExpansion;
 
     static CollapseItem()
     {
@@ -299,17 +297,10 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         {
             _expandButton.Click -= HandleExpandButtonClick;
         }
-        _contentExpansion?.ApplyState(IsSelected);
-
-        var motionActor = e.NameScope.Find<BaseMotionActor>("PART_ContentMotionActor");
-        _contentExpansion = motionActor is null
-            ? null
-            : new ContentExpansionAnimator(motionActor, motionActor.NotifyMotionPreStart, motionActor.NotifyMotionCompleted);
         _headerDecorator       = e.NameScope.Find<Control>("PART_HeaderDecorator");
         _expandButton          = e.NameScope.Find<IconButton>("PART_ExpandButton");
 
         UpdateEffectivePaddings();
-        HandleSelectedChanged(true);
         if (_expandButton is not null)
         {
             _expandButton.Click += HandleExpandButtonClick;
@@ -320,7 +311,6 @@ public class CollapseItem : HeaderedContentControl, ISelectable
     {
         base.OnAttachedToVisualTree(e);
         SetupDefaultExpandIcon();
-        _contentExpansion?.ApplyState(IsSelected);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -333,28 +323,9 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         }
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _contentExpansion?.ApplyState(IsSelected);
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == IsSelectedProperty)
-            {
-                HandleSelectedChanged();
-            }
-        }
-
-        if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
-        {
-            _contentExpansion?.ApplyState(IsSelected);
-        }
 
         if (change.Property == HeaderPaddingProperty ||
             change.Property == ContentPaddingProperty ||
@@ -444,22 +415,4 @@ public class CollapseItem : HeaderedContentControl, ISelectable
             : OwnerContentPadding ?? DefaultContentPadding;
     }
 
-    private void HandleSelectedChanged(bool forceDisabledMotion = false)
-    {
-        if (Presenter is not null)
-        {
-            UpdateContentVisibility(forceDisabledMotion);
-        }
-    }
-
-    private async void UpdateContentVisibility(bool forceDisabledMotion)
-    {
-        if (_contentExpansion is not { } expansion)
-        {
-            return;
-        }
-
-        var duration = IsMotionEnabled && !forceDisabledMotion ? MotionDuration : TimeSpan.Zero;
-        await expansion.RunAsync(IsSelected, Direction.Bottom, duration);
-    }
 }

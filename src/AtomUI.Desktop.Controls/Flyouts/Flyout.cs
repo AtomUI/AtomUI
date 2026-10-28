@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -54,10 +54,10 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     public static readonly StyledProperty<object> ContentProperty =
         AvaloniaProperty.Register<Flyout, object>(nameof(Content));
     
-    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty = 
+    public static readonly StyledProperty<Motion?> OpenMotionProperty =
         PopupControl.OpenMotionProperty.AddOwner<Flyout>();
         
-    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty = 
+    public static readonly StyledProperty<Motion?> CloseMotionProperty =
         PopupControl.CloseMotionProperty.AddOwner<Flyout>();
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
@@ -115,13 +115,13 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         set => SetValue(ContentProperty, value);
     }
     
-    public AbstractMotion? OpenMotion
+    public Motion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
-    public AbstractMotion? CloseMotion
+    public Motion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

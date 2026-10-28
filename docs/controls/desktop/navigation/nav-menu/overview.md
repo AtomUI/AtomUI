@@ -138,7 +138,7 @@ NavMenu 的公共 API 分为控件 API、节点 API 和事件 API。
 | `PART_Header` | `BaseNavMenuItemHeader` 的 mode 专用实现 | 菜单项 header，承载文字、图标、箭头和交互视觉。 |
 | `PART_Popup` | `Popup` | `Vertical` / `Horizontal` 模式下的子菜单浮层。 |
 | `PART_PopupFrame` | `NavMenuPopupFrame` | Popup 背景、圆角、尺寸约束和内容边距。 |
-| `PART_ChildItemsLayoutTransform` | `LayoutAwareMotionActor` | `Inline` 模式下的子菜单展开收起 motion 容器。 |
+| `PART_ChildItemsViewport` | `ContentViewport` | `Inline` 模式下的子菜单展开收起 motion 容器。 |
 | `PART_ChildItemsFrame` | `Border` | `Inline` 模式下的子菜单背景块。 |
 | `ChildItemsPresenter` | `ItemsPresenter` | `Inline` 模式下的子菜单内容承载。 |
 | `PART_ActiveIndicator` | `Rectangle` | `Horizontal` 顶层 light style 下的活动指示条。 |
@@ -185,7 +185,7 @@ NavMenu 的交互行为由 mode 决定。所有 mode 共用项激活事务契约
 `Inline` 模式：
 
 - 合法释放带子菜单的项目时切换 `IsSubMenuOpen`。
-- 子菜单在当前视觉树中展开，使用 `LayoutAwareMotionActor` 承载展开收起 motion。
+- 子菜单在当前视觉树中展开，使用 `ContentViewport` 承载展开收起 motion。
 - 合法释放叶子节点时提交选择，并更新所有祖先 `IsInSelectedPath`。
 - `IsAccordionMode=true` 时，顶层子菜单互斥展开；Inline 模式下旧分支收起与新分支展开同时开始，高度连续变化，动画期间再次点击可从当前进度反向切换。
 - `IsInlineCollapsed=true` 时，public `Mode` 仍保持 `Inline`，但内部有效模式切换为 vertical popup 语义：顶层只显示图标或无图标首字符，inline 子树不在主视觉树中展开，带子菜单的顶层项目通过 popup 打开。
@@ -278,7 +278,7 @@ NavMenu 位于 Desktop Navigation 分类，与 Breadcrumb、Pagination、Steps�
 - `ItemsControl`：承载 `Items`、`ItemsSource`、`ItemTemplate` 和容器生成。
 - AtomUI Token：通过 `NavMenuToken.ScopeProvider` 注册控件级资源。
 - Popup/Overlay：`Vertical` 和 `Horizontal` 子菜单通过 `Popup` 展开，并由 `ShouldUseOverlayPopup` 控制 overlay 使用策略。
-- MotionScene：`Inline` 子菜单展开收起使用 slide motion。
+- Motion：Inline 子菜单使用内容布局能力与 Expand / Collapse；根宽度保持控件拥有的原生布局动画。
 - Resource Host：`NavMenuNode` 使用 scoped resource-host generator 实现 `IResourceHost` / `IThemeVariantHost`，由当前 owner menu/container attach，并通过可释放 token 使 `Header`、`Tooltip` 等节点动态资源跟随菜单资源域。
 - Group Resource Host：`NavMenuGroup` 使用相同 scoped resource-host 规则，使动态 `Header` 和 `HeaderTemplate` 跟随当前菜单资源域，并在结构容器回收时释放 attachment。
 - Gallery：除 inline、vertical、horizontal、dark、items source、默认选中路径和默认展开路径外，最后一个结构化示例同时展示固定 Header/Footer、根分组、嵌套分组、分隔线和显式 `ItemSpacing`。
@@ -337,7 +337,7 @@ NavMenu 不实现 Form、CompactSpace 或 Button 家族接口。
 
 | Mode | 子菜单承载 | 顶层排列 |
 | --- | --- | --- |
-| `Inline` | 视觉树内 `LayoutAwareMotionActor` | Vertical StackPanel |
+| `Inline` | 视觉树内 `ContentViewport` | Vertical StackPanel |
 | `Vertical` | Popup | Vertical StackPanel |
 | `Horizontal` | Popup | Horizontal StackPanel |
 

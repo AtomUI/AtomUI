@@ -27,7 +27,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
                                              ICustomHitTest,
                                              IWaveSpiritAwareControl,
                                              IFormItemAware,
-                                             IStateMotionOwner
+                                             ITransitionInitializationOwner
 {
     #region 公共属性定义
     
@@ -258,7 +258,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     private DispatcherOperation? _pendingWave;
     private EventHandler? _formValueChanged;
     
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractToggleSwitch()
     {
@@ -284,7 +284,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     protected AbstractToggleSwitch()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -292,19 +292,19 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         base.OnLoaded(e);
         if (IsArrangeValid)
         {
-            CompleteStateMotionInitialization(Bounds.Size);
+            CompleteTransitionInitializationMode(Bounds.Size);
         }
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnAttachedToVisualTree(e);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         _pendingWave?.Abort();
         _pendingWave = null;
         base.OnDetachedFromVisualTree(e);
@@ -312,13 +312,13 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         _pendingWave?.Abort();
         _pendingWave = null;
         base.OnApplyTemplate(e);
@@ -350,14 +350,14 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             if (change.Property == IsCheckedProperty)
             {
                 CalculateElementsOffset(GrooveRect().Size);
-                if (_stateMotion.IsReady && IsMotionEnabled && IsWaveSpiritEnabled)
+                if (_transitionInitialization.IsReady && IsMotionEnabled && IsWaveSpiritEnabled)
                 {
                     var waveSpirit = _waveSpiritDecorator;
                     _pendingWave?.Abort();
                     _pendingWave = Dispatcher.InvokeAsync(() =>
                     {
                         _pendingWave = null;
-                        if (_stateMotion.IsReady && IsMotionEnabled && IsWaveSpiritEnabled &&
+                        if (_transitionInitialization.IsReady && IsMotionEnabled && IsWaveSpiritEnabled &&
                             ReferenceEquals(waveSpirit, _waveSpiritDecorator))
                         {
                             ConfigureWaveSpiritBrush();
@@ -448,7 +448,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         }
         
         _waveSpiritDecorator?.Arrange(new Rect(finalSize));
-        CompleteStateMotionInitialization(finalSize);
+        CompleteTransitionInitializationMode(finalSize);
         
         return finalSize;
     }
@@ -536,19 +536,19 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     #endregion
 
-    #region 实现 IStateMotionOwner 接口
+    #region 实现 ITransitionInitializationOwner 接口
 
-    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
 
     #endregion
 
-    private void CompleteStateMotionInitialization(Size size)
+    private void CompleteTransitionInitializationMode(Size size)
     {
         if (_switchKnob is { IsArrangeValid: true } &&
             double.IsFinite(size.Width) && double.IsFinite(size.Height) &&
             MathUtils.GreaterThan(size.Width, 0) && MathUtils.GreaterThan(size.Height, 0))
         {
-            _stateMotion.CompleteInitialization();
+            _transitionInitialization.CompleteInitialization();
         }
     }
 

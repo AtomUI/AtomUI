@@ -1,12 +1,9 @@
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.MotionScene;
 using AtomUI.Registration;
 using AtomUI.Theme;
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Input;
-using Avalonia.Media.Transformation;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -25,7 +22,6 @@ public static class ThemeManagerBuilderExtensions
     private static void InitializeDesktopRuntime(ControlPackageContext context)
     {
         DialogInputCaptureTracker.Initialize();
-        Animation.RegisterCustomAnimator<TransformOperations, MotionTransformOptionsAnimator>();
         var inputManager = AvaloniaLocator.CurrentMutable.GetService(typeof(IInputManager)) as IInputManager;
         if (inputManager is not null)
         {

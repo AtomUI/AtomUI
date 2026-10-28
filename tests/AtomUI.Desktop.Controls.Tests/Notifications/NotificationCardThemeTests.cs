@@ -33,7 +33,7 @@ public class NotificationCardThemeTests
     }
 
     [Fact]
-    public void Notification_Card_Uses_Render_Only_Motion_Actor()
+    public void Notification_Card_Motion_Does_Not_Invalidate_Layout()
     {
         using var manager = new WindowNotificationManager();
         var card = new NotificationCard(manager)
@@ -42,15 +42,19 @@ public class NotificationCardThemeTests
             Content = "Notification body"
         };
 
-        ShowInWindow(card, () =>
+        using var clock = new AtomUI.Desktop.Controls.Tests.Motion.ManualMotionClock();
+        ShowInWindow(card, window =>
         {
-            card.GetVisualDescendants()
-                .OfType<MotionActor>()
-                .Single()
-                .ShouldNotBeNull();
-            card.GetVisualDescendants()
-                .OfType<LayoutAwareMotionActor>()
-                .ShouldBeEmpty();
+            var frame = card.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "Frame");
+            window.UpdateLayout();
+            clock.Step(0);
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            frame.IsMeasureValid.ShouldBeTrue();
+            card.IsMeasureValid.ShouldBeTrue();
+            clock.Step(50);
+            frame.IsMeasureValid.ShouldBeTrue();
+            card.IsMeasureValid.ShouldBeTrue();
         });
     }
 
@@ -67,8 +71,7 @@ public class NotificationCardThemeTests
 
         ShowInWindow(card, () =>
         {
-            var actor = card.GetVisualDescendants().OfType<MotionActor>().Single();
-            var frame = actor.GetVisualDescendants().OfType<Border>().Single(item => item.Name == "Frame");
+            var frame = card.GetVisualDescendants().OfType<Border>().Single(item => item.Name == "Frame");
             var host = frame.GetVisualDescendants()
                             .OfType<FeedbackStackTransitionSnapshotHost>()
                             .Single();

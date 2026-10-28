@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -6,7 +6,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
@@ -142,6 +141,13 @@ public abstract class AbstractSpin : ContentControl, ICustomizableSizeTypeAware,
     
     #endregion
     
+    private readonly TransitionInitializationSession _transitionInitialization;
+
+    protected AbstractSpin()
+    {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -158,15 +164,15 @@ public abstract class AbstractSpin : ContentControl, ICustomizableSizeTypeAware,
         SetCurrentValue(IsCustomIndicatorProperty, CustomIndicator != null || CustomIndicatorTemplate != null);
     }
 
-    protected override void OnInitialized()
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.UIThread.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
     }
 }

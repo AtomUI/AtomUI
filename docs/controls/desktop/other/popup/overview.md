@@ -83,7 +83,7 @@ Pinned 状态不改变上述会话分类：外点、Escape、失焦、window dea
 ```text
 Popup
   -> PopupRoot or OverlayPopupHost       transparent host
-     -> PopupMotionActor                 open/close motion
+     -> PopupSurface : Panel             open/close motion target
         -> VisualLayerManager
            -> ShadowsAwareContainer      frame surface + shadow
               -> Child                   direct content or specialized presenter

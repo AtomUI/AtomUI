@@ -108,7 +108,7 @@ public abstract class AbstractToggleIconButton : ToggleButton, IMotionAwareContr
     
     #endregion
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractToggleIconButton()
     {
@@ -120,24 +120,24 @@ public abstract class AbstractToggleIconButton : ToggleButton, IMotionAwareContr
     {
         // Parent templates assign IconBrush and checked appearance through styles after
         // this control is attached, so the initial appearance must commit without transitions.
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -146,7 +146,7 @@ public abstract class AbstractToggleIconButton : ToggleButton, IMotionAwareContr
         var size = base.MeasureOverride(availableSize);
         // Template changes invalidate measure even when several changes coalesce back
         // to the applied template and Avalonia skips OnApplyTemplate.
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
         return size;
     }
     

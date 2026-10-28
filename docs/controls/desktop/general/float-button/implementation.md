@@ -158,10 +158,12 @@ Target ScrollViewer (ScrollChanged / OnLoaded)
 Semantic marker 与模板结构的真实映射：
 
 - `AbstractFloatButtonTheme` 的 Circle/Square 双模板中，`IconPresenter.semantic-icon` 静态存在；
-  `ContentPresenter.semantic-content` 只在 Square 模板存在。`BackTopFloatButtonTheme` 的两套模板包在 MotionActor 内，
-  提供同一组 marker。
+  `ContentPresenter.semantic-content` 只在 Square 模板存在。`BackTopFloatButtonTheme` 在既有 Panel 上声明 `atom:Motion`，
+  由 `IsActive` 驱动 Fade，提供同一组 marker；不持有方向 guard、显隐执行器或 Actor。
 - `FloatButtonGroupTheme` 的 Default 模板只有 `FloatButtonItemsControl.semantic-list`；Click/Hover 模板中
-  `FloatButton.semantic-trigger` 与 MotionActor 内的 `semantic-list` 是 Canvas 下的 sibling。
+  `FloatButton.semantic-trigger` 与 `Border#PART_MenuSurface` 是 Canvas 下的 sibling，`semantic-list` 位于该静态表面内。
+  表面隔离菜单位移与 list 自定义变换；有效时长和启用状态由主题绑定。位移距离取 trigger 当前 DIP 尺寸，
+  控件在提交可见性前一次性构建 Motion 参数快照，播放与替代由 Core 负责。
 - Badge adorner 由 `ConfigureBadge` 在运行时创建并加入 `PART_BadgeLayout`，属于 Badge 家族 descriptor 的范围；
   FloatButton 不为其声明 marker。
 - 已知不一致：`BackTopFloatButtonTheme` 的模板把徽标画布命名为 `BadgeLayout`（缺少 `PART_` 前缀），而

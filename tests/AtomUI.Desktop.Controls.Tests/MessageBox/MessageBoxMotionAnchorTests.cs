@@ -1,5 +1,4 @@
 using System.Reflection;
-using AtomUI.MotionScene;
 using Avalonia.Controls;
 using Shouldly;
 using Xunit;
@@ -39,7 +38,7 @@ public class MessageBoxMotionAnchorTests
         }
         else
         {
-            openingMotion.ShouldBeOfType<FadeInMotion>();
+            openingMotion.ShouldBeOfType<DialogZoomInMotion>();
         }
     }
 

@@ -1,10 +1,8 @@
 using AtomUI.Icons.AntDesign;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
@@ -85,9 +83,6 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
 
     #endregion
 
-    private BaseMotionActor? _motionActor;
-    private bool _showAnimating;
-    private bool _hideAnimating;
     private CancellationTokenSource? _cancellationTokenSource;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -112,16 +107,6 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         _cancellationTokenSource = null;
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _motionActor = e.NameScope.Find<BaseMotionActor>(BaseMotionActor.MotionActorPart);
-        if (_motionActor != null)
-        {
-            _motionActor.SetCurrentValue(IsVisibleProperty, IsActive);
-        }
-    }
-
     protected override void ConfigureDefaultIcon()
     {
         if (Icon == null)
@@ -136,17 +121,6 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         if (change.Property == TargetProperty)
         {
             ConfigureTarget(change.OldValue as AvaScrollViewer, change.NewValue as AvaScrollViewer);
-        }
-        else if (change.Property == IsActiveProperty)
-        {
-            if (IsActive)
-            {
-                Dispatcher.InvokeAsync(ApplyShowMotionAsync);
-            }
-            else
-            {
-                Dispatcher.InvokeAsync(ApplyHideMotionAsync);
-            }
         }
     }
 
@@ -188,56 +162,6 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         {
             IsActive = Target.Offset.Y >= VisibilityHeight;
             UpdateScrollProgress(Target);
-        }
-    }
-
-    private async Task ApplyShowMotionAsync()
-    {
-        if (_motionActor is not null)
-        {
-            if (IsMotionEnabled)
-            {
-                if (_showAnimating)
-                {
-                    return;
-                }
-
-                _showAnimating = true;
-                _motionActor.SetCurrentValue(IsVisibleProperty, false);
-                var motion = new FadeInMotion(MotionDuration, new QuadraticEaseOut());
-                await motion.RunAsync(_motionActor,
-                    () => { _motionActor.SetCurrentValue(IsVisibleProperty, true); });
-                _showAnimating = false;
-            }
-            else
-            {
-                _motionActor.SetCurrentValue(IsVisibleProperty, true);
-            }
-        }
-    }
-
-    private async Task ApplyHideMotionAsync()
-    {
-        if (_motionActor is not null)
-        {
-            if (IsMotionEnabled)
-            {
-                if (_hideAnimating)
-                {
-                    return;
-                }
-
-                _hideAnimating = true;
-                var motion =
-                    new FadeOutMotion(MotionDuration, new QuadraticEaseOut());
-                await motion.RunAsync(_motionActor);
-                _hideAnimating = false;
-                _motionActor.SetCurrentValue(IsVisibleProperty, false);
-            }
-            else
-            {
-                _motionActor.SetCurrentValue(IsVisibleProperty, false);
-            }
         }
     }
 

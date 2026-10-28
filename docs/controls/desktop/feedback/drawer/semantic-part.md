@@ -20,7 +20,7 @@ Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板�
 | `footer` | `footer` | 一一对应（`InfoFooter` presenter，仅设置 Footer 时可见）。 |
 | `close` | `close` | 一一对应（`PART_CloseButton` IconButton）。 |
 | `dragger` | 不暴露 | 上游 v6 的 resizable 拖拽手柄；AtomUI Drawer 暂无 resizable 能力，待能力落地后按上游补齐。 |
-| `wrapper` | 不暴露 | 上游动效包装容器，其语义预览清单同样不包含它；对应 AtomUI 的 `PART_InfoContainerMotionActor` 动效基础设施。 |
+| `wrapper` | 不暴露 | 上游动效包装容器，其语义预览清单同样不包含它；对应 AtomUI 的 `PART_Surface` 动效基础设施。 |
 
 部件明细：
 
@@ -195,7 +195,7 @@ Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板�
 
 ## 5. 定制边界
 
-以下模板节点**不属于**语义部件，不承载稳定定制契约：`PART_RootClip`（宿主圆角裁剪）、`RootLayout`（两个容器各自的布局 Panel）、`InfoLayout`（行布局 Grid）、两条 `Separator`（分割线，随 header/footer 存在性显示）、`PART_InfoContainerMotionActor`（动效宿主）。上游的 `wrapper`/`dragger` 不暴露（见 §1 映射表）。
+以下模板节点**不属于**语义部件，不承载稳定定制契约：`PART_RootClip`（宿主圆角裁剪）、`RootLayout`（两个容器各自的布局 Panel）、`InfoLayout`（行布局 Grid）、两条 `Separator`（分割线，随 header/footer 存在性显示）、`PART_Surface`（动效宿主）。上游的 `wrapper`/`dragger` 不暴露（见 §1 映射表）。
 
 ## 6. 兼容性与验证
 

@@ -326,7 +326,7 @@ public class NavMenuInlineCollapsedTests
     }
 
     [Fact]
-    public void InlineCollapsed_Toggle_Preserves_SelectedItem_And_Restores_Open_Inline_Path()
+    public async Task InlineCollapsed_Toggle_Preserves_SelectedItem_And_Restores_Open_Inline_Path()
     {
         var child = new NavMenuNode
         {
@@ -420,6 +420,32 @@ public class NavMenuInlineCollapsedTests
                 rootContainer.IsInSelectedPath.ShouldBeTrue();
                 parentContainer.IsInSelectedPath.ShouldBeTrue();
                 childContainer.IsSelected.ShouldBeTrue();
+
+                var rootViewport = rootContainer.GetVisualDescendants().OfType<ContentViewport>()
+                    .First(viewport => viewport.Name == "PART_ChildItemsViewport" &&
+                                       ReferenceEquals(viewport.TemplatedParent, rootContainer));
+                var parentViewport = parentContainer.GetVisualDescendants().OfType<ContentViewport>()
+                    .First(viewport => viewport.Name == "PART_ChildItemsViewport" &&
+                                       ReferenceEquals(viewport.TemplatedParent, parentContainer));
+                var visibility = Task.WhenAll(
+                    AtomUI.Animations.Motion.GetVisibilityTask(rootViewport),
+                    AtomUI.Animations.Motion.GetVisibilityTask(parentViewport));
+                var settle = System.Diagnostics.Stopwatch.StartNew();
+                while (!visibility.IsCompleted && settle.Elapsed < TimeSpan.FromSeconds(2))
+                {
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                    Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
+                    await Task.Delay(10, TestContext.Current.CancellationToken);
+                }
+                visibility.IsCompletedSuccessfully.ShouldBeTrue();
+                (await visibility).ShouldAllBe(result => result.IsCompleted);
+                rootViewport.IsVisible.ShouldBeTrue("a restored open branch must actually be visible, without a close/reopen click.");
+                rootViewport.Opacity.ShouldBe(1);
+                rootViewport.Bounds.Height.ShouldBeGreaterThan(0);
+                rootContainer.Bounds.Height.ShouldBeGreaterThan(rootViewport.Bounds.Height);
+                parentViewport.IsVisible.ShouldBeTrue();
+                parentViewport.Opacity.ShouldBe(1);
+                parentViewport.Bounds.Height.ShouldBeGreaterThan(0);
             }
         }
         finally

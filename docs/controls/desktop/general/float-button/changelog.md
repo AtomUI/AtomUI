@@ -2,6 +2,14 @@
 
 本文档记录 FloatButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- Motion
+  - BackTop 直接在既有 Panel 上声明 Fade 显隐，移除 Actor 包装、方向 guard 和独立显隐执行器。
+  - FloatButtonGroup 通过静态菜单表面隔离 list 自定义变换，播放与连续替代统一交由 Core Motion。
+  - 保持 trigger 尺寸决定的四方向位移、透明度反向连续性、进度环和 Semantic Part 路由。
+
+
 ## 2026-09-12
 
 - API

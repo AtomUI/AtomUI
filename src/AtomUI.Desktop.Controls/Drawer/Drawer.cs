@@ -454,9 +454,29 @@ public partial class Drawer : Control,
 
     private void ReleaseDrawerContainer()
     {
-        RaiseCrossRootsChanged();
-        _container?.Release();
+        var container = _container;
         _container = null;
+        Exception? notificationFailure = null;
+        try
+        {
+            RaiseCrossRootsChanged();
+        }
+        catch (Exception exception)
+        {
+            notificationFailure = exception;
+        }
+        try
+        {
+            container?.Release();
+        }
+        catch (Exception releaseFailure) when (notificationFailure is not null)
+        {
+            throw new AggregateException(notificationFailure, releaseFailure);
+        }
+        if (notificationFailure is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(notificationFailure).Throw();
+        }
     }
 
     private void ConfigureOpenOnSizeChangedSubscription()

@@ -7,8 +7,8 @@
 ## 1. 控件定位
 
 选中指示条的首帧契约是按当前选中项直接提交长度、厚度和位置，后续有效选择变化保留主题过渡。四向 placement、
-当前容器几何及主题就绪条件见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，
-源码接入差异与证据见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+当前容器几何及主题就绪条件见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，
+源码接入差异与证据见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 | 项 | 值 |
 | --- | --- |

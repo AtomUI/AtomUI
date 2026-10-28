@@ -1,5 +1,8 @@
 # Popup 桌面版实现原理
 
+表面登记与动效清理以请求代际和资源身份为边界：先退役旧目标/准备，再释放旧覆盖；
+属性通知若同步登记新表面，旧调用不得清除新准备或回写旧目标。
+
 本文档描述 Popup 的宿主选择、frame surface/shadow、定位、动效和生命周期实现。公共契约见
 [Popup 桌面版架构设计](overview.md)，Token 语义见 [Popup Token 设计](token.md)，变化记录见
 [Popup Changelog](changelog.md)。
@@ -19,7 +22,8 @@ Popup 的物理关闭策略还承载内部钉住打开状态。`IsPopupPinnedOpe
 - `src/AtomUI.Desktop.Controls/Popup/PopupLightDismissRegistration.cs`：取得当前 open session 的 light-dismiss registration，负责配置变化时的更新和释放。
 - `src/AtomUI.Desktop.Controls/Popup/PopupUtils.cs`：placement 算法、popup scope 和 owning popup 查询。
 - `src/AtomUI.Desktop.Controls/Popup/PopupToken.cs`：Popup 家族的阴影、圆角和 anchor margin Token。
-- `src/AtomUI.Core/MotionScene/MotionExecutionState.cs`：MotionScene 共享的 internal 动效执行生命周期定义。
+- `src/AtomUI.Core/Animations/Motion`：可复用动效定义、原生播放、请求身份和属性覆盖。
+- `src/AtomUI.Desktop.Controls/Popup/PopupSurface.cs`：实际表面与显示前的 owner 就绪通知。
 - `src/AtomUI.Desktop.Controls/Popup/Themes/PopupTheme.axaml`：Popup shadow 和 motion Theme 值；不覆盖 surface 默认值。
 - `src/AtomUI.Desktop.Controls/Popup/Themes/PopupRootTheme.axaml`：native transparent host 组合。
 - `src/AtomUI.Desktop.Controls/Popup/Themes/OverlayPopupHostTheme.axaml`：overlay host 组合。
@@ -113,15 +117,19 @@ ContentPresenter Child observable 在 Child/Presenter 替换时重新配置圆�
 并在降级期间订阅提供方的 `TemplateApplied`，下一次模板应用时重新探测，部件就绪即恢复箭头 relay binding；订阅随
 `surface bindings` 统一释放。custom placement 同样把部件不可用按箭头隐藏处理，复用阴影厚度补偿路径。
 
-Popup 实例拥有 open/close motion cancellation token 和本次关闭执行状态；Core 的 `MotionExecutionState` 只定义
-`Idle -> Pending -> Playing -> Completing` 阶段语义，不拥有任何控件实例或任务。Popup 同一时刻最多调度一次关闭动效，
-快速重开把 Pending/Playing 收敛回 Idle，Completing 只允许 Avalonia 执行一次最终 close。`Closed` 统一取消并释放 token、
-清空 motion actor、打开时 TopLevel、placement tracker 与 wheel guard。
+Popup 持有本次宿主请求版本和局部 `Idle -> Pending -> Playing -> Completing` 关闭阶段；Core Motion 拥有活动播放资源。
+快速重开使旧版本失效，由新入场连续替代离场；同一时刻最多调度一次有效关闭。完成结果核对请求与表面身份，
+最终排队的 Close 再次核对版本、阶段和独立关闭意图。绑定已将 IsOpen 设为 false 时仍必须完成物理关闭；
+false→true 或显式重开在 Completing 阶段也使旧关闭失效。`Closed` 取消播放并清空表面、打开时 TopLevel、tracker 与 wheel guard。
+离场期间更换模板时，旧表面不再可用，新表面先保持隐藏，再按当前版本稳定关闭；重新打开可取消这次排队关闭。
 
-开启动画同时接受 `Opened -> PopupMotionActor ready` 与 `actor ready -> Opened` 两种 host 物化顺序。`Opened` 记录当前打开周期，
-actor attach 通过 `NotifyMotionActorReady` 回报就绪；任一后到的入口都进入同一个 `StartOpenMotion` 路径。actor 在 attach 时为防止
-首帧闪烁而预置的 `Opacity=0` 必须由该路径收敛到动画终态，或在禁用 motion 时显式恢复为 `Opacity=1`。异步调度捕获本次 actor
-和 cancellation token，`Closed` 清除打开周期和 actor，禁止旧 host 状态进入下一轮。
+`PopupSurface` 直接继承 Panel，是宿主实际表面，承载原有的阴影和 VisualLayerManager，不实现 Actor。
+开启动画接受表面先就绪或 `Opened` 先发生两种顺序。逻辑 attach 在宿主显示前建立作用域透明度覆盖；
+无 rooted logical owner 的 Direct Popup 还通过 visual attach 注册表面，在首个绘制前完成准备。
+Direct Popup 需要在其可达资源作用域提供宿主主题；没有 AtomUI 表面的自定义宿主按无动效路径关闭，
+不能用未挂载的模拟目标代表实际宿主支持动画。
+一次 Loaded 调度跨越布局准备边界，调用 `Motion.PlayAsync` 后释放初始覆盖。无可播放轨迹时恢复底层属性来源。
+异步任务捕获请求版本和目标身份，旧宿主不能修改新打开周期；有效时长通过请求传入，不修改共享 Motion 定义。
 
 关闭动效只能延迟仍然有效的普通关闭。Popup 打开时记录该会话的 owning `TopLevel` 以及当时是否已有 logical owner；
 `Closing` 发生时验证当前实际 PlacementTarget 仍在 visual tree、目标仍属于原 TopLevel，并且目标能够转换到该 TopLevel。
@@ -135,7 +143,7 @@ Pinned request 获取当前 PlacementTarget 后，订阅 target attach/detach，
 replacement、re-template、detach 或 unpin 后失效。显式 `Flyout.ShowAt` 在 `OnOpening` 使用同一物理门禁，无效 target 不发布
 Flyout/Popup opened state。
 
-生命周期关闭先使 generation 失效、取消 motion、恢复 motion actor，再进入可嵌套的 close bypass scope。即使 Popup 当前
+生命周期关闭先使 generation 失效、取消 motion、释放初始覆盖，再进入可嵌套的 close bypass scope。即使 Popup 当前
 有效 `IsOpen=false`，该入口仍调用 Avalonia close，以清理 coercion 下保留的 base open request 和 AtomUI pending request。
 Unpin 对已打开 Popup 只释放 close guard；对 pending Popup 则同时清理 PlacementTarget、Popup parent、target tracking 和
 Flyout global resource bindings。Window deactivation 是普通关闭来源，只有窗口销毁或会话失效才属于 lifecycle teardown。

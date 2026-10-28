@@ -543,14 +543,6 @@ internal class TreeViewItemHeader : ContentControl
         SetCurrentValue(IsPressedProperty, false);
     }
 
-    internal void NotifyAnimating(bool animating)
-    {
-        if (_nodeSwitcherButton != null)
-        {
-            _nodeSwitcherButton.IsNodeAnimating = animating;
-        }
-    }
-
     public Point GetDragIndicatorOffset(Control relativeTo)
     {
         var offsetX = 0d;

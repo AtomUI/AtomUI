@@ -113,8 +113,8 @@ public class DialogSemanticPartTests
         CollectMarkers(XDocument.Load(GetRepoFile(PresenterThemePath)))
             .ShouldBe([
                 "semantic-scope-mask:OverlayDialogMask",
-                "semantic-scope-presenter:Panel",
-                "semantic-wrapper:MotionActor"
+                "semantic-scope-presenter:Border",
+                "semantic-wrapper:ContentPresenter"
             ]);
         CollectMarkers(XDocument.Load(GetRepoFile(SurfaceThemePath)))
             .ShouldBe([
@@ -696,8 +696,8 @@ public class DialogSemanticPartTests
                 PumpUntil(() => window.GetVisualDescendants().OfType<OverlayDialogPresenter>().Any());
 
                 var presenter = window.GetVisualDescendants().OfType<OverlayDialogPresenter>().Single();
-                presenter.GetVisualDescendants().OfType<MotionActor>()
-                         .Any(static m => m.Name == "PART_MaskMotionActor")
+                presenter.GetVisualDescendants().OfType<Control>()
+                         .Any(static m => m.Name == "PART_MaskHost")
                          .ShouldBeTrue("遮罩宿主仍然存在");
                 presenter.GetVisualDescendants().OfType<OverlayDialogMask>()
                          .ShouldBeEmpty("modeless 不物化遮罩节点：mask 的 Optional 同时覆盖 modeless 与 Window 宿主");
@@ -783,8 +783,8 @@ public class DialogSemanticPartTests
         var mask      = presenter.GetVisualDescendants().OfType<OverlayDialogMask>().Single();
 
         AssertMarker(
-            presenter.GetVisualDescendants().OfType<MotionActor>()
-                     .Single(static m => m.Name == "PART_SurfaceMotionActor"),
+            presenter.GetVisualDescendants().OfType<Control>()
+                     .Single(static m => m.Classes.Contains("semantic-wrapper")),
             "semantic-wrapper");
         AssertMarker(
             mask.GetVisualDescendants().OfType<Border>().Single(static b => b.Name == "Frame"),
@@ -852,8 +852,8 @@ public class DialogSemanticPartTests
                 var scopeLayer = layer.GetVisualParent().ShouldBeOfType<ScopeAwareOverlayLayer>();
                 scopeLayer.GetVisualParent().ShouldBeSameAs(scopeHost);
 
-                var maskActor = presenter.GetVisualDescendants().OfType<MotionActor>()
-                                         .Single(static m => m.Name == "PART_MaskMotionActor");
+                var maskActor = presenter.GetVisualDescendants().OfType<Control>()
+                                         .Single(static m => m.Name == "PART_DialogMask");
                 PumpUntil(() => maskActor.Bounds.Width > 0);
                 maskActor.Bounds.Width.ShouldBe(300, 0.5);
                 maskActor.Bounds.Height.ShouldBe(200, 0.5);

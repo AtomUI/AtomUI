@@ -1,6 +1,6 @@
 using System.Reflection;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using MotionApi = AtomUI.Animations.Motion;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -1175,7 +1175,7 @@ public class NavMenuSelectionTests
             var parentContainer = (Control)menu.ContainerFromItem(parent)!;
             SetTimeSpanProperty(parentContainer, "OpenCloseMotionDuration", TimeSpan.FromMilliseconds(1));
 
-            var actor = GetChildItemsMotionActor(parentContainer);
+            var actor = GetChildItemsViewport(parentContainer);
             var parentMenuItem = (INavMenuItem)parentContainer;
             parentMenuItem.Open();
             WaitForInlineMotionCompletion(actor);
@@ -1184,7 +1184,7 @@ public class NavMenuSelectionTests
             WaitForInlineMotionCompletion(actor);
 
             actor.IsVisible.ShouldBeFalse();
-            actor.Opacity.ShouldBe(0.0);
+            actor.Opacity.ShouldBe(1.0);
 
             menu.IsMotionEnabled = false;
             DrainDispatcher();
@@ -1304,16 +1304,16 @@ public class NavMenuSelectionTests
 
             SetTimeSpanProperty(parentContainer, "OpenCloseMotionDuration", TimeSpan.FromMilliseconds(1));
             parentMenuItem.Open();
-            WaitForInlineMotionCompletion(GetChildItemsMotionActor(parentContainer));
+            WaitForInlineMotionCompletion(GetChildItemsViewport(parentContainer));
 
             SetTimeSpanProperty(parentContainer, "OpenCloseMotionDuration", TimeSpan.FromMilliseconds(500));
             parentMenuItem.Close();
             Dispatcher.UIThread.RunJobs();
             Dispatcher.UIThread.RunJobs();
 
-            var actor = GetChildItemsMotionActor(parentContainer);
+            var actor = GetChildItemsViewport(parentContainer);
             actor.IsVisible.ShouldBeTrue();
-            actor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(actor).IsCompleted).ShouldBeTrue();
 
             menu.IsMotionEnabled = false;
             Dispatcher.UIThread.RunJobs();
@@ -1323,7 +1323,7 @@ public class NavMenuSelectionTests
 
             parentMenuItem.IsSubMenuOpen.ShouldBeTrue();
 
-            actor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            MotionApi.GetVisibilityTask(actor).IsCompleted.ShouldBeTrue();
             Thread.Sleep(600);
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
@@ -1392,18 +1392,18 @@ public class NavMenuSelectionTests
         return (bool)property.GetValue(container)!;
     }
 
-    private static BaseMotionActor GetChildItemsMotionActor(Control container)
+    private static ContentViewport GetChildItemsViewport(Control container)
     {
         var field = container.GetType().GetField(
-            "_childItemsLayoutTransform",
+            "_childItemsViewport",
             BindingFlags.Instance | BindingFlags.NonPublic);
         field.ShouldNotBeNull();
-        return (BaseMotionActor)field.GetValue(container)!;
+        return (ContentViewport)field.GetValue(container)!;
     }
 
     private static Border GetChildItemsFrame(Control container)
     {
-        var actor = GetChildItemsMotionActor(container);
+        var actor = GetChildItemsViewport(container);
         actor.Content.ShouldBeOfType<Border>();
         return (Border)actor.Content;
     }
@@ -1454,7 +1454,7 @@ public class NavMenuSelectionTests
             : null;
     }
 
-    private static void WaitForInlineMotionCompletion(BaseMotionActor actor)
+    private static void WaitForInlineMotionCompletion(ContentViewport actor)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
         do
@@ -1462,14 +1462,14 @@ public class NavMenuSelectionTests
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
-            if (!actor.IsAnimating(Visual.OpacityProperty))
+            if (MotionApi.GetVisibilityTask(actor).IsCompleted)
             {
                 return;
             }
             Thread.Sleep(10);
         } while (DateTime.UtcNow < deadline);
 
-        actor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        MotionApi.GetVisibilityTask(actor).IsCompleted.ShouldBeTrue();
     }
 
     private static void DrainDispatcher()

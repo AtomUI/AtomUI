@@ -5,8 +5,8 @@
 ## 1. 控件定位
 
 选中滑块首次出现时直接使用当前选中容器的完整矩形，后续有效选择变化保留飞行动画。就绪状态、首次有效几何
-与主题过渡的共享契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，
-源码接入差异与验证边界见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+与主题过渡的共享契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，
+源码接入差异与验证边界见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 | 项 | 值 |
 | --- | --- |

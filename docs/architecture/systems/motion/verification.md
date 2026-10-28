@@ -1,0 +1,145 @@
+# Motion 验证状态与完成门禁
+
+本页区分[目标架构](overview.md)与当前可用实现，定义迁移、平台与发布验收。内置消费者已迁移，
+代码保持在 `feature/motion` 的未提交工作树中等待审查。定向验证、原生观测与平台性能验收分别记录，不能相互替代。
+
+## 当前源码边界
+
+| 能力 | 当前源码与目标差异 |
+| --- | --- |
+| 定义与执行 | Core/Animations/Motion 已实现 Motion/Build、内置家族、组合、类型化属性和原生执行；第三方子类与 atom: AXAML 消费有定向证据；合成后端尚未启用 |
+| 目标 | 真实 Control 或模板静态隔离表面；旧 Actor、接口族和 MotionScene 已删除 |
+| 内容展开 | 公开 IMotionLayout 与 Controls.ContentViewport 已接入 Expander、Collapse、NavMenu Inline 和 TreeView 系列，几何 / 输入有定向证据 |
+| 状态初始化 | Animations 下已有 TransitionInitializationSession/TransitionSuppressionScope，继续服从独立初始化合同 |
+| 显示隐藏 | 内置消费者已迁入 Motion，Overlay Dialog 使用框架时钟并校准为普通 Zoom；实际呈现的支持矩阵尚未验收 |
+| 注册 | 基础 Motion 不依赖 Desktop animator 注册；旧 TransformOperations 注册已删除，Masonry 继续拥有自己的 ITransform 适配 |
+| 性能 | 已运行 NavMenu 侧栏与子菜单原生探针；没有实际 display present 数据及最低设备证据，跨平台帧率目标尚未验收 |
+
+源码入口：[Motion 核心](../../../../src/AtomUI.Core/Animations/Motion/Motion.cs)、
+[单次播放](../../../../src/AtomUI.Core/Animations/Motion/Playback/MotionPlayback.cs)、
+[内容视口](../../../../src/AtomUI.Controls/Primitives/ContentViewport.cs)、
+[Popup 准备](../../../../src/AtomUI.Desktop.Controls/Popup/PopupSurface.cs)、
+[Desktop 注册](../../../../src/AtomUI.Desktop.Controls/ThemeManagerBuilderExtensions.cs)、
+[原生观测](../../../../tools/performances/AtomUI.GalleryPerformance/NativeMotionProbe.cs)。
+这些路径描述现存实现，消费者迁移后同步更新，不能把旧类删除与整个目标验收完成等同。
+
+## 能力验证
+
+实现核心前验证合成路径的真实完成/故障、当前呈现值、反向、终态提交、客户端基值和变换后命中。
+原生路径验证 Delay、FillMode、首 tick 前取消、多轨道不同时长/曲线与组合结束。
+验证运行资源转交终态记录后，不再保留 CTS/任务/帧订阅，Reset/下一请求/detach 可释放剩余覆盖。
+布局能力的精确签名需经独立第三方库、编译 AXAML 和 AOT 验证，不能只凭友元测试通过就称可扩展。
+不满足合成合同的组合使用可靠原生路径；需要框架公开能力时单独提出依赖方案，不反射内部成员冒充支持。
+
+## 契约矩阵
+
+| 范围 | 必须证明 |
+| --- | --- |
+| 构建与参数 | 实例复用、快照隔离、非法数值/时间/通道在写目标前失败、DIP/比例和 origin 正确 |
+| 曲线与轨迹 | 端点及中间值、分段曲线、变换顺序、实际组件参数与参考规格一致 |
+| 请求 | 整体替代、NotReady 不抢占、重复状态幂等、显式 Play 重新播放、回调重入 |
+| 组合 | 一个所有权、并行同通道拒绝、子项 FillMode 校验、局部 Delay、段间保持、父时长缩放、取消未开始子段 |
+| 属性 | 绑定/主题在覆盖期间更新、恢复最新值、终态显式持有、跨家族不复活旧变换 |
+| 生命周期 | 外部取消、detach、换模板、容器回收、owner 销毁、清理异常、迟到通知 |
+| 布局/输入 | 自然内容、固定父约束、四方向、动态内容、嵌套滚动、滚动条、裁剪和真实命中 |
+| 业务接入 | Popup 首帧和物理关闭、焦点/遮罩、BackTop 快速显隐、TreeView 反向及键盘 |
+| 扩展 | 普通第三方子类、自定义曲线/属性/布局无内部权限可用，不依赖全局类型注册 |
+| 发布 | 实际目标宿主编译、裁剪、NativeAOT 和所声明平台运行，未使用类型可移除 |
+
+## 迁移与事实同步
+
+旧 API 不保留长期兼容实现。先验证核心与扩展，再迁视觉动效、业务接入和布局，消费者迁移验证后删除 Actor 类族、
+双 transform、无调用的旧几何和重复执行路径。现有状态初始化与已经采用原生时钟的场景不因迁移倒退。
+公共 API、主题、Semantic Part 专用 Style、Gallery API/Token/示例和单控件文档同步；视觉规格差异单独记录。
+
+Core 和 Controls 模块入口描述当前目录与目标归属；本系统文档拥有共享合同，单控件文档不重复维护另一份运行协议。
+当前布局协作细节见[内容展开](../control-infrastructure/content-expansion.md)，其中只描述现存视口与租约机制。
+更新当前实现状态时必须有源码与相应验证证据，不能仅移除预实现 notice。
+
+## 验证范围与证据
+
+按[定向验证](../../../engineering/workflows/affected-verification.md)运行改动模块，不自行扩展到全量回归。
+新验证默认临时，遵守[测试生命周期](../../../engineering/development/test-value-and-lifecycle.md)，清理后再次验证最终模块。
+纯文档变更检查相对链接、目标/现状区分、命名、导航和 git diff --check，不以文档验证冒充产品测试。
+
+原生性能门槛、支持矩阵及统计口径由[性能验收](performance.md)统一拥有；最低设备、平台、内容规模和并发必须冻结。
+平台呈现、布局/交互、资源释放与发布证据分别保存，某一项通过不能代替其他项。
+目前未指定最低性能配置，不能将当前开发机探针或架构预算描述为新库已达到 60/120FPS。
+
+## 本次审查与能力证据（2026-10-28）
+
+核心临时验证共 50 项通过，覆盖构建、轨迹、组合、替代、取消、绑定恢复、清理异常和布局扩展。
+独立审查的三项重要问题均有 RED→GREEN 证据：绑定 `IsOpen=false` 的关闭意图与反向重开、关闭期间 Popup 换模板的稳定收敛、
+合法 AddOwner 属性的通道适用性。相关覆盖合并到既有用例；临时测试与独立 fixture 验证结束后删除，不新增永久用例。
+
+独立第三方程序集通过 `atom:` 编译 AXAML、自定义 Motion、实际有限时长播放、`IMotionLayout` 和 AddOwner 属性通道验证，
+并在 macOS arm64 NativeAOT 可执行文件中返回 `THIRD_PARTY_AXAML_PLAYBACK_LAYOUT_AOT_OK`（exit 0）。
+类型化属性校验直接调用 `ValidateValue`，避免对象转换路径引入的 IL2026；没有通过关闭裁剪检查隐藏警告。
+
+Motion 迁移阶段清理后的工作树按以下范围验证，全部为 `net10.0` 的精确过滤，没有运行全量回归。
+下述后续 NavMenu 布局修复另列其最终验证范围，不将阶段证据冒充最新输入的全量证明：
+
+| 范围 | 结果 |
+| --- | --- |
+| Core MotionExecutionTests 与 TransitionInitializationTests（最长组合、AddOwner/Reset、既有状态初始化） | 5 passed |
+| Controls FixedAvaloniaMemberRetentionTests（清理后重建程序集） | 1 passed |
+| Desktop 布局/输入、Expander、Collapse、NavMenu、TreeView/Transfer、Masonry | 255 passed |
+| Desktop Popup/Flyout/ContextMenu、FloatButton/BackTop、Badge、Drawer | 171 passed |
+| Desktop Feedback/Message/Notification、Dialog/MessageBox | 280 passed |
+| Gallery Badge/Modal 语义高亮、Expander/Collapse 页面 | 8 passed |
+| DataGridFilterDialogPopupTests | 4 passed |
+
+Desktop 第一组同时包含现存 Motion 目录的真实卡片关闭用例；表格是实际命令的分组，不叠加历史临时验证数量。
+
+Motion 迁移版本（不含后续 NavMenu 布局修复）的 Gallery 发布执行 `PublishToLocal.ps1`，使用 Release、`osx-arm64`、`publishAot=true`，
+返回 exit 0 与 `NativeAOT output validation passed`；产物为 Mach-O arm64 可执行文件。
+该次没有 Motion/Core 的链接器或 AOT 警告。依赖 ReactiveUI 的 IL2104/IL3053，以及本机 Homebrew dylib
+构建版本高于 macOS 12 部署目标的链接警告仍存在；此结果不代表旧版 macOS 或其他平台已运行验收。
+
+原生侧栏和子菜单各运行 3 个进程、每进程 8 次开关，共 48 个动作。属性采样间隔中位数约 8.3ms，
+子菜单关闭的 Rendered 批次间隔 P99 为 21.045ms；Rendered 与属性变化都不等于屏幕实际呈现。
+原生 `all` 场景的第二个进程在 BorderBeam 未观测到中间值，不能报告整组通过，也不能把它直接归因于新 Motion。
+这些数据没有配对基线，不构成提升百分比或 60/120FPS 保证。
+
+Gallery 的实际 Expander 页面通过 Skia 渲染及程序鼠标输入验证，检查闭合、中段、完整展开和快速反向，
+逐帧检查自然文本、裁剪与后续内容占位。截图审计及清理已完成。原生 Gallery 精确可执行文件已启动并核对进程，
+但 UI 自动化无法按该路径连接；遵守本地调试规则停止该路径的自动化，没有改连同名安装版。
+
+旧 `AtomUI.Performance` 的目标统计与四个受影响场景已迁移到现存节点；其完整工程仍受基线中的 7 个编译错误阻塞
+（入口缺失命名空间、已移除的 TabControl/TabStrip 专用 ScrollViewer 类型）。这套工具不作为本次通过证据；
+原生 `AtomUI.GalleryPerformance` 是独立工程，其证据按上述限定范围报告。
+
+### 保留的设计边界
+
+- 原生框架时钟是当前唯一执行后端；合成后端尚未具备可靠完成、当前呈现和命中合同，不能提前启用。
+- 独立 RenderTransform 来源要求使用模板隔离表面；不轮询应用的变换来源，不悄悄覆盖或合成不完整的矩阵。
+- 关闭期间 Popup 原模板被销毁时，新表面预隐藏并稳定关闭，不保留已经销毁表面的剩余离场时长。
+- Popup 换目标的原生首帧无闪烁、完整 Flyout Completing 链、全部 DPI/MinMax/自身固定尺寸组合及最低设备仍需专项验收。
+- 没有复现框架时钟异常停滞，不引入按成功时长猜测完成的 watchdog；取消与 detach 仍释放资源。
+- 自定义曲线和插值器遵守纯函数、不可变合同；请求快照不深克隆任意第三方对象内部状态。
+
+## NavMenu 侧栏往返的原生补充验收（2026-10-28）
+
+后续按用户录屏复现冷启动 Gallery：展开 Layout、实际点击 FlexPanel、收起再展开侧栏。
+macOS 原生窗口为 1300×900 DIP、RenderScaling=2，输入通过框架 RawPointerEventArgs 管线，
+每步核对 InputHitTest，不以直接修改展开状态代替点击。
+
+修复前 Components 的 IsSubMenuOpen/展示意图均为 true，Motion 结果为 Completed，DesiredSize 高度528，
+但实际 Bounds 高度0，祖先仍缓存高度44的折叠排列；内部 Layout 的视口高度220正常。
+单独重测视口无效，重新排列祖先可恢复分配。ContentViewport 的租约建立、进度和释放现统一失效自身 Measure
+与祖先 Arrange，使实际占位变化不再依赖 DesiredSize 恰好发生变化；没有补发点击、延时或禁用动效。
+
+修复后 3 个独立原生进程、各2轮侧栏往返通过：Components 视口528、Layout 视口220，
+祖先实际分配包含 Header 与子菜单，选择保持，单次点击开合及叶子行左/中/右命中均通过。
+原生取证使用 RenderTargetBitmap 即时渲染，只检查菜单视觉与几何，不等同显示器呈现或 FPS；
+完整 Gallery 的 Skia 合成器帧另行验证。本次程序自驱动原生验收补充了此前 UI 工具无法按路径连接的证据缺口，
+不扩展为所有平台或性能门禁已通过。
+
+本次修复仅使用已有类型化 Layoutable/Visual API，无新增反射或动态注册；临时原生输入探针读取 InputRoot 的反射不进入产品。
+本次未重跑 NativeAOT 发布或其他平台验收，前述发布记录仍属于迁移阶段版本。
+
+清理后的共享布局/输入与 NavMenu 定向验证246项通过，范围为 NavMenu Inline/InlineCollapsed、
+项激活、键盘、选择、ContentExpansion Motion/Boundary/Input、Expander/Collapse 行为和 TreeView 状态回放。
+既有打开路径用例合并实际可见性、动效完成和父项分配断言，不新增永久用例。
+临时场景移除后的 Gallery CaseNavigationLayoutTests 另3项通过，合计249项最终定向测试；未运行全量回归。
+临时原生输入驱动、Skia 场景和13个取证文件已删除，媒体审计 clean；原生性能工具按正常入口重建通过。

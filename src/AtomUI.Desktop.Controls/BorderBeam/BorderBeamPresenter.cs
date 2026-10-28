@@ -7,6 +7,7 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -142,7 +143,8 @@ internal class BorderBeamPresenter : Control
     #endregion
 
     private Animation? _animation;
-    private CancellationTokenSource? _animationCancellationTokenSource;
+    private IDisposable? _animationSubscription;
+    private Rect? _effectiveViewport;
     private AvaloniaList<BorderBeamColorStop>? _subscribedColorStops;
 
     static BorderBeamPresenter()
@@ -166,12 +168,16 @@ internal class BorderBeamPresenter : Control
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _effectiveViewport = null;
+        EffectiveViewportChanged += HandleEffectiveViewportChanged;
         ConfigureColorStopsSubscription(ColorStops);
         UpdateAnimationState();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        EffectiveViewportChanged -= HandleEffectiveViewportChanged;
+        _effectiveViewport = null;
         StopAnimation();
         ConfigureColorStopsSubscription(null);
         base.OnDetachedFromVisualTree(e);
@@ -194,6 +200,7 @@ internal class BorderBeamPresenter : Control
 
         if (change.Property == IsMotionEnabledProperty ||
             change.Property == DurationProperty ||
+            change.Property == OutsetProperty ||
             change.Property == IsVisibleProperty)
         {
             RestartAnimation();
@@ -247,7 +254,7 @@ internal class BorderBeamPresenter : Control
             return;
         }
 
-        if (_animationCancellationTokenSource is not null)
+        if (_animationSubscription is not null)
         {
             return;
         }
@@ -272,25 +279,30 @@ internal class BorderBeamPresenter : Control
         };
         _animation.Duration = Duration;
 
-        _animationCancellationTokenSource = new CancellationTokenSource();
-        var cancellationTokenSource = _animationCancellationTokenSource;
-        Dispatcher.InvokeAsync(async () =>
+        // Running depends on the actual visible viewport and a runtime duration
+        // snapshot, which ControlTheme cannot express without duplicate state.
+        var subscription = _animation.PlayLoop(this, ProgressProperty);
+        if (ShouldRunAnimation() && _animationSubscription is null)
         {
-            try
-            {
-                await _animation.RunInfiniteAsync(this, cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
-            {
-            }
-        });
+            _animationSubscription = subscription;
+        }
+        else
+        {
+            subscription.Dispose();
+        }
     }
 
     private void StopAnimation()
     {
-        _animationCancellationTokenSource?.Cancel();
-        _animationCancellationTokenSource?.Dispose();
-        _animationCancellationTokenSource = null;
+        var subscription = _animationSubscription;
+        _animationSubscription = null;
+        subscription?.Dispose();
+    }
+
+    private void HandleEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
+    {
+        _effectiveViewport = e.EffectiveViewport;
+        UpdateAnimationState();
     }
 
     private bool ShouldRunAnimation()
@@ -300,7 +312,8 @@ internal class BorderBeamPresenter : Control
                this.IsAttachedToVisualTree() &&
                Duration > TimeSpan.Zero &&
                Bounds.Width > 0 &&
-               Bounds.Height > 0;
+               Bounds.Height > 0 &&
+               _effectiveViewport is { } viewport && viewport.Intersects(GetRenderBounds());
     }
 
     private bool ShouldRenderBeam()

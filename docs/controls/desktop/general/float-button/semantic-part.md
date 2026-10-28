@@ -29,7 +29,7 @@ Overlay Layer 中创建的真实控件才是 owner，Host 自身不声明任何 
 | `icon` | `.semantic-icon` | `IconPresenter` | `Single` | `Selector` | `false` | `false` |
 | `content` | `.semantic-content` | `ContentPresenter` | `Optional` | `Selector` | `false` | `false` |
 
-`BackTopFloatButton` 的模板结构与 `FloatButton` 一致（仅外层包一层 MotionActor），共享相同的 Part 名称与数量语义。
+`BackTopFloatButton` 在实际 Panel 上声明显隐动效，与 `FloatButton` 共享相同的 Part 名称与数量语义。
 上游体系的 BackTop 没有公开语义 API；AtomUI 按自身模板事实提供同等契约。
 
 ### 1.3 `FloatButtonGroup`
@@ -78,18 +78,17 @@ Group 内的子项按钮是独立的 `FloatButton` owner，可以在 group-scope
 
 - `FloatButton` 的 Circle/Square 双模板由 `Shape` 切换；`icon` marker 在两套模板中静态存在，`content` 只在 Square
   模板中存在。模板随 Shape 重套用后由新模板重新提供同一 marker 契约。
-- `BackTopFloatButton` 的模板把全部内容包在 MotionActor 内；`IsActive` 只切换 MotionActor 的可见性，marker 身份和
+- `BackTopFloatButton` 的模板在 `Panel#PART_VisibilityRoot` 上声明 Motion；`IsActive` 驱动该表面的可见性，marker 身份和
   数量保持不变。
-- `FloatButtonGroup` 的 Default 模板只有 `list`；Click/Hover 模板中 `trigger` 与 MotionActor 内的 `list` 是
-  Canvas 下的 sibling。`IsOpen` 只驱动 MotionActor 可见性与位移动画，不增删 marker 节点。触发模式下的 `list`
-  在首次打开前不参与布局与视觉树（MotionActor 不可见时不执行测量），marker 在首次打开时随模板测量创建，之后的
-  开关切换保持同一实例。
+- `FloatButtonGroup` 的 Default 模板只有 `list`；Click/Hover 模板中 `trigger` 与包裹 list 的静态菜单表面是
+  Canvas 下的 sibling。`IsOpen` 驱动 `PART_MenuSurface` 可见性与位移动画，不增删 marker 节点。
+  list 由模板直接创建，关闭时随祖先表面隐藏，开关切换保持同一实例。
 - `trigger` Part 的契约边界止于公开 `FloatButton` 控件本身；其模板内的 `icon`/`content` 由 `FloatButton` owner 的
   descriptor 负责，不由 `FloatButtonGroup` 重复公开。
 - Badge（`DotBadgeAdorner` / `CountBadgeAdorner`）是 Badge 家族的运行时创建控件，拥有独立 descriptor；
   FloatButton 模板中的 `PART_BadgeLayout` 只是内部定位宿主，不属于任何 Part。
 - ToolTip 是独立的 overlay 控件家族，通过附加属性接入，不属于 FloatButton 的 Part。
-- `FloatButtonSeparatorLayer`、MotionActor、`BackgroundFrame`/`Frame` 表面层和 `EmptyControl` 占位都是内部
+- `FloatButtonSeparatorLayer`、菜单动效表面、`BackgroundFrame`/`Frame` 表面层和 `EmptyControl` 占位都是内部
   Composition 节点，不属于 Semantic Part。
 
 ## 4. 尺寸与布局基线

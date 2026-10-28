@@ -303,4 +303,4 @@ owner-to-context 同步与 context-to-owner 请求使用不同入口，并在值
 ## 状态动效初始化
 
 `PaginationNavItem` 构造时建立共享初始化会话，覆盖导航容器挂载后才同步的初始页码状态；加载后恢复前景、边框和背景过渡。
-共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。

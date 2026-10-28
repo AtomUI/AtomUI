@@ -47,8 +47,8 @@ public class ModalSemanticPartHighlightTests
 
             // 钉住常开：语义页签内点击遮罩不关闭任何一个预览宿主。OverlayDialogMask 是 internal 类型，
             // 经其模板 Border#Frame（遮罩可视后代，命中判定要求 source 在 mask 子树内）发起按压。
-            var maskFrame = window.GetVisualDescendants().OfType<MotionActor>()
-                                  .First(m => m.Name == "PART_MaskMotionActor")
+            var maskFrame = window.GetVisualDescendants().OfType<Control>()
+                                  .First(m => m.Name == "PART_DialogMask")
                                   .GetVisualDescendants().OfType<Border>()
                                   .Single(b => b.Name == "Frame");
             RaisePointerPressed(maskFrame);

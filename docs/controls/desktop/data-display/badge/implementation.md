@@ -68,7 +68,7 @@ Count / Status / Text / Color / Offset / Placement / Visibility / Motion
 CountBadge
   DecoratedTarget?               (owner child)
   CountBadgeAdorner?             (runtime-created)
-    MotionActor PART_MotionActor
+    Border PART_IndicatorSurface
       Panel RootLayout
         Border BadgeIndicator
         TextBlock BadgeText
@@ -84,7 +84,7 @@ standalone 模板：
 DotBadge
   DotBadgeAdorner               (runtime-created)
     DockPanel RootLayout
-      MotionActor PART_MotionActor
+      Border PART_IndicatorSurface
         DotBadgeIndicator
       Label Label
 ```
@@ -97,7 +97,7 @@ DotBadge
   AdornerLayer                 (visual host)
     DotBadgeAdorner            (runtime-created)
       DockPanel RootLayout
-        MotionActor PART_MotionActor
+        Border PART_IndicatorSurface
           DotBadgeIndicator
 ```
 
@@ -122,16 +122,18 @@ RibbonBadge 不进入 Avalonia `AdornerLayer`。有目标时，owner 在同一�
 | Owner | Part | Marker 节点 | ContractType | Cardinality | CrossVisualRoot | RuntimeCreated | Marker 形式 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `CountBadge` | `root` | owner 本身 | `CountBadge` | `Single` | `false` | `false` | 隐式 root，不加 class。 |
-| `CountBadge` | `indicator` | `PART_MotionActor` | `Control` | `Optional` | `true` | `true` | Adorner Theme 中静态 `Classes.semantic-indicator="True"`。 |
+| `CountBadge` | `indicator` | `Panel#RootLayout` | `Control` | `Optional` | `true` | `true` | Adorner Theme 中静态 `Classes.semantic-indicator="True"`。 |
 | `DotBadge` | `root` | owner 本身 | `DotBadge` | `Single` | `false` | `false` | 隐式 root，不加 class。 |
-| `DotBadge` | `indicator` | 两套模板中的 `PART_MotionActor` | `Control` | `Optional` | `true` | `true` | 两套 Adorner Theme 模板均静态添加 marker。 |
+| `DotBadge` | `indicator` | `DotBadgeIndicator#Indicator` | `Control` | `Optional` | `true` | `true` | 两套 Adorner Theme 模板均静态添加 marker。 |
 | `RibbonBadge` | `root` | owner 本身 | `RibbonBadge` | `Single` | `false` | `false` | 隐式 root，不加 class。 |
 | `RibbonBadge` | `indicator` | 运行时 `RibbonBadgeAdorner` | `Control` | `Optional` | `false` | `true` | C# 创建时使用生成的 semantic class 常量。 |
 | `RibbonBadge` | `content` | `PART_LabelPart` | `Avalonia.Controls.TextBlock` | `Optional` | `false` | `true` | Adorner Theme 中静态 `Classes.semantic-content="True"`。 |
 
 所有非 root Part 都标记 `RuntimeCreated=true`，因为 public owner 的可达视觉由 C# 创建的内部 Adorner 生命周期建立。该元数据描述真实创建模型，也避免把内部 Adorner Theme 误当成 public owner 的静态 ControlTemplate；不能用于掩盖普通静态模板缺失。
 
-Count 和 Dot 把 `indicator` 放在 MotionActor 上，使背景、文本或状态点作为一个稳定视觉职责参与透明度、尺寸、变换和布局定制。MotionActor 名称和具体子树仍是内部实现。Ribbon 的绘制发生在 Adorner 自身，因此 `indicator` marker 位于运行时 Adorner。
+Count 的 `indicator` 是实际内容 Panel，Dot 的 `indicator` 是实际状态点。私有 `PART_IndicatorSurface` 是静态 Border，
+在语义节点外承载有限动效，隔离应用的 indicator 变换与 Motion 变换；专用 Style 的 route 和 Control 契约保持不变。
+Ribbon 的绘制发生在 Adorner 自身，其 `indicator` marker 仍位于运行时 Adorner。
 
 明确排除 Count 的 Border/TextBlock 拆分、Dot standalone Label、`RootLayout`、Ribbon 折角 Geometry、render helper、`DecoratedTarget`、motion phase 和所有 internal CLR identity。
 
@@ -174,7 +176,9 @@ Attach 顺序与 Avalonia 12 原生 attached Adorner 模型一致：先建立 Ad
 
 - Count 在 `Count=0 && !IsZeroVisible` 时归一 `BadgeIsVisible=false`。为保证退出动效仍显示旧数值，Adorner 可以暂存 `CountText`，动效结束后再移除。
 - Count/Dot 启用动效且已加载时，隐藏流程等待退出动效完成再从 owner 或 AdornerLayer 移除；禁用动效或 owner detach 时立即拆除。
-- Dot 的显示和隐藏动效由独立 `CancellationTokenSource` 管理；新动效、模板切换和 detach 必须取消旧任务。
+- Count/Dot 共用 `BadgeMotionSession` 管理就绪、请求版本和物理移除，Core Motion 管理真实播放及连续替代。
+  新显示意图使旧隐藏完成失效；同一 adorned element 和 layer 保持挂载，不通过重挂载制造反向。
+  准备覆盖、模板替换、禁用和 detach 按 owner 释放；standalone Dot 保持静态显示，不补播入场。
 - Ribbon 没有退出动效；隐藏时立即移除 RibbonBadgeAdorner。有 `DecoratedTarget` 时目标继续保留并参与布局。
 
 ### 6.3 Target 切换与 owner detach
@@ -293,7 +297,7 @@ Badge Semantic Part 的默认运行时成本仅包括 descriptor 静态数据和
 
 - descriptor owner 只能是 `CountBadge`、`DotBadge`、`RibbonBadge`，不能是 shared abstract base 或 internal Adorner。
 - Count/Dot 只有 `root/indicator`；Ribbon 只有 `root/indicator/content`。
-- Count/Dot `indicator` marker 位于所有适用 Adorner 模板的 `PART_MotionActor`；Ribbon indicator 位于 runtime Adorner，content 位于 `PART_LabelPart`。
+- Count/Dot `indicator` marker 位于实际 Panel/状态点，有限动效位于外侧私有表面；Ribbon indicator 位于 runtime Adorner，content 位于 `PART_LabelPart`。
 - 所有非 root Part 保持 `Optional + Selector + RuntimeCreated`；Count/Dot indicator 保持 `CrossVisualRoot=true`。
 - Badge public owner selector 使用 descriptor 的 direct-child/template route，不使用 logical descendant、类型前缀 class 或
   internal 类型。Count/Dot runtime adorner 必须携带 `.semantic-scope-indicator`；Ribbon adorner 自身携带

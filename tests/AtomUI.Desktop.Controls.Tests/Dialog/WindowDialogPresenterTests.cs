@@ -80,9 +80,8 @@ public class WindowDialogPresenterTests
             PumpUntil(() => presenter.HostWindow.IsVisible);
 
             WaitWithDispatcherPump(showTask);
-            presenter.HostWindow.GetVisualDescendants()
-                     .OfType<AtomUI.Controls.Primitives.MotionActor>()
-                     .ShouldBeEmpty();
+            presenter.HostWindow.IsVisible.ShouldBeTrue();
+            presenter.FocusScope.ShouldBeAssignableTo<Avalonia.Visual>().IsAttachedToVisualTree().ShouldBeTrue();
         }
         finally
         {

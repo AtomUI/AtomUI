@@ -12,17 +12,13 @@
                     卡片模板：上方为「图标 + 标题/描述」的流式内容区，下方为可选的动作区；
                     close 与 progress 是不参与流式排版的覆盖层，通过对齐属性贴在卡片右上角与底边。
 
-                    两条结构约束不能改：
-                    1) `Frame` 必须是 MotionActor 的直接内容。`Frame` 负责画 BoxShadow，一旦在它与
-                       MotionActor 之间再夹一层布局 Panel，阴影就会被那层 Panel 的边界裁掉（右/下各只剩
-                       1 个逻辑像素）。`Message` 的 `PART_Frame` 同样是 MotionActor 的直接内容，所以它的
-                       硬阴影一直正常。
+                    两条结构约束：
+                    1) `Frame` 是模板根、阴影绘制者与有限动效目标。Frame 上方不插入裁剪布局层，
+                       卡片外层继续承担堆叠定位与缩放；Message 的 PART_Frame 使用同一职责分离。
                     2) `Padding` 必须由 `Frame` 内部的 `ContentBox` 承担，不能让 `Frame` 自己带内边距。
                        `PART_Layout` 是 close / progress 的定位父级，只有 `Frame` 无内边距时它才与卡片
                        边框内侧重合，close / progress 才能贴在边框右上角与边框底边；否则会被内边距顶开。
                 -->
-                <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}"
-                                  ClipToBounds="False">
                     <Border Name="Frame"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -84,7 +80,6 @@
                             </Grid>
                         </atom:FeedbackStackTransitionSnapshotHost>
                     </Border>
-                </atom:MotionActor>
             </ControlTemplate>
         </Setter>
 

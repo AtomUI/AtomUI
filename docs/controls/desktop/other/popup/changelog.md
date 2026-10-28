@@ -2,6 +2,14 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-10-27
+
+- Motion
+  - `OpenMotion` / `CloseMotion` 使用新的 `Motion` 定义，时长通过播放请求覆盖，不再修改定义对象。
+  - 实际表面改为 `PopupSurface : Panel`，去除 Actor 包装；显示前准备使用可释放的属性覆盖。
+  - 入场替代离场保持当前值，关闭 completion 与排队 Close 均核对请求版本和表面身份。
+  - Direct Popup 同时支持 visual attach 就绪，不依赖 rooted logical owner。
+
 ## 2026-10-03
 
 - Fixed

@@ -281,4 +281,4 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 ## 状态动效初始化
 
 `ComboBoxItem` 在构造阶段建立共享初始化会话，初始候选及选中背景直接建立；加载后恢复过渡，回收清理前复位。弹层打开、焦点和后续候选变化仍遵循各自的正常动效语义。
-共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。

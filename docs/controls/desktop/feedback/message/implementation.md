@@ -28,7 +28,7 @@
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackCardMotionCoordinator.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/IFeedbackStackItem.cs`
 - `src/AtomUI.Desktop.Controls/Message/WindowMessageManager.SemanticParts.cs`
-- `src/AtomUI.Core/MotionScene/MotionExecutionState.cs`
+- `src/AtomUI.Core/Animations/Motion`
 
 职责边界：
 
@@ -78,10 +78,9 @@ Public API / ItemsSource / Command / Event
 - 交互与状态：`IsClosed`、`IsClosing`、`IsMotionEnabled`。
 - 视觉与布局：`Position`。
 
-`IsClosing` 和 `IsClosed` 是 MessageCard 的 public 业务状态。卡片拥有一个共享 `FeedbackCardMotionCoordinator`；协调器分别
-以 `MotionExecutionState` 约束进入和退出阶段，按 `Idle -> Pending -> Playing -> Completing -> Idle` 推进。关闭/禁用状态与
-模板重套用都进入同一控制器；旧 actor 的执行会被取消且 completion 失效，当前 actor 立即接管目标状态。播放中的 Position /
-Duration 变化不重启同一 actor，新值从下一次 motion 生效；Completing 只负责提交一次 `IsClosed=true`。
+`IsClosing` 和 `IsClosed` 是 MessageCard 的 public 业务状态。`FeedbackCardMotionCoordinator` 持有业务阶段、版本和当前
+`PART_Frame`；Core Motion 拥有真实播放、连续替代与属性覆盖。模板替换使旧完成失效，禁用和 closed 状态立即收敛。
+播放中修改 Position/Duration 不重启当前目标，新值在下一次请求生效；关闭只提交一次 `IsClosed=true`。
 
 维护要求：
 
@@ -137,11 +136,9 @@ Message 的交互事件应从输入源收敛到控件级语义事件：
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 - MessageCard 的关闭请求、模板状态回放和最终 `IsClosed` 提交必须经过同一个关闭动效执行状态流。
-- MessageCard 的内容 actor 使用共享 Feedback motion；按 Position 从对应边缘平移 64 DIP 并插值 opacity，退出反向执行，
-  scale 全程为 `1`。actor 进入/退出与外层队列位置 transform 不得写入同一属性。
-- 入场和退出通过同一 motion 执行入口交接 actor；复用同一个 actor 时，取消请求之后必须等待旧 motion 的异步清理完成，
-  才能写入新目标。新模板的不同 actor 可以立即启动。等待期间仍响应当前执行的取消，重套模板、detach 或 dispose
-  不得留下继续启动旧执行的回调。
+- MessageCard 直接对阴影 Frame 使用共享 Feedback motion；按 Position 从对应边缘平移 64 DIP 并插值 opacity，
+  scale 全程为 `1`，与外层队列位置 transform 分离。
+- 关闭从当前呈现值连续替代入场，不等待旧任务清理；模板替换、detach 和 dispose 使旧完成失效，资源按句柄释放。
 - FeedbackStackPanel 把展开位置表达为相对稳定顶部/底部锚点的 transform，使新增、移除和 Stack 切换只更新目标
   transform；不得先改写屏幕位置再通过 Dispatcher 执行补偿动画。motion-disabled 时直接排列可见终态，并保持隐藏项
   的有效展开 Bounds，以避免无意义的 transform 属性写入和 layout-invalid 重试。
@@ -198,7 +195,7 @@ Message 的交互事件应从输入源收敛到控件级语义事件：
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
-- `IsClosing` / `IsClosed` public 状态不得与 internal `MotionExecutionState` 合并；重复调度不得创建并行退出动效。
+- `IsClosing` / `IsClosed` public 状态不得与 internal Motion 合并；重复调度不得创建并行退出动效。
 - `MaxItems <= 0` 必须保持无限语义；Stack 不能通过提前关闭旧项模拟折叠。
 - Stack 不能隐式把有限时长改为永久展示，也不能在未 hover 时暂停 scheduler；Gallery 的永久 Stack 示例必须通过
   `Expiration=TimeSpan.Zero` 显式表达。

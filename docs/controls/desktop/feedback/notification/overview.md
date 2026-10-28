@@ -153,13 +153,13 @@ Manager 持有稳定集合，模板只通过 `ItemsSource` 消费；重套模板
 
 ### 8.3 动效模型
 
-Notification 的内容 actor 与外层队列 transform 职责独立但同时运行。卡片按 Position 从宿主边方向的 `64 DIP` 偏移
+Notification 的实际 Frame 与外层队列 transform 职责独立但同时运行。卡片按 Position 从宿主边方向的 `64 DIP` 偏移
 连续淡入，退出沿同一方向离场，scale 在进入/退出期间始终为 `1`；已有通知同步平滑让位。两类过渡均使用
 SharedToken `MotionDurationMid` 和 `cubic-bezier(0.645, 0.045, 0.355, 1)`。超过阈值时最多显示最新三张真实卡片，
 实际可见数为 `Min(3, StackThreshold)`，Stack scale 为 `1`、`0.94`、`0.88`。每张卡片以真实测量高度参与 8 DIP
 折叠边缘定位；hover 展开全部。关闭项保留最后一次投影独立离场，其余项从关闭开始同步重排。初始投影、禁用 motion、
-重套模板和卸载路径必须直接收敛或取消旧 actor，不允许延迟 completion 改写当前状态。进入先提交无 transition 的透明偏移
-准备态，跨过所属 TopLevel 的一个真实动画帧后再进入可见终态，保证首张卡片与后续卡片具有同样连续的淡入位移。
+重套模板和卸载路径收敛或取消旧目标，不允许旧 completion 改写当前状态。进入先保持透明准备覆盖，
+布局就绪后由 Motion 同步建立偏移起点并从原生时钟零进度推进，首张和后续卡片使用相同播放协议。
 
 ### 8.4 视觉选项模型
 

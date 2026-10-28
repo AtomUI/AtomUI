@@ -6,8 +6,6 @@
     <ControlTheme x:Key="{x:Type atom:MessageCard}" TargetType="atom:MessageCard">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}"
-                                         ClipToBounds="False">
                     <Border Name="PART_Frame"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -28,7 +26,6 @@
                                                  Text="{TemplateBinding Message}" />
                         </DockPanel>
                     </Border>
-                </atom:MotionActor>
             </ControlTemplate>
         </Setter>
 

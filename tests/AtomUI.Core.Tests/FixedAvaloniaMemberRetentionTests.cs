@@ -10,7 +10,7 @@ public class FixedAvaloniaMemberRetentionTests
     {
         var files = new[]
         {
-            "src/AtomUI.Core/Animations/AnimatableReflectionExtensions.cs",
+            "src/AtomUI.Core/Reflection/AnimatableReflectionExtensions.cs",
             "src/AtomUI.Core/Controls/FocusManagerReflectionExtensions.cs",
             "src/AtomUI.Core/Controls/ItemCollectionReflectionExtensions.cs",
             "src/AtomUI.Core/Controls/RawPointerEventTypeReflectionExtensions.cs",

@@ -1,83 +1,43 @@
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
-using Avalonia.Animation.Easings;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>
-/// Placement-aware translate/fade motion shared by Message and Notification cards.
-/// Queue positioning and stack scale remain on the outer card transform.
-/// </summary>
-internal sealed class FeedbackCardMotion : AbstractMotion
+/// <summary>Finite card entry/exit; queue positioning and stack scale stay on the outer card.</summary>
+internal sealed class FeedbackCardMotion : Motion
 {
     internal const double Offset = 64d;
 
-    private static readonly ITransform RestTransform = BuildTranslateTransform(0, 0);
-    private static readonly ITransform TopTransform = BuildTranslateTransform(0, -Offset);
-    private static readonly ITransform BottomTransform = BuildTranslateTransform(0, Offset);
-    private static readonly ITransform LeftTransform = BuildTranslateTransform(-Offset, 0);
-    private static readonly ITransform RightTransform = BuildTranslateTransform(Offset, 0);
+    private readonly bool _entering;
+    private readonly Vector _offset;
 
-    private readonly bool _isEntering;
-    private readonly ITransform _offsetTransform;
-
-    internal FeedbackCardMotion(
-        bool isEntering,
-        NotificationPosition position,
-        TimeSpan duration)
-        : base(duration, CreateEasing())
+    internal FeedbackCardMotion(bool isEntering, NotificationPosition position, TimeSpan duration)
+        : base(duration, MotionCurves.InOut)
     {
-        _isEntering = isEntering;
-        _offsetTransform = CreateOffsetTransform(position);
-        RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
-    }
-
-    internal static void PrepareEntry(BaseMotionActor actor, NotificationPosition position)
-    {
-        actor.Transitions = null;
-        actor.RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
-        actor.Opacity = 0;
-        actor.MotionTransform = CreateOffsetTransform(position);
-    }
-
-    protected override void ConfigureMotionStartValue(BaseMotionActor actor)
-    {
-        actor.Opacity = _isEntering ? 0 : 1;
-        actor.MotionTransform = _isEntering ? _offsetTransform : RestTransform;
-    }
-
-    protected override void ConfigureMotionEndValue(BaseMotionActor actor)
-    {
-        actor.Opacity = _isEntering ? 1 : 0;
-        actor.MotionTransform = _isEntering ? RestTransform : _offsetTransform;
-    }
-
-    protected override void NotifyCompleted(BaseMotionActor actor)
-    {
-        actor.Opacity = _isEntering ? 1 : 0;
-    }
-
-    private static Easing CreateEasing()
-    {
-        return new SplineEasing
+        _entering = isEntering;
+        _offset = position switch
         {
-            X1 = 0.645,
-            Y1 = 0.045,
-            X2 = 0.355,
-            Y2 = 1
+            NotificationPosition.TopCenter => new Vector(0, -Offset),
+            NotificationPosition.BottomCenter => new Vector(0, Offset),
+            NotificationPosition.TopLeft or NotificationPosition.BottomLeft => new Vector(-Offset, 0),
+            _ => new Vector(Offset, 0)
         };
     }
 
-    private static ITransform CreateOffsetTransform(NotificationPosition position)
+    protected override void Build(MotionBuilder builder, in MotionContext context)
     {
-        return position switch
+        builder.Origin = new RelativePoint(0, 0, RelativeUnit.Absolute);
+        if (_entering)
         {
-            NotificationPosition.TopCenter => TopTransform,
-            NotificationPosition.BottomCenter => BottomTransform,
-            NotificationPosition.TopLeft or NotificationPosition.BottomLeft =>
-                LeftTransform,
-            _ => RightTransform
-        };
+            builder.TranslateX.From(_offset.X).To(0);
+            builder.TranslateY.From(_offset.Y).To(0);
+            builder.Opacity.From(0).To(context.BaseOpacity);
+        }
+        else
+        {
+            builder.TranslateX.FromCurrent().To(_offset.X);
+            builder.TranslateY.FromCurrent().To(_offset.Y);
+            builder.Opacity.FromCurrent().To(0);
+        }
     }
 }

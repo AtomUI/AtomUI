@@ -1,7 +1,10 @@
+using Avalonia.Data;
+using Avalonia.Controls.Templates;
 using AtomUI.Controls.Primitives;
 using AtomUI.Controls.Converters;
 using Avalonia.Layout;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using MotionApi = AtomUI.Animations.Motion;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -511,7 +514,7 @@ public class ExpanderBehaviorTests
         var window = ShowInWindow(expander);
         try
         {
-            var motionActor = GetContentMotionActor(expander);
+            var motionActor = GetContentViewport(expander);
             var initialContentBorderThickness = expander.ContentBorderThickness;
             var contentBorderChangeCount = 0;
             using var contentBorderSubscription =
@@ -522,22 +525,22 @@ public class ExpanderBehaviorTests
 
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             expander.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
             WaitForLayoutCondition(() => motionActor.IsVisible &&
-                                         !motionActor.IsAnimating(Visual.OpacityProperty) &&
+                                         !(!MotionApi.GetVisibilityTask(motionActor).IsCompleted) &&
                                          motionActor.Opacity == 1);
 
             expander.IsExpanded.ShouldBeTrue();
             motionActor.IsVisible.ShouldBe(expander.IsExpanded);
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-            motionActor.MotionTransform.ShouldBeNull();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
+            motionActor.RenderTransform.ShouldBeNull();
             motionActor.Transitions.ShouldBeNull();
             contentBorderChangeCount.ShouldBe(0);
             expander.ContentBorderThickness.ShouldBe(initialContentBorderThickness);
@@ -555,8 +558,8 @@ public class ExpanderBehaviorTests
         var oldButton = new IconButton();
         var newButton = new IconButton();
 
-        expander.ApplyTemplateParts(oldButton, new LayoutAwareMotionActor());
-        expander.ApplyTemplateParts(newButton, new LayoutAwareMotionActor());
+        expander.ApplyTemplateParts(oldButton, new ContentViewport());
+        expander.ApplyTemplateParts(newButton, new ContentViewport());
 
         oldButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, oldButton));
         expander.IsExpanded.ShouldBeFalse();
@@ -582,22 +585,21 @@ public class ExpanderBehaviorTests
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
 
-            var oldMotionActor = GetContentMotionActor(expander);
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            oldMotionActor.MotionTransformOperations = TransformOperations.Identity;
+            var oldMotionActor = GetContentViewport(expander);
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeTrue();
+            oldMotionActor.RenderTransform = TransformOperations.Identity;
             oldMotionActor.Height = 42;
-            oldMotionActor.MotionTransformOperations.ShouldNotBeNull();
+            oldMotionActor.RenderTransform.ShouldNotBeNull();
             oldMotionActor.Height.ShouldBe(42);
-            var lateCompletionCount = 0;
-            oldMotionActor.Completed += (_, _) => lateCompletionCount++;
+            var obsoletePlayback = MotionApi.GetVisibilityTask(oldMotionActor);
 
-            expander.ApplyTemplateParts(new IconButton(), new LayoutAwareMotionActor());
+            expander.ApplyTemplateParts(new IconButton(), new ContentViewport());
 
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeFalse();
             oldMotionActor.IsVisible.ShouldBeTrue();
             oldMotionActor.Opacity.ShouldBe(1);
-            oldMotionActor.MotionTransform.ShouldBeNull();
-            oldMotionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted.ShouldBeTrue();
+            oldMotionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             oldMotionActor.Transitions.ShouldBeNull();
             oldMotionActor.Height.ShouldBe(42);
 
@@ -605,14 +607,14 @@ public class ExpanderBehaviorTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeFalse();
             oldMotionActor.IsVisible.ShouldBeTrue();
             oldMotionActor.Opacity.ShouldBe(1);
-            oldMotionActor.MotionTransform.ShouldBeNull();
-            oldMotionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted.ShouldBeTrue();
+            oldMotionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             oldMotionActor.Transitions.ShouldBeNull();
             oldMotionActor.Height.ShouldBe(42);
-            lateCompletionCount.ShouldBe(0);
+            obsoletePlayback.IsCompletedSuccessfully.ShouldBeTrue();
         }
         finally
         {
@@ -637,23 +639,22 @@ public class ExpanderBehaviorTests
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(expander);
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            motionActor.MotionTransformOperations = TransformOperations.Identity;
+            var motionActor = GetContentViewport(expander);
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
+            motionActor.RenderTransform = TransformOperations.Identity;
             motionActor.Height = 42;
-            motionActor.MotionTransformOperations.ShouldNotBeNull();
+            motionActor.RenderTransform.ShouldNotBeNull();
             motionActor.Height.ShouldBe(42);
-            var lateCompletionCount = 0;
-            motionActor.Completed += (_, _) => lateCompletionCount++;
+            var obsoletePlayback = MotionApi.GetVisibilityTask(motionActor);
 
             window.Content = null;
             Dispatcher.UIThread.RunJobs();
 
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
             motionActor.IsVisible.ShouldBeTrue();
             motionActor.Opacity.ShouldBe(1);
-            motionActor.MotionTransform.ShouldBeNull();
-            motionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(motionActor).IsCompleted.ShouldBeTrue();
+            motionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             motionActor.Transitions.ShouldBeNull();
             motionActor.Height.ShouldBe(42);
 
@@ -661,14 +662,14 @@ public class ExpanderBehaviorTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
             motionActor.IsVisible.ShouldBeTrue();
             motionActor.Opacity.ShouldBe(1);
-            motionActor.MotionTransform.ShouldBeNull();
-            motionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(motionActor).IsCompleted.ShouldBeTrue();
+            motionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             motionActor.Transitions.ShouldBeNull();
             motionActor.Height.ShouldBe(42);
-            lateCompletionCount.ShouldBe(0);
+            obsoletePlayback.IsCompletedSuccessfully.ShouldBeTrue();
         }
         finally
         {
@@ -691,34 +692,35 @@ public class ExpanderBehaviorTests
         var window = ShowInWindow(expander);
         try
         {
-            var motionActor = GetContentMotionActor(expander);
+            var motionActor = GetContentViewport(expander);
             motionActor.IsVisible.ShouldBeTrue();
 
             expander.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
             motionActor.IsVisible.ShouldBeTrue();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             window.Content = null;
             Dispatcher.UIThread.RunJobs();
 
             expander.IsExpanded.ShouldBeFalse();
-            motionActor.IsVisible.ShouldBeFalse();
-            motionActor.Opacity.ShouldBe(0);
+            motionActor.IsAttachedToVisualTree().ShouldBeFalse();
+            MotionApi.GetVisibilityTask(motionActor).IsCompleted.ShouldBeTrue();
+            motionActor.Opacity.ShouldBe(1, "Hidden stable state releases the Motion override and preserves the underlying opacity.");
 
             window.Content = expander;
             Dispatcher.UIThread.RunJobs();
 
-            ReferenceEquals(GetContentMotionActor(expander), motionActor).ShouldBeTrue();
+            ReferenceEquals(GetContentViewport(expander), motionActor).ShouldBeTrue();
             motionActor.IsVisible.ShouldBe(expander.IsExpanded);
-            motionActor.Opacity.ShouldBe(0);
+            motionActor.Opacity.ShouldBe(1, "Hidden stable state releases the Motion override and preserves the underlying opacity.");
 
             Thread.Sleep(expander.MotionDuration + TimeSpan.FromMilliseconds(50));
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
             motionActor.IsVisible.ShouldBe(expander.IsExpanded);
-            motionActor.Opacity.ShouldBe(0);
+            motionActor.Opacity.ShouldBe(1, "Hidden stable state releases the Motion override and preserves the underlying opacity.");
         }
         finally
         {
@@ -774,16 +776,16 @@ public class ExpanderBehaviorTests
         return presenter!;
     }
 
-    private static BaseMotionActor GetContentMotionActor(AtomUIExpander expander)
+    private static ContentViewport GetContentViewport(AtomUIExpander expander)
     {
-        var motionActor = FindTemplatePart<BaseMotionActor>(expander, "PART_ContentMotionActor");
+        var motionActor = FindTemplatePart<ContentViewport>(expander, "PART_ContentViewport");
         motionActor.ShouldNotBeNull();
         return motionActor!;
     }
 
     private static PixelAlignedBorder GetContentBorder(AtomUIExpander expander)
     {
-        var motionActor = GetContentMotionActor(expander);
+        var motionActor = GetContentViewport(expander);
         motionActor.Content.ShouldBeOfType<PixelAlignedBorder>();
         var contentBorder = (PixelAlignedBorder)motionActor.Content!;
         string.IsNullOrEmpty(contentBorder.Name).ShouldBeTrue();
@@ -989,13 +991,20 @@ public class ExpanderBehaviorTests
     {
         protected override Type StyleKeyOverride => typeof(AtomUIExpander);
 
-        public void ApplyTemplateParts(IconButton expandButton, BaseMotionActor motionActor)
+        public void ApplyTemplateParts(IconButton expandButton, ContentViewport motionActor)
         {
-            var nameScope = new NameScope();
-            nameScope.Register("PART_ExpandButton", expandButton);
-            nameScope.Register("PART_ContentMotionActor", motionActor);
-
-            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
+            Template = new FuncControlTemplate((owner, scope) =>
+            {
+                scope.Register("PART_ExpandButton", expandButton);
+                scope.Register("PART_ContentViewport", motionActor);
+                MotionApi.SetEnter(motionActor, new ExpandMotion());
+                MotionApi.SetLeave(motionActor, new CollapseMotion());
+                motionActor.Bind(MotionApi.IsVisibleProperty, new TemplateBinding(IsExpandedProperty));
+                motionActor.Bind(MotionApi.IsEnabledProperty, new TemplateBinding(IsMotionEnabledProperty));
+                motionActor.Bind(MotionApi.DurationOverrideProperty, new TemplateBinding(MotionDurationProperty));
+                return new StackPanel { Children = { expandButton, motionActor } };
+            });
+            ApplyTemplate();
         }
     }
 }

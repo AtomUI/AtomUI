@@ -14,7 +14,7 @@ namespace AtomUI.Desktop.Controls;
 
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
-                            ISelectable, IStateMotionOwner
+                            ISelectable, ITransitionInitializationOwner
 {
     #region 公共属性定义
 
@@ -188,7 +188,7 @@ public class ListViewItem : ContentControl,
     private static readonly Point s_invalidPoint = new(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
     
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static ListViewItem()
     {
@@ -203,31 +203,31 @@ public class ListViewItem : ContentControl,
 
     public ListViewItem()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -359,9 +359,9 @@ public class ListViewItem : ContentControl,
 
     #endregion
 
-    #region 实现 IStateMotionOwner 接口
+    #region 实现 ITransitionInitializationOwner 接口
 
-    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
 
     #endregion
 

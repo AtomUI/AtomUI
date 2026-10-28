@@ -29,20 +29,19 @@ WindowNotificationManager (root，对应上游 list)
   └─ FeedbackStackPresenter#PART_Items (listContent，公共契约 ItemsControl，Margin 消费 manager.Padding)
        └─ ItemsPresenter / FeedbackStackPanel
             └─ NotificationCard (root，对应上游 notice root)
-                 └─ MotionActor
-                      └─ Border#Frame (表面投影，Padding=0)
-                           └─ FeedbackStackTransitionSnapshotHost#PART_StackTransitionSnapshotHost
-                                └─ Grid#PART_Layout
-                                     ├─ Border#ContentBox (消费 card.Padding)
-                                     │    └─ StackPanel
-                                     │         ├─ DockPanel#Wrapper (wrapper)
-                                     │         │    ├─ IconPresenter#IconPresenter (icon)
-                                     │         │    └─ StackPanel#Section (section)
-                                     │         │         ├─ SelectableTextBlock#HeaderTitle (title)
-                                     │         │         └─ ContentPresenter#Content (description)
-                                     │         └─ ContentPresenter#ActionsContainer (actions)
-                                     ├─ IconButton#PART_CloseButton (close，右上角覆盖)
-                                     └─ NotificationProgressBar#ProgressBar (progress，运行时创建、跨列贴底)
+                 └─ Border#Frame (表面投影，Padding=0)
+                      └─ FeedbackStackTransitionSnapshotHost#PART_StackTransitionSnapshotHost
+                           └─ Grid#PART_Layout
+                                ├─ Border#ContentBox (消费 card.Padding)
+                                │    └─ StackPanel
+                                │         ├─ DockPanel#Wrapper (wrapper)
+                                │         │    ├─ IconPresenter#IconPresenter (icon)
+                                │         │    └─ StackPanel#Section (section)
+                                │         │         ├─ SelectableTextBlock#HeaderTitle (title)
+                                │         │         └─ ContentPresenter#Content (description)
+                                │         └─ ContentPresenter#ActionsContainer (actions)
+                                ├─ IconButton#PART_CloseButton (close，右上角覆盖)
+                                └─ NotificationProgressBar#ProgressBar (progress，运行时创建、跨列贴底)
 ```
 
 上游 `root` 就是 notification notice 本身，因此映射到 `NotificationCard` owner；上游 `list` 是承载全部 notice 的
@@ -53,7 +52,7 @@ WindowNotificationManager (root，对应上游 list)
 - manager 铺满宿主反馈层，安全区外边距由 `TopLevelMarginBinder` 提供；列表内边距由 owner `Padding` 提供，
   投影到 presenter 的 `Margin`。`Position` 决定六种对齐，内联使用时定位作用于调用方分配的布局范围。
 - `listContent` 公共类型为 `ItemsControl`。实际 presenter 和 panel 管理可变高度卡片的堆叠、展开与项间距。
-- `Frame` 是 `MotionActor` 的直接内容，绘制背景、边框、阴影。card `Padding` 由内部 `ContentBox` 消费；
+- `Frame` 是模板根和 Motion 目标，绘制背景、边框、阴影。card `Padding` 由内部 `ContentBox` 消费；
   `Frame` 自身零内边距，使关闭按钮偏移从边框内侧计算，进度条能够贴底。
 - `close` 与内容在 Grid 第一行重叠，右上对齐；`progress` 运行时加入第二行并跨两列，以有限的卡片内容宽度测量。
   两者均不嵌入 `wrapper` / `section` / `actions` 的正文流。快照 host 只拥有折叠过渡期间的内容快照，不公开 Part。
@@ -86,7 +85,7 @@ WindowNotificationManager (root，对应上游 list)
 | Customization | `Root` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | NotificationCard owner（表面投影到 `Border#Frame`，动效由 `MotionActor` 承载） |
+| AtomUI 节点 | NotificationCard owner（表面投影到 `Border#Frame`，动效由 Frame 承载） |
 | 职责 | 通知项根元素：承载 `Title`、`Content`、`Icon`、`Actions`、`NotificationType`、`IsClosing`、`IsClosed`、`IsMotionEnabled` 与进入/退出动效；根表面（背景、边框、圆角、阴影、内边距）投影到模板中的 `Border#Frame`。对应上游 notice root。 |
 | 相关 API | `Title`、`Content`、`Icon`、`Actions`、`ActionsTemplate`、`NotificationType`、`IsClosing`、`IsClosed`、`IsMotionEnabled`、`Close()`、`NotificationClosed` |
 | 相关 Token | `NotificationBg`、`NotificationPadding`、SharedToken（`BoxShadows`、`BorderRadiusLG`） |
@@ -320,7 +319,7 @@ WindowNotificationManager (root，对应上游 list)
 适合通过 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius`、`BoxShadow`、`Padding` 等 owner 侧 Setter
 定制整卡视觉——背景/圆角/阴影/边框经模板内 `Border#Frame` 的 `TemplateBinding` 投影到卡片外框，`Padding` 经
 `Border#ContentBox` 投影到内容内边距，是上游 `root` styles
-（背景色、圆角、阴影、内边距、边框）的 AtomUI 等价表达。`root` 不表示模板中的 `MotionActor`、
+（背景色、圆角、阴影、内边距、边框）的 AtomUI 等价表达。`root` 不表示模板中的
 `Border#Frame` 或 `Grid#PART_Layout` 节点本身。
 
 ### 2.2 wrapper / icon / section / title / description / actions
@@ -517,7 +516,7 @@ Application 之一。Gallery 的 `Custom Semantic Part styling` 示例把生成�
 
 以下区域明确不属于 Notification Semantic Part：
 
-- 关闭动效执行状态（`MotionExecutionState` 与 `MotionActor`）、`Close()` 调度与 `IsClosed` 提交路径是
+- 关闭动效执行状态（Motion）、`Close()` 调度与 `IsClosed` 提交路径是
   行为状态，不是 Part。
 - `Border#Frame`、`Grid#PART_Layout`、`Border#ContentBox`、`StackPanel` 是模板结构节点：`root` 的表面投影到 `Frame`，
   内边距投影到 `ContentBox`，但节点名称、数量与层级不属于 `root` 契约。
@@ -561,5 +560,5 @@ Semantic Style 服从 Avalonia 原生属性优先级。Notification 没有用户
 
 - standalone `NotificationCard` 与 manager 创建的卡片均初始化 motion coordinator，模板应用和属性修改不依赖 host。
 - 正文、关闭按钮和 runtime progress 使用同一模板 owner；进度条跨列、贴底且可获得有限测量宽度。
-- render-only `MotionActor` 负责进出场，外层卡片负责队列投影；折叠快照的完成、取消和卸载均释放位图与旧节点引用。
+- render-only Frame 负责进出场，外层卡片负责队列投影；折叠快照的完成、取消和卸载均释放位图与旧节点引用。
 - 六种 `Position`、运行时切换、非默认 `Padding` 与 Stack 配置不改变 Part 身份；可见数量由活动卡片和堆叠状态决定。

@@ -322,7 +322,7 @@ Semantic Style 覆盖 `item` / `subMenu.item` 的 `Padding` / `MinHeight`、图�
   没有对应键。
 - Horizontal 底部分割线 `PART_HorizontalLine` 与一级活动指示条 `PART_ActiveIndicator`：上游无对应键。
 - inline collapsed 首字符节点 `CollapsedTitlePresenter`。
-- Inline 子菜单内容容器 `PART_ChildItemsLayoutTransform` / `PART_ChildItemsFrame` / `ChildItemsPresenter`：`subMenu.item`
+- Inline 子菜单内容容器 `PART_ChildItemsViewport` / `PART_ChildItemsFrame` / `ChildItemsPresenter`：`subMenu.item`
   描述的是该容器**内部**的菜单项，不是容器自身。
 - 分隔线 `NavMenuDividerItem` 及其模板 `PixelAlignedBorder`。
 - 分组容器 `NavMenuGroupItem` 自身（其标题与列表通过 `itemTitle` / `list` / `subMenu.itemTitle` / `subMenu.list` 定制）。

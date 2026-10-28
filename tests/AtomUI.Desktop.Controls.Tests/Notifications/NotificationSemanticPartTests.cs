@@ -1,6 +1,5 @@
 using System.Xml.Linq;
 using AtomUI.Controls;
-using AtomUI.MotionScene;
 using AtomUI.Theme;
 using AtomUI.Theme.Schema;
 using Avalonia;
@@ -229,11 +228,8 @@ public class NotificationSemanticPartTests
     [Fact]
     public void Frame_Sits_Directly_In_The_Motion_Actor_So_BoxShadow_Is_Not_Clipped()
     {
-        // 回归：Frame 负责画 BoxShadow，必须直接作为 MotionActor 的内容。曾经在两者之间夹了一层
-        // Panel#PART_Layout，阴影被裁到右/下各只剩 1 个逻辑像素，卡片看起来「右下角少了一块」。
-        // Message 的 PART_Frame 正是 MotionActor 的直接内容，所以它的硬阴影一直正常。
-        // Frame 与 MotionActor 之间只允许有 ContentControl 自带的 PART_ContentPresenter，
-        // 不允许再出现任何布局 Panel。
+        // The shadow frame is the actual template root and motion target.
+        // An intermediate clipping layout must not trim its hard shadow.
         var manager = CreateManager();
         var card = CreateCard(manager, NotificationType.Success, "Shadow", "Body");
         card.BoxShadow = BoxShadows.Parse("4 4 0 #D9F7BE");
@@ -242,16 +238,9 @@ public class NotificationSemanticPartTests
         try
         {
             var frame = FindFrame(card);
-            var motionActor = card.GetVisualDescendants()
-                                  .OfType<BaseMotionActor>()
-                                  .Single();
-            motionActor.ClipToBounds.ShouldBeFalse();
-
-            var between = frame.GetVisualAncestors()
-                               .TakeWhile(static ancestor => ancestor is not BaseMotionActor)
-                               .ToArray();
-            between.ShouldNotBeEmpty();
-            between.ShouldAllBe(static ancestor => ancestor is ContentPresenter);
+            frame.GetVisualParent().ShouldBeSameAs(card);
+            frame.ClipToBounds.ShouldBeFalse();
+            card.ClipToBounds.ShouldBeFalse();
 
             // PART_Layout 与内边距层都必须落在 Frame 内部：Frame 无内边距时 PART_Layout 才与卡片
             // 边框内侧重合，close / progress 的覆盖定位才贴着边框。

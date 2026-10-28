@@ -584,9 +584,9 @@ public partial class ComboBox : AvaloniaComboBox,
 
     protected override void ClearContainerForItemOverride(Control element)
     {
-        if (element is IStateMotionOwner owner)
+        if (element is ITransitionInitializationOwner owner)
         {
-            owner.StateMotionSession.Reset();
+            owner.TransitionInitialization.Reset();
         }
 
         if (element is ComboBoxItem comboBoxItem)

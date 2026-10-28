@@ -29,7 +29,7 @@ Control 生成 descriptor，不继承基类 descriptor，先例：`SimplePaginat
 | `root` | 6.0.0 | `root`（隐式，owner 契约） | 上游 `.ant-modal-root` 是最外层容器；AtomUI 遵循系统契约 root=owner 控件，上游 root 对应内部 `DialogOverlayLayer`/presenter 基础设施，不作为部件暴露。 |
 | `mask` | 5.13.0 | `mask` | 一一对应；`IsModal=false` 或 Window 宿主时不物化（Optional）。 |
 | `container` | 6.0.0 | `container` | 一一对应（`Border#Frame`：背景、圆角、`ClipToBounds`）。上游同一节点的 `boxShadow`/`padding` 在 AtomUI 分属其他节点，见 §5.1。 |
-| `wrapper` | 5.13.0 | `wrapper` | 角色对应：上游是动画/滚动包裹层，AtomUI 由 `PART_SurfaceMotionActor` 承担。几何差异见 §5.2。 |
+| `wrapper` | 5.13.0 | `wrapper` | 角色对应：上游是动画/滚动包裹层，AtomUI 映射到私有动效表面内的 ContentPresenter。几何边界见 §5.2。 |
 | `header` | 5.13.0 | `header` | 一一对应（`Border#HeaderFrame`：背景、内边距）。Overlay 恒存在；Window 宿主不物化（Optional，见 §2）。 |
 | `title` | 6.0.0 | `title` | 一一对应（`TextBlock#Title`）。Overlay 恒存在；随 header 在 Window 宿主不物化（Optional）。 |
 | `body` | 5.13.0 | `body` | 一一对应（`Border#ContentFrame`：正文内边距与内容承载）。 |
@@ -85,8 +85,8 @@ Part 明细：
 | ContractType | `Avalonia.Controls.Control` |
 | Cardinality | Optional |
 | RuntimeCreated / CrossVisualRoot / CrossNestedOwners | true / true / true |
-| AtomUI 节点 | `OverlayDialogPresenterTheme.axaml` 的 `MotionActor#PART_SurfaceMotionActor`（静态 marker） |
-| 职责 | Surface 动画/过渡包裹层；承载 opening/closing motion 的视觉宿主 |
+| AtomUI 节点 | `OverlayDialogPresenterTheme.axaml` 的 `ContentPresenter.semantic-wrapper`（静态 marker） |
+| 职责 | Surface 包裹层；应用样式与私有 Motion 变换隔离 |
 | 相关 API | `IsMotionEnabled` |
 | 相关 Token | `MotionDurationMid` |
 | Customization | Selector |
@@ -368,8 +368,8 @@ Gallery 语义预览：对齐上游 `getContainer={false}` 的内联模态——
 
 上游 `wrapper`（`.ant-modal-wrap`）是 `position:fixed; inset:0; overflow:auto` 的**全屏**滚动容器，`root` 与
 `.ant-modal` 负责定位。AtomUI 的定位、滚动与宿主容量由 `OverlayDialogLayer`/presenter 承担，`wrapper` 映射到
-`MotionActor#PART_SurfaceMotionActor`，其 bounds 与 Surface 正文一致而非全屏。因此 `wrapper` 承诺的是“动画/过渡包裹层”
-职责，不承诺上游的全屏滚动几何。
+私有动效表面内的 `ContentPresenter.semantic-wrapper`。其几何由 presenter 和宿主分配，
+wrapper 承诺的是包裹与定制边界，不单独承担 CSS fixed / overflow 滚动机制。
 
 ### 5.3 `header` 的几何差异
 

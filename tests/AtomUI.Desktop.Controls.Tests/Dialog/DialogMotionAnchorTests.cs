@@ -1,6 +1,5 @@
 using System.Reflection;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -18,14 +17,14 @@ public class DialogMotionAnchorTests
     }
 
     [Fact]
-    public void Dialog_Without_Explicit_PlacementTarget_Uses_Fade_Motion()
+    public void Dialog_Without_Explicit_PlacementTarget_Uses_Centered_Zoom_Motion()
     {
         var placementTarget = new Border();
         var dialog = new AtomUI.Desktop.Controls.Dialog();
         var presenter = new OverlayDialogPresenter(dialog, placementTarget);
 
-        CreateSurfaceMotion(presenter, isOpening: true).ShouldBeOfType<FadeInMotion>();
-        CreateSurfaceMotion(presenter, isOpening: false).ShouldBeOfType<FadeOutMotion>();
+        CreateSurfaceMotion(presenter, isOpening: true).ShouldBeOfType<DialogZoomInMotion>();
+        CreateSurfaceMotion(presenter, isOpening: false).ShouldBeOfType<DialogZoomOutMotion>();
     }
 
     [Fact]
@@ -68,7 +67,7 @@ public class DialogMotionAnchorTests
         }
         else
         {
-            openingMotion.ShouldBeOfType<FadeInMotion>();
+            openingMotion.ShouldBeOfType<DialogZoomInMotion>();
         }
     }
 

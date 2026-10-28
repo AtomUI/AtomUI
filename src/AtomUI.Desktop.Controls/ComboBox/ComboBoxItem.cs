@@ -11,7 +11,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaComboBoxItem = Avalonia.Controls.ComboBoxItem;
 
-public class ComboBoxItem : AvaloniaComboBoxItem, IStateMotionOwner
+public class ComboBoxItem : AvaloniaComboBoxItem, ITransitionInitializationOwner
 {
     #region 内部属性定义
 
@@ -47,35 +47,35 @@ public class ComboBoxItem : AvaloniaComboBoxItem, IStateMotionOwner
     private static readonly Point s_invalidPoint = new Point(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     public ComboBoxItem()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -137,9 +137,9 @@ public class ComboBoxItem : AvaloniaComboBoxItem, IStateMotionOwner
         }
         _pointerDownPoint = s_invalidPoint;
     }
-    #region 实现 IStateMotionOwner 接口
+    #region 实现 ITransitionInitializationOwner 接口
 
-    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
 
     #endregion
 

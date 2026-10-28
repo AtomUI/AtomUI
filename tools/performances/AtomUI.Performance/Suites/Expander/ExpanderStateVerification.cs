@@ -40,8 +40,8 @@ internal static partial class Program
         var expander = CreateVerificationExpander();
         using var _ = RealizeControl(expander);
 
-        Expect(FindVisualByName<Control>(expander, "PART_ContentMotionActor") == null,
-            "Closed Expander should not create PART_ContentMotionActor before first expand.",
+        Expect(FindVisualByName<Control>(expander, "PART_ContentViewport") is { IsVisible: false },
+            "Closed Expander should keep its static content viewport hidden.",
             failures);
         Expect(FindVisualByName<ContentPresenter>(expander, "PART_ContentPresenter") == null,
             "Closed Expander should not create PART_ContentPresenter before first expand.",
@@ -150,19 +150,19 @@ internal static partial class Program
     {
         var expander = CreateVerificationExpander();
         expander.SetValue(AtomExpander.IsMotionEnabledProperty, false, Avalonia.Data.BindingPriority.Animation);
-        Control? firstActor;
+        Control? firstViewport;
         using (var realized = RealizeControl(expander))
         {
-            Expect(FindVisualByName<Control>(expander, "PART_ContentMotionActor") == null,
-                "Closed Expander should not create content motion actor before first expand.",
+            Expect(FindVisualByName<Control>(expander, "PART_ContentViewport") is { IsVisible: false },
+                "Closed Expander should keep its static content viewport hidden.",
                 failures);
 
             expander.IsExpanded = true;
             RefreshLayout(realized.Window);
-            firstActor = FindVisualByName<Control>(expander, "PART_ContentMotionActor");
-            var firstPresenter = (firstActor as ContentControl)?.Content as ContentPresenter;
-            Expect(firstActor != null,
-                "Expander should create content motion actor on first expand.",
+            firstViewport = FindVisualByName<Control>(expander, "PART_ContentViewport");
+            var firstPresenter = GetMaterializedExpanderContentPresenter(expander);
+            Expect(firstViewport != null,
+                "Expander should create content content viewport on first expand.",
                 failures);
             Expect(firstPresenter != null,
                 "Expander should create content presenter on first expand.",
@@ -170,17 +170,17 @@ internal static partial class Program
 
             expander.IsExpanded = false;
             RefreshLayout(realized.Window);
-            Expect(CountExpanderVisualsByName(expander, "PART_ContentMotionActor") == 1,
-                "Expander should keep one materialized motion actor after collapse, not duplicate it.",
+            Expect(CountExpanderVisualsByName(expander, "PART_ContentViewport") == 1,
+                "Expander should keep one materialized content viewport after collapse, not duplicate it.",
                 failures);
 
             expander.IsExpanded = true;
             RefreshLayout(realized.Window);
-            var secondActor = FindVisualByName<Control>(expander, "PART_ContentMotionActor");
-            Expect(ReferenceEquals(firstActor, secondActor),
-                "Expander should reuse the materialized motion actor on second expand.",
+            var secondViewport = FindVisualByName<Control>(expander, "PART_ContentViewport");
+            Expect(ReferenceEquals(firstViewport, secondViewport),
+                "Expander should reuse the materialized content viewport on second expand.",
                 failures);
-            Expect(ReferenceEquals(firstPresenter, (secondActor as ContentControl)?.Content),
+            Expect(ReferenceEquals(firstPresenter, GetMaterializedExpanderContentPresenter(expander)),
                 "Expander should not duplicate content presenter across expand/collapse toggles.",
                 failures);
             Expect(firstPresenter == null || firstPresenter.TemplatedParent == expander,
@@ -188,14 +188,11 @@ internal static partial class Program
                 failures);
         }
 
-        Expect(firstActor?.GetVisualParent() == null,
-            "Detached Expander should release the content motion actor visual parent.",
+        Expect(firstViewport == null || TopLevel.GetTopLevel(firstViewport) == null,
+            "Detached Expander should detach its content viewport from the visual root.",
             failures);
-        Expect(GetPrivateField(expander, "AtomUI.Desktop.Controls.Expander", "_motionActor") == null,
-            "Detached Expander should clear the content motion actor field.",
-            failures);
-        Expect(GetPrivateField(expander, "AtomUI.Desktop.Controls.Expander", "_contentPresenter") == null,
-            "Detached Expander should clear the content presenter field.",
+        Expect(firstViewport == null || Math.Abs(firstViewport.Opacity - 1) < 0.001,
+            "Detached Expander should release Motion's opacity cover.",
             failures);
     }
 
@@ -310,9 +307,7 @@ internal static partial class Program
 
     private static ContentPresenter? GetMaterializedExpanderContentPresenter(AtomExpander expander)
     {
-        return FindVisualByName<Control>(expander, "PART_ContentMotionActor") is ContentControl actor
-            ? actor.Content as ContentPresenter
-            : null;
+        return FindVisualByName<ContentPresenter>(expander, "PART_ContentPresenter");
     }
 
     private static AtomExpander CreateVerificationExpander()

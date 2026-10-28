@@ -77,7 +77,7 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
 
     #endregion
     
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractSegmentedItem()
     {
@@ -89,24 +89,24 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
 
     protected AbstractSegmentedItem()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -114,7 +114,7 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
     {
         base.OnApplyTemplate(e);
         UpdatePseudoClasses();
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

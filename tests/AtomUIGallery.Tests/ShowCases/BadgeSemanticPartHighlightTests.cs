@@ -62,7 +62,7 @@ public class BadgeSemanticPartHighlightTests
                 "the RibbonBadge semantic owner must wrap its 180px preview card instead of stretching across the stage.");
 
             // 指示器红点必须锚定在卡片右上角：runtime adorner 的舞台尺寸等于包裹后的
-            // badge 尺寸（96 宽），motion actor 在其中右对齐。AdornerLayer 的窗口级
+            // badge 尺寸（96 宽），私有动效表面在其中右对齐。AdornerLayer 的窗口级
             // 粘贴由合成器 AdornedVisual 跟踪，headless 下只断言布局层事实。
             var runtimeAdorner = AdornerLayer.GetAdornerLayer(countOwner)!.Children
                                              .Single(child => ReferenceEquals(
@@ -72,9 +72,13 @@ public class BadgeSemanticPartHighlightTests
             var indicator = runtimeAdorner.GetVisualDescendants()
                                           .Single(static visual =>
                                               visual.Classes.Contains("semantic-indicator"));
-            indicator.Bounds.Right.ShouldBe(runtimeAdorner.Bounds.Width + 10, 1,
+            // The semantic part is inside its private motion boundary. Compare the
+            // same rendered rectangle in adorner coordinates rather than its parent-local Bounds.
+            var indicatorOrigin = indicator.TranslatePoint(default, runtimeAdorner)!.Value;
+            var indicatorBounds = new Rect(indicatorOrigin, indicator.Bounds.Size);
+            indicatorBounds.Right.ShouldBe(runtimeAdorner.Bounds.Width + 10, 1,
                 "the count indicator must sit at the top-right corner of the wrapped card.");
-            indicator.Bounds.Top.ShouldBe(-10, 1);
+            indicatorBounds.Top.ShouldBe(-10, 1);
 
             var partsPane = page.GetVisualDescendants()
                                 .OfType<Border>()

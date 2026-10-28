@@ -414,7 +414,7 @@ header 最小高度基线不被固定高度破坏，switcher 命中区仍可点�
 - 过滤高亮节点（`TextBlock#FilterHighlighter`）、`FilterHighlightForeground` 与 `FilterStrategy` 高亮呈现。
 - header 内容框 `Border#PART_HeaderContentFrame`、`NodeHoverMode` 的 hover / selected 背景绘制层与
   `TreeViewItem.Render` 的树形连线 / 整行背景自绘逻辑。
-- 子节点展开动效 actor（`LayoutAwareMotionActor#PART_ItemsPresenterMotionActor`）与 `ItemsPresenter`。
+- 子节点展开动效 actor（`ContentViewport#PART_ChildrenViewport`）与 `ItemsPresenter`。
 - 空状态（`EmptyIndicator`、`DefaultEmptyIndicator`）、拖拽 preview / drop indicator、缩进层级计算。
 - 用户 `HeaderTemplate` / `ItemTemplate` 生成的子树、`Icon` 具体内容与 switcher 具体图标内容。
 - `TreeViewItemHeader`（internal，`.semantic-scope-header` 只作为 route 跳点）、`NodeSwitcherButton`（internal，

@@ -92,10 +92,10 @@ public class PopupMarginPlacementTests
                 {
                     new Setter(TemplatedControl.TemplateProperty,
                         new FuncControlTemplate<OverlayPopupHost>((host, scope) =>
-                            new PopupMotionActor
+                            new PopupSurface
                             {
                                 ClipToBounds = false,
-                                Content = new VisualLayerManager
+                                Children = { new VisualLayerManager
                                 {
                                     ClipToBounds = false,
                                     Child = new ShadowsAwareContainer
@@ -108,7 +108,7 @@ public class PopupMarginPlacementTests
                                             ContentTemplate = host.ContentTemplate
                                         }.RegisterInNameScope(scope)
                                     }
-                                }
+                                } }
                             }))
                 }
             };

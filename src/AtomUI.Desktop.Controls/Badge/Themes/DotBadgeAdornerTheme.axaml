@@ -11,15 +11,15 @@
                     Name="RootLayout"
                     LastChildFill="True"
                     ClipToBounds="False">
-                    <atom:MotionActor
-                        Name="PART_MotionActor"
-                        Classes.semantic-indicator="True"
+                    <Border
+                        Name="PART_IndicatorSurface"
                         ClipToBounds="False"
                         DockPanel.Dock="Left">
                         <atomcommons:DotBadgeIndicator
                             Name="Indicator"
+                            Classes.semantic-indicator="True"
                             BadgeDotColor="{TemplateBinding BadgeDotColor}" />
-                    </atom:MotionActor>
+                    </Border>
                     <Label Name="Label"
                            Content="{TemplateBinding Text}"
                            IsVisible="{TemplateBinding IsAdornerMode, Converter={x:Static BoolConverters.Not}}" />
@@ -38,15 +38,15 @@
                         Name="RootLayout"
                         LastChildFill="True"
                         ClipToBounds="False">
-                        <atom:MotionActor
-                            Name="PART_MotionActor"
-                            Classes.semantic-indicator="True"
+                        <Border
+                            Name="PART_IndicatorSurface"
                             ClipToBounds="False"
                             DockPanel.Dock="Left">
                             <atomcommons:DotBadgeIndicator
                                 Name="Indicator"
+                                Classes.semantic-indicator="True"
                                 BadgeDotColor="{TemplateBinding BadgeDotColor}" />
-                        </atom:MotionActor>
+                        </Border>
                     </DockPanel>
                 </ControlTemplate>
             </Setter>
@@ -65,7 +65,7 @@
             <Setter Property="Margin" Value="{atom:DotBadgeTokenResource LabelMargin}" />
         </Style>
         
-        <Style Selector="^ /template/ atom|MotionActor#PART_MotionActor">
+        <Style Selector="^ /template/ atomcommons|DotBadgeIndicator#Indicator">
             <Setter Property="Width" Value="{atom:DotBadgeTokenResource DotSize}" />
             <Setter Property="Height" Value="{atom:DotBadgeTokenResource DotSize}" />
         </Style>

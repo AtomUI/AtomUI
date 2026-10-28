@@ -83,7 +83,7 @@ Public API / ItemsSource / Command / Event
 
 - `PART_CloseButton`：承载用户触发入口、导航或关闭动作。
 - `PART_InfoContainer`：稳定模板协作入口，重命名前必须同步主题和实现。
-- `PART_InfoContainerMotionActor`：稳定模板协作入口，重命名前必须同步主题和实现。
+- `PART_Surface`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_Mask`：稳定模板协作入口，重命名前必须同步主题和实现。
 
 ### 语义部件基础设施
@@ -123,6 +123,18 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 - 嵌套 Drawer 继承父 container 的 effective target；父 Drawer 的 `OpenOn` 迁移时，所有已打开子 Drawer 必须迁移到同一 scope，并释放旧 Window 的全部 suppression lease。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
+
+### 动效目标与完成
+
+`PART_Surface` 是静态 Border，只包裹实际面板，并按 Placement 使用有效 DialogSize 约束主轴。
+面板 ±100% 位移以该表面的实际尺寸为基准，不使用全窗口或遮罩尺寸。其子节点的 push 变换保持独立。
+`PART_Mask` 使用另一个 Motion 目标，保留原有遮罩范围、命中和 Token 背景。
+
+面板采用对应边的 ±100%↔0、opacity .7↔1，遮罩采用 opacity 0↔1；两者使用 CSS ease 和有效 Slow 时长。
+这是与参考规格的参数校准，区别于原先基础 Move 的 0↔1 和 CubicEaseOut。
+两个播放请求在同一布局准备之后启动，统一等待真实播放结果；不通过 Task.Delay 猜测过渡结束。
+首次显示的透明度准备使用作用域覆盖，反向时保留实际矩阵和透明度，由 Core 连续替代。
+物理移除和 Opened/Closed 通知前核对本次版本、实际表面、业务 owner、挂载状态及最新 IsOpen。
 
 ## 8. 资源、性能与 AOT 边界
 

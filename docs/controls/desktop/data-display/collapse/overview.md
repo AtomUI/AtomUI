@@ -57,7 +57,7 @@ Collapse 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
 | `PART_AddOnContentPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
-| `PART_ContentMotionActor` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_ContentViewport` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_ContentPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
 | `PART_ExpandButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
 | `PART_Frame` | `?` | 承载根视觉、边框、背景或尺寸基线。 |

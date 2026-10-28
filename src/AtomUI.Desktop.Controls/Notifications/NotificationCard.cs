@@ -1,7 +1,6 @@
-﻿using AtomUI.Controls;
+using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.MotionScene;
 using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Animation;
@@ -206,7 +205,7 @@ public partial class NotificationCard : ContentControl,
     private PathIcon? _templateNotificationIcon;
     private bool _isApplyingTemplateNotificationIcon;
     private TimeSpan _progressBarTotalExpiration;
-    private BaseMotionActor? _motionActor;
+    private Control? _motionTarget;
     private FeedbackStackTransitionSnapshotHost? _stackTransitionSnapshotHost;
     private Matrix _stackCollapseSnapshotTarget;
     private bool _isStackCollapseSnapshotArmed;
@@ -301,7 +300,7 @@ public partial class NotificationCard : ContentControl,
         SetupPositionPseudoClasses(Position);
         SetupNotificationTypePseudoClasses();
         SetupDefaultNotificationIcon();
-        ApplyMotionActor();
+        ApplyMotionTarget();
         if (_closeButton != null)
         {
             _closeButton.Click += HandleCloseButtonClose;
@@ -311,7 +310,7 @@ public partial class NotificationCard : ContentControl,
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseStackTransitionSnapshot();
-        _motionCoordinator.DetachActor(IsClosing, IsClosed);
+        _motionCoordinator.DetachTarget(IsClosing, IsClosed);
         base.OnDetachedFromVisualTree(e);
         if (_closeButton != null)
         {
@@ -333,7 +332,7 @@ public partial class NotificationCard : ContentControl,
         ClearProgressBar();
         _layout      = e.NameScope.Find<Grid>("PART_Layout");
         _closeButton = e.NameScope.Find<IconButton>("PART_CloseButton");
-        _motionActor = e.NameScope.Find<BaseMotionActor>(BaseMotionActor.MotionActorPart);
+        _motionTarget = e.NameScope.Find<Control>("Frame");
         _stackTransitionSnapshotHost = e.NameScope.Find<FeedbackStackTransitionSnapshotHost>(
             FeedbackStackTransitionSnapshotHost.SnapshotHostPart);
 
@@ -342,14 +341,14 @@ public partial class NotificationCard : ContentControl,
             _closeButton.Click += HandleCloseButtonClose;
         }
 
-        ApplyMotionActor();
+        ApplyMotionTarget();
         ConfigureProgressBar();
     }
 
-    private void ApplyMotionActor()
+    private void ApplyMotionTarget()
     {
-        _motionCoordinator.ApplyActor(
-            _motionActor,
+        _motionCoordinator.ApplyTarget(
+            _motionTarget,
             IsClosing,
             IsClosed,
             IsMotionEnabled,

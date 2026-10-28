@@ -545,4 +545,4 @@ git diff --check
 ## 状态动效初始化
 
 `ListViewItem` 在构造阶段抑制过渡，覆盖 owner 准备容器时写入的初始选中外观；加载后恢复最新集合。父控件在清理容器之前复位会话，避免离树前的清理写入启动过渡。
-共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。

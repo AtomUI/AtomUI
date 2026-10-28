@@ -2,6 +2,16 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-28
+
+- Motion / architecture
+  - Overlay 统一使用 Motion 原生时钟与真实完成任务，移除旧 Actor、合成提交后的计时完成和重复内容淡出。
+  - 普通 Zoom 使用 .2↔1，入场 Slow / OutCirc、离场 Mid / InOutCirc；无显式锚点使用实际面板中心，原点在本次播放冻结。
+  - 遮罩作为独立透明度目标，保留 modeless 条件物化；私有表面隔离 wrapper 自定义变换，专用 Style route 不变。
+  - 关闭先连续替代入场，生命周期任务先登记后执行，保留 Footer、按钮、焦点和实际宿主释放边界。
+- Validation
+  - 受控时钟覆盖首帧、原点、反向、实际结束和覆盖释放；原生呈现预算独立验收，不以 Headless 推断 FPS。
+
 ## 2026-10-17
 
 - Design

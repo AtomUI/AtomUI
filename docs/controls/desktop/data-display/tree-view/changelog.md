@@ -3,6 +3,13 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- Motion
+  - `OpenMotion` / `CloseMotion` 改为 `Motion`，控件不再修改共享定义的 Duration。
+  - 子项采用 `ContentViewport#PART_ChildrenViewport`，TreeSelect/Transfer 复用相同布局能力。
+  - 反向意图连续替代播放，移除 switcher 的播放期禁点和丢弃请求 guard；旧模板的完成无权修改当前状态。
+
 ## 2026-10-19
 
 - Behavior

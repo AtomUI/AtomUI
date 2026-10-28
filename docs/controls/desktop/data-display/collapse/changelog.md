@@ -2,6 +2,15 @@
 
 本文档记录 Collapse 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- Implementation
+  - 内容动效改为主题中的 `atom:Motion` 声明，使用 `ExpandMotion` / `CollapseMotion` 与公开布局能力。
+  - `PART_ContentMotionActor` 替换为 `ContentViewport#PART_ContentViewport`，移除容器持有的动画执行器和完成回调。
+  - 保持手风琴空间交换、内容自然排版、视口命中、结构边线与 Semantic Part route；隐藏后恢复底层透明度来源。
+- Docs
+  - 同步模板绑定、布局租约、请求替代和资源释放边界。
+
 ## 2026-09-10
 
 - Design

@@ -1,3 +1,5 @@
+using Avalonia.Data;
+using Avalonia.Controls.Templates;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Avalonia;
@@ -11,7 +13,8 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using MotionApi = AtomUI.Animations.Motion;
 using Shouldly;
 using Xunit;
 using AtomUICollapse = AtomUI.Desktop.Controls.Collapse;
@@ -1128,8 +1131,8 @@ public class CollapseBehaviorTests
             item.IsSelected = true;
             item.IsSelected = false;
             Dispatcher.UIThread.RunJobs();
-            var motionActor = GetContentMotionActor(item);
-            WaitForLayoutCondition(() => !motionActor.IsAnimating(Visual.OpacityProperty) &&
+            var motionActor = GetContentViewport(item);
+            WaitForLayoutCondition(() => !(!MotionApi.GetVisibilityTask(motionActor).IsCompleted) &&
                                          motionActor.IsVisible == item.IsSelected);
             item.IsSelected.ShouldBeFalse();
             motionActor.IsVisible.ShouldBeFalse();
@@ -1170,7 +1173,7 @@ public class CollapseBehaviorTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(item);
+            var motionActor = GetContentViewport(item);
             var initialItemBorder = item.ItemBorderThickness;
             var initialContentBorder = item.ContentBorderThickness;
             var itemBorderChangeCount = 0;
@@ -1185,19 +1188,19 @@ public class CollapseBehaviorTests
 
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             item.IsSelected = false;
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
             WaitForLayoutCondition(() => motionActor.IsVisible &&
-                                         !motionActor.IsAnimating(Visual.OpacityProperty) &&
+                                         !(!MotionApi.GetVisibilityTask(motionActor).IsCompleted) &&
                                          motionActor.Opacity == 1);
 
             item.IsSelected.ShouldBeTrue();
             motionActor.IsVisible.ShouldBeTrue();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-            motionActor.MotionTransform.ShouldBeNull();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
+            motionActor.RenderTransform.ShouldBeNull();
             motionActor.Transitions.ShouldBeNull();
             itemBorderChangeCount.ShouldBe(0);
             contentBorderChangeCount.ShouldBe(0);
@@ -1217,8 +1220,8 @@ public class CollapseBehaviorTests
         var oldButton = new IconButton();
         var newButton = new IconButton();
 
-        item.ApplyTemplateParts(oldButton, new LayoutAwareMotionActor());
-        item.ApplyTemplateParts(newButton, new LayoutAwareMotionActor());
+        item.ApplyTemplateParts(oldButton, new ContentViewport());
+        item.ApplyTemplateParts(newButton, new ContentViewport());
 
         oldButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, oldButton));
         item.IsSelected.ShouldBeFalse();
@@ -1247,15 +1250,15 @@ public class CollapseBehaviorTests
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
 
-            var oldMotionActor = GetContentMotionActor(item);
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            item.ApplyTemplateParts(new IconButton(), new LayoutAwareMotionActor());
+            var oldMotionActor = GetContentViewport(item);
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeTrue();
+            item.ApplyTemplateParts(new IconButton(), new ContentViewport());
 
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeFalse();
             oldMotionActor.IsVisible.ShouldBeTrue();
             oldMotionActor.Opacity.ShouldBe(1);
-            oldMotionActor.MotionTransform.ShouldBeNull();
-            oldMotionActor.MotionTransformOperations.ShouldBeNull();
+            MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted.ShouldBeTrue();
+            oldMotionActor.RenderTransform.ShouldBeNull();
             oldMotionActor.Transitions.ShouldBeNull();
             oldMotionActor.Height.ShouldBe(double.NaN);
         });
@@ -1293,17 +1296,17 @@ public class CollapseBehaviorTests
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(item);
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            var motionActor = GetContentViewport(item);
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             window.Content = null;
             Dispatcher.UIThread.RunJobs();
 
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
             motionActor.IsVisible.ShouldBeTrue();
             motionActor.Opacity.ShouldBe(1);
-            motionActor.MotionTransform.ShouldBeNull();
-            motionActor.MotionTransformOperations.ShouldBeNull();
+            motionActor.RenderTransform.ShouldBeNull();
+            motionActor.RenderTransform.ShouldBeNull();
             motionActor.Transitions.ShouldBeNull();
             motionActor.Height.ShouldBe(double.NaN);
         }
@@ -1345,9 +1348,9 @@ public class CollapseBehaviorTests
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(item);
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            motionActor.MotionTransform.ShouldBeNull();
+            var motionActor = GetContentViewport(item);
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
+            motionActor.RenderTransform.ShouldBeNull();
             motionActor.Height.ShouldBe(double.NaN);
         }
         finally
@@ -1387,8 +1390,8 @@ public class CollapseBehaviorTests
 
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
-            var motionActor = GetContentMotionActor(item);
-            WaitForLayoutCondition(() => !motionActor.IsAnimating(Visual.OpacityProperty) &&
+            var motionActor = GetContentViewport(item);
+            WaitForLayoutCondition(() => !(!MotionApi.GetVisibilityTask(motionActor).IsCompleted) &&
                                          motionActor.IsVisible == item.IsSelected);
             motionActor.Opacity.ShouldBe(1);
             motionActor.Height.ShouldBe(double.NaN);
@@ -1436,7 +1439,7 @@ public class CollapseBehaviorTests
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(item);
+            var motionActor = GetContentViewport(item);
             WaitForLayoutCondition(() => motionActor.Bounds.Height > 0.0);
             motionActor.Bounds.Height.ShouldBeGreaterThan(0.0);
         }
@@ -1478,7 +1481,7 @@ public class CollapseBehaviorTests
             item.IsSelected = true;
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(item);
+            var motionActor = GetContentViewport(item);
             WaitForLayoutCondition(() => motionActor.Bounds.Height > 0.0);
             motionActor.Bounds.Height.ShouldBeGreaterThan(0.0);
         }
@@ -1623,9 +1626,9 @@ public class CollapseBehaviorTests
         return presenter!;
     }
 
-    private static BaseMotionActor GetContentMotionActor(AtomUICollapseItem item)
+    private static ContentViewport GetContentViewport(AtomUICollapseItem item)
     {
-        var motionActor = FindTemplatePart<BaseMotionActor>(item, "PART_ContentMotionActor");
+        var motionActor = FindTemplatePart<ContentViewport>(item, "PART_ContentViewport");
         motionActor.ShouldNotBeNull();
         return motionActor!;
     }
@@ -1728,13 +1731,20 @@ public class CollapseBehaviorTests
     {
         protected override Type StyleKeyOverride => typeof(AtomUICollapseItem);
 
-        public void ApplyTemplateParts(IconButton expandButton, BaseMotionActor motionActor)
+        public void ApplyTemplateParts(IconButton expandButton, ContentViewport motionActor)
         {
-            var nameScope = new NameScope();
-            nameScope.Register("PART_ExpandButton", expandButton);
-            nameScope.Register("PART_ContentMotionActor", motionActor);
-
-            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
+            Template = new FuncControlTemplate((owner, scope) =>
+            {
+                scope.Register("PART_ExpandButton", expandButton);
+                scope.Register("PART_ContentViewport", motionActor);
+                MotionApi.SetEnter(motionActor, new ExpandMotion());
+                MotionApi.SetLeave(motionActor, new CollapseMotion());
+                motionActor.Bind(MotionApi.IsVisibleProperty, new TemplateBinding(IsSelectedProperty));
+                motionActor.Bind(MotionApi.IsEnabledProperty, new TemplateBinding(IsMotionEnabledProperty));
+                motionActor.Bind(MotionApi.DurationOverrideProperty, new TemplateBinding(MotionDurationProperty));
+                return new StackPanel { Children = { expandButton, motionActor } };
+            });
+            ApplyTemplate();
         }
     }
 }

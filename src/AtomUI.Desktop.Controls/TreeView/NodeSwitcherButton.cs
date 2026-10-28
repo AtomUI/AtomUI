@@ -164,7 +164,6 @@ internal class NodeSwitcherButton : ToggleButton
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    internal bool IsNodeAnimating { get; set; }
     
     #endregion
 
@@ -281,11 +280,6 @@ internal class NodeSwitcherButton : ToggleButton
 
     protected override void Toggle()
     {
-        if (IsNodeAnimating)
-        {
-            return;
-        }
-        
         _owningTreeItem ??= this.FindAncestorOfType<TreeViewItem>();
         Debug.Assert(_owningTreeItem != null);
         if (_owningTreeItem.HasTreeItemDataLoader && !_owningTreeItem.AsyncLoaded)

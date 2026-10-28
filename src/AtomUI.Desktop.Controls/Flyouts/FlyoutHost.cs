@@ -1,8 +1,8 @@
-﻿using System.Reactive.Disposables;
+using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Data;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -56,10 +56,10 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<FlyoutHost>();
     
-    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty = 
+    public static readonly StyledProperty<Motion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<FlyoutHost>();
         
-    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty = 
+    public static readonly StyledProperty<Motion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<FlyoutHost>();
     
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
@@ -169,13 +169,13 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         set => SetValue(MotionDurationProperty, value);
     }
     
-    public AbstractMotion? OpenMotion
+    public Motion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
-    public AbstractMotion? CloseMotion
+    public Motion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

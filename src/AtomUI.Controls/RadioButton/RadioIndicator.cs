@@ -109,7 +109,7 @@ internal class RadioIndicator : TemplatedControl
     private WaveSpiritDecorator? _waveSpiritDecorator;
     private DispatcherOperation? _pendingWave;
     
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static RadioIndicator()
     {
@@ -126,14 +126,14 @@ internal class RadioIndicator : TemplatedControl
 
     public RadioIndicator()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _pendingWave?.Abort();
         _pendingWave = null;
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -141,14 +141,14 @@ internal class RadioIndicator : TemplatedControl
     {
         _pendingWave?.Abort();
         _pendingWave = null;
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -174,7 +174,7 @@ internal class RadioIndicator : TemplatedControl
             }
 
             if (change.Property == IsCheckedProperty &&
-                _stateMotion.IsReady &&
+                _transitionInitialization.IsReady &&
                 IsMotionEnabled &&
                 IsWaveSpiritEnabled &&
                 !PseudoClasses.Contains(StdPseudoClass.Disabled) &&
@@ -204,7 +204,7 @@ internal class RadioIndicator : TemplatedControl
     private void PlayWaveSpirit()
     {
         _pendingWave = null;
-        if (!_stateMotion.IsReady || !IsMotionEnabled || !IsWaveSpiritEnabled ||
+        if (!_transitionInitialization.IsReady || !IsMotionEnabled || !IsWaveSpiritEnabled ||
             !IsEnabled || IsChecked != true || _waveSpiritDecorator is null)
         {
             return;
@@ -267,7 +267,7 @@ internal class RadioIndicator : TemplatedControl
     {
         base.OnApplyTemplate(e);
         _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(WaveSpiritDecorator.WaveSpiritPart);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
 }

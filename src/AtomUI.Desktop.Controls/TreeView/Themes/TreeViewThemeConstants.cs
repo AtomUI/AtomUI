@@ -2,7 +2,7 @@ namespace AtomUI.Desktop.Controls.Themes;
 
 internal static class TreeViewItemThemeConstants
 {
-    public const string ItemsPresenterMotionActorPart = "PART_ItemsPresenterMotionActor";
+    public const string ChildrenViewportPart = "PART_ChildrenViewport";
 }
 
 internal static class TreeViewItemHeaderThemeConstants

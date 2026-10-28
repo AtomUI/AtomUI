@@ -210,8 +210,8 @@ Grid 结构不属于 title 契约。
 ### 2.5 body
 
 `body` 表示每个面板的内容区域，即 `PixelAlignedBorder#PART_ContentFrame`，cardinality 为 `Multiple`（每个面板各一个）。
-节点属于模板稳定结构，不随展开/收起增删；展开/收起动效由 Core 共享的 `ContentExpansionAnimator` 驱动
-`LayoutAwareMotionActor#PART_ContentMotionActor`，收起稳定态隐藏内容 actor（`Opacity=0`、`IsVisible=false`），
+节点属于模板稳定结构，不随展开/收起增删；主题声明的 `ExpandMotion` / `CollapseMotion` 通过布局能力驱动
+`ContentViewport#PART_ContentViewport`，收起稳定态隐藏内容视口（`IsVisible=false`）并释放属性覆盖，
 body 节点自身的 Part 身份与数量不变。
 
 它负责：
@@ -313,11 +313,11 @@ Collapse 的尺寸链与 Semantic Setter 的关系：
 | 项目 | 内容 |
 | --- | --- |
 | 完整尺寸分支 | `Large`、`Middle`、`Small`、`Custom` 四档（`CustomizableSizeType`），默认 `Middle`；`Collapse.SizeType` 是 public 属性（`ICustomizableSizeTypeAware`），经 `PrepareContainerForItemOverride` 投影到每个 `CollapseItem`。 |
-| 布局 owner | 头部 `PART_HeaderDecorator`（`Padding=EffectiveHeaderPadding` + `TextElement.FontSize`/`TextBlock.LineHeight`）、内容 `PART_ContentFrame`（`Padding=EffectiveContentPadding`）、箭头 `PART_ExpandButton`（`IconSizeSM` 图标 + 按位置/尺寸档的边距）。面板总高度由内容自然测量 + `PART_ContentMotionActor` 的动效（Core `ContentExpansionAnimator` 的尺寸/透明度进度）拥有。 |
+| 布局 owner | 头部 `PART_HeaderDecorator`（`Padding=EffectiveHeaderPadding` + `TextElement.FontSize`/`TextBlock.LineHeight`）、内容 `PART_ContentFrame`（`Padding=EffectiveContentPadding`）、箭头 `PART_ExpandButton`（`IconSizeSM` 图标 + 按位置/尺寸档的边距）。面板总高度由内容自然测量 + `PART_ContentViewport` 的动效（Core `Motion` 的尺寸/透明度进度）拥有。 |
 | Token 映射 | Middle/Custom → `HeaderPadding`、`ContentPadding`、`FontSize`/`FontHeight`、`Left/RightExpandButtonMargin`；Large → `CollapseHeaderPaddingLG`、`CollapseContentPaddingLG`、`FontSizeLG`/`FontHeightLG`、`*MarginLG`；Small → `CollapseHeaderPaddingSM`、`CollapseContentPaddingSM`、`FontSize`/`FontHeight`（Small 与 Middle 同字号）、`*MarginSM`。 |
 | 状态矩阵 | 展开/收起、disabled、ghost、borderless、TriggerType、ExpandIconPosition 只切换主题 selector 视觉，不改变 marker 与节点数量，见 [§4](#4-状态与数量语义)。 |
 | 外部映射 | antd `size="small"` → `Small`；antd 默认（middle）→ `Middle`（及 `Custom`）；antd `size="large"` → `Large`。依据：antd Collapse 的 `size` 三档驱动 `headerPadding*`、`contentPadding*`、`fontSize*` 与图标尺寸；AtomUI 用同构三档 Token 表达，`Custom` 复用 Middle 基线并把完整控制权交给用户。 |
-| 失败回归 | 给 `header` 设置固定 `Height`/`MinHeight` 会绕过 Padding + 字体自然测量，多行标题与三档尺寸基线失效。展开/收起动效由 Core 共享的 `ContentExpansionAnimator` 拥有：动效期间以尺寸/透明度进度驱动内容视口，固定 `body` Height 会与该进度竞争，因为 actor 的视口尺寸覆盖内容测量。Semantic Setter 中不应设置固定 `Height`/`Width`/Min/Max 布局值；改变头部/内容间距应通过 `ItemHeaderPadding`/`ItemContentPadding`、Token 或主题分支实现。 |
+| 失败回归 | 给 `header` 设置固定 `Height`/`MinHeight` 会绕过 Padding + 字体自然测量，多行标题与三档尺寸基线失效。展开/收起动效由 Core 共享的 `Motion` 拥有：动效期间以尺寸/透明度进度驱动内容视口，固定 `body` Height 会与该进度竞争，因为 actor 的视口尺寸覆盖内容测量。Semantic Setter 中不应设置固定 `Height`/`Width`/Min/Max 布局值；改变头部/内容间距应通过 `ItemHeaderPadding`/`ItemContentPadding`、Token 或主题分支实现。 |
 
 `header` / `body` 的 `Background`、`Padding`、字体与边框 Setter 是公共定制路径（Semantic Setter 优先级高于主题尺寸档
 TemplateBinding）；固定 `Height` / `Width` / Min/Max 类布局 Setter 会与尺寸档链或 content motion 的高度动画竞争 Avalonia
@@ -330,9 +330,9 @@ TemplateBinding）；固定 `Height` / `Width` / Min/Max 类布局 Setter 会与
 
 - `CollapseItem` 容器本身与 item shell 边框（面板之间的底部分隔线）；上游不公开 `.ant-collapse-item`，容器上的
   `.semantic-scope-item` 只是路由用 scope marker。
-- `PART_MainLayout`、`PART_AddOnContentPresenter`（`AddOnContent` 附加内容区域）与 `PART_ContentMotionActor`（展开/收起
+- `PART_MainLayout`、`PART_AddOnContentPresenter`（`AddOnContent` 附加内容区域）与 `PART_ContentViewport`（展开/收起
   动效 actor）；`item`、`motion`、`content` 的旧分类名不属于 Semantic Part，节点映射以本文档为准。
-- 展开/收起动效由 motion actor 拥有（layout transform 缩放 + 透明度过渡，稳定态切换显式高度），不属于 `body` Part
+- 展开/收起动效由 Motion 播放协议与内容视口的布局租约拥有（真实占位、裁剪与透明度），不属于 `body` Part
   的样式契约。
 - 用户自定义 `ItemsPanel` 不影响 Part 路由（容器逻辑父级始终是 Collapse owner）；建议自定义面板根节点声明
   `Classes.semantic-scope-panel="True"` 以保持 items host 链标识一致。

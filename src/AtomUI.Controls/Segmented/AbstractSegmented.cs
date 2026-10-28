@@ -17,7 +17,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
                                           IMotionAwareControl,
                                           ICustomizableSizeTypeAware,
                                           IFormItemAware,
-                                          IStateMotionOwner
+                                          ITransitionInitializationOwner
 {
     #region 公共属性定义
 
@@ -137,7 +137,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     // 滑块过渡在属性提交后的下一渲染帧才真正启动，计时补偿一帧，保证抑制态晚于视觉落地结束。
     private static readonly TimeSpan ThumbMotionCompletionMargin = TimeSpan.FromMilliseconds(32);
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractSegmented()
     {
@@ -156,7 +156,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     public AbstractSegmented()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
         SelectionMode = SelectionMode.Single;
     }
     
@@ -168,13 +168,13 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnApplyTemplate(e);
         var hasDefaultSelected = false;
         foreach (var item in Items)
@@ -209,14 +209,14 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnAttachedToVisualTree(e);
         SelectionChanged += HandleSelectionChanged;
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         SelectionChanged -= HandleSelectionChanged;
         StopThumbMotion();
         base.OnDetachedFromVisualTree(e);
@@ -343,9 +343,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     }
     #endregion
 
-    #region 实现 IStateMotionOwner 接口
+    #region 实现 ITransitionInitializationOwner 接口
 
-    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
 
     #endregion
 
@@ -364,7 +364,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             // 与 antd 一致：不存在可飞行的来源几何时滑块立即消失，不做出现动画。
             StopThumbMotion();
             SetThumbVisible(false);
-            _stateMotion.CompleteInitialization();
+            _transitionInitialization.CompleteInitialization();
             return;
         }
 
@@ -392,17 +392,17 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         if (_isThumbVisible && basePos.HasValue && baseSize.HasValue &&
             targetPos == basePos.Value && targetSize == baseSize.Value)
         {
-            _stateMotion.CompleteInitialization();
+            _transitionInitialization.CompleteInitialization();
             return;
         }
 
         // 只有选中项主动切换且滑块已可见时才允许飞行；首次出现与布局跟随一律瞬移。
         var canAnimate = animate &&
-                         _stateMotion.IsReady &&
+                         _transitionInitialization.IsReady &&
                          _isThumbVisible &&
                          (targetPos != SelectedThumbPos || targetSize != SelectedThumbSize);
 
-        using var snap = !canAnimate && _stateMotion.IsReady
+        using var snap = !canAnimate && _transitionInitialization.IsReady
             ? new TransitionSuppressionScope(this)
             : null;
 
@@ -410,7 +410,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         SelectedThumbSize = targetSize;
 
         SetThumbVisible(true);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
 
         if (canAnimate)
         {

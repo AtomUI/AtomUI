@@ -8,7 +8,7 @@
   - Line 指示条在当前选中项完整几何提交后启用主题过渡；首次显示、重新挂载及重新应用模板直接定位。
   - 相同最终矩阵不重复写入，保留动画中的普通排列；集合清空后废弃旧来源基线。
 - Docs
-  - 同步 [共享状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)
+  - 同步 [共享状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)
     及实际接入、生命周期与验证边界。
 
 ## 2026-09-15

@@ -1,5 +1,5 @@
-﻿using AtomUI.Controls;
-using AtomUI.MotionScene;
+using AtomUI.Controls;
+using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -149,7 +149,7 @@ internal static class PopupUtils
         };
     }
 
-    internal static (AbstractMotion? open, AbstractMotion? close) CreateMotionForPlacement(PlacementMode placement)
+    internal static (Motion? open, Motion? close) CreateMotionForPlacement(PlacementMode placement)
     {
         if (!IsCanonicalAnchorPlacementMode(placement))
         {

@@ -70,8 +70,8 @@ ToggleSwitch 的公共契约由 Avalonia `ToggleButton` 状态和 AtomUI 扩展�
 
 首帧状态契约：把手、内容偏移和轨道外观直接呈现当前 `IsChecked`；后续有效切换保留主题过渡。loading 旋转属于
 过程反馈，保持独立语义。根控件与把手的基线提交和主题就绪条件见
-[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)，源码接入差异及证据见
-[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，源码接入差异及证据见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 ToggleSwitch 的交互优先级：
 

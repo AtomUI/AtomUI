@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -91,8 +90,8 @@ public class FloatButtonHostOverlayTests
                                     .OfType<FloatButtonGroup>()
                                     .Single();
             var motionActor = group.GetVisualDescendants()
-                                   .OfType<BaseMotionActor>()
-                                   .Single();
+                                   .OfType<Border>()
+                                   .Single(control => control.Name == "PART_MenuSurface");
 
             group.IsOpen.ShouldBeFalse();
             motionActor.IsVisible.ShouldBeFalse();

@@ -1,11 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Controls.Utils;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -104,11 +104,11 @@ public partial class TreeView : AvaloniaTreeView,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TreeView>();
     
-    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty = 
-        Popup.OpenMotionProperty.AddOwner<TreeView>();
+    public static readonly StyledProperty<Motion?> OpenMotionProperty =
+        AvaloniaProperty.Register<TreeView, Motion?>(nameof(OpenMotion));
         
-    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty = 
-        Popup.CloseMotionProperty.AddOwner<TreeView>();
+    public static readonly StyledProperty<Motion?> CloseMotionProperty =
+        AvaloniaProperty.Register<TreeView, Motion?>(nameof(CloseMotion));
     
     public static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
         AvaloniaProperty.Register<TreeView, ItemToggleType>(nameof(ToggleType), ItemToggleType.None);
@@ -289,13 +289,13 @@ public partial class TreeView : AvaloniaTreeView,
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public AbstractMotion? OpenMotion
+    public Motion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
     
-    public AbstractMotion? CloseMotion
+    public Motion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);

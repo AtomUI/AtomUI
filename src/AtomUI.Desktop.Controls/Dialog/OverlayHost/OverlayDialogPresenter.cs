@@ -2,11 +2,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -14,7 +12,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -48,7 +45,10 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         Dialog.IsMotionEnabledProperty.AddOwner<OverlayDialogPresenter>();
 
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
-        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration));
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration), TimeSpan.FromMilliseconds(200));
+
+    internal static readonly StyledProperty<TimeSpan> OpeningMotionDurationProperty =
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(OpeningMotionDuration), TimeSpan.FromMilliseconds(300));
 
     internal bool IsModal
     {
@@ -72,6 +72,12 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
+    }
+
+    internal TimeSpan OpeningMotionDuration
+    {
+        get => GetValue(OpeningMotionDurationProperty);
+        set => SetValue(OpeningMotionDurationProperty, value);
     }
 
     #endregion
@@ -107,8 +113,6 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     #endregion
 
-    private static readonly TimeSpan CompositionMotionCompletionSlack = TimeSpan.FromMilliseconds(32);
-
     private readonly Dialog _dialog;
     private readonly Control _placementTarget;
     private readonly DialogSurface _surface;
@@ -118,8 +122,11 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private Window? _ownerWindow;
     private IDisposable? _drawnChromeOverlaySuppression;
     private bool _ownerIsWayland;
-    private MotionActor? _maskMotionActor;
-    private MotionActor? _surfaceMotionActor;
+    private Border? _surfaceMotionRoot;
+    private CompositeDisposable? _entryPreparation;
+    private RelativePoint? _motionOrigin;
+    private bool _closeRequested;
+    private bool _presentationStarted;
     private OverlayDialogMask? _dialogMask;
     private CancellationTokenSource? _openingMotionCancellationSource;
     private Task? _showTask;
@@ -177,8 +184,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     {
         base.OnApplyTemplate(e);
         ReleaseDialogMask();
-        _maskMotionActor = e.NameScope.Find<MotionActor>("PART_MaskMotionActor");
-        _surfaceMotionActor = e.NameScope.Find<MotionActor>("PART_SurfaceMotionActor");
+        _surfaceMotionRoot = e.NameScope.Find<Border>("PART_SurfaceMotionRoot");
         _dialogMask = e.NameScope.Find<OverlayDialogMask>("PART_DialogMask");
         if (_dialogMask is not null)
         {
@@ -188,7 +194,12 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     public ValueTask ShowAsync(CancellationToken cancellationToken)
     {
-        _showTask ??= ShowCoreAsync(cancellationToken);
+        if (_showTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _showTask = completion.Task;
+            _ = CompleteOperationAsync(completion, () => ShowCoreAsync(cancellationToken));
+        }
         return new ValueTask(_showTask);
     }
 
@@ -229,37 +240,105 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         ApplyTemplate();
         _surface.ApplyTemplate();
         UpdateLayerBounds(_dialogLayer.AvailableSize);
-        if (_surfaceMotionActor is not null)
+        if (IsMotionEnabled)
         {
-            _surfaceMotionActor.Opacity = IsMotionEnabled ? 0 : 1;
+            PrepareEntry();
         }
-
         await Dispatcher.UIThread.InvokeAsync(
             () => UpdateLayerBounds(_dialogLayer?.AvailableSize ?? default),
             DispatcherPriority.Loaded);
         _isInitialSizeResolved = true;
-
-        if (IsMotionEnabled && _surfaceMotionActor is not null)
+        if (_closeRequested)
         {
-            _openingMotionCancellationSource =
-                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var motionToken = _openingMotionCancellationSource.Token;
-            if (!await TryRunCompositorOpeningMotionAsync(motionToken))
+            ReleaseEntryPreparation();
+            return;
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        _motionOrigin = ResolveMotionOrigin();
+        if (IsMotionEnabled && _surfaceMotionRoot is { } target)
+        {
+            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _openingMotionCancellationSource = cancellation;
+            var preparation = _entryPreparation;
+            _entryPreparation = null;
+            try
             {
-                await CreateSurfaceMotion(isOpening: true)
-                    .RunAsync(_surfaceMotionActor, cancellationToken: motionToken);
+                Task<MotionResult> surfacePlayback;
+                Task<MotionResult>? maskPlayback = null;
+                try
+                {
+                    surfacePlayback = CreateSurfaceMotion(true).PlayAsync(target, cancellation.Token);
+                    if (!_closeRequested && IsModal && _dialogMask is { } mask)
+                    {
+                        maskPlayback = new FadeInMotion(OpeningMotionDuration).PlayAsync(mask, cancellation.Token);
+                    }
+                }
+                finally
+                {
+                    preparation?.Dispose();
+                }
+                if (!_closeRequested)
+                {
+                    _presentationStarted = true;
+                }
+                else
+                {
+                    cancellation.Cancel();
+                }
+                if (maskPlayback is not null)
+                {
+                    await Task.WhenAll(surfacePlayback, maskPlayback);
+                }
+                var result = await surfacePlayback;
+                if (!_closeRequested && result.Outcome == MotionOutcome.NotReady)
+                {
+                    ResetMotionTargets();
+                }
+                if (!_closeRequested)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             }
+            finally
+            {
+                if (ReferenceEquals(_openingMotionCancellationSource, cancellation))
+                {
+                    _openingMotionCancellationSource = null;
+                }
+                cancellation.Dispose();
+            }
+        }
+        else
+        {
+            ReleaseEntryPreparation();
+            ResetMotionTargets();
+            _presentationStarted = true;
         }
     }
 
     public ValueTask CloseAsync()
     {
-        _closeTask ??= CloseCoreAsync();
+        if (_closeTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _closeTask = completion.Task;
+            _ = CompleteOperationAsync(completion, CloseCoreAsync);
+        }
         return new ValueTask(_closeTask);
     }
 
     private async Task CloseCoreAsync()
     {
+        _closeRequested = true;
+        if (!_presentationStarted)
+        {
+            _surfaceMotionRoot?.SetCurrentValue(IsVisibleProperty, false);
+            _dialogMask?.SetCurrentValue(IsVisibleProperty, false);
+        }
+        // Start the replacement before cancelling the old request. Core samples
+        // the presented scale/opacity while the opening request still owns it.
+        var closing = _presentationStarted && IsMotionEnabled && _dialogLayer is not null
+            ? RunClosingMotionsAsync() : Task.CompletedTask;
         _openingMotionCancellationSource?.Cancel();
         if (_showTask is not null)
         {
@@ -269,257 +348,110 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             }
             catch
             {
-                // Show failures are reported by the session; close still owns complete teardown.
+                // The session observes show failure; close still tears down its own host.
             }
         }
-
-        if (IsMotionEnabled && _surfaceMotionActor is not null && _dialogLayer is not null)
-        {
-            if (!await TryRunCompositorClosingMotionAsync())
-            {
-                var motionTasks = new List<Task>
-                {
-                    CreateSurfaceMotion(isOpening: false).RunAsync(_surfaceMotionActor)
-                };
-                if (_surface.SurfaceContentLayer is { } surfaceContentLayer)
-                {
-                    motionTasks.Add(RunSurfaceContentCloseMotionAsync(surfaceContentLayer));
-                }
-
-                await Task.WhenAll(motionTasks);
-            }
-        }
-
-        _surface.DisconnectCompositionChildren();
-        _surface.Dispose();
-        RemoveFromDialogLayer();
-    }
-
-    private async Task RunSurfaceContentCloseMotionAsync(Control surfaceContentLayer)
-    {
-        var animation = new Animation
-        {
-            Duration = MotionDuration,
-            Easing = new LinearEasing(),
-            FillMode = FillMode.Forward,
-            Children =
-            {
-                new KeyFrame
-                {
-                    Cue = new Cue(0),
-                    Setters = { new Setter(Visual.OpacityProperty, 1d) }
-                },
-                new KeyFrame
-                {
-                    Cue = new Cue(1),
-                    Setters = { new Setter(Visual.OpacityProperty, 0d) }
-                }
-            }
-        };
-
         try
         {
-            await animation.RunAsync(surfaceContentLayer);
+            await closing;
         }
         finally
         {
-            // The surface is torn down immediately after all close motions;
-            // restore the live tree for re-use if teardown is interrupted.
-            surfaceContentLayer.Opacity = 1;
+            ReleaseEntryPreparation();
+            ResetMotionTargets();
+            _surface.DisconnectCompositionChildren();
+            _surface.Dispose();
+            RemoveFromDialogLayer();
         }
     }
 
-    private async Task<bool> TryRunCompositorOpeningMotionAsync(CancellationToken cancellationToken)
+    private async Task RunClosingMotionsAsync()
     {
-        var motion = CreateSurfaceMotion(isOpening: true);
-        var surfaceVisual = ElementComposition.GetElementVisual(_surfaceMotionActor!);
-        if (surfaceVisual is null)
+        if (_surfaceMotionRoot is not { } target)
         {
-            return false;
+            return;
         }
+        var surface = CreateSurfaceMotion(false).PlayAsync(target);
+        if (IsModal && _dialogMask is { } mask)
+        {
+            var masking = new FadeOutMotion(MotionDuration).PlayAsync(mask);
+            await Task.WhenAll(surface, masking);
+        }
+        else
+        {
+            await surface;
+        }
+    }
 
-        var isZoom = motion is DialogZoomInMotion;
+    private static async Task CompleteOperationAsync(TaskCompletionSource completion, Func<Task> operation)
+    {
         try
         {
-            // A newly attached CompositionVisual must reach the server before its first animation batch.
-            await surfaceVisual.Compositor.RequestCommitAsync().WaitAsync(cancellationToken);
-            if (isZoom)
-            {
-                var openingStart = ZoomBigMotionDefinition.OpeningStart;
-                var visible = ZoomBigMotionDefinition.Visible;
-                var origin = ResolveMotionOrigin().Point;
-                surfaceVisual.CenterPoint = new Vector3D(origin.X, origin.Y, 0);
-                StartScaleAnimation(
-                    surfaceVisual,
-                    openingStart.Scale,
-                    visible.Scale,
-                    motion.Easing,
-                    motion.Duration);
-            }
-
-            StartOpacityAnimation(
-                surfaceVisual,
-                isZoom ? ZoomBigMotionDefinition.OpeningStart.Opacity : 0.0,
-                ZoomBigMotionDefinition.Visible.Opacity,
-                motion.Easing,
-                motion.Duration);
-            await WaitForCompositionMotionAsync(
-                surfaceVisual.Compositor,
-                motion.Duration + CompositionMotionCompletionSlack,
-                cancellationToken);
+            await operation();
+            completion.TrySetResult();
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException exception)
         {
-            CompleteCompositorOpeningMotion(surfaceVisual, isZoom);
-            throw;
+            completion.TrySetCanceled(exception.CancellationToken);
         }
-
-        CompleteCompositorOpeningMotion(surfaceVisual, isZoom);
-        return true;
-    }
-
-    private async Task<bool> TryRunCompositorClosingMotionAsync()
-    {
-        var motion = CreateSurfaceMotion(isOpening: false);
-        var surfaceVisual = ElementComposition.GetElementVisual(_surfaceMotionActor!);
-        if (surfaceVisual is null)
+        catch (Exception exception)
         {
-            return false;
-        }
-
-        CompositionVisual? contentVisual = null;
-        if (_surface.SurfaceContentLayer is { } surfaceContentLayer)
-        {
-            contentVisual = ElementComposition.GetElementVisual(surfaceContentLayer);
-            if (contentVisual is null)
-            {
-                return false;
-            }
-        }
-
-        var isZoom = motion is DialogZoomOutMotion;
-        if (isZoom)
-        {
-            var visible = ZoomBigMotionDefinition.Visible;
-            var closingEnd = ZoomBigMotionDefinition.ClosingEnd;
-            var origin = ResolveMotionOrigin().Point;
-            surfaceVisual.CenterPoint = new Vector3D(origin.X, origin.Y, 0);
-            StartScaleAnimation(
-                surfaceVisual,
-                visible.Scale,
-                closingEnd.Scale,
-                motion.Easing,
-                motion.Duration);
-        }
-
-        var endOpacity = isZoom ? ZoomBigMotionDefinition.ClosingEnd.Opacity : 0.0;
-        StartOpacityAnimation(
-            surfaceVisual,
-            ZoomBigMotionDefinition.Visible.Opacity,
-            endOpacity,
-            motion.Easing,
-            motion.Duration);
-        if (contentVisual is not null)
-        {
-            StartOpacityAnimation(contentVisual, 1.0, 0.0, new LinearEasing(), MotionDuration);
-        }
-
-        await WaitForCompositionMotionAsync(
-            surfaceVisual.Compositor,
-            motion.Duration + CompositionMotionCompletionSlack,
-            CancellationToken.None);
-        CompleteCompositorClosingMotion(
-            surfaceVisual,
-            contentVisual,
-            isZoom,
-            endOpacity);
-        return true;
-    }
-
-    private void CompleteCompositorOpeningMotion(CompositionVisual surfaceVisual,
-                                                 bool includesScale)
-    {
-        var visible = ZoomBigMotionDefinition.Visible;
-        surfaceVisual.StopAnimation("Opacity");
-        surfaceVisual.Opacity = (float)visible.Opacity;
-        if (includesScale)
-        {
-            surfaceVisual.StopAnimation("Scale");
-            surfaceVisual.Scale       = new Vector3D(visible.Scale, visible.Scale, 1);
-            surfaceVisual.CenterPoint = default;
-        }
-
-        _surfaceMotionActor!.Opacity = visible.Opacity;
-    }
-
-    private static void CompleteCompositorClosingMotion(CompositionVisual surfaceVisual,
-                                                        CompositionVisual? contentVisual,
-                                                        bool includesScale,
-                                                        double endOpacity)
-    {
-        surfaceVisual.StopAnimation("Opacity");
-        surfaceVisual.Opacity = (float)endOpacity;
-        if (includesScale)
-        {
-            var closingEnd = ZoomBigMotionDefinition.ClosingEnd;
-            surfaceVisual.StopAnimation("Scale");
-            surfaceVisual.Scale = new Vector3D(closingEnd.Scale, closingEnd.Scale, 1);
-        }
-
-        contentVisual?.StopAnimation("Opacity");
-        if (contentVisual is not null)
-        {
-            contentVisual.Opacity = 1;
+            completion.TrySetException(exception);
         }
     }
 
-    private static void StartOpacityAnimation(CompositionVisual visual,
-                                              double from,
-                                              double to,
-                                              Easing easing,
-                                              TimeSpan duration)
+    private void PrepareEntry()
     {
-        var animation = visual.Compositor.CreateScalarKeyFrameAnimation();
-        animation.Duration = duration;
-        animation.InsertKeyFrame(0, (float)from, easing);
-        animation.InsertKeyFrame(1, (float)to, easing);
-        visual.StartAnimation("Opacity", animation);
+        ReleaseEntryPreparation();
+        var preparation = new CompositeDisposable();
+        _entryPreparation = preparation;
+        if (_surfaceMotionRoot is { } target)
+        {
+            preparation.Add(target.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
+        }
+        if (!_closeRequested && _dialogMask is { } mask)
+        {
+            preparation.Add(mask.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
+        }
     }
 
-    private static void StartScaleAnimation(CompositionVisual visual,
-                                            double from,
-                                            double to,
-                                            Easing easing,
-                                            TimeSpan duration)
+    private void ReleaseEntryPreparation()
     {
-        var animation = visual.Compositor.CreateVector3DKeyFrameAnimation();
-        animation.Duration = duration;
-        animation.InsertKeyFrame(0, new Vector3D(from, from, 1), easing);
-        animation.InsertKeyFrame(1, new Vector3D(to, to, 1), easing);
-        // StartAnimation does not update the client base value. Keep it distinct from the
-        // endpoint so completing or cancelling the motion serializes the final scale.
-        visual.Scale = new Vector3D(from, from, 1);
-        visual.StartAnimation("Scale", animation);
+        var preparation = _entryPreparation;
+        _entryPreparation = null;
+        preparation?.Dispose();
     }
 
-    private static async Task WaitForCompositionMotionAsync(Compositor compositor,
-                                                            TimeSpan duration,
-                                                            CancellationToken cancellationToken)
+    private void ResetMotionTargets()
     {
-        // Submission may wait behind layout/render work. Count the motion from the batch
-        // reaching the render thread, otherwise a delayed batch can be stopped mid-motion.
-        await compositor.RequestCommitAsync().WaitAsync(cancellationToken);
-        var completionSource = new TaskCompletionSource();
-        using var timer = DispatcherTimer.RunOnce(
-            completionSource.SetResult,
-            duration,
-            DispatcherPriority.Normal);
-        await completionSource.Task.WaitAsync(cancellationToken);
+        if (_surfaceMotionRoot is { } target)
+        {
+            MotionPlayback.CancelAndReset(target);
+        }
+        if (_dialogMask is { } mask)
+        {
+            MotionPlayback.CancelAndReset(mask);
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
+        {
+            ReleaseEntryPreparation();
+            ResetMotionTargets();
+        }
     }
 
     public ValueTask DisposeAsync()
     {
-        _disposeTask ??= DisposeCoreAsync();
+        if (_disposeTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _disposeTask = completion.Task;
+            _ = CompleteOperationAsync(completion, DisposeCoreAsync);
+        }
         return new ValueTask(_disposeTask);
     }
 
@@ -591,8 +523,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         Content = null;
         _ownerWindow = null;
         _ownerIsWayland = false;
-        _maskMotionActor = null;
-        _surfaceMotionActor = null;
+        _surfaceMotionRoot = null;
         try
         {
             ((ISetInheritanceParent)this).SetParent(null);
@@ -794,7 +725,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     private void ApplyMaskBounds(Size layerSize)
     {
-        if (_maskMotionActor is null)
+        if (_dialogMask is null)
         {
             return;
         }
@@ -805,11 +736,11 @@ internal sealed class OverlayDialogPresenter : ContentControl,
                 TopLevel.GetTopLevel(this)?.RenderScaling ?? 1)
             : layerSize;
 
-        _maskMotionActor.HorizontalAlignment = HorizontalAlignment.Left;
-        _maskMotionActor.VerticalAlignment = VerticalAlignment.Top;
-        _maskMotionActor.Width = maskSize.Width;
-        _maskMotionActor.Height = maskSize.Height;
-        _maskMotionActor.Margin = default;
+        _dialogMask.HorizontalAlignment = HorizontalAlignment.Left;
+        _dialogMask.VerticalAlignment = VerticalAlignment.Top;
+        _dialogMask.Width = maskSize.Width;
+        _dialogMask.Height = maskSize.Height;
+        _dialogMask.Margin = default;
     }
 
     private static Point ConstrainSurfacePosition(Rect ownerBounds, Size surfaceSize, Point position)
@@ -969,29 +900,32 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         return double.IsFinite(value) ? Math.Clamp(value, min, max) : double.NaN;
     }
 
-    private AbstractMotion CreateSurfaceMotion(bool isOpening)
+    private Motion CreateSurfaceMotion(bool isOpening)
     {
-        if (!_dialog.UsesPlacementTargetAsMotionAnchor)
-        {
-            return isOpening
-                ? new FadeInMotion(MotionDuration, new CircularEaseOut())
-                : new FadeOutMotion(MotionDuration, new CubicEaseIn());
-        }
-
-        var origin = ResolveMotionOrigin();
+        var origin = _motionOrigin ?? ResolveMotionOrigin();
         return isOpening
-            ? new DialogZoomInMotion(origin, MotionDuration)
+            ? new DialogZoomInMotion(origin, OpeningMotionDuration)
             : new DialogZoomOutMotion(origin, MotionDuration);
     }
 
     private RelativePoint ResolveMotionOrigin()
     {
-        var targetCenter = new Point(
-            _placementTarget.Bounds.Width / 2,
-            _placementTarget.Bounds.Height / 2);
-        var presenterPoint = _placementTarget.TranslatePoint(targetCenter, this) ??
-                             new Point(Bounds.Width / 2, Bounds.Height / 2);
-        return new RelativePoint(presenterPoint, RelativeUnit.Absolute);
+        if (_surfaceMotionRoot is not { } target || !target.IsArrangeValid)
+        {
+            return new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+        }
+        if (_dialog.UsesPlacementTargetAsMotionAnchor)
+        {
+            var anchorCenter = new Point(_placementTarget.Bounds.Width / 2, _placementTarget.Bounds.Height / 2);
+            if (_placementTarget.TranslatePoint(anchorCenter, target) is { } anchor)
+            {
+                return new RelativePoint(anchor, RelativeUnit.Absolute);
+            }
+        }
+        var center = new Point(_surface.Bounds.Width / 2, _surface.Bounds.Height / 2);
+        return _surface.TranslatePoint(center, target) is { } surfaceCenter
+            ? new RelativePoint(surfaceCenter, RelativeUnit.Absolute)
+            : new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
     }
 
     private void HandleSurfaceCloseRequested(object? sender, DialogSurfaceCloseRequestedEventArgs e)

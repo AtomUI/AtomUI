@@ -43,14 +43,14 @@
                                              FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                              IsSelectable="{TemplateBinding IsSelectable}"
                                              Focusable="{TemplateBinding Focusable}" />
-                    <atom:LayoutAwareMotionActor
-                        Name="PART_ItemsPresenterMotionActor"
+                    <atom:ContentViewport
+                        Name="PART_ChildrenViewport"
                         ClipToBounds="True"
                         IsVisible="False">
                         <ItemsPresenter Name="ItemsPresenter"
                                         Focusable="False"
                                         ItemsPanel="{TemplateBinding ItemsPanel}" />
-                    </atom:LayoutAwareMotionActor>
+                    </atom:ContentViewport>
                 </StackPanel>
             </ControlTemplate>
         </Setter>

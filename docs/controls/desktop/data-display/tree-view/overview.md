@@ -114,7 +114,7 @@ TreeViewItem 节点 API：
 | `ItemsPresenter` | `TreeView` | 承载顶层节点容器。 |
 | `EmptyIndicator` | `TreeView` | 空状态内容展示。 |
 | `Header` | `TreeViewItem` | 节点 header 控件。 |
-| `PART_ItemsPresenterMotionActor` | `TreeViewItem` | 子节点展开收起动效容器。 |
+| `PART_ChildrenViewport` | `TreeViewItem` | 子节点展开收起动效容器。 |
 | `PART_NodeSwitcherButton` | `TreeViewItemHeader` | 展开、收起、加载和叶子图标入口。 |
 | `PART_IconPresenter` | `TreeViewItemHeader` | 节点图标展示。 |
 | `PART_HeaderContentFrame` | `TreeViewItemHeader` | header 内容背景、hover、selected、pressed 和 pointer 事件边界。 |

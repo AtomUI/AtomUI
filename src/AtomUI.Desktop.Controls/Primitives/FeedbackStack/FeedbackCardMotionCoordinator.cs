@@ -1,22 +1,21 @@
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Logging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>
-/// Owns the current template actor's finite entry/exit execution. It prevents stale template
-/// continuations from completing a newer motion and releases every cancellation source.
-/// </summary>
-internal sealed class FeedbackCardMotionCoordinator : IDisposable
+/// <summary>Owns card entry and close intent; Core Motion owns playback and replacement.</summary>
+internal sealed class FeedbackCardMotionCoordinator(Action completeClose) : IDisposable
 {
-    private Action? _completeClose;
-    private BaseMotionActor? _actor;
-    private CancellationTokenSource? _entryCancellation;
-    private CancellationTokenSource? _exitCancellation;
-    private (BaseMotionActor Actor, Task Completion)? _runningMotion;
-    private MotionExecutionState _entryState;
-    private MotionExecutionState _exitState;
+    private Action? _completeClose = completeClose;
+    private Control? _target;
+    private IDisposable? _preparation;
+    private long _version;
+    private Phase _phase;
     private NotificationPosition _position;
     private TimeSpan _duration;
     private bool _isMotionEnabled;
@@ -26,143 +25,127 @@ internal sealed class FeedbackCardMotionCoordinator : IDisposable
     private bool _closeCompleted;
     private bool _isDisposed;
 
-    internal FeedbackCardMotionCoordinator(Action completeClose)
-    {
-        _completeClose = completeClose;
-    }
-
-    internal void ApplyActor(
-        BaseMotionActor? actor,
-        bool isClosing,
-        bool isClosed,
-        bool isMotionEnabled,
-        NotificationPosition position,
-        TimeSpan duration)
+    internal void ApplyTarget(Control? target, bool isClosing, bool isClosed, bool isMotionEnabled,
+        NotificationPosition position, TimeSpan duration)
     {
         if (_isDisposed)
         {
             return;
         }
-
         UpdateState(isClosing, isClosed, isMotionEnabled, position, duration);
-        CancelEntry();
-        CancelExit();
-        _actor = actor;
-
+        var version = ++_version;
+        var previous = _target;
+        _target = target;
+        _phase = Phase.Idle;
+        ReleasePreparation();
+        if (previous is not null && !ReferenceEquals(previous, target))
+        {
+            MotionPlayback.CancelAndReset(previous);
+        }
+        if (version != _version)
+        {
+            return;
+        }
         if (_isClosed)
         {
-            ConvergeHidden();
+            Converge(false);
         }
         else if (_isClosing)
         {
-            ScheduleExit(DispatcherPriority.Loaded);
+            Schedule(false);
         }
-        else if (_actor is null)
+        else if (target is null)
         {
-            // Template/property initialization can run before an actor exists. It must not
-            // consume the one entry motion that belongs to the first realized actor.
             return;
         }
         else if (!_isMotionEnabled || _entryCompleted)
         {
             _entryCompleted = true;
-            ConvergeVisible();
+            Converge(true);
         }
         else
         {
-            FeedbackCardMotion.PrepareEntry(_actor, _position);
-            ScheduleEntry();
+            var preparation = target.SetValue(Visual.OpacityProperty, 0, BindingPriority.Animation);
+            if (version != _version || _isDisposed || !ReferenceEquals(target, _target))
+            {
+                preparation?.Dispose();
+                return;
+            }
+            _preparation = preparation;
+            Schedule(true);
         }
     }
 
-    internal void StartClose(
-        bool isClosed,
-        bool isMotionEnabled,
-        NotificationPosition position,
-        TimeSpan duration)
+    internal void StartClose(bool isClosed, bool isMotionEnabled, NotificationPosition position, TimeSpan duration)
     {
         if (_isDisposed || isClosed || _closeCompleted)
         {
             return;
         }
-
         UpdateState(true, isClosed, isMotionEnabled, position, duration);
-        CancelEntry();
         if (!_isMotionEnabled)
         {
-            CancelExit();
+            ++_version;
             CompleteExit();
-            return;
         }
-
-        ScheduleExit();
+        else if (_phase != Phase.Exit)
+        {
+            Schedule(false);
+        }
     }
 
-    internal void UpdateConfiguration(
-        bool isClosing,
-        bool isClosed,
-        bool isMotionEnabled,
-        NotificationPosition position,
-        TimeSpan duration)
+    internal void UpdateConfiguration(bool isClosing, bool isClosed, bool isMotionEnabled,
+        NotificationPosition position, TimeSpan duration)
     {
         if (_isDisposed)
         {
             return;
         }
-
         UpdateState(isClosing, isClosed, isMotionEnabled, position, duration);
         if (_isClosed)
         {
-            CancelEntry();
-            CancelExit();
-            ConvergeHidden();
-            return;
+            ++_version;
+            _phase = Phase.Idle;
+            Converge(false);
         }
-
-        if (!_isMotionEnabled)
+        else if (!_isMotionEnabled)
         {
-            CancelEntry();
+            ++_version;
+            _phase = Phase.Idle;
             if (_isClosing)
             {
-                CancelExit();
                 CompleteExit();
             }
-            else
+            else if (_target is not null)
             {
-                if (_actor is not null)
-                {
-                    _entryCompleted = true;
-                    ConvergeVisible();
-                }
+                _entryCompleted = true;
+                Converge(true);
             }
-            return;
         }
     }
 
-    internal void DetachActor(bool isClosing, bool isClosed)
+    internal void DetachTarget(bool isClosing, bool isClosed)
     {
         if (_isDisposed)
         {
             return;
         }
-
+        var version = ++_version;
+        _phase = Phase.Idle;
         _isClosing = isClosing;
         _isClosed = isClosed;
-        CancelEntry();
-        CancelExit();
-        if (_isClosed)
-        {
-            ConvergeHidden();
-        }
-        else if (_isClosing)
+        if (_isClosing && !_isClosed)
         {
             CompleteExit();
         }
         else
         {
-            ConvergeVisible();
+            Converge(!_isClosed);
         }
-        _actor = null;
+        if (version == _version)
+        {
+            _target = null;
+        }
     }
 
     public void Dispose()
@@ -171,28 +154,16 @@ internal sealed class FeedbackCardMotionCoordinator : IDisposable
         {
             return;
         }
-
+        ++_version;
         _isDisposed = true;
-        CancelEntry();
-        CancelExit();
-        if (_isClosed || _isClosing)
-        {
-            ConvergeHidden();
-        }
-        else
-        {
-            ConvergeVisible();
-        }
-        _actor = null;
+        _phase = Phase.Idle;
+        Converge(!_isClosing && !_isClosed);
+        _target = null;
         _completeClose = null;
     }
 
-    private void UpdateState(
-        bool isClosing,
-        bool isClosed,
-        bool isMotionEnabled,
-        NotificationPosition position,
-        TimeSpan duration)
+    private void UpdateState(bool isClosing, bool isClosed, bool isMotionEnabled,
+        NotificationPosition position, TimeSpan duration)
     {
         _isClosing = isClosing;
         _isClosed = isClosed;
@@ -201,187 +172,82 @@ internal sealed class FeedbackCardMotionCoordinator : IDisposable
         _duration = duration;
     }
 
-    private void ScheduleEntry()
+    private void Schedule(bool entering)
     {
-        if (_actor is null || _isClosing || _isClosed || _entryCompleted ||
-            _entryState != MotionExecutionState.Idle)
+        if (_isDisposed)
         {
             return;
         }
-
-        _entryState = MotionExecutionState.Pending;
-        Dispatcher.UIThread.InvokeAsync(RunEntryAsync, DispatcherPriority.Loaded);
+        var version = ++_version;
+        var target = _target;
+        _phase = entering ? Phase.Entry : Phase.Exit;
+        Dispatcher.UIThread.Post(() => _ = RunAsync(version, target, entering), DispatcherPriority.Loaded);
     }
 
-    private async Task RunEntryAsync()
+    private async Task RunAsync(long version, Control? target, bool entering)
     {
-        if (_isDisposed || _entryState != MotionExecutionState.Pending || _isClosing || _isClosed)
+        if (!IsCurrent(version, target, entering))
         {
             return;
         }
-
-        var actor = _actor;
-        if (actor is null || !_isMotionEnabled)
+        if (target is null || !_isMotionEnabled)
         {
-            _entryState = MotionExecutionState.Idle;
-            _entryCompleted = true;
-            ConvergeVisible();
+            Complete(entering);
             return;
         }
-
-        var topLevel = TopLevel.GetTopLevel(actor);
-        if (topLevel is null)
+        if (entering && !target.IsAttachedToVisualTree())
         {
-            // A template can be applied before its card enters a visual tree. Keep the
-            // prepared state intact; the card re-applies the actor when it is attached.
-            _entryState = MotionExecutionState.Idle;
+            _phase = Phase.Idle;
             return;
         }
-
-        _entryState = MotionExecutionState.Playing;
-        var cancellation = new CancellationTokenSource();
-        _entryCancellation = cancellation;
+        var preparation = _preparation;
+        _preparation = null;
         try
         {
-            // Match Ant Design's prepare -> next frame -> active motion lifecycle.
-            // A dispatcher priority is not a render boundary, so starting the transition
-            // earlier allows the compositor to skip the transparent translated frame.
-            await WaitForAnimationFrameAsync(topLevel, cancellation.Token);
-            cancellation.Token.ThrowIfCancellationRequested();
-            if (!ReferenceEquals(_actor, actor) || _entryState != MotionExecutionState.Playing ||
-                _isClosing || _isClosed || !_isMotionEnabled)
+            target.UpdateLayout();
+            Task<MotionResult> playback;
+            try
+            {
+                playback = new FeedbackCardMotion(entering, _position, _duration).PlayAsync(target);
+            }
+            finally
+            {
+                preparation?.Dispose();
+            }
+            var result = await playback;
+            if (!IsCurrent(version, target, entering) ||
+                (result.Outcome != MotionOutcome.NotReady && (!result.IsCompleted || !Motion.IsCurrent(target, result))))
             {
                 return;
             }
-
-            await RunMotionAsync(actor, true, cancellation.Token);
-            if (!cancellation.IsCancellationRequested && ReferenceEquals(_actor, actor) &&
-                _entryState == MotionExecutionState.Playing && !_isClosing && !_isClosed)
-            {
-                _entryCompleted = true;
-                ConvergeVisible();
-            }
+            Complete(entering);
         }
-        catch (OperationCanceledException)
+        catch (Exception exception)
         {
-        }
-        finally
-        {
-            cancellation.Dispose();
-            if (ReferenceEquals(_entryCancellation, cancellation))
+            Logger.TryGet(LogEventLevel.Error, AtomUILogArea.Control)?.Log(
+                target, "Feedback card motion failed: {Exception}", exception);
+            if (IsCurrent(version, target, entering))
             {
-                _entryCancellation = null;
-                _entryState = MotionExecutionState.Idle;
+                Complete(entering);
             }
         }
     }
 
-    private static async Task WaitForAnimationFrameAsync(
-        TopLevel topLevel,
-        CancellationToken cancellationToken)
-    {
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var cancellationRegistration = cancellationToken.Register(
-            static state =>
-            {
-                var (source, token) = ((TaskCompletionSource, CancellationToken))state!;
-                source.TrySetCanceled(token);
-            },
-            (completion, cancellationToken));
-        topLevel.RequestAnimationFrame(_ => completion.TrySetResult());
-        await completion.Task;
-    }
+    private bool IsCurrent(long version, Control? target, bool entering) =>
+        !_isDisposed && version == _version && ReferenceEquals(target, _target) && !_isClosed &&
+        _isClosing != entering && _phase == (entering ? Phase.Entry : Phase.Exit);
 
-    private void ScheduleExit(DispatcherPriority? priority = null)
+    private void Complete(bool entering)
     {
-        if (_isDisposed || _isClosed || _closeCompleted || _exitState != MotionExecutionState.Idle)
+        _phase = Phase.Idle;
+        if (entering)
         {
-            return;
-        }
-
-        _exitState = MotionExecutionState.Pending;
-        if (priority is { } dispatcherPriority)
-        {
-            Dispatcher.UIThread.InvokeAsync(RunExitAsync, dispatcherPriority);
+            _entryCompleted = true;
+            Converge(true);
         }
         else
         {
-            Dispatcher.UIThread.InvokeAsync(RunExitAsync);
-        }
-    }
-
-    private async Task RunExitAsync()
-    {
-        if (_isDisposed || _exitState != MotionExecutionState.Pending || _isClosed || _closeCompleted)
-        {
-            return;
-        }
-
-        var actor = _actor;
-        if (actor is null || !_isMotionEnabled)
-        {
             CompleteExit();
-            return;
-        }
-
-        _exitState = MotionExecutionState.Playing;
-        var cancellation = new CancellationTokenSource();
-        _exitCancellation = cancellation;
-        try
-        {
-            await RunMotionAsync(actor, false, cancellation.Token);
-            if (!cancellation.IsCancellationRequested && ReferenceEquals(_actor, actor) &&
-                _exitState == MotionExecutionState.Playing)
-            {
-                CompleteExit();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        finally
-        {
-            cancellation.Dispose();
-            if (ReferenceEquals(_exitCancellation, cancellation))
-            {
-                _exitCancellation = null;
-                if (_exitState == MotionExecutionState.Playing)
-                {
-                    _exitState = MotionExecutionState.Idle;
-                }
-            }
-        }
-    }
-
-    private async Task RunMotionAsync(BaseMotionActor actor, bool isEntering, CancellationToken cancellationToken)
-    {
-        // Cancellation requests do not finish AbstractMotion's asynchronous cleanup.
-        // Its old finally must release the actor before another motion writes to it.
-        if (_runningMotion is { } previousMotion && ReferenceEquals(previousMotion.Actor, actor))
-        {
-            try
-            {
-                await previousMotion.Completion.WaitAsync(cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var motion = new FeedbackCardMotion(isEntering, _position, _duration);
-        var motionTask = motion.RunAsync(actor, cancellationToken: cancellationToken);
-        _runningMotion = (actor, motionTask);
-        try
-        {
-            await motionTask;
-        }
-        finally
-        {
-            if (_runningMotion is { } currentMotion && ReferenceEquals(currentMotion.Completion, motionTask))
-            {
-                _runningMotion = null;
-            }
         }
     }
 
@@ -391,59 +257,45 @@ internal sealed class FeedbackCardMotionCoordinator : IDisposable
         {
             return;
         }
-
         _closeCompleted = true;
-        _exitState = MotionExecutionState.Completing;
-        ConvergeHidden();
-        var completeClose = _completeClose;
+        _phase = Phase.Idle;
+        var complete = _completeClose;
         _completeClose = null;
-        try
+        var version = _version;
+        Converge(false);
+        if (!_isDisposed && version == _version)
         {
-            completeClose?.Invoke();
-        }
-        finally
-        {
-            _exitState = MotionExecutionState.Idle;
+            complete?.Invoke();
         }
     }
 
-    private void CancelEntry()
+    private void ReleasePreparation()
     {
-        var cancellation = _entryCancellation;
-        _entryCancellation = null;
-        cancellation?.Cancel();
-        _entryState = MotionExecutionState.Idle;
+        var preparation = _preparation;
+        _preparation = null;
+        preparation?.Dispose();
     }
 
-    private void CancelExit()
+    private void Converge(bool visible)
     {
-        var cancellation = _exitCancellation;
-        _exitCancellation = null;
-        cancellation?.Cancel();
-        _exitState = MotionExecutionState.Idle;
-    }
-
-    private void ConvergeVisible()
-    {
-        if (_actor is null)
+        var version = _version;
+        var target = _target;
+        ReleasePreparation();
+        if (target is null || version != _version)
         {
             return;
         }
-
-        _actor.Transitions = null;
-        _actor.MotionTransform = null;
-        _actor.Opacity = 1;
+        MotionPlayback.CancelAndReset(target);
+        if (version == _version && ReferenceEquals(target, _target))
+        {
+            target.SetCurrentValue(Visual.IsVisibleProperty, visible);
+        }
     }
 
-    private void ConvergeHidden()
+    private enum Phase
     {
-        if (_actor is null)
-        {
-            return;
-        }
-
-        _actor.Transitions = null;
-        _actor.MotionTransform = null;
-        _actor.Opacity = 0;
+        Idle,
+        Entry,
+        Exit
     }
 }

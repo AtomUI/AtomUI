@@ -9,7 +9,7 @@
   - 初始状态不排队波纹，待执行反馈在 detach / 模板替换时取消。
   - 默认文本按实际字形轮廓垂直居中，处理字体回退和 shaping offset；保留显式及隐式自定义模板的布局。
 - Docs
-  - 更新 [共享状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)
+  - 更新 [共享状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)
     与实际实现、原生验证和测试处置说明。
 
 ## 2026-10-03

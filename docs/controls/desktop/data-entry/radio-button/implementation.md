@@ -218,6 +218,6 @@ RadioButton 的交互事件应从输入源收敛到控件级语义事件：
 ## 状态动效初始化
 
 内部 `RadioIndicator` 构造时持有共享初始化会话，挂载后计算的圆点尺寸直接提交，加载后才恢复过渡。初始 checked 不创建波纹任务，待执行波纹在分离和模板变更时取消。
-共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
 
 `AbstractOptionButton` 同样持有会话，覆盖 `OptionButtonGroup` 在容器挂载后赋予的初始 checked 外观；父组的选择模型、按压反馈和后续状态切换保持原有语义。

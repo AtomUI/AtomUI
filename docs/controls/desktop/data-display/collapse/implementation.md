@@ -15,7 +15,8 @@
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseItem.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseToken.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/ICollapseItemData.cs`
-- `src/AtomUI.Core/MotionScene/ContentExpansionAnimator.cs`：三个控件共用的内容测量、进度插值和执行资源 owner。
+- `src/AtomUI.Core/Animations/Motion`：动效定义、请求身份、框架时钟、属性覆盖与可见性生命周期。
+- `src/AtomUI.Controls/Primitives/ContentViewport.cs`：自然内容测量、实际视口、占位与方向锚定。
 - `src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseTheme.axaml`
 
@@ -76,7 +77,7 @@ Collapse
                         │   ├── IconButton#PART_ExpandButton          ← .semantic-icon
                         │   ├── ContentPresenter#PART_HeaderPresenter ← .semantic-title
                         │   └── ContentPresenter#PART_AddOnContentPresenter
-                        └── LayoutAwareMotionActor#PART_ContentMotionActor
+                        └── ContentViewport#PART_ContentViewport
                             └── PixelAlignedBorder#PART_ContentFrame  ← .semantic-body
                                 └── ContentPresenter#PART_ContentPresenter
 ```
@@ -119,7 +120,7 @@ owner）；建议自定义面板根节点声明 `Classes.semantic-scope-panel="T
 稳定 template part 接入点：
 
 - `PART_AddOnContentPresenter`：展示用户内容、文本、图标或模板化数据。
-- `PART_ContentMotionActor`：稳定模板协作入口，重命名前必须同步主题和实现。
+- `PART_ContentViewport`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ContentPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_ExpandButton`：承载用户触发入口、导航或关闭动作。
 - `PART_Frame`：承载根视觉、边框、背景或尺寸基线。
@@ -148,16 +149,16 @@ Header 模式下，header 区域和展开图标触发 selection；Icon 模式下
 
 ### 7.2 共用内容展开执行链
 
-`CollapseItem` 为当前 `PART_ContentMotionActor` 持有 Core 内部 `ContentExpansionAnimator`，直接把
-`IsSelected`、`Direction.Bottom` 和有效 `MotionDuration` 提交给动画执行器。动画执行器使用同一个 Avalonia 原生
-`Animation` 驱动存储在 actor 上的私有展开进度附加属性与 `Opacity`，收放共用 `Spline(0.645, 0.045, 0.355, 1)`。
-进度属性及其布局失效通知由动画执行器拥有；`BaseMotionActor` 仅通过内部 `IMotionActorLayout` 委托测量和排列。
-视口高度参与父布局并裁剪完整尺寸的内容，不缩放文字或图标。
+主题将 `CollapseItem.IsSelected` 绑定到 `PART_ContentViewport` 的 `atom:Motion.IsVisible`，
+声明 `ExpandMotion` 和 `CollapseMotion`，并绑定启用状态及有效时长。Core Motion 通过每次执行独立的非视觉进度源
+接入 Avalonia 框架时钟，收放共用 `Spline(0.645, 0.045, 0.355, 1)`。
+`ContentViewport` 实现公开的 `IMotionLayout` 能力，以布局租约控制占位和实际视口，
+完整内容按自然尺寸排版，不缩放文字或图标；`CollapseItem` 不持有执行器或完成回调。
 源码所有权与算法见 [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)。
 
-动画执行器在取消旧动画前采样当前 Bounds 高度和有效透明度，使旧执行身份失效后建立新起点。内部进度的同步起点覆盖
-首个 tick 前的绘制窗口，`FillMode.Forward` 保持最终 tick 到异步 continuation 的终点。只有当前执行可以提交稳定
-显示状态及 actor 完成通知；item 的 selection 与图标状态继续由 `IsSelected` 决定。
+新请求在旧执行清理前捕获当前 Bounds 和有效透明度，连续替代旧动画。同步起点覆盖首个 tick 前的绘制窗口，
+`FillMode.Both` 保持首尾帧；只有当前请求可以提交稳定显示状态。收起后隐藏视口并释放属性覆盖，恢复底层透明度来源；
+item 的 selection 与图标状态继续由 `IsSelected` 决定。
 
 ### 7.3 接入与生命周期边界
 

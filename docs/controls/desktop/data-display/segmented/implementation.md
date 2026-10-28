@@ -104,9 +104,9 @@ IFormItemAware.ClearFormValue()   → SelectedItem = null
 ## 5. 生命周期与模板接入
 
 状态动效的基线 owner 为 `AbstractSegmented`，输入是当前选中容器到 owner 的坐标转换和最终 Bounds。共享首帧
-契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)；
+契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)；
 会话接入及已覆盖初始化顺序见
-[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/state-motion-initialization-verification.md)。
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 静态初始化：
 
@@ -124,7 +124,7 @@ IFormItemAware.ClearFormValue()   → SelectedItem = null
 
 初始化和加载：
 
-- 根控件和 `AbstractSegmentedItem` 各自在构造时创建 `StateMotionSession`，在 detach 和模板变更时复位；item 的初始选中外观也在加载前直接建立。
+- 根控件和 `AbstractSegmentedItem` 各自在构造时创建 `TransitionInitializationSession`，在 detach 和模板变更时复位；item 的初始选中外观也在加载前直接建立。
 - `OnLoaded()` 与最终排列核对容器几何，第一次有效滑块直接提交位置和尺寸，再启用主题过渡。
 
 模板接入：

@@ -1,9 +1,10 @@
-﻿using System.Collections.Specialized;
+using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using AtomUI.Controls.Primitives;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation.Easings;
@@ -403,9 +404,10 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     
     #endregion
     
-    private bool _animating;
-    private bool _isRealExpanded;
-    private BaseMotionActor? _itemsPresenterMotionActor;
+    private static readonly Motion DefaultOpenMotion = new ExpandMotion(Direction.Top, easing: new CubicEaseOut());
+    private static readonly Motion DefaultCloseMotion = new CollapseMotion(Direction.Top, easing: new CubicEaseIn());
+    private ContentViewport? _childrenViewport;
+    private long _childrenRequestVersion;
     private readonly BorderRenderHelper _borderRenderHelper;
     private TreeViewItemHeader? _header;
     internal bool AsyncLoaded;
@@ -519,6 +521,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        ++_childrenRequestVersion;
         base.OnDetachedFromVisualTree(e);
         OwnerTreeView = null;
     }
@@ -527,6 +530,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         base.OnAttachedToVisualTree(e);
         OwnerTreeView = this.FindAncestorOfType<TreeView>();
+        HandleExpandedChanged(true);
     }
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -576,7 +580,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         {
             HandleToggleTypeChanged(change);
         }
-        else if (change.Property == IsExpandedProperty)
+        else if (change.Property == IsExpandedProperty || change.Property == IsMotionEnabledProperty)
         {
             HandleExpandedChanged();
         }
@@ -620,13 +624,39 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     private void HandleExpandedChanged(bool forceDisabledMotion = false)
     {
-        if (IsExpanded)
+        var version = ++_childrenRequestVersion;
+        if (_childrenViewport is not { } viewport || OwnerTreeView is not { } owner)
         {
-            ExpandChildren(forceDisabledMotion);
+            return;
         }
-        else
+
+        // OwnerTreeView is assigned during runtime container preparation. The one-request
+        // ExpandAll/initialization flag has no equivalent ControlTheme binding source.
+        // Configure the request once; Motion owns the clock and the target lifecycle.
+        Motion.SetEnter(viewport, owner.OpenMotion ?? DefaultOpenMotion);
+        Motion.SetLeave(viewport, owner.CloseMotion ?? DefaultCloseMotion);
+        Motion.SetDurationOverride(viewport, owner.MotionDuration);
+        Motion.SetIsEnabled(viewport, IsMotionEnabled && !owner.IsExpandAllProcess && !forceDisabledMotion);
+        Motion.SetIsVisible(viewport, IsExpanded);
+        if (forceDisabledMotion)
         {
-            CollapseChildren(forceDisabledMotion);
+            Motion.SnapVisibility(viewport);
+        }
+        _ = CompleteExpansionAsync(version, viewport, owner, IsExpanded);
+    }
+
+    private async Task CompleteExpansionAsync(long version, ContentViewport viewport, TreeView owner, bool expanded)
+    {
+        var result = await Motion.GetVisibilityTask(viewport);
+        if (version != _childrenRequestVersion || !ReferenceEquals(viewport, _childrenViewport) ||
+            !ReferenceEquals(owner, OwnerTreeView) || IsExpanded != expanded ||
+            !this.IsAttachedToVisualTree() || !result.IsCompleted)
+        {
+            return;
+        }
+        if (expanded && IsAutoExpandParent && Parent is TreeViewItem parentTreeItem)
+        {
+            parentTreeItem.SetCurrentValue(IsExpandedProperty, true);
         }
     }
 
@@ -652,98 +682,17 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnCheckedChanged(this);
     }
 
-    private void ExpandChildren(bool forceDisabledMotion = false)
-    {
-        if (_itemsPresenterMotionActor is null ||
-            _animating ||
-            OwnerTreeView is null ||
-            _isRealExpanded)
-        {
-            return;
-        }
-
-        if (!IsMotionEnabled || OwnerTreeView.IsExpandAllProcess || forceDisabledMotion)
-        {
-            ApplyChildrenStableState(_itemsPresenterMotionActor, true);
-            _isRealExpanded = true;
-            return;
-        }
-
-        _animating = true;
-        _header?.NotifyAnimating(true);
-
-        var motion = OwnerTreeView.OpenMotion ?? new ExpandMotion(Direction.Top, null, new CubicEaseOut());
-        motion.Duration = OwnerTreeView.MotionDuration;
-        Dispatcher.InvokeAsync(async () =>
-        {
-            await motion.RunAsync(_itemsPresenterMotionActor,
-                () => { _itemsPresenterMotionActor.IsVisible = true; });
-            _animating = false;
-            _header?.NotifyAnimating(false);
-            _isRealExpanded = true;
-            if (IsAutoExpandParent)
-            {
-                if (Parent is TreeViewItem parentTreeItem)
-                {
-                    parentTreeItem.SetCurrentValue(IsExpandedProperty, true);
-                }
-            }
-        });
-    }
-
-    private void CollapseChildren(bool forceDisabledMotion = false)
-    {
-        if (_itemsPresenterMotionActor is null ||
-            _animating ||
-            OwnerTreeView is null ||
-            !_isRealExpanded)
-        {
-            return;
-        }
-
-        if (!IsMotionEnabled || OwnerTreeView.IsExpandAllProcess || forceDisabledMotion)
-        {
-            ApplyChildrenStableState(_itemsPresenterMotionActor, false);
-            _isRealExpanded = false;
-            return;
-        }
-
-        _animating = true;
-        _header?.NotifyAnimating(true);
-
-        var motion = OwnerTreeView.CloseMotion ?? new CollapseMotion(Direction.Top, null, new CubicEaseIn());
-        motion.Duration = OwnerTreeView.MotionDuration;
-
-        Dispatcher.InvokeAsync(async () =>
-        {
-            await motion.RunAsync(_itemsPresenterMotionActor);
-            _itemsPresenterMotionActor.IsVisible = false;
-            _animating                           = false;
-            _header?.NotifyAnimating(false);
-            _isRealExpanded = false;
-        });
-    }
-
-    private static void ApplyChildrenStableState(BaseMotionActor motionActor, bool isExpanded)
-    {
-        motionActor.Transitions               = null;
-        motionActor.MotionTransform           = null;
-        motionActor.MotionTransformOperations = null;
-        motionActor.Opacity                   = isExpanded ? 1.0 : 0.0;
-        motionActor.IsVisible                 = isExpanded;
-    }
-
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ++_childrenRequestVersion;
         base.OnApplyTemplate(e);
         _header = e.NameScope.Find<TreeViewItemHeader>("Header");
-        _itemsPresenterMotionActor =
-            e.NameScope.Find<BaseMotionActor>("PART_ItemsPresenterMotionActor");
+        _childrenViewport = e.NameScope.Find<ContentViewport>("PART_ChildrenViewport");
 
         ConfigureIsLeaf();
         HandleExpandedChanged(true);
     }
-    
+
     internal bool IsEffectiveCheckable()
     {
         if (!IsEnabled || !IsIndicatorEnabled || ToggleType == ItemToggleType.None)
@@ -799,7 +748,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
         var switcherButtonRect = _header.SwitcherButtonRect(this);
         
-        if (!IsLeaf && !isLastChild && _itemsPresenterMotionActor?.IsVisible == true)
+        if (!IsLeaf && !isLastChild && _childrenViewport?.IsVisible == true)
         {
             var switcherMiddleBottom = new Point(switcherButtonRect.X + switcherButtonRect.Width / 2, switcherButtonRect.Bottom);
             var blockStartPoint = new Point(switcherMiddleBottom.X, switcherMiddleBottom.Y);

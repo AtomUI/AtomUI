@@ -2,6 +2,14 @@
 
 本文档记录 Badge 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-28
+
+- Motion
+  - Count/Dot 改用 `Motion` 子类，移除 Actor、过渡订阅和重复的显隐取消源。
+  - 私有 Border 承载动效，indicator 语义节点保留独立样式和变换；专用 Style route 不变。
+  - 同一目标和 layer 反向时保持挂载与实际矩阵，旧隐藏请求不能移除新显示状态。
+  - 保持计数隐藏期间文本、standalone Dot 静态显示、布局锚定和祖先可见性同步。
+
 ## 2026-09-27
 
 - Implementation

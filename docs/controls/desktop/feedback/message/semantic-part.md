@@ -29,11 +29,10 @@ WindowMessageManager (root，对应上游 list)
        └─ FeedbackStackPresenter#PART_Items (listContent，公共契约 ItemsControl)
             └─ ItemsPresenter / FeedbackStackPanel
                  └─ MessageCard (root，对应上游 notice root)
-                      └─ MotionActor
-                           └─ Border#PART_Frame (root 表面投影)
-                                └─ DockPanel#PART_HeaderContainer (wrapper)
-                                     ├─ IconPresenter#PART_IconContent (icon)
-                                     └─ SelectableTextBlock#PART_Message (title)
+                      └─ Border#PART_Frame (root 表面投影)
+                           └─ DockPanel#PART_HeaderContainer (wrapper)
+                                ├─ IconPresenter#PART_IconContent (icon)
+                                └─ SelectableTextBlock#PART_Message (title)
 ```
 
 上游 `root` 就是 message notice 本身，因此映射到 `MessageCard` owner；上游 `list` 是承载全部 notice 的定位容器，
@@ -74,7 +73,7 @@ WindowMessageManager (root，对应上游 list)
 | Customization | `Root` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | MessageCard owner（表面投影到 `Border#PART_Frame`，动效由 `MotionActor` 承载） |
+| AtomUI 节点 | MessageCard owner（表面投影到 `Border#PART_Frame`，动效由 Frame 承载） |
 | 职责 | 单条消息项根元素：承载 `Message`、`MessageType`、`Icon`、`IsClosing`、`IsClosed`、`IsMotionEnabled` 与进入/退出动效；根表面（背景、圆角、阴影、内边距）投影到模板中的 `Border#PART_Frame`。对应上游 notice root。 |
 | 相关 API | `Message`、`MessageType`、`Icon`、`IsClosing`、`IsClosed`、`IsMotionEnabled`、`Close()`、`MessageClosed` |
 | 相关 Token | `ContentBg`、`ContentPadding`、SharedToken（`BoxShadows`、`BorderRadiusLG`） |
@@ -205,7 +204,7 @@ API，`IsClosing` / `IsClosed` 关闭状态，以及 `IsMotionEnabled` 与进出
 
 适合通过 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius`、`BoxShadow`、`Padding` 等 owner 侧 Setter
 定制整卡视觉——这些属性经模板内 `Border#PART_Frame` 的 `TemplateBinding` 投影到卡片外框，是上游 `root` styles
-（背景色、圆角、阴影、内边距）的 AtomUI 等价表达。`root` 不表示模板中的 `MotionActor`、`Border#PART_Frame` 或
+（背景色、圆角、阴影、内边距）的 AtomUI 等价表达。`root` 不表示模板中的 `Border#PART_Frame` 或
 `DockPanel#PART_HeaderContainer` 节点本身。
 
 ### 2.2 MessageCard wrapper / icon / title
@@ -362,9 +361,9 @@ TopLevel 内三种作用域同时尝试命中卡片）：
 
 以下区域明确不属于 Message Semantic Part：
 
-- 关闭动效执行状态（`MotionExecutionState` 与 `MotionActor`）、`Close()` 调度与 `IsClosed` 提交路径是行为状态，
+- 关闭动效执行状态（Motion）、`Close()` 调度与 `IsClosed` 提交路径是行为状态，
   不是 Part。
-- `Border#PART_Frame`、`MotionActor` 是模板结构节点：`root` 的表面投影到 `PART_Frame`，但 `PART_Frame` 的名称、
+- `Border#PART_Frame`、Frame 是模板结构节点：`root` 的表面投影到 `PART_Frame`，但 `PART_Frame` 的名称、
   数量与层级不属于 `root` 契约。
 - 稳定卡片集合、`FeedbackLifetimeScheduler`、`MaxHostLayerRetryCount` 重试与宿主层安装/卸载是
   manager 的行为实现，不是 Part。

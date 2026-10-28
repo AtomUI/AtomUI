@@ -5,7 +5,6 @@ using Avalonia.Headless;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
 using System.Runtime.CompilerServices;
 using Shouldly;
 using Xunit;
@@ -212,21 +211,21 @@ public class FeedbackManagerStackTests
 
             var actor = manager.Cards[0]
                                .GetVisualDescendants()
-                               .OfType<BaseMotionActor>()
-                               .Single();
+                               .OfType<Border>()
+                               .Single(control => control.Name == "Frame");
             actor.IsAttachedToVisualTree().ShouldBeTrue();
             TopLevel.GetTopLevel(actor).ShouldBe(window);
             manager.Cards[0].IsMotionEnabled.ShouldBeTrue();
             manager.Cards[0].OpenCloseMotionDuration.ShouldBe(TimeSpan.FromMinutes(1));
 
-            for (var i = 0; i < 3 && actor.Transitions is null; i++)
+            for (var i = 0; i < 3 && !actor.IsAnimating(Visual.OpacityProperty); i++)
             {
                 AvaloniaHeadlessPlatform.ForceRenderTimerTick();
                 Dispatcher.UIThread.RunJobs();
             }
 
-            actor.Transitions.ShouldNotBeNull();
-            actor.MotionTransform.ShouldNotBeNull();
+            actor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            actor.RenderTransform.ShouldNotBeNull();
             actor.Opacity.ShouldBeLessThan(1);
         });
     }
@@ -902,7 +901,7 @@ public class FeedbackManagerStackTests
 
         var presenter = manager.GetVisualDescendants().OfType<FeedbackStackPresenter>().Single();
         var card = manager.Cards[0];
-        var motionActor = card.GetVisualDescendants().OfType<MotionActor>().Single();
+        var motionActor = card.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "Frame");
         var managerReference = new WeakReference(manager);
         var presenterReference = new WeakReference(presenter);
         var cardReference = new WeakReference(card);

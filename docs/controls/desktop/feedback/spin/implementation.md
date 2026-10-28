@@ -114,6 +114,9 @@ Spin 的交互事件应从输入源收敛到控件级语义事件：
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
 - 内容、命令和视觉状态在模板节点之间的同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
+
+根控件的 MaskOpacity 自动过渡使用 `TransitionInitializationSession`：构造时抑制、Loaded 完成基线、detach 复位，
+恢复最新 Transitions 来源。指示器的持续反馈独立于该初始化作用域，不通过私有开关或 Dispatcher 猜测就绪。
 - Semantic Part marker 不参与状态切换；`IsSpinning`、`IsTipVisible` 和 `IsCustomIndicator` 只改变目标节点的
   `IsVisible`，marker 身份和数量保持不变。
 - 指示器旋转与圆点透明度动画由 `AbstractSpinIndicator` 通过 Composition 动画直接拥有；动画目标从

@@ -167,7 +167,7 @@ internal class InputControlFrame : ContentControl,
 
     #endregion
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static InputControlFrame()
     {
@@ -176,24 +176,24 @@ internal class InputControlFrame : ContentControl,
 
     public InputControlFrame()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
@@ -233,7 +233,7 @@ internal class InputControlFrame : ContentControl,
         UpdateFocusWithinPseudoClass();
         PseudoClasses.Set(StdPseudoClass.Pressed, IsInnerBoxPressed);
         UpdateEffectiveStatus();
-        _stateMotion.CompleteInitialization();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPointerEntered(PointerEventArgs e)

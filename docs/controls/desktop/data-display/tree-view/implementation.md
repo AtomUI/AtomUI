@@ -187,7 +187,7 @@ NodeDropped / ItemDropped event projection
 
 `TreeView` 实例构造注册 TreeViewToken scope，并监听 root `Items.CollectionChanged`。`OnInitialized` 设置默认 filter、默认 filter value selector 和空状态。`OnAttachedToVisualTree` 挂接 interaction handler，`OnDetachedFromVisualTree` 解除 handler 并取消所有异步加载。`OnLoaded` 回放默认状态。
 
-`TreeViewItem.OnApplyTemplate` 获取 `Header` 和 `PART_ItemsPresenterMotionActor`，配置叶子状态，并按当前 `IsExpanded` 同步子项实际可见状态。
+`TreeViewItem.OnApplyTemplate` 获取 `Header` 和 `PART_ChildrenViewport`，配置叶子状态，并按当前 `IsExpanded` 同步子项实际可见状态。
 
 `TreeViewItemHeader.OnApplyTemplate` 获取 `PART_HeaderContentFrame`、`PART_IconPresenter` 和 `PART_NodeSwitcherButton`。设置新 `PART_HeaderContentFrame` 前必须解除旧 frame 的 pointer 事件订阅，避免旧模板节点继续影响 hover 状态。
 
@@ -214,7 +214,7 @@ TreeView (root)                                            ← TreeView owner
                  │                        └─ Panel
                  │                             ├─ ContentPresenter#HeaderPresenter   ← .semantic-item-title
                  │                             └─ TextBlock#FilterHighlighter（非 Part，过滤高亮）
-                 └─ LayoutAwareMotionActor#PART_ItemsPresenterMotionActor（非 Part）
+                 └─ ContentViewport#PART_ChildrenViewport（非 Part）
                           └─ ItemsPresenter
                                └─ TreeViewItem (item, .semantic-item)    ← TreeViewItem.item 递归覆盖子容器
 ```
@@ -269,8 +269,10 @@ TreeView pointer 流程：
 展开收起：
 
 - SwitcherButton 通过 `IsChecked` 双向绑定到 `TreeViewItem.IsExpanded`。
-- `TreeViewItem.HandleExpandedChanged` 进入 `ExpandChildren` 或 `CollapseChildren`。
-- 展开收起通过 `LayoutAwareMotionActor` 承载；全量展开、路径回放和内部状态同步可临时关闭 motion。
+- `TreeViewItem.HandleExpandedChanged` 捕获当前 owner、视口和请求版本，从 `OpenMotion` / `CloseMotion` 选择定义，通过可见性入口提交目标。
+- `ContentViewport#PART_ChildrenViewport` 实现公开布局能力，内容保持自然尺寸排版。全量展开、路径回放和初始化可按该次请求关闭动效。
+- 新展开意图连续替代当前动画；switcher 不因动画而忽略点击。完成后只有当前 owner、模板和目标均一致时才能执行自动展开祖先。
+- 动效定义的 Duration 不被控件修改，实际时长通过目标的请求覆盖传入。模板替换和 detach 使旧完成失效；重新挂载按最新 `IsExpanded` 初始化。
 
 上下文菜单：
 

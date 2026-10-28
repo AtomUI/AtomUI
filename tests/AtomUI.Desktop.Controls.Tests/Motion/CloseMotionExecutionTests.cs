@@ -1,9 +1,10 @@
-using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Headless;
+using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
@@ -12,265 +13,174 @@ namespace AtomUI.Desktop.Controls.Tests.Motion;
 
 public class CloseMotionExecutionTests
 {
-    static CloseMotionExecutionTests()
+    static CloseMotionExecutionTests() => AvaloniaTestApp.EnsureInitialized();
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Retemplate_During_Pending_Close_Completes_Exactly_Once(bool notification)
     {
-        AvaloniaTestApp.EnsureInitialized();
+        using var scene = new Scene(notification, TimeSpan.Zero, show: false);
+        scene.Card.Close();
+        scene.Show();
+        scene.Card.IsClosed.ShouldBeTrue();
+        scene.Closed.ShouldBe(1);
+        scene.Surface.IsVisible.ShouldBeFalse();
     }
 
-    [Fact]
-    public void MessageCard_Retemplate_During_Pending_Close_Starts_One_Exit_Motion()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Retemplate_During_Playing_Close_Uses_The_Current_Surface_And_Closes_Once(bool notification)
     {
-        var card = new TestMessageCard
-        {
-            IsMotionEnabled         = true,
-            OpenCloseMotionDuration = TimeSpan.Zero
-        };
-        var actor = new MotionActor();
-        var preStartCount = 0;
-        actor.PreStart += (_, _) => preStartCount++;
-
-        card.Close();
-        card.ApplyMotionActor(actor);
-        Dispatcher.UIThread.RunJobs();
-
-        preStartCount.ShouldBe(1);
-        card.IsClosed.ShouldBeTrue();
+        using var scene = new Scene(notification, TimeSpan.FromSeconds(1));
+        scene.Step(0);
+        scene.Step(250);
+        scene.Card.Close();
+        scene.Pump();
+        var previous = scene.Surface;
+        previous.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+        scene.Card.Duration = TimeSpan.Zero;
+        scene.Surface = new Border { Width = 320, Height = 96 };
+        scene.Card.ApplySurface(scene.Surface);
+        scene.Pump();
+        scene.Card.IsClosed.ShouldBeTrue();
+        scene.Closed.ShouldBe(1);
+        scene.Surface.IsVisible.ShouldBeFalse();
+        previous.IsAttachedToVisualTree().ShouldBeFalse();
+        previous.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        previous.RenderTransform.ShouldBeNull();
     }
 
-    [Fact]
-    public void NotificationCard_Retemplate_During_Pending_Close_Starts_One_Exit_Motion()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Disabling_Motion_During_Close_Converges_And_Closes_Once(bool notification)
     {
-        using var manager = new WindowNotificationManager();
-        var card = new TestNotificationCard(manager)
-        {
-            IsMotionEnabled         = true,
-            OpenCloseMotionDuration = TimeSpan.Zero
-        };
-        var actor = new MotionActor();
-        var preStartCount = 0;
-        actor.PreStart += (_, _) => preStartCount++;
-
-        card.Close();
-        card.ApplyMotionActor(actor);
-        Dispatcher.UIThread.RunJobs();
-
-        preStartCount.ShouldBe(1);
-        card.IsClosed.ShouldBeTrue();
+        using var scene = new Scene(notification, TimeSpan.FromSeconds(1));
+        scene.Step(0);
+        scene.Step(250);
+        scene.Card.Close();
+        scene.Pump();
+        scene.Surface.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+        scene.Card.IsMotionEnabled = false;
+        scene.Pump();
+        scene.Card.IsClosed.ShouldBeTrue();
+        scene.Closed.ShouldBe(1);
+        scene.Surface.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        scene.Surface.IsVisible.ShouldBeFalse();
     }
 
-    [Fact]
-    public void MessageCard_Retemplate_During_Playing_Close_Restarts_On_The_Current_Actor_And_Closes_Once()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void External_Closed_State_Cancels_Entry_And_Converges_Hidden(bool notification)
     {
-        var card = new TestMessageCard
-        {
-            IsMotionEnabled = true,
-            OpenCloseMotionDuration = TimeSpan.FromSeconds(1)
-        };
-        var firstActor = new MotionActor();
-        var currentActor = new MotionActor();
-        var firstStarts = 0;
-        var currentStarts = 0;
-        var closeCount = 0;
-        firstActor.PreStart += (_, _) => firstStarts++;
-        currentActor.PreStart += (_, _) => currentStarts++;
-        card.MessageClosed += (_, _) => closeCount++;
-
-        card.Close();
-        card.ApplyMotionActor(firstActor);
-        Dispatcher.UIThread.RunJobs();
-        firstStarts.ShouldBe(1);
-
-        card.OpenCloseMotionDuration = TimeSpan.Zero;
-        card.ApplyMotionActor(currentActor);
-        Dispatcher.UIThread.RunJobs();
-
-        currentStarts.ShouldBe(1);
-        card.IsClosed.ShouldBeTrue();
-        closeCount.ShouldBe(1);
+        using var scene = new Scene(notification, TimeSpan.FromMinutes(1));
+        scene.Surface.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+        scene.Card.IsClosed = true;
+        scene.Surface.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        scene.Surface.RenderTransform.ShouldBeNull();
+        scene.Surface.IsVisible.ShouldBeFalse();
+        scene.Surface.Opacity.ShouldBe(1);
     }
 
-    [Fact]
-    public void NotificationCard_Retemplate_During_Playing_Close_Restarts_On_The_Current_Actor_And_Closes_Once()
+    private interface ITestCard : IDisposable
     {
-        using var manager = new WindowNotificationManager();
-        var card = new TestNotificationCard(manager)
-        {
-            IsMotionEnabled = true,
-            OpenCloseMotionDuration = TimeSpan.FromSeconds(1)
-        };
-        var firstActor = new MotionActor();
-        var currentActor = new MotionActor();
-        var firstStarts = 0;
-        var currentStarts = 0;
-        var closeCount = 0;
-        firstActor.PreStart += (_, _) => firstStarts++;
-        currentActor.PreStart += (_, _) => currentStarts++;
-        card.NotificationClosed += (_, _) => closeCount++;
-
-        card.Close();
-        card.ApplyMotionActor(firstActor);
-        Dispatcher.UIThread.RunJobs();
-        firstStarts.ShouldBe(1);
-
-        card.OpenCloseMotionDuration = TimeSpan.Zero;
-        card.ApplyMotionActor(currentActor);
-        Dispatcher.UIThread.RunJobs();
-
-        currentStarts.ShouldBe(1);
-        card.IsClosed.ShouldBeTrue();
-        closeCount.ShouldBe(1);
+        TemplatedControl Control { get; }
+        bool IsClosed { get; set; }
+        bool IsMotionEnabled { get; set; }
+        TimeSpan Duration { get; set; }
+        event EventHandler<RoutedEventArgs> Closed;
+        void Close();
+        void ApplySurface(Border surface);
     }
 
-    [Fact]
-    public void MessageCard_Disabling_Motion_During_Close_Converges_And_Closes_Once()
+    private sealed class TestMessageCard : MessageCard, ITestCard
     {
-        var card = new TestMessageCard
-        {
-            IsMotionEnabled = true,
-            OpenCloseMotionDuration = TimeSpan.FromSeconds(1)
-        };
-        var actor = new MotionActor();
-        var closeCount = 0;
-        card.MessageClosed += (_, _) => closeCount++;
-
-        card.Close();
-        card.ApplyMotionActor(actor);
-        Dispatcher.UIThread.RunJobs();
-
-        card.IsMotionEnabled = false;
-        Dispatcher.UIThread.RunJobs();
-
-        card.IsClosed.ShouldBeTrue();
-        closeCount.ShouldBe(1);
+        public TemplatedControl Control => this;
+        public TimeSpan Duration { get => OpenCloseMotionDuration; set => OpenCloseMotionDuration = value; }
+        public event EventHandler<RoutedEventArgs> Closed { add => MessageClosed += value; remove => MessageClosed -= value; }
+        public void ApplySurface(Border surface) => SetSurfaceTemplate(this, surface, "PART_Frame");
+        public void Dispose() => ReleaseOwner();
     }
 
-    [Fact]
-    public void NotificationCard_Disabling_Motion_During_Close_Converges_And_Closes_Once()
+    private sealed class TestNotificationCard(WindowNotificationManager manager) : NotificationCard(manager), ITestCard
     {
-        using var manager = new WindowNotificationManager();
-        var card = new TestNotificationCard(manager)
-        {
-            IsMotionEnabled = true,
-            OpenCloseMotionDuration = TimeSpan.FromSeconds(1)
-        };
-        var actor = new MotionActor();
-        var closeCount = 0;
-        card.NotificationClosed += (_, _) => closeCount++;
-
-        card.Close();
-        card.ApplyMotionActor(actor);
-        Dispatcher.UIThread.RunJobs();
-
-        card.IsMotionEnabled = false;
-        Dispatcher.UIThread.RunJobs();
-
-        card.IsClosed.ShouldBeTrue();
-        closeCount.ShouldBe(1);
+        public TemplatedControl Control => this;
+        public TimeSpan Duration { get => OpenCloseMotionDuration; set => OpenCloseMotionDuration = value; }
+        public event EventHandler<RoutedEventArgs> Closed { add => NotificationClosed += value; remove => NotificationClosed -= value; }
+        public void ApplySurface(Border surface) => SetSurfaceTemplate(this, surface, "Frame");
+        public void Dispose() => ReleaseOwner();
     }
 
-    [Fact]
-    public void MessageCard_External_Closed_State_Cancels_Entry_And_Converges_Hidden()
+    private static void SetSurfaceTemplate(TemplatedControl card, Border surface, string part)
     {
-        var card = new TestMessageCard
+        surface.Name = part;
+        card.Template = new FuncControlTemplate((_, scope) =>
         {
-            IsMotionEnabled = true,
-            OpenCloseMotionDuration = TimeSpan.FromMinutes(1)
-        };
-        var actor = new MotionActor();
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-            card.ApplyMotionActor(actor);
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-            actor.Transitions.ShouldNotBeNull();
-
-            card.IsClosed = true;
-
-            actor.Transitions.ShouldBeNull();
-            actor.MotionTransform.ShouldBeNull();
-            actor.Opacity.ShouldBe(0);
-        }
-        finally
-        {
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
+            scope.Register(part, surface);
+            return surface;
+        });
+        card.ApplyTemplate();
     }
 
-    [Fact]
-    public void NotificationCard_External_Closed_State_Cancels_Entry_And_Converges_Hidden()
+    private sealed class Scene : IDisposable
     {
-        using var manager = new WindowNotificationManager();
-        var card = new TestNotificationCard(manager)
-        {
-            IsMotionEnabled = true,
-            OpenCloseMotionDuration = TimeSpan.FromMinutes(1)
-        };
-        var actor = new MotionActor();
-        var window = new AvaloniaWindow
-        {
-            Width = 600,
-            Height = 400,
-            Content = actor
-        };
+        private readonly ManualMotionClock _clock = new();
+        private readonly WindowNotificationManager? _manager;
+        internal readonly ITestCard Card;
+        internal readonly AvaloniaWindow Window;
+        internal Border Surface = new() { Width = 320, Height = 96 };
+        internal int Closed;
 
-        try
+        internal Scene(bool notification, TimeSpan duration, bool show = true)
         {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-            card.ApplyMotionActor(actor);
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-            actor.Transitions.ShouldNotBeNull();
-
-            card.IsClosed = true;
-
-            actor.Transitions.ShouldBeNull();
-            actor.MotionTransform.ShouldBeNull();
-            actor.Opacity.ShouldBe(0);
-        }
-        finally
-        {
-            window.Close();
-            Dispatcher.UIThread.RunJobs();
-        }
-    }
-
-    private sealed class TestMessageCard : MessageCard
-    {
-        internal void ApplyMotionActor(BaseMotionActor actor)
-        {
-            var nameScope = new NameScope();
-            nameScope.Register(BaseMotionActor.MotionActorPart, actor);
-            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
-        }
-    }
-
-    private sealed class TestNotificationCard : NotificationCard
-    {
-        internal TestNotificationCard(WindowNotificationManager manager)
-            : base(manager)
-        {
+            if (notification)
+            {
+                _manager = new WindowNotificationManager();
+                Card = new TestNotificationCard(_manager);
+            }
+            else
+            {
+                Card = new TestMessageCard();
+            }
+            Card.IsMotionEnabled = true;
+            Card.Duration = duration;
+            Card.Closed += (_, _) => Closed++;
+            Window = new AvaloniaWindow { Width = 600, Height = 400, Content = Card.Control };
+            if (show)
+            {
+                Show();
+            }
         }
 
-        internal void ApplyMotionActor(BaseMotionActor actor)
+        internal void Show()
         {
-            var nameScope = new NameScope();
-            nameScope.Register(BaseMotionActor.MotionActorPart, actor);
-            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
+            Card.ApplySurface(Surface);
+            Window.Show();
+            Pump();
+        }
+
+        internal void Pump()
+        {
+            Dispatcher.UIThread.RunJobs();
+            Window.UpdateLayout();
+        }
+
+        internal void Step(int milliseconds)
+        {
+            _clock.Step(milliseconds);
+            Pump();
+        }
+
+        public void Dispose()
+        {
+            Card.Dispose();
+            Window.Close();
+            Pump();
+            _manager?.Dispose();
+            _clock.Dispose();
         }
     }
 }

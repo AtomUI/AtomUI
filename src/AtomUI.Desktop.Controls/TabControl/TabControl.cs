@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class TabControl : BaseTabControl, IStateMotionOwner
+public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
 {
     #region 内部属性定义
 
@@ -50,11 +50,11 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
     private TabScrollViewer? _scrollViewer;
     private IDisposable? _selectedItemBoundsSubscription;
 
-    private readonly StateMotionSession _stateMotion;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     public TabControl()
     {
-        _stateMotion = new StateMotionSession(this);
+        _transitionInitialization = new TransitionInitializationSession(this);
         SelectionChanged += HandleSelectionChanged;
     }
 
@@ -91,13 +91,13 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _stateMotion?.Reset();
+        _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnApplyTemplate(e);
         _selectedIndicator = e.NameScope.Find<Border>("PART_SelectedItemIndicator");
         _itemsPresenter    = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
@@ -119,7 +119,7 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         base.OnAttachedToVisualTree(e);
         SubscribeSelectedItemBounds();
         SetupSelectedIndicator();
@@ -127,7 +127,7 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _stateMotion.Reset();
+        _transitionInitialization.Reset();
         _selectedItemBoundsSubscription?.Dispose();
         _selectedItemBoundsSubscription = null;
         base.OnDetachedFromVisualTree(e);
@@ -138,9 +138,9 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
         base.OnLoaded(e);
         SetupSelectedIndicator();
     }
-    #region 实现 IStateMotionOwner 接口
+    #region 实现 ITransitionInitializationOwner 接口
 
-    StateMotionSession IStateMotionOwner.StateMotionSession => _stateMotion;
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
 
     #endregion
 
@@ -177,7 +177,7 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
         if (Items.Count == 0)
         {
             _selectedIndicator?.SetCurrentValue(IsVisibleProperty, false);
-            _stateMotion.CompleteInitialization();
+            _transitionInitialization.CompleteInitialization();
         }
         else
         {
@@ -199,7 +199,7 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
                 {
                     return;
                 }
-                using var snap = !_selectedIndicator.IsVisible && _stateMotion.IsReady
+                using var snap = !_selectedIndicator.IsVisible && _transitionInitialization.IsReady
                     ? new TransitionSuppressionScope(this)
                     : null;
                 _selectedIndicator.SetCurrentValue(IsVisibleProperty, true);
@@ -236,7 +236,7 @@ public partial class TabControl : BaseTabControl, IStateMotionOwner
                 {
                     SelectedIndicatorRenderTransform = transform;
                 }
-                _stateMotion.CompleteInitialization();
+                _transitionInitialization.CompleteInitialization();
             }
         }
         

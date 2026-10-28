@@ -140,11 +140,11 @@ Expander 不引入额外 owner：它是单面板控件，没有 item 容器或�
 Expander owner 本身，因此四个 Part 声明 `RuntimeCreated=false` 且不携带显式 `SelectorRoute`；生成器按
 [Semantic Part Generator §2.3](../../../../modules/generator/semantic-part-generator.md)把静态根模板 Part 的 route 规范化为
 `/template/ .<SelectorClass>`。`header` 位于 `LayoutTransformControl#PART_HeaderLayoutTransform` 内部，`body` 位于
-`LayoutAwareMotionActor#PART_ContentMotionActor` 内部，但两者都不跨越第二层模板边界，`TemplatedParent` 仍是 Expander
+`ContentViewport#PART_ContentViewport` 内部，但两者都不跨越第二层模板边界，`TemplatedParent` 仍是 Expander
 owner，因此单一 `/template/` 路由已经足够，不需要为它们声明更宽的 logical descendant 路由。Expander 没有任何由 C# 创建
 并注入 marker 的 Part，也不存在跨视觉根 Part。
 
-`body` 的数量语义是 `Optional` 而不是 `Single`：折叠稳定态下 `PART_ContentMotionActor` 的 `IsVisible=false`，其内部
+`body` 的数量语义是 `Optional` 而不是 `Single`：折叠稳定态下 `PART_ContentViewport` 的 `IsVisible=false`，其内部
 `ContentPresenter` 只保留逻辑子级、不挂接视觉子级，因此 `body` 节点从视觉树中**完全缺席**（不是隐藏）；展开后才物化。
 `header` / `icon` / `title` 是模板常驻节点，折叠与展开都存在于视觉树，因此声明 `Single`。该结论由 Gate B 的 selector 命中
 测试实测得出，见 [§7 兼容性与验证](#7-兼容性与验证)。
@@ -232,8 +232,8 @@ Grid 列排布（`PART_HeaderLayout` 的 `Auto, *, Auto, Auto` 四列）不属�
 
 ### 2.5 body
 
-`body` 表示内容区域，即 `ContentPresenter#PART_ContentPresenter`，cardinality 为 `Optional`。展开/收起动效由 Core 共享的
-`ContentExpansionAnimator` 驱动 `LayoutAwareMotionActor#PART_ContentMotionActor`。
+`body` 表示内容区域，即 `ContentPresenter#PART_ContentPresenter`，cardinality 为 `Optional`。
+主题声明的 `ExpandMotion` / `CollapseMotion` 通过 `IMotionLayout` 驱动 `ContentViewport#PART_ContentViewport`。
 
 `body` 的节点存在性由内容区域的呈现历史决定：
 
@@ -258,7 +258,7 @@ Grid 列排布（`PART_HeaderLayout` 的 `Auto, *, Auto, Auto` 四列）不属�
 适合定制内容区域的 `Background`、`Padding` 与 `TextElement.*`。展开/收起动效的尺寸动画由 motion actor 拥有，不属于
 `body` 的样式契约；固定 `Height` / `Width` / Min/Max 类布局 Setter 不作为公共定制路径，见 [§5 尺寸基线](#5-尺寸基线)。
 
-`body` 不包含 Header/Content 分隔线。分隔线由 `PART_ContentMotionActor` 内部一个未命名 `PixelAlignedBorder` 拥有，该节点
+`body` 不包含 Header/Content 分隔线。分隔线由 `PART_ContentViewport` 内部一个未命名 `PixelAlignedBorder` 拥有，该节点
 不作为 Part 或模板 part 契约暴露，见 [§6 定制边界](#6-定制边界)。
 
 ## 3. Selector 用法
@@ -356,12 +356,12 @@ Expander 的尺寸链与 Semantic Setter 的关系：
 | 项目 | 内容 |
 | --- | --- |
 | 完整尺寸分支 | `Large`、`Middle`、`Small`、`Custom` 四档（`CustomizableSizeType`），默认 `Middle`；`SizeType` 是 public 属性。 |
-| 布局 owner | 头部 `PART_HeaderDecorator`（`Padding` + `TextElement.FontSize` / `TextBlock.LineHeight`）、内容 `PART_ContentPresenter`（`Padding`）、箭头 `PART_ExpandButton`（`IconSizeSM` 图标 + 按位置与尺寸档的 margin）。整体高度由内容自然测量 + `PART_ContentMotionActor` 的动效进度拥有。 |
+| 布局 owner | 头部 `PART_HeaderDecorator`（`Padding` + `TextElement.FontSize` / `TextBlock.LineHeight`）、内容 `PART_ContentPresenter`（`Padding`）、箭头 `PART_ExpandButton`（`IconSizeSM` 图标 + 按位置与尺寸档的 margin）。整体高度由内容自然测量 + `PART_ContentViewport` 的动效进度拥有。 |
 | Token 映射 | Middle/Custom → `HeaderPadding`、`ContentPadding`、`FontSize`/`FontHeight`、`Left/RightExpandButtonHMargin`；Large → `HeaderPaddingLG`、`ContentPaddingLG`、`FontSizeLG`/`FontHeightLG`；Small → `HeaderPaddingSM`、`ContentPaddingSM`、`FontSize`/`FontHeight`（Small 与 Middle 同字号）。 |
 | 显式覆盖 | `HeaderPadding` / `ContentPadding` 非空时置 `:custom-header-padding` / `:custom-content-padding`，主题在 `:not(...)` 分支外覆盖三档默认 Padding；显式 HeaderPadding 同时把箭头 margin 改为从 `HeaderPadding` 对应方向推导。 |
 | 状态矩阵 | 展开/收起、方向、disabled、Ghost、Borderless、TriggerType、ExpandIconPosition、SizeType 只切换主题 selector 视觉，不改变 marker 与节点数量，见 [§4](#4-状态与数量语义)。 |
 | 外部映射 | antd `size="small"` → `Small`；antd 默认（middle）→ `Middle`（及 `Custom`）；antd `size="large"` → `Large`。依据：antd Collapse 的 `size` 三档驱动 header/content padding、字号与图标尺寸；AtomUI 用同构三档 Token 表达，`Custom` 复用 Middle 基线并把完整控制权交给用户。 |
-| 失败回归 | 给 `header` 或 `body` 设置固定 `Height`/`MinHeight` 会绕过 Padding + 字体自然测量，多行标题与三档尺寸基线失效。展开/收起动效由 Core 共享的 `ContentExpansionAnimator` 拥有：动效期间以尺寸/透明度进度驱动内容视口，固定 `body` Height 会与该进度竞争，因为 actor 的视口尺寸覆盖内容测量。Semantic Setter 中不应设置固定 `Height`/`Width`/Min/Max 布局值；改变头部/内容间距应通过 `HeaderPadding`/`ContentPadding`、Token 或主题分支实现。 |
+| 失败回归 | 给 `header` 或 `body` 设置固定 `Height`/`MinHeight` 会绕过 Padding + 字体自然测量，多行标题与三档尺寸基线失效。展开/收起动效由 Core 共享的 `Motion` 拥有：动效期间以尺寸/透明度进度驱动内容视口，固定 `body` Height 会与该进度竞争，因为 actor 的视口尺寸覆盖内容测量。Semantic Setter 中不应设置固定 `Height`/`Width`/Min/Max 布局值；改变头部/内容间距应通过 `HeaderPadding`/`ContentPadding`、Token 或主题分支实现。 |
 
 `header` 的 `Background`、`Padding`、字体与边框 Setter，以及 `body` 的 `Background`、`Padding` Setter 是公共定制路径
 （Semantic Setter 优先级高于主题尺寸档 TemplateBinding）；固定 `Height` / `Width` / Min/Max 类布局 Setter 会与尺寸档链或
@@ -371,14 +371,14 @@ content motion 的尺寸动画竞争 Avalonia 属性优先级，因此不作为�
 
 以下区域明确不属于 Expander Semantic Part：
 
-- `PART_Frame`、`PART_MainLayout`、`PART_HeaderLayout`、`PART_HeaderLayoutTransform`、`PART_ContentMotionActor`：模板结构
+- `PART_Frame`、`PART_MainLayout`、`PART_HeaderLayout`、`PART_HeaderLayoutTransform`、`PART_ContentViewport`：模板结构
   节点，其名称、类型与层级不是公共契约。
-- Header/Content 分隔线：位于 `PART_ContentMotionActor` 内部的未命名 `PixelAlignedBorder`，只由 `BorderThickness`、
+- Header/Content 分隔线：位于 `PART_ContentViewport` 内部的未命名 `PixelAlignedBorder`，只由 `BorderThickness`、
   `IsBorderless`、`IsGhostStyle` 与 `ExpandDirection` 决定。它没有 Part 身份，也不作为新的 template part 暴露；需要改变
   分隔线时通过公开的 `BorderThickness` 与视觉模式属性实现，见 [§8.5 结构化分隔线模型](overview.md#85-结构化分隔线模型)。
 - `PART_AddOnContentPresenter`（`AddOnContent` / `AddOnContentTemplate` 承载节点）：上游 `Collapse` 没有对应的公开语义
   区域，因此不发布为 Part。AddOnContent 是轻量辅助入口，其视觉通过 `AddOnContent` 自身类型或整控件 ControlTheme 定制。
-- 展开/收起动效：由 `PART_ContentMotionActor` 与 Core 共享的 `ContentExpansionAnimator` 拥有（尺寸/透明度进度与内容视口
+- 展开/收起动效：由 `PART_ContentViewport` 与 Core 共享的 `Motion` 拥有（尺寸/透明度进度与内容视口
   测量），不属于 `body` 的样式契约；`IsMotionEnabled` 与 `MotionDuration` 是公共控制入口。
 - 根表面背景、圆角与整体内边距：`PART_Frame` 的 `Background`、`CornerRadius`、`Padding` 由默认主题拥有，且**不从 owner
   属性投影**。因此这三项不能通过 root Semantic Setter 定制，只能通过替换 owner `ControlTheme` 实现。`BorderThickness` 与
@@ -410,7 +410,7 @@ Semantic Style 服从 Avalonia 原生属性优先级。Part Setter 命中只证�
   自定义 padding 伪类都不改变命中数量。
 - `body` 的数量严格遵循 `Optional` 语义：从未展开的实例命中 0 个节点；展开后命中 1 个节点且该节点的 `TemplatedParent`
   必须是 Expander owner（证明单一 `/template/` 路由成立、没有退化为宽泛 logical descendant）；首次展开后再次收起，节点
-  保持存在（命中 1），同时 `PART_ContentMotionActor.IsVisible` 转为 `false`。
+  保持存在（命中 1），同时 `PART_ContentViewport.IsVisible` 转为 `false`。
 - 生成的 `ExpanderHeaderStyle` / `ExpanderIconStyle` / `ExpanderTitleStyle` / `ExpanderBodyStyle` 在展开状态下各精确命中
   一个节点（不是 0 个、也不是多个）。
 - root 边框投影生效：`BorderThickness` 与 `IsBorderless` / `IsGhostStyle` 驱动 `PART_Frame` 的有效边框厚度；未声明用户

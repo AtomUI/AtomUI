@@ -4,7 +4,8 @@ using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Exceptions;
 using AtomUI.Input;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Converters;
@@ -522,11 +523,10 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     private Popup? _popup;
     private KeyGesture? _hotkey;
     private bool _isEmbeddedInMenu;
-    private BaseMotionActor? _childItemsLayoutTransform;
+    private ContentViewport? _childItemsViewport;
     private DispatcherOperation? _pendingCanExecuteUpdate;
 
     private Control? _itemHeader;
-    private ContentExpansionAnimator? _inlineExpansion;
     private long _inlineRequestVersion;
     private CompositeDisposable? _nodeBindingDisposables;
     private IDisposable? _popupPinnedOpenBinding;
@@ -568,7 +568,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
 
     internal void ClearEntryContext()
     {
-        ApplyInlineChildItemsStateImmediately(IsSubMenuOpen && HasSubMenu);
+        ApplyInlineChildItemsStateImmediately();
         OwnerMenu          = null;
         SemanticParentItem = null;
         EntryOwner         = null;
@@ -750,9 +750,9 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
             }
         }
         else if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled &&
-                 _childItemsLayoutTransform is not null)
+                 _childItemsViewport is not null)
         {
-            ApplyInlineChildItemsStateImmediately(IsSubMenuOpen && HasSubMenu);
+            ApplyInlineChildItemsStateImmediately();
         }
         else if (change.Property == CommandProperty)
         {
@@ -915,7 +915,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     {
         var value = (bool)change.NewValue!;
         var requestVersion = ++_inlineRequestVersion;
-        var expansion = _inlineExpansion;
+        var viewport = _childItemsViewport;
         
         if (Mode == NavMenuMode.Inline)
         {
@@ -926,9 +926,9 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
 
             Dispatcher.InvokeAsync(async () =>
             {
-                if (!IsCurrentInlineRequest(requestVersion, expansion, value) ||
-                    !await SetInlineChildItemsOpenAsync(value) ||
-                    !IsCurrentInlineRequest(requestVersion, expansion, value))
+                if (!IsCurrentInlineRequest(requestVersion, viewport, value) ||
+                    !await WaitForInlineChildItemsAsync() ||
+                    !IsCurrentInlineRequest(requestVersion, viewport, value))
                 {
                     return;
                 }
@@ -958,26 +958,28 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         }
     }
     
-    private Task<bool> SetInlineChildItemsOpenAsync(bool isOpen)
+    private async Task<bool> WaitForInlineChildItemsAsync()
     {
-        if (!HasSubMenu || _inlineExpansion is not { } expansion)
+        if (!HasSubMenu || _childItemsViewport is not { } viewport)
         {
-            return Task.FromResult(true);
+            return true;
         }
 
-        var duration = IsMotionEnabled ? OpenCloseMotionDuration : TimeSpan.Zero;
-        return expansion.RunAsync(isOpen, Direction.Bottom, duration);
+        return (await Motion.GetVisibilityTask(viewport)).IsCompleted;
     }
 
-    private void ApplyInlineChildItemsStateImmediately(bool isOpen)
+    private void ApplyInlineChildItemsStateImmediately()
     {
         ++_inlineRequestVersion;
-        _inlineExpansion?.ApplyState(isOpen);
+        if (_childItemsViewport is { } viewport)
+        {
+            Motion.SnapVisibility(viewport);
+        }
     }
 
-    private bool IsCurrentInlineRequest(long version, ContentExpansionAnimator? expansion, bool isOpen)
+    private bool IsCurrentInlineRequest(long version, ContentViewport? viewport, bool isOpen)
     {
-        return version == _inlineRequestVersion && ReferenceEquals(expansion, _inlineExpansion) &&
+        return version == _inlineRequestVersion && ReferenceEquals(viewport, _childItemsViewport) &&
                Mode == NavMenuMode.Inline && isOpen == IsSubMenuOpen && this.IsAttachedToVisualTree();
     }
 
@@ -1135,7 +1137,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        ApplyInlineChildItemsStateImmediately(IsSubMenuOpen && HasSubMenu);
+        ApplyInlineChildItemsStateImmediately();
         UpdatePseudoClasses();
         TryUpdateCanExecute();
         TryOpenPinned();
@@ -1150,9 +1152,9 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        if (_childItemsLayoutTransform is not null)
+        if (_childItemsViewport is not null)
         {
-            ApplyInlineChildItemsStateImmediately(IsSubMenuOpen && HasSubMenu);
+            ApplyInlineChildItemsStateImmediately();
         }
 
         if (IsPopupPinnedOpen)
@@ -1191,9 +1193,9 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        if (_childItemsLayoutTransform is not null)
+        if (_childItemsViewport is not null)
         {
-            ApplyInlineChildItemsStateImmediately(IsSubMenuOpen && HasSubMenu);
+            ApplyInlineChildItemsStateImmediately();
         }
         base.OnApplyTemplate(e);
         if (_popup != null)
@@ -1221,17 +1223,15 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         }
 
         _itemHeader = e.NameScope.Find<Control>("PART_Header");
-        _childItemsLayoutTransform = null;
-        _inlineExpansion = null;
+        _childItemsViewport = null;
 
         if (Mode == NavMenuMode.Inline)
         {
-            _childItemsLayoutTransform =
-                e.NameScope.Find<BaseMotionActor>("PART_ChildItemsLayoutTransform");
-            if (_childItemsLayoutTransform is not null)
+            _childItemsViewport =
+                e.NameScope.Find<ContentViewport>("PART_ChildItemsViewport");
+            if (_childItemsViewport is not null)
             {
-                _inlineExpansion = new ContentExpansionAnimator(_childItemsLayoutTransform);
-                _inlineExpansion.ApplyState(IsSubMenuOpen && HasSubMenu);
+                Motion.SnapVisibility(_childItemsViewport);
             }
         }
     }

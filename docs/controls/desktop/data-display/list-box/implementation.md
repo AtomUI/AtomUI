@@ -342,4 +342,4 @@ git diff --check
 ## 状态动效初始化
 
 `ListBoxItem` 在构造阶段抑制过渡，覆盖生成容器挂载后才写入的初始选择；自身加载完成后恢复最新集合。父控件在清理容器之前复位会话，使虚拟化清理和下次挂载共用初始化边界。
-共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/state-motion-initialization.md)。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。

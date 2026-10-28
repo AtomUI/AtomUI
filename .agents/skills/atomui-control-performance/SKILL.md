@@ -258,7 +258,7 @@ The following model records implementation evidence used to form and falsify per
 
 | Topic | Verified behavior | Source | Implication |
 | --- | --- | --- | --- |
-| `Animatable.Transitions` activation | `EnableTransitions()` is called on `OnAttachedToVisualTree`. Until then, `CollectionChanged` is not subscribed and value changes don't run transitions. | `Avalonia.Base/Animation/Animatable.cs:62-103`, `:87-103` | Pre-attach writes normally do not animate. Attached-tree initialization uses owner-held `StateMotionSession` suppression acquired before attachment; template targets opt in during construction. Follow the [state motion contract](../../../docs/architecture/systems/control-infrastructure/state-motion-initialization.md), not private reflection toggles or queued readiness. |
+| `Animatable.Transitions` activation | `EnableTransitions()` is called on `OnAttachedToVisualTree`. Until then, `CollectionChanged` is not subscribed and value changes don't run transitions. | `Avalonia.Base/Animation/Animatable.cs:62-103`, `:87-103` | Pre-attach writes normally do not animate. Attached-tree initialization uses owner-held `TransitionInitializationSession` suppression acquired before attachment; template targets opt in during construction. Follow the [state motion contract](../../../docs/architecture/systems/control-infrastructure/transition-initialization.md), not private reflection toggles or queued readiness. |
 
 ---
 
@@ -680,7 +680,7 @@ Before writing any C# code that creates / subscribes / captures, list the pair u
 | `pointer.Capture(this);` | `pointer.Capture(null);` | The terminating gesture event (`PointerReleased`, `PointerCaptureLost`). Never on a timer. |
 | `_timer = new DispatcherTimer(...); _timer.Tick += ...; _timer.Start();` | `_timer.Stop(); _timer.Tick -= ...; _timer = null;` | `OnDetachedFromVisualTree` AND any explicit "stop" path. |
 | `_topLevel.Deactivated += ...;` (any TopLevel / Window-scoped subscription) | matching `-=` | `OnDetachedFromVisualTree`. The TopLevel can outlive the control by far. |
-| `StateMotionSession` / `TransitionSuppressionScope` | Commit a complete loaded baseline / dispose the owned override | Acquire before initial attached-tree writes; reset before detach, template replacement or container cleanup. Runtime snapping uses a separate `using` scope; restore the latest underlying collection and bindings. |
+| `TransitionInitializationSession` / `TransitionSuppressionScope` | Commit a complete loaded baseline / dispose the owned override | Acquire before initial attached-tree writes; reset before detach, template replacement or container cleanup. Runtime snapping uses a separate `using` scope; restore the latest underlying collection and bindings. |
 | `_popupHost.Open();` | `_popupHost.Close();` | Detach, re-template, or explicit close. The popup host is a separate visual root and will not auto-close on owner detach unless told. |
 
 ### Required practice
@@ -778,7 +778,7 @@ Do not report "assumed" cost savings. Every cost claim must include:
 ## Style & Best Practice
 
 - Reuse `AtomUI.Utils.MathUtils` (`AreClose`, `IsZero`, `GreaterThan`, `LessThanOrClose`, etc.) for floating-point comparison, epsilon checks, zero/one checks, ordering with tolerance, angle conversion, fixed-point rounding. Do not introduce hand-written `Math.Abs(...) < eps`, new epsilon constants, or duplicate helpers.
-- State initialization follows [the shared architecture](../../../docs/architecture/systems/control-infrastructure/state-motion-initialization.md): identify actual targets and complete baselines; do not use `Dispatcher.Post` to guess readiness. Keep `Transitions` in ControlTheme style setters. Test real parent/container preparation, remount and the first subsequent change; standalone preselected containers cannot prove initialization correctness. Loading, progress and explicit entrance animations retain separate contracts.
+- State initialization follows [the shared architecture](../../../docs/architecture/systems/control-infrastructure/transition-initialization.md): identify actual targets and complete baselines; do not use `Dispatcher.Post` to guess readiness. Keep `Transitions` in ControlTheme style setters. Test real parent/container preparation, remount and the first subsequent change; standalone preselected containers cannot prove initialization correctness. Loading, progress and explicit entrance animations retain separate contracts.
 - Never `Debug.Assert(value != null)` immediately followed by a nullable guard for the same value. Express the invariant in the type, helper return value, or use a real runtime guard with explicit recovery.
 - Remove unused `using` directives introduced by the change.
 - Prefer no API change. AtomUI has no formal release yet; API changes need explicit justification.

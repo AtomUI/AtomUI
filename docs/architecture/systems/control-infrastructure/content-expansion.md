@@ -1,244 +1,84 @@
 # 内容展开与收起动效设计
 
-本文定义 NavMenu Inline 子菜单、Collapse 内容面板和 Expander 内容区共用的展开与收起设计契约。
-共享职责归属 `AtomUI.Core/MotionScene`，控件接入职责归属 `AtomUI.Desktop.Controls`。
-目录入口见 [Control 基础设施](overview.md)，模块边界见 [AtomUI.Core](../../../modules/core/overview.md)。
+本文定义 NavMenu Inline、Collapse、Expander 与 TreeView 系列共用的内容几何和接入合同。
+播放身份、结果与属性覆盖见 [Motion 系统](../motion/overview.md)，实际布局能力见
+[目标与布局](../motion/targets-and-layout.md)。Core 拥有播放，Controls 拥有 ContentViewport，具体控件拥有业务状态。
 
-本文是统一动效的设计与维护依据。Core 内部 `ContentExpansionAnimator` 负责共用执行，三个控件负责状态和
-模板接入；各控件的接入结构与验证入口由其 `implementation.md` 描述。
+## 1. 不变量
 
-控件入口：
-
-| 控件 | 公共契约与状态模型 | 现有实现与接入边界 |
-| --- | --- | --- |
-| NavMenu | [架构设计](../../../controls/desktop/navigation/nav-menu/overview.md) | [实现原理](../../../controls/desktop/navigation/nav-menu/implementation.md) |
-| Collapse / CollapseItem | [架构设计](../../../controls/desktop/data-display/collapse/overview.md) | [实现原理](../../../controls/desktop/data-display/collapse/implementation.md) |
-| Expander | [架构设计](../../../controls/desktop/data-display/expander/overview.md) | [实现原理](../../../controls/desktop/data-display/expander/implementation.md) |
-
-## 1. 设计定位与不变量
-
-内容展开动效把控件的目标展开状态投影为连续变化的布局占位、裁剪区域和透明度。共享范围包括测量约束、
-首尾帧、反转、取消、完成和资源释放；控件继续拥有选择、菜单路径、输入处理和事件语义。
-
-- 内容按正常尺寸排版，动画只改变内容可见区域的主轴尺寸和透明度，不缩放文字或图标。
-- 展开和收起使用同一条进度曲线；同一次手风琴切换中的两项在同一动画时钟帧开始交换空间。
-- 新请求从当前已呈现的尺寸和透明度接续。状态变化不能被播放中的动画丢弃，也不能先跳到固定端点。
-- 首个动画 tick 前、最后一个 tick 后与异步清理前均是合法绘制窗口，必须具有确定的视觉值。
-- 只有当前执行拥有者可以写入最终状态或报告完成。取消任务不能回写新任务或已替换模板的视觉对象。
-- 外框、标题、分隔线、padding、滚动约束和命中范围保持各控件的结构语义。
+- 内容保持自然尺寸排版，动画改变占位、真实视口和透明度，不缩放文字或图标。
+- 同一手风琴切换并发交换空间，不等新项展开完成才关闭旧项。
+- 反向从实际 Bounds 与透明度接续，首 tick 前和最后 tick 后均保持确定帧。
+- 尺寸约束、标题、边框、padding、可见滚动条、嵌套滚动与命中合同保持原有所有权。
+- 只有当前请求可以提交稳定状态；旧执行不影响新模板或新 owner。
 
 ## 2. 模型与所有权
 
-| 角色或值 | 定义 | 所有者 |
-| --- | --- | --- |
-| 目标展开状态 | 业务请求的展开或收起状态 | `IsSubMenuOpen`、selection model / `IsSelected`、`IsExpanded` |
-| 内容视口 | 对外报告动画占位并裁剪溢出内容的内部区域 | 控件模板及其布局接入层 |
-| 自然内容尺寸 | 在有效宿主约束下，包含内容边框和内部间距的完整布局尺寸，单位 DIP | `ContentExpansionAnimator` 的布局策略 |
-| 展开进度 | 与透明度共用动画时钟的插值输入 | `ContentExpansionAnimator` 私有附加属性，值存储在当前 actor 上 |
-| 当前呈现值 | 视口实际 Bounds 主轴尺寸与有效透明度 | 当前视觉帧 |
-| 动画请求 | 目标状态、方向、时长、宿主身份和请求身份 | 控件持有的内部展开动画执行器 |
-| 执行资源 | animation、取消源、完成回调及布局接入引用 | 单次执行；由动画执行器失效和释放 |
+| 职责 | Owner |
+| --- | --- |
+| IsExpanded / IsSelected / IsSubMenuOpen | 具体控件、selection 或菜单状态 |
+| Motion 定义、时钟、替代、透明度与结果 | Core Motion |
+| IMotionLayout / IMotionLayoutLease | Core 的公开扩展能力 |
+| 自然内容、占位、实际视口和四方向排列 | Controls.ContentViewport 及其布局租约 |
+| Opened / Closed、命令、键盘、路径和物理宿主 | 具体业务控件 |
 
-“展开动画执行器”和“内容视口”是内部职责名称，不构成新增的 public 类型、属性、Template Part 或主题资源 key。
-共享层通过强类型内部协作接收控件输入，不引用 Desktop 的 selection model、菜单节点或具体控件 Token。
-Core 的内部可见性沿用现有模块边界，不增加反向项目引用。
+ContentViewport 继承 ContentControl，保留 ContentTemplate 和延迟物化，只实现布局能力。
+它不拥有动画任务、取消源、帧时钟或业务事件，普通视觉 Motion 不需要该原语。
+租约的 SetProgress 接受同一次播放的进度，Dispose 只解除自身接管；旧租约不能清除后建立的新租约。
 
-数据流：
+租约建立、进度变化和释放都必须失效本节点的测量及视觉祖先的排列。实际视口与期望占位是独立值：
+宽度重排或模板切换可能已经发布最终 DesiredSize，但祖先仍缓存收起时的子项排列。
+仅依赖 DesiredSize 变化通知不足以恢复真实分配矩形。祖先只进入框架的 Arrange 失效队列，
+不逐帧强制 Measure 祖先、同步刷新布局或另建调度时钟；同帧重复失效由框架队列合并。
+
+## 3. 计算流程
+
+单位为 DIP。水平主轴用于 Left / Right，垂直主轴用于 Top / Bottom。
+
+1. 准备时捕获当前 Bounds 主轴可见长度及扣除 Margin 的期望占位。首次展开以零长度起步，反向使用当前租约呈现值。
+2. Measure 以有效宿主约束测量完整 Presenter，取得自然内容尺寸。动画主轴不作为缩小文字排版的测量约束。
+3. 期望占位按进度插值；ArrangeCore 单独约束实际分配矩形。即使固定父布局分配更大空间，真实 Bounds 和命中视口也受进度约束。
+4. Arrange 使用完整内容尺寸，交叉轴遵守父约束。Bottom / Right 起点为零，Top / Left 以可见长度减完整长度确定尾边锚定。
+5. 启用布局舍入时先按实际缩放取得视口像素尺寸，再用该结果计算锚点，不独立舍入相邻边。
+
+实际内容长度取自然内容与有效宿主分配的适用值，Margin 留在原 owner。
+Min / Max、固定尺寸与内容边框不会通过删除应用属性来实现收起；实际视口仍单独承担绘制和交互裁剪。
+
+## 4. 动态内容与反向
+
+内容、字体、padding、边框、真实宽度约束或嵌套内容变化时，自然尺寸随布局失效更新。
+同一次播放的进度不重启。设新终点为 T、当前呈现长度为 V、当前进度为 p（p<1），重新计算虚拟起点：
 
 ```text
-控件状态 owner → 目标展开状态 / 方向 / 时长
-                         ↓
-                内部展开动画执行器
-                ↙            ↘
-          自然内容测量      动画请求所有权
-                ↘            ↙
-               内容视口尺寸 + 透明度
-                         ↓
-               裁剪后的可见内容 / 当前请求完成
+S = (V - T * p) / (1 - p)
+L(p) = max(0, S + (T - S) * p)
 ```
 
-源码职责：
+因此目标变化当帧保持 V，仍在原截止时间到达新终点；占位与实际视口分别重定向。
+新的反向意图是新请求，从当前实际长度开始使用新请求时长。透明度与尺寸共享同一时钟基准。
 
-| 源码入口 | 职责 |
+## 5. 控件接入
+
+| 消费者 | 目标与状态 |
 | --- | --- |
-| `src/AtomUI.Core/MotionScene/ContentExpansionAnimator.cs` | 私有展开进度属性及布局失效通知、单次请求所有权、自然内容尺寸、插值、取消及完成；实现 `IMotionActorLayout`。 |
-| `src/AtomUI.Core/MotionScene/IMotionActorLayout.cs` | 内部通用布局协作契约：内容测量、actor 排列区域约束和完整内容排列。 |
-| `src/AtomUI.Core/MotionScene/BaseMotionActor.cs` | 通过 `MotionLayout` 委托布局，不依赖具体动画执行器或展开进度属性。 |
-| `src/AtomUI.Core/MotionScene/BaseLayoutAwareMotionActor.cs` | 存在 `MotionLayout` 时交给该布局策略处理，其余执行保留既有布局变换路径。 |
-| 三个控件的模板接入层 | 当前目标、方向、时长、animator 生命周期及控件自身完成事件。 |
+| Expander | PART_ContentViewport；主题绑定 IsExpanded、IsMotionEnabled、MotionDuration，方向 selector 提供 LayoutDirection |
+| CollapseItem | PART_ContentViewport；主题绑定 IsSelected、动效开关和有效时长，父 selection 同步协调互斥 |
+| NavMenu Inline | PART_ChildItemsViewport；主题声明开合，item 持有排队版本和事件核对，不持有执行器 |
+| TreeView / TreeSelect / Transfer | PART_ChildrenViewport；owner 捕获自定义定义和请求参数，反向不丢弃，完成时核对业务和模板身份 |
 
-`ContentExpansionAnimator` 是持续绑定当前模板 actor、处理多次开合请求的动画执行器。它通过私有
-`AttachedProperty<double>` 声明 `ContentExpansionProgress`，属性 owner 为执行器，host 为 `BaseMotionActor`。
-进度值和 `Opacity` 都存储在 actor 上，由同一个 Avalonia 原生 `Animation` 同步驱动；进度变化的静态 class handler
-由执行器注册并使 actor 测量失效，不捕获执行器实例。
+ExpandMotion / CollapseMotion 使用该能力，普通 Control 缺少能力时在写目标前拒绝布局轨迹。
+初始模板、重新挂载、关闭动效或方向切换由可见性 owner 按当前业务状态稳定投影。
+正常展开保留终态布局覆盖；收起隐藏、Reset、下一次成功请求和 detach 释放覆盖及租约，恢复最新底层来源。
 
-执行器仅在动画运行期间把自身安装到 `MotionLayout`，取消或完成时解除。`BaseMotionActor` 只根据
-`IMotionActorLayout` 委托测量与排列，不读取展开方向、目标状态或进度。接口实现按进度报告布局占位、约束裁剪视口，
-并以完整尺寸排列内容。进度属性与布局接口均是内部实现，不增加 public 配置或模板资源。
-原有 `ExpandMotion`、`CollapseMotion` 和自定义 Motion 的全局协议保持独立。
+## 6. 输入、滚动与验证
 
-动画执行器不维护第二套“当前选中项”或“展开项集合”。它也不负责标题命中、键盘导航、图标旋转、业务命令或路由事件。
-一次执行的完成结果只报告“当前请求完成”或“已被替代/取消”，是否发送控件事件由原状态 owner 决定。
+绘制裁剪和命中使用相同实际视口，不只修改 DesiredSize 或透明度。
+验证保留原有限高、内容规模、标题、滚动条、嵌套 ScrollViewer 与边界滚动链；不通过移除约束规避问题。
 
-## 3. 控件与方向策略
+定向验证覆盖四方向与不同缩放、固定父约束、动态内容、同高空间交换、首尾帧、快速反向、模板替换和卸载重挂载。
+现有 ContentExpansionMotion / Boundary / Input 与控件行为测试承担长期合同；Headless 不替代原生视觉和帧预算验收。
 
-| 接入场景 | 动画主轴 | 内容靠近标题的边 | 状态与互斥 owner | 时长输入 |
-| --- | --- | --- | --- | --- |
-| NavMenu Inline 子菜单 | 高度 | 顶边 | `NavMenuItem.IsSubMenuOpen`；根菜单协调顶层互斥 | `OpenCloseMotionDuration`，主题映射 `MotionDurationMid` |
-| Collapse 普通 / 手风琴 | 高度 | 顶边 | Avalonia selection model；`CollapseItem.IsSelected` 为投影 | `MotionDuration`，主题映射 `MotionDurationSlow` |
-| Expander Down | 高度 | 顶边 | `IsExpanded` | `MotionDuration`，主题映射 `MotionDurationSlow` |
-| Expander Up | 高度 | 底边 | `IsExpanded` | 同上 |
-| Expander Left | 宽度 | 右边 | `IsExpanded` | 同上 |
-| Expander Right | 宽度 | 左边 | `IsExpanded` | 同上 |
-
-时长由控件的有效主题值提供，共享层不把所有控件强制改成同一个毫秒数。收放曲线统一为
-`Spline(0.645, 0.045, 0.355, 1)`，属于内部动效策略，不增加控件专属 Token 或公开动画配置。
-NavMenu 的菜单项背景过渡、根菜单 Inline Collapsed 宽度切换和 Popup 动效属于各自的独立职责。
-
-## 4. Template 与布局契约
-
-内容视口复用既有模板协作入口：NavMenu 的 child motion actor，以及 Collapse / Expander 的
-`PART_ContentMotionActor`。布局接入层可以使用内部实现隔离内容测量和可见区域，但不得重命名既有 part、
-新增公开定制入口，或改变应用对 Header / Content 的使用方式。
-
-各模板内部内容所有权：
-
-- NavMenu：`VerticalChildItemsMargin` 位于内部 `PART_ChildItemsFrame`，作为完整内容的一部分参与裁剪。
-- Collapse：`PART_ContentFrame` 拥有内容 padding 和顶部边线；item shell 拥有非末项底线，根框拥有外框。
-- Expander：未命名内容 `PixelAlignedBorder` 拥有分隔线，`PART_ContentPresenter` 拥有内容 padding。
-
-父布局分配的可用区域与动画视口是两个尺寸：固定尺寸宿主或填充布局分配的主轴空间可以大于 actor 的
-DesiredSize。测量报告连续变化的占位，排列仍须按进度约束真实裁剪视口并维持标题侧锚定，不能把父级分配的
-整段空间直接当作当前可见长度；根控件的显式尺寸和 Min/Max 约束保持原有值。
-
-内容内部间距和边线必须包含在自然尺寸中。不能在首尾帧额外恢复一段视口外 margin，也不能通过边框厚度动画
-补偿内容尺寸。标题、外框和 item 间的结构化分隔线不参与内容透明度动画。
-
-### 4.1 测量约束
-
-测量输入是宿主在正常展开布局中能够分配给内容的约束，不是当前正在缩小的视口 Bounds。垂直展开保持有效内容
-宽度，测量完整内容高度；水平展开保持正常展开时的排版宽度和交叉轴约束，求得完整内容宽度。
-宽度必须扣除实际标题占位、外框及布局间距，并遵守宿主的有限约束和内容自身尺寸规则。
-
-对横向换行文本，不得以每一帧的动画宽度重新排版，也不得为取得目标宽度而无条件改成无限宽测量。
-内容在本次执行内按相同的完整布局尺寸排列，由视口裁剪显示。视口报告的动画尺寸仍参与父布局，使后续内容连续移动。
-
-自然尺寸在内容、字体、padding、边框、有效宿主约束、方向或嵌套内容尺寸改变时失效；动画自身的视口尺寸变化
-不构成自然测量约束变化。失效按布局轮次合并，只重测受影响内容，不在每帧遍历所有面板或整个菜单树。
-
-### 4.2 四方向锚定
-
-以内容视口局部坐标表示：主轴可见长度为 `v`，完整内容长度为 `L`。
-
-- Down / Right：内容主轴起点为 `0`。
-- Up / Left：内容主轴起点为 `v - L`，使靠近标题的尾边与视口尾边重合。
-
-交叉轴遵循原模板对齐方式。该排列只表达方向锚定，不缩放内容；文字相对其内容布局和锚定边的位置保持稳定。
-Up / Left 的整体移动是方向语义的一部分，不能误判为文字局部排版抖动。
-像素取整遵循宿主缩放与原有布局规则，避免对内容偏移和锚定边进行相互独立、互相矛盾的取整。
-启用 `UseLayoutRounding` 时，先按宿主缩放取得实际视口像素尺寸，再用同一尺寸计算 Up / Left 的尾边锚点；
-反转前后即使浮点插值变为已捕获的像素尺寸，文字也保持在同一个锚定位置。
-
-裁剪同时约束绘制与可交互内容区域。不得通过取消高度限制、隐藏滚动条或移除嵌套 ScrollViewer 来满足动画断言；
-viewport、extent、offset、内外滚动及边界滚动传递仍由原滚动 owner 管理。
-
-## 5. 连续动画与手风琴空间交换
-
-输入包含当前呈现尺寸 `s`、目标尺寸 `d`、当前透明度 `a`、目标透明度 `b`、有效时长 `T`。
-尺寸单位为 DIP，透明度区间为 `[0, 1]`。展开目标 `d` 为自然内容主轴长度，收起目标为 `0`；`b` 分别为 `1`、`0`。
-
-测量占位与实际视口分别保留起点及目标，共用同一进度。正常内容流中两者一致；父布局强制填充额外空间时，
-测量目标仍取自然尺寸，视口展开目标取完整排列长度，保持固定宿主内的内容对齐和最终帧连续。
-
-```text
-p = Clamp(elapsed / T, 0, 1)
-q = Spline(0.645, 0.045, 0.355, 1)(p)
-size(p)    = s + (d - s) × q
-opacity(p) = a + (b - a) × q
-```
-
-从稳定状态切换两个面板、且时长和起始时钟帧相同时，旧内容高度 `H1` 与新内容高度 `H2` 的总占位满足：
-
-```text
-total(p) = H1 × (1 - q) + H2 × q
-```
-
-因此等高内容的总占位保持不变；不等高内容的总占位在两个稳定高度之间单调变化，不产生额外的中途膨胀。
-上述关系针对内容视口，固定标题、item 分隔线和外框不计入交换量。
-连续反转或多次切换时，保证每个视口从实际当前值接续，不对多个尚未结束的请求强行假定稳定起点公式。
-
-同一手风琴操作先由业务 owner 同步提交旧项关闭与目标项打开，再由两个内容视口在同一动画时钟帧开始播放。
-不得等待新项完成事件才关闭旧项。共享动画执行器不能通过回写 selection 或额外保存 active item 实现这种同步。
-
-## 6. 请求、首尾帧与生命周期
-
-一次请求按以下顺序处理：
-
-1. 核对当前宿主、模板、方向和目标状态。尚未开始就被替代的排队请求直接结束，不接触 actor。
-2. 在取消旧执行前读取当前已呈现的 Bounds 主轴尺寸和有效透明度。隐藏状态的起点为零。
-3. 使旧执行身份失效，再取消旧动画；取消回调和旧 `finally` 无权清理新执行使用的 actor。
-4. 同步安装起点插值与透明度，并使布局失效；布局轮次在有效宿主约束下取得自然尺寸，首个 tick 前使用所捕获的起点。
-5. 启动尺寸与透明度动画。播放期间保留内容可见，通过裁剪和透明度控制呈现。
-6. 用 `FillMode.Forward` 或等价的最终值保持语义覆盖动画结束至异步 continuation 之间的绘制窗口。
-7. 仅当前请求、当前 actor 且目标仍一致时提交稳定状态。展开恢复自然布局；收起先稳定为零占位并隐藏内容，
-   再释放临时尺寸控制。最后报告当前请求完成并释放执行资源。
-
-反向请求用新的完整有效时长从所捕获的当前帧重新插值。契约保证尺寸和透明度位置连续，不承诺反向瞬间速度导数连续。
-内容或宿主约束在同一执行中变化时，重新测量目标并从当前帧接续，保留原截止时间；不因嵌套动画逐帧失效而无限延长
-父动画。截止后按最新内容恢复自然布局，不能残留过期固定尺寸或永久裁剪。
-
-属性写入也可能通过同步通知触发新请求。起点安装和稳定状态投影在每次可通知的属性写入后核对请求身份；
-取消本身触发新请求时同样停止旧操作，避免旧请求在通知返回后继续隐藏或清理新目标。
-
-| 入口或边界 | 处理契约 |
-| --- | --- |
-| 初始布局、禁用动效、有效时长不大于零 | 直接投影目标稳定状态，不创建动画任务 |
-| 内容为空或自然主轴尺寸为零 | 保持确定的零尺寸，透明度及可见性服从目标状态 |
-| 模板 part 缺失 | 不启动内容动画，不影响业务状态提交 |
-| 正常布局约束尚不可用 | 保留稳定状态，由有效布局恢复自然测量；不猜测像素尺寸、不强制同步布局 |
-| 播放中关闭 `IsMotionEnabled` | 立即取消并收敛到当前目标，不等待下一次展开状态变化 |
-| `ExpandDirection` 变化 | 取消原轴执行、释放原轴临时值，按新方向和当前目标重新建立稳定布局 |
-| 模板替换 | 旧请求失效并释放；新 part 按当前目标初始化，旧回调不得操作新 part |
-| detach、容器回收、owner 变化 | 取消并解除订阅，清除执行引用；重新接入时以当前业务状态建立布局 |
-
-清理只移除本机制拥有的内部进度、布局接入、动画值和执行资源，保留原有值或绑定。默认模板展开后使用自然尺寸；不得覆写用户给
-根控件设置的 `Height`、`Width`、Min/Max 约束，或修改内容自身的布局属性来制造终态。
-该机制不以 `Height` / `Width`、transform 或 transition 作为临时进度存储，也不能在清理时删除用户或模板
-拥有的这些值。已经关闭或被取消的执行不能留下内部布局接管或迟到完成通知。
-
-## 7. 兼容性、资源与 AOT
-
-统一机制保持现有 public API、事件语义、Template Part、ControlTheme key 和 Token 契约。现有
-`ExpandMotion` / `CollapseMotion` 与通用 `AbstractMotion` 还被其他调用者使用；本设计不改变其全局语义，
-不把 TreeView 的自定义 `OpenMotion` / `CloseMotion` 接口隐式替换为另一套协议。
-
-`ColorPickerCollapse` 通过继承 Collapse 消费同一内容行为，其调色板展开状态投影及内容布局属于直接回归范围。
-NavMenu 的选中路径、嵌套子菜单状态、完成事件归属，以及 Expander 的继承状态语义仍由各控件保持。
-
-动画执行器、取消源和测量缓存绑定单个控件及其当前模板生命周期。资源不进入全局字典，不创建独立周期定时器，
-不通过静态事件长期持有控件。动画及属性写入在 UI 调度上下文内完成；缓存失效不引入对整个视觉树的逐帧扫描。
-
-共享协议使用强类型内部调用与静态 AXAML 组合，不依赖运行时反射、字符串属性查找、动态程序集扫描或按动画
-实例注册全局 animator。模板内部布局类型的接入必须遵守已有生成式注册和 NativeAOT 约束。
-
-## 8. 验证契约
-
-| 范围 | 必须证明的不变量 |
-| --- | --- |
-| 进度与几何 | 起点与终点准确；等高交换占位稳定，不等高交换无额外膨胀；尺寸和透明度反转连续 |
-| 时钟边界 | 首个 tick 前、最后 tick 后且 continuation 前均可绘制，不闪出完整内容或回退到旧值 |
-| 竞争请求 | 快速开关、切换多个面板、排队请求失效；旧取消与完成回调不能覆盖当前请求 |
-| 四方向 | Header dock、内容锚定边、分隔线相邻关系、完整尺寸和最终隐藏均一致 |
-| 排版与嵌套 | 多行文本的行布局稳定，内容局部文字坐标稳定；三层嵌套和动画中尺寸变化能正确重新测量 |
-| 生命周期 | 初始状态、关动效、方向切换、模板替换、detach / reattach、容器回收，无残留临时尺寸和订阅 |
-| 输入与滚动 | 保留原始尺寸约束、可见滚动条、裁剪和命中范围、内层滚动与外层边界传递 |
-| 视觉变体 | Light / Dark、Borderless / Ghost、自定义 padding、1× / 2× 缩放；比较布局 DIP 与物理像素误差 |
-| 控件业务 | NavMenu 顶层互斥及有效完成事件；Collapse 单选/多选和集合变化；Expander 触发模式与继承语义 |
-| 直接消费者 | ColorPicker 调色板状态与布局；既有自定义 motion 调用者保持兼容 |
-
-自动化验证使用可控动画时钟采样中间帧，并验证真实布局与文本坐标。不能仅凭最终 `IsVisible` 正确、某个 transform
-非空或任务完成就判断动画满足契约。像素误差应按缩放和实际取整规则解释，不能通过扩大容差吞掉整段间距跳变。
-
-Gallery 走查保留 NavMenu 三层手风琴、Collapse 普通/手风琴/嵌套示例，以及 Expander 固定高度容器中的方向和
-换行文本示例。Headless 布局与截图证明几何和帧边界；原生宿主走查证明交互和实际观感，两者不能互相替代。
-验证范围选择共享机制、三个控件与直接消费者的定向测试；模板注册或 AOT 边界变化时另做相应发布验证。
+控件实现入口：[Expander](../../../controls/desktop/data-display/expander/implementation.md)、
+[Collapse](../../../controls/desktop/data-display/collapse/implementation.md)、
+[NavMenu](../../../controls/desktop/navigation/nav-menu/implementation.md)、
+[TreeView](../../../controls/desktop/data-display/tree-view/implementation.md)。

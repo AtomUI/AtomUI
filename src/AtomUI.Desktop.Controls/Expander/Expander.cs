@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -198,7 +197,6 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
     private Control? _headerDecorator;
     private IconButton? _expandButton;
-    private ContentExpansionAnimator? _contentExpansion;
 
     public Expander()
     {
@@ -213,15 +211,9 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
             _expandButton.Click -= HandleExpandButtonClicked;
         }
 
-        _contentExpansion?.ApplyState(IsExpanded);
-        var motionActor = e.NameScope.Find<BaseMotionActor>("PART_ContentMotionActor");
-        _contentExpansion = motionActor is null
-            ? null
-            : new ContentExpansionAnimator(motionActor, motionActor.NotifyMotionPreStart, motionActor.NotifyMotionCompleted);
         _headerDecorator = e.NameScope.Find<Control>("PART_HeaderDecorator");
         _expandButton    = e.NameScope.Find<IconButton>("PART_ExpandButton");
 
-        _contentExpansion?.ApplyState(IsExpanded);
 
         if (_expandButton is not null)
         {
@@ -235,18 +227,6 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
         UpdatePseudoClasses();
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _contentExpansion?.ApplyState(IsExpanded);
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _contentExpansion?.ApplyState(IsExpanded);
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -256,17 +236,6 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
             {
                 SetupDefaultIcon();
             }
-        }
-
-        if (change.Property == IsExpandedProperty)
-        {
-            UpdateContentVisibility(IsExpanded);
-        }
-
-        if ((change.Property == IsMotionEnabledProperty && !IsMotionEnabled) ||
-            change.Property == ExpandDirectionProperty)
-        {
-            _contentExpansion?.ApplyState(IsExpanded);
         }
 
         if (change.Property == BorderThicknessProperty ||
@@ -357,30 +326,6 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
             ExpandDirection.Left => new Thickness(0, 0, line, 0),
             ExpandDirection.Right => new Thickness(line, 0, 0, 0),
             _ => throw new ArgumentOutOfRangeException(nameof(ExpandDirection), ExpandDirection,
-                "Invalid value for ExpandDirection")
-        };
-    }
-
-    private async void UpdateContentVisibility(bool isVisible)
-    {
-        if (_contentExpansion is not { } expansion)
-        {
-            return;
-        }
-
-        var duration = IsMotionEnabled ? MotionDuration : TimeSpan.Zero;
-        await expansion.RunAsync(isVisible, DirectionFromExpandDirection(ExpandDirection), duration);
-    }
-
-    private static Direction DirectionFromExpandDirection(ExpandDirection expandDirection)
-    {
-        return expandDirection switch
-        {
-            ExpandDirection.Left => Direction.Left,
-            ExpandDirection.Up => Direction.Top,
-            ExpandDirection.Right => Direction.Right,
-            ExpandDirection.Down => Direction.Bottom,
-            _ => throw new ArgumentOutOfRangeException(nameof(expandDirection), expandDirection,
                 "Invalid value for ExpandDirection")
         };
     }

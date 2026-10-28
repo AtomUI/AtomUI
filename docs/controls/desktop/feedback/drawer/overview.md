@@ -57,7 +57,7 @@ Drawer 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 | --- | --- | --- |
 | `PART_CloseButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
 | `PART_InfoContainer` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_InfoContainerMotionActor` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_Surface` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_Mask` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。

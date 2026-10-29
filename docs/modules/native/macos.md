@@ -2,7 +2,7 @@
 
 ## 概述
 
-macOS 平台通过 Objective-C Runtime（`libobjc.A.dylib`）直接调用 AppKit 框架的 `NSWindow` / `NSView` API，实现窗口鼠标事件穿透、标题栏红绿灯按钮位置控制及窗口关闭按钮状态管理。所有 API 均标注 `[SupportedOSPlatform("macos")]`。
+macOS 平台通过 Objective-C Runtime（`libobjc.A.dylib`）直接调用 AppKit 框架的 `NSWindow` / `NSView` API，实现窗口鼠标事件穿透、标题栏红绿灯按钮位置控制及窗口关闭按钮状态管理，并通过 `MacOSPopupShadowPassThrough` 实现窗口型 Popup 阴影区域的输入穿透（见第 5 节）。所有原生调用均标注 `[SupportedOSPlatform("macos")]`。
 
 ---
 
@@ -238,6 +238,7 @@ Objective-C 消息发送函数的不同签名重载：
 | `objc_msgSend_bool(IntPtr, IntPtr)` | `bool` | receiver, selector | 无参消息，返回 bool |
 | `objc_msgSend_void_rect(IntPtr, IntPtr, NSRectFull)` | `void` | receiver, selector, rect | 单 NSRect 参数消息 |
 | `objc_msgSend_rect(IntPtr, IntPtr)` | `NSRectFull` | receiver, selector | 无参消息，返回 NSRect |
+| `objc_msgSend_point(IntPtr, IntPtr)` | `NSPoint` | receiver, selector | 无参消息，返回 NSPoint（两个 double，x64/arm64 均寄存器返回，不走 `_stret`） |
 | `objc_msgSend_ulong(IntPtr, IntPtr)` | `ulong` | receiver, selector | 无参消息，返回 ulong |
 | `objc_msgSend_void_ulong(IntPtr, IntPtr, ulong)` | `void` | receiver, selector, ulong arg | 单 ulong 参数消息 |
 
@@ -251,6 +252,7 @@ Objective-C 消息发送函数的不同签名重载：
 |--------|-----------------|----------------|
 | `SetIgnoresMouseEventsSelector` | `"setIgnoresMouseEvents:"` | `[NSWindow setIgnoresMouseEvents:]` |
 | `IgnoresMouseEventsSelector` | `"ignoresMouseEvents"` | `[NSWindow ignoresMouseEvents]` |
+| `MouseLocationOutsideOfEventStreamSelector` | `"mouseLocationOutsideOfEventStream"` | `[NSWindow mouseLocationOutsideOfEventStream]` |
 | `StandardWindowButtonSelector` | `"standardWindowButton:"` | `[NSWindow standardWindowButton:]` |
 | `FrameSelector` | `"frame"` | `[NSView frame]` |
 | `SetFrameSelector` | `"setFrame:"` | `[NSView setFrame:]` |
@@ -554,3 +556,26 @@ if (OperatingSystem.IsMacOS())
 4. **按钮可能为空** — 如果窗口样式不包含某些按钮（如 `Borderless` 窗口），`GetStandardWindowButton` 可能返回 `IntPtr.Zero`，代码中已做非空检查
 5. **强制重绘** — 修改按钮位置后需要调用 `SetNeedsDisplay(superview, true)` 触发标题栏重绘，否则视觉位置不会更新
 
+---
+
+## 5. MacOSPopupShadowPassThrough（窗口型 Popup 阴影输入穿透）
+
+由 `NativePopupShadowHitTest.TryAttach` / `SuspendInputBeforeShow` 在 macOS 上创建与调用，实现 `IPopupShadowHitTest`。
+控件侧语义见 [Popup 实现原理](../../controls/desktop/other/popup/implementation.md)“8.1 窗口型 Popup 阴影输入穿透”。
+
+AppKit 没有独立于可见内容的输入区域，透明窗口中 alpha 大于 0 的阴影像素仍接收鼠标，因此只能整窗切换 `ignoresMouseEvents`：
+
+| 状态（`MacOSPopupInputState`） | `ignoresMouseEvents` | 轮询 | 条件 |
+|---|---|---|---|
+| `Receive` | `NO` | 否 | 光标在内容形状内、窗口外，或本窗口持有鼠标按键拖拽 |
+| `Suspended` | `YES` | 否 | 打开/关闭动效期间，或 `PopupRoot.IsHitTestVisible` 为 false |
+| `PassThrough` | `YES` | 16ms `DispatcherTimer` | 光标在窗口内、内容形状外（阴影） |
+
+- 进入阴影由 `IInputManager.Process` 的原始 Move 判定（按 PopupRoot 的 `PresentationSource` 过滤）。阴影不参与命中，
+  路由 `PointerMoved` 在阴影上不会引发。
+- 穿透期间读取 `mouseLocationOutsideOfEventStream`：窗口忽略事件时仍返回实时光标；窗口基准坐标原点在左下，
+  `DesktopScaling` 为 1，翻转 Y 即客户区 DIP。不需要辅助功能权限。
+- `setIgnoresMouseEvents:` 只在状态变化时下发；缓存初始为未下发，首次必定下发，不读取 `ignoresMouseEvents`。AppKit 按窗口选择鼠标事件接收者，同进程与跨进程一致穿透。
+- `SuspendInputBeforeShow` 在显示前置为 `YES`（此时原生句柄已存在）。
+- 释放：停止轮询、取消订阅；`PlatformImpl` 仍存在时恢复为 `!PopupRoot.IsHitTestVisible`，与 Avalonia.Native
+  `SetHitTestVisible`（同样使用 `setIgnoresMouseEvents:`）保持一致。窗口已销毁时 `Invalidate()` 只停止轮询。

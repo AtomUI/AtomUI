@@ -183,7 +183,7 @@ focus 与 host teardown 继续使用 Avalonia Popup 协议。产品 owner 只提
 框架私有会话与 registration 布局由固定类型/成员引用描述；依赖升级后须重新执行多 Popup、实际命中、关闭事件、
 宿主复用与 NativeAOT 验证。普通 Debug 测试不能代替 trimming 和 NativeAOT 发布证据。
 
-### 8.1 窗口型 Popup 阴影输入穿透（Windows / X11 / Wayland）
+### 8.1 窗口型 Popup 阴影输入穿透（Windows / X11 / Wayland / macOS）
 
 native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + 阴影 buffer。阴影与内容保持同一 surface（动效严格同帧），
 只把输入区域收缩到内容形状。被否决的独立阴影窗口方案与各平台调研见
@@ -193,7 +193,8 @@ native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + �
 用 `TopLevel.GetTopLevel(Child)` 判定，不使用反射），调用 `NativePopupShadowHitTest.TryAttach`；`Closed` 时释放。
 Windows 返回 `WindowsPopupShadowHitTestHook`，X11（句柄 descriptor 为 `XID` 且 SHAPE 可用）返回
 `X11PopupShadowInputRegion`，原生 Wayland（`Avalonia.Wayland.PopupImpl`）返回 `WaylandPopupShadowInputRegion`，
-macOS 返回 `null`。三者共用 `IPopupShadowHitTest`：`Invalidate()` 由 Popup 在动效状态变化时调用，Windows 逐点查询，实现为空。
+macOS 返回 `MacOSPopupShadowPassThrough`。四者共用 `IPopupShadowHitTest`：`Invalidate()` 由 Popup 在动效状态变化时调用，
+Windows 逐点查询，实现为空。
 
 内容形状直接复用 Avalonia 命中测试：`popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null`。
 `PopupFrameRenderer` 以非空填充绘制圆角矩形，箭头以几何绘制，Avalonia 绘制列表命中测试按圆角矩形与几何计算且不包含
@@ -256,6 +257,23 @@ Wayland（`WaylandPopupShadowInputRegion`）：`wl_surface.set_input_region` 只
 - 释放时窗口仍存活才按 `PopupRoot.IsHitTestVisible` 恢复（可命中为协议默认的无限区域）。compositor 重连时 Avalonia 按自身
   命中状态重放整窗级区域，下次 `Invalidate()` 再收缩。
 
+macOS（`MacOSPopupShadowPassThrough`）：AppKit 没有独立于可见内容的输入区域，透明窗口中 alpha 大于 0 的阴影像素仍接收鼠标，
+只能整窗切换 `ignoresMouseEvents`。内容判定与 Windows 共用 `InputHitTest` 回调，差异如下：
+
+- 进入阴影：订阅 `IInputManager.Process`，只处理 `Root` 为该 PopupRoot `PresentationSource` 的原始 Move，按 `Position`
+  判定。不能用 PopupRoot 的路由 `PointerMoved`：阴影不参与命中，指针位于阴影上时 Avalonia 没有目标元素，不引发路由事件，
+  从内容或窗口外移入阴影都不会被察觉（实机日志确认）。
+- 指针在阴影上时整窗 `setIgnoresMouseEvents:YES`，事件由 AppKit 交给下方窗口，同进程与跨进程一致，不需要 Windows 的两层。
+  穿透后窗口收不到事件，16ms `DispatcherTimer` 读取 `mouseLocationOutsideOfEventStream`（窗口忽略事件时仍有效，窗口基准坐标
+  翻转 Y 即客户区 DIP，无需辅助功能权限）；光标回到内容形状或离开窗口时恢复并停止轮询。
+- 动效期间整窗穿透。`SuspendInputBeforeShow` 在显示前置为 `YES`（实测此时原生句柄已存在）；动效结束的 `Invalidate()`
+  按当前光标决定恢复或直接进入穿透。
+- Avalonia.Native 的 `SetHitTestVisible` 同样使用 `setIgnoresMouseEvents:`：`PopupRoot.IsHitTestVisible` 为 false 时按暂停处理，
+  释放时窗口仍存活则恢复为 `!IsHitTestVisible`。状态判定 `ResolveState` 为纯函数。
+- 本窗口持有按键拖拽（原始 Move 带鼠标按键）时始终接收：AppKit 拖拽期间把移动发给按下时的窗口，即使光标已到阴影或窗口外，
+  中途穿透会丢失拖拽与抬起事件（如下拉列表滚动条拖到阴影上）。窗口内外按事件位置判定。
+- `ignoresMouseEvents` 的缓存从未下发开始，首次状态必定下发，不读取窗口当前值。
+
 ## 9. 资源、性能与 AOT 边界
 
 可选 surface 不增加 host 或 wrapper；只扩展既有 renderer。renderer 因 shadow 或显式 surface 按需创建并复用，surface
@@ -288,6 +306,7 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
   close 不得创建并行关闭动效，`Closed` 必须回到 `Idle`。
 - Popup 开启动画必须覆盖 `Opened` 与实际表面就绪的两种先后顺序；物理 `IsOpen=true` 但表面仍透明不是有效打开终态。
 - native 阴影输入穿透不得拆出独立阴影窗口，也不得在运行时切换 `WS_EX_LAYERED`；只切换 `WS_EX_TRANSPARENT`。
+- macOS 进入阴影的判定必须基于原始指针输入，不得改用 PopupRoot 路由事件。
 - 内容形状判定必须与实际绘制一致：不得给 `PopupRoot`、`PopupSurface` 或 `ShadowsAwareContainer` 设置非空背景，
   否则阴影区域会重新拦截输入。
 - native placement 的主轴偏移必须扣除朝向 anchor 一侧的残余阴影；改变阴影 Token 不得改变内容相对 anchor 的位置。
@@ -303,6 +322,19 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
 - `DialogPopupControlFamilyTests`、DataGrid popup tests 和代表性控件测试验证家族行为与视觉所有权未变。
 
 实机验证状态为 Windows、macOS 已测试；Linux X11、原生 Wayland 仅验证窗口型 Popup 阴影输入穿透（见下）。
+
+窗口型 Popup 阴影输入穿透（macOS，Avalonia.Native，Gallery InfoFlyout“三种触发方式”示例，`ShouldUseOverlayPopup=False`）：
+CGEvent 驱动真实指针，`CGWindowList` 读取 Popup 窗口 frame（288×188 pt，内容约 215×115），临时日志记录原始输入与状态切换：
+
+- 修复前（路由 `PointerMoved` 版本）：从内容移入右侧阴影，原始 Move 的命中为空、无路由事件，窗口不穿透，Hover 浮层一直保持打开。
+- 内容 → 阴影：首个阴影内 Move 即进入穿透并轮询，浮层按移出关闭；锚点 → 相邻按钮上的阴影：浮层窗口仍存在时下方按钮已进入悬停。
+- 指针停在锚点与内容内时同一浮层窗口保持打开，无反复开关；内容内保持接收输入。
+- 窗口外 → Click 浮层左侧阴影进入穿透，离开窗口恢复接收；点击阴影 light dismiss 关闭，关闭后轮询与订阅即停止，无异常日志。
+- 跨进程：Gallery 下移使 Click 浮层顶部约 52pt 超出主窗口，独立进程靶子窗口位于其下；指针在顶部阴影上时靶子收到
+  ENTER/MOVE，点击收到 DOWN。
+- `SuspendInputBeforeShow` 调用时原生句柄已存在，挂接时窗口处于穿透，动效期间 `Suspended`，动效结束光标在阴影上直接穿透。
+
+未覆盖：禁用内容（与 Windows 共用 `enabledElementsOnly: false` 判定）、多显示器、Intel x64 实机、动效中途交互的逐帧录制。
 
 窗口型 Popup 阴影输入穿透（X11，XWayland，100% 缩放）：临时探针应用以 X11 后端打开 `ShouldUseOverlayPopup=False` 的
 FlyoutHost，用 `XShapeGetRectangles(ShapeInput)` 读取 Popup 窗口实际输入形状：窗口 288×188 px，输入区域为 216×116 内容主体

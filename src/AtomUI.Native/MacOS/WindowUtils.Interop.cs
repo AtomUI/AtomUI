@@ -200,9 +200,15 @@ internal static class WindowUtilsInterop
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern void objc_msgSend_void(IntPtr receiver, IntPtr selector);
 
+    // NSPoint 为两个 double，x64 与 arm64 都按寄存器返回，不走 objc_msgSend_stret。
+    [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
+    public static extern NSPoint objc_msgSend_point(IntPtr receiver, IntPtr selector);
+
     // Selector字符串缓存
     public static readonly IntPtr SetIgnoresMouseEventsSelector = sel_registerName("setIgnoresMouseEvents:");
     public static readonly IntPtr IgnoresMouseEventsSelector = sel_registerName("ignoresMouseEvents");
+    public static readonly IntPtr MouseLocationOutsideOfEventStreamSelector =
+        sel_registerName("mouseLocationOutsideOfEventStream");
     public static readonly IntPtr StandardWindowButtonSelector = sel_registerName("standardWindowButton:");
     public static readonly IntPtr FrameSelector = sel_registerName("frame");
     public static readonly IntPtr SuperviewSelector = sel_registerName("superview");

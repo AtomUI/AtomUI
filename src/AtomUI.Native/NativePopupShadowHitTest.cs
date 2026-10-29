@@ -10,7 +10,8 @@ internal interface IPopupShadowHitTest : IDisposable
 {
     /// <summary>
     /// 输入暂停状态或内容形状可能已变化。逐点查询的平台（Windows）忽略；
-    /// 预先提交输入区域的平台（X11、Wayland）据此重新计算并提交。
+    /// 预先提交输入区域的平台（X11、Wayland）据此重新计算并提交；
+    /// macOS 据此按当前光标重新决定整窗是否穿透。
     /// </summary>
     void Invalidate();
 }
@@ -46,6 +47,7 @@ internal static class NativePopupShadowHitTest
     /// 原生窗口映射（显示）前先让整窗对输入透明，由随后的 <see cref="TryAttach"/> 接管。
     /// X11：窗口带默认（整窗）输入形状映射到指针下时，X 服务器立即给下方窗口发送 Leave，
     /// 下方控件丢失悬停（Hover 浮层因此关闭再打开）；映射前设好空输入形状可避免这次越界事件。
+    /// macOS：同样在显示前整窗 <c>ignoresMouseEvents</c>，由 <see cref="TryAttach"/> 按光标位置恢复。
     /// Wayland 在 <see cref="TryAttach"/> 时的首次提交已先于首帧（映射）生效，不需要处理。
     /// Windows 按 <c>WM_NCHITTEST</c> 逐点查询，不需要也不做处理。
     /// </summary>
@@ -56,11 +58,15 @@ internal static class NativePopupShadowHitTest
         {
             Linux.X11PopupShadowInputRegion.SuspendInputBeforeShow(popupRoot);
         }
+        else if (OperatingSystem.IsMacOS())
+        {
+            MacOS.MacOSPopupShadowPassThrough.SuspendInputBeforeShow(popupRoot);
+        }
     }
 
     /// <param name="popupRoot">窗口型 Popup 的 TopLevel（独立原生窗口）。</param>
     /// <param name="isInputSuspended">为 true 时整窗穿透（打开/关闭动画期间）。</param>
-    /// <param name="isInContentShape">客户区 DIP 坐标是否落在内容形状（圆角矩形 + 箭头）内，供逐点命中的平台使用。</param>
+    /// <param name="isInContentShape">客户区 DIP 坐标是否落在内容形状（圆角矩形 + 箭头）内，供逐点命中的平台（Windows、macOS）使用。</param>
     /// <param name="getContentShape">
     /// 内容形状几何，供预先提交输入区域的平台使用；返回 <c>null</c> 表示无法计算，此时不限制输入区域。
     /// </param>
@@ -80,6 +86,11 @@ internal static class NativePopupShadowHitTest
         {
             return (IPopupShadowHitTest?)Linux.X11PopupShadowInputRegion.TryCreate(popupRoot, isInputSuspended, getContentShape) ??
                    Linux.WaylandPopupShadowInputRegion.TryCreate(popupRoot, isInputSuspended, getContentShape);
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            return MacOS.MacOSPopupShadowPassThrough.TryCreate(popupRoot, isInputSuspended, isInContentShape);
         }
 
         return null;

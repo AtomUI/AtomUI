@@ -2,7 +2,7 @@
 
 日期：2026-10-29。状态：Windows 第一层 + 第二层与阴影 token 统一已实现并通过脚本化视觉验证（见文末“Windows 实施结果”）；
 Linux X11 已实现并验证输入形状（见“X11 实施结果”）；原生 Wayland 已实现并在 GNOME Mutter 上验证（见“Wayland 实施结果”）；
-macOS 尚未实施。
+macOS 已实现并在 Apple Silicon 实机验证（见“macOS 实施结果”）。
 
 窗口型 Popup（`ShouldUseOverlayPopup=False`，独立原生窗口）的阴影体验明显差于 Overlay Popup。
 原因是原生窗口的阴影只能画在窗口自身 surface 内：阴影画得越大，窗口越大，阴影区域会拦截鼠标事件。
@@ -161,6 +161,34 @@ macOS 没有独立于可见内容的输入区域 API。
 
 建议 macOS 优先评估方案 2，以保持与其他平台一致的阴影视觉；方案 1 作为样式可接受时的低成本备选。
 
+### macOS 设计（2026-10-29 用户确认采用方案 2）
+
+否决方案 1：系统阴影不能使用 `BoxShadowsSecondary`，与本分支统一窗口型 / Overlay 阴影的目标冲突。
+
+与 Windows 同属逐点查询：内容判定复用 `Popup.AttachShadowHitTest()` 已传入的 `isInContentShape`
+（`PopupRoot.InputHitTest`），Popup 侧不新增回调。差别在于 macOS 只有整窗开关 `setIgnoresMouseEvents:`，
+没有 `WM_NCHITTEST` 那样的逐次询问，因此用“指针事件进入阴影 → 整窗穿透 → 轮询光标 → 恢复”的状态切换实现。
+
+1. 判定入口：`PopupRoot` 上以 `handledEventsToo` 监听 `PointerMoved`（实施时改为原始指针输入，见“macOS 实施结果”）。点不在内容形状内时调用
+   `setIgnoresMouseEvents:YES` 并启动 16ms 的 `DispatcherTimer`（`DispatcherPriority.Input`，与 Windows 第二层相同）。
+2. 轮询：读取 `[NSWindow mouseLocationOutsideOfEventStream]`。它在窗口忽略鼠标事件时仍返回实时光标，坐标为窗口
+   基准坐标（原点左下），按 content view 高度翻转 Y 即为客户区 DIP（macOS `DesktopScaling` 为 1），不做屏幕坐标换算，
+   不需要辅助功能权限。光标回到内容形状内或离开窗口范围时恢复 `NO` 并停止轮询；离开窗口后再次进入会重新收到指针事件。
+   `NSPoint` 为两个 double，x64 与 arm64 都按寄存器返回，使用普通 `objc_msgSend`，不走 `_stret`。
+3. 动效期间：`SuspendInputBeforeShow` 在窗口显示前设为 `YES`，避免窗口出现在指针下时打断下方悬停（沿用 X11 结论，
+   macOS 需实机确认是否必要）；`Invalidate()` 按 `isInputSuspended` 与当前光标重算：动效中保持 `YES`，动效结束后
+   光标在内容内恢复 `NO`，在阴影上保持 `YES` 并启动轮询。
+4. 穿透范围：AppKit 按窗口选择鼠标事件接收者，同进程主窗口与其他程序、桌面一致生效，不分两层。点击阴影交给主窗口
+   light dismiss，与 Windows 结论相同，不改变语义。
+5. 释放：`Dispose()` 停止轮询、移除事件处理；窗口仍存活时恢复挂接前的 `ignoresMouseEvents`。
+
+实现：`src/AtomUI.Native/MacOS/MacOSPopupShadowPassThrough.cs`（`IPopupShadowHitTest`），
+`MacOS/WindowUtils.Interop.cs` 补充所需 selector 与 `NSPoint` 返回的 `objc_msgSend`，`NativePopupShadowHitTest` 增加 macOS 分支。
+“是否穿透 / 是否轮询”的判定抽为纯函数并先写失败测试。
+
+实机验证（本机 macOS，Gallery）：Hover 浮层阴影下按钮悬停；内容 → 阴影按移出处理；点击阴影触发 light dismiss；
+Popup 超出主窗口时阴影下的其他程序收到事件；打开 / 关闭动效期间无闪关；回到内容后交互恢复。
+
 ## 动画期间的命中策略（全平台）
 
 - 默认：Popup 打开/关闭动画期间整窗不可命中（等价于现有整窗级 `SetHitTestVisible(false)`），动画结束后
@@ -255,6 +283,25 @@ Windows 10 build 19045 已复测（见 [Windows 10 实机验证快速上手](202
 - 验证：GNOME Mutter 原生 Wayland 166.7% 缩放，Mutter RemoteDesktop 驱动真实指针 + `WAYLAND_DEBUG` 协议日志，结果见 Popup 实现原理
   第 11 节。临时探针已删除。
 - 未覆盖：跨客户端穿透、KDE/wlroots、compositor 重连。
+
+## macOS 实施结果（2026-10-29）
+
+正式设计见 [Popup 实现原理](../../controls/desktop/other/popup/implementation.md)“8.1”与
+[AtomUI.Native macOS](../../modules/native/macos.md)“5. MacOSPopupShadowPassThrough”。
+
+与“macOS 设计”一节的差异：
+
+- 进入阴影的判定由 PopupRoot 路由 `PointerMoved` 改为 `IInputManager.Process` 原始 Move。实机日志：从内容移入阴影时原始 Move
+  命中为空，Avalonia 不引发路由事件，窗口始终不穿透，Hover 浮层保持打开；从窗口外移入阴影同理。
+- `PopupRoot.IsHitTestVisible` 为 false 时按暂停处理，释放时恢复为 `!IsHitTestVisible`：Avalonia.Native `SetHitTestVisible`
+  同样使用 `setIgnoresMouseEvents:`，记录挂接前的值会读到 `SuspendInputBeforeShow` 刚设置的 `YES`。
+- `SuspendInputBeforeShow` 需要实机确认的一项已确认：调用时原生句柄已存在，挂接时窗口处于穿透。
+
+验证（Apple Silicon，Gallery InfoFlyout 示例，CGEvent 驱动真实指针，临时日志与独立进程靶子窗口；结果见 Popup 实现原理第 11 节）：
+内容 → 阴影按移出关闭；阴影下相邻按钮悬停；窗口外 → 阴影进入穿透、离开恢复；点击阴影 light dismiss；跨进程靶子收到
+ENTER/MOVE/DOWN；停留锚点与内容时浮层不反复开关。临时日志、探针与靶子已删除。
+
+未覆盖：禁用内容、多显示器、Intel x64 实机、动效中途交互的逐帧录制。
 
 ## 实现入口
 

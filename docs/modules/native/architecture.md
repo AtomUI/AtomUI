@@ -73,11 +73,13 @@ haptic 或生命周期能力确实需要原生调用时才进入 Native。Native
 src/AtomUI.Native/
 ├── AtomUI.Native.csproj
 ├── NativeWindowSizing.cs
+├── NativePopupShadowHitTest.cs
 ├── WindowExtensions.cs
 ├── FileSystem/
 │   └── NativeFileSystem.cs
 ├── Windows/
 │   ├── WindowsCsdSizingHook.cs
+│   ├── WindowsPopupShadowHitTestHook.cs
 │   ├── WindowUtils.Interop.cs
 │   └── WindowUtils.Windows.cs
 ├── MacOS/
@@ -101,11 +103,15 @@ src/AtomUI.Native/
   `WM_ERASEBKGND`/`WM_SHOWWINDOW`，并在 `WM_ENTERSIZEMOVE` 与 `WM_EXITSIZEMOVE` 之间跳过擦除填充。
   默认 `RedirectionSurface` 下 GDI 填充会先于渲染帧被 DWM 合成，live resize 期间填充会表现为整窗闪背景色
   （见 [Windows Live Resize 与窗口装饰架构](../../architecture/systems/windowing/windows-live-resize.md)）。
+- `WindowsPopupShadowHitTestHook` 让窗口型 Popup（`PopupRoot`）的阴影区域输入穿透：`WM_NCHITTEST` 在内容形状外返回
+  `HTTRANSPARENT`，阴影超出所属主窗口时临时切换 `WS_EX_TRANSPARENT`（窗口挂接时即为 `WS_EX_LAYERED` + alpha 255）。
+  内容形状与动效状态由 Popup 以委托提供，见 [Windows 平台 API](windows.md) 第 6 节。
 - Windows 目录可以封装 DWM 属性、系统 metric、Win32 消息结构体和受限的可释放 hook。
 - Windows 目录不决定 live resize 策略、合成后端策略、CSD/SSD 策略或控件行为；合成后端顺序由
   `AtomUI.Core` 的 `WithAtomUIDefaultOptions()` 决定。
-- 窗口装饰与 resize hit-test 由 Avalonia CSD 管理；AtomUI 不处理 `WM_NCCALCSIZE` 或
-  `WM_NCHITTEST`，不返回 resize hit-test。
+- 窗口装饰与 resize hit-test 由 Avalonia CSD 管理；AtomUI 不对 Window 处理 `WM_NCCALCSIZE` 或
+  `WM_NCHITTEST`，不返回 resize hit-test。唯一的 `WM_NCHITTEST` 处理是上述窗口型 Popup 阴影穿透，只返回
+  `HTTRANSPARENT` 或交还 Avalonia。
 - 标题栏按钮通过 Avalonia 公共 `WindowDecorationProperties.ElementRole` 接入原生行为，
   不需要 AtomUI 自定义 caption WndProc hook。
 - 允许 Native 层提供窄范围、显式 opt-in、可释放的 sizing/message helper，例如只处理

@@ -2,6 +2,18 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-10-29
+
+- Token
+  - `PopupToken.PopupRootShadow` 与 `FlyoutHostToken.PopupRootShadow` 改为 `BoxShadowsSecondary`，窗口型与 Overlay Popup 阴影一致。
+- Input（Windows）
+  - 窗口型 Popup 阴影区域输入穿透：`WM_NCHITTEST` 在内容形状外返回 `HTTRANSPARENT`（同进程）；阴影超出主窗口时临时加
+    `WS_EX_TRANSPARENT` 并按帧轮询光标恢复（跨进程）。打开/关闭动效期间整窗穿透。
+- Fixed
+  - native 定位在 `MarginToAnchor` 非零时忽略朝向 anchor 一侧的残余阴影，阴影变大后内容离 anchor 过远；改为
+    `MarginToAnchor - 残余阴影`，并移除箭头隐藏时的单独补偿（已被统一规则覆盖）。12 个方向 × 箭头显示/隐藏/居中与
+    Overlay 路径逐像素对比一致。
+
 ## 2026-10-28
 
 - Motion

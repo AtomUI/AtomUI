@@ -99,6 +99,20 @@ native 与 overlay 两条路径共享相同的 frame surface 实现：
 `PopupRoot.Background` 保持 `null`，`TransparencyLevelHint` 保持 `Transparent`。不透明表面只覆盖 Child bounds，不能填满
 native popup 的透明 shadow buffer。overlay host 使用同一原则，避免 host 背景改变圆角、箭头或 shadow 几何。
 
+两条路径的默认阴影相同（`BoxShadowsSecondary`）。native 路径的阴影画在 popup 窗口自身的 shadow buffer 中；
+Windows 上阴影区域不接收鼠标输入（见 [实现原理](implementation.md)“窗口型 Popup 阴影输入穿透”），行为与 overlay 一致：
+
+| 场景 | 行为 |
+| --- | --- |
+| 指针在内容形状（圆角矩形 + 箭头）内 | Popup 正常接收输入。 |
+| 指针在阴影上，阴影位于所属主窗口内 | 输入交给下方的主窗口或其他 Popup；`Trigger=Hover` 浮层按“移出”处理。 |
+| 指针在阴影上，阴影超出主窗口、盖在其他程序上 | 输入交给下方其他程序；指针回到内容形状内后 Popup 恢复可交互。 |
+| 点击阴影 | 与点击 Popup 外部完全相同：light dismiss 照常关闭；只有 `OverlayDismissEventPassThrough=True` 时下方控件同时收到这次点击。 |
+| 打开/关闭动效期间 | 整窗不接收输入，动效结束后恢复按内容形状命中。 |
+
+内容相对 anchor 的位置与阴影厚度无关：native 路径在朝向 anchor 的一侧扣除残余阴影后再留出 `MarginToAnchor`，
+与 overlay 路径落在同一屏幕位置。
+
 ## 6. 控件家族与集成关系
 
 Flyout、MenuFlyout、TreeViewFlyout、PopupConfirm、ToolTip、ContextMenu、ComboBox、Select、Cascader、TreeSelect、

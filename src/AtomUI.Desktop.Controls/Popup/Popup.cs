@@ -4,8 +4,10 @@ using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Media;
 using AtomUI.Animations;
+using AtomUI.Native;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
@@ -187,6 +189,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     #region 动画相关字段
 
     private PopupCloseState _closeMotionState;
+    private bool _isOpenMotionActive;
     private bool _hasRaisedOpened;
     private bool _isLogicallyAttachedAtOpen;
     private long _motionVersion;
@@ -197,6 +200,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private PopupLightDismissRegistration? _lightDismissRegistration;
 
     #endregion
+
+    // 窗口型 Popup 阴影区域的输入穿透，随一次打开会话挂接与释放
+    private IDisposable? _shadowHitTest;
 
     // 避免 popup 内的 wheel 事件冒泡出去触发 PlacementTarget 所在祖先 ScrollViewer 的意外滚动。
     // 订阅对象要记录下来,保证 open/close 成对摘挂。
@@ -246,11 +252,13 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         AttachWheelGuard();
         UpdatePlacementTransformTracker();
         StartOpenMotion();
+        AttachShadowHitTest();
     }
 
     private void StartOpenMotion()
     {
         var version = ++_motionVersion;
+        _isOpenMotionActive = false;
         if (_motionTarget is not { } target)
         {
             return;
@@ -264,10 +272,26 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
         // A single layout boundary prepares the physical host. Playback itself
         // always follows Avalonia's clock, with no periodic Dispatcher work.
+        _isOpenMotionActive = true;
         Dispatcher.Post(() => _ = PlayOpenMotionAsync(version, target, motion), DispatcherPriority.Loaded);
     }
 
     private async Task PlayOpenMotionAsync(long version, Control target, AbstractMotion motion)
+    {
+        try
+        {
+            await PlayOpenMotionCoreAsync(version, target, motion);
+        }
+        finally
+        {
+            if (version == _motionVersion)
+            {
+                _isOpenMotionActive = false;
+            }
+        }
+    }
+
+    private async Task PlayOpenMotionCoreAsync(long version, Control target, AbstractMotion motion)
     {
         if (!IsCurrentMotion(version, target) || !IsOpen || _closeMotionState != PopupCloseState.Idle)
         {
@@ -306,7 +330,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
+        DetachShadowHitTest();
         _hasRaisedOpened = false;
+        _isOpenMotionActive = false;
         var lightDismiss = _lightDismissRegistration;
         _lightDismissRegistration = null;
         var previousVersion = _motionVersion;
@@ -336,6 +362,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         var preparation = _entryPreparation;
         _motionTarget = null;
         _entryPreparation = null;
+        _isOpenMotionActive = false;
         Exception? failure = null;
         try
         {
@@ -408,6 +435,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         }
 
         _closeMotionState = PopupCloseState.Pending;
+        _isOpenMotionActive = false;
         _closeRequested = true;
         var version = ++_motionVersion;
         ClearEntryPreparation();
@@ -483,6 +511,35 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     internal bool IsPlayingCloseMotion =>
         _closeMotionState is PopupCloseState.Pending or PopupCloseState.Playing or PopupCloseState.Completing;
+
+    /// <summary>
+    /// 打开（含等待首帧准备）或关闭动效进行中。
+    /// </summary>
+    internal bool IsPlayingMotion => _isOpenMotionActive || IsPlayingCloseMotion;
+
+    private void AttachShadowHitTest()
+    {
+        DetachShadowHitTest();
+        // 打开后 Child 挂在宿主下：窗口型 Popup 的 TopLevel 即 PopupRoot，Overlay Popup 则是所属窗口
+        if (Child is null || TopLevel.GetTopLevel(Child) is not PopupRoot popupRoot)
+        {
+            return;
+        }
+
+        // 内容形状直接使用 Avalonia 的命中测试：frame renderer 的圆角矩形与箭头几何可命中，
+        // 绘制列表命中不包含 BoxShadow，阴影区域因此不命中。禁用的内容仍属于内容形状。
+        _shadowHitTest = NativePopupShadowHitTest.TryAttach(
+            popupRoot,
+            () => IsPlayingMotion,
+            point => popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null);
+    }
+
+    private void DetachShadowHitTest()
+    {
+        var shadowHitTest = _shadowHitTest;
+        _shadowHitTest = null;
+        shadowHitTest?.Dispose();
+    }
 
     internal void CancelCloseAnimation()
     {

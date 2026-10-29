@@ -1,6 +1,7 @@
 # 窗口型 Popup 阴影与鼠标穿透方案记录
 
-日期：2026-10-29。状态：方案调研完成，尚未实现；各平台方案与待验证项见下文。
+日期：2026-10-29。状态：Windows 第一层 + 第二层与阴影 token 统一已实现并通过脚本化视觉验证（见文末“Windows 实施结果”）；
+Linux X11 / Wayland、macOS 尚未实施。
 
 窗口型 Popup（`ShouldUseOverlayPopup=False`，独立原生窗口）的阴影体验明显差于 Overlay Popup。
 原因是原生窗口的阴影只能画在窗口自身 surface 内：阴影画得越大，窗口越大，阴影区域会拦截鼠标事件。
@@ -183,6 +184,41 @@ macOS 没有独立于可见内容的输入区域 API。
 2. X11 / Wayland 输入区域：复用 `AtomUI.Native` 现有的 Window 阴影穿透能力；Wayland 同时推进上游 API。
 3. macOS 动态穿透方案评估。
 4. 收到“阴影盖住其他程序时点不穿”的反馈后，再实施 Windows 第二层。
+
+## Windows 实施结果（2026-10-29）
+
+分支 `feature/windows-popup-shadow-hit-test`（基于 `experiment/windows-live-resize-layout-sync`）。正式设计见
+[Popup 实现原理](../../controls/desktop/other/popup/implementation.md)“8.1 窗口型 Popup 阴影输入穿透”与
+[AtomUI.Native Windows](../../modules/native/windows.md)“6. WindowsPopupShadowHitTestHook”。
+
+实现与方案的差异：
+
+- 内容形状不手算圆角矩形 + 箭头，直接用 `PopupRoot.InputHitTest(point, enabledElementsOnly: false)`：Avalonia 绘制列表
+  命中按圆角矩形与箭头几何计算，且不包含 `BoxShadow`。
+- `Popup.Host` 与 `IPopupHostProvider` 在 Avalonia 12.1.4 均为 internal，改用 `TopLevel.GetTopLevel(Child) is PopupRoot` 判定，不用反射。
+- 第二层按点判定（阴影点在主窗口外才加 `WS_EX_TRANSPARENT`），等价于“仅 Popup 超出主窗口时启用”；轮询在光标回到
+  内容、回到主窗口或移出 Popup 时停止。`WS_EX_LAYERED` + alpha 255 在挂接时对所有窗口型 Popup 设置，运行时不再改动。
+- “点击阴影时下方控件同时收到点击”并非无条件成立：主窗口 `LightDismissOverlayLayer` 在 light-dismiss Popup 打开期间
+  覆盖整个客户区，点击阴影与点击 Popup 外部任意位置相同；只有 `OverlayDismissEventPassThrough=True` 时下方控件收到点击，
+  且该期间主窗口控件不进入悬停态。这与 overlay Popup 一致，未改变 light dismiss 语义。
+
+阴影改为 `BoxShadowsSecondary` 后暴露了既有定位缺陷：`MarginToAnchor` 非零时 native 主轴偏移忽略朝向 anchor 的残余阴影
+（旧阴影约 7px 被箭头抵消，未显现），内容离 anchor 多出约 40 DIP。已改为 `MarginToAnchor - 残余阴影` 并移除箭头隐藏时的
+单独补偿。
+
+验证（Windows 11，2560×1600，150%，`RedirectionSurface`；脚本在本地 `tmp/visual-verification/windows/`）：
+
+| 脚本 | 内容 | 结果 |
+|---|---|---|
+| `layered-probe.ps1`、`popup-shadow-anim.ps1` | `WS_EX_LAYERED` + alpha 255 前置验证；打开/关闭动效 ddagrab 逐帧 | 无黑框、逐像素 alpha 保留，阴影与内容同帧 |
+| `popup-directions.ps1` | 12 方向 × 箭头显示/隐藏/居中，窗口型 vs overlay 截图对比 | 36 组 frame/阴影/箭头/margin 全部重合，仅文字子像素差异 |
+| `popup-shadow-layer1.ps1` | Hover 浮层阴影下按钮悬停；内容→阴影按移出关闭；点击 Click 浮层阴影 | 全部通过（点击穿透需 `OverlayDismissEventPassThrough=True`） |
+| `popup-shadow-layer2.ps1` + `target-window.ps1` | 浮层超出主窗口 107px，独立进程 WinForms 靶子 | 靶子收到 ENTER/CLICK；回到内容后样式移除、靶子 LEAVE、点击内容不关闭；主窗口内阴影不启用第二层；切换期间内容区 204 帧无变化 |
+
+单元测试：Popup/Flyout/ToolTip 370 项中 362 通过；`PopupMarginPlacementTests` 8 项失败在基线上同样失败
+（headless 非 CSD 窗口无法创建 Popup host），与本改动无关。
+
+未覆盖：Windows 10、WinUI/DirectComposition 合成模式下的 `WS_EX_LAYERED` 兼容性、多显示器混合 DPI。
 
 ## 实现入口
 

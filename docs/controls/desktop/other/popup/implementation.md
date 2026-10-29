@@ -28,6 +28,8 @@ Popup 的物理关闭策略还承载内部钉住打开状态。`IsPopupPinnedOpe
 - `src/AtomUI.Desktop.Controls/Popup/Themes/PopupRootTheme.axaml`：native transparent host 组合。
 - `src/AtomUI.Desktop.Controls/Popup/Themes/OverlayPopupHostTheme.axaml`：overlay host 组合。
 - `src/AtomUI.Desktop.Controls/Primitives/ShadowsAwareContainer.cs`：两类 host 共享的 frame surface/shadow renderer 与几何适配。
+- `src/AtomUI.Native/NativePopupShadowHitTest.cs`、`src/AtomUI.Native/Windows/WindowsPopupShadowHitTestHook.cs`：窗口型 Popup
+  阴影区域输入穿透（Windows），由 `Popup` 在每次打开会话挂接与释放。
 
 ## 3. 核心类职责
 
@@ -95,7 +97,10 @@ native host 使用同一份有效 box-shadow thickness 分配 measure/arrange �
 overlay host 使用 `IsOverlayMode=true`，不把 native shadow buffer 加入 layout。
 
 Popup 将普通 Avalonia placement 转换为 custom placement，并统一计算 anchor、gravity、offset、shadow thickness、arrow
-center 修正和 flip。center 使用 owning `TopLevel.ClientSize`；pointer 使用 owning TopLevel 的 client 坐标。surface 不进入
+center 修正和 flip。native 路径的主轴偏移为 `MarginToAnchor - 残余阴影`：残余阴影是朝向 anchor 一侧的阴影厚度减去
+箭头占用（`PopupUtils.GetAnchorSideResidualShadow`），与 `ShadowsAwareContainer.GetEffectiveShadowThickness` 预留的空间一致；
+箭头隐藏、部件不可用或 Child 没有箭头时 arrow bounds 为空，残余阴影即完整阴影厚度，不再需要单独补偿。副轴（edge-aligned
+对齐）继续由 `CalculateShadowOffset` 按完整阴影厚度对齐内容边缘。由此内容相对 anchor 的位置与阴影厚度无关，与 overlay 路径一致。center 使用 owning `TopLevel.ClientSize`；pointer 使用 owning TopLevel 的 client 坐标。surface 不进入
 任何 placement 输入，因此不能改变位置或尺寸。
 
 翻转预测使用定位请求中的有效尺寸：从 host 的 `PopupSize` 扣除 `Deflate` 后计算边界约束，
@@ -178,6 +183,42 @@ focus 与 host teardown 继续使用 Avalonia Popup 协议。产品 owner 只提
 框架私有会话与 registration 布局由固定类型/成员引用描述；依赖升级后须重新执行多 Popup、实际命中、关闭事件、
 宿主复用与 NativeAOT 验证。普通 Debug 测试不能代替 trimming 和 NativeAOT 发布证据。
 
+### 8.1 窗口型 Popup 阴影输入穿透（Windows）
+
+native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + 阴影 buffer。阴影与内容保持同一 surface（动效严格同帧），
+只把输入区域收缩到内容形状。被否决的独立阴影窗口方案与各平台调研见
+[窗口型 Popup 阴影与鼠标穿透方案记录](../../../../superpowers/progress/2026-10-29-window-popup-shadow-hit-test-plan.md)。
+
+挂接：`Popup.Opened` 时若 Child 的 TopLevel 是 `PopupRoot`（`Host` 与 `IPopupHostProvider` 在 Avalonia 12.1.4 均为 internal，
+用 `TopLevel.GetTopLevel(Child)` 判定，不使用反射），调用 `NativePopupShadowHitTest.TryAttach`；`Closed` 时释放。
+非 Windows 平台返回 `null`。
+
+内容形状直接复用 Avalonia 命中测试：`popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null`。
+`PopupFrameRenderer` 以非空填充绘制圆角矩形，箭头以几何绘制，Avalonia 绘制列表命中测试按圆角矩形与几何计算且不包含
+`BoxShadow`，因此阴影区域天然不命中；`PopupRoot`、`PopupSurface`、`ShadowsAwareContainer` 无背景，
+`PART_TransparencyFallback` 不可命中。禁用的内容仍属于内容形状（不按 enabled 过滤）。
+
+动效期间整窗穿透：`Popup.IsPlayingMotion` = 打开动效（从 `StartOpenMotion` 排队到播放结束，包含首帧前的透明准备期）
+或关闭动效阶段（`Pending`/`Playing`/`Completing`）。命中判定每次 `WM_NCHITTEST` 拉取该状态，无需通知；
+动效结束后下一次鼠标移动即恢复按内容形状命中。
+
+两层判定（`WindowsPopupShadowHitTestHook`，`Win32Properties.AddWndProcHookCallback` 挂接）：
+
+1. 同进程：`WM_NCHITTEST` 在内容形状外（或动效期间）返回 `HTTRANSPARENT`，系统把鼠标事件交给同线程下方窗口
+   （所属主窗口、其他 Popup）。内容形状内不处理，交还 Avalonia。
+2. 跨进程：`HTTRANSPARENT` 只在同线程窗口之间转发。若该点同时位于所属主窗口（`GA_ROOTOWNER` 的
+   `DWMWA_EXTENDED_FRAME_BOUNDS`）之外，加 `WS_EX_TRANSPARENT`，之后由 16ms `DispatcherTimer` + `GetCursorPos` 轮询；
+   光标回到内容形状、回到主窗口内或移出 Popup 窗口时移除并停止轮询，交还第一层。Popup 完全位于主窗口内时不会进入该路径。
+
+`WS_EX_TRANSPARENT` 只在 `WS_EX_LAYERED` 窗口上跨进程生效。挂接时即设置 `WS_EX_LAYERED` +
+`SetLayeredWindowAttributes(alpha=255)`；运行时只切换 `WS_EX_TRANSPARENT`，不调用 `SetWindowPos(SWP_FRAMECHANGED)`，
+不触发重绘。`WM_DESTROY` 时停止轮询，释放时若窗口仍存在则恢复原扩展样式。
+
+与 light dismiss 的关系：命中穿透只决定事件交给哪个窗口。主窗口中 `LightDismissOverlayLayer` 在 light-dismiss Popup
+打开期间覆盖整个客户区，因此点击阴影与点击 Popup 外部任何位置完全相同：照常关闭，只有
+`OverlayDismissEventPassThrough=True` 时下方控件同时收到点击；该期间主窗口控件也不会进入悬停态（overlay Popup 相同）。
+无 light dismiss 的 Popup（如 `Trigger=Hover` 浮层、ToolTip）下方控件可直接收到悬停。
+
 ## 9. 资源、性能与 AOT 边界
 
 可选 surface 不增加 host 或 wrapper；只扩展既有 renderer。renderer 因 shadow 或显式 surface 按需创建并复用，surface
@@ -209,6 +250,10 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
 - Popup 以自身 `PopupCloseState` 表达关闭动效阶段；`Pending`、`Playing` 和 `Completing` 单向收敛，重复
   close 不得创建并行关闭动效，`Closed` 必须回到 `Idle`。
 - Popup 开启动画必须覆盖 `Opened` 与实际表面就绪的两种先后顺序；物理 `IsOpen=true` 但表面仍透明不是有效打开终态。
+- native 阴影输入穿透不得拆出独立阴影窗口，也不得在运行时切换 `WS_EX_LAYERED`；只切换 `WS_EX_TRANSPARENT`。
+- 内容形状判定必须与实际绘制一致：不得给 `PopupRoot`、`PopupSurface` 或 `ShadowsAwareContainer` 设置非空背景，
+  否则阴影区域会重新拦截输入。
+- native placement 的主轴偏移必须扣除朝向 anchor 一侧的残余阴影；改变阴影 Token 不得改变内容相对 anchor 的位置。
 
 ## 11. 测试与验证
 
@@ -221,3 +266,15 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
 - `DialogPopupControlFamilyTests`、DataGrid popup tests 和代表性控件测试验证家族行为与视觉所有权未变。
 
 实机验证状态为 Windows、macOS 已测试；Linux X11/Wayland 未测试。
+
+窗口型 Popup 阴影输入穿透与定位（Windows 11，150% 缩放，`RedirectionSurface`）使用脚本化视觉验证
+（本地 `tmp/visual-verification/windows/`，`ddagrab` 录制 + UI Automation 定位）：
+
+- 定位：InfoFlyout 箭头示例 12 个方向 × 箭头显示/隐藏/居中共 36 组，窗口型与 overlay 截图逐像素对比，
+  frame、阴影、箭头与 margin 全部重合（12 组完全一致，其余仅文字子像素栅格化差异）。
+- 第一层：Hover 浮层阴影盖住相邻按钮时，录像中存在“浮层可见且下方按钮悬停”的帧；指针从内容移到阴影后 Hover 浮层关闭；
+  点击 Click 浮层阴影 light dismiss，`OverlayDismissEventPassThrough=True` 时下方按钮同时获得焦点。
+- 第二层：浮层超出主窗口 107px，独立进程 WinForms 靶子在阴影下收到 ENTER/CLICK，该点 `WindowFromPoint` 命中靶子进程；
+  光标回到（主窗口外的）内容后 `WS_EX_TRANSPARENT` 移除、靶子收到 LEAVE、点击内容浮层不关闭；主窗口内阴影不启用第二层。
+- 视觉：`WS_EX_LAYERED` + alpha 255 下透明圆角与阴影无黑框；打开/关闭动效逐帧阴影与内容同帧；两次样式切换期间
+  内容区 204 帧无任何变化。

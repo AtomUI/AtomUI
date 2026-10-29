@@ -76,7 +76,7 @@ namespace AtomUI.Desktop.Controls;
 [SemanticPart(
     "popup.listItem",
     SelectorClass = "semantic-popup-list-item",
-    SelectorRoute = "/template/ .semantic-popup-root >> .semantic-popup-list-item",
+    SelectorRoute = "> .semantic-popup-list-item",
     CrossVisualRoot = true,
     RuntimeCreated = true,
     Cardinality = SemanticPartCardinality.Multiple,

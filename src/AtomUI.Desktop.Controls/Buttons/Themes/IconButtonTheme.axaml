@@ -38,12 +38,15 @@
         <Setter Property="IsMotionEnabled" Value="{atom:IconButtonTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ atom|IconPresenter atom|Icon">
-            <Setter Property="LoadingAnimation" Value="{TemplateBinding LoadingAnimation}" />
             <Setter Property="LoadingAnimationDuration" Value="{TemplateBinding LoadingAnimationDuration}" />
         </Style>
 
         <Setter Property="IconBrush"
                 Value="{atom:IconButtonTokenResource ColorIcon}" />
+
+        <Style Selector="^[IsMotionEnabled=True] /template/ atom|IconPresenter atom|Icon">
+            <Setter Property="LoadingAnimation" Value="{TemplateBinding LoadingAnimation}" />
+        </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">

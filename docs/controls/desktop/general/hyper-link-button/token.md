@@ -11,3 +11,7 @@
 ## FontFamily 的精确与继承合同
 
 本控件的类型化Global FontFamily在正规化配置直接包含该字段时进入根渲染；未配置则保留真实InheritanceParent的字体，清除恢复当前祖先。Shared字体配置同样生效，显式配置与缺省不按值相等猜测。FontFamily Setter由ControlTheme MultiBinding提供，控件只暴露内部只读继承源；原生Style/local及资源覆盖保持。接口观察在分离时释放父订阅，重挂刷新，不以逻辑父代替受保护的真实继承父。详细机制见[显式Token资源](../../../../modules/core/configured-token-resources.md)。
+
+## 禁用边框的绘制条件
+
+BorderColorDisabled进入禁用状态root BorderBrush并由实际Frame读取；默认BorderThickness=0保持链接无边框。应用提供非零root线宽后该颜色才形成实际描边，原生BorderBrush本地值继续优先；这不是为链接新增默认边框。字段、资源key及缺省颜色保持。

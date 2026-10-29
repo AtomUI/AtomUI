@@ -55,3 +55,7 @@ N3-E [Expander默认结果](container-expander-defaults-results.md)完成本机�
 Expander后经第二十批13文件批准提交并推送6bd607676；[第二十轮实际结果](platform-twentieth-results.md)8个job全部成功，三OS各6405项、三NativeAOT各26／两Browser各23，源身份相同；未取消／重试／发布，该轮不含后续Segmented。
 
 N3-S [Segmented本机结果](segmented-defaults-results.md)：14默认V2、三条有效TrackPadding依赖及自动高度0下限按独立批准设计实施；28标准默认不变，280条metadata一致、仅18条值预期变化。旧/新各288次鼠标及192次方向键通过；Mac managed1037／AOT1038、336资源记录一致。120正式帧40组1DIP全检出、12恢复0；四对精确14点历史差异及所示布局独立获批，原始FAIL保留；216诊断帧及223节点输入未证明每次历史内部原因。四临时C#、339媒体和419文件原生工程清理，原30项／NET8零警告及单Token成员审计通过。14Token／2Control回填，Reserved仍20；仅本机默认依赖切片出口，不关闭N2／N4、其他Host、原生最终像素或完整CT14，Git另审。
+
+2026-10-28 N3-SC13 [TreeSelect/Cascader默认结果](container-select-defaults-results.md)：1+12字段V2 rev1，2实际V1 RED→5PASS9s；104原/新值与type/key/ID/slot一致，两后端56对旧新及16对恢复均0。managed/AOT各123，字重别名均按精确600/400校验；NET8零20.42s、成员2Token文件/0Control/0问题。3临时源、422工程文件（1,228,223,829 bytes）、113媒体已清理且audit clean；精确两模块77PASS6s。仅本机默认迁移，DropdownHeight与行数预算的消费者所有权、标签身份、完整家族及CT25仍开放。用户已同意下一高度包取Own上限与更小页数预算，具体视觉另审；当前不提前Git提交。
+
+2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），当前等待明确视觉确认。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。

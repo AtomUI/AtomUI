@@ -126,6 +126,14 @@ CheckBox 的交互事件应从输入源收敛到控件级语义事件：
 
 ## 7. 内部算法与关键流程
 
+CheckBoxToken 通过静态默认函数建立尺寸依赖。主题编译器先确定有效 `CheckIndicatorSize`，再为未显式配置的 `CheckedMarkSize` 求值；模板将后者直接绑定到 CheckedMark 的 Width/Height。三态标记仍独立读取 Global 字号派生值。默认求值不读取选择状态，也不修改勾选、焦点或组选择数据。
+
+CheckBox 的文字、普通/选中/hover/禁用颜色、圆角及动效/水波开关读取 CheckBox 身份的有效 Global。内部 CheckBoxIndicator 的 BorderThickness 与默认动效开关使用最近公开 owner 的资源；TokenTransitions 将既有时长标记转换为同一 owner 的动态绑定，仍由 Control 的 Style Setter 持有实例与订阅。
+
+CheckBoxGroup 的动效开关和两种间距读取 Group 自身有效 Global。Group 模板把最终 ItemSpacing/LineSpacing 传给内部 CheckBoxItemsControl，再传到 WrapPanel；内部列表的独立默认不替代这条模板绑定。公开子 CheckBox 保留自己的身份和既有组动效协作，Group 不借用 CheckBox 的 Token 身份。
+
+CheckBox 与 CheckBoxGroup 的字体 Setter 使用现有三输入可选转换器：真实父值、显式存在位资源、最终有效 Global。两个薄封装仅通过内部 IThemeInheritanceSource 读取受保护的 InheritanceParent；AXAML 持有最终 FontFamily/FontSize，不在代码写回字体。共用观察器在逻辑离树时停止父订阅，换父与重挂刷新，绑定释放时移除事件，不保存上一个父节点的镜像状态。
+
 维护者需要重点关注以下流程：
 
 - API 默认值到 effective state 的归一。

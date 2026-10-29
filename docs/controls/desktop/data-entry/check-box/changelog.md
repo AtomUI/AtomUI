@@ -2,6 +2,12 @@
 
 本文档记录 CheckBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- 四个 Own 字段接入 DependencyDefaultsV2 rev1；未显式配置的 CheckedMarkSize 跟随有效 CheckIndicatorSize，保留显式下游与原三态标记默认公式。
+- CheckBox 与 CheckBoxGroup 的现有颜色、开关和组间距接入各自有效 Global；内部指示器的厚度按公开 owner 更新，保留原 Setter 条件、时长机制及组绑定。
+- CheckBox / CheckBoxGroup 显式有效 Global FontFamily/FontSize 进入实际文本，未配置与清除保留父级继承，主题 Setter 保持原生 Style/LocalValue 覆盖。
+
 ## 2026-08-16
 
 - Semantic Part

@@ -89,6 +89,8 @@ Public API / inherited command / item source / user input
 
 RadioButton 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
+RadioButton 与 RadioButtonGroup 的 FontFamily/FontSize 支持显式有效 Global，未配置、清除与换父沿真实继承链；普通 Style 与 LocalValue 保持优先级。Group 与公开子 item 的身份分别处理，指示器仍按 Own 尺寸公式计算，不把字体设置隐式改成指示器尺寸别名，见 [Token 设计](token.md)。
+
 | 主题文件 | 职责 |
 | --- | --- |
 | `RadioButtonGroupTheme.axaml` | 定义局部操作入口、按钮或 handle 的状态视觉。 |

@@ -128,6 +128,8 @@ public abstract class AbstractHyperLinkButton : AvaloniaButton,
 
         if (change.Property == IsVisitedProperty ||
             change.Property == ContentProperty ||
+            change.Property == IconProperty ||
+            change.Property == IsDangerProperty ||
             change.Property == IsLoadingProperty)
         {
             UpdatePseudoClasses();
@@ -137,6 +139,9 @@ public abstract class AbstractHyperLinkButton : AvaloniaButton,
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(ButtonPseudoClass.Visited, IsVisited);
+        PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
+        PseudoClasses.Set(ButtonPseudoClass.Loading, IsLoading);
+        PseudoClasses.Set(ButtonPseudoClass.IsDanger, IsDanger);
     }
 
     protected override void OnClick()

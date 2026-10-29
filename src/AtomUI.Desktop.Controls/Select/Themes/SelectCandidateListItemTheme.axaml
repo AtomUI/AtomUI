@@ -10,8 +10,12 @@
         <Setter Property="BorderThickness" Value="0" />
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
-            <Setter Property="FontSize" Value="{atom:SelectTokenResource OptionFontSize}"/>
-            <Setter Property="MinHeight" Value="{atom:SelectTokenResource OptionHeight}"/>
+            <Setter Property="FontSize" Value="{CompiledBinding $parent[atom:SelectCandidateList].FontSize}" />
+            <!-- Keep the same trigger priority as the inherited ListView size presets. -->
+            <Style Selector="^[SizeType=Small], ^[SizeType=Middle], ^[SizeType=Large], ^[SizeType=Custom]">
+                <Setter Property="Padding" Value="{atom:SelectTokenResource OptionPadding}" />
+                <Setter Property="MinHeight" Value="{atom:SelectTokenResource OptionHeight}" />
+            </Style>
             <Style Selector="^[IsGroupItem=False]:pointerover">
                 <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
                 <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />

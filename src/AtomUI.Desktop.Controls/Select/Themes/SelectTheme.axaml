@@ -165,7 +165,7 @@
         <Setter Property="IsMotionEnabled" Value="{atom:SelectTokenResource EnableMotion}" />
         <Setter Property="PopupContentPadding"
                 Value="{atom:SelectTokenResource PopupContentPadding}" />
-        <Setter Property="OptionFontSize" Value="{atom:SelectTokenResource FontSize}" />
+        <Setter Property="OptionFontSize" Value="{atom:SelectTokenResource OptionFontSize}" />
         <Setter Property="ItemHeight" Value="{atom:SelectTokenResource ControlHeight}" />
         <Setter Property="PlaceholderForeground"
                 Value="{atom:SelectTokenResource ColorTextPlaceholder}" />

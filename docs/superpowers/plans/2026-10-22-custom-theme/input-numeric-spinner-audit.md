@@ -1,0 +1,19 @@
+# CT13 / CT15：NumericUpDown 与 ButtonSpinner 接续源码核对
+
+本记录为只读事实与下一分包入口，没有迁移产品、批准视觉或关闭家族。CB4的独立精确视觉审查进行中；不用其批准覆盖这里。
+
+## 已核对事实
+
+- NumericUpDown自身没有独立Own定义，根主题已有typed排版、Foreground、PlaceholderForeground、EnableMotion与几何输入；IsCustomFontSize、输入/数值转换和草稿同步仍由既有控制流程持有。
+- ButtonSpinnerToken仍是WholeEvaluatorV1，8历史字段。FilledHandleBg实际按ColorUtils.OnBackground(有效Global.ColorFillSecondary, HandleBg)计算，存在对同Own HandleBg的真实默认依赖；这与Select25字段的Global-only情况不同，不能机械照搬空Own图。
+- HandleWidth进入ButtonSpinner根、ButtonSpinnerDecoratedBox及NumericUpDown根的SpinnerHandleWidth；HandleIconSize进入普通上下箭头；HandleBg/FilledHandleBg、HandleHoverColor、HandleActiveBg和HandleBorderColor进入真实操作区域。ControlWidth=90尚未找到内置typed消费者，必须独立分类，不能因迁移8默认就标成有效编辑入口。
+- NumericUpDownSpinner的内嵌加减按钮使用Shared.IconSize，普通ButtonSpinner上下箭头使用Own.HandleIconSize=FontSize/2。两者默认图形职责不同；不能将所有图标统一成7或14而改变原外观。
+- ButtonSpinnerHandleTheme的线宽、disabled背景/边框、active图标色及ButtonSpinnerDecoratedBox的布局/动效/尺寸仍有Shared资源；NumericUpDownSpinner另有两条硬编码1 DIP分隔边和四处Shared图标尺寸。它们只是需要实际owner/消费验证的候选，尚无RED，不写成已确认Bug。
+
+## 推荐顺序与验收边界
+
+先NU1：8字段V2及FilledHandleBg真实Own边，原默认/显式Own、0与清除/资源key和slot；覆盖独立ButtonSpinner与NumericUpDown两种模式的实际消费者及原明暗像素。显式HandleBg修复所致Filled变化需要单独视觉审查。ControlWidth按真实引用与兼容语义另作决定。
+
+再NU2：逐入口用实际NumericUpDown/Input与Spinner/浮动模式证明Global归属与线宽/图标更新；保持平方按钮、文本/草稿、键盘增减、焦点、Min/Max、CompactSpace和原高度/滚动合同。新几何变化按具体范围审查，不引入一套Custom Token。
+
+代码中的输入转换同步旗标属于现有控制状态机；本次主题入口核对不授权顺手重排或改写数据同步逻辑。完整CT13/CT15/CT20/CT25仍开放。

@@ -10,6 +10,6 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDescription}"/>
     </ControlTheme>
 </ResourceDictionary>

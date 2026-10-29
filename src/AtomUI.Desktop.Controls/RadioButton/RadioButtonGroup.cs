@@ -1,9 +1,12 @@
 using AtomUI.Controls.Commons;
+using AtomUI.Theme.Resources;
+using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public class RadioButtonGroup : AbstractRadioButtonGroup
+public class RadioButtonGroup : AbstractRadioButtonGroup,
+    IThemeInheritanceSource
 {
     public RadioButtonGroup()
     {
@@ -13,4 +16,7 @@ public class RadioButtonGroup : AbstractRadioButtonGroup
     {
         return new RadioButton();
     }
+
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

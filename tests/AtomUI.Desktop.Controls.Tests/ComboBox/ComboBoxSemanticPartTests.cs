@@ -99,7 +99,7 @@ public class ComboBoxSemanticPartTests
             "/template/ .semantic-popup-root >> .semantic-popup-empty",
             crossVisualRoot: true);
         AssertPart(descriptor, "popup.listItem", PopupListItemClass, typeof(AtomUIComboBoxItem),
-            "/template/ .semantic-popup-root >> .semantic-popup-list-item",
+            "> .semantic-popup-list-item",
             SemanticPartCardinality.Multiple, crossVisualRoot: true, runtimeCreated: true);
 
         // ComboBoxItem 模板内只有一个纯 ContentPresenter，容器级样式已由 popup.listItem 完整覆盖，

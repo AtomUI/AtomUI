@@ -25,6 +25,22 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+十一字段采用 DependencyDefaultsV2 rev1，每字段独立静态默认函数；所有输入为有效 Global 或常量，不建立 Own 字段间依赖。
+
+| 字段 | 默认输入 |
+| --- | --- |
+| PopupContentPadding | 左右 UniformlyPaddingXXS，上下 BorderRadiusLG.TopLeft / 2 |
+| ItemColor / ItemHoverColor | ColorTextSecondary；显式 ItemColor 不影响未配置的 ItemHoverColor |
+| ItemSelectedColor / ItemDisabledColor | ColorText / ColorTextDisabled |
+| ItemBgColor / ItemHoverBgColor / ItemSelectedBgColor | ColorBgElevated / ColorBgTextHover / ControlItemBgActive |
+| ItemPadding | UniformlyPaddingSM,0 |
+| ItemMargin | 0,0.5，保留半DIP上下边距 |
+| HandleHoverColor | ColorPrimary |
+
+名称、类型、资源 key、公开 ID 与 slot 保持；显式 Own（含合法0）优先，清除后恢复默认。该表定义资源求值；最终绘制仍由具体状态选择器和模板输入决定，不能用资源默认值推导状态行为。
+
+普通项前景读取 ItemColor，未选中候选高亮读取 ItemHoverColor，选中项读取 ItemSelectedColor，禁用项读取 ItemDisabledColor。disabled选择器保留原优先级，不改变选择或输入状态。内部手柄的真实 IconButton 在 pointerover 时读取 HandleHoverColor；该入口通过既有 ControlTheme 映射到实际箭头画刷，不新增手柄或代码定制入口。
+
 ComboBox 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。

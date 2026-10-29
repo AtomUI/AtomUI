@@ -2,8 +2,8 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TreeSelectToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TreeSelectToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -11,15 +11,7 @@ internal sealed class TreeSelectToken : AbstractControlDesignToken
     /// </summary>
     public double MinPopupWidth { get; set; }
 
-    public TreeSelectToken()
-
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        MinPopupWidth = 300;
-    }
+    [ControlTokenDefault(nameof(MinPopupWidth))]
+    private static double DefaultForMinPopupWidth(in ControlTokenDefaultContext context) => 300;
     
 }

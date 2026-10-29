@@ -159,7 +159,6 @@
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
                         <Border Name="PopupFrame"
                                 Classes.semantic-popup-root="True"
-                                MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding EffectivePopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:CascaderView Name="PART_CascaderView"
@@ -196,7 +195,6 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="IsMotionEnabled" Value="{atom:CascaderTokenResource EnableMotion}" />
-        <Setter Property="MaxPopupHeight" Value="{atom:CascaderTokenResource DropdownHeight}" />
         <Setter Property="ItemHeight" Value="{atom:CascaderTokenResource ControlHeight}" />
         <Setter Property="PlaceholderForeground"
                 Value="{atom:CascaderTokenResource ColorTextPlaceholder}" />
@@ -217,6 +215,12 @@
                     Value="{atom:PopupTokenResource PopupRootShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
+            <Setter Property="MaxHeight">
+                <MultiBinding Converter="{x:Static atom:CascaderThemeBindings.PopupMaxHeight}">
+                    <TemplateBinding Property="{x:Static atom:CascaderThemeBindings.PopupHeightBudgetProperty}" />
+                    <atom:CascaderTokenResource Kind="DropdownHeight" />
+                </MultiBinding>
+            </Setter>
             <Setter Property="Background" Value="{atom:CascaderTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />

@@ -4,6 +4,21 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CheckBoxGroup}" TargetType="atom:CheckBoxGroup">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:CheckBoxGroupTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:CheckBoxGroupTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:CheckBoxGroupTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:CheckBoxGroupTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="Frame"
@@ -21,14 +36,14 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:CheckBoxGroupTokenResource EnableMotion}" />
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:ICheckBoxOption">
                 <atom:TextBlock Text="{Binding Content}" />
             </DataTemplate>
         </Setter>
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+        <Setter Property="ItemSpacing" Value="{atom:CheckBoxGroupTokenResource SpacingXS}" />
+        <Setter Property="LineSpacing" Value="{atom:CheckBoxGroupTokenResource SpacingXS}" />
 
     </ControlTheme>
 </ResourceDictionary>

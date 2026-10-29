@@ -1,5 +1,9 @@
 # TreeSelect 桌面版实现原理
 
+共享SelectHandle通过内部IndicatorSize接收实际TreeSelect有效Global.IconSize，再以TemplateBinding供给公开IconPresenter及现有图标目标；没有新增Own字段、包装层或C#绑定。它与公开Presenter身份区分，原Template优先级转发/子显式值规则保持。IconLayout的反馈间距读取同一TreeSelect owner的SpacingXS。
+
+共享 SelectTagAwareTextBox 的标签 ItemSpacing/LineSpacing、响应式面板 Spacing 及 SelectMaxCountIndicator 的文字颜色，通过 OwnerTokenResource 分别读取实际 TreeSelect 有效 Global.SpacingXXS/ColorTextDescription。共享主题名称不代表使用 Select 的配置，也不接管公开子 Tag 的颜色身份；未新增内部 identity 或代码绑定。
+
 本文档描述 TreeSelect 桌面版的输入壳体、树数据集合、选择同步、过滤、候选弹层、Form 和 Token 资源边界。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [TreeSelect 桌面版架构设计](overview.md)，Token 语义见 [TreeSelect Token 设计](token.md)，变化记录见 [TreeSelect Changelog](changelog.md)。
 
 Popup 接入边界：`AbstractSelect` 负责业务状态和内容准备，`PART_Popup` 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。

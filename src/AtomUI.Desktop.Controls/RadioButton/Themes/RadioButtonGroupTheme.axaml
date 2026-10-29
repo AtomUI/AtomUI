@@ -4,6 +4,21 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:RadioButtonGroup}" TargetType="atom:RadioButtonGroup">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:RadioButtonGroupTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:RadioButtonGroupTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:RadioButtonGroupTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:RadioButtonGroupTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="Frame"
@@ -17,7 +32,7 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:RadioButtonGroupTokenResource EnableMotion}" />
 
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
@@ -28,8 +43,8 @@
             </ItemsPanelTemplate>
         </Setter>
 
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+        <Setter Property="ItemSpacing" Value="{atom:RadioButtonGroupTokenResource SpacingXS}" />
+        <Setter Property="LineSpacing" Value="{atom:RadioButtonGroupTokenResource SpacingXS}" />
 
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:IRadioButtonOption">

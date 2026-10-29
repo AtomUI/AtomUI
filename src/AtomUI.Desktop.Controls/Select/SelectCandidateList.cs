@@ -16,11 +16,535 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SelectCandidateList : ListView, ICandidateList
 {
+
+    #region 公共属性定义
+
+    public static readonly DirectProperty<SelectCandidateList, object?> CandidateSelectedItemProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, object?>(
+            nameof(CandidateSelectedItem),
+            o => o.CandidateSelectedItem,
+            (o, v) => o.CandidateSelectedItem = v,
+            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
+    public static readonly DirectProperty<SelectCandidateList, int> CandidateSelectedIndexProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, int>(
+            nameof(CandidateSelectedIndex),
+            o => o.CandidateSelectedIndex,
+            (o, v) => o.CandidateSelectedIndex = v,
+            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
+    public static readonly DirectProperty<SelectCandidateList, bool> IsHideSelectedOptionsProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, bool>(
+            nameof(IsHideSelectedOptions),
+            o => o.IsHideSelectedOptions,
+            (o, v) => o.IsHideSelectedOptions = v);
+
+    public static readonly StyledProperty<int> MaxCountProperty =
+        Select.MaxCountProperty.AddOwner<SelectCandidateList>();
+
+    public static readonly DirectProperty<SelectCandidateList, bool> HasAnyVisibleItemProperty =
+        AvaloniaProperty.RegisterDirect<SelectCandidateList, bool>(
+            nameof(HasAnyVisibleItem),
+            o => o.HasAnyVisibleItem,
+            (o, v) => o.HasAnyVisibleItem = v);
+
+    private object? _candidateSelectedItem;
+
+    public object? CandidateSelectedItem
+    {
+        get => _candidateSelectedItem;
+        set
+        {
+            if (value is null)
+            {
+                ClearActiveCandidate();
+            }
+            else if (!TrySetCandidateItemSelected(value))
+            {
+                ClearActiveCandidate();
+            }
+        }
+    }
+
+    private int _candidateSelectedIndex = -1;
+
+    public int CandidateSelectedIndex
+    {
+        get => _candidateSelectedIndex;
+        set
+        {
+            if (value < 0)
+            {
+                ClearActiveCandidate();
+            }
+            else if (!TrySetCandidateItemSelected(value))
+            {
+                ClearActiveCandidate();
+            }
+        }
+    }
+
+    private bool _isHideSelectedOptions;
+
+    public bool IsHideSelectedOptions
+    {
+        get => _isHideSelectedOptions;
+        set => SetAndRaise(IsHideSelectedOptionsProperty, ref _isHideSelectedOptions, value);
+    }
+
+    public int MaxCount
+    {
+        get => GetValue(MaxCountProperty);
+        set => SetValue(MaxCountProperty, value);
+    }
+
+    private bool _hasAnyVisibleItem = true;
+
+    public bool HasAnyVisibleItem
+    {
+        get => _hasAnyVisibleItem;
+        set => SetAndRaise(HasAnyVisibleItemProperty, ref _hasAnyVisibleItem, value);
+    }
+
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<RoutedEventArgs> CommitEvent =
+        RoutedEvent.Register<SelectCandidateList, RoutedEventArgs>(nameof(Commit),
+            RoutingStrategies.Bubble);
+
+    public static readonly RoutedEvent<RoutedEventArgs> CancelEvent =
+        RoutedEvent.Register<SelectCandidateList, RoutedEventArgs>(nameof(Cancel),
+            RoutingStrategies.Bubble);
+
+    public event EventHandler<RoutedEventArgs>? Commit
+    {
+        add => AddHandler(CommitEvent, value);
+        remove => RemoveHandler(CommitEvent, value);
+    }
+
+    public event EventHandler<RoutedEventArgs>? Cancel
+    {
+        add => AddHandler(CancelEvent, value);
+        remove => RemoveHandler(CancelEvent, value);
+    }
+
+    #endregion
+
+
+    #region 内部协作 API
+
+    private event EventHandler<SelectionChangedEventArgs>? CandidateSelectionChanged;
+
+    internal void ClearActiveCandidate()
+    {
+        if (CandidateSelectedIndex == -1 && CandidateSelectedItem is null)
+        {
+            return;
+        }
+
+        ClearCandidateProjection(CandidateSelectedIndex, CandidateSelectedItem);
+        SetAndRaise(CandidateSelectedIndexProperty, ref _candidateSelectedIndex, -1);
+        SetAndRaise(CandidateSelectedItemProperty, ref _candidateSelectedItem, null);
+    }
+
+    internal void NotifyCandidateRowSizeChanged(SelectCandidateListItem row)
+    {
+        if (TemplatedParent is not Select owner || !owner.IsDropDownOpen)
+        {
+            return;
+        }
+        // Child reflow can complete without arranging this list again. Keep the
+        // nominal budget on the same first realized data row used by ArrangeOverride.
+        foreach (var container in GetRealizedContainers())
+        {
+            if (container is SelectCandidateListItem { IsVisible: true, IsGroupItem: false } first)
+            {
+                if (ReferenceEquals(first, row))
+                {
+                    var height = row.Bounds.Height + row.Margin.Top + row.Margin.Bottom;
+                    if (double.IsFinite(height) && height > 0 && !owner.ItemHeight.Equals(height))
+                    {
+                        owner.ItemHeight = height;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    internal void NotifyCandidateContainerAvailabilityChanged(SelectCandidateListItem listItem)
+    {
+        if (!listItem.IsCandidateSelected)
+        {
+            return;
+        }
+
+        var sourceIndex = SelectionIndexFromContainer(listItem);
+        if (sourceIndex < 0 || !TryGetViewIndexFromSourceIndex(sourceIndex, out _) ||
+            !TryGetSourceItem(sourceIndex, out var candidateItem) ||
+            !IsCandidateAvailable(sourceIndex, candidateItem, listItem))
+        {
+            ClearActiveCandidate();
+        }
+    }
+
+    #endregion
+
     private static readonly FuncTemplate<Panel?> DefaultPanel = new(() => new CandidateVirtualizingStackPanel());
 
     private ScrollViewer? _scrollViewer;
 
-    private event EventHandler<SelectionChangedEventArgs>? CandidateSelectionChanged;
+    static SelectCandidateList()
+    {
+        AffectsArrange<SelectCandidateList>(IsHideSelectedOptionsProperty);
+        SelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectItemChanged(args));
+        SelectionChangedEvent.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectionChanged(args));
+        ItemsPanelProperty.OverrideDefaultValue<SelectCandidateList>(DefaultPanel);
+    }
+
+    public void HandleKeyDown(KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Enter:
+                if (IsSingleMode())
+                {
+                    HandleSingleModeCommit();
+                }
+                else
+                {
+                    HandleMultiModeCommit();
+                }
+
+                e.Handled = true;
+                break;
+
+            case Key.Up:
+                SelectPreviousCandidateItem();
+                e.Handled = true;
+                break;
+
+            case Key.Down:
+                SelectNextCandidateItem();
+
+                e.Handled = true;
+                break;
+
+            case Key.Escape:
+                HandleCancel();
+                e.Handled = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public bool TrySetCandidateItemSelected(object item)
+    {
+        if (item is IGroupListItemData groupListItemData && groupListItemData.IsGroupItem)
+        {
+            return false;
+        }
+
+        foreach (var sourceIndex in EnumerateCurrentViewSourceIndexes())
+        {
+            if (TryGetSourceItem(sourceIndex, out var sourceItem) && ReferenceEquals(sourceItem, item))
+            {
+                return TrySetCandidateItemSelected(sourceIndex);
+            }
+        }
+
+        return false;
+    }
+
+    public bool TrySetCandidateItemSelected(int index)
+    {
+        if (!TryGetViewIndexFromSourceIndex(index, out var localIndex) ||
+            localIndex < 0 || localIndex >= ItemCount ||
+            !TryGetSourceItem(index, out var candidateItem))
+        {
+            return false;
+        }
+
+        var candidateContainer = ContainerFromIndex(localIndex) as SelectCandidateListItem;
+        if (!IsCandidateAvailable(index, candidateItem, candidateContainer))
+        {
+            return false;
+        }
+
+        var changed = SetActiveCandidate(index, candidateItem!, candidateContainer);
+        if (changed && ItemsPanelRoot is CandidateVirtualizingStackPanel virtualizingStackPanel)
+        {
+            var realizedContainer = virtualizingStackPanel.ScrollCandidateItemIntoView(localIndex);
+            if (realizedContainer is SelectCandidateListItem listItem)
+            {
+                SetCandidateProjectionIfChanged(listItem, true);
+            }
+        }
+
+        return true;
+    }
+
+    protected override void NotifyFilterContextChanged()
+    {
+        ClearActiveCandidate();
+    }
+
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        var listItem = new SelectCandidateListItem();
+        listItem.Classes.Add(SelectSemanticParts.PopupListItemClass);
+        return listItem;
+    }
+
+    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        return NeedsContainer<SelectCandidateListItem>(item, out recycleKey);
+    }
+
+    protected override void PrepareListViewItem(ListViewItem listItem, object? item, int index)
+    {
+        base.PrepareListViewItem(listItem, item, index);
+        listItem[!SelectCandidateListItem.IsHideSelectedOptionsProperty] = this[!IsHideSelectedOptionsProperty];
+        listItem.SetCurrentValue(
+            SelectCandidateListItem.IsCandidateSelectedProperty,
+            IsCandidateForViewIndex(index, item));
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _scrollViewer = e.NameScope.Find<ScrollViewer>(ListViewThemeConstants.ScrollViewerPart);
+    }
+
+    protected virtual void NotifyCommit()
+    {
+        if (CandidateSelectedIndex >= 0)
+        {
+            SelectedIndex = CandidateSelectedIndex;
+        }
+
+        RaiseEvent(new RoutedEventArgs(CommitEvent)
+        {
+            Source = this,
+        });
+    }
+
+    protected virtual void NotifyCancel()
+    {
+        RaiseEvent(new RoutedEventArgs(CancelEvent)
+        {
+            Source = this,
+        });
+    }
+
+    protected virtual void SelectPreviousCandidateItem()
+    {
+        var sourceIndex = FindNextEnabledIndex(
+            _candidateSelectedIndex != -1 ? _candidateSelectedIndex : SelectedIndex,
+            -1);
+        if (sourceIndex == -1)
+        {
+            ClearActiveCandidate();
+            return;
+        }
+
+        TrySetCandidateItemSelected(sourceIndex);
+    }
+
+    protected virtual void SelectNextCandidateItem()
+    {
+        var sourceIndex = FindNextEnabledIndex(
+            _candidateSelectedIndex != -1 ? _candidateSelectedIndex : SelectedIndex,
+            1);
+        if (sourceIndex == -1)
+        {
+            ClearActiveCandidate();
+            return;
+        }
+
+        TrySetCandidateItemSelected(sourceIndex);
+    }
+
+    protected internal override void NotifyItemClicked(ListViewItem item)
+    {
+        if (IsSingleMode() && !item.IsGroupItem)
+        {
+            NotifyCommit();
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ItemsSourceProperty)
+        {
+            ClearActiveCandidate();
+        }
+
+        if (change.Property == MaxCountProperty ||
+            change.Property == SelectedItemsProperty)
+        {
+            ConfigureOptionsForMaxCount();
+        }
+
+        if (change.Property == SelectedItemsProperty ||
+            change.Property == IsHideSelectedOptionsProperty ||
+            change.Property == ItemsSourceProperty ||
+            change.Property == IsEmptyDataSourceProperty)
+        {
+            if (IsHideSelectedOptions)
+            {
+                ConfigureHasAnyVisibleItem();
+            }
+        }
+
+        if (change.Property == MaxCountProperty ||
+            change.Property == SelectedItemsProperty ||
+            change.Property == IsHideSelectedOptionsProperty)
+        {
+            ClearActiveCandidateIfUnavailable();
+        }
+
+        if (change.Property == HasAnyVisibleItemProperty ||
+            change.Property == IsHideSelectedOptionsProperty ||
+            change.Property == SelectedItemsProperty)
+        {
+            ConfigureEmptyIndicator();
+        }
+    }
+
+    protected internal override bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+    {
+        if (!IsSelectable)
+        {
+            return false;
+        }
+
+        if (GetContainerFromEventSource(source) is SelectCandidateListItem listItem &&
+            TrySetCandidateFromContainer(listItem, out var sourceIndex))
+        {
+            if (IsSingleMode())
+            {
+                SelectedIndex = sourceIndex;
+            }
+            else
+            {
+                ToggleVisibleItemSelection();
+            }
+        }
+        return true;
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (e.Pointer.Type == PointerType.Mouse &&
+            GetContainerFromEventSource(e.Source) is SelectCandidateListItem listItem)
+        {
+            TrySetCandidateFromContainer(listItem, out _);
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        ClearActiveCandidate();
+    }
+
+    protected override void ConfigureEmptyIndicator()
+    {
+        if (!IsHideSelectedOptions)
+        {
+            SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && IsEmptyDataSource);
+        }
+        else
+        {
+            SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (IsEmptyDataSource || !HasAnyVisibleItem));
+        }
+        SetCurrentValue(IsDefaultEmptyIndicatorVisibleProperty,
+            IsEffectiveEmptyVisible && EmptyIndicator is null && EmptyIndicatorTemplate is null);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (IsHideSelectedOptions)
+        {
+            var hasAnyVisibleItem = false;
+            foreach (var child in LogicalChildren)
+            {
+                if (child is Control control && control.IsVisible)
+                {
+                    hasAnyVisibleItem = true;
+                }
+            }
+            HasAnyVisibleItem = hasAnyVisibleItem;
+        }
+
+        var size = base.ArrangeOverride(finalSize);
+        // ControlTheme cannot derive a row budget from realized measurement. Bounds
+        // may still describe the previous arrange pass; use this pass's DesiredSize.
+        // Do not materialize the source or subscribe to global layout.
+        if (TemplatedParent is Select owner && owner.IsDropDownOpen)
+        {
+            foreach (var container in GetRealizedContainers())
+            {
+                if (container is SelectCandidateListItem { IsVisible: true, IsGroupItem: false } row)
+                {
+                    var height = row.DesiredSize.Height;
+                    if (double.IsFinite(height) && height > 0)
+                    {
+                        if (!owner.ItemHeight.Equals(height))
+                        {
+                            owner.ItemHeight = height;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return size;
+    }
+
+    protected override void NotifyClearContainerForVirtualizingContext(ListViewItem item)
+    {
+        base.NotifyClearContainerForVirtualizingContext(item);
+        if (item is SelectCandidateListItem listItem)
+        {
+            listItem.ClearValue(SelectCandidateListItem.IsCandidateSelectedProperty);
+        }
+    }
+
+    protected override void NotifyRestoreDefaultContext(ListViewItem item, IListItemData itemData)
+    {
+        base.NotifyRestoreDefaultContext(item, itemData);
+        if (item is SelectCandidateListItem listItem && item is IListItemVirtualizingContextAware virtualListItem)
+        {
+            SetCandidateProjectionIfChanged(
+                listItem,
+                CandidateSelectedIndex != -1 &&
+                virtualListItem.VirtualIndex == GlobalIndexLocalIndex(CandidateSelectedIndex) &&
+                ReferenceEquals(itemData, CandidateSelectedItem));
+        }
+    }
+
+    protected override void NotifyRestoreVirtualizingContext(ListViewItem item, IDictionary<object, object?> context)
+    {
+        base.NotifyRestoreVirtualizingContext(item, context);
+        if (item is SelectCandidateListItem listItem && item is IListItemVirtualizingContextAware virtualListItem)
+        {
+            SetCandidateProjectionIfChanged(
+                listItem,
+                CandidateSelectedIndex != -1 &&
+                virtualListItem.VirtualIndex == GlobalIndexLocalIndex(CandidateSelectedIndex) &&
+                ReferenceEquals(item.Content, CandidateSelectedItem));
+        }
+    }
+
+    #region 实现 ICandidateList
 
     event EventHandler<SelectionChangedEventArgs>? ICandidateList.SelectionChanged
     {
@@ -75,134 +599,7 @@ internal class SelectCandidateList : ListView, ICandidateList
         }
     }
 
-    #region 公共属性定义
-
-    public static readonly DirectProperty<SelectCandidateList, object?> CandidateSelectedItemProperty =
-        AvaloniaProperty.RegisterDirect<SelectCandidateList, object?>(
-            nameof(CandidateSelectedItem),
-            o => o.CandidateSelectedItem,
-            (o, v) => o.CandidateSelectedItem = v,
-            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
-
-    public static readonly DirectProperty<SelectCandidateList, int> CandidateSelectedIndexProperty =
-        AvaloniaProperty.RegisterDirect<SelectCandidateList, int>(
-            nameof(CandidateSelectedIndex),
-            o => o.CandidateSelectedIndex,
-            (o, v) => o.CandidateSelectedIndex = v,
-            defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
-
-    public static readonly DirectProperty<SelectCandidateList, bool> IsHideSelectedOptionsProperty =
-        AvaloniaProperty.RegisterDirect<SelectCandidateList, bool>(
-            nameof(IsHideSelectedOptions),
-            o => o.IsHideSelectedOptions,
-            (o, v) => o.IsHideSelectedOptions = v);
-
-    private object? _candidateSelectedItem;
-
-    public object? CandidateSelectedItem
-    {
-        get => _candidateSelectedItem;
-        set
-        {
-            if (value is null)
-            {
-                ClearActiveCandidate();
-            }
-            else if (!TrySetCandidateItemSelected(value))
-            {
-                ClearActiveCandidate();
-            }
-        }
-    }
-
-    private int _candidateSelectedIndex = -1;
-
-    public int CandidateSelectedIndex
-    {
-        get => _candidateSelectedIndex;
-        set
-        {
-            if (value < 0)
-            {
-                ClearActiveCandidate();
-            }
-            else if (!TrySetCandidateItemSelected(value))
-            {
-                ClearActiveCandidate();
-            }
-        }
-    }
-
-    private bool _isHideSelectedOptions;
-
-    public bool IsHideSelectedOptions
-    {
-        get => _isHideSelectedOptions;
-        set => SetAndRaise(IsHideSelectedOptionsProperty, ref _isHideSelectedOptions, value);
-    }
-
-    public static readonly StyledProperty<int> MaxCountProperty =
-        Select.MaxCountProperty.AddOwner<SelectCandidateList>();
-
-    public int MaxCount
-    {
-        get => GetValue(MaxCountProperty);
-        set => SetValue(MaxCountProperty, value);
-    }
-
     #endregion
-
-    #region 公共事件定义
-    public static readonly RoutedEvent<RoutedEventArgs> CommitEvent =
-        RoutedEvent.Register<SelectCandidateList, RoutedEventArgs>(nameof(Commit),
-            RoutingStrategies.Bubble);
-
-    public static readonly RoutedEvent<RoutedEventArgs> CancelEvent =
-        RoutedEvent.Register<SelectCandidateList, RoutedEventArgs>(nameof(Cancel),
-            RoutingStrategies.Bubble);
-
-    public event EventHandler<RoutedEventArgs>? Commit
-    {
-        add => AddHandler(CommitEvent, value);
-        remove => RemoveHandler(CommitEvent, value);
-    }
-
-    public event EventHandler<RoutedEventArgs>? Cancel
-    {
-        add => AddHandler(CancelEvent, value);
-        remove => RemoveHandler(CancelEvent, value);
-    }
-    #endregion
-
-    #region 内部属性定义
-
-    public static readonly DirectProperty<SelectCandidateList, bool> HasAnyVisibleItemProperty =
-        AvaloniaProperty.RegisterDirect<SelectCandidateList, bool>(
-            nameof(HasAnyVisibleItem),
-            o => o.HasAnyVisibleItem,
-            (o, v) => o.HasAnyVisibleItem = v);
-
-    private bool _hasAnyVisibleItem = true;
-
-    public bool HasAnyVisibleItem
-    {
-        get => _hasAnyVisibleItem;
-        set => SetAndRaise(HasAnyVisibleItemProperty, ref _hasAnyVisibleItem, value);
-    }
-    #endregion
-
-    static SelectCandidateList()
-    {
-        AffectsArrange<SelectCandidateList>(IsHideSelectedOptionsProperty);
-        SelectedItemProperty.Changed.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectItemChanged(args));
-        SelectionChangedEvent.AddClassHandler<SelectCandidateList>((list, args) => list.HandleSelectionChanged(args));
-        ItemsPanelProperty.OverrideDefaultValue<SelectCandidateList>(DefaultPanel);
-    }
-
-    protected override void NotifyFilterContextChanged()
-    {
-        ClearActiveCandidate();
-    }
 
     private void HandleSelectionChanged(ListViewSelectionChangedEventArgs args)
     {
@@ -220,76 +617,11 @@ internal class SelectCandidateList : ListView, ICandidateList
                 args.SelectedItems.ToArray()));
     }
 
-    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
-    {
-        var listItem = new SelectCandidateListItem();
-        listItem.Classes.Add(SelectSemanticParts.PopupListItemClass);
-        return listItem;
-    }
-
-    protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
-    {
-        return NeedsContainer<SelectCandidateListItem>(item, out recycleKey);
-    }
-
-    protected override void PrepareListViewItem(ListViewItem listItem, object? item, int index)
-    {
-        base.PrepareListViewItem(listItem, item, index);
-        listItem[!SelectCandidateListItem.IsHideSelectedOptionsProperty] = this[!IsHideSelectedOptionsProperty];
-        listItem.SetCurrentValue(
-            SelectCandidateListItem.IsCandidateSelectedProperty,
-            IsCandidateForViewIndex(index, item));
-    }
-
     private void ResetScrollViewer()
     {
         if (_scrollViewer != null)
         {
             _scrollViewer.Offset = new Vector(0, 0);
-        }
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _scrollViewer = e.NameScope.Find<ScrollViewer>(ListViewThemeConstants.ScrollViewerPart);
-    }
-
-    public void HandleKeyDown(KeyEventArgs e)
-    {
-        switch (e.Key)
-        {
-            case Key.Enter:
-                if (IsSingleMode())
-                {
-                    HandleSingleModeCommit();
-                }
-                else
-                {
-                    HandleMultiModeCommit();
-                }
-
-                e.Handled = true;
-                break;
-
-            case Key.Up:
-                SelectPreviousCandidateItem();
-                e.Handled = true;
-                break;
-
-            case Key.Down:
-                SelectNextCandidateItem();
-
-                e.Handled = true;
-                break;
-
-            case Key.Escape:
-                HandleCancel();
-                e.Handled = true;
-                break;
-
-            default:
-                break;
         }
     }
 
@@ -307,19 +639,6 @@ internal class SelectCandidateList : ListView, ICandidateList
         }
     }
 
-    protected virtual void NotifyCommit()
-    {
-        if (CandidateSelectedIndex >= 0)
-        {
-            SelectedIndex = CandidateSelectedIndex;
-        }
-
-        RaiseEvent(new RoutedEventArgs(CommitEvent)
-        {
-            Source = this,
-        });
-    }
-
     private void HandleCancel()
     {
         NotifyCancel();
@@ -327,14 +646,6 @@ internal class SelectCandidateList : ListView, ICandidateList
         {
             ClearState();
         }
-    }
-
-    protected virtual void NotifyCancel()
-    {
-        RaiseEvent(new RoutedEventArgs(CancelEvent)
-        {
-            Source = this,
-        });
     }
 
     private void HandleSelectItemChanged(AvaloniaPropertyChangedEventArgs e)
@@ -348,34 +659,6 @@ internal class SelectCandidateList : ListView, ICandidateList
     private void ClearState()
     {
         Selection.Clear();
-    }
-
-    protected virtual void SelectPreviousCandidateItem()
-    {
-        var sourceIndex = FindNextEnabledIndex(
-            _candidateSelectedIndex != -1 ? _candidateSelectedIndex : SelectedIndex,
-            -1);
-        if (sourceIndex == -1)
-        {
-            ClearActiveCandidate();
-            return;
-        }
-
-        TrySetCandidateItemSelected(sourceIndex);
-    }
-
-    protected virtual void SelectNextCandidateItem()
-    {
-        var sourceIndex = FindNextEnabledIndex(
-            _candidateSelectedIndex != -1 ? _candidateSelectedIndex : SelectedIndex,
-            1);
-        if (sourceIndex == -1)
-        {
-            ClearActiveCandidate();
-            return;
-        }
-
-        TrySetCandidateItemSelected(sourceIndex);
     }
 
     private int FindNextEnabledIndex(int startSourceIndex, int delta)
@@ -421,57 +704,9 @@ internal class SelectCandidateList : ListView, ICandidateList
         return -1;
     }
 
-    protected internal override void NotifyItemClicked(ListViewItem item)
-    {
-        if (IsSingleMode() && !item.IsGroupItem)
-        {
-            NotifyCommit();
-        }
-    }
-
     private bool IsSingleMode()
     {
         return (SelectionMode & SelectionMode.Multiple) != SelectionMode.Multiple;
-    }
-
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == ItemsSourceProperty)
-        {
-            ClearActiveCandidate();
-        }
-
-        if (change.Property == MaxCountProperty ||
-            change.Property == SelectedItemsProperty)
-        {
-            ConfigureOptionsForMaxCount();
-        }
-
-        if (change.Property == SelectedItemsProperty ||
-            change.Property == IsHideSelectedOptionsProperty ||
-            change.Property == ItemsSourceProperty ||
-            change.Property == IsEmptyDataSourceProperty)
-        {
-            if (IsHideSelectedOptions)
-            {
-                ConfigureHasAnyVisibleItem();
-            }
-        }
-
-        if (change.Property == MaxCountProperty ||
-            change.Property == SelectedItemsProperty ||
-            change.Property == IsHideSelectedOptionsProperty)
-        {
-            ClearActiveCandidateIfUnavailable();
-        }
-
-        if (change.Property == HasAnyVisibleItemProperty ||
-            change.Property == IsHideSelectedOptionsProperty ||
-            change.Property == SelectedItemsProperty)
-        {
-            ConfigureEmptyIndicator();
-        }
     }
 
     private void ConfigureOptionsForMaxCount()
@@ -555,52 +790,6 @@ internal class SelectCandidateList : ListView, ICandidateList
         HasAnyVisibleItem = false;
     }
 
-    public bool TrySetCandidateItemSelected(object item)
-    {
-        if (item is IGroupListItemData groupListItemData && groupListItemData.IsGroupItem)
-        {
-            return false;
-        }
-
-        foreach (var sourceIndex in EnumerateCurrentViewSourceIndexes())
-        {
-            if (TryGetSourceItem(sourceIndex, out var sourceItem) && ReferenceEquals(sourceItem, item))
-            {
-                return TrySetCandidateItemSelected(sourceIndex);
-            }
-        }
-
-        return false;
-    }
-
-    public bool TrySetCandidateItemSelected(int index)
-    {
-        if (!TryGetViewIndexFromSourceIndex(index, out var localIndex) ||
-            localIndex < 0 || localIndex >= ItemCount ||
-            !TryGetSourceItem(index, out var candidateItem))
-        {
-            return false;
-        }
-
-        var candidateContainer = ContainerFromIndex(localIndex) as SelectCandidateListItem;
-        if (!IsCandidateAvailable(index, candidateItem, candidateContainer))
-        {
-            return false;
-        }
-
-        var changed = SetActiveCandidate(index, candidateItem!, candidateContainer);
-        if (changed && ItemsPanelRoot is CandidateVirtualizingStackPanel virtualizingStackPanel)
-        {
-            var realizedContainer = virtualizingStackPanel.ScrollCandidateItemIntoView(localIndex);
-            if (realizedContainer is SelectCandidateListItem listItem)
-            {
-                SetCandidateProjectionIfChanged(listItem, true);
-            }
-        }
-
-        return true;
-    }
-
     private bool TrySetCandidateFromContainer(SelectCandidateListItem listItem, out int sourceIndex)
     {
         sourceIndex = SelectionIndexFromContainer(listItem);
@@ -638,18 +827,6 @@ internal class SelectCandidateList : ListView, ICandidateList
         }
 
         return true;
-    }
-
-    internal void ClearActiveCandidate()
-    {
-        if (CandidateSelectedIndex == -1 && CandidateSelectedItem is null)
-        {
-            return;
-        }
-
-        ClearCandidateProjection(CandidateSelectedIndex, CandidateSelectedItem);
-        SetAndRaise(CandidateSelectedIndexProperty, ref _candidateSelectedIndex, -1);
-        SetAndRaise(CandidateSelectedItemProperty, ref _candidateSelectedItem, null);
     }
 
     private void ClearCandidateProjection(int sourceIndex, object? candidateItem)
@@ -712,54 +889,6 @@ internal class SelectCandidateList : ListView, ICandidateList
         }
     }
 
-    internal void NotifyCandidateContainerAvailabilityChanged(SelectCandidateListItem listItem)
-    {
-        if (!listItem.IsCandidateSelected)
-        {
-            return;
-        }
-
-        var sourceIndex = SelectionIndexFromContainer(listItem);
-        if (sourceIndex < 0 || !TryGetViewIndexFromSourceIndex(sourceIndex, out _) ||
-            !TryGetSourceItem(sourceIndex, out var candidateItem) ||
-            !IsCandidateAvailable(sourceIndex, candidateItem, listItem))
-        {
-            ClearActiveCandidate();
-        }
-    }
-
-    protected internal override bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
-    {
-        if (!IsSelectable)
-        {
-            return false;
-        }
-
-        if (GetContainerFromEventSource(source) is SelectCandidateListItem listItem &&
-            TrySetCandidateFromContainer(listItem, out var sourceIndex))
-        {
-            if (IsSingleMode())
-            {
-                SelectedIndex = sourceIndex;
-            }
-            else
-            {
-                ToggleVisibleItemSelection();
-            }
-        }
-        return true;
-    }
-
-    protected override void OnPointerMoved(PointerEventArgs e)
-    {
-        base.OnPointerMoved(e);
-        if (e.Pointer.Type == PointerType.Mouse &&
-            GetContainerFromEventSource(e.Source) is SelectCandidateListItem listItem)
-        {
-            TrySetCandidateFromContainer(listItem, out _);
-        }
-    }
-
     private void ToggleVisibleItemSelection()
     {
         var sourceIndex = CandidateSelectedIndex;
@@ -778,78 +907,4 @@ internal class SelectCandidateList : ListView, ICandidateList
         }
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        ClearActiveCandidate();
-    }
-
-    protected override void ConfigureEmptyIndicator()
-    {
-        if (!IsHideSelectedOptions)
-        {
-            SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && IsEmptyDataSource);
-        }
-        else
-        {
-            SetCurrentValue(IsEffectiveEmptyVisibleProperty, IsShowEmptyIndicator && (IsEmptyDataSource || !HasAnyVisibleItem));
-        }
-        SetCurrentValue(IsDefaultEmptyIndicatorVisibleProperty,
-            IsEffectiveEmptyVisible && EmptyIndicator is null && EmptyIndicatorTemplate is null);
-    }
-
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        if (IsHideSelectedOptions)
-        {
-            var hasAnyVisibleItem = false;
-            foreach (var child in LogicalChildren)
-            {
-                if (child is Control control && control.IsVisible)
-                {
-                    hasAnyVisibleItem = true;
-                }
-            }
-            HasAnyVisibleItem = hasAnyVisibleItem;
-        }
-
-        return base.ArrangeOverride(finalSize);
-    }
-
-    #region 虚拟化上下文管理
-    protected override void NotifyClearContainerForVirtualizingContext(ListViewItem item)
-    {
-        base.NotifyClearContainerForVirtualizingContext(item);
-        if (item is SelectCandidateListItem listItem)
-        {
-            listItem.ClearValue(SelectCandidateListItem.IsCandidateSelectedProperty);
-        }
-    }
-
-    protected override void NotifyRestoreDefaultContext(ListViewItem item, IListItemData itemData)
-    {
-        base.NotifyRestoreDefaultContext(item, itemData);
-        if (item is SelectCandidateListItem listItem && item is IListItemVirtualizingContextAware virtualListItem)
-        {
-            SetCandidateProjectionIfChanged(
-                listItem,
-                CandidateSelectedIndex != -1 &&
-                virtualListItem.VirtualIndex == GlobalIndexLocalIndex(CandidateSelectedIndex) &&
-                ReferenceEquals(itemData, CandidateSelectedItem));
-        }
-    }
-
-    protected override void NotifyRestoreVirtualizingContext(ListViewItem item, IDictionary<object, object?> context)
-    {
-        base.NotifyRestoreVirtualizingContext(item, context);
-        if (item is SelectCandidateListItem listItem && item is IListItemVirtualizingContextAware virtualListItem)
-        {
-            SetCandidateProjectionIfChanged(
-                listItem,
-                CandidateSelectedIndex != -1 &&
-                virtualListItem.VirtualIndex == GlobalIndexLocalIndex(CandidateSelectedIndex) &&
-                ReferenceEquals(item.Content, CandidateSelectedItem));
-        }
-    }
-    #endregion
 }

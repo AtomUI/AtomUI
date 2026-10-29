@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class RadioButtonToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class RadioButtonToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -32,33 +32,30 @@ internal sealed class RadioButtonToken : AbstractControlDesignToken
 
     public Thickness TextMargin { get; set; }
 
-    public RadioButtonToken()
+    [ControlTokenDefault(nameof(RadioSize))]
+    private static double DefaultForRadioSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG;
 
-    {
-    }
+    [ControlTokenDefault(nameof(DotSize), nameof(RadioSize), nameof(DotPadding))]
+    private static double DefaultForDotSize(in ControlTokenDefaultContext context, double radioSize, double dotPadding) =>
+        radioSize - (dotPadding + context.Global.LineWidth) * 2;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var lineWidth        = EffectiveGlobalToken.LineWidth;
-        var fontSizeLG       = EffectiveGlobalToken.FontSizeLG;
-        var colorPrimary     = EffectiveGlobalToken.ColorPrimary;
-        var colorWhite       = EffectiveGlobalToken.ColorWhite;
+    [ControlTokenDefault(nameof(DotColorDisabled))]
+    private static Color DefaultForDotColorDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
 
-        var dotPadding = 4; // 魔术值，需要看有没有好办法消除
-        var radioSize  = fontSizeLG;
+    [ControlTokenDefault(nameof(RadioColor))]
+    private static Color DefaultForRadioColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorWhite;
 
-        var radioDotSize = radioSize - (dotPadding + lineWidth) * 2;
+    [ControlTokenDefault(nameof(RadioBgColor))]
+    private static Color DefaultForRadioBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
 
-        DotPadding       = dotPadding;
-        RadioSize        = radioSize;
-        DotSize          = radioDotSize;
-        DotColorDisabled = EffectiveGlobalToken.ColorTextDisabled;
+    [ControlTokenDefault(nameof(DotPadding))]
+    private static double DefaultForDotPadding(in ControlTokenDefaultContext context) => 4;
 
-        // internal
-        RadioColor   = colorWhite;
-        RadioBgColor = colorPrimary;
-        TextMargin   = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-    }
-    
+    [ControlTokenDefault(nameof(TextMargin))]
+    private static Thickness DefaultForTextMargin(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXS, 0, context.Global.UniformlyMarginXS, 0);
 }

@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class SelectToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class SelectToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -86,8 +86,16 @@ internal sealed class SelectToken : AbstractControlDesignToken
     /// </summary>
     public double OptionHeight { get; set; }
 
+    /// <summary>
+    /// Historical compatibility resource. No built-in affix layout consumer;
+    /// retain the default and resource/config contract for external styles.
+    /// </summary>
     public Thickness SelectAffixPadding { get; set; }
 
+    /// <summary>
+    /// Historical compatibility resource. Built-in tag spacing uses Global.SpacingXXS;
+    /// this value remains available without adding implicit tag margins.
+    /// </summary>
     public Thickness FixedItemMargin { get; set; }
 
     /// <summary>
@@ -141,64 +149,140 @@ internal sealed class SelectToken : AbstractControlDesignToken
     /// </summary>
     public Thickness MultiModePrefixIndentLG { get; set; }
 
-    public SelectToken()
+    [ControlTokenDefault(nameof(MultipleItemBg))]
+    private static Color DefaultForMultipleItemBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillSecondary;
 
+    [ControlTokenDefault(nameof(MultipleItemHeight))]
+    private static double DefaultForMultipleItemHeight(in ControlTokenDefaultContext context) =>
+        Math.Min(context.Global.ControlHeight - context.Global.UniformlyPaddingXXS * 2,
+            context.Global.ControlHeight - context.Global.LineWidth * 2) - 2;
+
+    [ControlTokenDefault(nameof(MultipleItemHeightSM))]
+    private static double DefaultForMultipleItemHeightSM(in ControlTokenDefaultContext context) =>
+        Math.Min(context.Global.ControlHeightSM - context.Global.UniformlyPaddingXXS * 2,
+            context.Global.ControlHeightSM - context.Global.LineWidth * 2) + 4;
+
+    [ControlTokenDefault(nameof(MultipleItemHeightLG))]
+    private static double DefaultForMultipleItemHeightLG(in ControlTokenDefaultContext context) =>
+        Math.Min(context.Global.ControlHeightLG - context.Global.UniformlyPaddingXXS * 2,
+            context.Global.ControlHeightLG - context.Global.LineWidth * 2);
+
+    [ControlTokenDefault(nameof(MultipleSelectorBgDisabled))]
+    private static Color DefaultForMultipleSelectorBgDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainerDisabled;
+
+    [ControlTokenDefault(nameof(MultipleItemColorDisabled))]
+    private static Color DefaultForMultipleItemColorDisabled(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(OptionSelectedColor))]
+    private static Color DefaultForOptionSelectedColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(OptionSelectedFontWeight))]
+    private static FontWeight DefaultForOptionSelectedFontWeight(in ControlTokenDefaultContext context) =>
+        context.Global.FontWeightStrong;
+
+    [ControlTokenDefault(nameof(OptionSelectedBg))]
+    private static Color DefaultForOptionSelectedBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(OptionActiveBg))]
+    private static Color DefaultForOptionActiveBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgHover;
+
+    [ControlTokenDefault(nameof(OptionPadding))]
+    private static Thickness DefaultForOptionPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.ControlPaddingHorizontal,
+            (context.Global.ControlHeight - context.Global.FontHeight) / 2);
+
+    [ControlTokenDefault(nameof(OptionFontSize))]
+    private static double DefaultForOptionFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(OptionHeight))]
+    private static double DefaultForOptionHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
+
+    [ControlTokenDefault(nameof(SelectAffixPadding))]
+    private static Thickness DefaultForSelectAffixPadding(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingXXS;
+
+    [ControlTokenDefault(nameof(FixedItemMargin))]
+    private static Thickness DefaultForFixedItemMargin(in ControlTokenDefaultContext context) =>
+        new(Math.Floor(context.Global.UniformlyPaddingXXS / 2));
+
+    [ControlTokenDefault(nameof(PopupContentPadding))]
+    private static Thickness DefaultForPopupContentPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXXS / 2);
+
+    [ControlTokenDefault(nameof(MultiModePadding))]
+    private static Thickness DefaultForMultiModePadding(in ControlTokenDefaultContext context)
     {
+        var vertical = Math.Round((context.Global.ControlHeight - context.Global.FontHeight) / 2 * 10) / 10 -
+                       context.Global.LineWidth;
+        var right = context.Global.UniformlyPaddingSM - context.Global.LineWidth;
+        return new Thickness(vertical, vertical, right, vertical);
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    [ControlTokenDefault(nameof(MultiModePaddingSM))]
+    private static Thickness DefaultForMultiModePaddingSM(in ControlTokenDefaultContext context)
     {
-        base.CalculateTokenValues(isDarkMode);
-
-        // Item height default use `controlHeight - 2 * paddingXXS`,
-        // but some case `paddingXXS=0`.
-        // Let's fallback it.
-        double dblPaddingXXS      = EffectiveGlobalToken.UniformlyPaddingXXS * 2;
-        double dblLineWidth       = EffectiveGlobalToken.LineWidth * 2;
-        double multipleItemHeight = Math.Min(EffectiveGlobalToken.ControlHeight - dblPaddingXXS, EffectiveGlobalToken.ControlHeight - dblLineWidth);
-        double multipleItemHeightSM = Math.Min(EffectiveGlobalToken.ControlHeightSM - dblPaddingXXS, EffectiveGlobalToken.ControlHeightSM - dblLineWidth);
-        double multipleItemHeightLG = Math.Min(EffectiveGlobalToken.ControlHeightLG - dblPaddingXXS, EffectiveGlobalToken.ControlHeightLG - dblLineWidth);
-        FixedItemMargin = new Thickness(Math.Floor(EffectiveGlobalToken.UniformlyPaddingXXS / 2));
-
-        OptionSelectedColor      = EffectiveGlobalToken.ColorText;
-        OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
-        OptionSelectedBg         = EffectiveGlobalToken.ControlItemBgActive;
-        OptionActiveBg           = EffectiveGlobalToken.ControlItemBgHover;
-        OptionPadding            = new Thickness(EffectiveGlobalToken.ControlPaddingHorizontal, (EffectiveGlobalToken.ControlHeight - EffectiveGlobalToken.FontHeight) / 2);
-        OptionFontSize =  EffectiveGlobalToken.FontSize;
-        OptionHeight = EffectiveGlobalToken.ControlHeight;
-        MultipleItemBg = EffectiveGlobalToken.ColorFillSecondary;
-        MultipleItemHeight = multipleItemHeight - 2;
-        MultipleItemHeightSM = multipleItemHeightSM + 4;
-        MultipleItemHeightLG = multipleItemHeightLG;
-        MultipleSelectorBgDisabled = EffectiveGlobalToken.ColorBgContainerDisabled;
-        MultipleItemColorDisabled = EffectiveGlobalToken.ColorTextDisabled;
-        SelectAffixPadding = EffectiveGlobalToken.PaddingXXS;
-
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-
-        var lineWidth    = EffectiveGlobalToken.LineWidth;
-
-        var multiPaddingVertical = Math.Round((EffectiveGlobalToken.ControlHeight - EffectiveGlobalToken.FontHeight) / 2 * 10) / 10 - lineWidth;
-        var multiPaddingVerticalSM = Math.Round((EffectiveGlobalToken.ControlHeightSM - EffectiveGlobalToken.FontHeight) / 2 * 10) / 10 - lineWidth;
-        var multiPaddingVerticalLG = Math.Ceiling((EffectiveGlobalToken.ControlHeightLG - EffectiveGlobalToken.FontHeightLG) / 2 * 10) / 10 -
-                                     lineWidth;
-
-        var multiPaddingRight = EffectiveGlobalToken.UniformlyPaddingSM - lineWidth;
-        MultiModePadding = new Thickness(multiPaddingVertical, multiPaddingVertical, multiPaddingRight, multiPaddingVertical);
-        MultiModePrefixIndent = new Thickness(Math.Max(0, multiPaddingRight - multiPaddingVertical), 0, 0, 0);
-
-        var multiPaddingRightSM = EffectiveGlobalToken.ControlPaddingHorizontalSM - lineWidth;
-        MultiModePaddingSM = new Thickness(multiPaddingVerticalSM, multiPaddingVerticalSM, multiPaddingRightSM, multiPaddingVerticalSM);
-        MultiModePrefixIndentSM = new Thickness(Math.Max(0, multiPaddingRightSM - multiPaddingVerticalSM), 0, 0, 0);
-
-        var multiPaddingRightLG = EffectiveGlobalToken.ControlPaddingHorizontal - lineWidth;
-        MultiModePaddingLG = new Thickness(multiPaddingVerticalLG, multiPaddingVerticalLG, multiPaddingRightLG, multiPaddingVerticalLG);
-        MultiModePrefixIndentLG = new Thickness(Math.Max(0, multiPaddingRightLG - multiPaddingVerticalLG), 0, 0, 0);
-
-        SingleModePadding   = new Thickness(multiPaddingRight, multiPaddingVertical);
-        SingleModePaddingSM = new Thickness(multiPaddingRightSM, multiPaddingVerticalSM);
-        SingleModePaddingLG = new Thickness(multiPaddingRightLG,  multiPaddingVerticalLG);
+        var vertical = Math.Round((context.Global.ControlHeightSM - context.Global.FontHeight) / 2 * 10) / 10 -
+                       context.Global.LineWidth;
+        var right = context.Global.ControlPaddingHorizontalSM - context.Global.LineWidth;
+        return new Thickness(vertical, vertical, right, vertical);
     }
 
+    [ControlTokenDefault(nameof(MultiModePaddingLG))]
+    private static Thickness DefaultForMultiModePaddingLG(in ControlTokenDefaultContext context)
+    {
+        var vertical = Math.Ceiling((context.Global.ControlHeightLG - context.Global.FontHeightLG) / 2 * 10) / 10 -
+                       context.Global.LineWidth;
+        var right = context.Global.ControlPaddingHorizontal - context.Global.LineWidth;
+        return new Thickness(vertical, vertical, right, vertical);
+    }
+
+    [ControlTokenDefault(nameof(SingleModePadding))]
+    private static Thickness DefaultForSingleModePadding(in ControlTokenDefaultContext context)
+    {
+        var padding = DefaultForMultiModePadding(context);
+        return new Thickness(padding.Right, padding.Top);
+    }
+
+    [ControlTokenDefault(nameof(SingleModePaddingSM))]
+    private static Thickness DefaultForSingleModePaddingSM(in ControlTokenDefaultContext context)
+    {
+        var padding = DefaultForMultiModePaddingSM(context);
+        return new Thickness(padding.Right, padding.Top);
+    }
+
+    [ControlTokenDefault(nameof(SingleModePaddingLG))]
+    private static Thickness DefaultForSingleModePaddingLG(in ControlTokenDefaultContext context)
+    {
+        var padding = DefaultForMultiModePaddingLG(context);
+        return new Thickness(padding.Right, padding.Top);
+    }
+
+    [ControlTokenDefault(nameof(MultiModePrefixIndent))]
+    private static Thickness DefaultForMultiModePrefixIndent(in ControlTokenDefaultContext context)
+    {
+        var padding = DefaultForMultiModePadding(context);
+        return new Thickness(Math.Max(0, padding.Right - padding.Left), 0, 0, 0);
+    }
+
+    [ControlTokenDefault(nameof(MultiModePrefixIndentSM))]
+    private static Thickness DefaultForMultiModePrefixIndentSM(in ControlTokenDefaultContext context)
+    {
+        var padding = DefaultForMultiModePaddingSM(context);
+        return new Thickness(Math.Max(0, padding.Right - padding.Left), 0, 0, 0);
+    }
+
+    [ControlTokenDefault(nameof(MultiModePrefixIndentLG))]
+    private static Thickness DefaultForMultiModePrefixIndentLG(in ControlTokenDefaultContext context)
+    {
+        var padding = DefaultForMultiModePaddingLG(context);
+        return new Thickness(Math.Max(0, padding.Right - padding.Left), 0, 0, 0);
+    }
 }

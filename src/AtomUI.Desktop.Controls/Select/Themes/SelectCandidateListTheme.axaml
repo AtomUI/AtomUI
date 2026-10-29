@@ -8,6 +8,10 @@
             <atom:ListViewTheme TargetType="atom:SelectCandidateList" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="FontSize">
+            <TemplateBinding Property="atom:Select.OptionFontSize" />
+        </Setter>
+
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:ISelectOption">
                 <atom:TextBlock Text="{Binding Header}" />

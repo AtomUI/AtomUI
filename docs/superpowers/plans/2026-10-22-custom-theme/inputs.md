@@ -1,6 +1,18 @@
 # CT-13 输入与选择主题执行目录
 
-在已授权精确主题全局计划内推进，主agent独立，无分支/worktree/提交。依赖CT10已验收共享机制与CT11资源/动效机制；各家族最终出口仍独立记录。CT12未决五个历史字段与完整持续动效出口保留，不能改记完成。
+2026-10-28 [S6结果](input-select-option-metrics-results.md)：公开字体与Own最小行高进入真实候选项，均匀普通行预算保留三行；12专项/managed1442/AOT1442/NET8零/清理后Select71通过。4临时源、426工程文件和241媒体清理、audit clean。[36对配置视觉](input-select-option-metrics-visual-review.md)已获用户限定批准；24对默认/恢复0。分组、可变模板、其他配置及完整家族仍开放。
+
+2026-10-28 [S5源码分类](input-select-legacy-fields.md)：SelectAffixPadding/FixedItemMargin按Legacy兼容保留，默认/类型/key/ID/slot/配置读取不变，不虚构内置布局；文档改为真实SingleModePadding三档。C#仅XML注释、去除注释后源码严格相等，常驻测试净增0，成员1/0/0及原Token1项通过，无视觉变化或Git，不关闭家族。
+
+2026-10-28 [S4结果](input-select-handle-results.md)：三手柄父组合IconSize/反馈SpacingXS接通，6RED/6正对照→13PASS；原颜色和真实hover清除保持，编译专用Suffix Style命中/当前值恢复通过。managed/AOT各4202、NET8零19.88s、成员1/1/0；临时5源/426文件工程/201媒体清理后三模块148PASS。[26对配置视觉](input-select-handle-visual-review.md)已独立批准，默认/恢复24对均0；完整家族及CT25开放，无Git。
+
+2026-10-28 [S3结果](input-select-internal-owner-results.md)：三公开owner共用标签间距/计数文字的7处资源接通实际owner，6有效间距RED及3纠正后的颜色RED→10PASS；managed/AOT各290、NET8零18.12s，临时3源/422工程文件/113媒体清理后三模块148PASS。[14对配置视觉](input-select-internal-owner-visual-review.md)已独立批准，非修复14对两后端均0；完整家族、其他尺寸/Global/Part仍开放。
+
+2026-10-28 [S2结果](input-select-option-padding-results.md)：Select Own.OptionPadding进入真实Frame，匹配继承尺寸触发优先级；原4RED→6PASS，原生固定弹层managed/AOT各2044、NET8零19.92s，清理后Select71PASS。[20对配置/0视觉](input-select-option-padding-visual-review.md)已独立批准，默认/清除等24对均0。原生普通弹层窗口失活后的关闭原始记录保留，不冒充原生像素/输入通过。下一入口为[S3三owner内部排版](input-select-internal-owner-audit.md)。
+
+2026-10-28接续：[NU3结果](input-numeric-divider-results.md)的父厚度对应边投射已通过5专项、managed/AOT各590与NET8零警告；临时清理后Numeric49项通过。[10对显式厚度视觉](input-numeric-divider-visual-review.md)已独立批准，16非修复对均0，完整家族仍开放。下一入口为Select候选项OptionPadding实际消费者核对；S1默认协议迁移不代表该Own字段已消费。
+
+在已授权精确主题全局计划内推进，主agent独立，无分支/worktree/提交。依赖CT10已验收共享机制与CT11资源/动效机制；各家族最终出口仍独立记录。CT12五历史字段兼容分类与loading开关分包已完成，完整家族、原生显示和跨Host出口按[九owner核对](buttons-exit-audit.md)保留。
 
 ## 来源事实与拆包
 
@@ -60,7 +72,7 @@ F2清理后执行。InputControlFrameTheme仍直接读取Shared的边框、背�
 
 各分包继续实际Skia/同轨迹、输入及当前Mac AOT；临时验证和媒体清理后聚焦输入/OTP。G2及旧输入的往返合成边缘和热切换分配仍归CT25开放，不随OTP推进取消。
 
-G2性能闭环先补CT25真实Startup索引查询：现有零分配用例使用手工registry，生产按identity查找却每次ToString。先真实App根索引两种身份标量分配RED与伪造owner拒绝正对照，再修复；保留惰性descriptor、原资源键/优先级、旧producer与追加事务，验证同轨迹默认/配置/恢复像素和真实AOT，清理后Core/Startup/输入相关focused。不能以此自动解释全部26%热分配增长。
+G2性能闭环的真实Startup索引候选经当前源码复核，5381fb6c9已经采用metadata tuple成功查询。本轮[真实App验证](input-startup-lookup-results.md)确认两类identity、两类Global及Own标量各10000次均0分配，伪造owner拒绝；没有重复改产品或新建缓存。整场景26%热分配增长及往返合成出口仍开放，继续按真实同工作负载核查，不能以局部查询0分配关闭。
 
 ### G3-B1 几何资源与声明式部件验证
 
@@ -99,3 +111,29 @@ G3-C字体专项完成，前后、AOT、清理及最终聚焦结果见[根与分
 ### G3-D 已批准的分隔符颜色
 
 [颜色结果](input-otp-color-results.md)：普通／禁用有效Global在根ControlTheme声明，默认与批准原型四图完全一致；7临时RED→GREEN、96cell实际输入／几何／优先级及38帧Mac AOT-JIT通过。原生直接Style移除与栅格边缘分别记录CT25，不能计作完整家族完成。
+
+## CheckBox / RadioButton 接续结果
+
+[CR1默认依赖](input-check-radio-defaults-results.md)及RadioBgColor Legacy分类完成；[CR3现有Global入口](input-check-radio-global-results.md)切片完成。只回填已验证的默认依赖、已有颜色/开关/间距与owner消费；字体、其余Global和完整家族/CT25仍开放。
+
+[CR4字体结果](input-check-radio-typography-results.md)：四owner的可选FontFamily/FontSize进入真实字形，原生默认与父继承保持、当前Mac433/433及GC通过；清理和原51项验证完成。其余输入选择、全家族及CT25继续。
+
+## ComboBox 接续
+
+[CB1默认结果](input-combo-box-defaults-results.md)完成十一项Global-only V2迁移，默认/既有配置/弹层前后0像素。ItemDisabledColor消费缺口及HandleHoverColor真实hover命中核对单独继续，不能用默认资源存在关闭完整家族。
+
+[CB2禁用色](input-combo-box-disabled-results.md)与[CB3专用Style路由](input-combo-box-item-route-results.md)完成本机切片，精确视觉分别批准；HandleHoverColor已确认原有正对照，未重复修改。其他Global/状态/完整家族及CT25继续。
+
+## Select接续
+
+[S1默认协议结果](input-select-defaults-results.md)完成25字段本机V2迁移；原/候选77/155严格恢复FAIL保持CT25开放。其余消费者/字体/Part与完整家族继续。
+
+[CB4显示区文字结果](input-combo-box-display-colors-results.md)的具体新视觉已独立批准，全部临时清理及69/8项最终验证完成；仍不代表完整ComboBox。下一入口按[NumericUpDown/ButtonSpinner核对](input-numeric-spinner-audit.md)建立真实Own边反例。
+
+[NU1结果](input-numeric-spinner-defaults-results.md)的18背景变化与N01-N14已独立批准，临时清理及65/1项最终验证完成；NU2继续Shared实际owner，不混合7/14图标职责。
+
+[NU2-A结果](input-numeric-inline-icons-results.md)的四对配置glyph与四对自然差异已独立批准，临时清理和原49项完成；Numeric token.md按实际无独立Own定义纠正，后续分隔/其他Global/家族出口继续。
+
+[NU2-B结果](input-spinner-stroke-results.md)18描边变化及6默认hover差异已独立批准；清理后65/1通过。NU3继续两条Numeric inline硬编码分隔边，按父边框对应边投射，不改既有内部Handle取Left算法。
+
+2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），当前等待明确视觉确认。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。

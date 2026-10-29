@@ -3,29 +3,27 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class CheckBoxToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class CheckBoxToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-    
-    public CheckBoxToken()
-
-    {
-    }
-    
     public double CheckIndicatorSize { get; set; }
     public double CheckedMarkSize { get; set; }
-
     public double IndicatorTristateMarkSize { get; set; }
-    
     public Thickness TextMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CheckIndicatorSize        = EffectiveGlobalToken.ControlInteractiveSize;
-        CheckedMarkSize           = CheckIndicatorSize * 0.6;
-        IndicatorTristateMarkSize = EffectiveGlobalToken.FontSizeLG / 2;
-        TextMargin                = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-    }
-    
+    [ControlTokenDefault(nameof(CheckIndicatorSize))]
+    private static double DefaultForCheckIndicatorSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlInteractiveSize;
+
+    [ControlTokenDefault(nameof(CheckedMarkSize), nameof(CheckIndicatorSize))]
+    private static double DefaultForCheckedMarkSize(in ControlTokenDefaultContext context, double checkIndicatorSize) =>
+        checkIndicatorSize * 0.6;
+
+    [ControlTokenDefault(nameof(IndicatorTristateMarkSize))]
+    private static double DefaultForIndicatorTristateMarkSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG / 2;
+
+    [ControlTokenDefault(nameof(TextMargin))]
+    private static Thickness DefaultForTextMargin(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyMarginXS, 0, context.Global.UniformlyMarginXS, 0);
 }

@@ -5,6 +5,7 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SelectHandle}" TargetType="atom:SelectHandle">
+        <Setter Property="IndicatorSize" Value="{atom:OwnerTokenResource IconSize}" />
         <Setter Property="FilterIndicatorTemplate">
             <atom:IconTemplate>
                 <antdicons:SearchOutlined />
@@ -39,8 +40,8 @@
         <Style Selector="^ /template/ atom|Icon">
             <Setter Property="StrokeBrush"
                     Value="{atom:SharedTokenResource ColorTextQuaternary}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="Width" Value="{TemplateBinding IndicatorSize}" />
+            <Setter Property="Height" Value="{TemplateBinding IndicatorSize}" />
         </Style>
 
         <!--
@@ -50,8 +51,8 @@
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="IconBrush"
                     Value="{CompiledBinding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="Width" Value="{TemplateBinding IndicatorSize}" />
+            <Setter Property="Height" Value="{TemplateBinding IndicatorSize}" />
         </Style>
 
         <Style Selector="^[IsAllowClear=True][IsSelectionEmpty=False]">
@@ -66,7 +67,7 @@
         </Style>
 
         <Style Selector="^ /template/ StackPanel#IconLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

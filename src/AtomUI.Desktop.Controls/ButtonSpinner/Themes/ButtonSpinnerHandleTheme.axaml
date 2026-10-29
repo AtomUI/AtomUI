@@ -31,7 +31,7 @@
         
         <Setter Property="ClipToBounds" Value="True"/>
         <Setter Property="BorderBrush" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}"/>
-        <Setter Property="SpinnerBorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
+        <Setter Property="SpinnerBorderThickness" Value="{atom:OwnerTokenResource BorderThickness}"/>
         <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource HandleBg}"/>
         <Style Selector="^[StyleVariant=Filled]">
             <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />

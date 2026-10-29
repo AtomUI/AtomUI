@@ -42,7 +42,6 @@
                                     Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
-                                    LoadingAnimation="Spin"
                                     FillBrush="{TemplateBinding Foreground}"
                                     StrokeBrush="{TemplateBinding Foreground}"
                                     DockPanel.Dock="Left" />
@@ -114,7 +113,6 @@
                                     Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
-                                    LoadingAnimation="Spin"
                                     FillBrush="{TemplateBinding Foreground}"
                                     StrokeBrush="{TemplateBinding Foreground}"
                                     DockPanel.Dock="Left" />
@@ -185,7 +183,6 @@
                                     Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
-                                    LoadingAnimation="Spin"
                                     FillBrush="{TemplateBinding Foreground}"
                                     StrokeBrush="{TemplateBinding Foreground}"
                                     DockPanel.Dock="Left" />
@@ -361,6 +358,9 @@
         </Style>
         <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
             <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^[IsMotionEnabled=True] /template/ atom|Icon#PART_LoadingIcon">
+            <Setter Property="LoadingAnimation" Value="Spin" />
         </Style>
 
         <Style Selector="^:loading">

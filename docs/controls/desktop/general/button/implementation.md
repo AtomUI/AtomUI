@@ -125,6 +125,7 @@ Wave 时，Button 读取当时已经合并 Theme、状态 selector、Semantic ro
 视觉属性，同样参与该取色顺序。
 
 Loading 状态影响 loading icon、原 icon 可见性和交互反馈，但不应通过直接禁用控件来模拟。
+模板生成的loading图标仅在owner IsMotionEnabled=true时使用Spin；关闭动效保留静态loading图标与内容，恢复时重新使用当前规则。Spin默认由ControlTheme的style Setter声明，不在模板节点上写死本地动画值。DropdownButton的独立主题遵守同一消费边界。
 
 ## 7. 内部算法与关键流程
 
@@ -248,3 +249,7 @@ ButtonTheme的高度、圆角、描边、图标、focus、loading与disabled Glo
 ### 可选禁用描边与关联Flyout间距
 
 禁用特定描边由ControlTheme选择存在位/普通资源值，缺省回退通用BorderColorDisabled。Button.cs中的关联Flyout方法只负责非Visual关联对象的Target与订阅生命周期；仅实际Target owner绑定GutterToFlyout，绑定优先级Template，关闭/替换/分离释放，局部值仍优先。不能用Setter嵌套属性路径修改模板外另一个Flyout对象。未配置保留旧0间距，不更改RequestedPlacement。
+
+## 原生兼容包装 SimpleButton
+
+AtomUI.Controls.Commons.SimpleButton保留空Avalonia Button包装合同。它没有独立AtomUI主题注册或Own，使用Avalonia ContentControl默认模板与原生属性/用户主题、宿主继承；不接受独立AtomUI Control Token配置，也不借用Button identity。此范围已经审查核定，新增独立产品主题需另行设计。默认ContentPresenter读取其背景、边框、线宽、圆角、Padding及内容，普通原生输入语义保持。

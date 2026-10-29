@@ -9,6 +9,9 @@ namespace AtomUI.Desktop.Controls;
 
 internal class SelectHandle : TemplatedControl
 {
+
+    #region 公共属性定义
+
     public static readonly StyledProperty<bool> IsInputHoverProperty =
         AvaloniaProperty.Register<SelectHandle, bool>(nameof(IsInputHover));
 
@@ -49,16 +52,6 @@ internal class SelectHandle : TemplatedControl
         AvaloniaProperty.RegisterDirect<SelectHandle, bool>(
             nameof(IsFormFeedbackVisible),
             o => o.IsFormFeedbackVisible);
-
-    internal static readonly DirectProperty<SelectHandle, PathIcon?> CurrentIndicatorIconProperty =
-        AvaloniaProperty.RegisterDirect<SelectHandle, PathIcon?>(
-            nameof(CurrentIndicatorIcon),
-            o => o.CurrentIndicatorIcon);
-
-    internal static readonly DirectProperty<SelectHandle, bool> IsCurrentIndicatorVisibleProperty =
-        AvaloniaProperty.RegisterDirect<SelectHandle, bool>(
-            nameof(IsCurrentIndicatorVisible),
-            o => o.IsCurrentIndicatorVisible);
 
     public bool IsInputHover
     {
@@ -140,6 +133,40 @@ internal class SelectHandle : TemplatedControl
         private set => SetAndRaise(IsFormFeedbackVisibleProperty, ref _isFormFeedbackVisible, value);
     }
 
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<RoutedEventArgs> ClearRequestedEvent =
+        RoutedEvent.Register<SelectHandle, RoutedEventArgs>(nameof(ClearRequested), RoutingStrategies.Bubble);
+
+    public event EventHandler<RoutedEventArgs>? ClearRequested
+    {
+        add => AddHandler(ClearRequestedEvent, value);
+        remove => RemoveHandler(ClearRequestedEvent, value);
+    }
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<SelectHandle, PathIcon?> CurrentIndicatorIconProperty =
+        AvaloniaProperty.RegisterDirect<SelectHandle, PathIcon?>(
+            nameof(CurrentIndicatorIcon),
+            o => o.CurrentIndicatorIcon);
+
+    internal static readonly DirectProperty<SelectHandle, bool> IsCurrentIndicatorVisibleProperty =
+        AvaloniaProperty.RegisterDirect<SelectHandle, bool>(
+            nameof(IsCurrentIndicatorVisible),
+            o => o.IsCurrentIndicatorVisible);
+
+    // Parent composition input: default 0, supplied by the theme from the real
+    // owner's IconSize. The nested public IconPresenter keeps its own identity.
+    // Parent composition input: default 0, supplied by the theme from the real
+    // owner's IconSize. The nested public IconPresenter keeps its own identity.
+    internal static readonly StyledProperty<double> IndicatorSizeProperty =
+        AvaloniaProperty.Register<SelectHandle, double>(nameof(IndicatorSize));
+
     private PathIcon? _currentIndicatorIcon;
 
     internal PathIcon? CurrentIndicatorIcon
@@ -156,21 +183,26 @@ internal class SelectHandle : TemplatedControl
         private set => SetAndRaise(IsCurrentIndicatorVisibleProperty, ref _isCurrentIndicatorVisible, value);
     }
 
-    private PathIcon? _filterIndicator;
+    internal double IndicatorSize
+    {
+        get => GetValue(IndicatorSizeProperty);
+        set => SetValue(IndicatorSizeProperty, value);
+    }
 
     internal PathIcon? FilterIndicator => _filterIndicator;
 
-    public static readonly RoutedEvent<RoutedEventArgs> ClearRequestedEvent =
-        RoutedEvent.Register<SelectHandle, RoutedEventArgs>(nameof(ClearRequested), RoutingStrategies.Bubble);
+    #endregion
 
-    public event EventHandler<RoutedEventArgs>? ClearRequested
-    {
-        add => AddHandler(ClearRequestedEvent, value);
-        remove => RemoveHandler(ClearRequestedEvent, value);
-    }
+    private PathIcon? _filterIndicator;
 
     private IconButton? _clearButton;
+
     private IDisposable? _feedbackStatusSubscription;
+
+    static SelectHandle()
+    {
+        AffectsMeasure<SelectHandle>(IndicatorSizeProperty);
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -214,6 +246,13 @@ internal class SelectHandle : TemplatedControl
         }
     }
 
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromLogicalTree(e);
+        _feedbackStatusSubscription?.Dispose();
+        _feedbackStatusSubscription = null;
+    }
+
     private void UpdateCurrentIndicatorIcon()
     {
         CurrentIndicatorIcon = IsFilterEnabled && IsDropDownOpen
@@ -250,15 +289,9 @@ internal class SelectHandle : TemplatedControl
         }
     }
 
-    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromLogicalTree(e);
-        _feedbackStatusSubscription?.Dispose();
-        _feedbackStatusSubscription = null;
-    }
-
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs e)
     {
         RaiseEvent(new RoutedEventArgs(ClearRequestedEvent, this));
     }
+
 }

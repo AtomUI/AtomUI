@@ -14,6 +14,10 @@ Popup 接入边界：`ComboBox` 负责业务状态和内容准备，template Pop
 
 ## 1. 实现定位
 
+ComboBoxToken 的十一默认由版本化静态函数求值，只有有效 Global 与常量输入；依赖计划不把相同 Global 默认的字段互相连接。PopupContentPadding 的纵向值保留 BorderRadiusLG.TopLeft / 2，ItemBgColor 读取 ColorBgElevated，ItemMargin 保留上下0.5。默认计算不读取输入、选择、弹层或指针状态，实例状态由既有控件和主题选择器处理。
+
+ComboBoxItemTheme 的 disabled Foreground 与其他条目状态共用 ComboBox Own 颜色体系，最终前景通过原生继承进入实际文本。手柄主题已有内部 IconButton:pointerover 到 HandleHoverColor 的绑定，真实 IconBrush 再进入箭头 StrokeBrush；不开辟代码查找节点后设置颜色的路径。
+
 本文档覆盖 ComboBox 的控件实现、主题接入、状态同步和 Gallery 可见维护边界。具体属性注册、默认值、绘制细节和 AXAML selector 仍应直接阅读源码；本文只记录维护者必须理解的稳定结构和不变量。
 
 ## 2. 源码文件结构
@@ -331,3 +335,9 @@ ComboBox 实例拥有 OpenMotion/CloseMotion 的有效值，组件主题提供 S
 根 padding、边宽、圆角投射到 AddOn 输入表面，编辑/非编辑结构及原有画刷状态合同保持。
 
 几何默认、原生优先级和组合边界见[共享输入表面](../../data-entry/input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+## 显示区占位与状态文字
+
+`PlaceholderForeground` 的主题默认读取 ComboBox 有效 Global.ColorTextPlaceholder。普通显示区通过 TemplateBinding 读取该公开属性；可编辑输入沿既有属性转发进入内部占位文字。普通占位不叠加固定透明度，公开画刷的 alpha 与专用 Placeholder Style 的 Opacity 分别按原生属性规则参与绘制。
+
+禁用显示文字继续由共享输入 frame 的既有有效 ColorTextDisabled 消费负责，根 Foreground 的原有默认读取行为保持。Filled/Borderless 的错误和警告文字规则只在启用时激活；禁用时撤回这层局部状态色，由 frame 继承链提供禁用文字颜色。该声明不改变校验状态、输入选择或弹层条目的颜色入口。

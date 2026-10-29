@@ -20,11 +20,15 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `CardSize`、`TitleFontSize`、`TitleFontSizeLG`、`TitleFontSizeSM`、`InkBarThickness` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CardPadding`、`CardPaddingSM`、`CardPaddingLG`、`HorizontalMargin`、`HorizontalItemMargin`、`HorizontalItemPadding` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CardPadding`、`CardPaddingSM`、`CardPaddingLG`、`HorizontalItemMargin`、`HorizontalItemPadding` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `CardBg`、`InkBarColor`、`ItemColor`、`ItemHoverColor`、`ItemSelectedColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuIndicatorPaddingHorizontal`、`MenuIndicatorPaddingVertical`、`MenuEdgeThickness`、`BoxShadowTabsOverflowLeft`、`BoxShadowTabsOverflowRight`、`BoxShadowTabsOverflowTop`、`BoxShadowTabsOverflowBottom` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+`HorizontalMargin`归Legacy兼容字段：当前四种Tab内置模板没有该字段的消费者，保留`Thickness`类型、资源key/ID、V2默认及配置往返，不作为有效内置视觉编辑项。其默认仍为`Thickness(0,0,Global.UniformlyMargin,0)`，不删除或映射为其他Token。
+
+页签与内容的间隔由公开`TabControl.TabAndContentGutter`及其Own默认负责，按placement投射到内部`TabStripMargin`。它与`HorizontalMargin`的类型、默认值及方向职责不同，不是别名；独立TabStrip没有内容区，不增加对应映射。
 
 ## 3. 控件专项模型中的 Token 使用
 

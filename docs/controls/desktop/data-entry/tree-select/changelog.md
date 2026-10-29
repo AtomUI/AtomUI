@@ -19,6 +19,15 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-28
+
+- MinPopupWidth 默认求值迁移到 DependencyDefaultsV2、声明修订 1；保留默认 300、类型、资源身份与显式覆盖/撤回合同。
+
+- 共享手柄箭头尺寸与反馈区间距分别消费TreeSelect有效Global.IconSize/SpacingXS，保留默认14/8、原颜色/清除流程及专用Suffix Style优先级。
+
+- 共享内部标签布局与数量文字读取 TreeSelect 实际 owner 的有效 Global.SpacingXXS/ColorTextDescription，保留默认值及原选择、删除流程。
+
+
 ## 2026-10-23
 
 - 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。

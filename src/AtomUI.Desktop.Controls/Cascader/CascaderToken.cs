@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class CascaderToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class CascaderToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -77,27 +77,50 @@ internal sealed class CascaderToken : AbstractControlDesignToken
     /// </summary>
     public double ItemHeaderSpacing { get; set; }
 
-    public CascaderToken()
+    [ControlTokenDefault(nameof(HeaderHeight))]
+    private static double DefaultForHeaderHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
 
-    {
-    }
+    [ControlTokenDefault(nameof(ControlWidth))]
+    private static double DefaultForControlWidth(in ControlTokenDefaultContext context) => 184;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var itemPaddingVertical = Math.Round((EffectiveGlobalToken.ControlHeight - EffectiveGlobalToken.FontHeight) / 2);
-        ControlWidth             = 184;
-        ControlItemWidth         = 111;
-        DropdownHeight           = 180;
-        OptionHoverBg            = EffectiveGlobalToken.ControlItemBgHover;
-        OptionSelectedBg         = EffectiveGlobalToken.ControlItemBgActive;
-        OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
-        OptionPadding            = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, itemPaddingVertical);
-        MenuPadding              = EffectiveGlobalToken.PaddingXXS;
-        OptionSelectedColor      = EffectiveGlobalToken.ColorText;
-        HeaderHeight             = EffectiveGlobalToken.ControlHeightSM;
-        FilterHighlightColor     = EffectiveGlobalToken.ColorError;
-        ItemHeaderSpacing        = EffectiveGlobalToken.SpacingXXS;
-    }
+    [ControlTokenDefault(nameof(ControlItemWidth))]
+    private static double DefaultForControlItemWidth(in ControlTokenDefaultContext context) => 111;
+
+    [ControlTokenDefault(nameof(DropdownHeight))]
+    private static double DefaultForDropdownHeight(in ControlTokenDefaultContext context) => 180;
+
+    [ControlTokenDefault(nameof(OptionSelectedBg))]
+    private static Color DefaultForOptionSelectedBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(OptionHoverBg))]
+    private static Color DefaultForOptionHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgHover;
+
+    [ControlTokenDefault(nameof(OptionSelectedColor))]
+    private static Color DefaultForOptionSelectedColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(OptionSelectedFontWeight))]
+    private static FontWeight DefaultForOptionSelectedFontWeight(in ControlTokenDefaultContext context) =>
+        context.Global.FontWeightStrong;
+
+    [ControlTokenDefault(nameof(OptionPadding))]
+    private static Thickness DefaultForOptionPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingSM,
+            Math.Round((context.Global.ControlHeight - context.Global.FontHeight) / 2));
+
+    [ControlTokenDefault(nameof(MenuPadding))]
+    private static Thickness DefaultForMenuPadding(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingXXS;
+
+    [ControlTokenDefault(nameof(FilterHighlightColor))]
+    private static Color DefaultForFilterHighlightColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ItemHeaderSpacing))]
+    private static double DefaultForItemHeaderSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.SpacingXXS;
     
 }

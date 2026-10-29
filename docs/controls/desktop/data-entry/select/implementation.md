@@ -1,6 +1,18 @@
 # Select 桌面版实现原理
 
+候选项字体沿 Select.OptionFontSize → SelectCandidateList.FontSize → SelectCandidateListItem.FontSize 的 AXAML 绑定链进入文字。根主题默认读取 Own.OptionFontSize，实例本地值优先；生成的 SelectPopupListItemStyle 可覆盖具体候选项，退出样式后恢复当前实例字体。候选项 MinHeight 与 Padding 使用匹配继承尺寸预设的属性触发优先级，分别读取 Own.OptionHeight 与 Own.OptionPadding。
+
+均匀普通候选行的弹层预算使用首个已实现、可见、非分组行的实际高度，继续按 DisplayPageSize 计算并保留弹层上下 padding。列表布局读取本轮 DesiredSize；行 Bounds 高度变化时通过所属列表同步既有 ItemHeight，避免清除配置后沿用上轮度量。两条路径均只接受有限正值及实际变化，不遍历数据源、不新建布局订阅或缓存。OptionHeight=0 取消行最小高度，文字与 padding 继续参与自然测量。此名义行高规则不承诺可变模板或分组头具有相同行高。
+
+Own中的SelectAffixPadding/FixedItemMargin是历史兼容资源，当前内置布局不消费；保留配置、默认和资源读取，不凭名称增加prefix/suffix padding或标签margin。实际单选内缩由SingleModePadding三档处理，标签间距由有效Global.SpacingXXS处理。
+
+SelectHandle的父组合尺寸输入IndicatorSize由ControlTheme读取实际Select有效Global.IconSize，再用TemplateBinding送到公开IconPresenter及现有图标目标。内部输入注册默认0，常规主题提供14，并声明测量失效；不新增Own字段或包装层。公开Presenter的身份、Core中Template优先级转发及子显式值规则保持。反馈区域与箭头同时显示时，IconLayout读取同一owner的SpacingXS。
+
+内部标签布局的 ItemSpacing/LineSpacing 与响应式最大标签面板 Spacing，通过 OwnerTokenResource 读取实际 Select 有效 Global.SpacingXXS；计数文字读取同一公开 owner 的 ColorTextDescription。它们沿现有树解析，不新增内部 identity、代码绑定或缓存，也不接管公开子 Tag 的颜色身份。
+
 本文档描述 Select 桌面版的输入壳体、选项集合、选择同步、过滤、Tags 动态选项、候选弹层、异步加载、Form 和 Token 资源边界。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [Select 桌面版架构设计](overview.md)，鼠标与键盘的统一候选状态见 [Select 候选交互设计](candidate-interaction-design.md)，Token 语义见 [Select Token 设计](token.md)，变化记录见 [Select Changelog](changelog.md)。
+
+候选项内缩由 Select Own.OptionPadding 提供。派生候选项主题使用与继承 ListView 尺寸预设相同的属性触发优先级声明 Padding，避免普通类型选择器的 Setter 被 BasedOn 尺寸触发器覆盖；不改列表数据或输入事件。该值经原模板绑定进入实际 PixelAlignedBorder Frame，Frame 内的 DockPanel/ContentPresenter 共同受其内缩，专用 SelectPopupListItemStyle 仍拥有上层定制优先级。
 
 Popup 接入边界：`AbstractSelect` 负责业务状态和内容准备，`PART_Popup` 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -293,6 +305,7 @@ Select 不依赖运行时反射发现模板结构。模板协作通过固定 tem
 AOT 边界：
 
 - `SelectToken` 通过 token generator 显式注册，生成 `SelectTokenKind` 和 `SelectTokenResourceExtension`。
+- Select 的 25 个 Own 默认由 DependencyDefaultsV2 静态计划求值，声明修订为 1；默认输入均为有效 Global。前缀补偿和单选 padding 复用多选 padding 的默认算术，不从显式 Own padding 建立依赖。求值、显式存在状态及内部 slot 由既有 Compiler/Generator 负责，不引入运行时成员扫描。
 - API 与 Token 契约由控件文档、源码 public surface、Token 类型或生成数据维护。
 - `OptionTemplate`、AddOn 模板和 EmptyIndicator 模板是 XAML 模板入口，不依赖运行时成员扫描。
 

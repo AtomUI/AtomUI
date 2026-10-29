@@ -1,5 +1,11 @@
 # TreeSelect Token 设计
 
+TreeSelect 的 1 个 Own 字段使用 DependencyDefaultsV2、声明修订 1。MinPopupWidth 默认仍为 300，显式 Own 值包括 0 保持存在状态；撤回后恢复默认。名称、类型、资源 key、公开编号和 slot 保持兼容；不把复用的 Select 字段并入 TreeSelect Own。
+
+箭头组合尺寸消费TreeSelect有效Global.IconSize，常规各尺寸仍14；0与清除更新真实模板。颜色继续沿有效ColorTextQuaternary/专用Suffix Style继承，清除按钮已有owner入口不变；不能因复用SelectHandle而读取Select或公开IconPresenter自身的尺寸配置。公开Form反馈与箭头的间距读取TreeSelect有效Global.SpacingXS，预设最小高度与自然内容测量保持。
+
+多选标签的横向/行间距及响应式面板间距消费 TreeSelect 有效 Global.SpacingXXS；数量指示文字消费 ColorTextDescription。0与清除按现有资源更新，不新增 Own 字段，也不因复用 Select 内部资产而读取 Select identity 的同名配置。
+
 本文档定义 `AtomUI.Desktop.Controls.TreeSelectToken` 的专属语义、分类、使用范围和兼容边界。共享输入表面分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，控件 Token 的通用分层、命名、计算、Theme Variables 边界和预设色规则见 [AtomUI 控件 Token 设计规范](../../../../engineering/development/control-token-guidelines.md)。TreeSelect 整体架构见 [TreeSelect 桌面版架构设计](overview.md)，内部实现原理见 [TreeSelect 桌面版实现原理](implementation.md)，设计和契约变化记录见 [TreeSelect Changelog](changelog.md)。
 
 ## 1. 定位

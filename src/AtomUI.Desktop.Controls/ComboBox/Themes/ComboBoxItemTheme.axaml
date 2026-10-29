@@ -48,7 +48,7 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:ComboBoxTokenResource ItemDisabledColor}" />
         </Style>
 
 

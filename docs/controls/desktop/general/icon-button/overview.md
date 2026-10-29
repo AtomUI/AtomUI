@@ -4,4 +4,6 @@ IconButton提供图标按钮行为；ToggleIconButton提供checked与unchecked�
 
 IconButton的Icon、IconBrush、IconWidth/Height、LoadingAnimation/Duration及IsMotionEnabled由Common抽象基类声明；ToggleIconButton提供CheckedIcon、UnCheckedIcon、IsChecked、IconBrush、四种状态画刷及IsMotionEnabled。最终值遵循原生属性和Style优先级；主题更新保留实例、checked和输入行为。
 
+IconButton仅在自身IsMotionEnabled=true时向内容Icon投射LoadingAnimation；关闭时保留图标与LoadingAnimationDuration，恢复时使用当前Spin/Pulse配置。用户对内容Icon设置的本地值继续遵循原生优先级；ToggleIconButton没有同名loading投射合同。
+
 主题输入见[Token](token.md)，源码职责和绑定见[实现](implementation.md)，变更见[Changelog](changelog.md)。本次不增加Semantic Part，也不把私有模板部件作为公共定制合同。

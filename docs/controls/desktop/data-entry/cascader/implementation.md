@@ -1,5 +1,11 @@
 # Cascader 桌面版实现原理
 
+弹层高度在原 PopupFrame 上统一求约束：AbstractSelect 维护名义 ItemHeight、DisplayPageSize 和 popup padding 的预算；ControlTheme 的 MultiBinding 取该预算与 Own.DropdownHeight 的较小值，作为 Frame.MaxHeight 的主题默认。内部静态转换器只进行双值最小值计算，现有 AvaloniaProperty 对象通过只读别名供 TemplateBinding 使用，不注册新属性或创建控件绑定。两个输入独立更新，短内容保持自然大小，专用 popup.root Style 可按原生优先级覆盖默认。Popup 宿主的阴影与外部测量保持原流程。
+
+共享SelectHandle通过内部IndicatorSize接收实际Cascader有效Global.IconSize，再以TemplateBinding供给公开IconPresenter及现有图标目标；没有新增Own字段、包装层或C#绑定。它与公开Presenter身份区分，原Template优先级转发/子显式值规则保持。IconLayout的反馈间距读取同一Cascader owner的SpacingXS。
+
+共享 SelectTagAwareTextBox 的标签 ItemSpacing/LineSpacing、响应式面板 Spacing 及 SelectMaxCountIndicator 的文字颜色，通过 OwnerTokenResource 分别读取实际 Cascader 有效 Global.SpacingXXS/ColorTextDescription。共享主题名称不代表使用 Select 的配置，也不接管公开子 Tag 的颜色身份；未新增内部 identity 或代码绑定。
+
 本文档描述 Cascader 桌面版的输入壳体、选项集合、级联展开、选择同步、勾选、过滤、异步加载、绑定型选项和资源生命周期。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [Cascader 桌面版架构设计](overview.md)，候选列表状态契约见 [候选列表统一交互设计](../select/candidate-interaction-design.md)，Token 语义见 [Cascader Token 设计](token.md)，变化记录见 [Cascader Changelog](changelog.md)。
 
 Popup 接入边界：`AbstractSelect` 负责业务状态和内容准备，`PART_Popup` 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
@@ -13,6 +19,7 @@ Cascader 的实现由外层 `Cascader` 和内部 `CascaderView` 组成。`Cascad
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/Cascader/Cascader.cs`：public API、输入壳体、popup、选择结果、默认路径、Form / CompactSpace 集成和外层交互。
+- `src/AtomUI.Desktop.Controls/Cascader/CascaderThemeBindings.cs`：ControlTheme 的无状态高度约束合并，以及既有预算属性的 XAML 访问桥。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderView.cs`：弹层内容、选项源、选择、过滤入口、空状态、默认展开路径和模板接入。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderView.ExpandAndCollapse.cs`：展开、收起、同级互斥展开、子列创建和默认展开路径。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderView.Check.cs`：多选勾选、子树勾选、父级半选和 `SelectedOptions` 同步。

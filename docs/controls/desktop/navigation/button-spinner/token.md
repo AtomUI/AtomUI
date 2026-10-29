@@ -4,7 +4,7 @@
 
 ## 1. 定位
 
-ButtonSpinner Token 只表达组件级视觉变量，例如尺寸、间距、颜色、圆角、阴影、图标尺寸和弹层边界。Token 不承载运行时选择、展开、加载、错误、上传任务、过滤条件或业务状态。
+ButtonSpinner Own 表达手柄宽度、上下箭头尺寸及手柄背景/描边/状态颜色。根排版、圆角、输入表面和动效沿各自的有效 Global 与共享 frame 合同，不复制成这些 Own 字段。Token 不承载数值、草稿、选择、校验或 Spin 状态。
 
 当前 Token scope：
 
@@ -16,12 +16,15 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ControlWidth`、`HandleWidth`、`HandleIconSize` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | 按源码 Token 语义维护 |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HandleBg`、`HandleActiveBg`、`HandleHoverColor`、`HandleBorderColor`、`FilledHandleBg` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
+| 手柄几何 | 上下手柄的宽度与箭头尺寸。 | `HandleWidth`、`HandleIconSize` |
+| 手柄颜色 | 普通/Filled背景、分隔描边、hover图标与active背景；禁用规则由状态主题提供。 | `HandleBg`、`HandleActiveBg`、`HandleHoverColor`、`HandleBorderColor`、`FilledHandleBg` |
+| 历史兼容资源 | 保留默认90、类型、key、公开编号、slot及配置/资源读写；内置布局不读取，不映射或别名到实例Width。 | `ControlWidth`（Legacy） |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+八项历史默认采用 DependencyDefaultsV2、声明修订1。`HandleWidth`默认读取有效 Global.ControlHeightSM，`HandleIconSize`默认读取有效 Global.FontSize/2；`HandleBg`、`HandleActiveBg`、`HandleHoverColor`、`HandleBorderColor`分别来自有效 Global.ColorBgContainer、ColorFillAlter、ColorPrimary、ColorBorder。
+
+`FilledHandleBg`是唯一Own依赖：将有效Global.ColorFillSecondary叠加到有效Own.HandleBg，继续使用既有ColorUtils.OnBackground公式。显式HandleBg（含透明值）参与派生，显式FilledHandleBg优先，清除后按当前上游重算；两个输入均透明时结果透明。不按数值相等猜测显式存在状态。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -39,6 +42,7 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 - `ButtonSpinner`
 - `ButtonSpinnerHandle`
 - `ButtonSpinnerDecoratedBox`
+- `NumericUpDown`的Input/Spinner两种模式。Input的上下手柄读取这里的Own；Spinner模式的内嵌加减图标继续使用原Global.IconSize，按钮宽度保持随高度形成方形，不把HandleIconSize机械套到另一种图形职责。
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 

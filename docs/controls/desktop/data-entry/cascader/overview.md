@@ -8,6 +8,8 @@ Cascader 公开 13 个 Semantic Part（`root`、`prefix`、`content`、`placehol
 
 ## 1. 控件定位
 
+弹层主题高度上限由 Own.DropdownHeight 提供，默认 180；它与 DisplayPageSize 的名义预算共同限制内容，较小者生效，短内容自然收缩。0 表示零高度上限。生成的 popup.root 专用 Style 保持原生样式覆盖优先级，具体 Token 与布局边界见 [Token 设计](token.md)。
+
 | 项 | 值 |
 | --- | --- |
 | NuGet 包 | `AtomUI.Desktop.Controls` |

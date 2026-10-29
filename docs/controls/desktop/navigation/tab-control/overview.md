@@ -132,6 +132,8 @@ TabControl 使用 `TabControlToken` 作为控件 Token scope。Token 只表达�
 
 34项Own默认通过V2求值；Middle水平Card的默认padding跟随有效`CardSize`，显式padding覆盖仍优先。添加按钮由主题声明尺寸：水平高度跟随header，垂直保持`CardSize`正方形；专用`CardTabControlAddStyle`可覆盖尺寸，撤销状态定制后恢复当前方向的默认关系。
 
+历史`HorizontalMargin`仅保留资源和配置兼容，不参与内置渲染。调整页签与内容间距使用`TabAndContentGutter`，不把历史字段作为其别名。
+
 主题维护规则：
 
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。

@@ -156,6 +156,14 @@ RadioButton 的交互事件应从输入源收敛到控件级语义事件：
 
 ## 7. 内部算法与关键流程
 
+RadioIndicator 的绘制直径由唯一计算函数从当前尺寸和状态派生：启用且选中时使用 DotSizeValue；禁用且选中时使用 RadioSize − DotPadding × 2；未选中时使用 DotSizeValue × 0.6。挂载、选中/启用/指针状态变化，以及 RadioSize、DotSizeValue、DotPadding 的实时变化均重新求值，Render 消费 RadioDotEffectSize。尺寸更新不需要借助切换选中状态触发。该算术不能用 TemplateBinding 等价表达，故保留在共享指示器的现有运行时计算中，不新增缓存或中继绑定。
+
+RadioButton 的文字、各状态背景/边框及动效/水波开关读取 RadioButton 身份的有效 Global。内部 RadioIndicator 的 BorderThickness 通过 owner 资源查询，既有 TokenTransitions 的时长标记也由同一公开 owner 求值。RadioButtonGroup 的动效和间距读取自身身份；既有绑定把间距传到实际 WrapPanel，公开子 RadioButton 维持独立身份和原有组选择/动效协作。
+
+BorderThickness 读取最终有效厚度，不把它与 LineWidth 建立新别名。默认禁用 Control 算法时，仅覆盖 LineWidth 不触发其他 Global 字段的重新计算；需要按 LineWidth 重算派生厚度时，使用既有 Global/Custom 控件算法模式，或显式配置 BorderThickness。
+
+RadioButton 与 RadioButtonGroup 的 FontFamily/FontSize Setter 由 ControlTheme 的三输入 MultiBinding 决定：真实继承父值、显式存在位与有效 Global。薄封装只实现已有内部只读继承源，不在 C# 创建字体绑定或写回最终值；它能读取 AXAML 无法直接访问的受保护 InheritanceParent。共用父监听在逻辑离树时释放，换父和重挂刷新，绑定销毁时移除事件；内部子控件继续原生继承和独立身份。
+
 维护者需要重点关注以下流程：
 
 - API 默认值到 effective state 的归一。

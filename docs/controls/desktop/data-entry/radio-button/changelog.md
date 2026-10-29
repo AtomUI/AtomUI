@@ -2,6 +2,14 @@
 
 本文档记录 RadioButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- 七个 Own 字段接入 DependencyDefaultsV2 rev1；DotSize 跟随有效 RadioSize、DotPadding 和 Global.LineWidth，保留显式下游及原公式。
+- 指示器尺寸输入变化直接更新实际自绘直径，保持选中、禁用和未选中三个分支的既有计算。
+- 核定 RadioBgColor 为无内置消费者的 Legacy 保留字段，保留原导出与默认，不新增背景行为或 Global 别名。
+- RadioButton 与 RadioButtonGroup 的现有颜色、开关和组间距接入各自有效 Global；内部指示器厚度沿公开 owner 查询，不改变现有时长绑定、选择和组协作。
+- RadioButton / RadioButtonGroup 的 FontFamily/FontSize 支持可选有效 Global；真实父继承、显式存在位、Style/LocalValue、清除与重挂沿共用机制执行。
+
 ## 2026-10-23
 
 - Theme

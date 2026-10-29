@@ -1,5 +1,11 @@
 # Cascader Token 设计
 
+Cascader 的 12 个 Own 字段使用 DependencyDefaultsV2、声明修订 1。默认函数只读取有效 Global，显式 Own 值（包括 0 和透明色）保留存在状态，撤回后按当前 Global 重新求值。名称、类型、资源 key、公开编号和 slot 保持兼容。ControlWidth、ControlItemWidth、DropdownHeight 的常量默认分别为 184、111、180；OptionPadding 继续使用 Round((ControlHeight-FontHeight)/2)，不改变取整顺序。
+
+箭头组合尺寸消费Cascader有效Global.IconSize，常规各尺寸仍14；0与清除更新真实模板。颜色继续沿有效ColorTextQuaternary/专用Suffix Style继承，清除按钮已有owner入口不变；不能因复用SelectHandle而读取Select或公开IconPresenter自身的尺寸配置。公开Form反馈与箭头的间距读取Cascader有效Global.SpacingXS，预设最小高度与自然内容测量保持。
+
+多选标签的横向/行间距及响应式面板间距消费 Cascader 有效 Global.SpacingXXS；数量指示文字消费 ColorTextDescription。0与清除按现有资源更新，不新增 Own 字段，也不因复用 Select 内部资产而读取 Select identity 的同名配置。
+
 本文档记录 Cascader 专属 Token 的语义、分类和兼容边界。共享输入表面分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计见 [Cascader 桌面版架构设计](overview.md)，实现原理见 [Cascader 桌面版实现原理](implementation.md)，变化记录见 [Cascader Changelog](changelog.md)。通用 Token 规则见 [AtomUI 控件 Token 设计规范](../../../../engineering/development/control-token-guidelines.md)。
 
 ## 1. 定位
@@ -10,9 +16,9 @@
 
 | 分类 | Token | 语义 | 主要消费位置 |
 | --- | --- | --- | --- |
-| 尺寸 | `ControlWidth` | Cascader 输入控件默认宽度。 | `CascaderTheme.axaml` root style。 |
+| 尺寸 | `ControlWidth` | HorizontalAlignment 非 Stretch 时的 Cascader 主题宽度，实例 Width 可覆盖。 | `CascaderTheme.axaml` root style。 |
 | 尺寸 | `ControlItemWidth` | 单列选项默认宽度，也是普通 popup 最小宽度基线。 | `CascaderTheme.axaml`、level list 主题。 |
-| 尺寸 | `DropdownHeight` | 弹层默认最大高度。 | `CascaderTheme.axaml` `MaxPopupHeight`。 |
+| 尺寸 | `DropdownHeight` | PopupFrame 的主题最大高度，默认 180；0 表示零高度上限。 | `CascaderTheme.axaml` 的 Frame Style Setter。 |
 | 尺寸 | `HeaderHeight` | 选项 header 最小高度。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `OptionPadding` | 选项内部 padding。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `MenuPadding` | 单列菜单 padding。 | `CascaderViewLevelListTheme.axaml`。 |
@@ -26,6 +32,8 @@
 ## 3. 控件专项模型中的 Token 使用
 
 `CascaderTheme.axaml` 使用 `ControlWidth`、`ControlItemWidth`、`DropdownHeight` 和 `FilterHighlightColor` 定义外层输入宽度、普通 popup 最小宽度、最大高度和过滤高亮。
+
+Popup 的最大高度另受名义行高 × DisplayPageSize + popup 上下 padding 的预算约束。两个约束同时参与自然布局，较小者限制实际高度；内容较少时自然收缩。Own 上限位于 ControlTheme Style Setter，专用 CascaderPopupRootStyle 可按原生优先级覆盖合并后的主题默认。
 
 `CascaderViewLevelListTheme.axaml` 使用 `ControlItemWidth` 和 `MenuPadding` 定义每列的结构尺寸。级联列宽属于 Cascader 的核心视觉契约，不应被单个 item 模板硬编码覆盖。
 

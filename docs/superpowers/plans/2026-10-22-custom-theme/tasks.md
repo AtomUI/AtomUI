@@ -8,7 +8,7 @@
 
 2026-10-25用户要求完成全部进行中任务，当前执行集合为CT-11–CT-19及CT-25；不把分包通过、视觉批准或提交当整项完成。
 
-更新日期：2026-10-26。工作位置为`feature/custom-theme`及现有worktree，源码审计基线`85407138f`；阶段提交`79f2fc00e`记录截至CT-08A的成果，本轮已持续推进至CT-19颜色选择及CT-25平台分包，机制及各分包清理后聚焦证据见下表，本轮修改继续交用户审查，不自动提交，整体重构尚未完成。CT-00/CT-01完成的是目录与源码分类，不表示控件或主题机制已经修复。**已完成CT-04/CT-05及CT-06机制和DataGrid17项兼容接入；Own V2持续按家族迁移，DataGrid78字段和ColorPicker24字段的后续默认计划已有独立结果；完整控件家族验收仍为0项**，不能把准备工作换算成视觉验收完成率。
+更新日期：2026-10-28。工作位置为`feature/custom-theme`及现有worktree，源码审计基线`85407138f`；阶段提交`79f2fc00e`记录截至CT-08A的成果，本轮已持续推进至CT-19颜色选择及CT-25平台分包，机制及各分包清理后聚焦证据见下表，本轮修改继续交用户审查，不自动提交，整体重构尚未完成。CT-00/CT-01完成的是目录与源码分类，不表示控件或主题机制已经修复。**已完成CT-04/CT-05及CT-06机制和DataGrid17项兼容接入；Own V2持续按家族迁移，DataGrid78字段和ColorPicker24字段的后续默认计划已有独立结果；完整控件家族验收仍为0项**，不能把准备工作换算成视觉验收完成率。
 
 | ID | 状态 | 已完成与证据 | 下一步／未完成门槛 |
 | --- | --- | --- | --- |
@@ -199,3 +199,66 @@ Transfer后续核对并修正文档中的无效专用Style、SetterTargetType及
 2026-10-27 CT14 N3-TAB：[本机结果](container-tabs-defaults-results.md)的34默认V2、一条CardPadding依赖及已批准添加按钮状态恢复已验证。四项默认原3FAIL1PASS→候选4PASS，四项历史35/51→29；最终11项扩展通过，Mac managed1062/AOT1063及408资源相同。所示布局与[N01–N16精确差异](tabs-layout-noise-review.md)已批准，原始FAIL保留；8临时源、303媒体、423文件原生工程清理，原Tab283项/NET8零警告/成员审计通过。回填34Token与4Control，HorizontalMargin仍Undecided，Reserved仍20；直接原生Styles.Remove仍残留91而期望56，不列为已修复，完整家族/其他Host/原生最终像素保持开放。新Git快照须另审。
 
 NavMenu首次展开的[接续TDD结果](nav-menu-initial-collapse-motion-results.md)：原始15项13FAIL2PASS，保存最后coercion输入的候选13PASS2FAIL，被低优先级Style覆盖及Animation恢复反例否决。普通Avalonia Border最小coercion反例也把Animation360恢复成Local300，独立1FAIL保留。产品NavMenu.cs已恢复HEAD，临时源删除，原有307项通过不证明本Bug修复；必须修订有效宽度取值方案，CT14/CT25继续开放，不能重新安装未经验证的镜像字段。
+
+
+2026-10-27继续执行：用户要求依次完成剩余全部任务，范围扩展至CT11–CT23、CT25–CT26，CT24保持明确暂缓。第二十二批27文件已获批原样提交推送346732602a，三OS/两Browser验证8/8成功，见[第二十二轮结果](platform-twenty-second-results.md)，不作为完整家族验收。
+
+CT14 [HorizontalMargin分类](tab-horizontal-margin-results.md)完成：完整源码/模板/Gallery搜索确认无内置消费者，归Legacy兼容保留，不删除字段或接成别名，运行C#除XML注释外逐字不变；原Tab283项、0Skip及成员审计通过。该字段不再Undecided，容器Reserved仍20。NavMenu/直接Style移除按已批准[FW1源码验证](framework-restore-validation-plan.md)继续，尚未修改正式依赖。
+
+2026-10-27 FW1本地源码验证与恢复完成：69临时/扩展通过、清理后47原有通过、NET8/NET10 API16148记录一致；实际Mac managed/AOT各152项通过，原NavMenu仍为失败负对照。参考源码及XamlX已恢复/删除；用户决定继续官方12.1.4，正式恢复缺陷和NavMenu仍开放。见[源码验证结果](framework-restore-validation-results.md)。
+
+2026-10-27 CT11/CT12：[Hyper loading接线](buttons-hyper-loading-results.md)及[连续动效开关](buttons-continuous-motion-results.md)分包完成并获用户精确视觉批准。原5FAIL/4FAIL分别变为通过；四owner明暗8个默认同相位帧对0，停动四项0、重启有效；最终临时10项、实际Mac managed/AOT各63项、清理后精确模块132项通过，NET8零警告。三份临时源码、148PNG+manifest、外部423文件全部删除。仅主agent作者自审，未提交/未调度Actions；完整CT11/CT12/CT25不关闭。下一项继续核查Hyper icon-only/danger状态激活。
+
+2026-10-27 CT12：[Hyper icon-only/danger](buttons-hyper-states-results.md)原始6FAIL→最终7PASS，四档指标与实际输入状态通过；同步夹具UI时钟阻塞的2654像素失败保留并以等时异步单变量定位，最终当前颜色到达目标的硬断言及明暗配置/退出恢复均0，预期2944/2976精确差异已获用户批准。Mac managed/AOT各129PASS、清理后132项、NET8零警告通过；两份临时源码、132PNG+manifest与外部423文件清理。CT12逐字段/完整家族出口继续，CI不代替验收；无提交授权。
+
+2026-10-27 CT12：[Hyper root绘制](buttons-hyper-root-paint-results.md)8原始消费/Style失败接通；自审3项root默认值失败改用Frame编译空值回退，最终14项、Mac managed/AOT各63项、清理后132项及NET8零警告通过。默认/恢复0，所示定制精确差异已批准。SimpleButton已获用户核定保留原生包装，Native委托/三点输入/局部像素0验证并同步目录；Hyper禁用Own边框在请求线宽时进入真实Frame。两份临时源码、66PNG+manifest、外部423文件删除。[九owner出口核对](buttons-exit-audit.md)保持全家族开放及9/5、4/2原始差异、长寿命Flyout关系、CT20溢出边界；无提交或新Actions。
+
+2026-10-27 CT13 [CR1默认依赖结果](input-check-radio-defaults-results.md)：CR1：11默认V2与三条有效Own边；原5FAIL→最终6PASS，明暗22条默认/key/ID/slot一致；managed/AOT各51，清理后原51项/NET8零警告；直接AA/恢复0，精确配置变化与自然90/76、3/6已单独批准，CT25合成专项及完整家族保持开放。两临时源码、423文件原生工程、268PNG及manifest共269文件已清理且audit clean；产品无刷新补丁，未提交。下一项继续RadioBgColor分类及其余输入消费。
+
+2026-10-27 CT13 CR2：CR2：完整产品源码/模板/Gallery/测试搜索仅有RadioBgColor声明和默认，无内置消费者；选中背景与边框直接读取有效Global.ColorPrimary。归Legacy/CompatibilityRetained，保留Color、key/ID/slot、V2默认及配置/资源读取；不新增背景行为或别名，CT23按历史保留展示。产品输入与CR1最终51项/NET8一致。见[CR1结果中的兼容分类](input-check-radio-defaults-results.md#radiobgcolor-兼容分类)。不关闭完整家族或CT25。
+
+2026-10-27 CT13 [CR3 Global结果](input-check-radio-global-results.md)：CR3：六AXAML/38个已有Global资源入口接到四个公开owner与内部指示器；8有效RED加修正算法后的2有效RED→15PASS，0/恢复扩展14PASS；Mac managed/AOT各54，清理后原51项、NET8零警告。默认/输入原→新0，精确配置5015/5015及三点恢复3/3已批准；原始失败保留CT25。临时2源、419文件原生工程、108PNG+manifest全部清理，无Git/完整家族批准。内部列表继续Group模板绑定；时长既有Owner消费已验证，未重复改造。下一项核查字体继承及其余输入选择消费者。
+
+2026-10-27 CT13 [CR4字体结果](input-check-radio-typography-results.md)：CR4：四个公开owner复用内部真实继承父只读桥与三输入字体转换器，八个AXAML Setter显式消费有效Global FontFamily/FontSize；默认/清除继承、Style/Local及相等值存在位正确。8RED→13合同/GC通过（7对象回收），完整默认/父字体Frame通过，224条非配置数据一致；Mac managed/AOT各8窗口433项，NET8零警告34.62s，清理后原51项。配置字体及N01–N07精确25/32点差异已批准，原始FAIL留CT25。两临时源、419文件原生工程、314PNG+manifest均清理；非全家族，无Git授权。本包仅作者另步自审；下一步继续余下输入/选择消费者和完整家族出口。
+
+2026-10-27 CT13 [CB1 ComboBox默认结果](input-combo-box-defaults-results.md)：CB1：ComboBox11项Global-only默认V2 rev1，无Own边；原注册协议1FAIL/旧GlobalOwn正对照1PASS→候选3PASS，明暗22条默认/类型/key/ID/slot相同。保留三行cap/四项/滚动条节点可见/真实DownEnter，22对新旧完整帧及AA/复位/配置恢复0；1DIP7643/3933检出。Mac产品Window/Overlay managed/AOT各102，NET8零警告24.82s；两临时源、419文件工程、44PNG+manifest清理，原ComboBox69PASS/0Skip，单Token审计0问题。仅默认机制，ItemDisabledColor/HandleHoverColor消费及完整家族/CT25继续，无Git。
+
+2026-10-28 CT13 [CB2禁用色](input-combo-box-disabled-results.md)：CB2：禁用Foreground唯一资源入口接Own ItemDisabledColor；原1FAIL/既有HandleHover与Frame2PASS→3PASS20s，明暗仅显式disabled文字各402点已单独批准，其他/AA/复位0。Mac managed/AOT各42、NET8零警告23.79s；两临时源/419文件工程/49媒体清理，原69项。专用Style优先级扩展另由CB3闭环，非全家族，无Git。
+
+2026-10-28 CT13 [CB3专用Style路由](input-combo-box-item-route-results.md)：CB3：popup.listItem真实直接逻辑父为ComboBox，原从视觉PopupFrame查逻辑后代不命中；route改> .semantic-popup-list-item，marker/ContractType/跨根/Multiple保持，无代码属性回退。原4FAIL→4PASS22s，真实编译专用Style类/Setter核对、Own更新/撤回及文本通过；预编译x:Class managed/AOT各54，消除夹具URI入口IL2026，无抑制。八对精确Style变化已单独批准，其余20对/AA/复位0。临时C#/AXAML、334文件工程、57媒体清理，原69项/NET8零警告24.89s；完整家族/CT25继续，无Git。
+
+2026-10-28 CT13 [S1 Select默认协议](input-select-defaults-results.md)：S1：Select25项Global-only V2 rev1；50默认/type/key/ID/slot前后相同，4临时+原前缀5PASS1s；原前缀断言保留仅改生成入口。正确主题背景48对旧新/480状态记录0差异；严格原/候选启用恢复Light77(max1)/Dark155(max3)仍FAIL，直接0，保留CT25。Mac managed/AOT各256；NET8零18.57s，成员1/0/0；两临时源、422文件原生工程、207媒体清理且auditclean；清理后原三模块148PASS0Skip6s。仅作者另步自审，完整家族/其余消费开放，无Git。
+
+2026-10-28 CT13 [CB4显示区候选](input-combo-box-display-colors-results.md)：真实原版6FAIL/4PASS加Warning2FAIL→最终13PASS；只接占位画刷及限制禁用时错误/警告文字，撤销无效根getter假设和多余根Setter。managed/AOT各108、NET8零18.47s、临时4源/430文件原生工程/134媒体清理、原Combo69/Gallery8通过；新26对具体视觉范围待单独批准，未验收、无Git；完整家族和CT25继续。
+
+2026-10-28：CB4的[限定视觉范围](input-combo-box-display-colors-visual-review.md)已获本次独立批准；候选完成本机切片出口，原始失败及纠正保留。CB4：占位默认/公开画刷与禁用错误警告文字修复独立视觉已批准；8有效RED→13PASS，260根记录/getter不变；managed/AOT108各、NET8零18.47s；临时4源/430文件工程/134媒体清理后Combo69/Gallery8通过。原根localForeground实际禁用绘制与其余完整家族/CT25仍开放，无Git。
+
+2026-10-28 CT13/CT15 [NU1候选](input-numeric-spinner-defaults-results.md)：NU1候选：8默认V2rev1、FilledHandleBg读取有效Own.HandleBg；16默认/type/key-ID-slot一致，原5FAIL3PASS→8PASS，528状态记录相同。managed/AOT246各，NET8零20.98s；2临时源/422文件工程/565媒体清理，原65/Gallery1通过。直接绘制26非修复阶段0、18背景变化；自然N01-N14具体差异待独立批准，完整家族/CT25开放，无Git。
+
+2026-10-28 NU1：8默认V2rev1及Filled<-HandleBg有效Own边完成；16默认/type/key-ID-slot相同。原5FAIL3PASS→8PASS；managed/AOT246各、NET8零20.98s；临时2源/422文件工程/565媒体清理、原65/Gallery1通过。18背景修复与N01-N14已获独立批准，原自然/直接/同版计数保留，完整CT13/15/20/25及绘制历史问题开放，无Git。
+
+2026-10-28 [NU2-A候选](input-numeric-inline-icons-results.md)：NU2-A候选：4个加减图标尺寸入口改Numeric有效Global.IconSize；默认14/Input7不变，子IconButton颜色身份保留。原4FAIL1PASS→6PASS；160根/320动作非尺寸记录相同。managed/AOT454各、NET8零23.53s；临时2源/422文件工程/81媒体清理、原Numeric49PASS2s。四对22/0图标变化及四对自然小差异待独立批准，不沿用NU1范围，无Git。
+
+2026-10-28 NU2-A：四图标尺寸入口读取Numeric有效Global，保持Input7/Spinner默认14与子颜色身份；4RED→6PASS，managed/AOT454各、NET8零23.53s，临时2源/422文件工程/81媒体清理后原49PASS。四配置glyph变化与四对精确自然差异已独立批准，完整家族/CT25开放，无Git。
+
+2026-10-28 [NU2-B候选](input-spinner-stroke-results.md)：NU2-B候选：两处SpinnerBorderThickness Shared改真实Owner，原4目标FAIL→5PASS；320根记录不变，managed/AOT196各、NET8零19.48s；临时2源/422文件工程/161媒体清理后原65PASS2s。18配置描边变化及6对默认hover自然差异待独立批准，完整家族/CT25开放，无Git。
+
+2026-10-28 NU2-B：两内部SpinnerBorderThickness改真实Owner；4RED→5PASS，managed/AOT196各、NET8零19.48s，临时2源/422文件工程/161媒体清理、原65/Gallery1通过。18描边修复与6默认hover自然差异已独立批准，完整家族/CT25开放，无Git。
+
+2026-10-28 [NU3结果](input-numeric-divider-results.md)：Numeric inline两分隔边绑定父BorderThickness对应Right/Left，4RED→5PASS；managed/AOT各590、NET8零20.56s，临时2源/422文件工程/142媒体清理后Numeric49PASS。自然/直接26对中16均0、10显式厚度变化已获[独立批准](input-numeric-divider-visual-review.md)；不关闭CT13/CT20/CT25，无Git。
+
+2026-10-28 [S2结果](input-select-option-padding-results.md)：Select候选项Own.OptionPadding接通Frame，原4RED→6PASS、原生固定弹层managed/AOT各2044、NET8零19.92s；临时4源/426文件工程/177媒体清理后Select71PASS。自然/直接44对计数相同，24对默认/清除等0、20对配置变化已获[独立批准](input-select-option-padding-visual-review.md)；完整家族/原生像素与输入/CT25仍开放，无Git。
+
+2026-10-28 [S3结果](input-select-internal-owner-results.md)：三选择owner的6处内部间距及1处计数资源改用实际owner，6有效间距RED及3纠正后的颜色RED→10PASS；managed/AOT各290、NET8零18.12s，临时3源/422文件工程/113媒体清理后精确三模块148PASS。两绘制后端各14非修复对0，14配置变化已获[独立批准](input-select-internal-owner-visual-review.md)；原始无效画刷类型断言/纠正过程保留，完整家族/CT25仍开放，无Git。
+
+2026-10-28 [S4结果](input-select-handle-results.md)：手柄父组合IconSize及反馈SpacingXS修复，6RED/6正对照→13PASS；原颜色/真实hover清除和三编译专用Suffix Style恢复保持。最终managed/AOT各4202、NET8零19.88s，成员1文件/1控件/0问题、50成员整理前后指纹一致；临时5源/426文件工程/201媒体清理后三模块148PASS。默认/恢复24对0，[26对配置视觉](input-select-handle-visual-review.md)已独立批准，含Select Middle/Custom配置23时32→33自然高度；完整家族/CT25开放，无Git。
+
+2026-10-28 [S5](input-select-legacy-fields.md)：SelectAffixPadding/FixedItemMargin完成Legacy/CompatibilityRetained源码分类，保留默认/类型/资源与配置合同，不增造内置效果；正式文档纠正SingleModePadding三档。C#仅XML注释，非注释源码严格相等；成员1/0/0、原Token1PASS19ms，无新增测试/媒体/原生工程、无视觉变化或Git，完整家族开放。
+
+2026-10-28 [S6结果](input-select-option-metrics-results.md)：公开候选字体、Own最小行高与均匀普通行DisplayPageSize预算接通；8RED/1正对照→12PASS，本轮26s，原生managed/AOT各1442。两后端各60对、24默认/恢复0及36配置变化，见[限定审查](input-select-option-metrics-visual-review.md)，已获用户明确限定批准。4临时源、426工程文件、241媒体已清理且audit clean；精确SelectControl71PASS4s、NET8零警告/错误、成员2文件/2控件/0问题。完整家族与CT25保持开放；整任务完成后commit授权已在原会话收到，当前不提前提交。
+
+2026-10-28 N3-SC13 [TreeSelect/Cascader默认结果](container-select-defaults-results.md)：1+12字段V2 rev1，2实际V1 RED→5PASS9s；104原/新值与type/key/ID/slot一致，两后端56对旧新及16对恢复均0。managed/AOT各123，字重别名均按精确600/400校验；NET8零20.42s、成员2Token文件/0Control/0问题。3临时源、422工程文件（1,228,223,829 bytes）、113媒体已清理且audit clean；精确两模块77PASS6s。仅本机默认迁移，DropdownHeight与行数预算的消费者所有权、标签身份、完整家族及CT25仍开放。用户已同意下一高度包取Own上限与更小页数预算，具体视觉另审；当前不提前Git提交。
+
+2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），当前等待明确视觉确认。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。
+
+2026-10-29 用户明确要求提交当前 custom-theme 快照；本次授权立即提交当前任务相关改动，不等待全部任务结束。提交不表示完整家族/整项任务完成，不代替Cascader高度包70对限定视觉批准；不含推送、发布或新建分支/worktree。原整任务完成后提交授权与本次快照提交分别记录。

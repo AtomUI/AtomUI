@@ -1,0 +1,21 @@
+# CT-12：SimpleButton 原生兼容边界审查
+
+## 当前实际合同
+
+`AtomUI.Controls.Commons.SimpleButton`是公开的空Avalonia.Controls.Button子类，源文件仅保留继承声明。完整产品源码搜索没有使用者、Own、AtomUI主题资源或独立注册片段；现有control-inventory明确为NoIndependentFragment，不能仅凭这一点判定缺陷。
+
+当前官方12.1.4运行证据：StyleKey为SimpleButton自身，默认Template为Avalonia ContentControl的FuncControlTemplate，实际视觉子树为ContentPresenter/TextBlock；原生Avalonia Button在同一宿主也使用此默认模板。没有独立Avalonia Button ControlTheme资源。ControlTokenAccessor捕获SimpleButton明确抛出未注册schema异常，不接受独立AtomUI Control Global/Own配置。正确版本2d79ba55的ContentControl源码确认默认模板通过TemplateBinding转发Background/Border/Padding/Content等原生属性。
+
+## 建议保留的范围
+
+保留SimpleButton作为原生Avalonia兼容包装，不在本任务新增AtomUI主题身份、Own字段或预设视觉。其原生属性、用户ControlTheme与继承语义继续由Avalonia承担；独立AtomUI Control配置不作为它的现有能力。Root类型和公开名称保持。
+
+这不是删除Control或把全家族判通过。默认画面与原生输入/属性边界仍需给出相应场景证据，未验证平台继续列CT25；新增独立产品主题属于另一个明确设计选择，不能由agent自动创建后把行为变化当成兼容修复。
+
+## 审查点
+
+用户需要核定：本轮接受上述原生包装边界，还是要求本轮新增独立AtomUI注册主题。建议保留现状，因为当前没有自有主题或产品使用者，新建主题会扩大公开契约与默认外观。原临时探针两项正对照通过（包装边界观测、Hyper全行命中），Hyper Frame四项真实失败另行修复，不混入SimpleButton。
+
+用户已批准保留原生兼容包装边界（call_365dea7a230e47369242a467487bfd79:0）。当前[根绘制分包](buttons-hyper-root-paint-results.md)已补原生背景/边框/线宽/圆角/Padding委托与左/中/右3次点击，完整明暗场景中该行前后差异均0，managed Native同样验证；NativeAOT与清理后出口随后回填。此决定不把其他平台或完整CT12计为通过。
+
+当前Mac NativeAOT同样验证包装属性委托和未注册边界；完整根绘制探针managed/AOT各63PASS。临时探针与所有媒体/外部产物已清理，精确模块132项、NET8零警告通过；control-inventory与visual-coverage按已批准边界回填，正式说明归Button implementation的兼容包装段。

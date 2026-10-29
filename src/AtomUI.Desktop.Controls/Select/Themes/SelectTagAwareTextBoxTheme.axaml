@@ -19,12 +19,12 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|SelectWrapPanel#PART_DefaultPanel">
-            <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
-            <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="ItemSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
+            <Setter Property="LineSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
         </Style>
 
         <Style Selector="^ /template/ atom|SelectMaxTagAwarePanel#PART_MaxCountAwarePanel">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
         </Style>
 
         <Style Selector="^:disabled">

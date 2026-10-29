@@ -38,6 +38,17 @@
 - Validation
   - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../superpowers/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
 
+## 2026-10-28
+
+- 普通与可编辑占位默认读取有效 ColorTextPlaceholder，普通显示区接通公开 PlaceholderForeground，移除固定0.3透明度叠加。
+- Filled/Borderless 错误/警告文字规则在禁用时退出，保留共享 frame 既有禁用色与根 Foreground 默认行为。
+- popup.listItem 的专用 Style 路由按容器真实直接逻辑父修正，显式与生成容器均由 ComboBoxPopupListItemStyle 声明式命中，不通过代码回退定制。
+
+## 2026-10-27
+
+- 十一项 Own 默认接入 DependencyDefaultsV2 rev1，保留有效 Global 输入、字段顺序/身份和精确公式；不新增 Own 依赖或改变弹层/输入实现。
+- 禁用项文字读取既有 ItemDisabledColor，保留默认公式与原选择器优先级；显式 Own 及其有效 Global 默认可实时到达实际文本。
+
 ## 2026-10-23
 
 - 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。

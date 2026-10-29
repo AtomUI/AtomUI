@@ -25,6 +25,12 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+四个 Own 字段使用 DependencyDefaultsV2 rev1。`CheckIndicatorSize` 默认读取有效 Global `ControlInteractiveSize`；未显式配置的 `CheckedMarkSize` 读取有效 Own `CheckIndicatorSize × 0.6`。显式标记尺寸（含 0）保留自身值，清除后重新派生。
+
+`IndicatorTristateMarkSize` 继续读取有效 Global `FontSizeLG / 2`，不随 `CheckIndicatorSize` 派生；`TextMargin` 继续读取有效 Global `UniformlyMarginXS`，仅用于左右间距。四个字段的名称、类型、资源 key、公开枚举值和 slot 保持原合同。
+
+CheckBox 与 CheckBoxGroup 分别消费自身有效 Global 的 `FontFamily` / `FontSize`。未显式配置时保留真实父级字体；显式配置（含恰好等于当前父值的配置）才使用主题值，清除后恢复当前父级。实例 LocalValue 与普通 owner Style 仍高于主题 Setter，Group 内容的公开子 CheckBox 保留自身身份与继承关系。字体控制文本排版，指示器尺寸仍由上述独立公式决定，不新增 Own 字体字段或尺寸档位。
+
 CheckBox 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。

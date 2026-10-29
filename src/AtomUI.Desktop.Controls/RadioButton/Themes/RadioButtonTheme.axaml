@@ -5,6 +5,21 @@
     xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:RadioButton}" TargetType="atom:RadioButton">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:RadioButtonTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:RadioButtonTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:RadioButtonTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:RadioButtonTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="Frame"
@@ -37,18 +52,18 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="Foreground" Value="{atom:RadioButtonTokenResource ColorText}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:RadioButtonTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+                Value="{atom:RadioButtonTokenResource EnableWaveSpirit}" />
 
         <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Margin" Value="{atom:RadioButtonTokenResource TextMargin}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:RadioButtonTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
@@ -61,34 +76,34 @@
             <Setter Property="RadioInnerBackground"
                     Value="{atom:RadioButtonTokenResource RadioColor}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorder}" />
+                    Value="{atom:RadioButtonTokenResource ColorBorder}" />
         </Style>
         <Style Selector="^:checked">
             <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:RadioButtonTokenResource ColorPrimary}" />
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:RadioButtonTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^:not(:checked)">
             <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorBgContainer}" />
+                        Value="{atom:RadioButtonTokenResource ColorBgContainer}" />
             </Style>
         </Style>
         <Style Selector="^:not(:checked):pointerover">
             <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:RadioButtonTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                        Value="{atom:RadioButtonTokenResource ColorBgContainerDisabled}" />
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorBorder}" />
+                        Value="{atom:RadioButtonTokenResource ColorBorder}" />
                 <Setter Property="RadioInnerBackground"
                         Value="{atom:RadioButtonTokenResource DotColorDisabled}" />
             </Style>

@@ -18,6 +18,12 @@
 - Changed
   - 明确 Dropdown 根层 Slide、嵌套菜单 ZoomBig 与实际 Flyout 的配置/释放责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-27
+
+- Theme
+  - loading图标的默认Spin在owner IsMotionEnabled启用时声明式生效；关闭时保留静态图标，清除或恢复后回到当前owner配置。
+
+
 ## 2026-10-23
 
 - Theme

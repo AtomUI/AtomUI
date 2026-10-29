@@ -2,6 +2,12 @@
 
 本文档记录 ButtonSpinner 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-28
+
+- 内部DecoratedBox/Handle的SpinnerBorderThickness读取真实公开owner的有效Global.BorderThickness，保留默认1、原绘制及方向规则。
+- 八项历史默认接入DependencyDefaultsV2 rev1，FilledHandleBg默认读取有效Own.HandleBg；默认、类型及资源编号保持。
+- ControlWidth核定为Legacy兼容资源：保留90默认及配置/资源读写，不新增内置宽度行为或实例Width别名。
+
 ## 2026-10-23
 
 - 附加区域背景、描边、padding/行高及内容面板间距接入实际owner的Effective Global；内部NumericUpDownSpinner沿树使用NumericUpDown身份。

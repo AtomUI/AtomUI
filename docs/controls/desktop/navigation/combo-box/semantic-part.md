@@ -253,7 +253,7 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | Owner | `ComboBox` |
 | Part | `popup.listItem` |
 | Selector | `.semantic-popup-list-item` |
-| SelectorRoute | `/template/ .semantic-popup-root >> .semantic-popup-list-item` |
+| SelectorRoute | `> .semantic-popup-list-item` |
 | Style Type | `ComboBoxPopupListItemStyle` |
 | ContractType | `ComboBoxItem` |
 | Cardinality | `Multiple` |
@@ -264,8 +264,10 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | AtomUI 节点 | 运行时容器：`CreateContainerForItemOverride` / `PrepareContainerForItemOverride` 创建的 `ComboBoxItem` 实例本身（marker 不写在 `ComboBoxItemTheme.axaml` 模板内部节点上，理由见 §2） |
 | 职责 | 单个候选项容器，承载项内容、选中视觉、hover/active 候选视觉、禁用态与过滤隐藏。 |
 | 相关 API | `ItemsSource`、`ItemTemplate`、`SelectedItem`、`SelectedIndex`、`ItemHeight`（internal）、`OptionFontSize` |
-| 相关 Token | ComboBoxToken（`ItemColor`、`ItemBgColor`、`ItemHoverColor`、`ItemHoverBgColor`、`ItemSelectedColor`、`ItemSelectedBgColor`、`ItemPadding`、`ItemMargin`） |
+| 相关 Token | ComboBoxToken（`ItemColor`、`ItemDisabledColor`、`ItemBgColor`、`ItemHoverColor`、`ItemHoverBgColor`、`ItemSelectedColor`、`ItemSelectedBgColor`、`ItemPadding`、`ItemMargin`） |
 | 稳定性 | stable since 6.2.0 |
+
+容器是 ComboBox 的直接逻辑子节点，TemplatedParent 为空；PopupFrame 是其视觉祖先。专用 Style 因此沿 `>` 逻辑子节点路由命中带 marker 的实例，不从 PopupFrame 查找逻辑后代。此关系同时适用于自动生成的容器与 ItemsSource 中显式提供的 ComboBoxItem；保持 owner 隔离、跨视觉根标志与原生属性优先级。
 
 #### `popup.empty`
 

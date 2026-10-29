@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-10-27
+
+- Theme
+  - Button/Dropdown模板的loading旋转跟随当前owner IsMotionEnabled开关；关闭时保留静态图标，恢复时重启默认旋转，不改变loading/Click/命令状态。
+
 ## 2026-10-24
 
 - Compatibility

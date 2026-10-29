@@ -6,6 +6,7 @@
 
 - Theme
   - 34项Own默认接入V2；`CardPadding`依赖有效`CardSize`，保留原公式、显式覆盖、资源身份及有限负padding。
+  - 明确无内置消费者的`HorizontalMargin`为Legacy兼容字段，保留名称、类型、key/ID、默认函数与配置往返，不改变布局或接成其他字段的别名。
   - 卡片添加按钮的尺寸与方向对齐改为主题声明；水平高度响应实际header，专用Add Style覆盖退出后恢复绑定。
   - 水平编译绑定由模板内Style Setter持有NameScope，不新增C#订阅。
 - Docs

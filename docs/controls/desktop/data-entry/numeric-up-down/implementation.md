@@ -31,6 +31,8 @@ NumericUpDown 的实现基于 Avalonia `NumericUpDown`，AtomUI 通过 `InputCon
 
 `NumericUpDownSpinner` 是 NumericUpDown 专用的 internal 子控件。它以 `ButtonSpinner` 为基础主题，在 `IsButtonSpinnerFloatable=False` 时提供 inline 三段式模板，并在自己的主题中维护 `PART_DecreaseButton`、`PART_IncreaseButton` 的视觉。NumericUpDown 父主题只传递属性和内容，不进入该子控件的模板内部。
 
+inline加减图标的宽高属于NumericUpDown组合几何，直接读取NumericUpDown有效Global.IconSize，默认14；不借用目标公开IconButton的IconSize/SM，也不与Input上下箭头的ButtonSpinnerOwn.HandleIconSize（默认7）合并。IconButton的颜色仍按自身identity和状态规则提供，明确父几何不重写子控件颜色或新增Own字段。
+
 `TextBox#PART_TextBox` 负责文本编辑、placeholder、只读、数据校验和 disabled 文本色。NumericUpDown 不应让内层 TextBox 绘制独立边框。
 
 ## 4. 状态与数据流
@@ -125,6 +127,8 @@ String mode 保存 raw text，同时尝试同步可计算 `Value`。内部同步
 仍被派生主题继承；不得为声明依赖而加入会遮蔽该替换的局部 include。content padding、派生模板和控件局部属性优先级保持不变。
 
 Spinner mode 使用独立模板创建三段式结构。左右 action 按钮的宽度通过编译绑定跟随自身实际高度，保持正方形；按钮内 padding 为零，标准尺寸图标在其中居中。分隔线由外层段边框另行占位，不计入按钮本体的正方形尺寸。Small、Middle、Large 和自定义高度均使用同一几何规则，不使用浮动 Handle 的固定宽度或输入横向 padding 决定按钮宽度。
+
+分隔边通过模板绑定读取根传入的 `BorderThickness`：减号段右边取 `Right`，加号段左边取 `Left`，使用既有 `BorderThicknessFilterConverter` 排除其余边。默认1、0、本地设置和非均匀厚度均按对应侧解释；分隔线占位变化不改变按钮本体的正方形规则。
 
 spinner 模式的外层 content frame 必须保持零 padding，避免与左右 action 段和中间输入段自身 padding 叠加，导致控件高度超过输入控件标准高度。
 

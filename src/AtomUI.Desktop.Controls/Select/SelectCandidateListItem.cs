@@ -20,6 +20,12 @@ internal class SelectCandidateListItem : ListViewItem
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == BoundsProperty &&
+            change.GetOldValue<Rect>().Height != change.GetNewValue<Rect>().Height &&
+            ItemsControl.ItemsControlFromItemContainer(this) is SelectCandidateList layoutOwner)
+        {
+            layoutOwner.NotifyCandidateRowSizeChanged(this);
+        }
         if (change.Property == IsEnabledProperty ||
             change.Property == IsVisibleProperty ||
             change.Property == IsGroupItemProperty ||

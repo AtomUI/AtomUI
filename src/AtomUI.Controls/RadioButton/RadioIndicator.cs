@@ -188,7 +188,10 @@ internal class RadioIndicator : TemplatedControl
         {
             if (change.Property == IsPointerOverProperty ||
                 change.Property == IsCheckedProperty ||
-                change.Property == IsEnabledProperty)
+                change.Property == IsEnabledProperty ||
+                change.Property == RadioSizeProperty ||
+                change.Property == DotSizeValueProperty ||
+                change.Property == DotPaddingProperty)
             {
                 RadioDotEffectSize = CalculateDotSize(IsEnabled, IsChecked.HasValue && IsChecked.Value);
             }
@@ -225,6 +228,9 @@ internal class RadioIndicator : TemplatedControl
 
     private double CalculateDotSize(bool isEnabled, bool isChecked)
     {
+        // ControlTheme TemplateBinding cannot express the disabled size-minus-padding
+        // or unchecked scaled-dot arithmetic. Keep one runtime calculation for attach,
+        // state changes and live geometry inputs; Render consumes this derived value.
         double targetValue;
         if (isChecked)
         {

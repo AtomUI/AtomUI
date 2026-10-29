@@ -19,6 +19,22 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-28
+
+- 接通公开 OptionFontSize 的候选文字投射与 Own.OptionHeight 的最小行高；均匀普通行的弹层预算跟随已实现行高，保持 DisplayPageSize 的可视行数语义，支持自然行高 0、清除和重开。
+
+- 核定SelectAffixPadding/FixedItemMargin为无内置消费者的Legacy兼容资源，保留类型、默认及配置/资源读取；纠正文档将其当作内置布局入口及将SingleModePadding误写为Padding的表述，不新增布局行为。
+
+- 手柄箭头尺寸接通父组合Global.IconSize，反馈区间距接通Global.SpacingXS；默认14/8、既有颜色/清除逻辑及专用Suffix Style优先级保持。
+
+- 内部标签换行/响应式间距及数量文字改读实际 owner 的有效 Global.SpacingXXS/ColorTextDescription，保留默认值和原选择、删除流程。
+
+- 接通候选项 Own.OptionPadding，保留原公式及默认场景像素；0、非均匀配置和清除进入真实内容布局，专用样式覆盖及退出资格后的恢复保持。
+
+- 25 个历史 Own 默认迁移到 DependencyDefaultsV2、声明修订 1，保留原 Global 公式、默认值、资源编号和字段类型。
+- 前缀对齐的既有测试改用生成的默认求值入口，保留三档补偿断言；不新增常驻用例。
+
+
 ## 2026-10-23
 
 - 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。

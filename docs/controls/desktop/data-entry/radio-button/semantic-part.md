@@ -70,7 +70,7 @@ root 不表示模板中的 `PixelAlignedBorder#Frame`、布局容器或指示圆
 绘制指示，并直接消费 `Background`、`BorderBrush`、`BorderThickness` 与 `CornerRadius`；默认主题把
 `CornerRadius` 设为 `RadioSize`（即正圆），Semantic Style 覆盖为更小值时得到圆角方形指示。圆点颜色仍由
 `RadioIndicator` 内部的 `RadioInnerBackground` 驱动，不属于 `TemplatedControl` 公共契约，也不通过 `icon` Part
-对外承诺。需要调整圆点颜色时，应通过主题 SharedToken 或默认主题的 `:checked` / `:disabled` 状态分支实现。
+对外承诺。需要调整内圆颜色时，应配置既有 Own `RadioColor` / `DotColorDisabled`，或调整其有效 Global 默认输入；不通过获取内部节点设置 `RadioInnerBackground` 绕过公开契约。
 
 icon 不公开 `RadioIndicator` 具体控件类型、其 `Render` 绘制细节、内部圆点几何计算、水波 actor、内部 `Name`
 或选中动画 phase。

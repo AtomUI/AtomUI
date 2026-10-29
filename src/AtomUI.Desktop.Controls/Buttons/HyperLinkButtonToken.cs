@@ -8,6 +8,9 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
 internal sealed partial class HyperLinkButtonToken : AbstractControlDesignToken, IControlTokenDefaults
 {
+    /// <summary>
+    /// 禁用状态边框颜色；默认保持无边框，应用提供非零 BorderThickness 时参与实际描边。
+    /// </summary>
     public Color BorderColorDisabled { get; set; }
     public Thickness ContentPadding { get; set; }
     public Thickness ContentPaddingLG { get; set; }

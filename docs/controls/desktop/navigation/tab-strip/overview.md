@@ -121,6 +121,8 @@ TabStrip 当前没有专属 Token 文档；主题通过 SharedToken、关联控�
 
 家族Own资源显式复用`TabControl`，Global仍由实际owner决定。Middle水平Card的默认padding跟随有效`CardSize`；`CardTabStripAddStyle`可声明按钮尺寸，退出状态定制后恢复当前方向的尺寸关系。水平按钮高度跟随header自然布局，垂直按钮保持`CardSize`正方形。
 
+家族历史`HorizontalMargin`没有内置消费者，仅保留资源和配置兼容；独立轨道不因该字段引入新的内容区间隔或默认margin。
+
 TabStrip 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证规则。组合或派生控件应显式说明哪些 API 被继承、覆盖或不支持。
 
 主要协作类型：

@@ -1,5 +1,11 @@
 # Select Token 设计
 
+Own.OptionFontSize 提供公开 OptionFontSize 的主题默认，实例值可覆盖；实际候选项继承该入口，专用候选项 Style 可进一步定制。Own.OptionHeight 是候选项最小高度，0 表示自然测量。均匀普通行的实际高度参与 DisplayPageSize 的弹层预算，因此较大字体或行高会相应增加弹层高度，清除配置恢复当前默认；分组和可变模板不能据此解释为固定行高合同。
+
+箭头的组合宽高消费Select有效Global.IconSize，常规主题各尺寸仍14；0与清除通过既有模板更新。它是父组合尺寸输入，不把公开IconPresenter自身的Global当作Select配置。箭头颜色继续从右附加区有效ColorTextQuaternary/专用Suffix Style继承，清除按钮保留已有owner入口。公开Form成功反馈与箭头之间的间距消费Select有效Global.SpacingXS；预设最小高度保持，较大图标可按原自然测量增加实际高度。
+
+内部多选标签的横向/行间距及响应式面板间距消费 Select 有效 Global.SpacingXXS；数量指示文字消费 ColorTextDescription。0与清除按现有资源更新，不新增 Own 字段。相同字段用于其他公开控件时分别按其 owner 解释，不能借共享内部主题把 TreeSelect/Cascader 配置合并到 Select。
+
 本文档定义 `AtomUI.Desktop.Controls.SelectToken` 的专属语义、分类、使用范围和兼容边界。共享输入表面分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，控件 Token 的通用分层、命名、计算、Theme Variables 边界和预设色规则见 [AtomUI 控件 Token 设计规范](../../../../engineering/development/control-token-guidelines.md)。Select 整体架构见 [Select 桌面版架构设计](overview.md)，内部实现原理见 [Select 桌面版实现原理](implementation.md)，设计和契约变化记录见 [Select Changelog](changelog.md)。
 
 ## 1. 定位
@@ -13,6 +19,12 @@ SelectToken 不承载以下状态：
 - 候选项 hover、pressed、selected、disabled 的当前实例状态。
 - Popup 当前宽度、高度、offset、placement 或异步加载结果。
 
+### 默认求值协议
+
+25 个历史字段采用 `DependencyDefaultsV2`、声明修订 1。各字段默认只读取有效 Global，显式 Own 值（包括 0 和与默认相等的值）保持存在状态，清除后重新使用当前 Global 默认。字段名称、类型、资源 key、公开编号和内部 slot 保持兼容。
+
+标签高度保留普通档减 2、小号档加 4、大号档不补偿的公式；普通/小号垂直 padding 使用 Round，大号使用 Ceiling。`SingleModePadding*` 和 `MultiModePrefixIndent*` 复用相同 Global 默认算术，不读取显式 `MultiModePadding*`，不构成 Own 依赖。PrefixIndent 仍保留 0 下限。这些规则不扩大各字段的实际消费范围。
+
 ## 2. Token 分类
 
 ### 2.1 多选标签 Token
@@ -23,9 +35,8 @@ SelectToken 不承载以下状态：
 - `MultipleItemHeightLG`
 - `MultipleSelectorBgDisabled`
 - `MultipleItemColorDisabled`
-- `FixedItemMargin`
 
-这些 Token 控制 Multiple / Tags 模式下 `SelectTag` 的背景、尺寸、禁用态颜色和标签间距。高度按 SharedToken 的控件高度和基础 padding 计算，使 Large / Middle / Small 三种预设尺寸与输入框高度对齐。
+这些 Token 控制 Multiple / Tags 模式下 `SelectTag` 的背景、尺寸和禁用态颜色。高度按 SharedToken 的控件高度和基础 padding 计算，使 Large / Middle / Small 三种预设尺寸与输入框高度对齐。内置标签间距由有效Global.SpacingXXS提供，不由历史FixedItemMargin自动添加margin。
 
 ### 2.2 候选项 Token
 
@@ -39,30 +50,37 @@ SelectToken 不承载以下状态：
 
 这些 Token 控制 `SelectCandidateListItem` 的选中、active、文本和行高基准。当前弹层最大高度使用实例 `ItemHeight` 计算，主题默认值来自 `SharedToken.ControlHeight`；调整 `OptionHeight` 时必须同时验证候选项实际高度和弹层可视行数是否仍然一致。
 
+`OptionPadding` 直接进入候选项及其内容呈现器，不再继承独立 ListView 的 ItemPadding 三档。默认仍由当前 Select 有效 Global 的水平内缩及 `(ControlHeight-FontHeight)/2` 计算，0与非均匀输入完整保留；清除回有效默认。它改变选项内缩，不修改根输入框 padding、DisplayPageSize 或弹层最大高度公式。专用 `SelectPopupListItemStyle` 的 Padding Setter 优先于 Own，退出其 class 资格后恢复当前有效 Own。
+
 ### 2.3 输入内容 padding Token
 
-- `Padding`
-- `PaddingSM`
-- `PaddingLG`
+- `SingleModePadding`
+- `SingleModePaddingSM`
+- `SingleModePaddingLG`
 - `MultiModePadding`
 - `MultiModePaddingSM`
 - `MultiModePaddingLG`
 - `MultiModePrefixIndent`
 - `MultiModePrefixIndentSM`
 - `MultiModePrefixIndentLG`
-- `SelectAffixPadding`
 
 这些 Token 控制 Select 输入区域和多选内容区域的 padding。单选模式主要使用输入框默认内容布局；多选和 Tags 模式根据是否已有选中项切换普通 padding 与 multi mode padding。
 
 `MultiModePadding*` 的左值服务于标签区域（较小的起点），`MultiModePrefixIndent*` 作为 `PART_ContentLeftAddOn`（prefix）的额外左 Margin，使多选 / Tags 模式下有选中项时 prefix 的左内缩与单选模式一致（对齐 Ant Design：selector 小左内缩 + prefix 自身 margin 补偿）。两者之和等于对应尺寸的单选水平内边距。
 
-`SizeType=Custom` 在主题中与 `Middle` 共享 `Padding` 和 `MultiModePadding` 分支。它不是独立 Token 组。
+`SizeType=Custom` 在主题中与 `Middle` 共享 `SingleModePadding` 和 `MultiModePadding` 分支。它不是独立 Token 组；不另有名为Padding/PaddingSM/PaddingLG的Select Own字段。
 
 ### 2.4 弹层 Token
 
 - `PopupContentPadding`
 
 该 Token 控制 `PopupFrame` 内部 padding，并参与 `MaxPopupHeight` 计算。
+
+### 2.5 历史兼容资源
+
+`SelectAffixPadding` 与 `FixedItemMargin` 在当前内置控件、主题和Gallery中只有声明/default，没有实际布局消费者，按Legacy兼容保留。它们继续参与现有配置/资源读取，名称、Thickness类型、默认公式、key/ID/slot不变，外部专用Style仍可显式使用。
+
+`SelectAffixPadding`默认取有效Global.PaddingXXS，但不自动控制prefix/suffix布局；`FixedItemMargin`默认各边为Floor(UniformlyPaddingXXS/2)，不自动添加标签margin。不能因为资源可读就宣称内置可见效果，也不把两者映射到公开Padding、已有SingleModePadding或Global.SpacingXXS以增造行为。
 
 ## 3. 控件专项模型中的 Token 使用
 

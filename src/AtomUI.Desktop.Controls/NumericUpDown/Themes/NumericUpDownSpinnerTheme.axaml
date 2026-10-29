@@ -5,6 +5,10 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <Thickness x:Key="NumericUpDownSpinnerContentPadding">0</Thickness>
+    <atom:BorderThicknessFilterConverter x:Key="NumericSpinnerDecreaseDividerThickness"
+                                        Left="False" Top="False" Right="True" Bottom="False" />
+    <atom:BorderThicknessFilterConverter x:Key="NumericSpinnerIncreaseDividerThickness"
+                                        Left="True" Top="False" Right="False" Bottom="False" />
 
     <ControlTheme x:Key="{x:Type atom:NumericUpDownSpinner}"
                   TargetType="atom:NumericUpDownSpinner"
@@ -47,7 +51,7 @@
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Left"
                                 BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
-                                BorderThickness="0,0,1,0"
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource NumericSpinnerDecreaseDividerThickness}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
                                     Name="PART_DecreaseButton"
@@ -57,15 +61,15 @@
                                     Padding="0"
                                     Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
-                                    IconWidth="{atom:SharedTokenResource IconSize}"
-                                    IconHeight="{atom:SharedTokenResource IconSize}"
+                                    IconWidth="{atom:NumericUpDownTokenResource IconSize}"
+                                    IconHeight="{atom:NumericUpDownTokenResource IconSize}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Right"
                                 BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
-                                BorderThickness="1,0,0,0"
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource NumericSpinnerIncreaseDividerThickness}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
                                     Name="PART_IncreaseButton"
@@ -75,8 +79,8 @@
                                     Padding="0"
                                     Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
-                                    IconWidth="{atom:SharedTokenResource IconSize}"
-                                    IconHeight="{atom:SharedTokenResource IconSize}"
+                                    IconWidth="{atom:NumericUpDownTokenResource IconSize}"
+                                    IconHeight="{atom:NumericUpDownTokenResource IconSize}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>

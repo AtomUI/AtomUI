@@ -4,14 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ComboBoxToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ComboBoxToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-
-    public ComboBoxToken()
-
-    {
-    }
 
     /// <summary>
     /// 菜单内容边距
@@ -68,28 +63,47 @@ internal sealed class ComboBoxToken : AbstractControlDesignToken
     /// </summary>
     public Color HandleHoverColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PopupContentPadding  = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);
-        
-        var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
-        var colorTextSecondary = EffectiveGlobalToken.ColorTextSecondary;
-        var colorBgContainer   = EffectiveGlobalToken.ColorBgElevated;
-        var colorBgTextHover   = EffectiveGlobalToken.ColorBgTextHover;
+    [ControlTokenDefault(nameof(PopupContentPadding))]
+    private static Thickness DefaultForPopupContentPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXXS, context.Global.BorderRadiusLG.TopLeft / 2);
 
-        ItemColor         = colorTextSecondary;
-        ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
+    [ControlTokenDefault(nameof(ItemColor))]
+    private static Color DefaultForItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
 
-        ItemBgColor         = colorBgContainer;
-        ItemHoverBgColor    = colorBgTextHover;
-        ItemSelectedBgColor = EffectiveGlobalToken.ControlItemBgActive;
-        ItemDisabledColor = colorTextDisabled;
-        HandleHoverColor = EffectiveGlobalToken.ColorPrimary;
+    [ControlTokenDefault(nameof(ItemHoverColor))]
+    private static Color DefaultForItemHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
 
-        ItemPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
-        ItemMargin  = new Thickness(0, 0.5);
-    }
-    
+    [ControlTokenDefault(nameof(ItemSelectedColor))]
+    private static Color DefaultForItemSelectedColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ItemDisabledColor))]
+    private static Color DefaultForItemDisabledColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(ItemBgColor))]
+    private static Color DefaultForItemBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
+
+    [ControlTokenDefault(nameof(ItemHoverBgColor))]
+    private static Color DefaultForItemHoverBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgTextHover;
+
+    [ControlTokenDefault(nameof(ItemSelectedBgColor))]
+    private static Color DefaultForItemSelectedBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(ItemPadding))]
+    private static Thickness DefaultForItemPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingSM, 0);
+
+    [ControlTokenDefault(nameof(ItemMargin))]
+    private static Thickness DefaultForItemMargin(in ControlTokenDefaultContext context) =>
+        new(0, 0.5);
+
+    [ControlTokenDefault(nameof(HandleHoverColor))]
+    private static Color DefaultForHandleHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
 }

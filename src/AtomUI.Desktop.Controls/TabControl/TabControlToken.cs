@@ -63,7 +63,7 @@ internal sealed partial class TabControlToken : AbstractControlDesignToken, ICon
     public double InkBarThickness { get; set; }
 
     /// <summary>
-    /// 横向标签页外间距
+    /// 历史保留：横向标签页外间距；当前内置模板不消费，保留资源与配置兼容。
     /// </summary>
     public Thickness HorizontalMargin { get; set; }
 

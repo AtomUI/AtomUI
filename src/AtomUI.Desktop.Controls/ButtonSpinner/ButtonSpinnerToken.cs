@@ -4,17 +4,12 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ButtonSpinnerToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ButtonSpinnerToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public ButtonSpinnerToken()
-
-    {
-    }
-
     /// <summary>
-    /// 输入框宽度
+    /// 历史输入框宽度资源；内置布局不读取，保留默认值及配置/资源兼容。
     /// </summary>
     public double ControlWidth { get; set; }
 
@@ -53,18 +48,34 @@ internal sealed class ButtonSpinnerToken : AbstractControlDesignToken
     /// </summary>
     public Color FilledHandleBg { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ControlWidth   = 90;
-        HandleWidth    = EffectiveGlobalToken.ControlHeightSM;
-        HandleIconSize = EffectiveGlobalToken.FontSize / 2;
-        HandleActiveBg = EffectiveGlobalToken.ColorFillAlter;
-        HandleBg       = EffectiveGlobalToken.ColorBgContainer;
-        FilledHandleBg = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillSecondary,
-            HandleBg);
-        HandleHoverColor  = EffectiveGlobalToken.ColorPrimary;
-        HandleBorderColor = EffectiveGlobalToken.ColorBorder;
-    }
-    
+    [ControlTokenDefault(nameof(ControlWidth))]
+    private static double DefaultForControlWidth(in ControlTokenDefaultContext context) => 90;
+
+    [ControlTokenDefault(nameof(HandleWidth))]
+    private static double DefaultForHandleWidth(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
+
+    [ControlTokenDefault(nameof(HandleIconSize))]
+    private static double DefaultForHandleIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize / 2;
+
+    [ControlTokenDefault(nameof(HandleBg))]
+    private static Color DefaultForHandleBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(HandleActiveBg))]
+    private static Color DefaultForHandleActiveBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillAlter;
+
+    [ControlTokenDefault(nameof(HandleHoverColor))]
+    private static Color DefaultForHandleHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(HandleBorderColor))]
+    private static Color DefaultForHandleBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBorder;
+
+    [ControlTokenDefault(nameof(FilledHandleBg), nameof(HandleBg))]
+    private static Color DefaultForFilledHandleBg(in ControlTokenDefaultContext context, Color handleBg) =>
+        ColorUtils.OnBackground(context.Global.ColorFillSecondary, handleBg);
 }

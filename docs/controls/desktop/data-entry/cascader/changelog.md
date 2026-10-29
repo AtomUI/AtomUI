@@ -19,6 +19,17 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-28
+
+- 修复 DropdownHeight 被页数预算覆盖：Own 与较小页数预算在原 Frame 上合并约束；保留自然内容高度与专用 popup.root Style 优先级，支持热更新、0 和清除恢复。
+
+- 12 个历史 Own 字段迁移到 DependencyDefaultsV2、声明修订 1，保持默认公式、常量、资源编号与字段类型；明确 ControlWidth 的非 Stretch 消费条件。
+
+- 共享手柄箭头尺寸与反馈区间距分别消费Cascader有效Global.IconSize/SpacingXS，保留默认14/8、原颜色/清除流程及专用Suffix Style优先级。
+
+- 共享内部标签布局与数量文字读取 Cascader 实际 owner 的有效 Global.SpacingXXS/ColorTextDescription，保留默认值及原选择、删除流程。
+
+
 ## 2026-10-23
 
 - 根表面几何接入 owner 有效主题值，保留默认渲染和原生覆盖优先级。

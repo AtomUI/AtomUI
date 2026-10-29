@@ -22,6 +22,7 @@
             </MultiBinding>
         </Setter>
         <Setter Property="Foreground" Value="{atom:ComboBoxTokenResource ColorText}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:ComboBoxTokenResource ColorTextPlaceholder}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -86,7 +87,7 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
-                                Opacity="0.3"
+                                Foreground="{TemplateBinding PlaceholderForeground}"
                                 IsVisible="{TemplateBinding SelectingItemsControl.SelectedItem, Converter={x:Static ObjectConverters.IsNull}}"
                                 Text="{TemplateBinding PlaceholderText}" />
                             <ContentPresenter
@@ -188,6 +189,7 @@
         <Setter Property="EmptyIndicatorPadding" Value="{atom:ComboBoxTokenResource Padding}" />
         <Setter Property="OptionFontSize" Value="{atom:ComboBoxTokenResource FontSize}" />
         <Setter Property="ItemHeight" Value="{atom:ComboBoxTokenResource ControlHeight}" />
+
         
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
@@ -216,13 +218,13 @@
         </Style>
 
         <Style Selector="^[StyleVariant=Borderless]">
-            <Style Selector="^:error">
+            <Style Selector="^:error:not(:disabled)">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
                             Value="{atom:ComboBoxTokenResource ColorErrorText}" />
                 </Style>
             </Style>
-            <Style Selector="^:warning">
+            <Style Selector="^:warning:not(:disabled)">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
                             Value="{atom:ComboBoxTokenResource ColorWarningText}" />
@@ -231,13 +233,13 @@
         </Style>
 
         <Style Selector="^[StyleVariant=Filled]">
-            <Style Selector="^:error">
+            <Style Selector="^:error:not(:disabled)">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
                             Value="{atom:ComboBoxTokenResource ColorErrorText}" />
                 </Style>
             </Style>
-            <Style Selector="^:warning">
+            <Style Selector="^:warning:not(:disabled)">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
                             Value="{atom:ComboBoxTokenResource ColorWarningText}" />

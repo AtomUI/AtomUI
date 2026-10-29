@@ -26,6 +26,10 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+RadioButton 的七个 Own 字段使用 DependencyDefaultsV2 rev1。`RadioSize` 默认读取有效 Global `FontSizeLG`，`DotPadding` 默认保持 4；未显式配置的 `DotSize` 按有效 Own `RadioSize - (DotPadding + Global.LineWidth) × 2` 求值，不额外钳制结果。显式下游（含 0）优先，清除后恢复派生。颜色和文字间距保留原默认公式，字段名称、类型、资源 key、公开枚举值和 slot 不变。
+
+`RadioBgColor` 为 Legacy 兼容保留字段：仍导出 Color 资源，默认读取有效 Global `ColorPrimary`，应用可自行读取。当前内置模板不消费该 Own 字段，选中背景和边框直接读取有效 Global `ColorPrimary`，未选中背景读取 `ColorBgContainer`，禁用背景读取 `ColorBgContainerDisabled`。它不构成内置背景的有效编辑入口，也不与 Global 字段建立别名；改变内置选中背景应配置相应 Global 或使用公开专用语义样式。
+
 RadioButton 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
@@ -85,7 +89,11 @@ RadioButton 的控件专项模型通过 Theme 消费 Token：
 
 `OptionButtonGroup` 与公开子 `OptionButton` 的 Global identity 分别解析。Group 控制组合外框、水平固定高度和选中边框；Item 控制自身字体、留白和状态色。仅给 Item 配高度不会解除 Group 的固定高度约束。两个 Transition 集合在 ControlTheme style Setter 中消费 Item 的动态 `MotionDurationMid`，不把初始化资源值固化到共享 Transition。
 
-## FontFamily 的精确与继承合同
+## RadioButton / RadioButtonGroup 的字体合同
+
+两个公开owner分别消费自身有效 Global `FontFamily` / `FontSize`。未显式配置时保留真实InheritanceParent的字体；显式配置与缺省不按值相等猜测，清除后恢复当前父级。原生Style与LocalValue仍可覆盖主题Setter。Group通过继承把字体传给未单独配置的公开子RadioButton，子项显式配置维持自身身份。该入口不新增Own字体、SizeType或IsCustomFontSize；RadioSize/DotSize仍按其独立默认依赖求值。
+
+## OptionButton / OptionButtonGroup 的 FontFamily 合同
 
 本控件的类型化Global FontFamily在正规化配置直接包含该字段时进入根渲染；未配置则保留真实InheritanceParent的字体，清除恢复当前祖先。Shared字体配置同样生效，显式配置与缺省不按值相等猜测。FontFamily Setter由ControlTheme MultiBinding提供，控件只暴露内部只读继承源；原生Style/local及资源覆盖保持。接口观察在分离时释放父订阅，重挂刷新，不以逻辑父代替受保护的真实继承父。详细机制见[显式Token资源](../../../../modules/core/configured-token-resources.md)。
 

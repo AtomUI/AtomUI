@@ -1,0 +1,17 @@
+# CT13 S3：选择控件内部排版目标接续核对
+
+本记录保留启动时源码范围与接续证据；本机分包不代表完整家族通过。
+
+接续证据：三公开根各自有效SpacingXXS=18/11/7，真实可见wrap/响应式panel仍4。初轮及Models共享后各9FAIL、1s，其中6项为有效间距RED，另3项误限定具体SolidColorBrush，而原/候选均可返回合法ImmutableSolidColorBrush，不计作有效颜色RED。已改按ISolidColorBrush颜色合同，并仅将计数资源切回原Shared补跑3项真实RED；mustRestore与精确候选已保存。原版Skia明暗三根/六标签/换行与响应式、0/禁用/恢复/真实移除标签，自然/直接各1PASS、8s、28帧；候选间距6项已通过，完整颜色RED/GREEN继续。
+
+本轮实现范围限定7处资源：SelectResultOptionsBoxTheme和SelectTagAwareTextBoxTheme各3处SpacingXXS，以及SelectMaxCountIndicatorTheme的一处ColorTextDescription。均为内部实际目标，拟通过已有OwnerTokenResource读取各真实公开根；要由GREEN和原生检查证明，不能用源码推定命中。TagAware禁用Foreground另核真实可见子Tag颜色职责，本轮不混入。
+
+SelectTagAwareTextBox和SelectMaxCountIndicator同时出现在Select/TreeSelect/Cascader模板；SelectResultOptionsBox另有相同的内部tag布局主题。它们不是新的公开配置identity。当前两tag布局主题的ItemSpacing/LineSpacing/响应式Spacing、TagAware禁用Foreground及计数器Foreground仍读取Shared，需用各真实公开owner的有效Global证明是否断链。不能在三家族共享资产中机械改为SelectTokenResource。
+
+下一步骤：先用三种实际公开根及当前数据创建可见多选tag、两行换行、响应式最大tag与计数器，配置不同SpacingXXS/ColorTextDescription/ColorTextDisabled并放置公开Tag干扰配置；核对真实Panel布局与可见文字而非只读资源。实际失败后才能选择OwnerTokenResource或其他符合真实拓扑的声明式入口。默认/0/清除、数据和删除/选择交互、明暗原帧及具体视觉范围、managed/AOT/NET8与临时清理后精确三模块分别留证。
+
+SelectHandle另含Shared.IconSize、ColorTextQuaternary及SpacingXS，但图标/清除按钮有公开子Control身份。必须另核父组合尺寸与子颜色职责；本分包不将它们统一替换成OwnerTokenResource，也不借内部排版目标的结论推断公开Icon身份。
+
+本包不改S2候选项Padding、popup高度公式、事件、Mode/选择数据状态机或公有字段。完整CT13/CT20/CT25仍开放，无Git操作。
+
+当前接续结论：计数3项已按颜色接口取得有效RED、997ms，精确候选恢复且mustRestore为空；最终10PASS、直接绘制10PASS9s、managed/AOT各290、NET8零18.12s。临时3源/422工程文件/113媒体清理后精确三模块148PASS7s；14对配置视觉已获[独立批准](input-select-internal-owner-visual-review.md)，非修复14对均0。[完整结果](input-select-internal-owner-results.md)保留原始无效断言与修正，不再将其当有效RED。

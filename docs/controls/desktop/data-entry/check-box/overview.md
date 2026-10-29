@@ -86,6 +86,8 @@ Public API / inherited command / item source / user input
 
 CheckBox 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
+CheckBox 与 CheckBoxGroup 分别选择自身有效 Global；FontFamily/FontSize 仅在显式配置时进入主题，未配置与清除保持真实父级继承。实例属性和普通 owner Style 可覆盖主题值，组内容的公开子 CheckBox 保留自身身份。指示器与文本尺寸是独立维度，具体默认依赖见 [Token 设计](token.md)。
+
 | 主题文件 | 职责 |
 | --- | --- |
 | `CheckBoxGroupTheme.axaml` | 定义布局、内容承载或框架节点视觉。 |

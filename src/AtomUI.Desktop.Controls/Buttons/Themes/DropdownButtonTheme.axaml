@@ -44,7 +44,6 @@
                                     Name="PART_LoadingIcon"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
-                                    LoadingAnimation="Spin"
                                     FillBrush="{TemplateBinding Foreground}"
                                     StrokeBrush="{TemplateBinding Foreground}"
                                     DockPanel.Dock="Left" />

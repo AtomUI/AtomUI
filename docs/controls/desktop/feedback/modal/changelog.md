@@ -2,6 +2,12 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-29
+
+- Performance
+  - Hold the Window content cache lease while the modal mask fades in or out, so mask frames composite cached window content instead of re-rendering the page; render-thread median drops from about 9.5 ms to 2.4 ms per mask frame on the measured Wayland Gallery.
+  - Surface zoom now writes the compositor transform channels instead of `RenderTransform`; closing during opening hands the channels over without a reset.
+
 ## 2026-10-28
 
 - Motion / architecture

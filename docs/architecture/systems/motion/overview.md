@@ -63,6 +63,7 @@ AbstractMotion 子类及配置 → 本次几何/参数快照 → 统一播放协
 | [定义与第三方扩展](definitions-and-extension.md) | 基类、构建、配置、曲线、轨迹、组合与公开接入语义 |
 | [内置轨迹与组件规格](built-in-motion.md) | 端点、原点、曲线控制点、时长及组件实际选择 |
 | [播放与生命周期](playback-and-lifecycle.md) | 请求、结果、取消、替代、FillMode、终态持有和属性所有权 |
+| [帧流水线](frame-pipeline.md) | 时钟订阅、空帧保活、合成变换通道、按呈现时间采样与平台时间源 |
 | [目标、布局与控件接入](targets-and-layout.md) | 无 Actor 目标、执行能力、内容视口、裁剪/命中和宿主边界 |
 | [性能与呈现验收](performance.md) | 帧预算、调度/分配约束、场景、测量口径和性能门槛 |
 | [验证状态与完成门禁](verification.md) | 当前源码差异、能力验证、定向验证与发布可用性 |

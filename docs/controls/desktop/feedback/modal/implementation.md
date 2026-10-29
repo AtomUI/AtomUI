@@ -40,8 +40,8 @@
 - `DialogOverlayLayer` 解析当前 owner 的视觉宿主，并管理同一 owner scope 内的 presenter 顺序、可用尺寸和栈顶键盘路由。
 - `OverlayDialogPresenter` 是 Dialog layer 的直接子节点；mask 与 Surface 不拆成独立 popup。
 - modal mask 打开/关闭动画期间，presenter 向 owner `Window` 申请内容缓存租约（`AcquireContentCache`），mask 每帧合成缓存的窗口内容
-  而不重绘整页；条件不满足时租约为 null，保持直接绘制。条件与像素验证见
-  [mask 性能记录](../../../../superpowers/progress/2026-10-29-overlay-dialog-mask-performance-investigation.md)。
+  而不重绘整页；条件不满足时租约为 null，保持直接绘制。条件与验证见
+  [覆盖层内容缓存](../../../../architecture/systems/control-infrastructure/overlay-content-cache.md)。
 - `WindowDialogPresenter` 拥有一个 `DialogWindow`，并将同一个 `DialogSurface` 作为原生 Window 内容。
   `DialogWindow` 逻辑父是 owner `Dialog`（presenter 构造时 `SetParent`），并按 `PopupRoot` 既有范式覆写
   `IStyleHost.StylingParent => Parent`，使 owner 实例级 Semantic Style 能级联进独立窗口宿主；owner 未生根

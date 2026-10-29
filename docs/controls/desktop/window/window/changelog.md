@@ -4,10 +4,13 @@
 
 ## 2026-10-29
 
+- Performance
+  - Add the reference-counted `AcquireContentCache(overlay)` lease: while a full-window overlay animates, the CSD template content root (`PART_ContentCacheHost`) is composited from a BitmapCache instead of being re-rendered every frame. A hidden `PART_ContentBackdrop` repaints the live frame brush inset from the rounded edge so cached text keeps an opaque base. The lease is refused (direct rendering kept) for non-CSD templates, non-opaque frame brushes, frame-layer content, non-integral device-pixel bounds, or an overlay inside the cached content. See [overlay content cache](../../../../architecture/systems/control-infrastructure/overlay-content-cache.md).
 - Fix
   - Restore the active-state left, right and bottom frame borders on Windows 10 under the default `RedirectionSurface`. Avalonia extends the DWM frame 1px into the client area when it uses a redirection bitmap, and Win10 DWM draws the active border beneath that glass, where the opaque client covered it; only the self-drawn top edge was left visible. A Windows 10-only native hook (`WindowsLegacyFrameMarginHook`) resets the margins to 0 after each Avalonia rewrite, so DWM draws the native translucent border again. Windows 11, Linux and macOS are unaffected. The self-drawn top edge is still required.
   - Eliminate opposite-edge frame lag on Windows live resize. Dragging the left or top edge no longer makes the right or bottom edge jump; previously 28%–33% of frames showed gaps of up to 121px under `WinUIComposition`.
   - Remove the whole-window background flashes that `RedirectionSurface` used to show during live resize.
+  - Predict the Wayland window scale before the first layout. Avalonia starts Wayland toplevels at scale 1 and adopts the compositor's fractional scale only after mapping, so the window laid out and rendered once at scale 1 and re-laid out about 250 ms later (NavMenu text appeared to change). The constructor now applies the outputs' scale through the impl's `UpdateScaling`; the later compositor notification matches and changes nothing.
 - Implementation
   - `WithAtomUIDefaultOptions()` now orders Windows composition modes as `RedirectionSurface` → `WinUIComposition` → `DirectComposition` → `LowLatencyDxgiSwapChain`. Only the redirection surface is composited by DWM in sync with window geometry changes; WinUI/DComp/flip swapchain presents run on a separate timeline from the window frame.
   - `WindowsBackgroundHook` skips its GDI `WM_ERASEBKGND` fill between `WM_ENTERSIZEMOVE` and `WM_EXITSIZEMOVE`. Under `RedirectionSurface` that fill reached DWM before the rendered frame and was the root cause of the previously recorded full-page white frames. The first-show fill is unchanged.

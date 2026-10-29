@@ -1,6 +1,9 @@
 # Motion 帧流水线重构设计
 
-日期：2026-10-29。状态：用户已确认方案；步骤 2 已实施；步骤 3 的帧驱动、空帧保活、合成变换通道与 Wayland 呈现时间采样已实施；Windows/macOS 帧计时与 NavMenu 根宽度迁移未开始。
+日期：2026-10-29。状态：用户已确认方案；步骤 2 已实施；步骤 3 的帧驱动、空帧保活、合成变换通道与 Wayland 呈现时间采样已实施；
+步骤 4 以内容缓存实施并接入 Overlay Dialog 与 Drawer；另修复 Wayland 启动按缩放 1 首次布局的问题。Windows/macOS 帧计时、NavMenu 根宽度迁移与步骤 1、5 未开始。
+本文为过程记录；正式契约见 `architecture/systems/motion/frame-pipeline.md`、`architecture/systems/control-infrastructure/overlay-content-cache.md`
+与 `modules/native/linux.md`。
 边界：只使用 AtomUI 与 Avalonia 12.1.4 现有包的公开 API，平台层允许已有形态的反射适配；不自编译或维护 Avalonia 包。
 不保留 Motion 公共 API 兼容层。源码依据来自本地参考副本 Avalonia `2d79ba55fae1b1e71c69f93a668080c9029e6a31`。
 
@@ -64,7 +67,7 @@ Wayland 专项：渲染循环唤醒对齐 frame callback；提前准备、按回
 | 1 | 测量：每帧重绘面积（DirtyRects）、每帧推进次数、16ms 计时器路径次数、上屏间隔；Release 基线 | 全部 | 未开始 |
 | 2 | 内容视口只失效自身，并精确修复框架排列缺口 | 全部 | 已实施，见[验证记录](../../architecture/systems/motion/verification.md) |
 | 3 | MotionFrameDriver、通道 C、空帧保活、帧计时（先 Windows/macOS，Wayland 复用） | 全部 | 驱动/保活/通道 C、Wayland 帧计时已实施；Windows/macOS 帧计时未开始 |
-| 4 | mask 期间降低背景重绘成本：改为 BitmapCache 内容缓存（CSD 窗口），独立透明窗口方案搁置 | CSD 窗口 | 已实施，见 mask 性能记录 |
+| 4 | mask 期间降低背景重绘成本：改为 BitmapCache 内容缓存（CSD 窗口），独立透明窗口方案搁置；Drawer 同样接入 | CSD 窗口 | 已实施，正式契约见 `architecture/systems/control-infrastructure/overlay-content-cache.md` |
 | 5 | Wayland 渲染循环对齐 frame callback，实验开关转正式子系统 | Linux | 未开始 |
 
 删除清单（随对应步骤执行）：`MotionProgress` 与 MotionPlayback 中的 Avalonia `Animation`、

@@ -206,7 +206,7 @@ A/B 临时验证：固定尺寸边界外的绘制祖先在 5 个 tick 中被重�
 
 ## 帧驱动与合成变换通道（2026-10-29）
 
-按[帧流水线重构设计](../../../superpowers/specs/2026-10-29-motion-frame-pipeline-redesign.md)步骤 3 的平台无关部分：
+[帧流水线](frame-pipeline.md)平台无关部分的实施验证：
 MotionPlayback 删除 MotionProgress 与 Avalonia Animation，改由 MotionFrameDriver 直接订阅框架全局时钟；
 平移/缩放/旋转写入 CompositionVisual 合成通道；播放中的空帧请求合成提交。
 

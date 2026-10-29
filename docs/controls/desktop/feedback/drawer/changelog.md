@@ -2,6 +2,11 @@
 
 本文档记录 Drawer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-29
+
+- Performance
+  - Hold the Window content cache lease for the whole open and close motion (with or without mask), so the sliding panel and mask composite cached window content instead of re-rendering the page beneath; render-thread median drops from about 8.5 ms to 2.5 ms per frame on the measured Wayland Gallery. Drawers whose layer lies inside the cached content (local scroll or content-control hosts) keep direct rendering.
+
 ## 2026-09-10
 
 - API

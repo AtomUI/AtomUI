@@ -133,8 +133,8 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 打开/关闭 Motion 期间（无论是否显示遮罩），`DrawerContainer` 向所在 `Window` 申请内容缓存租约
 （`AcquireContentCache(this)`），面板滑动与遮罩渐变每帧合成缓存的窗口内容而不重绘其下页面。
 容器位于被缓存内容之内（例如图层被注入到页面内的 `ScrollContentPresenter` / `ContentControl`）或缓存条件不满足时，
-租约为 null，保持直接绘制。条件与像素/性能验证见
-[mask 性能记录](../../../../superpowers/progress/2026-10-29-overlay-dialog-mask-performance-investigation.md)。
+租约为 null，保持直接绘制。条件与验证见
+[覆盖层内容缓存](../../../../architecture/systems/control-infrastructure/overlay-content-cache.md)。
 
 面板采用对应边的 ±100%↔0、opacity .7↔1，遮罩采用 opacity 0↔1；两者使用 CSS ease 和有效 Slow 时长。
 这是与参考规格的参数校准，区别于原先基础 Move 的 0↔1 和 CubicEaseOut。

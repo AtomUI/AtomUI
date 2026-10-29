@@ -30,10 +30,13 @@
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowTitleBarShadowBackground.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowVisualLayerClip.cs`
 - `src/AtomUI.Desktop.Controls/Window/Window.cs`
+- `src/AtomUI.Desktop.Controls/Window/Window.ContentCache.cs`
+- `src/AtomUI.Desktop.Controls/Window/WindowContentBackdrop.cs`
 - `src/AtomUI.Desktop.Controls/Window/WindowToken.cs`
 - `src/AtomUI.Native/WindowExtensions.cs`
 - `src/AtomUI.Native/Linux/WaylandWindowReflectionExtensions.cs`
 - `src/AtomUI.Native/Linux/WaylandWindowUtils.cs`
+- `src/AtomUI.Native/Linux/WaylandInitialScaling.cs`
 - `src/AtomUI.Native/Linux/WindowUtils.Linux.cs`
 
 职责边界：
@@ -280,6 +283,11 @@ ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Wind
 - TitleBar 宿主发现只使用逻辑祖先和强类型 AvaloniaProperty binding，不使用全局 Window registry、反射或字符串 binding path；状态变化复用现有 lease，template reapply 不重复创建 lease。
 - 首次显示主题表面使用一次性 Snapshot 读取，不为同步 `Show` 临界区创建资源 observable 或订阅。
 - 大集合控件必须保证 container recycle 后不会泄漏旧 item 状态。
+- CSD 模板的内容根 `PART_ContentCacheHost` 与首个子元素 `PART_ContentBackdrop` 是覆盖层内容缓存的 template part；
+  `AcquireContentCache(overlay)` 为引用计数租约，模板重新应用时复位。条件与验证见
+  [覆盖层内容缓存](../../../../architecture/systems/control-infrastructure/overlay-content-cache.md)。
+- Wayland 下构造末尾、首次布局前调用 Native 的 `WaylandInitialScaling.Apply(PlatformImpl)`，按输出预测初始缩放，
+  避免先按缩放 1 布局再整窗重排；机制与边界见 [Native Linux](../../../../modules/native/linux.md)。
 
 ## 9. 维护不变量
 

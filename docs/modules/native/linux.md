@@ -144,9 +144,9 @@ Native 通过安装回调交出 `WaylandPresentationTiming`；Native 不引用 C
 internal 计数（presented/predicted/hits）仅供诊断工具读取。
 
 该路径不改变 NavMenu 布局或动画参数。当前实测有明显收益，但尚未满足所有场景的稳定刷新验收，
-不能作为已经解决 60/120 FPS 的保证。具体版本、测量和未覆盖项见
-[调查记录](../../superpowers/progress/2026-10-28-nav-menu-layout-motion-investigation.md)；升级后需要重新做真实呈现、
-生命周期与 NativeAOT 验证。
+不能作为已经解决 60/120 FPS 的保证。测量与未覆盖项见
+[Motion 验证状态](../../architecture/systems/motion/verification.md)，采样契约见
+[Motion 帧流水线](../../architecture/systems/motion/frame-pipeline.md)；升级后需要重新做真实呈现、生命周期与 NativeAOT 验证。
 
 ## Wayland 初始缩放预测
 

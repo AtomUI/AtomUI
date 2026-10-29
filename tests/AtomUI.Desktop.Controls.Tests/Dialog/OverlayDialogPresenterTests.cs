@@ -1,6 +1,7 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Tests.Window;
+using AtomUI.Desktop.Controls.Tests.Motion;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -955,14 +956,14 @@ public class OverlayDialogPresenterTests
                 clock.Step(150);
                 Dispatcher.UIThread.RunJobs();
                 var opacity = surfaceActor.Opacity;
-                var transform = surfaceActor.RenderTransform!.Value;
+                var transform = MotionTransformProbe.Matrix(surfaceActor);
                 var closeTask = presenter.CloseAsync().AsTask();
                 PumpUntil(() => showTask.IsCompleted);
 
                 showTask.IsCompleted.ShouldBeTrue();
                 closeTask.IsCompleted.ShouldBeFalse();
                 surfaceActor.Opacity.ShouldBe(opacity, .001);
-                surfaceActor.RenderTransform!.Value.ShouldBe(transform);
+                MotionTransformProbe.Matrix(surfaceActor).ShouldBe(transform);
                 clock.Step(150);
                 Dispatcher.UIThread.RunJobs();
                 clock.Step(300);

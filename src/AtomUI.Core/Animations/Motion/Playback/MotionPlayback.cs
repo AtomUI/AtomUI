@@ -1,7 +1,5 @@
 using System.Runtime.CompilerServices;
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -18,10 +16,9 @@ internal sealed class MotionPlayback
     private readonly MotionPlan _plan;
     private readonly MotionValues _baseline;
     private readonly CancellationToken _externalToken;
-    private CancellationTokenSource? _cancellation;
     private readonly long _requestId;
     private MotionPresentation? _presentation;
-    private MotionProgress? _progress;
+    private MotionFrameDriver? _frames;
     private MotionOutcome? _stopReason;
     private Exception? _failure;
     private Phase _phase;
@@ -68,11 +65,6 @@ internal sealed class MotionPlayback
         {
             return Task.FromResult(new MotionResult(MotionOutcome.NotReady, 0, false));
         }
-        if (plan.HasTransform && target.GetBaseValue(Visual.RenderTransformProperty).HasValue)
-        {
-            throw new NotSupportedException("This native motion target has an independent RenderTransform source. " +
-                "Provide an explicit template transform boundary for the motion.");
-        }
         if (plan.Layouts.Length > 0 && target is not IMotionLayout)
         {
             throw new NotSupportedException("This motion requires a target implementing IMotionLayout.");
@@ -104,7 +96,6 @@ internal sealed class MotionPlayback
         {
             run._presentation?.Dispose();
             run._presentation = null;
-            run._cancellation?.Dispose();
             return Task.FromResult(new MotionResult(MotionOutcome.Superseded, requestId, false));
         }
         var previous = state.Active;
@@ -222,21 +213,9 @@ internal sealed class MotionPlayback
             if (shouldAnimate && CanWrite)
             {
                 animated = true;
-                var cancellation = new CancellationTokenSource();
-                _cancellation = cancellation;
-                _progress = new MotionProgress { Tick = Tick };
-                var animation = new Animation
-                {
-                    Duration = _plan.Duration + _plan.Delay,
-                    Easing = new LinearEasing(),
-                    FillMode = FillMode.Forward,
-                    Children =
-                    {
-                        new KeyFrame { Cue = new Cue(0), Setters = { new Setter(MotionProgress.ValueProperty, 0d) } },
-                        new KeyFrame { Cue = new Cue(1), Setters = { new Setter(MotionProgress.ValueProperty, 1d) } }
-                    }
-                };
-                await animation.RunAsync(_progress, cancellation.Token);
+                _frames = new MotionFrameDriver(_state.Target, _plan.Duration + _plan.Delay, Tick);
+                _frames.Start();
+                await _frames.Completion;
             }
             if (_failure is not null)
             {
@@ -271,14 +250,9 @@ internal sealed class MotionPlayback
         finally
         {
             _phase = Phase.Finished;
-            if (_progress is not null)
-            {
-                _progress.Tick = null;
-                _progress = null;
-            }
+            _frames?.Stop();
+            _frames = null;
             registration.Dispose();
-            _cancellation?.Dispose();
-            _cancellation = null;
             try
             {
                 _presentation?.Dispose();
@@ -298,13 +272,13 @@ internal sealed class MotionPlayback
         }
     }
 
-    private void Tick(double progress)
+    private void Tick(TimeSpan local)
     {
         if (!CanWrite || _phase != Phase.Playing || _externalToken.IsCancellationRequested)
         {
             return;
         }
-        var elapsed = TimeSpan.FromTicks((long)((_plan.Duration + _plan.Delay).Ticks * progress)) - _plan.Delay;
+        var elapsed = local - _plan.Delay;
         if (elapsed < TimeSpan.Zero)
         {
             return;
@@ -333,7 +307,7 @@ internal sealed class MotionPlayback
         }
         _stopReason = outcome;
         _phase = Phase.Settling;
-        _cancellation?.Cancel();
+        _frames?.Stop();
     }
 
     private MotionResult Result(MotionOutcome outcome, bool animated) => new(outcome, _requestId, animated);

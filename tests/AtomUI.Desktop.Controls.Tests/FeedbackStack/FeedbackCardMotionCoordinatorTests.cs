@@ -21,7 +21,7 @@ public class FeedbackCardMotionCoordinatorTests
         scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
         scene.Coordinator.Dispose();
         scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-        scene.Target.RenderTransform.ShouldBeNull();
+        MotionTransformProbe.Find(scene.Target).ShouldBeNull();
         scene.Target.Opacity.ShouldBe(1);
     }
 
@@ -31,7 +31,7 @@ public class FeedbackCardMotionCoordinatorTests
         using var scene = new Scene();
         scene.Enter(NotificationPosition.TopRight);
         scene.Target.Opacity.ShouldBe(0);
-        scene.Target.RenderTransform!.Value.M31.ShouldBe(64, .001);
+        MotionTransformProbe.Matrix(scene.Target).M31.ShouldBe(64, .001);
         scene.Step(0);
         scene.Target.Opacity.ShouldBe(0);
         scene.Step(1000);
@@ -54,24 +54,24 @@ public class FeedbackCardMotionCoordinatorTests
         scene.Step(0);
         scene.Step(2500);
         var opacity = scene.Target.Opacity;
-        var matrix = scene.Target.RenderTransform!.Value;
+        var matrix = MotionTransformProbe.Matrix(scene.Target);
         scene.Coordinator.StartClose(false, true, position, scene.Duration);
         scene.Pump();
         scene.Target.Opacity.ShouldBe(opacity, .001);
-        scene.Target.RenderTransform!.Value.ShouldBe(matrix);
+        MotionTransformProbe.Matrix(scene.Target).ShouldBe(matrix);
         scene.Step(2500);
         scene.Step(12400);
         scene.Closed.ShouldBe(0);
         scene.Clock.Step(12600);
         scene.Window.UpdateLayout();
         scene.Target.Opacity.ShouldBe(0);
-        var endpoint = scene.Target.RenderTransform!.Value;
+        var endpoint = MotionTransformProbe.Matrix(scene.Target);
         endpoint.M31.ShouldBe(x, .001);
         endpoint.M32.ShouldBe(y, .001);
         scene.Pump();
         scene.Closed.ShouldBe(1);
         scene.Target.IsVisible.ShouldBeFalse();
-        scene.Target.RenderTransform.ShouldBeNull();
+        MotionTransformProbe.Find(scene.Target).ShouldBeNull();
         scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
         scene.Step(15000);
         scene.Closed.ShouldBe(1);
@@ -86,7 +86,7 @@ public class FeedbackCardMotionCoordinatorTests
         coordinator.DetachTarget(false, true);
         target.IsVisible.ShouldBeFalse();
         target.Opacity.ShouldBe(1);
-        target.RenderTransform.ShouldBeNull();
+        MotionTransformProbe.Find(target).ShouldBeNull();
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class FeedbackCardMotionCoordinatorTests
         scene.Enter(NotificationPosition.TopRight);
         scene.Target.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
         scene.Target.Opacity.ShouldBe(0);
-        scene.Target.RenderTransform!.Value.M31.ShouldBe(64, .001);
+        MotionTransformProbe.Matrix(scene.Target).M31.ShouldBe(64, .001);
     }
 
     [Fact]
@@ -126,11 +126,11 @@ public class FeedbackCardMotionCoordinatorTests
         scene.Enter();
         scene.Step(0);
         scene.Step(1000);
-        var transform = scene.Target.RenderTransform;
+        var transform = MotionTransformProbe.Find(scene.Target);
         var opacity = scene.Target.Opacity;
         scene.Coordinator.UpdateConfiguration(false, false, true, NotificationPosition.BottomCenter, TimeSpan.FromSeconds(2));
         scene.Pump();
-        scene.Target.RenderTransform.ShouldBeSameAs(transform);
+        MotionTransformProbe.Find(scene.Target).ShouldBe(transform);
         scene.Target.Opacity.ShouldBe(opacity);
     }
 
@@ -143,11 +143,11 @@ public class FeedbackCardMotionCoordinatorTests
         scene.Pump();
         scene.Step(0);
         scene.Step(1000);
-        var transform = scene.Target.RenderTransform;
+        var transform = MotionTransformProbe.Find(scene.Target);
         var opacity = scene.Target.Opacity;
         scene.Coordinator.UpdateConfiguration(true, false, true, NotificationPosition.BottomCenter, TimeSpan.FromSeconds(2));
         scene.Pump();
-        scene.Target.RenderTransform.ShouldBeSameAs(transform);
+        MotionTransformProbe.Find(scene.Target).ShouldBe(transform);
         scene.Target.Opacity.ShouldBe(opacity);
         scene.Step(11000);
         scene.Closed.ShouldBe(1);

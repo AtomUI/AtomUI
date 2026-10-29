@@ -2,7 +2,6 @@ using System.Reactive.Subjects;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Media;
 
 namespace AtomUI.Animations;
 
@@ -13,9 +12,8 @@ internal sealed class MotionPresentation : IDisposable
     internal bool HasTransform { get; }
 
     private readonly Control _target;
-    private readonly RelativePoint _origin;
     private readonly List<IDisposable> _overrides = [];
-    private readonly MatrixTransform? _transform;
+    private readonly MotionCompositionTransform? _transform;
     private readonly int _channels;
     private readonly IMotionPropertyPresentation[] _properties;
     private readonly MotionLayoutSegment[] _layouts;
@@ -30,7 +28,6 @@ internal sealed class MotionPresentation : IDisposable
     internal MotionPresentation(Control target, MotionPlan plan, MotionValues initial)
     {
         _target = target;
-        _origin = plan.Origin;
         Values = initial;
         HasOpacity = plan.HasOpacity;
         HasTransform = plan.HasTransform;
@@ -53,7 +50,7 @@ internal sealed class MotionPresentation : IDisposable
         }
         if (HasTransform)
         {
-            _transform = new MatrixTransform();
+            _transform = new MotionCompositionTransform(target, plan);
         }
         if (HasOpacity)
         {
@@ -73,10 +70,7 @@ internal sealed class MotionPresentation : IDisposable
         {
             return;
         }
-        if (_transform is not null)
-        {
-            _transform.Matrix = CreateMatrix(Values);
-        }
+        _transform?.Attach(Values);
         if (!run.CanWrite || _disposed)
         {
             return;
@@ -96,15 +90,6 @@ internal sealed class MotionPresentation : IDisposable
         if (!run.CanWrite || _disposed)
         {
             return;
-        }
-        if (_transform is not null)
-        {
-            Own(_target.SetValue(Visual.RenderTransformOriginProperty, _origin, BindingPriority.Animation));
-            if (!run.CanWrite || _disposed)
-            {
-                return;
-            }
-            Own(_target.SetValue(Visual.RenderTransformProperty, _transform, BindingPriority.Animation));
         }
         foreach (var property in _properties)
         {
@@ -126,10 +111,6 @@ internal sealed class MotionPresentation : IDisposable
         if (!_attached)
         {
             Values = values with { Opacity = Math.Clamp(values.Opacity, 0, 1) };
-            if (_transform is not null)
-            {
-                _transform.Matrix = CreateMatrix(Values);
-            }
             _opacity?.OnNext(Values.Opacity);
             foreach (var property in _properties)
             {
@@ -145,7 +126,7 @@ internal sealed class MotionPresentation : IDisposable
                 X = values.X, Y = values.Y, ScaleX = values.ScaleX,
                 ScaleY = values.ScaleY, Rotation = values.Rotation
             };
-            _transform.Matrix = CreateMatrix(Values);
+            _transform.Apply(Values);
         }
         Values = Values with { LayoutProgress = values.LayoutProgress };
         ApplyLayout(values.LayoutProgress, elapsed, run);
@@ -212,6 +193,7 @@ internal sealed class MotionPresentation : IDisposable
         var layout = _layout;
         _layout = null;
         Release(layout);
+        Release(_transform);
         foreach (var property in _properties)
         {
             Release(property);
@@ -291,11 +273,5 @@ internal sealed class MotionPresentation : IDisposable
         {
             _layout?.SetProgress(progress);
         }
-    }
-
-    private static Matrix CreateMatrix(MotionValues values)
-    {
-        return Matrix.CreateScale(values.ScaleX, values.ScaleY) *
-            Matrix.CreateRotation(values.Rotation * Math.PI / 180) * Matrix.CreateTranslation(values.X, values.Y);
     }
 }

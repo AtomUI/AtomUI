@@ -1,6 +1,7 @@
 using AtomUI.Animations;
 using System.Reactive.Subjects;
 using Avalonia;
+using Avalonia.Rendering.Composition;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Shouldly;
@@ -43,10 +44,10 @@ public class MotionExecutionTests
                 playing.IsCompleted.ShouldBeFalse();
                 (await playing).IsCompleted.ShouldBeTrue();
                 target.Opacity.ShouldBe(0);
-                target.RenderTransform!.Value.M22.ShouldBe(.8, .001);
+                ElementComposition.GetElementVisual(target)!.Scale.Y.ShouldBe(.8, .001);
                 target.Padding.ShouldBe(new Thickness(8));
                 Motion.Reset(target);
-                target.RenderTransform.ShouldBeNull();
+                ElementComposition.GetElementVisual(target)!.Scale.Y.ShouldBe(1);
                 target.Opacity.ShouldBe(1);
                 target.Padding.ShouldBe(new Thickness(4));
 

@@ -75,7 +75,7 @@ Reset/detach 后终态覆盖也必须归零。终态记录不得反向保留业�
 ## 属性所有权
 
 临时属性覆盖必须可撤销，不能保存旧数值后 SetValue 写回。绑定和主题在覆盖期间继续存在并能更新。
-应用 RenderTransform 与 Motion delta 的顺序明确；能力不足时使用模板显式边界，不丢弃应用变换或来源更新。
+应用 RenderTransform 进入合成 TransformMatrix，Motion delta 位于独立合成通道并在其后组合（缩放、旋转围绕 CenterPoint，最后平移）；二者互不覆盖，不需要模板变换边界。
 相同属性上的主题 Transition 与显式 Motion 通过接入边界协调，不通过全局禁用过渡处理其他 owner 的属性。
 
 ## owner 与释放

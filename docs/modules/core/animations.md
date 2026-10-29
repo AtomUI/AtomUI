@@ -10,7 +10,7 @@
 
 | 能力 | 所有权 | AtomUI 增补 |
 | --- | --- | --- |
-| 时钟、关键帧、循环、属性过渡、样条求值 | Avalonia Animation、Style.Animations、Transitions、SplineEasing | 使用公开入口，不实现第二套帧时钟或贝塞尔求解器 |
+| 时钟、关键帧、循环、属性过渡、样条求值 | Avalonia Animation、Style.Animations、Transitions、SplineEasing；Motion 播放直接订阅同一全局时钟 | 时钟经 `Reflection/GlobalClockReflection` 按类型名从 AvaloniaLocator 解析内部 IGlobalClock，其余使用公开入口；不实现第二套帧时钟或贝塞尔求解器 |
 | 有限显式动效 | AbstractMotion 定义与 Motion 接入 | 定义与组合、每目标请求身份、连续替代、绑定恢复、终态和布局能力 |
 | 初始状态提交 | Transition 初始化协议 | 暂时抑制自动过渡，等待 owner 提交完整基线，再恢复最新过渡来源 |
 | 持续过程反馈 | 对应控件与原生循环动画 | 控件决定运行条件；原生动画推进循环；停止时释放本次样式/运行作用域 |

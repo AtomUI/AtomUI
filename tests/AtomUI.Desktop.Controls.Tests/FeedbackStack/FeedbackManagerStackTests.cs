@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Tests.Motion;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -225,7 +226,7 @@ public class FeedbackManagerStackTests
             }
 
             actor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            actor.RenderTransform.ShouldNotBeNull();
+            MotionTransformProbe.Find(actor).ShouldNotBeNull();
             actor.Opacity.ShouldBeLessThan(1);
         });
     }

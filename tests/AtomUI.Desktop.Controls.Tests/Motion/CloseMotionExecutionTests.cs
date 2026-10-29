@@ -49,7 +49,7 @@ public class CloseMotionExecutionTests
         scene.Surface.IsVisible.ShouldBeFalse();
         previous.IsAttachedToVisualTree().ShouldBeFalse();
         previous.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-        previous.RenderTransform.ShouldBeNull();
+        MotionTransformProbe.Find(previous).ShouldBeNull();
     }
 
     [Theory]
@@ -80,7 +80,7 @@ public class CloseMotionExecutionTests
         scene.Surface.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
         scene.Card.IsClosed = true;
         scene.Surface.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-        scene.Surface.RenderTransform.ShouldBeNull();
+        MotionTransformProbe.Find(scene.Surface).ShouldBeNull();
         scene.Surface.IsVisible.ShouldBeFalse();
         scene.Surface.Opacity.ShouldBe(1);
     }

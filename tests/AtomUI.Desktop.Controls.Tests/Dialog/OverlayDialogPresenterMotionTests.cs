@@ -24,7 +24,7 @@ public class OverlayDialogPresenterMotionTests
             using var scene = new Scene();
             var opening = scene.BeginShow();
             scene.Target.Opacity.ShouldBe(0);
-            scene.Target.RenderTransform!.Value.M11.ShouldBe(.2, .001);
+            MotionTransformProbe.Matrix(scene.Target).M11.ShouldBe(.2, .001);
             scene.Step(0);
             scene.Target.Opacity.ShouldBe(0);
             scene.Step(500);
@@ -34,7 +34,7 @@ public class OverlayDialogPresenterMotionTests
             scene.Step(1100);
             opening.IsCompletedSuccessfully.ShouldBeTrue();
             scene.Target.Opacity.ShouldBe(1);
-            scene.Target.RenderTransform!.Value.M11.ShouldBe(1);
+            MotionTransformProbe.Matrix(scene.Target).M11.ShouldBe(1);
             scene.Mask.Opacity.ShouldBe(1);
         });
     }
@@ -60,7 +60,7 @@ public class OverlayDialogPresenterMotionTests
             scene.Step(2200);
             closing.IsCompletedSuccessfully.ShouldBeTrue();
             scene.Presenter.Parent.ShouldBeNull();
-            target.RenderTransform.ShouldBeNull();
+            MotionTransformProbe.Find(target).ShouldBeNull();
             target.Opacity.ShouldBe(1);
         });
     }
@@ -74,9 +74,9 @@ public class OverlayDialogPresenterMotionTests
             scene.BeginShow();
             var surface = scene.Presenter.Surface;
             var center = surface.TranslatePoint(new Point(surface.Bounds.Width / 2, surface.Bounds.Height / 2), scene.Target)!.Value;
-            scene.Target.RenderTransformOrigin.Point.X.ShouldBe(center.X, .001);
-            scene.Target.RenderTransformOrigin.Point.Y.ShouldBe(center.Y, .001);
-            scene.Target.RenderTransform!.Value.M11.ShouldBe(.2, .001);
+            MotionTransformProbe.Origin(scene.Target).X.ShouldBe(center.X, .001);
+            MotionTransformProbe.Origin(scene.Target).Y.ShouldBe(center.Y, .001);
+            MotionTransformProbe.Matrix(scene.Target).M11.ShouldBe(.2, .001);
             scene.Step(0);
             scene.Step(1100);
             scene.Target.Opacity.ShouldBe(1);
@@ -93,11 +93,11 @@ public class OverlayDialogPresenterMotionTests
             scene.Step(0);
             scene.Step(1100);
             var target = scene.Target;
-            var origin = target.RenderTransformOrigin;
+            var origin = MotionTransformProbe.Origin(target);
             scene.Placement.Margin = new Thickness(40, 20, 0, 0);
             scene.Pump();
             scene.Presenter.CloseAsync();
-            target.RenderTransformOrigin.ShouldBe(origin);
+            MotionTransformProbe.Origin(target).ShouldBe(origin);
             scene.Step(1100);
             scene.Step(2200);
         });
@@ -113,18 +113,18 @@ public class OverlayDialogPresenterMotionTests
             scene.Step(0);
             scene.Step(250);
             var target = scene.Target;
-            var matrix = target.RenderTransform!.Value;
+            var matrix = MotionTransformProbe.Matrix(target);
             var opacity = target.Opacity;
             var closing = scene.Presenter.CloseAsync().AsTask();
             scene.Pump();
-            target.RenderTransform!.Value.ShouldBe(matrix);
+            MotionTransformProbe.Matrix(target).ShouldBe(matrix);
             target.Opacity.ShouldBe(opacity, .001);
             scene.Step(250);
             scene.Step(1350);
             opening.IsCompletedSuccessfully.ShouldBeTrue();
             closing.IsCompletedSuccessfully.ShouldBeTrue();
             scene.Presenter.Parent.ShouldBeNull();
-            target.RenderTransform.ShouldBeNull();
+            MotionTransformProbe.Find(target).ShouldBeNull();
         });
     }
 

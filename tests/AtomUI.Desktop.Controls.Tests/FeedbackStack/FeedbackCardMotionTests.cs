@@ -38,7 +38,7 @@ public class FeedbackCardMotionTests
             target.Opacity.ShouldBe(1);
             AssertMatrix(target, 0, 0);
             AtomUI.Animations.Motion.Reset(target);
-            target.RenderTransform.ShouldBeNull();
+            MotionTransformProbe.Find(target).ShouldBeNull();
         }
         finally
         {
@@ -65,7 +65,7 @@ public class FeedbackCardMotionTests
             AssertMatrix(target, x, y);
             target.Opacity.ShouldBe(0);
             AtomUI.Animations.Motion.Reset(target);
-            target.RenderTransform.ShouldBeNull();
+            MotionTransformProbe.Find(target).ShouldBeNull();
             target.Opacity.ShouldBe(1);
         }
         finally
@@ -100,7 +100,7 @@ public class FeedbackCardMotionTests
             cancellation.Cancel();
             (await running).Outcome.ShouldBe(MotionOutcome.Cancelled);
             target.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-            target.RenderTransform.ShouldBeNull();
+            MotionTransformProbe.Find(target).ShouldBeNull();
             target.Opacity.ShouldBe(1);
         }
         finally
@@ -111,7 +111,7 @@ public class FeedbackCardMotionTests
 
     private static void AssertMatrix(Control target, double x, double y)
     {
-        var matrix = target.RenderTransform!.Value;
+        var matrix = MotionTransformProbe.Matrix(target);
         matrix.M11.ShouldBe(1, .001);
         matrix.M22.ShouldBe(1, .001);
         matrix.M31.ShouldBe(x, .001);

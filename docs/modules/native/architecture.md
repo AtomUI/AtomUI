@@ -88,7 +88,8 @@ src/AtomUI.Native/
     ├── WindowUtils.Linux.cs
     ├── XcbConnectionHolder.cs
     ├── WaylandWindowReflectionExtensions.cs
-    └── WaylandWindowUtils.cs
+    ├── WaylandWindowUtils.cs
+    └── Rendering/
 ```
 
 ### Windows
@@ -129,6 +130,11 @@ X11 能力必须以 `IPlatformHandle.HandleDescriptor == "XID"` 为前置条件�
 `WXdgTopLevelProxy` 直接调用真实 `WlSurface`，不符合上游线程和重连契约。`DynamicDependency` 只保证
 reflection metadata 不被裁剪，不能解决该问题。正确边界应由 Avalonia persistent surface/proxy 提供
 input-region 方法，并通过 `WaylandWorkerClient.PostWithCommit` 下发。
+
+`Linux/Rendering` 的实验性帧调度沿用 Avalonia Wayland worker 和现有 EGL 资源 owner：
+允许在上一帧 callback 等待期间准备一个后备帧，callback 清理后再提交。Native 管理有界状态、
+静态 session、callback relay 与 EGL 错误；Desktop 管理受限反射、版本门槛及默认启用、可显式关闭的诊断开关。
+资源与恢复约束见 [Linux 帧调度](linux.md#实验性-wayland-egl-帧调度)。
 
 ### FileSystem
 

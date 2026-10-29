@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Logging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace AtomUI;
@@ -128,6 +129,24 @@ public static class DesktopAppBuilderExtensions
         var initializeWayland = builder.WindowingSubsystemInitializer!;
         return builder.UseWindowingSubsystem(() =>
         {
+            // Enable on compatible Wayland backends unless explicitly disabled for diagnosis.
+            if (!AppContext.TryGetSwitch("AtomUI.Experimental.WaylandFramePacing", out var enableFramePacing) || enableFramePacing)
+            {
+                if (WaylandFramePacingCompatibility.TryCreate(out var compatibility, out var reason))
+                {
+                    var renderer = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+                    AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>()
+                                   .ToConstant(new WaylandFramePacingRenderInterface(renderer, compatibility));
+                    Logger.TryGet(LogEventLevel.Information, AtomUILogArea.System)?.Log(
+                        typeof(DesktopAppBuilderExtensions), "Wayland frame pacing enabled: {Reason}", reason);
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning, AtomUILogArea.System)?.Log(
+                        typeof(DesktopAppBuilderExtensions), "Wayland frame pacing was not enabled: {Reason}", reason);
+                }
+            }
+
             initializeWayland();
 
             // Wayland creates Dispatcher before its worker finishes, then installs a new backend.

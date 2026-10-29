@@ -7,8 +7,8 @@
 
 | 能力 | 当前源码与目标差异 |
 | --- | --- |
-| 定义与执行 | Core/Animations/Motion 已实现 AbstractMotion/Build、Motion 附加属性接入、内置家族、组合、类型化属性和原生执行；第三方子类与 atom: AXAML 消费有定向证据；合成后端尚未启用 |
-| 目标 | 真实 Control 或模板静态隔离表面；旧 Actor、接口族和 MotionScene 已删除 |
+| 定义与执行 | Core/Animations/Motion 已实现 AbstractMotion/Build、Motion 附加属性接入、内置家族、组合、类型化属性和原生执行；第三方子类与 atom: AXAML 消费有定向证据；变换通道写入 CompositionVisual，播放由 MotionFrameDriver 直接驱动 |
+| 目标 | 真实 Control；应用 RenderTransform 可与变换动效共存；旧 Actor、接口族和 MotionScene 已删除 |
 | 内容展开 | 公开 IMotionLayout 与 Controls.ContentViewport 已接入 Expander、Collapse、NavMenu Inline 和 TreeView 系列，几何 / 输入有定向证据 |
 | 状态初始化 | Animations 下已有 TransitionInitializationSession/TransitionSuppressionScope，继续服从独立初始化合同 |
 | 显示隐藏 | 内置消费者已迁入 Motion，Overlay Dialog 使用框架时钟并校准为普通 Zoom；实际呈现的支持矩阵尚未验收 |
@@ -143,8 +143,8 @@ Gallery 的实际 Expander 页面通过 Skia 渲染及程序鼠标输入验证�
 
 ### 保留的设计边界
 
-- 原生框架时钟是当前唯一执行后端；合成后端尚未具备可靠完成、当前呈现和命中合同，不能提前启用。
-- 独立 RenderTransform 来源要求使用模板隔离表面；不轮询应用的变换来源，不悄悄覆盖或合成不完整的矩阵。
+- 框架全局时钟仍是唯一计时来源；不使用合成关键帧动画（12.1.4 无完成通知与当前值回读），变换值由 UI 线程逐帧写入合成通道。
+- 应用 RenderTransform 与 Motion 变换已分属不同合成通道（2026-10-29），原“独立来源需模板隔离表面”的限制取消；既有隔离表面仍可工作，未逐个删除。
 - 关闭期间 Popup 原模板被销毁时，新表面预隐藏并稳定关闭，不保留已经销毁表面的剩余离场时长。
 - Popup 换目标的原生首帧无闪烁、完整 Flyout Completing 链、全部 DPI/MinMax/自身固定尺寸组合及最低设备仍需专项验收。
 - 没有复现框架时钟异常停滞，不引入按成功时长猜测完成的 watchdog；取消与 detach 仍释放资源。
@@ -158,8 +158,8 @@ macOS 原生窗口为 1300×900 DIP、RenderScaling=2，输入通过框架 RawPo
 
 修复前 Components 的 IsSubMenuOpen/展示意图均为 true，Motion 结果为 Completed，DesiredSize 高度528，
 但实际 Bounds 高度0，祖先仍缓存高度44的折叠排列；内部 Layout 的视口高度220正常。
-单独重测视口无效，重新排列祖先可恢复分配。ContentViewport 的租约建立、进度和释放现统一失效自身 Measure
-与祖先 Arrange，使实际占位变化不再依赖 DesiredSize 恰好发生变化；没有补发点击、延时或禁用动效。
+单独重测视口无效，重新排列祖先可恢复分配。当时的修复让租约建立、进度和释放统一失效自身 Measure
+与全部祖先 Arrange；该方案已于 2026-10-29 被精确修复取代，见下文“布局动效失效范围收窄”。
 
 修复后 3 个独立原生进程、各2轮侧栏往返通过：Components 视口528、Layout 视口220，
 祖先实际分配包含 Header 与子菜单，选择保持，单次点击开合及叶子行左/中/右命中均通过。
@@ -186,3 +186,76 @@ macOS 原生窗口为 1300×900 DIP、RenderScaling=2，输入通过框架 RawPo
 清理后Core Animations定向5项、Desktop ContentExpansion/NavMenuInline/OverlayDialogPresenterMotion/CloseMotionExecution
 定向92项均通过，永久测试净增0；未运行全量回归。保留源文件的结构检查1个文件、0项问题，git diff --check通过。
 这份证据仅证明上述正确性行为，不证明原生屏幕闪烁已全部消除或60/120 FPS达标。
+
+## 布局动效失效范围收窄（2026-10-29）
+
+原实现每个进度 tick 失效视口全部视觉祖先的排列。Avalonia 12.1.4 的 `InvalidateArrange` 同时调用 `InvalidateVisual`，
+`CompositingRenderer.UpdateCore` 重录该祖先绘制指令，合成端把其整棵子树边界加入重绘区域；
+窗口外框等绘制型祖先因此使子菜单、Expander、Collapse、TreeView 展开退化为逐帧整窗重绘。
+
+收窄为只失效自身测量后，临时 Headless 用例复现了上节 macOS 侧栏往返问题：Components 视口 DesiredSize 580、实际高度 2–4。
+根因是框架排列缺口：约束变化导致的重新测量不清除 IsArrangeValid，祖先测量期间不转发 ChildDesiredSizeChanged，
+相同排列矩形使祖先跳过排列。现由视口在排列后比较父链 DesiredSize 快照，只重新排列尺寸变化的祖先，
+详细合同见[内容展开](../control-infrastructure/content-expansion.md)。
+
+A/B 临时验证：固定尺寸边界外的绘制祖先在 5 个 tick 中被重新排列 5 次（原实现）→ 0 次；
+侧栏往返 1、2 轮的子菜单分配在仅收窄版本失败，在原实现与最终实现均通过。
+最终 Desktop 定向 780 项（Motion/Expander/Collapse/NavMenu/TreeView/Transfer/TreeSelect/TabControl/DialogSurface/Masonry）
+与 Rendering 72 项（TabOverflowShadow）通过。临时用例已删除，全局测试净新增 0。
+本次没有原生窗口 DirtyRects 或呈现帧率数据，不能据此宣称帧率达标。
+
+## 帧驱动与合成变换通道（2026-10-29）
+
+按[帧流水线重构设计](../../../superpowers/specs/2026-10-29-motion-frame-pipeline-redesign.md)步骤 3 的平台无关部分：
+MotionPlayback 删除 MotionProgress 与 Avalonia Animation，改由 MotionFrameDriver 直接订阅框架全局时钟；
+平移/缩放/旋转写入 CompositionVisual 合成通道；播放中的空帧请求合成提交。
+
+临时 A/B（Headless，ManualMotionClock）：
+
+| 验证 | 原实现 | 新实现 |
+| --- | --- | --- |
+| 延迟段脉冲后合成端存在待提交批次 | 失败 | 通过（单独及分组运行） |
+| 纯缩放帧不重录目标绘制指令（5 帧） | 失败 | 通过 |
+| 应用 RotateTransform 与缩放动效共存 | 抛 NotSupportedException | 通过，应用变换保持不变 |
+
+首版通道释放直接恢复保存值，替代交接时旧请求覆盖了新请求刚呈现的缩放/平移；
+Dialog 与 Feedback 卡片“进入中关闭”的连续性用例失败后改为按通道所有权交接，相关用例通过。
+
+读取 RenderTransform 的既有动效断言改为读取合成通道（测试辅助 MotionTransformProbe），断言值不变。
+最终 Desktop.Controls 4128 项中 4119 通过；9 项失败在会话开始前的基线上同样失败
+（Dialog 4 项 9 DIP 偏差、通知悬停重验证、MessageBox 最小宽度、DatePicker 范围 3 项）。
+Core Motion 8 项、Controls 27 项通过；Gallery 412 项中 19 项 SemanticPartHighlight 失败，基线同样失败。
+临时用例已删除，全局测试净新增 0。
+
+未完成：透明度仍逐帧写 UI 属性并重录目标自身绘制指令；平台帧计时（预计上屏时间）、NavMenu 根宽度迁移、
+mask 独立图层未实施；没有原生窗口呈现数据，Windows/macOS 未运行验证。
+
+## Wayland 呈现时间采样（2026-10-29）
+
+Native 绑定 `wp_presentation` 并按提交请求 feedback，Core 的 MotionFrameDriver 按预计上屏时间采样（实现与边界见
+[Native Linux](../../../modules/native/linux.md)）。本机 Wayland、60Hz、Debug，真实 Gallery；同一进程内只切换 Core 时钟，
+Native feedback 保持开启；每变体预热 2 轮、每方向 20 次、动作窗口 650ms。
+
+**NavMenu 内联子菜单（Components）**：首版预测即使上屏帧数不变，布局通知由每动作 342–376 降至 14–19。
+
+**Overlay Dialog＋mask 同时动画**（用户报告不足 60FPS 的场景）：Modal 页 BasicDialog 设为 modal，打开 300ms、关闭 200ms，
+触发点改为离窗口中心最远的可见按钮（1259,72；窗口 1300×900），放大缩放位移。只数上屏帧会掩盖卡顿，
+因此临时为每个上屏帧标注其内容在动画时间轴上的时刻，统计相邻上屏帧内容是否恰好前进 1 个刷新：
+
+| 版本 | 方向 | 上屏 FPS | 漏刷新 | 内容均匀前进 | 重复 | 跳帧 | 内容−上屏 中位 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 脉冲时间采样 | 开 / 关 | 58.6–59.8 / 58.6–59.8 | 1–19 | 46–65% / 51–63% | 38–65 | 33–69 | 落后约 40ms |
+| 首版预测（绘制完成登记） | 开 / 关 | 59.1 / 60.0 | 5 / 0 | 81% / 73% | 29 / 23 | 36 / 37 | 0 |
+| 最终（绘制开始登记、帧消费推进、残差修正、起点顺延） | 开 / 关 | 57.8 / 59.3 | 14 / 3 | 83% / 83% | 33 / 26 | 29 / 16 | 0 |
+
+脉冲采样下即使上屏约 59FPS，仍有 35–54% 的帧内容重复或跳跃，与用户观感一致；这不是上屏帧率问题。
+首版预测在该场景曾**劣化**上屏（未计入已占用准备槽，见上节设计修正），后续每一项修正都有同进程对照。
+最终版本第 3 帧起内容基本逐刷新前进（各帧位置不良步数 0–3/20），剩余问题：
+
+- 起始帧仍重复一次（18–19/20 动作），即动画晚一个刷新开始，不再伴随跳帧；
+- 漏刷新是真实慢帧，同次运行两种采样同时升高（14/19、3/11），主要来自 mask 的整窗重绘与 Debug 构建，
+  属于设计步骤 4（mask 独立图层）范围，采样调度无法消除。
+
+因此**不能宣称 Overlay Dialog＋mask 已稳定 60FPS**。数据为合成器 presentation feedback，非高速相机；未测 120Hz、VRR、
+多输出、Release/NativeAOT，不代表 Windows/macOS。临时宿主与内容标注已删除，无新增永久测试；
+Desktop.Controls 4119/4128（9 项基线失败不变）、Core 8、Controls 27 通过。

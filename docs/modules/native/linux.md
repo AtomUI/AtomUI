@@ -60,7 +60,7 @@ Native 层只接收 device pixel 坐标并执行 input-region 请求，不决定
 resize band。最大化或全屏时 input region 恢复为整个 surface。
 
 窗口型 Popup 由 `X11PopupShadowInputRegion`（经 `NativePopupShadowHitTest.TryAttach` 创建）负责：
-Popup 提供平台无关的 `PopupContentShape`（DIP 圆角矩形 + 箭头三角形），`X11PopupContentRegion` 按 `RenderScaling`
+Popup 提供平台无关的 `PopupContentShape`（DIP 圆角矩形 + 箭头三角形），`PopupContentRegion` 按 `RenderScaling`
 逐像素行光栅化为多矩形提交；窗口映射前由 `SuspendInputBeforeShow()` 先置空（避免整窗输入形状映射到指针下产生越界事件）；
 动效期间为空区域；`PopupRoot.LayoutUpdated` 与 `Invalidate()` 触发重新计算，结果未变时不发请求；
 释放时窗口仍存活才恢复默认形状。只设置顶层 XID：父窗口输入形状外的点不会进入 GPU 渲染子窗口。详见
@@ -98,6 +98,12 @@ Wayland 核心协议虽然有 `wl_surface.set_input_region`，但当前公开框
 `WaylandWindowUtils` 直接调用 NWayland。这绕过了 worker marshalling 和重连模型，只能作为当前技术债记录，
 不能视为线程安全或受 Avalonia 支持的 Native 扩展点。后续正确实现应进入 Avalonia persistent surface/proxy，并通过
 `PostWithCommit` 下发。
+
+窗口型 Popup 的 `WaylandPopupShadowInputRegion` 同样经反射取得 worker 侧 surface，但不在 UI 线程操作协议对象：
+通过反射取得的 `WaylandWorker.PostWithCommit` 把 `WaylandWindowUtils.SetInputRectangles()` 排入合成批次在 worker 线程执行，
+surface 已映射（`CanCommitOutOfBand`）时额外 commit。它仍依赖 Avalonia 私有成员（版本升级须复核），但线程模型与
+Avalonia 自身 `SetHitTestVisible` 一致。动效期间使用 1×1 占位区域而非空区域：GNOME Mutter 上以空输入区域映射的
+xdg_popup 之后不再接收任何输入区域更新。详见 [Popup 实现原理](../../controls/desktop/other/popup/implementation.md)“8.1”。
 
 ## 实验性 Wayland EGL 帧调度
 

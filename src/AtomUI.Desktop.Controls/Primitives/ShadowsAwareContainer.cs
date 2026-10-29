@@ -229,11 +229,14 @@ internal class ShadowsAwareContainer : Decorator
 
         var arrowBounds = default(Rect);
         var arrowSide   = PopupArrowSide.None;
+        // ArrowIndicatorLayoutBounds 相对模板内的箭头定位面板（底部/右侧箭头时不与 ArrowDecoratedBox 原点重合），
+        // 因此直接按箭头布局部件自身变换到目标坐标系
         if (_frameRenderer is not null &&
             IsArrowVisible &&
-            _arrowDecoratedBox?.TranslatePoint(default, this) is { } arrowOrigin)
+            _arrowDecoratedBox?.ArrowIndicatorLayoutPart is { } arrowLayout &&
+            arrowLayout.TransformToVisual(relativeTo) is { } arrowTransform)
         {
-            arrowBounds = ArrowIndicatorLayoutBounds.Translate(arrowOrigin).TransformToAABB(transform);
+            arrowBounds = new Rect(arrowLayout.Bounds.Size).TransformToAABB(arrowTransform);
             arrowSide = ArrowDirection switch
             {
                 Direction.Left => PopupArrowSide.Left,

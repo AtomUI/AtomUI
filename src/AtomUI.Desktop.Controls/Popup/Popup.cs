@@ -532,7 +532,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
         // 逐点命中（Windows）直接使用 Avalonia 的命中测试：frame renderer 的圆角矩形与箭头几何可命中，
         // 绘制列表命中不包含 BoxShadow，阴影区域因此不命中。禁用的内容仍属于内容形状。
-        // 预先提交输入区域的平台（X11）无法逐点查询，提供同一圆角矩形与箭头几何，由 AtomUI.Native 光栅化。
+        // 预先提交输入区域的平台（X11、Wayland）无法逐点查询，提供同一圆角矩形与箭头几何，由 AtomUI.Native 光栅化。
         _shadowHitTest = NativePopupShadowHitTest.TryAttach(
             popupRoot,
             () => IsPlayingMotion,

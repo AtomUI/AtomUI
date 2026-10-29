@@ -10,7 +10,7 @@ internal interface IPopupShadowHitTest : IDisposable
 {
     /// <summary>
     /// 输入暂停状态或内容形状可能已变化。逐点查询的平台（Windows）忽略；
-    /// 预先提交输入区域的平台（X11）据此重新计算并提交。
+    /// 预先提交输入区域的平台（X11、Wayland）据此重新计算并提交。
     /// </summary>
     void Invalidate();
 }
@@ -46,6 +46,7 @@ internal static class NativePopupShadowHitTest
     /// 原生窗口映射（显示）前先让整窗对输入透明，由随后的 <see cref="TryAttach"/> 接管。
     /// X11：窗口带默认（整窗）输入形状映射到指针下时，X 服务器立即给下方窗口发送 Leave，
     /// 下方控件丢失悬停（Hover 浮层因此关闭再打开）；映射前设好空输入形状可避免这次越界事件。
+    /// Wayland 在 <see cref="TryAttach"/> 时的首次提交已先于首帧（映射）生效，不需要处理。
     /// Windows 按 <c>WM_NCHITTEST</c> 逐点查询，不需要也不做处理。
     /// </summary>
     /// <param name="popupRoot">尚未映射的窗口型 Popup TopLevel。</param>
@@ -77,7 +78,8 @@ internal static class NativePopupShadowHitTest
 
         if (OperatingSystem.IsLinux())
         {
-            return Linux.X11PopupShadowInputRegion.TryCreate(popupRoot, isInputSuspended, getContentShape);
+            return (IPopupShadowHitTest?)Linux.X11PopupShadowInputRegion.TryCreate(popupRoot, isInputSuspended, getContentShape) ??
+                   Linux.WaylandPopupShadowInputRegion.TryCreate(popupRoot, isInputSuspended, getContentShape);
         }
 
         return null;

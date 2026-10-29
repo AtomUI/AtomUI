@@ -4,15 +4,16 @@ using Avalonia;
 namespace AtomUI.Native.Linux;
 
 /// <summary>
-/// 把窗口型 Popup 的内容形状（圆角矩形 + 箭头三角形）光栅化为 device pixel 矩形的并集，
-/// 作为 X11 SHAPE input region 提交。
+/// 把窗口型 Popup 的内容形状（圆角矩形 + 箭头三角形）光栅化为整数坐标矩形的并集，
+/// 作为 X11 SHAPE input region（device pixel，按 RenderScaling）或 Wayland <c>wl_region</c>
+/// （surface 逻辑坐标，缩放为 1）提交。
 /// 按像素行扫描，像素中心落在形状内即属于输入区域；相邻行区间相同则合并，矩形数量约为圆角与箭头所占行数。
 /// </summary>
 [SupportedOSPlatform("linux")]
-internal static class X11PopupContentRegion
+internal static class PopupContentRegion
 {
     /// <param name="shape">客户区 DIP 坐标的内容形状。</param>
-    /// <param name="scaling">DIP 到 device pixel 的缩放。</param>
+    /// <param name="scaling">DIP 到目标整数坐标系的缩放。</param>
     public static List<PixelRect> Rasterize(PopupContentShape shape, double scaling)
     {
         var result = new List<PixelRect>();

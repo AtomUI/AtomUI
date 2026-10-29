@@ -1,7 +1,8 @@
 # 窗口型 Popup 阴影与鼠标穿透方案记录
 
 日期：2026-10-29。状态：Windows 第一层 + 第二层与阴影 token 统一已实现并通过脚本化视觉验证（见文末“Windows 实施结果”）；
-Linux X11 已实现并验证输入形状（见“X11 实施结果”）；Wayland、macOS 尚未实施。
+Linux X11 已实现并验证输入形状（见“X11 实施结果”）；原生 Wayland 已实现并在 GNOME Mutter 上验证（见“Wayland 实施结果”）；
+macOS 尚未实施。
 
 窗口型 Popup（`ShouldUseOverlayPopup=False`，独立原生窗口）的阴影体验明显差于 Overlay Popup。
 原因是原生窗口的阴影只能画在窗口自身 surface 内：阴影画得越大，窗口越大，阴影区域会拦截鼠标事件。
@@ -231,13 +232,29 @@ Windows 10 build 19045 已复测（见 [Windows 10 实机验证快速上手](202
   - GPU 渲染子窗口：X 服务器查找指针所在窗口时，父窗口输入形状外的点不会进入其子窗口，因此只设置顶层 XID 即可（与 Window 路径一致）。
 - 输入形状必须在窗口映射前设置：只在 `Opened`（晚于映射）挂接时，窗口以整窗输入形状映射到指针下，X 服务器立即给下方窗口
   发 Leave，Hover 浮层随即关闭（实机录屏中表现为反复开关）。改为 Child 挂入 PopupRoot 视觉树（首次布局，早于映射）时先提交空形状。
-- 平台相关实现全部位于 `AtomUI.Native`：`X11PopupShadowInputRegion`（挂接/提交/恢复）与 `X11PopupContentRegion`（光栅化）；
+- 平台相关实现全部位于 `AtomUI.Native`：`X11PopupShadowInputRegion`（挂接/提交/恢复）与 `PopupContentRegion`（光栅化，原名
+  `X11PopupContentRegion`，Wayland 实施时改为平台共用）；
   Desktop.Controls 只通过 `ShadowsAwareContainer.GetContentShape()` 提供平台无关的 DIP 几何 `PopupContentShape`。
 - Windows 路径不变：`WindowsPopupShadowHitTestHook` 只新增空的 `IPopupShadowHitTest.Invalidate()`，`TryAttach` 在 Windows 上
   传入的参数与创建的 hook 与之前相同；新增的几何回调只在 X11 上被调用。
 - 验证：临时测试覆盖光栅化（缩放、圆角、四个方向箭头）与真实 X 服务器上多矩形/空区域/恢复默认形状的往返；
   临时探针应用（X11 后端、XWayland）读取 Popup 窗口实际 `ShapeInput`，结果见 Popup 实现原理第 11 节。临时测试与探针已删除。
 - 未覆盖：鼠标实际穿透到下方窗口（同进程/跨进程）的交互录制、非整数缩放、GNOME/KDE 原生 X11 会话。
+
+## Wayland 实施结果（2026-10-29）
+
+- 方案中的“短期复用 Window 反射路径”改为不在 UI 线程直接操作协议对象：经反射取得 worker 侧 `WXdgPopup`
+  （`PopupImpl._surfaceProxy._target`）与 `WaylandWorker.PostWithCommit`，区域提交在 worker 线程随合成批次执行，surface 已映射时
+  按 `CanCommitOutOfBand` 额外 commit。仍依赖 Avalonia 私有成员，上游提供按区域输入 API 后迁移。
+- 输入区域坐标是 surface 逻辑坐标，与 X11 共用 `PopupContentShape`/`PopupContentRegion`，按缩放 1 光栅化。
+- 不需要映射前置空：`Opened` 时的首次提交与 Popup 首帧同批次，先于首个 buffer attach。
+- 关键发现（GNOME Mutter）：以空输入区域映射的 xdg_popup，之后设置任何输入区域都收不到指针；映射后空区域↔内容形状切换正常。
+  因此动效期间（打开动效始于映射前）使用 surface 原点 1×1 占位区域而非空区域。
+- 同时修复 `ShadowsAwareContainer.GetContentShape()` 的箭头定位（X11 共用）：`ArrowIndicatorLayoutBounds` 相对模板箭头定位面板，
+  底部箭头时被算进主体内部。
+- 验证：GNOME Mutter 原生 Wayland 166.7% 缩放，Mutter RemoteDesktop 驱动真实指针 + `WAYLAND_DEBUG` 协议日志，结果见 Popup 实现原理
+  第 11 节。临时探针已删除。
+- 未覆盖：跨客户端穿透、KDE/wlroots、compositor 重连。
 
 ## 实现入口
 

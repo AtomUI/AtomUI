@@ -12,8 +12,13 @@
 - Input（Linux X11）
   - 窗口型 Popup 阴影区域输入穿透：SHAPE input region 收缩到内容形状（圆角矩形 + 箭头三角形，逐像素行光栅化为多矩形），
     同进程与跨进程一致生效；打开/关闭动效期间为空区域，且在窗口映射前即置空，避免映射瞬间下方控件丢失悬停。
-    Wayland、macOS 行为不变。
+- Input（Linux Wayland）
+  - 窗口型 Popup 阴影区域输入穿透：`wl_surface.set_input_region` 收缩到同一内容形状（surface 逻辑坐标），经 Avalonia
+    Wayland worker 的合成批次提交，跨客户端生效；打开/关闭动效期间为 surface 原点 1×1 占位区域（GNOME Mutter 上以空区域
+    映射的 popup 不再接收后续输入区域）。首次提交先于首帧映射，Hover 浮层不再在映射瞬间反复开关。macOS 行为不变。
 - Fixed
+  - `ShadowsAwareContainer.GetContentShape()` 的箭头位置把相对模板箭头定位面板的 `ArrowIndicatorLayoutBounds` 当作相对
+    `ArrowDecoratedBox` 使用，底部/右侧箭头被算到主体内部，X11 输入形状缺失箭头；改为按箭头布局部件自身变换。
   - native 定位在 `MarginToAnchor` 非零时忽略朝向 anchor 一侧的残余阴影，阴影变大后内容离 anchor 过远；改为
     `MarginToAnchor - 残余阴影`，并移除箭头隐藏时的单独补偿（已被统一规则覆盖）。12 个方向 × 箭头显示/隐藏/居中与
     Overlay 路径逐像素对比一致。

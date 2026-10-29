@@ -94,7 +94,7 @@ internal sealed class X11PopupShadowInputRegion : IPopupShadowHitTest
         }
         else if (_getContentShape() is { } shape)
         {
-            region = X11PopupContentRegion.Rasterize(shape, _popupRoot.RenderScaling);
+            region = PopupContentRegion.Rasterize(shape, _popupRoot.RenderScaling);
         }
 
         if (region is null)

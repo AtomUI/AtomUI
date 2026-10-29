@@ -204,6 +204,8 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
 
     internal Border? ContentDecorator => _contentDecorator;
     private protected Control? ArrowIndicatorLayout;
+    // ArrowIndicatorLayoutBounds 相对模板内的箭头定位面板，不是本控件；需要真实位置时按此部件自身做坐标变换
+    internal Control? ArrowIndicatorLayoutPart => ArrowIndicatorLayout;
     private protected ArrowIndicator? ArrowIndicator;
     private protected bool ArrowPlacementFlipped;
 

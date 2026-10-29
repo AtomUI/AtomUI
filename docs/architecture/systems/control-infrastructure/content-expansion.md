@@ -40,6 +40,8 @@ ChildDesiredSizeChanged；若随后排列矩形相同，祖先跳过排列，子
 单位为 DIP。水平主轴用于 Left / Right，垂直主轴用于 Top / Bottom。
 
 1. 准备时捕获当前 Bounds 主轴可见长度及扣除 Margin 的期望占位。首次展开以零长度起步，反向使用当前租约呈现值。
+   接替的租约还未完成 Measure/Arrange 时，分别沿用其捕获的占位/视口起点；隐藏前的旧 Bounds 不代表本次准备已呈现的尺寸。
+   Arrange 完成以当前租约的视口 Bounds 发布或等值排列成功返回为界，不能以更早的 Presenter 排列通知为界。
 2. Measure 以有效宿主约束测量完整 Presenter，取得自然内容尺寸。动画主轴不作为缩小文字排版的测量约束。
 3. 期望占位按进度插值；ArrangeCore 单独约束实际分配矩形。即使固定父布局分配更大空间，真实 Bounds 和命中视口也受进度约束。
 4. Arrange 使用完整内容尺寸，交叉轴遵守父约束。Bottom / Right 起点为零，Top / Left 以可见长度减完整长度确定尾边锚定。

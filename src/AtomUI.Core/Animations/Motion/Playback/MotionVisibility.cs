@@ -1,10 +1,11 @@
+using System.Reactive.Subjects;
+using System.Runtime.ExceptionServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using System.Reactive.Disposables;
 
 namespace AtomUI.Animations;
 
@@ -16,7 +17,7 @@ internal sealed class MotionVisibility
         Task.FromResult(new MotionResult(MotionOutcome.Completed, 0, false));
 
     private readonly Control _target;
-    private IDisposable? _preparation;
+    private Preparation? _preparation;
     private TaskCompletionSource<MotionResult>? _completion;
     private long _version;
     private bool _initialized;
@@ -56,16 +57,12 @@ internal sealed class MotionVisibility
         _preparation = null;
         try
         {
-            Snap(version, visible);
+            SnapAndRelease(version, visible, preparation);
             CompleteStable(version, visible, completion);
         }
         catch (Exception exception)
         {
             Fail(version, visible, completion, exception);
-        }
-        finally
-        {
-            preparation?.Dispose();
         }
     }
 
@@ -87,42 +84,68 @@ internal sealed class MotionVisibility
         {
             if (!_target.IsAttachedToVisualTree() || (!visible && !_target.IsVisible))
             {
-                Snap(version, visible);
+                var previous = previousPreparation;
+                previousPreparation = null;
+                SnapAndRelease(version, visible, previous);
                 CompleteStable(version, visible, completion);
                 return;
             }
             var effect = visible ? Motion.GetEnter(_target) : Motion.GetLeave(_target);
             if (effect is null)
             {
-                Snap(version, visible);
+                var previous = previousPreparation;
+                previousPreparation = null;
+                SnapAndRelease(version, visible, previous);
                 CompleteStable(version, visible, completion);
                 return;
             }
-            if (visible && !_target.IsVisible)
+            var revealing = visible && !_target.IsVisible;
+            if (revealing || (!_target.IsArrangeValid && _target is IMotionLayout))
             {
-                var preparation = new CompositeDisposable();
+                var preparation = new Preparation();
                 _preparation = preparation;
-                preparation.Add(_target.SetValue(Visual.OpacityProperty, 0, BindingPriority.Animation) ?? Disposable.Empty);
+                var opacity = revealing ? 0 : _target.Opacity;
+                preparation.HoldOpacity(_target, opacity);
+                if (!IsCurrent(version, visible))
+                {
+                    preparation.Dispose();
+                    return;
+                }
                 if (_target is IMotionLayout layout)
                 {
-                    // Definitions are prepared without writes. Establish occupancy before visibility
-                    // can trigger layout; the playback lease replaces this lease before it is released.
-                    var plan = effect.Prepare(_target, MotionValues.Baseline(0), null);
-                    if (plan.Layouts.FirstOrDefault() is { Expanded: true, Start.Ticks: 0 } segment && plan.Layouts.Length > 0)
+                    var plan = effect.Prepare(_target, MotionValues.Baseline(opacity), null);
+                    if (!IsCurrent(version, visible))
                     {
-                        preparation.Add(layout.BeginLayoutMotion(segment.Direction, true));
+                        preparation.Dispose();
+                        return;
+                    }
+                    if (plan.Layouts.Length > 0 && plan.Layouts[0] is { Start.Ticks: 0 } segment &&
+                        (!revealing || segment.Expanded))
+                    {
+                        // Keep zero/current occupancy through readiness and replacement.
+                        // Playback takes its own lease before this preparation is released.
+                        var lease = layout.BeginLayoutMotion(segment.Direction, segment.Expanded);
+                        preparation.OwnLayout(lease);
+                        if (!IsCurrent(version, visible))
+                        {
+                            preparation.Dispose();
+                            return;
+                        }
+                        lease.SetProgress(0);
                     }
                 }
                 if (!IsCurrent(version, visible))
                 {
-                    preparation?.Dispose();
+                    preparation.Dispose();
                     return;
                 }
-                _preparation = preparation;
-                _target.SetCurrentValue(Visual.IsVisibleProperty, true);
-                if (!IsCurrent(version, visible))
+                if (revealing)
                 {
-                    return;
+                    _target.SetCurrentValue(Visual.IsVisibleProperty, true);
+                    if (!IsCurrent(version, visible))
+                    {
+                        return;
+                    }
                 }
             }
             if (_target.IsArrangeValid)
@@ -147,7 +170,14 @@ internal sealed class MotionVisibility
         }
         finally
         {
-            previousPreparation?.Dispose();
+            try
+            {
+                previousPreparation?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                Fail(version, visible, completion, exception);
+            }
         }
     }
 
@@ -235,6 +265,31 @@ internal sealed class MotionVisibility
         }
     }
 
+    private void SnapAndRelease(long version, bool visible, Preparation? preparation)
+    {
+        Exception? failure = null;
+        try
+        {
+            Snap(version, visible);
+        }
+        catch (Exception exception)
+        {
+            failure = exception;
+        }
+        try
+        {
+            preparation?.Dispose();
+        }
+        catch (Exception exception)
+        {
+            failure = failure is null ? exception : new AggregateException(failure, exception);
+        }
+        if (failure is not null)
+        {
+            ExceptionDispatchInfo.Capture(failure).Throw();
+        }
+    }
+
     private void CompleteStable(long version, bool visible, TaskCompletionSource<MotionResult> completion)
     {
         completion.TrySetResult(new MotionResult(IsCurrent(version, visible)
@@ -252,6 +307,13 @@ internal sealed class MotionVisibility
                 var preparation = _preparation;
                 _preparation = null;
                 preparation?.Dispose();
+            }
+            catch (Exception cleanup)
+            {
+                exception = new AggregateException(exception, cleanup);
+            }
+            try
+            {
                 Snap(version, visible);
             }
             catch (Exception cleanup)
@@ -297,6 +359,93 @@ internal sealed class MotionVisibility
                 {
                     _target.SetCurrentValue(Visual.IsVisibleProperty, visible);
                 }
+            }
+        }
+    }
+
+    private sealed class Preparation : IDisposable
+    {
+        private IDisposable? _opacity;
+        private Subject<double>? _opacitySource;
+        private IMotionLayoutLease? _layout;
+        private bool _disposed;
+
+        internal void HoldOpacity(Control target, double opacity)
+        {
+            var source = new Subject<double>();
+            _opacitySource = source;
+            // Runtime presentation snapshots cannot be declared in ControlTheme.
+            // Own the binding before publishing a value that can synchronously throw/reenter.
+            var binding = target.Bind(Visual.OpacityProperty, source, BindingPriority.Animation);
+            if (_disposed)
+            {
+                binding.Dispose();
+            }
+            else
+            {
+                _opacity = binding;
+                source.OnNext(opacity);
+            }
+        }
+
+        internal void OwnLayout(IMotionLayoutLease layout)
+        {
+            if (_disposed)
+            {
+                layout.Dispose();
+            }
+            else
+            {
+                _layout = layout;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            var layout = _layout;
+            var opacity = _opacity;
+            var source = _opacitySource;
+            _layout = null;
+            _opacity = null;
+            _opacitySource = null;
+            try
+            {
+                Exception? opacityFailure = null;
+                // A reentrant request can capture the old lease's pending geometry.
+                // Its replacement is installed before the old lease is released.
+                try
+                {
+                    opacity?.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    opacityFailure = exception;
+                }
+                try
+                {
+                    layout?.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    if (opacityFailure is not null)
+                    {
+                        throw new AggregateException(opacityFailure, exception);
+                    }
+                    throw;
+                }
+                if (opacityFailure is not null)
+                {
+                    ExceptionDispatchInfo.Capture(opacityFailure).Throw();
+                }
+            }
+            finally
+            {
+                source?.Dispose();
             }
         }
     }

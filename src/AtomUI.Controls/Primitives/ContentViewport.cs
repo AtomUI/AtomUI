@@ -17,8 +17,15 @@ public class ContentViewport : ContentControl, IMotionLayout
         }
         var horizontal = direction is Direction.Left or Direction.Right;
         var freshOpening = expanded && _layout is null;
-        var actual = IsVisible && !freshOpening ? Extent(Bounds.Size, horizontal) : 0;
-        var desired = IsVisible && !freshOpening ? Extent(DesiredSize.Deflate(Margin), horizontal) : 0;
+        var previous = _layout is { Horizontal: var axis } lease && axis == horizontal ? lease : null;
+        // A freshly visible preparation may still have Bounds from its last hidden
+        // state. Until its layout is committed, hand off the captured start instead.
+        var actual = IsVisible && !freshOpening
+            ? previous?.PresentedExtent ?? Extent(Bounds.Size, horizontal)
+            : 0;
+        var desired = IsVisible && !freshOpening
+            ? previous?.DesiredExtent ?? Extent(DesiredSize.Deflate(Margin), horizontal)
+            : 0;
         var layout = new LayoutLease(this, direction, expanded, actual, desired);
         _layout = layout;
         CaptureAncestorDesiredSizes();
@@ -27,6 +34,7 @@ public class ContentViewport : ContentControl, IMotionLayout
     }
 
     private LayoutLease? _layout;
+    private LayoutLease? _arrangingLayout;
     // Ancestor desired sizes seen at the previous arrange while occupancy is animated or settling.
     private List<(Layoutable Ancestor, Size DesiredSize)>? _ancestorDesiredSizes;
 
@@ -42,12 +50,37 @@ public class ContentViewport : ContentControl, IMotionLayout
 
     protected override void ArrangeCore(Rect finalRect)
     {
-        base.ArrangeCore(_layout?.Constrain(finalRect) ?? finalRect);
+        var layout = _layout;
+        var previous = _arrangingLayout;
+        _arrangingLayout = layout;
+        try
+        {
+            base.ArrangeCore(layout?.Constrain(finalRect) ?? finalRect);
+            if (ReferenceEquals(_layout, layout))
+            {
+                // Equal Bounds do not notify, but this lease still completed its arrangement.
+                layout?.CompleteArrange();
+            }
+        }
+        finally
+        {
+            _arrangingLayout = previous;
+        }
         RearrangeResizedAncestors();
         if (_layout is null)
         {
             _ancestorDesiredSizes = null;
         }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == BoundsProperty && _arrangingLayout is { } layout && ReferenceEquals(_layout, layout))
+        {
+            // Bounds is now published; external notification callbacks may capture it.
+            layout.CompleteArrange();
+        }
+        base.OnPropertyChanged(change);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -138,7 +171,19 @@ public class ContentViewport : ContentControl, IMotionLayout
         private Size _contentSize;
         private Size _arrangedContentSize;
         private double _progress;
+        private bool _measured;
+        private bool _arranged;
         private bool _disposed;
+
+        internal bool Horizontal => _horizontal;
+        internal double PresentedExtent => _arranged ? Extent(_owner.Bounds.Size, _horizontal) : _viewport.Start;
+        internal double DesiredExtent => _measured
+            ? Extent(_owner.DesiredSize.Deflate(_owner.Margin), _horizontal) : _desired.Start;
+
+        internal void CompleteArrange()
+        {
+            _arranged = true;
+        }
 
         internal LayoutLease(ContentViewport owner, Direction direction, bool expanded, double actual, double desired)
         {
@@ -188,6 +233,7 @@ public class ContentViewport : ContentControl, IMotionLayout
             _contentSize = content?.DesiredSize ?? default;
             var target = _expanded ? Extent(_contentSize, _horizontal) : 0;
             var extent = _desired.Interpolate(target, _progress, Extent(_owner.DesiredSize.Deflate(_owner.Margin), _horizontal));
+            _measured = true;
             return _horizontal ? _contentSize.WithWidth(extent) : _contentSize.WithHeight(extent);
         }
 
@@ -229,6 +275,8 @@ public class ContentViewport : ContentControl, IMotionLayout
 
     private sealed class ExtentInterpolation(double start)
     {
+        internal double Start => _start;
+
         private double _start = start;
         private double? _target;
 

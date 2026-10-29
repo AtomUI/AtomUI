@@ -1,7 +1,7 @@
 # Motion 验证状态与完成门禁
 
 本页区分[目标架构](overview.md)与当前可用实现，定义迁移、平台与发布验收。内置消费者已迁移，
-代码保持在 `feature/motion` 的未提交工作树中等待审查。定向验证、原生观测与平台性能验收分别记录，不能相互替代。
+各阶段的定向验证、原生观测与平台性能验收分别记录，不能相互替代。
 
 ## 当前源码边界
 
@@ -176,7 +176,7 @@ macOS 原生窗口为 1300×900 DIP、RenderScaling=2，输入通过框架 RawPo
 临时场景移除后的 Gallery CaseNavigationLayoutTests 另3项通过，合计249项最终定向测试；未运行全量回归。
 临时原生输入驱动、Skia 场景和13个取证文件已删除，媒体审计 clean；原生性能工具按正常入口重建通过。
 
-## 展开准备正确性验证（2026-10-28）
+## 展开准备正确性验证（2026-10-28，79af86f4e）
 
 本轮仅保留 `MotionVisibility` 的首帧占位准备与异常清理。窗口共享帧调度、背景缓存和 NavMenu 宽度迁移已撤回，
 播放执行器与 NavMenu 恢复 `e0894f90b` 实现；未保留性能提升或帧率达标声明。
@@ -186,6 +186,66 @@ macOS 原生窗口为 1300×900 DIP、RenderScaling=2，输入通过框架 RawPo
 清理后Core Animations定向5项、Desktop ContentExpansion/NavMenuInline/OverlayDialogPresenterMotion/CloseMotionExecution
 定向92项均通过，永久测试净增0；未运行全量回归。保留源文件的结构检查1个文件、0项问题，git diff --check通过。
 这份证据仅证明上述正确性行为，不证明原生屏幕闪烁已全部消除或60/120 FPS达标。
+
+## 可见性准备重入与布局交接修复（2026-10-28）
+
+本轮基于 `79af86f4e`，产品代码仅修改共享 `MotionVisibility` 与 `ContentViewport`。
+前一版本的一般展开路径已经修正，但透明度通知同步重入仍能让旧请求覆盖新布局租约；
+实际120 DIP场景在首个 Loaded 前暴露自然高度，随后回零。准备期间关闭/重开、发布和清理异常另有同类所有权缺口。
+
+修复为可通知边界后的请求身份检查、发布前持有透明度绑定、零/当前占位的连续交接，以及相互独立的资源清理与稳定投影。
+真实 Expander 隐藏后保留旧 Bounds，尚未完成布局的租约接替使用捕获起点。
+独立只读审查发现1项 Important：向上/向左展开时，Presenter 排列通知早于视口 Bounds 发布，过早的 Arrange 完成标记会读取旧尺寸。
+临时两行用例分别出现251/271 DIP而非0；标记移至实际 Bounds 发布或等值排列成功返回后，两行均恢复0。
+这项问题完成一次修复，无遗留 Critical、Important 或 Minor；修复后没有再发起独立复审。
+
+所有已确认修复先取得失败证据，再验证通过。临时验证包含透明度/实际可见性重入、准备期间关闭/重开、
+透明度发布异常、清理异常及清理回调中的新意图；detach/remount 是原本通过的边界检查，未作为新修复宣传。
+核心断言曾合并进既有 `ContentExpansionBoundaryTests` 的 Fact 与四方向 Theory 完成验证。
+2026-10-29 按用户要求，提交前将这些复现分支、专用辅助方法及枚举一并移除，原有测试完整保留，测试源码与基线一致。
+临时验证结果只证明本次修复，不作为未来自动化覆盖声明；共享内容展开、请求替代、关闭与生命周期仍由既有契约测试保护。
+
+2026-10-28 清理独立临时用例后，使用精确过滤与 TRX 核对以下 `net10.0` 结果，没有失败或跳过，也没有运行全量回归：
+
+| 范围 | 结果 |
+| --- | --- |
+| Core MotionExecutionTests、TransitionInitializationTests | 5 passed |
+| Desktop ContentExpansion、NavMenuInline、关闭与 Overlay Dialog，以及共享视口消费者 Expander/Collapse/TreeView/TreeSelect/Transfer/FloatButton | 222 passed |
+| Gallery 相关语义高亮、窗口布局、展开与导航页面 | 24 passed |
+
+2026-10-29 移除合并的复现代码后重新构建，按相同精确过滤最终确认 Core 5项（404ms）、Desktop 222项（18s）通过。
+TRX逐项结果与计数一致，无失败、跳过或未执行；未重新运行 Gallery、原生或 NativeAOT，其上述证据属于产品源码相同的前一阶段。
+
+最终生产 `AtomUI.Controls` 及依赖执行 `dotnet build -c Release --framework net8.0 -p:AtomUITargetFrameworks=net8.0 -m:1 -nr:false`，
+0警告0错误。Gallery 的 `PublishToLocal.ps1` 使用 Release、`osx-arm64`、`publishAot=true`，exit0且输出校验通过，
+产物为 Mach-O arm64。没有 AtomUI IL/AOT 诊断；ReactiveUI 的 IL2104/IL3053 与本机 Homebrew dylib 部署版本告警仍存在。
+两个产品源文件的成员结构检查0项问题；文档链接与 `git diff --check` 通过。
+
+### 原生菜单与视觉验收
+
+临时程序自驱动当前 Gallery 的 Menu 页面及原 `ItemsSourceDemoNavMenu`，保留 Option2 选择、数据、主题、嵌套结构和同一控件实例。
+实际宿主为 `Avalonia.Native.WindowImpl`，窗口1300×900 DIP、RenderScaling=2；启动校验当前 Core DLL 的 SHA256，避免旧产物混入。
+普通、透明度通知重入、实际可见性通知重入三组各24次开合动作、12次展开，共72动作、36次展开。
+LayoutUpdated 与合成批次观测均没有提前自然高度、倒退、缺失中间值或错误终态；嵌套视口由0连续到92 DIP，选择保留。
+另在该原生宿主执行向上/向左的 Bounds 发布重入断言，两项通过。
+更早的216动作属于重要审查修复前输入，未叠加为最终源码的通过数量。
+
+另一次独立截图运行记录折叠、首个布局、中段和展开终态。逐张查看确认：首个布局与折叠时的下方菜单位置一致，
+没有先撑开的空白背景；中段自然文本渐显并裁剪；终态 Option2 选中背景与下方菜单位置正确。
+截图为菜单 RenderTargetBitmap 即时渲染，只支持布局/视觉状态判断；时间轨迹取自不截图的独立运行。
+API 驱动不替代指针输入验收，合成提交与即时渲染也不等于屏幕实际呈现。本轮没有 Windows/Linux 原生运行或60/120 FPS证明。
+
+### 设计取舍与验收边界
+
+- 私有 Preparation 使用固定资源槽、无初值 Subject 绑定和独立释放，解决发布前所有权与异常清理；成本是每次准备的一份作用域/绑定，无新增逐帧分配或公共封装。
+- 视口用 Measure/Arrange 阶段标记与捕获起点区分未发布尺寸；成本是两个私有状态位和请求交接时的常数次读取，公开 API、AXAML、时长、曲线及布局交互不变。
+- 测试、原生、net8 与 NativeAOT 均为实现者实际运行记录，审查者未独立执行；重要修复后重新完成门禁，不沿用旧发布认证新输入。
+- 合成执行后端与帧率优化不在本次修复中，没有新增性能达标声明。
+- 自定义 Build 继续遵守无副作用合同；故意修改目标或重入业务的 Build 不作为支持能力。
+- 未修改的 MotionPlayback/MotionPresentation 通用发布异常和 Detached 向外抛错行为未做完整子系统审计，本页不提供整个动效库无缺陷的保证。
+
+临时测试、原生驱动、截图、日志、TRX及专用发布产物在记录结果后清理，媒体审计 clean；常规开发构建产物保留。
+2026-10-29 用户授权清理临时测试并提交；提交范围为修复与正式架构/验证文档，未授权推送。
 
 ## 布局动效失效范围收窄（2026-10-29）
 

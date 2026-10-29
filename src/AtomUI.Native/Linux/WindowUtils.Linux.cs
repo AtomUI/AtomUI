@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using AtomUI.Native.Linux;
+using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Native;
@@ -169,12 +170,21 @@ internal static class WindowUtilsLinux
     /// </summary>
     public static void SetInputRectangle(IntPtr handle, int x, int y, int width, int height)
     {
-        if (handle == IntPtr.Zero)
+        if (width <= 0 || height <= 0)
         {
             return;
         }
 
-        if (width <= 0 || height <= 0)
+        SetInputRectangles(handle, [new PixelRect(x, y, width, height)]);
+    }
+
+    /// <summary>
+    /// 将窗体的输入区域设置为多个矩形的并集（device pixel 坐标）。
+    /// 空列表表示空输入区域：整个窗口对鼠标透明。
+    /// </summary>
+    public static void SetInputRectangles(IntPtr handle, IReadOnlyList<PixelRect> rectangles)
+    {
+        if (handle == IntPtr.Zero)
         {
             return;
         }
@@ -185,19 +195,22 @@ internal static class WindowUtilsLinux
         }
 
         uint windowId = (uint)handle.ToInt64();
-
-        var rect = new WindowUtilsInterop.xcb_rectangle_t
-        {
-            X      = (short)Math.Clamp(x, short.MinValue, short.MaxValue),
-            Y      = (short)Math.Clamp(y, short.MinValue, short.MaxValue),
-            Width  = (ushort)Math.Min(width, ushort.MaxValue),
-            Height = (ushort)Math.Min(height, ushort.MaxValue)
-        };
-
-        IntPtr rectPtr = Marshal.AllocHGlobal(Marshal.SizeOf(rect));
+        var rectSize = Marshal.SizeOf<WindowUtilsInterop.xcb_rectangle_t>();
+        IntPtr rectsPtr = Marshal.AllocHGlobal(Math.Max(1, rectangles.Count) * rectSize);
         try
         {
-            Marshal.StructureToPtr(rect, rectPtr, false);
+            for (var i = 0; i < rectangles.Count; i++)
+            {
+                var source = rectangles[i];
+                var rect = new WindowUtilsInterop.xcb_rectangle_t
+                {
+                    X      = (short)Math.Clamp(source.X, short.MinValue, short.MaxValue),
+                    Y      = (short)Math.Clamp(source.Y, short.MinValue, short.MaxValue),
+                    Width  = (ushort)Math.Clamp(source.Width, 0, ushort.MaxValue),
+                    Height = (ushort)Math.Clamp(source.Height, 0, ushort.MaxValue)
+                };
+                Marshal.StructureToPtr(rect, rectsPtr + i * rectSize, false);
+            }
 
             lock (XcbConnectionHolder.SyncRoot)
             {
@@ -210,8 +223,8 @@ internal static class WindowUtilsLinux
                     windowId,
                     0,
                     0,
-                    1,
-                    rectPtr
+                    (uint)rectangles.Count,
+                    rectsPtr
                 );
 
                 CheckRequest(connection, cookie);
@@ -220,7 +233,34 @@ internal static class WindowUtilsLinux
         }
         finally
         {
-            Marshal.FreeHGlobal(rectPtr);
+            Marshal.FreeHGlobal(rectsPtr);
+        }
+    }
+
+    /// <summary>
+    /// 清除输入形状，恢复 X 服务器默认输入区域（随窗口尺寸变化的整个窗口）。
+    /// </summary>
+    public static void ClearInputShape(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero || !XcbConnectionHolder.IsShapeSupported)
+        {
+            return;
+        }
+
+        lock (XcbConnectionHolder.SyncRoot)
+        {
+            var connection = XcbConnectionHolder.Connection;
+            var cookie = WindowUtilsInterop.xcb_shape_mask_checked(
+                connection,
+                WindowUtilsInterop.xcb_shape_op_t.XCB_SHAPE_SO_SET,
+                WindowUtilsInterop.xcb_shape_kind_t.XCB_SHAPE_SK_INPUT,
+                (uint)handle.ToInt64(),
+                0,
+                0,
+                WindowUtilsInterop.XCB_NONE);
+
+            CheckRequest(connection, cookie);
+            WindowUtilsInterop.xcb_flush(connection);
         }
     }
 

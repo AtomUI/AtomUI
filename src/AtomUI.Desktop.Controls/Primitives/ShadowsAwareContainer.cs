@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Media;
+using AtomUI.Native;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -96,6 +97,7 @@ internal class ShadowsAwareContainer : Decorator
     private CompositeDisposable? _frameRenderBindings;
     private readonly List<ContentPresenter> _contentPresenterChain = [];
     private CompositeDisposable? _surfaceBindings;
+    private AbstractArrowDecoratedBox? _arrowDecoratedBox;
     private bool _isContentSurfaceTrackingActive;
 
     private bool HasBoxShadow => BoxShadow.Count != 0;
@@ -208,6 +210,42 @@ internal class ShadowsAwareContainer : Decorator
         return finalSize;
     }
 
+    /// <summary>
+    /// 内容形状（frame renderer 绘制的圆角矩形 + 箭头，不含阴影），<paramref name="relativeTo"/> 坐标系下的 DIP 几何；
+    /// 无法计算时返回 <c>null</c>。只在无动效变换时使用：圆角按未缩放处理，变换只取外包矩形。
+    /// </summary>
+    internal PopupContentShape? GetContentShape(Visual relativeTo)
+    {
+        if (this.TransformToVisual(relativeTo) is not { } transform)
+        {
+            return null;
+        }
+
+        var body = _frameRenderer?.Bounds ?? Child?.Bounds ?? default;
+        if (body.Width <= 0 || body.Height <= 0)
+        {
+            return null;
+        }
+
+        var arrowBounds = default(Rect);
+        var arrowSide   = PopupArrowSide.None;
+        if (_frameRenderer is not null &&
+            IsArrowVisible &&
+            _arrowDecoratedBox?.TranslatePoint(default, this) is { } arrowOrigin)
+        {
+            arrowBounds = ArrowIndicatorLayoutBounds.Translate(arrowOrigin).TransformToAABB(transform);
+            arrowSide = ArrowDirection switch
+            {
+                Direction.Left => PopupArrowSide.Left,
+                Direction.Top => PopupArrowSide.Top,
+                Direction.Right => PopupArrowSide.Right,
+                _ => PopupArrowSide.Bottom
+            };
+        }
+
+        return new PopupContentShape(body.TransformToAABB(transform), CornerRadius, arrowBounds, arrowSide);
+    }
+
     private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (HasBoxShadow || HasSurfaceBackground)
@@ -293,6 +331,7 @@ internal class ShadowsAwareContainer : Decorator
 
         _surfaceBindings?.Dispose();
         _surfaceBindings = null;
+        _arrowDecoratedBox = null;
     }
 
     private void HandleContentPresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -311,6 +350,7 @@ internal class ShadowsAwareContainer : Decorator
             var arrowDecoratedBox = arrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox();
             if (arrowDecoratedBox is not null)
             {
+                _arrowDecoratedBox = arrowDecoratedBox;
                 // 强制实例化 ArrowDecoratedBox 自身的模板，保证容器 Border 已就绪；
                 // 阴影圆角必须跟随真正可见的内容装饰器（容器 Border）：语义部件样式可能只覆盖
                 // 容器 Border 的圆角，此时 ArrowDecoratedBox 自身的 CornerRadius 与可见形状不一致，

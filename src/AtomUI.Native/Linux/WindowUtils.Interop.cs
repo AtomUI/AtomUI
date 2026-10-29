@@ -24,6 +24,9 @@ internal static class WindowUtilsInterop
     // Atom 常量
     internal const uint XCB_ATOM_CARDINAL = 6;
 
+    // xcb_pixmap_t None：SHAPE mask 传 None 时恢复默认形状（整个窗口）
+    internal const uint XCB_NONE = 0;
+
     // XChangeProperty mode
     internal const int PropModeReplace = 0;
 
@@ -167,6 +170,17 @@ internal static class WindowUtilsInterop
         short y_offset,                    // int16_t
         uint rectangles_len,               // uint32_t
         IntPtr rectangles                  // const xcb_rectangle_t* (指针)
+    );
+
+    [DllImport("libxcb-shape.so.0", EntryPoint = "xcb_shape_mask_checked")]
+    internal static extern xcb_void_cookie_t xcb_shape_mask_checked(
+        IntPtr c,
+        xcb_shape_op_t operation,
+        xcb_shape_kind_t destination_kind,
+        uint destination_window,
+        short x_offset,
+        short y_offset,
+        uint source_bitmap                 // xcb_pixmap_t
     );
     #endregion
 }

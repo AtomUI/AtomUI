@@ -202,7 +202,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     #endregion
 
     // 窗口型 Popup 阴影区域的输入穿透，随一次打开会话挂接与释放
-    private IDisposable? _shadowHitTest;
+    private IPopupShadowHitTest? _shadowHitTest;
 
     // 避免 popup 内的 wheel 事件冒泡出去触发 PlacementTarget 所在祖先 ScrollViewer 的意外滚动。
     // 订阅对象要记录下来,保证 open/close 成对摘挂。
@@ -273,6 +273,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         // A single layout boundary prepares the physical host. Playback itself
         // always follows Avalonia's clock, with no periodic Dispatcher work.
         _isOpenMotionActive = true;
+        _shadowHitTest?.Invalidate();
         Dispatcher.Post(() => _ = PlayOpenMotionAsync(version, target, motion), DispatcherPriority.Loaded);
     }
 
@@ -287,6 +288,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             if (version == _motionVersion)
             {
                 _isOpenMotionActive = false;
+                _shadowHitTest?.Invalidate();
             }
         }
     }
@@ -439,6 +441,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         _closeRequested = true;
         var version = ++_motionVersion;
         ClearEntryPreparation();
+        _shadowHitTest?.Invalidate();
         Dispatcher.Post(() => _ = PlayCloseMotionAndCloseAsync(version, motionActor, closeMotion), DispatcherPriority.Loaded);
     }
 
@@ -460,6 +463,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             if (result.Outcome != MotionOutcome.NotReady && (!result.IsCompleted || !Motion.IsCurrent(target, result)))
             {
                 _closeMotionState = PopupCloseState.Idle;
+                _shadowHitTest?.Invalidate();
                 return;
             }
         }
@@ -526,12 +530,26 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
 
-        // 内容形状直接使用 Avalonia 的命中测试：frame renderer 的圆角矩形与箭头几何可命中，
+        // 逐点命中（Windows）直接使用 Avalonia 的命中测试：frame renderer 的圆角矩形与箭头几何可命中，
         // 绘制列表命中不包含 BoxShadow，阴影区域因此不命中。禁用的内容仍属于内容形状。
+        // 预先提交输入区域的平台（X11）无法逐点查询，提供同一圆角矩形与箭头几何，由 AtomUI.Native 光栅化。
         _shadowHitTest = NativePopupShadowHitTest.TryAttach(
             popupRoot,
             () => IsPlayingMotion,
-            point => popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null);
+            point => popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null,
+            () => popupRoot.GetVisualDescendants().OfType<ShadowsAwareContainer>().FirstOrDefault()
+                           ?.GetContentShape(popupRoot));
+    }
+
+    // 窗口型 Popup 的 Child 在 PopupRoot 首次布局时挂入视觉树，早于原生窗口映射（WindowBase.Show 先布局再 PlatformImpl.Show）。
+    // 这是 Opened 之前唯一能拿到尚未映射的 PopupRoot 的时机，Avalonia 未提供其他公开回调。
+    private void HandleChildAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        // Avalonia 12 的视觉根是包裹 TopLevel 的 TopLevelHost，按所属 TopLevel 判定
+        if (_shadowHitTest is null && sender is Visual child && TopLevel.GetTopLevel(child) is PopupRoot popupRoot)
+        {
+            NativePopupShadowHitTest.SuspendInputBeforeShow(popupRoot);
+        }
     }
 
     private void DetachShadowHitTest()
@@ -552,6 +570,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         _closeRequested = false;
         SetCurrentValue(IsOpenProperty, true);
         StartOpenMotion();
+        _shadowHitTest?.Invalidate();
     }
 
     internal void CloseForLifecycle()
@@ -640,6 +659,18 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+
+        if (change.Property == ChildProperty)
+        {
+            if (change.OldValue is Control oldChild)
+            {
+                oldChild.AttachedToVisualTree -= HandleChildAttachedToVisualTree;
+            }
+            if (change.NewValue is Control newChild)
+            {
+                newChild.AttachedToVisualTree += HandleChildAttachedToVisualTree;
+            }
+        }
 
         if (change.Property == IsOpenProperty && change.GetNewValue<bool>() && _closeRequested)
         {

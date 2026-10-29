@@ -16,7 +16,7 @@ namespace AtomUI.Native.Windows;
 /// <c>WS_EX_LAYERED</c> + 整窗 alpha 255；运行时只切换 <c>WS_EX_TRANSPARENT</c>，不触发重绘。
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsPopupShadowHitTestHook : IDisposable
+internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
 {
     // 按帧轮询光标，约 60Hz
     private static readonly TimeSpan PassThroughPollInterval = TimeSpan.FromMilliseconds(16);
@@ -69,6 +69,11 @@ internal sealed class WindowsPopupShadowHitTestHook : IDisposable
     }
 
     internal bool IsPassThroughActive => _passThroughTimer is not null;
+
+    // WM_NCHITTEST 每次实时查询动效状态与内容形状，没有需要刷新的缓存
+    public void Invalidate()
+    {
+    }
 
     public void Dispose()
     {

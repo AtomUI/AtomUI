@@ -183,7 +183,7 @@ focus 与 host teardown 继续使用 Avalonia Popup 协议。产品 owner 只提
 框架私有会话与 registration 布局由固定类型/成员引用描述；依赖升级后须重新执行多 Popup、实际命中、关闭事件、
 宿主复用与 NativeAOT 验证。普通 Debug 测试不能代替 trimming 和 NativeAOT 发布证据。
 
-### 8.1 窗口型 Popup 阴影输入穿透（Windows）
+### 8.1 窗口型 Popup 阴影输入穿透（Windows / X11）
 
 native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + 阴影 buffer。阴影与内容保持同一 surface（动效严格同帧），
 只把输入区域收缩到内容形状。被否决的独立阴影窗口方案与各平台调研见
@@ -191,7 +191,9 @@ native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + �
 
 挂接：`Popup.Opened` 时若 Child 的 TopLevel 是 `PopupRoot`（`Host` 与 `IPopupHostProvider` 在 Avalonia 12.1.4 均为 internal，
 用 `TopLevel.GetTopLevel(Child)` 判定，不使用反射），调用 `NativePopupShadowHitTest.TryAttach`；`Closed` 时释放。
-非 Windows 平台返回 `null`。
+Windows 返回 `WindowsPopupShadowHitTestHook`，X11（句柄 descriptor 为 `XID` 且 SHAPE 可用）返回
+`X11PopupShadowInputRegion`，Wayland、macOS 返回 `null`。两者共用 `IPopupShadowHitTest`：`Invalidate()` 由 Popup
+在动效状态变化时调用，Windows 逐点查询，实现为空。
 
 内容形状直接复用 Avalonia 命中测试：`popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null`。
 `PopupFrameRenderer` 以非空填充绘制圆角矩形，箭头以几何绘制，Avalonia 绘制列表命中测试按圆角矩形与几何计算且不包含
@@ -218,6 +220,24 @@ native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + �
 打开期间覆盖整个客户区，因此点击阴影与点击 Popup 外部任何位置完全相同：照常关闭，只有
 `OverlayDismissEventPassThrough=True` 时下方控件同时收到点击；该期间主窗口控件也不会进入悬停态（overlay Popup 相同）。
 无 light dismiss 的 Popup（如 `Trigger=Hover` 浮层、ToolTip）下方控件可直接收到悬停。
+
+X11（`X11PopupShadowInputRegion`）：SHAPE `ShapeInput` 只改输入区域、不改可见区域，X 服务器按输入形状选择接收窗口，
+同进程与跨进程一致穿透，不需要 Windows 的第二层与光标轮询。输入形状是预先提交的区域，不能逐点查询：
+
+- 内容形状由 `ShadowsAwareContainer.GetContentShape()` 给出平台无关的 DIP 几何 `PopupContentShape`
+  （frame renderer 的圆角矩形 + `ArrowIndicatorLayoutBounds` 处底边贴住主体、顶点朝外的箭头三角形），
+  与 Windows 命中的圆角矩形与箭头一致。
+- `AtomUI.Native` 的 `X11PopupContentRegion` 按 `RenderScaling` 逐 device pixel 行扫描光栅化（像素中心在形状内即属于输入区域，
+  相邻行区间相同则合并），以多矩形 `xcb_shape_rectangles` 提交；典型无箭头浮层约 7 个矩形，带箭头约 13 个。
+- 映射前置空：窗口以默认（整窗）输入形状映射到指针下时，X 服务器立即给下方窗口发送 Leave，下方控件丢失悬停，
+  `Trigger=Hover` 浮层因此反复“打开→移出关闭→重新进入打开”。`Opened` 已晚于映射，Popup 在 Child 挂入 PopupRoot 视觉树时
+  （`WindowBase.Show` 先执行首次布局再 `PlatformImpl.Show`，早于映射）调用 `NativePopupShadowHitTest.SuspendInputBeforeShow`
+  先提交空输入形状，再由 `Opened` 的挂接接管。Avalonia 12 的视觉根是 `TopLevelHost`，按 `TopLevel.GetTopLevel(child)` 判定。
+  Windows 按 `WM_NCHITTEST` 逐点查询，该方法在 Windows 上不做任何处理。
+- 动效期间提交空区域（整窗穿透）；`PopupRoot.LayoutUpdated` 与 `Invalidate()` 触发重新计算，结果未变时不发请求。
+- 释放时若窗口仍存活（`PlatformImpl` 非空）用 `xcb_shape_mask(None)` 恢复默认输入形状；正常关闭时 Avalonia 已先销毁窗口，
+  不再发请求。
+- GPU 渲染子窗口不需单独设置：X 服务器查找指针所在窗口时，父窗口输入形状外的点不会进入子窗口。
 
 ## 9. 资源、性能与 AOT 边界
 
@@ -265,7 +285,15 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
 - `PopupEntryInventoryTests` 守卫所有 runtime 入口、无冗余默认值覆盖和 Popup Theme 的 `null` 默认契约。
 - `DialogPopupControlFamilyTests`、DataGrid popup tests 和代表性控件测试验证家族行为与视觉所有权未变。
 
-实机验证状态为 Windows、macOS 已测试；Linux X11/Wayland 未测试。
+实机验证状态为 Windows、macOS 已测试；Linux X11 仅验证窗口型 Popup 阴影输入形状（见下）；Wayland 未测试。
+
+窗口型 Popup 阴影输入穿透（X11，XWayland，100% 缩放）：临时探针应用以 X11 后端打开 `ShouldUseOverlayPopup=False` 的
+FlyoutHost，用 `XShapeGetRectangles(ShapeInput)` 读取 Popup 窗口实际输入形状：窗口 288×188 px，输入区域为 216×116 内容主体
+（圆角逐行内缩，面积约 46%），箭头显示时顶部为三角形逐行 1/3/5/7… px；打开动效约 230ms 内与关闭动效期间为空区域，
+关闭后窗口销毁且无 SHAPE 错误。Hover 交互（XTest 驱动指针，`Trigger=Hover` 窗口型浮层，阴影盖住按钮）：
+修复前指针停在按钮上时浮层反复“打开→button exit→关闭→button enter→再打开”；只在 `Opened` 挂接时仍在映射瞬间出现一次
+exit/enter 并关闭；映射前置空后不再产生越界事件，浮层保持打开；指针从按钮逐步移入内容保持打开，从内容移到阴影按移出关闭。
+未覆盖：鼠标实际穿透到下方窗口的交互录制、非整数缩放、GNOME/KDE 原生 X11 会话。
 
 窗口型 Popup 阴影输入穿透与定位（Windows 11，150% 缩放，`RedirectionSurface`）使用脚本化视觉验证
 （本地 `tmp/visual-verification/windows/`，`ddagrab` 录制 + UI Automation 定位）：

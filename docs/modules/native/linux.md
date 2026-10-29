@@ -42,6 +42,8 @@ normal 状态写入阴影 extents；最大化和全屏写入全零，避免 Mutt
 
 `WindowExtensions.SetWindowInputRectangle()` / `ResetWindowInputRegion()` 用 XCB SHAPE 的
 `XCB_SHAPE_SK_INPUT` 把输入区限制为一个矩形，目的是让视觉阴影区域的点击穿透到下方窗口。
+底层 `WindowUtilsLinux.SetInputRectangles()` 接受多个矩形（空列表 = 空输入区域，整窗穿透），
+`ClearInputShape()` 用 `xcb_shape_mask(None)` 恢复默认输入形状（随窗口尺寸变化的整个窗口）。
 Native 层只接收 device pixel 坐标并执行 input-region 请求，不决定 shadow 厚度、resize band 或订阅策略。
 
 当前实现的真实生命周期：
@@ -56,6 +58,13 @@ Native 层只接收 device pixel 坐标并执行 input-region 请求，不决定
 `WindowDecorationMargin`、`WindowState`、`TransparencyLevelHint`、`CanResize`、`FrameShadowThickness`
 和 `IsCsdEnabled`，按 `RenderScaling` 把 DIP 转成 device pixel，并在普通状态下只保留最多 10 DIP 的
 resize band。最大化或全屏时 input region 恢复为整个 surface。
+
+窗口型 Popup 由 `X11PopupShadowInputRegion`（经 `NativePopupShadowHitTest.TryAttach` 创建）负责：
+Popup 提供平台无关的 `PopupContentShape`（DIP 圆角矩形 + 箭头三角形），`X11PopupContentRegion` 按 `RenderScaling`
+逐像素行光栅化为多矩形提交；窗口映射前由 `SuspendInputBeforeShow()` 先置空（避免整窗输入形状映射到指针下产生越界事件）；
+动效期间为空区域；`PopupRoot.LayoutUpdated` 与 `Invalidate()` 触发重新计算，结果未变时不发请求；
+释放时窗口仍存活才恢复默认形状。只设置顶层 XID：父窗口输入形状外的点不会进入 GPU 渲染子窗口。详见
+[Popup 实现原理](../../controls/desktop/other/popup/implementation.md)“8.1”。
 
 这不是“整窗忽略鼠标”的 API。Linux 版本的 `SetWindowIgnoreMouseEventsLinux()`、
 `IsWindowIgnoreMouseEventsLinux()`、`xcb_get_geometry()` 和 shape-query 旧实现已经删除；文档和新代码都

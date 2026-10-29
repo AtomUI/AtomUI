@@ -956,6 +956,7 @@ public partial class Window : AvaloniaWindow,
         _transparencyFallbackBorder = null;
         base.OnApplyTemplate(e);
         _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
+        AttachContentCacheParts(e.NameScope);
 
         HandleCreateTitleBar();
         EnsureWindowsCsdMinimumHeight();

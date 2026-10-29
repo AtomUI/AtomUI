@@ -56,7 +56,7 @@
 - `GenericLinuxWindowChromeManager`：Linux generic fallback manager，承接无法确定为 X11 或 Wayland 的后端并复用共享 Linux chrome 行为。
 - `X11WindowChromeManager`：X11 专属 manager，负责 map 前初始 geometry、`_GTK_FRAME_EXTENTS`、shadow input region 订阅策略和 10 DIP resize band 保留。
 - `WaylandWindowChromeManager`：Wayland 专属 manager，负责 shadow extents 归一、managed resize grip 接管和 input region 矩形计算。
-- `WindowsWindowChromeManager`：Windows 专属 manager，负责 Windows CSD frame dark mode 与可见 frame border 策略。
+- `WindowsWindowChromeManager`：Windows 专属 manager，负责 Windows CSD frame dark mode 与可见 frame border 策略；首次显示前挂载 `AtomUI.Native` 的 `WindowsBackgroundHook`，窗口关闭时释放。该 hook 在 live resize 期间不做 GDI 背景填充（见 [AtomUI.Native Windows 文档](../../../../modules/native/windows.md) 第 5 节）。
 - `FullscreenPopoverLayer`：internal 模板协作层，维护 macOS 全屏标题栏 popover 的显示、按钮和宿主 Window 订阅。
 - `WindowResizer`：internal 模板协作控件，使用 `GripThickness` 和 `BeginResizeDrag` 提供 managed resize grip。
 - `WindowVisualLayerClip`：internal visible frame 裁剪 helper，是完整 layer surface 排除 `FrameShadowThickness` 后的共享计算入口。
@@ -298,6 +298,7 @@ ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Wind
 - `WindowDrawnDecorations` overlay 只包含 chrome；Dialog/Drawer 仍在 owning Window `TopLevel` 内，多个 owner 的 suppression lease 必须在最后一次释放后才恢复 chrome。
 - Windows 10 的顶边 frame 补偿只允许通过 `IsLegacyWindowsFrameBorderVisible` + overlay 自绘实现；不得清除 `WS_CAPTION`、重新引入 `WM_NCCALCSIZE` hook 或修改 Avalonia 的 resize 几何来换取边框。
 - 所有桌面平台共用 Window 首次显示主题表面准备流程，`WindowTheme` 是显示完成后的唯一长期背景所有者。
+- Windows live resize 不错帧依赖两项共同成立：`WithAtomUIDefaultOptions()` 的合成顺序以 `RedirectionSurface` 优先，以及 `WindowsBackgroundHook` 在 `WM_ENTERSIZEMOVE`～`WM_EXITSIZEMOVE` 期间不做 GDI 背景填充。调整任一项都必须按 [Windows Live Resize 与窗口装饰架构](../../../../architecture/systems/windowing/windows-live-resize.md) 重做拖动左/上边缘的视觉验证。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。

@@ -97,8 +97,13 @@ src/AtomUI.Native/
 - `SetWindowIgnoreMouseEventsWindows()` 修改 `WS_EX_TRANSPARENT/WS_EX_LAYERED`。
 - `WindowsCsdSizingHook` 封装 opt-in 的 `WM_GETMINMAXINFO` track size 修正和
   `WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE` live resize 信号。
+- `WindowsBackgroundHook` 在首次显示前用 GDI 填充客户区背景，避免原生空白帧；它只处理
+  `WM_ERASEBKGND`/`WM_SHOWWINDOW`，并在 `WM_ENTERSIZEMOVE` 与 `WM_EXITSIZEMOVE` 之间跳过擦除填充。
+  默认 `RedirectionSurface` 下 GDI 填充会先于渲染帧被 DWM 合成，live resize 期间填充会表现为整窗闪背景色
+  （见 [Windows Live Resize 与窗口装饰架构](../../architecture/systems/windowing/windows-live-resize.md)）。
 - Windows 目录可以封装 DWM 属性、系统 metric、Win32 消息结构体和受限的可释放 hook。
-- Windows 目录不决定 live resize 策略、合成后端策略、CSD/SSD 策略或控件行为。
+- Windows 目录不决定 live resize 策略、合成后端策略、CSD/SSD 策略或控件行为；合成后端顺序由
+  `AtomUI.Core` 的 `WithAtomUIDefaultOptions()` 决定。
 - 窗口装饰与 resize hit-test 由 Avalonia CSD 管理；AtomUI 不处理 `WM_NCCALCSIZE` 或
   `WM_NCHITTEST`，不返回 resize hit-test。
 - 标题栏按钮通过 Avalonia 公共 `WindowDecorationProperties.ElementRole` 接入原生行为，

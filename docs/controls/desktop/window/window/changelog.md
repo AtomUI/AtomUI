@@ -2,6 +2,25 @@
 
 本文档记录 Window 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-29
+
+- Fix
+  - Eliminate opposite-edge frame lag on Windows live resize. Dragging the left or top edge no longer makes the right or bottom edge jump; previously 28%–33% of frames showed gaps of up to 121px under `WinUIComposition`.
+  - Remove the whole-window background flashes that `RedirectionSurface` used to show during live resize.
+- Implementation
+  - `WithAtomUIDefaultOptions()` now orders Windows composition modes as `RedirectionSurface` → `WinUIComposition` → `DirectComposition` → `LowLatencyDxgiSwapChain`. Only the redirection surface is composited by DWM in sync with window geometry changes; WinUI/DComp/flip swapchain presents run on a separate timeline from the window frame.
+  - `WindowsBackgroundHook` skips its GDI `WM_ERASEBKGND` fill between `WM_ENTERSIZEMOVE` and `WM_EXITSIZEMOVE`. Under `RedirectionSurface` that fill reached DWM before the rendered frame and was the root cause of the previously recorded full-page white frames. The first-show fill is unchanged.
+  - A synchronous `UpdateLayout()` before `WM_PAINT` was tried and removed: Avalonia already completes layout synchronously inside `WM_SIZE`.
+- Breaking
+  - `AcrylicBlur` and `Mica` are unavailable under `RedirectionSurface`; `Transparent` uses the legacy `DwmEnableBlurBehindWindow` path. Applications that need material effects can put `WinUIComposition` first in their own `Win32PlatformOptions` and accept the live resize lag.
+- Docs
+  - Record the scripted visual verification, data and conclusions in the Windows live resize architecture document; update the cross-platform window guide, startup registration, `AtomUI.Native` Windows documentation and this implementation guide.
+- Validation
+  - Windows 11 build 26300, Avalonia 12.1.4, 2560x1600 @150%, Gallery Release. Scripted test: topmost click-through magenta backdrop, left/top edge located via `WM_NCHITTEST`, sinusoidal drag for 6 seconds, `ffmpeg ddagrab` at 60fps, per-frame gap and blank-frame counting over 510 frames per run.
+  - `RedirectionSurface`: 0 gap frames and 0 blank frames for both left and top edge drags, including at double drag speed. `WinUIComposition`: 28%–33% gap frames for both edges.
+  - Overlay popups (title-bar menu, tooltip), native-window popups (InfoFlyout with `ShouldUseOverlayPopup=False`) and the transparent splash render identically under both composition modes; no black-box regressions.
+  - `WindowResizeArtifactTests`: 62 passed, including the updated composition-order assertion and a new assertion that the background hook skips the erase fill during size-move.
+
 ## 2026-10-21
 
 - Fix

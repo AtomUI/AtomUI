@@ -6,6 +6,9 @@
 
 - 提供 `AppBuilder.WithAtomUIDefaultOptions()` 与 `AppBuilder.UseAtomUI()` 两个主要入口，以及 `ApplicationStartup.Attach`
   挂接点和启动编排（见[启动系统](../../architecture/systems/startup/overview.md)）。
+  `WithAtomUIDefaultOptions()` 在 Windows 上固定合成回退顺序为 `RedirectionSurface` → `WinUIComposition` →
+  `DirectComposition` → `LowLatencyDxgiSwapChain`，以消除 live resize 对向边缘错帧（见
+  [Windows Live Resize 与窗口装饰架构](../../architecture/systems/windowing/windows-live-resize.md)）。
 - 管理唯一运行时 `ThemeManager`、五阶段主题事务、稳定 ThemeContext、局部作用域图以及独立 TopLevel 的
   context lease/resource bridge。
 - 承接类型化主题包注册与默认赋值；保留动态 XML Reader/Binder，派生算法仅由现有运行时执行。

@@ -1,6 +1,6 @@
 # Windows 10 实机验证快速上手：窗口 live resize 与窗口型 Popup 阴影
 
-日期：2026-10-29。状态：待在 Windows 10 上执行。
+日期：2026-10-29。状态：Windows 10 已执行，结果见文末“Windows 10 结果”。live resize 与定位各有一项未达 Windows 11 基线，待决定是否修复。
 
 Windows 11 上已完成并通过脚本化验证的两项工作，需要在 Windows 10 上复测：
 
@@ -196,3 +196,54 @@ Windows 10 特有关注点：
   [Popup 实现原理](../../controls/desktop/other/popup/implementation.md) 第 11 节验证记录、
   [AtomUI.Native Windows](../../modules/native/windows.md) 6.3 兼容性说明。
 - 发现问题时先保留 `runs\`、`shadow\`、`popups\` 下的录像与截图，再改代码。
+
+## Windows 10 结果（2026-10-29）
+
+环境：Windows 10 Pro build 19045，2560×1600 @150%（144 DPI），NVIDIA GeForce RTX 4060 Laptop（32.0.16.1074）+ Intel UHD
+Graphics（32.0.101.7082），Avalonia 12.1.4，Gallery Release，不挂调试器。主窗口 `ex=0x40100`，不含
+`WS_EX_NOREDIRECTIONBITMAP`，即默认 `RedirectionSurface`。
+
+执行方式：Windows 11 的 PowerShell 脚本没有拷贝到这台机器，改用一个 C# 控制台工具按本文第 3、4 节的相同方法执行
+（洋红背景、`WM_NCHITTEST` 探测 resize 起点、`ddagrab` 60fps 录制、UI Automation 定位、WinForms 跨进程靶子）。
+源码保存在 `tmp/visual-verification/windows/vv/`，日志在 `vv.log`，输出在 `runs\`、`shadow\` 下。屏幕与 Win11 相同，
+因此没有修改第 2 节里写死的几何参数。
+
+### live resize
+
+| Tag | 拖动边缘 | 帧数 | 缺口帧 | 白屏帧 | 黑条帧 |
+|---|---|---|---|---|---|
+| `w10-left` / `w10-left2` | 左 | 373 / 379 | 0 / 0 | 0 / 0 | 2 / 4 |
+| `w10-fast`（2 倍速） | 左 | 386 | 0 | 0 | 3 |
+| `w10-top` / `w10-top2` | 上 | 403 / 410 | 1 / 3 | 0 / 0 | 0 / 0 |
+| `w10-fasttop`（2 倍速） | 上 | 407 | 4 | 0 | 0 |
+| `base-left` / `base-fast`（旧顺序，`ex=0x240100`） | 左 | 399 / 422 | 143 / 177 | 0 / 2 | 0 / 0 |
+| `base-top` / `base-fasttop`（旧顺序） | 上 | 406 / 430 | 151 / 170 | 0 / 1 | 0 / 0 |
+
+- 与旧的合成顺序相比，`RedirectionSurface` 优先在 Win10 上同样有效：缺口帧从 35%～42% 降到 0～1%。
+- **未达 Win11 基线（0 / 0）**：
+  - 拖左边缘时，每组有 2～4 帧在固定的右边缘出现黑色竖条，宽约 20～60 物理像素，只持续 1 帧。
+    这是窗口变宽时新露出的区域还没有渲染内容，scan 图中只是零星的单行。
+  - 拖上边缘时，每组有 1～4 帧在固定的下边缘出现洋红缺口。大多只有几像素，`w10-fasttop` 第 297 帧约 280 物理像素。
+    抽帧图在 `tmp/visual-verification/windows/stripe-left.png` 和 `gap-top.png`。
+- 前几次 `w10-left` 的结果 `overshootFrames≈680` 是录制区域设置错误，修正工具后重测，不计入上表。
+- 装饰（`runs\decor-w10fs\`）：正常、最大化、还原、失去焦点（Notepad 置前）、重新激活、全屏、退出全屏后标题栏与边框都正常；
+  缩到最小高度 166px 后继续拖动，窗口上边缘不移动，也没有旧帧叠加。
+- 没有执行：暗色主题下 Win10 边框颜色、`SM_CXBORDER` 1px 边框逐像素检查、`popup-test.ps1`（overlay 标题栏菜单）。
+
+### 窗口型 Popup 阴影
+
+| 步骤 | 结果 |
+|---|---|
+| 4.1 `WS_EX_LAYERED` + 动效 | 浮层 `ex=0x80080`（含 `WS_EX_LAYERED`，不含 `NOREDIRECTIONBITMAP`）；261 帧中浮层矩形内纯黑像素最多 0；`shadow\w10\steady.png` 圆角透明、阴影柔和，没有系统矩形投影；打开动效逐帧阴影与内容同帧。`layered-probe` 未单独执行（挂接时已设置 LAYERED，由动效录制覆盖） |
+| 4.2 定位 36 组 | 横向全部一致。6 组（显示/居中 × 下方、下左、下右）逐像素一致；**其余 30 组窗口型整体比 overlay 高 1 物理像素（150% 下约 0.67 DIP）**，上下边缘与文字一起错 1 行，所以出现的“文字差异”实际是平移，不是栅格化差异。差异图见 `shadow\dirs\mask-*.png` |
+| 4.3 第一层 | B、C 通过；C 默认 `聚焦我` 没有收到点击，加 `OverlayDismissEventPassThrough=True` 后收到点击。A：3 次运行分别为 0/48、7/47、6/47（Win11 18/96）。第一次为 0，原因未查明 |
+| 4.4 第二层 | 浮层超出主窗口 119px：`WS_EX_TRANSPARENT` 已设置，该点 `WindowFromPoint` 命中靶子进程；靶子日志为 `ENTER LEAVE CLICK ENTER`；回到内容后样式移除，点击内容浮层不关闭；主窗口内的阴影不启用第二层；内容区 278 帧中 0 帧变化。第一次运行只超出 57px，取到的阴影测试点仍在主窗口内，属于工具问题，不是产品失败 |
+
+结论：`WS_EX_LAYERED` 在 Win10 + `RedirectionSurface` 下兼容，第一层和第二层行为与 Win11 一致，不需要启用第 4.1 节的退路。
+
+### 待决定
+
+1. **Win10 live resize 残余单帧缺陷**：拖左边缘时右边缘有黑条，拖上边缘时下边缘有缺口，频率低于 1%。是否需要继续排查。
+2. **窗口型 Popup 纵向差 1 物理像素**：只出现在部分方向，横向没有差异。推测是 native popup 的 DIP→物理像素换算
+   （截断）与 overlay 的布局舍入（四舍五入）不一致，**还没有查源码确认**：本地没有 Avalonia 参考源码，也没有去 GitHub 核对。
+   Win11 记录的“仅文字子像素差异”也应改用边缘采样复查。

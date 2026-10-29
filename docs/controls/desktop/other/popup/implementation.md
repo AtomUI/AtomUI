@@ -278,3 +278,11 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
   光标回到（主窗口外的）内容后 `WS_EX_TRANSPARENT` 移除、靶子收到 LEAVE、点击内容浮层不关闭；主窗口内阴影不启用第二层。
 - 视觉：`WS_EX_LAYERED` + alpha 255 下透明圆角与阴影无黑框；打开/关闭动效逐帧阴影与内容同帧；两次样式切换期间
   内容区 204 帧无任何变化。
+
+Windows 10 build 19045（150% 缩放，`RedirectionSurface`）复测，记录见
+[Windows 10 实机验证快速上手](../../../../superpowers/progress/2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)：
+
+- `WS_EX_LAYERED` 兼容：浮层动效录制中没有纯黑像素，透明圆角与阴影正常。
+- 第一层、第二层结论与 Win11 一致。第二层测试中浮层超出主窗口 119px，靶子收到 ENTER/LEAVE/CLICK。
+- 定位：横向全部一致。下方放置且显示或居中箭头的 6 组逐像素一致；其余 30 组窗口型比 overlay 高 1 物理像素
+  （约 0.67 DIP），原因尚未确认。

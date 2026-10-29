@@ -218,7 +218,10 @@ macOS 没有独立于可见内容的输入区域 API。
 单元测试：Popup/Flyout/ToolTip 370 项中 362 通过；`PopupMarginPlacementTests` 8 项失败在基线上同样失败
 （headless 非 CSD 窗口无法创建 Popup host），与本改动无关。
 
-未覆盖：Windows 10、WinUI/DirectComposition 合成模式下的 `WS_EX_LAYERED` 兼容性、多显示器混合 DPI。
+Windows 10 build 19045 已复测（见 [Windows 10 实机验证快速上手](2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)）：
+`WS_EX_LAYERED` 兼容，第一层、第二层通过。定位时 30/36 组窗口型比 overlay 高 1 物理像素，原因待查。
+
+未覆盖：WinUI/DirectComposition 合成模式下的 `WS_EX_LAYERED` 兼容性、多显示器混合 DPI。
 
 ## 实现入口
 

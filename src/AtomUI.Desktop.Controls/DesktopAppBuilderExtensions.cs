@@ -1,8 +1,9 @@
 using System.Runtime.CompilerServices;
+using AtomUI.Animations;
+using AtomUI.Native;
 using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Logging;
-using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace AtomUI;
@@ -132,11 +133,8 @@ public static class DesktopAppBuilderExtensions
             // Enable on compatible Wayland backends unless explicitly disabled for diagnosis.
             if (!AppContext.TryGetSwitch("AtomUI.Experimental.WaylandFramePacing", out var enableFramePacing) || enableFramePacing)
             {
-                if (WaylandFramePacingCompatibility.TryCreate(out var compatibility, out var reason))
+                if (WaylandFramePacing.TryInstall(ReportWaylandFrameFailure, BindMotionPresentationClock, out var reason))
                 {
-                    var renderer = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-                    AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>()
-                                   .ToConstant(new WaylandFramePacingRenderInterface(renderer, compatibility));
                     Logger.TryGet(LogEventLevel.Information, AtomUILogArea.System)?.Log(
                         typeof(DesktopAppBuilderExtensions), "Wayland frame pacing enabled: {Reason}", reason);
                 }
@@ -167,6 +165,26 @@ public static class DesktopAppBuilderExtensions
         return builder.UseX11()
                       .UseSkia()
                       .UseHarfBuzz();
+    }
+
+    private static void ReportWaylandFrameFailure(Exception error)
+    {
+        Logger.TryGet(LogEventLevel.Error, AtomUILogArea.System)?.Log(
+            typeof(DesktopAppBuilderExtensions), "Wayland prepared-frame submission failed; retiring its target: {Error}", error);
+    }
+
+    // Native cannot reference Core; expose its presentation timing to Motion through Core's contract.
+    private static void BindMotionPresentationClock(WaylandPresentationTiming timing)
+    {
+        MotionFrameTiming.Clock = new WaylandMotionPresentationClock(timing);
+    }
+
+    private sealed class WaylandMotionPresentationClock(WaylandPresentationTiming timing) : IMotionPresentationClock
+    {
+        public long? PredictPresentation(long now) => timing.PredictPresentation(now);
+        public long RefreshInterval => timing.RefreshInterval;
+        public long FramesStarted => timing.FramesStarted;
+        public int FramesInFlight => timing.FramesInFlight;
     }
 }
 

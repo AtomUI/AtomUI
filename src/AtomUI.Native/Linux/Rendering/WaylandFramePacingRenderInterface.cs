@@ -5,7 +5,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 
-namespace AtomUI;
+namespace AtomUI.Native;
 
 internal sealed class WaylandFramePacingRenderInterface(
     IPlatformRenderInterface inner,

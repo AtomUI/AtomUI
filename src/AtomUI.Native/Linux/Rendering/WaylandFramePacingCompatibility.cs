@@ -1,10 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using AtomUI.Animations;
-using AtomUI.Native;
 using Avalonia;
-using Avalonia.Logging;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
@@ -14,7 +11,7 @@ using NWayland.Interop;
 using NWayland.Protocols.PresentationTime;
 using NWayland.Protocols.Wayland;
 
-namespace AtomUI;
+namespace AtomUI.Native;
 
 // Deliberately version-bound. These members are framework integration details, never control API.
 internal sealed class WaylandFramePacingCompatibility
@@ -52,6 +49,8 @@ internal sealed class WaylandFramePacingCompatibility
     private readonly ConditionalWeakTable<IPlatformRenderSurface, IPlatformRenderSurface> _surfaces = new();
     private readonly ConditionalWeakTable<object, WaylandSurfaceFrameState> _states = new();
     private readonly ConditionalWeakTable<object, StrongBox<WaylandPresentationTiming?>> _presentations = new();
+    private readonly Action<Exception> _reportFailure;
+    private readonly Action<WaylandPresentationTiming> _presentationTimingBound;
 
     [DynamicDependency("_surface", EglSurfaceTypeName, "Avalonia.Wayland")]
     [DynamicDependency("_frameCallback", SurfaceTypeName, "Avalonia.Wayland")]
@@ -72,8 +71,10 @@ internal sealed class WaylandFramePacingCompatibility
     [DynamicDependency("_listener", typeof(WlProxy))]
     [DynamicDependency("get_Registry", GlobalsTypeName, "Avalonia.Wayland")]
     [DynamicDependency("_knownGlobals", GlobalsTypeName, "Avalonia.Wayland")]
-    private WaylandFramePacingCompatibility()
+    private WaylandFramePacingCompatibility(Action<Exception> reportFailure, Action<WaylandPresentationTiming> presentationTimingBound)
     {
+        _reportFailure = reportFailure;
+        _presentationTimingBound = presentationTimingBound;
         var eglSurfaceType = Type.GetType("Avalonia.Wayland.Server.Transient.Rendering.WaylandEglWsiSurface, Avalonia.Wayland", true)!;
         _eglSurfaceType = eglSurfaceType;
         _topLevelType = Type.GetType("Avalonia.Wayland.Server.Persistent.WXdgTopLevel, Avalonia.Wayland", true)!;
@@ -117,10 +118,12 @@ internal sealed class WaylandFramePacingCompatibility
         }
     }
 
-    internal static bool TryCreate([NotNullWhen(true)] out WaylandFramePacingCompatibility? compatibility, out string reason)
+    internal static bool TryCreate(Action<Exception> reportFailure, Action<WaylandPresentationTiming> presentationTimingBound,
+        [NotNullWhen(true)] out WaylandFramePacingCompatibility? compatibility, out string reason)
     {
         compatibility = null;
-        var version = typeof(WaylandPlatformOptions).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var version = Type.GetType("Avalonia.WaylandPlatformOptions, Avalonia.Wayland")?.Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         var nwayland = typeof(WlProxy).Assembly.GetName().Version;
         if (!OperatingSystem.IsLinux() || version != "12.1.4+2d79ba55fae1b1e71c69f93a668080c9029e6a31" || nwayland != new Version(0, 11, 0, 0))
         {
@@ -130,7 +133,7 @@ internal sealed class WaylandFramePacingCompatibility
 
         try
         {
-            compatibility = new WaylandFramePacingCompatibility();
+            compatibility = new WaylandFramePacingCompatibility(reportFailure, presentationTimingBound);
             reason = "Validated Avalonia Wayland EGL frame-pacing adapter.";
             return true;
         }
@@ -192,8 +195,7 @@ internal sealed class WaylandFramePacingCompatibility
             Register = _register.CreateDelegate<Action<IDisposable>>(surface),
             Unregister = _unregister.CreateDelegate<Action<IDisposable>>(surface),
             Wakeup = wakeup,
-            ReportFailure = error => Logger.TryGet(LogEventLevel.Error, AtomUILogArea.System)?.Log(
-                typeof(WaylandFramePacingCompatibility), "Wayland prepared-frame submission failed; retiring its target: {Error}", error),
+            ReportFailure = _reportFailure,
             GetWlSurface = () => (WlSurface?)_wlSurface.GetValue(surface),
             Presentation = _globals.GetValue(surface) is { } globals
                 ? _presentations.GetValue(globals, value => new StrongBox<WaylandPresentationTiming?>(BindPresentation(value))).Value
@@ -214,7 +216,7 @@ internal sealed class WaylandFramePacingCompatibility
         var registry = (WlRegistry)_registry.GetValue(globals)!;
         var version = Math.Min(global.version, (uint)descriptor.Version);
         var timing = new WaylandPresentationTiming(listener => registry.Bind<WpPresentation>(global.name, version, listener));
-        MotionFrameTiming.Clock = new WaylandMotionPresentationClock(timing);
+        _presentationTimingBound(timing);
         return timing;
     }
 }

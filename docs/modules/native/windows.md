@@ -243,7 +243,9 @@ Popup 完全位于主窗口内时不会进入第二层。
 
 兼容性（Windows 11，默认 `RedirectionSurface`，Avalonia 旧式透明 `DwmEnableBlurBehindWindow`）已用 `ddagrab`
 逐帧验证：透明圆角与阴影无黑框、不丢逐像素 alpha，打开/关闭动效每帧阴影与内容同帧；两次样式切换期间
-内容区录像无任何变化帧。WinUI/DirectComposition 合成模式（`WS_EX_NOREDIRECTIONBITMAP`）下未验证。
+内容区录像无任何变化帧。Windows 10 build 19045（默认 `RedirectionSurface`）上也得到相同结论：
+浮层 `ex=0x80080`，动效 261 帧中浮层矩形内没有纯黑像素，不需要关闭 Win10 的分层样式。
+WinUI/DirectComposition 合成模式（`WS_EX_NOREDIRECTIONBITMAP`）下未验证。
 
 ### 6.4 生命周期
 
@@ -258,3 +260,40 @@ Popup 完全位于主窗口内时不会进入第二层。
 - `HTTRANSPARENT` 只在同线程窗口间转发，主窗口外的阴影必须由第二层处理。
 - 命中只决定事件交给哪个窗口；主窗口的 light dismiss 遮罩语义不变（点击阴影 = 点击 Popup 外部）。
 
+
+## 7. WindowsLegacyFrameMarginHook（Windows 10 激活态边框）
+
+`src/AtomUI.Native/Windows/WindowsLegacyFrameMarginHook.cs`，入口 `NativeWindowFrame.TryAttachLegacyFrameMarginHook(Window)`，
+由 `WindowsWindowChromeManager` 在首次显示前挂接、`Closed` 时释放。只在 Windows 10（build 10240 ~ 21999）创建；
+Windows 11、Linux、macOS 返回 `null`，行为不变。
+
+### 7.1 问题
+
+Avalonia 12.1.4 使用 redirection bitmap 时把 DWM 框架向客户区四边各扩展 1px
+（`WindowImpl.UpdateExtendMargins`：`defaultMargin = UseRedirectionBitmap ? 1 : 0`）。Win10 DWM 把激活态的 1px 可见边框
+画在这层扩展玻璃下方，被不透明客户区覆盖；非激活态边框画在客户区之上，不受影响。默认合成顺序改为
+`RedirectionSurface` 优先后，激活窗口的左、右、下三边边框消失，只剩 Window 自绘的顶边，看起来是一条孤立的深色线。
+`WinUIComposition` 下边距为 0，不受影响。
+
+### 7.2 做法
+
+扩展客户区、且没有 `WS_EX_NOREDIRECTIONBITMAP` 时，调用 `DwmExtendFrameIntoClientArea` 把边距归零。
+DWM 随即按系统原生方式绘制半透明边框。Avalonia 在显示、窗口状态切换、全屏进出和扩展提示变化时会重新写入 1px，
+这些操作都会产生 `WM_SHOWWINDOW`、`WM_ACTIVATE`、`WM_WINDOWPOSCHANGED` 或 `WM_DPICHANGED`。hook 收到这些消息后
+`Post` 一次合并的归零，在 Avalonia 的同步调用链结束后执行。live resize 期间（`WM_ENTERSIZEMOVE` ~ `WM_EXITSIZEMOVE`）
+Avalonia 不会重写边距，因此跳过 `WM_WINDOWPOSCHANGED`，不在每帧调用 DWM。
+
+顶边仍由 Window 自绘（`IsLegacyWindowsFrameBorderVisible`）：边距归零后 DWM 也不画顶边，客户区覆盖了标题栏区域。
+
+### 7.3 验证（Windows 10 19045，2560x1600 @150%，`RedirectionSurface`）
+
+本地脚本 `tmp/visual-verification/windows/vv`（`edges`、`states`）在白、灰、黑纯色背景下逐像素采样四边，并与同位置的
+原生 Notepad 对比：
+
+| 状态 | 修复前 左/右/下 | 修复后 左/右/下 | Notepad |
+|---|---|---|---|
+| 激活，白 / 灰 / 黑背景 | `FFFFFF`（无边框） | `707070` / `454545` / `191919` | 相同 |
+| 非激活，白 / 灰 / 黑背景 | `AAAAAA` / `6B6B6B` / `2B2B2B` | 不变 | 相同 |
+
+最大化→还原、全屏→退出、拖动 resize、失焦→重新激活之后，四边结果都保持一致。live resize 同一时段 A/B 对比
+（每组约 660 帧、4 组）：修复前与修复后缺口帧都是 13，黑条帧都是 4，没有回归。

@@ -160,6 +160,8 @@ Gallery Release 构建、不挂调试器。
 | `LowLatencyDxgiSwapChain` | 无洋红缺口，但边缘出现黑/白闪烁条纹 | 未测 | 0 |
 | `RedirectionSurface`（修复背景 hook 前） | 0 | — | 2～3 |
 | `RedirectionSurface`（当前） | **0**（2 倍拖动速度同样为 0） | **0** | **0** |
+| Windows 10 19045：旧顺序（`WS_EX_NOREDIRECTIONBITMAP`） | 36%～42% | 37%～40% | 0～2 |
+| Windows 10 19045：`RedirectionSurface`（当前） | 0（每组另有 2～4 帧右边缘黑条） | 0.2%～1%（1～4 帧） | 0 |
 
 结论：
 
@@ -245,6 +247,18 @@ Gallery Release 构建、不挂调试器。
 7. 标题栏拖动状态不会跨 release、capture lost、detach 或 `BeginMoveDrag` 保留。
 
 ### Windows 10 实机验证
+
+2026-10-29 已在 Windows 10 build 19045（2560x1600 @150%，默认 `RedirectionSurface`）上按同一脚本化方法执行，
+记录见 [Windows 10 实机验证快速上手](../../../superpowers/progress/2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)
+文末“Windows 10 结果”。
+
+- 与旧的合成顺序对比：拖左/上边缘的缺口帧从 35%～42% 降到 0～1%，没有白屏帧。
+- 与 Win11 不同，还有少量单帧缺陷：拖左边缘时每组 2～4 帧在右边缘出现 20～60px 黑条；
+  拖上边缘时每组 1～4 帧在下边缘出现洋红缺口。
+- 下面第 4、5 项通过。暗色主题下的 Win10 边框颜色还没有检查。
+- `RedirectionSurface` 下 Avalonia 把 DWM 框架向客户区扩展 1px，Win10 激活态的左、右、下边框因此被客户区覆盖。
+  该问题由仅在 Win10 创建的 `WindowsLegacyFrameMarginHook` 修复，见
+  [AtomUI.Native Windows](../../../modules/native/windows.md) 第 7 节。
 
 1. 快速来回拖动左边缘，右边缘保持固定。
 2. 快速来回拖动上边缘，下边缘保持固定。

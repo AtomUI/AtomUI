@@ -10,6 +10,7 @@ internal static class WindowUtilsInterop
     public const int GWL_EXSTYLE = -20;
     public const long WS_EX_TRANSPARENT = 0x20L;
     public const long WS_EX_LAYERED = 0x80000L;
+    public const long WS_EX_NOREDIRECTIONBITMAP = 0x200000L;
     public const uint LWA_ALPHA = 0x2;
     public const uint GA_ROOTOWNER = 3;
     public const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
@@ -22,6 +23,9 @@ internal static class WindowUtilsInterop
     public const int WM_ENTERSIZEMOVE = 0x0231;
     public const int WM_EXITSIZEMOVE = 0x0232;
     public const int WM_SHOWWINDOW = 0x0018;
+    public const int WM_ACTIVATE = 0x0006;
+    public const int WM_WINDOWPOSCHANGED = 0x0047;
+    public const int WM_DPICHANGED = 0x02E0;
     public const int WM_NCACTIVATE = 0x0086;
     public const int WM_DESTROY = 0x0002;
     public const int WM_NCHITTEST = 0x0084;
@@ -37,6 +41,9 @@ internal static class WindowUtilsInterop
 
     [DllImport("dwmapi.dll", PreserveSig = true)]
     public static extern int DwmSetWindowAttribute(IntPtr hWnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
+
+    [DllImport("dwmapi.dll", PreserveSig = true)]
+    public static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset);
 
     [DllImport("dwmapi.dll", PreserveSig = true)]
     public static extern int DwmGetWindowAttribute(
@@ -110,6 +117,15 @@ internal static class WindowUtilsInterop
         public int Height => Bottom - Top;
 
         public bool Contains(int x, int y) => x >= Left && x < Right && y >= Top && y < Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MARGINS
+    {
+        public int cxLeftWidth;
+        public int cxRightWidth;
+        public int cyTopHeight;
+        public int cyBottomHeight;
     }
 
     [StructLayout(LayoutKind.Sequential)]

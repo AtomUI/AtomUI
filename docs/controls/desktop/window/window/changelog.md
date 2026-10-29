@@ -5,6 +5,7 @@
 ## 2026-10-29
 
 - Fix
+  - Restore the active-state left, right and bottom frame borders on Windows 10 under the default `RedirectionSurface`. Avalonia extends the DWM frame 1px into the client area when it uses a redirection bitmap, and Win10 DWM draws the active border beneath that glass, where the opaque client covered it; only the self-drawn top edge was left visible. A Windows 10-only native hook (`WindowsLegacyFrameMarginHook`) resets the margins to 0 after each Avalonia rewrite, so DWM draws the native translucent border again. Windows 11, Linux and macOS are unaffected. The self-drawn top edge is still required.
   - Eliminate opposite-edge frame lag on Windows live resize. Dragging the left or top edge no longer makes the right or bottom edge jump; previously 28%–33% of frames showed gaps of up to 121px under `WinUIComposition`.
   - Remove the whole-window background flashes that `RedirectionSurface` used to show during live resize.
 - Implementation
@@ -20,6 +21,7 @@
   - `RedirectionSurface`: 0 gap frames and 0 blank frames for both left and top edge drags, including at double drag speed. `WinUIComposition`: 28%–33% gap frames for both edges.
   - Overlay popups (title-bar menu, tooltip), native-window popups (InfoFlyout with `ShouldUseOverlayPopup=False`) and the transparent splash render identically under both composition modes; no black-box regressions.
   - `WindowResizeArtifactTests`: 62 passed, including the updated composition-order assertion and a new assertion that the background hook skips the erase fill during size-move.
+  - Windows 10 active frame borders, Windows 10 19045 @150%: on white, gray and black backdrops, active and inactive borders now match a native Notepad window pixel for pixel, including after maximize/restore, fullscreen enter/exit, resizing and refocusing. Live resize A/B in one session shows the same gap and stripe frame counts before and after (13 and 4). `AtomUI.Desktop.Controls.Tests` Window tests: 238 passed.
 
 ## 2026-10-21
 

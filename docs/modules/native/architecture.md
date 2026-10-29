@@ -91,6 +91,7 @@ src/AtomUI.Native/
     ├── XcbConnectionHolder.cs
     ├── WaylandWindowReflectionExtensions.cs
     ├── WaylandWindowUtils.cs
+    ├── WaylandInitialScaling.cs
     └── Rendering/
 ```
 

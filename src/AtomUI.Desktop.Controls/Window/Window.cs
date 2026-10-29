@@ -659,6 +659,9 @@ public partial class Window : AvaloniaWindow,
         ScalingChanged += HandleWindowScalingChanged;
         _platformChromeManager = WindowChromeManager.Attach(this);
         UpdateCaptionButtonCapabilities();
+        // Before the first layout: Wayland would otherwise lay out and render at scale 1 until the compositor
+        // reports the preferred scale after mapping, then re-lay out the whole window.
+        WaylandInitialScaling.Apply(PlatformImpl);
     }
 
     internal IDisposable SuppressDrawnChromeOverlay()

@@ -752,8 +752,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 (anchor, gravity) = PopupUtils.GetAnchorAndGravity(requestedPlacement);
             }
 
+            // 箭头隐藏或部件不可用时保持空 bounds：窗口型 Popup 在朝向 anchor 一侧保留完整阴影，
+            // ApplyCustomPlacement 按完整阴影厚度回退（见 PopupUtils.GetAnchorSideResidualShadow）
             var arrowIndicatorLayoutBounds = default(Rect);
-            var arrowHiddenButCapable      = false;
             if (Child is IArrowAwareShadowMaskInfoProvider provider)
             {
                 // If ArrowIndicatorLayoutBounds is not initialized yet, force a layout pass
@@ -774,20 +775,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                             vOffset += delta.Y;
                         }
                     }
-                    else
-                    {
-                        // 箭头部件不可用（模板未就绪或主题未提供），与箭头隐藏同等对待：
-                        // 位置公式按无箭头计算，再由 arrowHiddenButCapable 做阴影厚度补偿
-                        arrowHiddenButCapable = true;
-                    }
-                }
-                else if (PopupUtils.CanEnabledArrow(requestedPlacement))
-                {
-                    // 箭头被隐藏但该 Placement 本来支持箭头：popup root 在箭头侧仍然预留了完整阴影厚度
-                    // （ShadowsAwareContainer.GetEffectiveShadowThickness 在 IsArrowVisible=false 时返回完整阴影），
-                    // 而位置公式默认阴影会被箭头抵消，因此此时内容离 target 会多出一个阴影厚度的空隙。
-                    // 在 ApplyCustomPlacement 之后再对 placement.Offset 做一次朝 target 方向的补偿。
-                    arrowHiddenButCapable = true;
                 }
             }
             var (flipX, flipY) = PopupUtils.ApplyCustomPlacement(
@@ -801,29 +788,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 anchor,
                 gravity,
                 arrowIndicatorLayoutBounds);
-            if (arrowHiddenButCapable && !isUseOverlayHost)
-            {
-                var arrowDirection = PopupUtils.FlipDirection(
-                    PopupUtils.GetDirection(requestedPlacement), flipX, flipY);
-                var dx = 0.0d;
-                var dy = 0.0d;
-                switch (arrowDirection)
-                {
-                    case Direction.Top:
-                        dy = shadowThickness.Bottom;
-                        break;
-                    case Direction.Bottom:
-                        dy = -shadowThickness.Top;
-                        break;
-                    case Direction.Left:
-                        dx = shadowThickness.Right;
-                        break;
-                    case Direction.Right:
-                        dx = -shadowThickness.Left;
-                        break;
-                }
-                placement.Offset = new Point(placement.Offset.X + dx, placement.Offset.Y + dy);
-            }
 
             NotifyFlipped(flipX, flipY);
             CustomPlacementCallback?.Invoke(placement, shadowThickness, marginToAnchor, isUseOverlayHost, flipX, flipY);

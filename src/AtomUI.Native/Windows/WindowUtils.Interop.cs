@@ -16,6 +16,8 @@ internal static class WindowUtilsInterop
     public const int SM_CXBORDER = 5;
     public const int SM_CYBORDER = 6;
     public const int WM_ERASEBKGND = 0x0014;
+    public const int WM_ENTERSIZEMOVE = 0x0231;
+    public const int WM_EXITSIZEMOVE = 0x0232;
     public const int WM_SHOWWINDOW = 0x0018;
     public const int WM_NCACTIVATE = 0x0086;
     public const int S_OK = 0;

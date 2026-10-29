@@ -1136,14 +1136,27 @@ public class WindowResizeArtifactTests
         source.ShouldContain("Win32CompositionMode.DirectComposition");
         source.ShouldContain("Win32CompositionMode.LowLatencyDxgiSwapChain");
         source.ShouldContain("Win32CompositionMode.RedirectionSurface");
+        // RedirectionSurface 优先：live resize 时只有它与 DWM 窗口几何同步合成，对向边缘不错帧。
+        source.IndexOf("Win32CompositionMode.RedirectionSurface", StringComparison.Ordinal)
+              .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.WinUIComposition", StringComparison.Ordinal));
         source.IndexOf("Win32CompositionMode.WinUIComposition", StringComparison.Ordinal)
               .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.DirectComposition", StringComparison.Ordinal));
         source.IndexOf("Win32CompositionMode.DirectComposition", StringComparison.Ordinal)
               .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.LowLatencyDxgiSwapChain", StringComparison.Ordinal));
-        source.IndexOf("Win32CompositionMode.LowLatencyDxgiSwapChain", StringComparison.Ordinal)
-              .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.RedirectionSurface", StringComparison.Ordinal));
         source.ShouldNotContain("WindowsAppBuilderDefaults");
         source.ShouldNotContain("ShouldRenderOnUIThread = true");
+    }
+
+    [Fact]
+    public void Windows_Background_Hook_Skips_Erase_Fill_During_Live_Resize()
+    {
+        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Windows/WindowsBackgroundHook.cs"));
+
+        // RedirectionSurface 下 WM_ERASEBKGND 的 GDI 填充会先于渲染帧被 DWM 合成，表现为整窗闪背景色。
+        source.ShouldContain("case WindowUtilsInterop.WM_ENTERSIZEMOVE:");
+        source.ShouldContain("case WindowUtilsInterop.WM_EXITSIZEMOVE:");
+        source.IndexOf("if (_isSizeMoving)", StringComparison.Ordinal)
+              .ShouldBeLessThan(source.IndexOf("TryFillClientArea(hWnd, wParam)", StringComparison.Ordinal));
     }
 
     private static string GetRepoFile(string relativePath)

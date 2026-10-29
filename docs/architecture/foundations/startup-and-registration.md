@@ -26,8 +26,8 @@ AtomUI Window 从首帧开始使用 CSD，不能先显示 compositor 标题栏�
 
 `WithAtomUIDefaultOptions()` 当前设置：
 
-- Windows 10：`AngleEgl/Software` 渲染回退与 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退策略。
-- Windows 11+：`AngleEgl/Software` 渲染回退与 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退策略。
+- Windows 10：`AngleEgl/Software` 渲染回退与 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退策略。
+- Windows 11+：`AngleEgl/Software` 渲染回退与 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退策略。
 - macOS Avalonia Native 渲染优先级：Metal、OpenGL、Software。Metal 在渲染线程直接呈现，启动提交占用 UI 线程时 Splash
   动画仍能上屏；早先 Metal live resize 抖动已由 Avalonia 12.1.0（#21588）修复。
 - X11 平台选项：`EnableDrawnDecorations = true`。

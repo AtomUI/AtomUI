@@ -86,12 +86,14 @@ public static class AppBuilderExtensions
                     Win32RenderingMode.AngleEgl,
                     Win32RenderingMode.Software
                 ],
+                // RedirectionSurface 优先：只有 redirection surface 会被 DWM 与窗口几何变化同步合成，
+                // 拖动左/上边缘 live resize 时对向边缘不会错帧（WinUI/DComp/flip swapchain 均有 1 帧以上滞后）。
                 CompositionMode =
                 [
+                    Win32CompositionMode.RedirectionSurface,
                     Win32CompositionMode.WinUIComposition,
                     Win32CompositionMode.DirectComposition,
-                    Win32CompositionMode.LowLatencyDxgiSwapChain,
-                    Win32CompositionMode.RedirectionSurface
+                    Win32CompositionMode.LowLatencyDxgiSwapChain
                 ]
             });
         }

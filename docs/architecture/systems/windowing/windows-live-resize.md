@@ -8,8 +8,8 @@
 
 | 系统 | 渲染模式 | 合成模式 | 窗口装饰 |
 |---|---|---|---|
-| Windows 10 | `AngleEgl`，失败时 `Software` | `WinUIComposition` → `DirectComposition` → `LowLatencyDxgiSwapChain` → `RedirectionSurface` | Avalonia CSD |
-| Windows 11+ | `AngleEgl`，失败时 `Software` | `WinUIComposition` → `DirectComposition` → `LowLatencyDxgiSwapChain` → `RedirectionSurface` | Avalonia CSD |
+| Windows 10 | `AngleEgl`，失败时 `Software` | `RedirectionSurface` → `WinUIComposition` → `DirectComposition` → `LowLatencyDxgiSwapChain` | Avalonia CSD |
+| Windows 11+ | `AngleEgl`，失败时 `Software` | `RedirectionSurface` → `WinUIComposition` → `DirectComposition` → `LowLatencyDxgiSwapChain` | Avalonia CSD |
 
 AtomUI 使用 Avalonia 公开的 Windows 合成回退顺序；Window Control 不读取或切换合成后端；后端只在
 `WithAtomUIDefaultOptions()` 的平台启动配置中确定。
@@ -33,7 +33,7 @@ AtomUI Window 负责 Control 状态、主题、标题栏内容和最小布局约
 AppBuilder
   -> WithAtomUIDefaultOptions()
   -> Win32PlatformOptions
-  -> CompositionMode = WinUIComposition, DirectComposition, LowLatencyDxgiSwapChain, RedirectionSurface fallback
+  -> CompositionMode = RedirectionSurface, WinUIComposition, DirectComposition, LowLatencyDxgiSwapChain fallback
   -> Avalonia Win32 platform initialization
 
 AtomUI Window
@@ -86,7 +86,8 @@ Live resize 问题分为两类，修复路径不能混用。
 ### 窗口外边缘错帧
 
 拖动左边缘或上边缘时，对向边缘出现位置回跳，属于窗口 surface 与几何提交的同步问题。AtomUI 通过统一的
-当前 Windows 合成策略处理，不在 Window 模板、布局或 Win32 消息层增加补丁。
+当前 Windows 合成策略处理（`RedirectionSurface` 优先，见下文"2026-10 自动化视觉验证"），不在 Window 模板、
+布局或 Win32 消息层增加同步补丁。
 
 ### 内容区域抖动
 
@@ -118,7 +119,7 @@ Live resize 问题分为两类，修复路径不能混用。
 - 自绘标题栏（CSD）属于内容区，因此标题栏按钮随内容一起滞后；原生标题栏由 DWM 直接合成，不走应用内容
   管线，天然与窗口外框同步，所以原生应用表现为"内容闪但标题栏不闪"。
 
-### 实机 A/B 结果与当前结论
+### 2026-08 实机 A/B 结果（已被"2026-10 自动化视觉验证"取代）
 
 在 `AppBuilderExtensions.WithAtomUIDefaultOptions()` 中逐一切换 `Win32PlatformOptions.CompositionMode`
 并实机拖动验证：
@@ -141,6 +142,40 @@ Live resize 问题分为两类，修复路径不能混用。
 结论：`WinUIComposition` 与 `LowLatencyDxgiSwapChain` 均可显著缓解旧 `RedirectionSurface` 路径下的整页空帧，但不能完全消除
 `WM_SIZE`、swap chain resize、Present 与 DWM 合成之间的时序差；右侧边缘仍可能闪烁。Icon showcase 的负载
 会放大这一问题，但不是白屏的根因。`WinUIComposition` 的透明 composition root 位于 HWND native backdrop 之上，AtomUI 的 Window.Background 或 GDI 背景填充不能覆盖尚未提交的 composition surface。
+
+### 2026-10 自动化视觉验证与当前结论
+
+上表的 2026-08 结论已被本节取代。环境：Windows 11 build 26300，Avalonia 12.1.4，2560x1600 @150% DPI，
+Gallery Release 构建、不挂调试器。
+
+方法（脚本化，可复现）：全屏置顶洋红背景（鼠标穿透、不可激活）；把 Gallery 窗口放到固定位置；
+用 `WM_NCHITTEST` 探测 `HTLEFT`/`HTTOP` 起点后按正弦轨迹往返拖动左/上边缘 6 秒；`ffmpeg ddagrab`
+（Desktop Duplication，即 DWM 合成结果）60fps 录制；逐帧统计固定对向边缘内侧露出的洋红像素宽度（缺口）
+和整窗无内容的帧（白屏）。每组 510 帧。
+
+| CompositionMode | 拖左边缘：右边缘缺口帧 / 最大缺口 | 拖上边缘：下边缘缺口帧 / 最大缺口 | 白屏帧 |
+|---|---|---|---|
+| `WinUIComposition` | 28%～33% / 78～121px | 31% / 56px | 0 |
+| `DirectComposition` | 33% / 73～99px | 未测 | 0 |
+| `LowLatencyDxgiSwapChain` | 无洋红缺口，但边缘出现黑/白闪烁条纹 | 未测 | 0 |
+| `RedirectionSurface`（修复背景 hook 前） | 0 | — | 2～3 |
+| `RedirectionSurface`（当前） | **0**（2 倍拖动速度同样为 0） | **0** | **0** |
+
+结论：
+
+- 只有 `RedirectionSurface` 的内容由 DWM 与窗口几何变化同步合成；WinUI/DComp/flip swapchain 的 Present
+  与窗口外框是两条独立时间线，任何应用侧同步渲染都无法对齐。因此默认合成顺序改为 `RedirectionSurface` 优先。
+- 旧记录中 `RedirectionSurface` 的"整页白屏"根因是 `WindowsBackgroundHook` 在 `WM_ERASEBKGND` 中用 GDI 填满
+  客户区：redirection surface 下这层填充先于渲染帧被 DWM 合成。`WindowsBackgroundHook` 在
+  `WM_ENTERSIZEMOVE` 与 `WM_EXITSIZEMOVE` 之间跳过擦除填充，交还 Avalonia 默认行为（窗口类无背景画刷），
+  首次显示前的底色填充不受影响。
+- 在 `WM_PAINT` 前同步 `UpdateLayout()` 无效：Avalonia 在 `WM_SIZE` 内已同步完成布局（实测布局耗时恒为 0），
+  该方向不再尝试。
+- 透明窗口回归验证：overlay Popup（标题栏菜单、Tooltip）与原生窗口 Popup（InfoFlyout
+  `ShouldUseOverlayPopup=False` 的悬停/点击浮层）在两种合成模式下截图一致（PSNR ≥ 55dB 或完全相同），
+  圆角、箭头和阴影透明合成正常，无黑框；Splash 透明圆角与阴影正常。
+- 代价：`RedirectionSurface` 下 `AcrylicBlur`/`Mica` 不可用（`CompositionEffectsSurface` 为空），
+  `Transparent` 走 `DwmEnableBlurBehindWindow` 旧式透明。需要材质效果的应用可显式覆盖 `CompositionMode`。
 
 ### 上游与官方立场
 
@@ -171,8 +206,9 @@ Live resize 问题分为两类，修复路径不能混用。
 - 跟踪 [Avalonia#9103](https://github.com/AvaloniaUI/Avalonia/issues/9103)；若上游实现
   `WM_NCCALCSIZE`/`WM_SIZE` 内同步 present，评估升级收益。
 - 用户侧可交叉验证 Intel Arc 驱动版本（已知部分版本存在视觉故障）。
-- 给用户/issue 的答复口径：内容与标题栏一起滞后是 CSD 的固有代价；要"标题栏不闪"只能改用 DWM 原生
-  标题栏（放弃自绘 chrome），属产品取舍，不在本契约默认策略内。
+- 给用户/issue 的答复口径：默认 `RedirectionSurface` 下拖动左/上边缘不再错帧；若应用显式把
+  `WinUIComposition`/`DirectComposition` 排在前面（例如为了 Mica/Acrylic），对向边缘错帧是这些合成路径的
+  平台限制，按本节上游跟踪处理。
 
 ## 禁止做法
 
@@ -187,7 +223,8 @@ Live resize 问题分为两类，修复路径不能混用。
 
 ## 兼容性不变量
 
-- Windows 10 和 Windows 11+ 使用 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退。
+- Windows 10 和 Windows 11+ 使用 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退。
+- `WindowsBackgroundHook` 在 live resize（size-move）期间不执行 `WM_ERASEBKGND` 填充。
 - Windows 默认 render modes 为 `AngleEgl` 和 `Software` fallback，`ShouldRenderOnUIThread=false`。
 - Win32 非客户区、resize hit-test、CSD 和 Snap Layout 只有一个所有者。
 - Window 主题始终通过 Avalonia CSD 表达 Windows 装饰。
@@ -199,7 +236,7 @@ Live resize 问题分为两类，修复路径不能混用。
 
 ### 自动验证
 
-1. Windows 10 和 Windows 11+ options 按 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序配置。
+1. Windows 10 和 Windows 11+ options 按 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序配置。
 2. Render modes 保持 `AngleEgl`、`Software`，且 `ShouldRenderOnUIThread=false`。
 3. Caption buttons 使用公开 `ElementRole`，不存在自定义 caption WndProc 注册。
 4. Window 主题保持 Avalonia CSD，不存在平行 Windows chrome manager。

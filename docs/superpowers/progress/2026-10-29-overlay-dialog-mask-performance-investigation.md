@@ -324,3 +324,23 @@ Window/Dialog 共 501 项：497 通过，4 失败，0 skipped。4 项失败的�
 未验证：Release/NativeAOT、120Hz、X11/macOS（未启用）、Windows（CSD 模板理论可用）、真实交互与视觉录像。
 临时 headless 用例、原生探针和回读/内容标注钩子均已删除；无新增永久测试。
 
+## Drawer 接入内容缓存（2026-10-29）
+
+`Window.AcquireContentCache(overlay)` 增加覆盖层参数：覆盖层位于缓存内容根之内时拒绝（否则每帧失效缓存反而更贵）。
+`DrawerContainer` 在打开/关闭 Motion 全程持有租约（含无遮罩时的面板滑动），Overlay Dialog 改为传入 presenter。
+
+Gallery Drawer 页的抽屉默认 `OpenOn` 为工作区窗口，容器位于窗口级 `ScopeAwareAdornerLayer`，不在缓存根与滚动容器内。
+本机 Wayland、5/3、Debug，右侧 Basic Drawer（带遮罩），每变体每方向 15 次，同一进程 3 组交替，渲染线程 `avalonia.comp.render.time`：
+
+| | 中位 | P95 | 最大 | >10ms 帧 |
+| --- | ---: | ---: | ---: | ---: |
+| 无缓存 | 8.4–10.9ms | 13.1–26.3ms | 14.5–42.0ms | 54–121 |
+| 缓存（动画中 30/30 采样确认生效） | **2.4–3.7ms** | **6.0–10.5ms** | 12.2–38.6ms | **1–14** |
+
+第 3 组两种变体同时受机器负载抬高，缓存仍将 >10ms 帧减少约 7 倍。
+
+原生 GPU 回读像素对照：Modal 页仍为 3 像素 ±1；Drawer 页 7 像素差，其中 4 个最大 34 级，位于主按钮内白色 PlusOutlined
+图标边缘（缓存帧略浅），其余 ±1。缩小 `RenderAtScale` 保护（1+1e-8 → 1+1e-12）后结果不变，成因未定位；
+差异仅存在于缓存生效的动画期间，且位于遮罩之下。临时回读钩子与探针已删除，无新增永久测试；
+Desktop.Controls 4119/4128（9 项基线失败不变），Rendering 77 通过。
+

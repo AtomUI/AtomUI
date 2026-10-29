@@ -13,17 +13,22 @@ public partial class Window
     private int _contentCacheLeases;
 
     /// <summary>
-    /// Caches the window content as a bitmap while a full-window overlay animates above it, so each overlay frame
-    /// composites the cached content instead of re-rendering it. Returns null when the cache cannot reproduce
-    /// direct rendering exactly; callers then keep the uncached path.
+    /// Caches the window content as a bitmap while <paramref name="overlay"/> animates above it, so each overlay
+    /// frame composites the cached content instead of re-rendering it. Returns null when the cache cannot reproduce
+    /// direct rendering exactly, or when the overlay itself lies inside the cached content (every overlay frame would
+    /// then invalidate the cache); callers keep the uncached path.
     /// </summary>
     /// <remarks>
     /// The cached root must sit on whole device pixels with its content clipped to it, and every text pixel must
     /// lie on an opaque base inside the cache. The backdrop supplies that base from the live frame brush, which
     /// must therefore be an opaque solid color with no frame layer content above it.
     /// </remarks>
-    internal IDisposable? AcquireContentCache()
+    internal IDisposable? AcquireContentCache(Visual overlay)
     {
+        if (_contentCacheHost is { } host && (ReferenceEquals(host, overlay) || host.IsVisualAncestorOf(overlay)))
+        {
+            return null;
+        }
         if (_contentCacheLeases == 0 && !TryEnableContentCache())
         {
             return null;
@@ -64,8 +69,9 @@ public partial class Window
         host.ClipToBounds = true;
         // ClearType keeps subpixel text in the layer. The host is already on whole device pixels; the framework's
         // snapping floors the world origin without tolerance, so 61.99999999999999 snaps a whole pixel away.
-        // The scale guard keeps the truncated layer size from losing a pixel to the same rounding.
-        host.CacheMode = new BitmapCache { EnableClearType = true, SnapsToDevicePixels = false, RenderAtScale = 1.00000001 };
+        // The scale guard keeps the truncated layer size from losing a pixel to the same rounding (2042.9999999999998
+        // becomes 2042); it is small enough to vanish in Skia's float transform.
+        host.CacheMode = new BitmapCache { EnableClearType = true, SnapsToDevicePixels = false, RenderAtScale = 1 + 1e-12 };
         // The composition visual only observes CacheMode during a property sync.
         host.InvalidateVisual();
         return true;

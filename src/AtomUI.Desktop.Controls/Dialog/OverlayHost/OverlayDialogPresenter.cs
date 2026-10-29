@@ -266,7 +266,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
                 Task<MotionResult> surfacePlayback;
                 Task<MotionResult>? maskPlayback = null;
                 using var contentCache = !_closeRequested && IsModal && _dialogMask is not null
-                    ? _ownerWindow?.AcquireContentCache() : null;
+                    ? _ownerWindow?.AcquireContentCache(this) : null;
                 try
                 {
                     surfacePlayback = CreateSurfaceMotion(true).PlayAsync(target, cancellation.Token);
@@ -377,7 +377,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         if (IsModal && _dialogMask is { } mask)
         {
             // While the full-window mask fades, composite the cached window content instead of re-rendering it.
-            using var contentCache = _ownerWindow?.AcquireContentCache();
+            using var contentCache = _ownerWindow?.AcquireContentCache(this);
             var masking = new FadeOutMotion(MotionDuration).PlayAsync(mask);
             await Task.WhenAll(surface, masking);
         }

@@ -343,6 +343,9 @@ internal class DrawerContainer : ContentControl
             if (surface is not null && IsMotionEnabled)
             {
                 UpdateLayout();
+                // The sliding panel and the mask repaint the window content they pass over on every frame; composite
+                // a cached copy of that content instead while the presentation plays.
+                using var contentCache = TopLevel.GetTopLevel(this) is Window window ? window.AcquireContentCache(this) : null;
                 Task<MotionResult> surfacePlayback;
                 Task<MotionResult>? maskPlayback = null;
                 var preparation = _entryPreparation;

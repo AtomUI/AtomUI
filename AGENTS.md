@@ -146,6 +146,12 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 2. **验证照常、提交信息可先备好**：构建、测试、运行验证不受本条限制照常执行；提交信息可以预先准备好（如用 commit-msg 技能生成草稿），但执行提交必须等用户明确指令。
 3. **例外仅限用户授权**：仅当用户明确要求提交（如“提交”、"commit"、“创建 commit”）或事先授权（如“这个任务做完直接提交”）时才可提交，且只提交授权范围内的工作，不顺手捎带未审查的改动。
 
+## Superpowers 产物存放强约束（本项目生效）
+
+1. **只用 `docs/superpowers/`**：Superpowers 流程产物一律放在 `docs/superpowers/` 下（`specs/`、`plans/`、`progress/`）；禁止在 `.superpowers/` 或其他隐藏目录下写入任何内容，技能脚本默认写入 `.superpowers/` 时改为手动写到 `docs/superpowers/`。
+2. **只存文字记录**：该目录只存放开发日志、任务规划与设计记录（Markdown），用于日后查询做过哪些调整、修复了哪些 bug。截图、录屏、视频、图片、TRX、二进制、构建产物、原始采样数据和日志转储一律禁止放入；视觉证据只写结论与必要的数值，媒体文件留在临时目录并在验证后删除。
+3. **防止膨胀**：执行过程的临时产物（任务说明、评审 diff、评审包等）放在会话临时目录，完成后删除，不进入 `docs/superpowers/`。`.gitignore` 对该目录只放行 `.md`；新增非 Markdown 文件视为违反本约束。
+
 ## Common Commands
 
 Use [affected verification](docs/engineering/workflows/affected-verification.md) as the default. The following sequence is a mandatory hard constraint for bug fixes and ordinary code changes:

@@ -20,13 +20,8 @@ on:
 env:
    SourceDir: ${{ github.workspace }}
    BuildDir: ${{ github.workspace }}/binaries
-   AtomUIToolsSourceDir: ${{ github.workspace }}/binaries/atomuitools-source
-   AtomUIToolsBinDir: ${{ github.workspace }}/binaries/atomuitools
    GalleryPublishDir: ${{ github.workspace }}/binaries/gallery_published
    GalleryArtifactsOutputDir: ${{ github.workspace }}/binaries/artifacts_output
-   AtomUIToolsMacBin: ${{ github.workspace }}/binaries/atomuitools/AtomUITools.Mac
-   AtomUIToolsWinBin: ${{ github.workspace }}/binaries/atomuitools/AtomUITools.Windows
-   AtomUIToolsLinuxBin: ${{ github.workspace }}/binaries/atomuitools/AtomUITools.Linux
 jobs:
    Prepare:
       name: Prepare release metadata
@@ -76,7 +71,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" -Force
@@ -157,7 +151,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" -Force
@@ -213,7 +206,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/appimage/x64" -Force
@@ -280,7 +272,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/appimage/arm64" -Force
@@ -347,7 +338,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/zip/x64" -Force
@@ -391,7 +381,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/zip/arm64" -Force

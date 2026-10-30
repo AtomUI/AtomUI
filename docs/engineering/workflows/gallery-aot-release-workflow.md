@@ -23,13 +23,28 @@ PublishAot:
 -publishAot '${{ inputs.PublishAot }}'
 ```
 
-## AtomUITools Checkout
+## 安装包打包脚本
 
-发布流程会拉取 private 仓库 `AtomUI/AtomUITools` 的 `develop` 分支来构建打包工具。由于这是跨仓库 checkout，`GITHUB_TOKEN` 不能默认读取该仓库，必须传入 `secrets.ACCESS_TOKEN`。
+安装包由仓库内 `controlgallery/AtomUIGallery.Desktop/scripts/packaging/` 的 PowerShell 脚本生成，不依赖外部私有工具，
+也不需要跨仓库 checkout 的 token：
 
-`AtomUITools` 和主仓库同属 `AtomUI` 组织，但标准 `GITHUB_TOKEN` 仍不应假定可读取另一个 private 仓库。`ACCESS_TOKEN` 应是 GitHub PAT 或 fine-grained token，并至少具备 `AtomUI/AtomUITools` 的只读 Contents 权限。这个 token 过期、未授权到该仓库，或没有配置到当前发布仓库的 Actions secrets 时，`actions/checkout` 会在 `Fetching the repository` 阶段失败。
+| 脚本 | 产物 | 平台 |
+| --- | --- | --- |
+| `New-GalleryZip.ps1` | `{Name}-{Version}.{BuildStamp}-{rid}.zip`，仅含 `*.exe` 与 `*.dll` | Windows |
+| `New-GalleryAppImage.ps1` | `{Name}-{rid}-{Version}.{BuildStamp}.AppImage` | Linux |
+| `New-GalleryDmg.ps1` | `{Name}-{Version}.{BuildStamp}-{rid}.dmg`，可选 `-CertIdentity` 签名 | macOS |
 
-`AtomUITools` 源码 checkout 到 `AtomUIToolsSourceDir`，构建输出写入 `AtomUIToolsBinDir`。这两个目录不能只靠大小写区分；Windows 和 macOS runner 的文件系统通常大小写不敏感，`AtomUITools` 与 `atomuitools` 会指向同一个目录。
+三个脚本共用 `GalleryPackaging.Common.ps1`，参数为 `-ConfigPath`（`PublishToLocal.ps1` 输出的 `config/InstallerConfig.xml`，
+仓库模板中的 `__VERSION__` 会被拒绝）、`-PackagesPath`、`-OutputPath`、`-Runtime`、`-BuildStamp`。
+`release-gallery.yml` 的 `Prepare` job 按 UTC 计算一次 `MMdd` 构建后缀并传给全部平台 job，同一次发布的产物后缀一致；
+本机运行省略 `-BuildStamp` 时取当前 UTC 日期。
+
+外部工具（appimagetool、linuxdeploy、create-dmg）在 `packaging-tools.json` 中固定版本与 SHA256，脚本下载后校验，
+不使用 `continuous` 构建或未锁定的 Homebrew 版本。升级工具时只修改该清单的版本、URL 与 SHA256，并完整运行一次
+Gallery 发布 workflow 验证全部平台。
+
+macOS 签名沿用既有顺序：`Contents/MacOS` 下文件按序号（Ordinal）排序逐个签名、主程序最后，再签 bundle，最后
+`codesign --verify --deep --strict`。本机无法授权 Finder 自动化时可加 `-SkipFinderLayout` 跳过 DMG 窗口布局，CI 不使用。
 
 ## 发布脚本职责
 
@@ -99,12 +114,10 @@ sudo apt-get install -y fuse libfuse2 patchelf desktop-file-utils file clang zli
 
 `clang` 和 `zlib1g-dev` 是 Linux NativeAOT 链接所需的本地工具链依赖。
 
-Linux AppImage 打包后必须包含根目录 `AppRun`。`release-gallery.yml` 在 `AtomUITools.Linux create-appimage` 之后调用 `controlgallery/AtomUIGallery.Desktop/scripts/EnsureAppImageLauncher.ps1`：
-
-- 检查 `AtomUIGallery.AppDir/usr/bin/AtomUIGallery.Desktop` 是否存在。
-- 如果 `AtomUIGallery.AppDir/AppRun` 缺失，生成标准 launcher，设置 `LD_LIBRARY_PATH` 到 `usr/lib`，再执行 Gallery 可执行文件。
-- 用同名 AppImage 重新调用 `appimagetool`，避免上传旧的缺入口产物。
-- 从最终 AppImage 中提取 `AppRun` 并执行 shell 语法检查。缺少 `AppRun` 时直接让 workflow 失败。
+`New-GalleryAppImage.ps1` 在调用 appimagetool 前就生成完整的 AppDir：根目录 `AppRun`（设置 `LD_LIBRARY_PATH`
+到 `usr/lib` 后执行 Gallery）、`.desktop`、普通文件形式的 `.DirIcon`，并统一权限（目录 755、文件 644，`AppRun`、主程序与
+`usr/lib` 下共享库 755），以满足 appimagetool 的 AppDir 校验。AppImage 只打包一次，随后解包检查 `AppRun`、`.desktop`、
+`.DirIcon` 与主程序。workflow 另外在 `xvfb-run` 下运行解包后的 `AppRun` 20 秒作为冒烟测试。
 
 ## 维护检查
 
@@ -113,7 +126,8 @@ Linux AppImage 打包后必须包含根目录 `AppRun`。`release-gallery.yml` �
 ```bash
 ruby -e 'require "yaml"; YAML.load_file(".github/workflows/release-gallery.yml"); puts "ok"'
 pwsh -NoLogo -NoProfile -Command '$errors = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile("controlgallery/AtomUIGallery.Desktop/scripts/PublishToLocal.ps1", [ref]$null, [ref]$errors); if ($errors.Count) { $errors | Format-List; exit 1 }'
-pwsh -NoLogo -NoProfile -Command '$errors = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile("controlgallery/AtomUIGallery.Desktop/scripts/EnsureAppImageLauncher.ps1", [ref]$null, [ref]$errors); if ($errors.Count) { $errors | Format-List; exit 1 }'
+pwsh -NoLogo -NoProfile -Command 'Get-ChildItem controlgallery/AtomUIGallery.Desktop/scripts/packaging/*.ps1 | ForEach-Object { $errors = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors); if ($errors.Count) { $errors | Format-List; exit 1 } }'
+pwsh -NoLogo -NoProfile -Command 'Get-Content controlgallery/AtomUIGallery.Desktop/scripts/packaging/packaging-tools.json -Raw | ConvertFrom-Json | Out-Null'
 pwsh -NoLogo -NoProfile -Command '[xml](Get-Content -Path "controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj" -Raw) | Out-Null'
 git diff --check
 ```

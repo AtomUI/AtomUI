@@ -62,6 +62,15 @@ if ($config.AppIcon) {
         throw "Configured application icon directory was not found: $iconSet"
     }
     Copy-Item -Path (Join-Path $iconSet "*") -Destination $iconsPath -Recurse
+    # linuxdeploy resolves the desktop entry's Icon from the hicolor theme and fails when it is absent.
+    Get-ChildItem -LiteralPath $iconSet -Filter "icon_*.png" -File |
+        Where-Object { $_.BaseName -match '^icon_(\d+)x\1$' } |
+        ForEach-Object {
+            $size = $Matches[1]
+            $themeDir = Join-Path $iconsPath "hicolor/${size}x${size}/apps"
+            New-Item -ItemType Directory -Path $themeDir -Force | Out-Null
+            Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $themeDir "$($config.Name).png")
+        }
 }
 if (-not $config.InstallerApplicationIcon) {
     throw "Installer config must define <InstallerApplicationIcon> for the AppImage .DirIcon."
@@ -105,6 +114,11 @@ Set-Content -LiteralPath $appRunPath -Value $appRun -Encoding utf8NoBOM -NoNewli
 # linuxdeploy runs as an AppImage itself; extract-and-run avoids requiring FUSE on the runner.
 $env:APPIMAGE_EXTRACT_AND_RUN = "1"
 Invoke-GalleryCommand -FilePath $linuxDeploy -ArgumentList @("--appdir", $appDir) -WorkingDirectory $OutputPath
+
+# linuxdeploy replaces the root icon with a symlink to a small theme size; keep the full-size application icon.
+$rootIcon = Join-Path $appDir "$($config.Name).png"
+Remove-Item -LiteralPath $rootIcon -Force -ErrorAction SilentlyContinue
+Copy-Item -LiteralPath $applicationIcon -Destination $rootIcon
 
 # Everyone must be able to read the AppDir; launchers and shared libraries must be executable.
 Invoke-GalleryCommand -FilePath "find" -ArgumentList @($appDir, "-type", "d", "-exec", "chmod", "755", "{}", "+")

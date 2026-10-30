@@ -234,7 +234,7 @@ jobs:
                chmod +x linuxdeploy-x86_64.AppImage
                sudo mv linuxdeploy-x86_64.AppImage /usr/local/bin/linuxdeploy
                
-               wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+               wget https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage
                chmod +x appimagetool-x86_64.AppImage
                sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
                
@@ -314,7 +314,7 @@ jobs:
                chmod +x linuxdeploy-aarch64.AppImage
                sudo mv linuxdeploy-aarch64.AppImage /usr/local/bin/linuxdeploy
 
-               wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
+               wget https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-aarch64.AppImage
                chmod +x appimagetool-aarch64.AppImage
                sudo mv appimagetool-aarch64.AppImage /usr/local/bin/appimagetool
 
